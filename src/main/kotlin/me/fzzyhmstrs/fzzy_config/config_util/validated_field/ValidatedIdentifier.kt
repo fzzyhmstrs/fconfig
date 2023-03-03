@@ -8,15 +8,15 @@ import net.minecraft.util.Identifier
 import java.util.function.Predicate
 
 class ValidatedIdentifier(
-  defaultValue: Identifier, 
-  private val idValidator: Predicate<Identifier> = Predicate {true}, 
-  private val invalidIdMessage: String = "None")
+    defaultValue: Identifier,
+    private val validIds: Collection<Identifier> = listOf(),
+    private val invalidIdMessage: String = "None")
   : 
   ValidatedField<Identifier>(defaultValue) 
 {
 
     init{
-        if (!idValidator.test(defaultValue)){
+        if (!validIds.contains(defaultValue) && !validIds.isEmpty()){
             throw IllegalArgumentException("Default identifier [$defaultValue] not valid per defined idValidator in validated identifier [${this.javaClass.canonicalName}] in config class [${this.javaClass.enclosingClass?.canonicalName}]")
         }
     }
@@ -40,7 +40,7 @@ class ValidatedIdentifier(
     }
 
     override fun validateAndCorrectInputs(input: Identifier): ValidationResult<Identifier> {
-        if (!idValidator.test(input)) {
+        if (!validIds.contains(input) && !validIds.isEmpty()) {
             val errorMessage = "Config Identifier $input couldn't be validated. Needs to meet the following criteria: $invalidIdMessage"
             return ValidationResult.error(storedValue,errorMessage)
         }

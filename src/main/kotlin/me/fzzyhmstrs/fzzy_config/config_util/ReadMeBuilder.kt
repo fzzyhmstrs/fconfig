@@ -1,6 +1,8 @@
 package me.fzzyhmstrs.fzzy_config.config_util
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.interfaces.ReadMeTextProvider
+import me.fzzyhmstrs.fzzy_config.interfaces.ReadMeWriter
 import java.util.function.Function
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.declaredMemberProperties

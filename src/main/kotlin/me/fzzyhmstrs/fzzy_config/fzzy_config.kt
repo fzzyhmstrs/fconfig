@@ -6,6 +6,7 @@ import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.loader.api.entrypoint.PreLaunchEntrypoint
+import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import kotlin.random.Random
 

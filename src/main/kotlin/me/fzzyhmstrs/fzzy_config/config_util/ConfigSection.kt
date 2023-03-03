@@ -2,6 +2,8 @@ package me.fzzyhmstrs.fzzy_config.config_util
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
+import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
+import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
 
 open class ConfigSection(
     headerText: Header = Header(),

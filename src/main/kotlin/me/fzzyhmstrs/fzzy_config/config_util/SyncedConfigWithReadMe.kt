@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.config_util
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.interfaces.SyncedConfig
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 
 abstract class SyncedConfigWithReadMe(

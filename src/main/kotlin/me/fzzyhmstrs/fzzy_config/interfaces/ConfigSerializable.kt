@@ -1,6 +1,7 @@
-package me.fzzyhmstrs.fzzy_config.config_util
+package me.fzzyhmstrs.fzzy_config.interfaces
 
 import com.google.gson.JsonElement
+import me.fzzyhmstrs.fzzy_config.config_util.ValidationResult
 
 interface ConfigSerializable{
     fun serialize(): JsonElement

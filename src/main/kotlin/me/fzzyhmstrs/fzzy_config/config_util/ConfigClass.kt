@@ -1,5 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.config_util
 
+import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
+
 open class ConfigClass(
     headerText: Header = Header(),
     decorator: LineDecorator = LineDecorator.DEFAULT)

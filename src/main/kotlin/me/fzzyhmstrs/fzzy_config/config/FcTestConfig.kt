@@ -70,7 +70,7 @@ object FcTestConfig:
 
         var testSection_3 = TestSection3(section3Header)
         class TestSection3(section3Header: Header): ConfigSection(section3Header){
-            var test_Id = ValidatedIdentifier(Identifier("redstone"), {id -> Registries.ITEM.containsId(id)}, "ID needs to be in the item registry.")
+            var test_Id = ValidatedIdentifier(Identifier("redstone"), Registries.ITEM.ids, "ID needs to be in the item registry.")
             var test_List = ValidatedList(
                 listOf(1, 3, 5, 7),
                 Int::class.java,

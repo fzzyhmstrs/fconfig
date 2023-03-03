@@ -3,6 +3,8 @@ package me.fzzyhmstrs.fzzy_config.config_util
 import com.google.gson.*
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config_util.validated_field.ValidatedField
+import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
+import me.fzzyhmstrs.fzzy_config.interfaces.OldClass
 import net.fabricmc.loader.api.FabricLoader
 import java.io.File
 import kotlin.reflect.KMutableProperty

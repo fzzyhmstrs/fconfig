@@ -6,6 +6,9 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config_util.*
+import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
+import me.fzzyhmstrs.fzzy_config.interfaces.ReadMeTextProvider
+import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
 import net.minecraft.network.PacketByteBuf
 import kotlin.reflect.full.hasAnnotation
 

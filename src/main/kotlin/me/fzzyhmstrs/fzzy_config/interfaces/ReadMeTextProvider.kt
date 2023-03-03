@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.config_util
+package me.fzzyhmstrs.fzzy_config.interfaces
 
 interface ReadMeTextProvider{
     fun readmeText(): String

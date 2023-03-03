@@ -1,5 +1,6 @@
-package me.fzzyhmstrs.fzzy_config.config_util
+package me.fzzyhmstrs.fzzy_config.interfaces
 
+import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
 import net.minecraft.network.PacketByteBuf
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility
@@ -17,7 +18,7 @@ interface ServerClientSynced{
             if (propVal is ServerClientSynced){ //ideal scenario is the properties are ValidatedFields or Sections
                 propVal.readFromServer(buf)
             } else if(prop is KMutableProperty<*>){ //fallback is just gson serialization
-                prop.setter.call(this,SyncedConfigHelperV1.gson.fromJson(buf.readString(),prop.returnType.javaClass))
+                prop.setter.call(this, SyncedConfigHelperV1.gson.fromJson(buf.readString(),prop.returnType.javaClass))
             }
         }
     }
