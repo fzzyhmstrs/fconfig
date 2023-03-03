@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "id": "fzzy_config",
+  "version": "${version}",
+  "name": "Fzzy Config",
+  "description": "Config library used in fzzyhmstrs mods. Provides input validation, ReadMe creation, and more.",
+  "authors": [
+    "fzzyhmstrs"
+  ],
+  "contact": {
+    "homepage": "https://www.curseforge.com/minecraft/mc-mods/fzzy-config",
+    "issues": "https://github.com/fzzyhmstrs/fconfig/issues",
+    "sources": "https://github.com/fzzyhmstrs/fconfig"
+  },
+  "license": "MIT License",
+  "icon": "assets/fzzy_config/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "me.fzzyhmstrs.fzzy_config.FC"
+      }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "me.fzzyhmstrs.fzzy_config.FCC"
+      }
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.13",
+    "fabric": "*",
+    "fabric-language-kotlin": ">=1.7.4+kotlin.1.6.21",
+    "minecraft": ">=1.19.3",
+    "java": ">=17"
+  }
+}

@@ -1,0 +1,11 @@
+{
+	"enchantment.fzzy_core.none": "None",
+	"enchantment.amethyst_imbuement.none.desc": "No Description.",
+	"modifiers.base_text": "Modifiers: ",
+	"testing.translation": "TESTING TESTING TESTING",
+	"testing.translation2": "This is a test README",
+	"fc.config.validated_color_r": "Red part of an RGBA color; enter an integer between 0 and 255.",
+	"fc.config.validated_color_g": "Green part of an RGBA color; enter an integer between 0 and 255.",
+	"fc.config.validated_color_b": "Blue part of an RGBA color; enter an integer between 0 and 255.",
+	"fc.config.validated_color_a": "Alpha part of an RGBA color; enter an integer between 0 (transparent) and 255 (opaque). The mod author may lock this to 255 only."
+}
