@@ -33,14 +33,14 @@ object SyncedConfigHelperV1 {
         try {
             if (f.exists()) {
                 val str = f.readLines().joinToString("\n")
-                println(">>> Found config:")
-                println(str)
+                //println(">>> Found config:")
+                //println(str)
                 val readConfig = deserializeConfig(configClass(), JsonParser.parseString(str))
                 if (readConfig.isError()) {
                     FC.LOGGER.warn("Errors found in $file per above log entries, attempting to correct invalid inputs automatically.")
                     val correctedConfig = serializeConfig(readConfig.get())
-                    println(">>> Corrected config:")
-                    println(correctedConfig)
+                    //println(">>> Corrected config:")
+                    //println(correctedConfig)
                     f.writeText(correctedConfig)
                 }
                 return readConfig.get()
@@ -49,8 +49,8 @@ object SyncedConfigHelperV1 {
             } else {
                 val initialClass = configClass()
                 val str = serializeConfig(initialClass)
-                println(">>>> Initial Config: ")
-                println(str)
+                //println(">>>> Initial Config: ")
+                //println(str)
                 f.writeText(str)
             }
             return configClass()
@@ -67,14 +67,18 @@ object SyncedConfigHelperV1 {
      * incorrect inputs from the new and old config will be automatically corrected where possible, or reverted to default if not, and the validated and updated config written to it's file
      */
     fun <T: Any> readOrCreateUpdatedAndValidate(file: String, previous: String, child: String = "", base: String = FC.MOD_ID, configClass: () -> T, previousClass: () -> OldClass<T>): T{
+        //println("Read or create and validate updated: $file")
         val (dir,dirCreated) = makeDir(child, base)
         if (!dirCreated) {
+            //println("totally failed!")
             return configClass()
         }
         val p = File(dir, previous)
         try {
             if (p.exists()) {
-                val pStr = p.readLines().joinToString("")
+                val pStr = p.readLines().joinToString("\n")
+                //println(">>> Found Old config:")
+                //println(pStr)
                 val previousConfig = deserializeConfig(previousClass(), JsonParser.parseString(pStr))
                 if (previousConfig.isError()){
                     FC.LOGGER.error("Old config $previous had errors, attempted to correct before updating.")
@@ -84,14 +88,14 @@ object SyncedConfigHelperV1 {
                 if (f.exists()){
                     p.delete() //attempts to delete the now useless old config version file
                     val str = f.readLines().joinToString("")
-                    println(">>> Found config:")
-                    println(str)
+                    //println(">>> Found config:")
+                    //println(str)
                     val readConfig = deserializeConfig(configClass(), JsonParser.parseString(str))
                     if (readConfig.isError()){
                         FC.LOGGER.warn("Errors found in $file per above logs, attempting to correct invalid inputs automatically.")
                         val correctedConfig = serializeConfig(readConfig.get())
-                        println(">>> Corrected config:")
-                        println(correctedConfig)
+                        //println(">>> Corrected config:")
+                        //println(correctedConfig)
                         f.writeText(correctedConfig)
                     }
                     return readConfig.get()
@@ -104,6 +108,7 @@ object SyncedConfigHelperV1 {
                 }
                 return newClass
             } else {
+                //println("couldn't find previous class!")
                 return readOrCreateAndValidate(file,child, base, configClass)
             }
         } catch (e: Exception) {

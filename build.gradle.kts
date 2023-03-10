@@ -15,22 +15,6 @@ val mavenGroup: String by project
 group = mavenGroup
 println("## Changelog for Amethyst Core $modVersion \n\n" + log.readText())
 repositories {
-    maven {
-        name = "TerraformersMC"
-        url = uri("https://maven.terraformersmc.com/")
-    }
-    maven {
-        name = "Ladysnake Libs"
-        url = uri("https://ladysnake.jfrog.io/artifactory/mods")
-    }
-    maven {
-        name = "Jitpack"
-        url = uri("https://jitpack.io")
-    }
-    flatDir {
-        dirs("F:\\Documents\\Mod Development\\ai\\build\\libs")
-    }
-
 }
 dependencies {
     val minecraftVersion: String by project
@@ -43,15 +27,6 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
     val fabricKotlinVersion: String by project
     modImplementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
-
-    modImplementation("dev.emi:trinkets:3.4.0"){
-        exclude("net.fabricmc.fabric-api")
-    }
-
-
-    implementation("com.github.LlamaLad7:MixinExtras:0.1.1")
-    annotationProcessor("com.github.LlamaLad7:MixinExtras:0.1.1")
-    include("com.github.LlamaLad7:MixinExtras:0.1.1")
 
 }
 tasks {

@@ -13,11 +13,17 @@ import net.minecraft.network.PacketByteBuf
 import kotlin.reflect.full.hasAnnotation
 
 /**
- * Validated Field Collection - serialization indistinguishable from their wrapped values, but deserialized into a validated wrapper
+ * Validated Field Collection - serialization is indistinguishable from their wrapped values, but deserialized into a validated wrapper
  *
- * Validated Fields CANNOT be serialized and deserialized by GSON properly. The JSON provided does not provide enough context as the validation is hidden within code only, and not serialized. These fields are not building new classes from scratch, they are updating and validating a pre-existing default class framework.
+ * Validated Fields CANNOT be serialized and deserialized by GSON properly. The JSON Element provided does not provide enough context, because the validation is hidden within code only, not serialized. These fields are not building new classes from scratch, they are updating and validating a pre-existing default class framework.
  *
- * Helper methods are provided to more easily sync configs directly with the PacketByteBuf framework, rather than serializing and then deserializing the entire JSON
+ * Helper methods are provided to more easily sync configs directly via PacketByteBufs, rather than serializing and then deserializing the entire JSON
+ *
+ * @param storedValue The wrapped value that this field validates, serializes, and syncs between server and client.
+ *
+ * @see ConfigSerializable
+ * @see ServerClientSynced
+ * @see ReadMeTextProvider
  */
 
 abstract class ValidatedField<T>(protected var storedValue: T):
@@ -28,6 +34,16 @@ abstract class ValidatedField<T>(protected var storedValue: T):
     protected val gson: Gson = GsonBuilder().setPrettyPrinting().create()
     private var locked = false
 
+    /**
+     * The primary deserialization method for a validated field used by the fzzy-config serializer. Checks for a client-side lock (not currently implemented); if the property isn't lockable, returns an error (therefore resetting the held value to the default one).
+     *
+     * @param json The json element to be deserialized. Typically passed in from the auto-deserializer in [SyncedConfigHelperV1]
+     *
+     * @param fieldName The declared name of the property for use in error reporting. With a property declared like "var propName1: Clazz()", fieldName will be "propName1"
+     *
+     * @return A [ValidationResult] with a boolean value that is functionally redundant and a stored error message, if the deserialization had an error.
+     */
+
     /////// fzzy core deserialization, NOT gson compatible ////////
     override fun deserialize(json: JsonElement, fieldName: String): ValidationResult<Boolean> {
         if(json.isJsonObject){
@@ -37,14 +53,21 @@ abstract class ValidatedField<T>(protected var storedValue: T):
                     return ValidationResult.error(true,"Illegal lock found, key $fieldName is not lockable.")
                 }
                 locked = true
-                return serializeAfterLockCheck(jsonObject.get("lock"),fieldName)
+                return deserializeAfterLockCheck(jsonObject.get("lock"),fieldName)
             }
         }
-        return serializeAfterLockCheck(json,fieldName)
+        return deserializeAfterLockCheck(json,fieldName)
 
     }
 
-    private fun serializeAfterLockCheck(json: JsonElement, fieldName: String): ValidationResult<Boolean>{
+    /**
+     * Internal helper method for [deserialize] that performs the actual deserialization after lock-checking, along with the input validation and error-generation and reporting
+     *
+     * Uses the abstract method [deserializeHeldValue] to perform the specific deserialization for a Field implementation.
+     *
+     * Params and Return values are the same as described in deserialize.
+     */
+    private fun deserializeAfterLockCheck(json: JsonElement, fieldName: String): ValidationResult<Boolean>{
         val tVal = deserializeHeldValue(json, fieldName)
         if (tVal.isError()){
             FC.LOGGER.error("Error deserializing manually entered config entry [$fieldName], using default value [${tVal.get()}]")
@@ -62,6 +85,13 @@ abstract class ValidatedField<T>(protected var storedValue: T):
         return ValidationResult.success(false)
     }
 
+    /**
+     * The primary serialization method used by the fzzy-config serializer. If the field is locked, it wraps the stored value in a "locked" JSON Object.
+     *
+     * Uses the abstract method [serializeHeldValue] to perform the specific serialization tasks.
+     *
+     * @return A JSON Element with the serialized value contained within.
+     */
     override fun serialize(): JsonElement {
         return if (locked){
             val json = JsonObject()
@@ -75,7 +105,6 @@ abstract class ValidatedField<T>(protected var storedValue: T):
     override fun writeToClient(buf: PacketByteBuf) {
         toBuf(buf)
     }
-
     override fun readFromServer(buf: PacketByteBuf) {
         val temp = fromBuf(buf)
         if (!locked) {
@@ -83,20 +112,77 @@ abstract class ValidatedField<T>(protected var storedValue: T):
         }
     }
 
+    /**
+     * Deserializes the wrapped value for updating [storedValue]. The goal of this method is to deserialize only the wrapped value. If an integer is wrapped, deserilaization should look exactly the same as a plain integer (except for locking).
+     *
+     * @param json The json element to be deserialized. Passed in from [deserialize] after lock-checking
+     *
+     * @param fieldName The declared name of the property for use in error reporting. With a property declared like "var propName1: Clazz()", fieldName will be "propName1"
+     *
+     * @return A [ValidationResult] that wraps an instance of the value to be stored, as well as a stored error message if the deserialization had an error.
+     */
     protected abstract fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<T>
 
+    /**
+     * Serializes the wrapped value of this validated field, and ONLY the wrapped value. Validation is maintained internally. If this field stores an Int, serialization is equivalent to a JSON Primitive storing an integer value.
+     *
+     * @return A JSON Element with the serialized wrapped value contained within.
+     */
     protected abstract fun serializeHeldValue(): JsonElement
 
+    /**
+     * Perform input validation and correction in this method. A simple example can be seen in [ValidatedNumber], where this method bounds the input number to within the max and min values provided.
+     *
+     * @param input An instance of type T to be validated and corrected as needed, where T is the type of value wrapped in this Field.
+     *
+     * @return a [ValidationResult] that wraps the validated and/or corrected result of type T, along with an error message if needed.
+     *
+     * @see ValidatedNumber
+     */
     protected abstract fun validateAndCorrectInputs(input: T): ValidationResult<T>
 
+    /**
+     * Serialize the wrapped value into a PacketByteBuf for syncing with the client.
+     *
+     * @param buf the [PacketByteBuf] to serialize the wrapped value into
+     */
     protected abstract fun toBuf(buf: PacketByteBuf)
 
+    /**
+     * Deserialize the value wrapped in [toBuf] for passing into [storedValue] via [readFromServer]
+     *
+     * @param buf the
+     */
     protected abstract fun fromBuf(buf: PacketByteBuf): T
 
+    /**
+     * Get the wrapped value with this method
+     *
+     * @return The wrapped value inside this Field
+     */
     open fun get(): T{
         return storedValue
     }
 
+    /**
+     * A setter method for the [storedValue] that first validates the value being set and then stores the post-validation result.
+     *
+     * @param input the pre-validation input of type T that will be validated and then stored, where T is the type of the wrapped value in this field.
+     */
+    open fun validateAndSet(input: T){
+        val tVal1 = validateAndCorrectInputs(input)
+        if (tVal1.isError()){
+            FC.LOGGER.error("Manually entered config entry had errors, corrected to [${tVal1.get()}]")
+            FC.LOGGER.error("  >>> Possible reasons: ${tVal1.getError()}")
+        }
+        storedValue = tVal1.get()
+    }
+
+    /**
+     * An EntryDeserializer can be used to deserialize an individual field entry for intermediate validation. An example of this can be seen in [ValidatedList]
+     *
+     * @see ValidatedList
+     */
     fun interface EntryDeserializer<T>{
         fun deserialize(json: JsonElement): T
     }
