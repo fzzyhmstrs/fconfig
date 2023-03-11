@@ -1,12 +1,19 @@
-package me.fzzyhmstrs.fzzy_config.config_util.validated_field
+package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import me.fzzyhmstrs.fzzy_config.config_util.ValidationResult
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
-import java.util.function.Predicate
 
+/**
+ * A validated [Identifier] value
+ *
+ * Identifiers are serialized as plain strings in the format "namespace:path". Validation happens both on deserialization, where checking for a valid identifier string is performed, and also during [validateAndCorrectInputs], where the validIds are checked for a match
+ *
+ * @param validIds Collection<Identifier>, optional. A collection of valid identifiers the user can select from. If left empty any validly formatted identifier will pass validation.
+ * @param invalidIdMessage String, optional. Provide a message detailing the criteria the user needs to follow in the case they make a mistake. For example, "Needs to be a registered item identifier." would be a good invalidIdMessage for validIds limited to `Registries.ITEM`. For reference, all the identifiers in a minecraft Registry can be acquired by calling `getIds()`.
+ */
 class ValidatedIdentifier(
     defaultValue: Identifier,
     private val validIds: Collection<Identifier> = listOf(),

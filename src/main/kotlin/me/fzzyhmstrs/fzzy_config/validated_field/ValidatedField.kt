@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.config_util.validated_field
+package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -17,9 +17,9 @@ import kotlin.reflect.full.hasAnnotation
  *
  * Validated Fields CANNOT be serialized and deserialized by GSON properly. The JSON Element provided does not provide enough context, because the validation is hidden within code only, not serialized. These fields are not building new classes from scratch, they are updating and validating a pre-existing default class framework.
  *
- * Helper methods are provided to more easily sync configs directly via PacketByteBufs, rather than serializing and then deserializing the entire JSON
+ * Helper methods are provided to more easily sync configs directly via [PacketByteBuf]s, rather than serializing and then deserializing the entire JSON
  *
- * @param storedValue The wrapped value that this field validates, serializes, and syncs between server and client.
+ * @param storedValue T. The wrapped value that this field validates, serializes, and syncs between server and client.
  *
  * @see ConfigSerializable
  * @see ServerClientSynced
@@ -31,6 +31,9 @@ abstract class ValidatedField<T>(protected var storedValue: T):
     ServerClientSynced,
     ReadMeTextProvider {
 
+    /**
+     * An internal GSON instance with pretty printing that can be used by ValidatedFields
+     */
     protected val gson: Gson = GsonBuilder().setPrettyPrinting().create()
     private var locked = false
 
@@ -115,9 +118,9 @@ abstract class ValidatedField<T>(protected var storedValue: T):
     /**
      * Deserializes the wrapped value for updating [storedValue]. The goal of this method is to deserialize only the wrapped value. If an integer is wrapped, deserilaization should look exactly the same as a plain integer (except for locking).
      *
-     * @param json The json element to be deserialized. Passed in from [deserialize] after lock-checking
+     * @param json JsonElement. The json element to be deserialized. Passed in from [deserialize] after lock-checking
      *
-     * @param fieldName The declared name of the property for use in error reporting. With a property declared like "var propName1: Clazz()", fieldName will be "propName1"
+     * @param fieldName String. The declared name of the property for use in error reporting. With a property declared like "var propName1: Clazz()", fieldName will be "propName1"
      *
      * @return A [ValidationResult] that wraps an instance of the value to be stored, as well as a stored error message if the deserialization had an error.
      */
@@ -133,7 +136,7 @@ abstract class ValidatedField<T>(protected var storedValue: T):
     /**
      * Perform input validation and correction in this method. A simple example can be seen in [ValidatedNumber], where this method bounds the input number to within the max and min values provided.
      *
-     * @param input An instance of type T to be validated and corrected as needed, where T is the type of value wrapped in this Field.
+     * @param input T. An instance of type T to be validated and corrected as needed, where T is the type of value wrapped in this Field.
      *
      * @return a [ValidationResult] that wraps the validated and/or corrected result of type T, along with an error message if needed.
      *
@@ -144,14 +147,14 @@ abstract class ValidatedField<T>(protected var storedValue: T):
     /**
      * Serialize the wrapped value into a PacketByteBuf for syncing with the client.
      *
-     * @param buf the [PacketByteBuf] to serialize the wrapped value into
+     * @param buf PacketByteBuf. The [PacketByteBuf] to serialize the wrapped value into
      */
     protected abstract fun toBuf(buf: PacketByteBuf)
 
     /**
      * Deserialize the value wrapped in [toBuf] for passing into [storedValue] via [readFromServer]
      *
-     * @param buf the
+     * @param buf PacketByteBuf. The [PacketByteBuf] to deserialize the wrapped value from
      */
     protected abstract fun fromBuf(buf: PacketByteBuf): T
 
@@ -167,7 +170,7 @@ abstract class ValidatedField<T>(protected var storedValue: T):
     /**
      * A setter method for the [storedValue] that first validates the value being set and then stores the post-validation result.
      *
-     * @param input the pre-validation input of type T that will be validated and then stored, where T is the type of the wrapped value in this field.
+     * @param input T. the pre-validation input of type T that will be validated and then stored, where T is the type of the wrapped value in this field.
      */
     open fun validateAndSet(input: T){
         val tVal1 = validateAndCorrectInputs(input)
@@ -179,9 +182,11 @@ abstract class ValidatedField<T>(protected var storedValue: T):
     }
 
     /**
-     * An EntryDeserializer can be used to deserialize an individual field entry for intermediate validation. An example of this can be seen in [ValidatedList]
+     * An EntryDeserializer can be used to deserialize an individual field entry for intermediate validation. An example of this can be seen in [ValidatedList](me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedList)
      *
-     * @see ValidatedList
+     * SAM: [deserialize] takes a JsonElement, returns a deserialized instance of T
+     *
+     * @see me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedList
      */
     fun interface EntryDeserializer<T>{
         fun deserialize(json: JsonElement): T

@@ -1,20 +1,36 @@
-package me.fzzyhmstrs.fzzy_config.config_util.validated_field
+package me.fzzyhmstrs.fzzy_config.validated_field.list
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
 import me.fzzyhmstrs.fzzy_config.config_util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
 import net.minecraft.network.PacketByteBuf
 import java.util.function.Predicate
 
+/**
+ * A validated list of objects
+ *
+ * Validated Lists deserialize their contents line-by-line, which allows fail-soft behavior of deserialization of entries. If only one entry has a syntax error, for example, it will simply be logged and skipped.
+ *
+ * Validation is performed by the provided entry validator.
+ *
+ * There are several pre-defined List type subclasses that may be preferable to use over this "raw" implementation.
+ *
+ * @param defaultValue List<R>. The default list settings
+ * @param lType Class<R>. The java class of the stored objects
+ * @param listEntryValidator Predicate<R>, optional. If not provided, validation will always pass (no validation). The supplied predicate should return true on validation success, false on fail.
+ * @param invalidEntryMessage String, optional. Provide a message detailing the criteria the user needs to follow in the case they make a mistake.
+ * @param entryDeserializer EntryDeserializer<R>, optional. If not provided, will attempt to use GSON to parse the values. Otherwise, provide a deserializer that parses the provided JsonElement.
+ */
 open class ValidatedList<R>(
     defaultValue: List<R>,
     private val lType: Class<R>,
     private val listEntryValidator: Predicate<R> = Predicate {true},
     private val invalidEntryMessage: String = "None",
-    private val entryDeserializer: EntryDeserializer<R> = EntryDeserializer {json ->  SyncedConfigHelperV1.gson.fromJson(json,lType)})
+    private val entryDeserializer: EntryDeserializer<R> = EntryDeserializer { json ->  SyncedConfigHelperV1.gson.fromJson(json,lType)})
     : 
-    ValidatedField<List<R>>(defaultValue) 
+    ValidatedField<List<R>>(defaultValue)
 {
 
     override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<List<R>> {

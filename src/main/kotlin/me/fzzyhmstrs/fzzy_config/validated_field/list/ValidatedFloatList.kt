@@ -1,7 +1,5 @@
-package me.fzzyhmstrs.fzzy_config.config_util.validated_field
+package me.fzzyhmstrs.fzzy_config.validated_field.list
 
-import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
-import java.util.function.BiPredicate
 import java.util.function.Predicate
 
 open class ValidatedFloatList(

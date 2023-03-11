@@ -21,9 +21,9 @@ annotation class ClientModifiable()
  *
  * A validated field that doesn't have an annotated or custom-defined read me text will have a default readme line that generally defines the contents of the field.
  *
- * @param translationKey Used to define a translatable text key for translatable readme description. This is the preferred use for this annotation, for better player accessibility
- * @param description Used to define a literal text description (not translatable). Defining translation key is preferable. If translation key is used, this is ignored
- * @param header Used to define a literal text header array. It is preferable to define a header within the [ConfigClass] or [ConfigSection] directly, to enable translatable headers
+ * @param translationKey String, optional. Used to define a translatable text key for translatable readme description. This is the preferred use for this annotation, for better player accessibility
+ * @param description String, optional. Used to define a literal text description (not translatable). Defining translation key is preferable. If translation key is used, this is ignored
+ * @param header String[], optional. Used to define a literal text header array. It is preferable to define a header within the [ConfigClass] or [ConfigSection] directly, to enable translatable headers
  */
 @Target(AnnotationTarget.PROPERTY,AnnotationTarget.CLASS)
 annotation class ReadMeText(val translationKey: String = "",val description: String = "", val header: Array<String> = [])

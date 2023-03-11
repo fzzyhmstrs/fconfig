@@ -6,6 +6,15 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 
+/**
+ * Adds auto-syncing capabilities to an inheriting class, used by the SyncedConfigRegistry to automatically sync the config classes over the network to the client.
+ *
+ * An enclosing class that is ServerClientSynced will scrape any ServerClientSynced properties it contains and add their syncing results to itself.
+ *
+ * Mutable properties are also scraped and passed via string using GSON
+ *
+ * In general use, neither default method will need to be interacted with by the user. Fzzy Config will use them in the background to automatically perform syncing.
+ */
 interface ServerClientSynced{
     fun readFromServer(buf: PacketByteBuf){
         val nameMap = this.javaClass.kotlin.declaredMemberProperties.associate { it.name to it }

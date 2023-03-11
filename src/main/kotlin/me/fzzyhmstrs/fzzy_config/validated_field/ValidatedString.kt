@@ -1,12 +1,23 @@
-package me.fzzyhmstrs.fzzy_config.config_util.validated_field
+package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import me.fzzyhmstrs.fzzy_config.config_util.ValidationResult
 import net.minecraft.network.PacketByteBuf
-import net.minecraft.util.Identifier
 import java.util.function.Predicate
 
+/**
+ * A validated general String. Not recommended for use with identifier or enum strings.
+ *
+ * Holds any generic string value. Validation of the string value is handled manually by passing a string validator predicate into this class.
+ *
+ * @param defaultValue String. The default string value.
+ * @param strValidator Predicate<String>, optional. If empty, any json-valid string will pass validation. Otherwise the predicate will be `tested`, and an error passed if the predicate returns false.
+ * @param invalidIdMessage String, optional. Provide a message detailing the criteria the user needs to follow in the case they make a mistake.
+ *
+ * @see ValidatedEnum
+ * @see ValidatedIdentifier
+ */
 class ValidatedString(
   defaultValue: String, 
   private val strValidator: Predicate<String> = Predicate {true}, 

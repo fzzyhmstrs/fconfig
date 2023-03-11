@@ -52,7 +52,7 @@ open class ReadMeBuilder(
     /**
      * builds the [readMeList] for passing to it's parent or for later writing. Uses reflection to scrape ReadMe info off of a [ReadMeText] annotation, calls a child ReadMeBuilder, or gets default test from a [ReadMeTextProvider]. Translatable text keys are applied here.
      *
-     * @param indent defines how much indenting the [LineDecorator] applies. Each 1 indent is a "tab"
+     * @param indent Int. defines how much indenting the [LineDecorator] applies. Each 1 indent is a "tab"
      *
      * @return A List of strings that represent lines in this ReadMe file.
      */
@@ -72,7 +72,7 @@ open class ReadMeBuilder(
                         readMeList.addAll(header)
                     }
                     if (translate != ""){
-                        readMeList.add(readMeLineDecorator(AcText.translatable(translate).string, it.name, indent))
+                        readMeList.add(readMeLineDecorator(FcText.translatable(translate).string, it.name, indent))
                         continue
                     }
                     if (desc != "") {
@@ -94,9 +94,9 @@ open class ReadMeBuilder(
     /**
      * decorates a raw input line with formatting, spacing, indenting, etc. By default, applies the builders [LineDecorator] to the supplied inputs. Can be overwritten to perform custom operations not possible with a decorator if needed.
      *
-     * @param rawLine The raw readme line string, without a title.
-     * @param propName the name of this readme line, generated from the reflected property name [build] finds.
-     * @param indent the amount of indenting to apply via the decorator
+     * @param rawLine String. The raw readme line string, without a title.
+     * @param propName String. the name of this readme line, generated from the reflected property name [build] finds.
+     * @param indent Int. the amount of indenting to apply via the decorator
      *
      * @return the decorated string
      */
@@ -252,7 +252,7 @@ open class ReadMeBuilder(
     class TranslatableHeaderComponent(private val key: String, builder: Function<String,List<String>>): HeaderComponent(builder){
 
         private val translation: String by lazy {
-            AcText.translatable(key).string
+            FcText.translatable(key).string
         }
 
         override fun provideInputString(): String {

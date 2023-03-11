@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.config_util
 
 import com.google.gson.*
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.config_util.validated_field.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
 import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
 import me.fzzyhmstrs.fzzy_config.interfaces.OldClass
 import net.fabricmc.loader.api.FabricLoader
@@ -11,18 +11,41 @@ import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.jvm.javaType
 
+/**
+ * Helper object that provides methods for reading, creating, and de/serializing configuration JSON's.
+ *
+ * In the vast majority of use-cases, the user can keep the scope of utilization to [readOrCreateAndValidate] and [readOrCreateUpdatedAndValidate], with other methods exposed for convenience in special circumstances.
+ */
 object SyncedConfigHelperV1 {
 
+    /**
+     * A GSON instance that is used by this helper and can be utilized as needed outside the helper.
+     */
     val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 
-    ////////////////////////////////////////
-    // Updated config creator methods  /////
-    ////////////////////////////////////////
-
     /**
-     * Improved basic config serializer/deserializer method that is no longer inline and created validated configs using [ValidatedField]
+     * Generator method for brand new config classes (rev 0, if you will). This method performs a sequence of tasks:
+     * 1. makes a directory/sub-directory as needed for storing the config file
+     * 2. makes a [File] instance
+     * 3. Checks if an existing config JSON exists. This is the "read" part of the method.
      *
-     * incorrect inputs will automatically be corrected where possible, or reverted to default if not, and the validated config re-written to it's file
+     * Then if a config JSON exists:
+     * 4. Deserializes and validates the JSON using [deserializeConfig]. Provide any error logging if relevant. This is the "AndValidate"
+     * 5. If there were validation errors found, correct the .json file with the post-validation config settings
+     * 6. Returns the deserialized and corrected config class.
+     *
+     * or if no file is found:
+     * 4. Attempt to serialize and write the config settings to a .json file. This is the "OrCreate"
+     * 5. Returns the default config settings class.
+     *
+     * In the case of an exception, this method will catch it, print the stack trace, and resort to passing back the default config settings provided to it.
+     *
+     * @param file String. The file name for the config json. Needs the suffix, so "my_file_name.json", for example.
+     * @param child String, optional. A subfolder name if desired. By default is left out, meaning the config will appear in the base subfolder
+     * @param base String, optional. A base config folder name. If left out, the config will be written into the "fzzy_config" subfolder. To write to the main config folder, pass "" to this.
+     * @param configClass () -> T. A provider of instances of the config class itself. In Kotlin this can typically be written like `{ MyConfigClass() }`
+     *
+     * @return An instance of the configClass passed to it, either as-is or updated and validated per the above process.
      */
     fun <T : Any> readOrCreateAndValidate(file: String, child: String = "", base: String = FC.MOD_ID, configClass: () -> T): T {
         val (dir,dirCreated) = makeDir(child, base)
@@ -33,38 +56,42 @@ object SyncedConfigHelperV1 {
         try {
             if (f.exists()) {
                 val str = f.readLines().joinToString("\n")
-                //println(">>> Found config:")
-                //println(str)
                 val readConfig = deserializeConfig(configClass(), JsonParser.parseString(str))
                 if (readConfig.isError()) {
                     FC.LOGGER.warn("Errors found in $file per above log entries, attempting to correct invalid inputs automatically.")
                     val correctedConfig = serializeConfig(readConfig.get())
-                    //println(">>> Corrected config:")
-                    //println(correctedConfig)
                     f.writeText(correctedConfig)
                 }
                 return readConfig.get()
             } else if (!f.createNewFile()) {
-                println("Failed to create default config file ($file), using default config.")
+                FC.LOGGER.error("Failed to create default config file ($file), using default config.")
             } else {
                 val initialClass = configClass()
                 val str = serializeConfig(initialClass)
-                //println(">>>> Initial Config: ")
-                //println(str)
                 f.writeText(str)
             }
             return configClass()
         } catch (e: Exception) {
-            println("Failed to read config file $file! Using default values: " + e.message)
+            FC.LOGGER.error("Failed to read config file $file! Using default values: " + e.message)
             e.printStackTrace()
             return configClass()
         }
     }
 
     /**
-     * Improved advanced config serializer/deserializer method that is no longer inline and created validated configs using [ValidatedField], allowing for 1 layer of version control
+     * Generator method for updating an existing config to a new version (Rev. >0). This method follows the same basic sequence of tasks as [readOrCreateAndValidate] with the following additions
+     * 1. First determines if an old version of the config file exists.
+     * 2. If it exists, deserialize and validate the old config, then call [OldClass.generateNewClass](generateNewClass) on the [OldClass] instance generated this way. Writes this new class to a .json file. Returns the new class.
+     * 3. If no old config exists, call [readOrCreateAndValidate] on the new config class.
      *
-     * incorrect inputs from the new and old config will be automatically corrected where possible, or reverted to default if not, and the validated and updated config written to it's file
+     * @param file String. The file name for the new config json. Needs the suffix, so "my_file_name_v0.json", for example.
+     * @param previous String. The file name for the old config json. Needs the suffix, so "my_file_name_v1.json", for example.
+     * @param child String, optional. A subfolder name if desired. By default is left out, meaning the config will appear in the base subfolder
+     * @param base String, optional. A base config folder name. If left out, the config will be written into the "fzzy_config" subfolder. To write to the main config folder, pass "" to this.
+     * @param configClass () -> T. A provider of instances of the config class itself. In Kotlin this can typically be written like `{ MyConfigClass() }`
+     * @param configClass () -> [OldClass]<T>. A provider of instances of the old config class for use in generating new classes.
+     *
+     * @return An instance of the configClass passed to it, either as-is or updated and validated per the above process.
      */
     fun <T: Any> readOrCreateUpdatedAndValidate(file: String, previous: String, child: String = "", base: String = FC.MOD_ID, configClass: () -> T, previousClass: () -> OldClass<T>): T{
         //println("Read or create and validate updated: $file")
@@ -118,7 +145,13 @@ object SyncedConfigHelperV1 {
         }
     }
 
-    //custom serializer that utilizes GSON on un-validated properties, and custom serialization on validated ones. Only serializes mutable properties
+    /**
+     * custom serializer that utilizes GSON on un-validated properties, and custom serialization on validated ones.
+     *
+     * Only serializes mutable properties. For a config to be stored successfully this must be kept in mind.
+     *
+     * [ValidatedField] *cannot* typically be serialized properly by GSON, as the validation information is meant to be hidden from the .json file itself, staying in code as a secure key of sorts. Without that context, GSON doesn't have enough context to properly serialize or deserialize a ValidatedField, and it is *STRONGLY* recommended not to expose the valdiation to the config file, as this defeats the validation by allowing for user editing of validation parameters.
+     */
     fun serializeConfig(config: Any): String{
         val json = JsonObject()
         val fields = config::class.java.declaredFields
@@ -138,7 +171,13 @@ object SyncedConfigHelperV1 {
         return gson.toJson(json)
     }
 
-
+    /**
+     * custom deserializer that utilizes GSON on un-validated properties, and custom deserialization on validated ones.
+     *
+     * Only deserializes mutable properties. For a config to be read from file successfully this must be kept in mind.
+     *
+     * [ValidatedField] *cannot* typically be serialized properly by GSON, as the validation information is meant to be hidden from the .json file itself, staying in code as a secure key of sorts. Without that context, GSON doesn't have enough context to properly serialize or deserialize a ValidatedField, and it is *STRONGLY* recommended not to expose the valdiation to the config file, as this defeats the validation by allowing for user editing of validation parameters.
+     */
     fun <T: Any> deserializeConfig(config: T, json: JsonElement): ValidationResult<T> {
         if (!json.isJsonObject) return ValidationResult.error(config,"Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
         val jsonObject = json.asJsonObject
@@ -173,13 +212,17 @@ object SyncedConfigHelperV1 {
     }
 
     /**
-     * method can be used to create a directory in the config parent directory. If the directory can't be created, the right member of the returning Pair will be false.
+     * Used to create a directory in the config parent directory inside the .minecraft folder. If the directory can't be created, the right member of the returning Pair will be false.
      */
     fun makeDir(child: String, base: String): Pair<File,Boolean>{
         val dir = if (child != ""){
             File(File(FabricLoader.getInstance().configDir.toFile(), base), child)
         } else {
-            File(FabricLoader.getInstance().configDir.toFile(), base)
+            if (base != "") {
+                File(FabricLoader.getInstance().configDir.toFile(), base)
+            } else {
+                FabricLoader.getInstance().configDir.toFile()
+            }
         }
         if (!dir.exists() && !dir.mkdirs()) {
             println("Could not create directory, using default configs.")
