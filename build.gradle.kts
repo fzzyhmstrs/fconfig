@@ -57,7 +57,7 @@ tasks {
 
 modrinth {
     token.set(System.getenv("MODRINTH_TOKEN"))
-    projectId.set("fzzy-core")
+    projectId.set("fzzy-config")
     versionNumber.set(modVersion)
     versionName.set("${base.archivesName.get()}-$modVersion")
     versionType.set("beta")
@@ -65,7 +65,7 @@ modrinth {
     gameVersions.addAll("1.19.3")
     loaders.addAll("fabric","quilt")
     detectLoaders.set(false)
-    changelog.set("## Changelog for Fzzy Core $modVersion \n\n" + log.readText())
+    changelog.set("## Changelog for Fzzy Config $modVersion \n\n" + log.readText())
     dependencies{
         required.project("fabric-api")
         required.project("fabric-language-kotlin")
