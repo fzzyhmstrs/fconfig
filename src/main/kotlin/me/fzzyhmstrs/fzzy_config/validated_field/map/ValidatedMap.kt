@@ -38,6 +38,10 @@ open class ValidatedMap<R,T>(
     ValidatedField<Map<R, T>>(defaultValue)
 {
 
+    fun get(key: R): T?{
+        return storedValue.get(key)
+    }
+    
     override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<Map<R,T>> {
         return try{
             if (!json.isJsonObject){
