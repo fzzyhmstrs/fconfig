@@ -17,6 +17,8 @@ import java.util.function.BiPredicate
  *
  * Validation is performed both on deserialization, where problems in deserialization of individual entries are trimmed from the resulting map and added to an error log message; and in validation, where the provided validator is tested.
  *
+ * ValidatedMap implements kotlin [Map], enabling direct usage of the validated field in the same manner as a normal Map<K,V>. For manipulation of the entire map contents, it is recommended to extract the stored list directly with [get]
+ *
  * @param keyType Class<R>. A java class of the key type.
  * @param valueType Class<T>. A java class of the value type.
  * @param mapEntryValidator BiPredicate<R,T>, optional. If not provided, will always test true (no validation). Pass a BiPredicate that tests both the key and entry against your specific criteria. True passes validation, false fails.
@@ -35,7 +37,8 @@ open class ValidatedMap<R,T>(
     private val entryDeserializer: EntryDeserializer<T> =
         EntryDeserializer { json -> SyncedConfigHelperV1.gson.fromJson(json, valueType) })
     :
-    ValidatedField<Map<R, T>>(defaultValue)
+    ValidatedField<Map<R, T>>(defaultValue),
+    Map<R,T>
 {
 
     override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<Map<R,T>> {
@@ -127,6 +130,31 @@ open class ValidatedMap<R,T>(
             val SHORT: KeyDeserializer<Short> = KeyDeserializer {str -> java.lang.Short.parseShort(str)}
             val BYTE: KeyDeserializer<Byte> = KeyDeserializer {str -> java.lang.Byte.parseByte(str)}
         }
+    }
+
+    override val entries: Set<Map.Entry<R, T>>
+        get() = storedValue.entries
+    override val keys: Set<R>
+        get() = storedValue.keys
+    override val size: Int
+        get() = storedValue.size
+    override val values: Collection<T>
+        get() = storedValue.values
+
+    override fun containsKey(key: R): Boolean {
+        return storedValue.containsKey(key)
+    }
+
+    override fun containsValue(value: T): Boolean {
+        return storedValue.containsValue(value)
+    }
+
+    override fun get(key: R): T? {
+        return storedValue[key]
+    }
+
+    override fun isEmpty(): Boolean {
+        return storedValue.isEmpty()
     }
 
 }

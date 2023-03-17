@@ -15,6 +15,8 @@ import java.util.function.Predicate
  *
  * Validation is performed by the provided entry validator.
  *
+ * ValidatedList implements kotlin [List], enabling direct usage of the validated field in the same manner as a normal List<T>. For manipulation of the entire list contents, it is recommended to extract the stored list directly with [get]
+ *
  * There are several pre-defined List type subclasses that may be preferable to use over this "raw" implementation.
  *
  * @param defaultValue List<R>. The default list settings
@@ -30,7 +32,8 @@ open class ValidatedList<R>(
     private val invalidEntryMessage: String = "None",
     private val entryDeserializer: EntryDeserializer<R> = EntryDeserializer { json ->  SyncedConfigHelperV1.gson.fromJson(json,lType)})
     : 
-    ValidatedField<List<R>>(defaultValue)
+    ValidatedField<List<R>>(defaultValue),
+    List<R>
 {
 
     override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<List<R>> {
@@ -90,5 +93,48 @@ open class ValidatedList<R>(
 
     override fun fromBuf(buf: PacketByteBuf): List<R> {
         return deserializeHeldValue(JsonParser.parseString(buf.readString()),"").get()
+    }
+
+    override val size: Int
+        get() = storedValue.size
+
+    override fun contains(element: R): Boolean {
+        return storedValue.contains(element)
+    }
+
+    override fun containsAll(elements: Collection<R>): Boolean {
+        return storedValue.containsAll(elements)
+    }
+
+    override fun get(index: Int): R {
+        return storedValue.get(index)
+    }
+
+    override fun indexOf(element: R): Int {
+        return storedValue.indexOf(element)
+    }
+
+    override fun isEmpty(): Boolean {
+        return storedValue.isEmpty()
+    }
+
+    override fun iterator(): Iterator<R> {
+        return storedValue.iterator()
+    }
+
+    override fun lastIndexOf(element: R): Int {
+        return storedValue.lastIndexOf(element)
+    }
+
+    override fun listIterator(): ListIterator<R> {
+        return storedValue.listIterator()
+    }
+
+    override fun listIterator(index: Int): ListIterator<R> {
+        return storedValue.listIterator(index)
+    }
+
+    override fun subList(fromIndex: Int, toIndex: Int): List<R> {
+        return storedValue.subList(fromIndex, toIndex)
     }
 }
