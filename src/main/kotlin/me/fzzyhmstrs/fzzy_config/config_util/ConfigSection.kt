@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.config_util
 
 import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
 import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
@@ -38,6 +39,7 @@ open class ConfigSection(
     }
 
     override fun deserialize(json: JsonElement, fieldName: String): ValidationResult<Boolean> {
+        if (json is JsonObject && json.size() == 0) return ValidationResult.error(true,"Config Section $fieldName is empty! Replacing with default section.")
         val validatedSection = SyncedConfigHelperV1.deserializeConfig(this,json)
         return if (validatedSection.isError()){
             ValidationResult.error(true,validatedSection.getError())
