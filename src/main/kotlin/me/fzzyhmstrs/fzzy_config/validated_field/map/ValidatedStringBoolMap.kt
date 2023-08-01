@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validated_field.map
 
+import java.util.function.BiFunction
 import java.util.function.BiPredicate
 
 /**
@@ -15,7 +16,8 @@ import java.util.function.BiPredicate
  */
 open class ValidatedStringBoolMap(
     defaultValue:Map<String,Boolean>,
-    mapEntryValidator: BiPredicate<String, Boolean> = BiPredicate{ _, _ -> true},
+    mapEntryValidator: BiPredicate<String,Boolean> = BiPredicate{_,_ -> true},
+    mapEntryCorrector: BiFunction<String, Boolean, Boolean> = BiFunction{ _, it -> it},
     invalidEntryMessage: String = "None")
     :
     ValidatedMap<String, Boolean>(
@@ -23,6 +25,7 @@ open class ValidatedStringBoolMap(
         String::class.java,
         Boolean::class.java,
         mapEntryValidator,
+        mapEntryCorrector,
         invalidEntryMessage,
         KeyDeserializer.STRING
     ) {

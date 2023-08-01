@@ -113,6 +113,7 @@ abstract class SyncedConfigWithReadMe(
                 Boolean::class.java,
                 {id,_ -> val idChk = Identifier.tryParse(id); if(idChk == null){false} else {
                     Registries.ITEM.containsId(idChk)}  },
+                {_,bl -> bl},
                 "Map key needs to be a valid item identifier; map entry needs to be a boolean ('true' or 'false')"
             )
 

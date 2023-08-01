@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validated_field.map
 
 import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
+import java.util.function.BiFunction
 import java.util.function.BiPredicate
 
 /**
@@ -18,7 +19,8 @@ import java.util.function.BiPredicate
 open class ValidatedStringKeyMap<T>(
     defaultValue:Map<String,T>,
     type:Class<T>,
-    mapEntryValidator: BiPredicate<String, T> = BiPredicate{ _, _ -> true},
+    mapEntryValidator: BiPredicate<String,T> = BiPredicate{_,_ -> true},
+    mapEntryCorrector: BiFunction<String, T, T> = BiFunction{ _, it -> it},
     invalidEntryMessage: String = "None",
     entryDeserializer: EntryDeserializer<T> =
         EntryDeserializer { json -> SyncedConfigHelperV1.gson.fromJson(json, type) })
@@ -28,6 +30,7 @@ open class ValidatedStringKeyMap<T>(
         String::class.java,
         type,
         mapEntryValidator,
+        mapEntryCorrector,
         invalidEntryMessage,
         KeyDeserializer.STRING,
         entryDeserializer
