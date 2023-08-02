@@ -45,13 +45,16 @@ open class ValidatedToolMaterial protected constructor(
         return repairIngredient.get()
     }
 
-    class Builder: AbstractBuilder<ValidatedToolMaterial>{
+    class Builder: AbstractBuilder<ValidatedToolMaterial, Builder>{
+        override fun builderClass(): Builder{
+            return this
+        }
         override fun build(): ValidatedToolMaterial {
             return ValidatedToolMaterial(d, mSM, aD, mL, e, rI)
         }
     }
     
-    abstract class AbstractBuilder<T: ValidatedToolMaterial>(){
+    abstract class AbstractBuilder<T: ValidatedToolMaterial, U: AbstractBuilder>(){
         protected var d = ValidatedInt(1,1,0)
         protected var mSM = ValidatedFloat(1f,1f,0f)
         protected var aD = ValidatedFloat(1f,1f,0f)
@@ -59,29 +62,31 @@ open class ValidatedToolMaterial protected constructor(
         protected var e = ValidatedInt(1,35,0)
         protected var rI = ValidatedIngredient(Ingredient.empty())
 
-        fun durability(default: Int, max: Int = Short.MAX_VALUE): Builder{
+        abstract fun builderClass(): U
+        
+        fun durability(default: Int, max: Int = Short.MAX_VALUE): U{
             d = ValidatedInt(default,max,0)
-            return this
+            return builderClass()
         }
-        fun miningSpeedMultiplier(default: Float, max: Float = 20f): Builder{
+        fun miningSpeedMultiplier(default: Float, max: Float = 20f): U{
             mSM = ValidatedFloat(default, max, 1f)
-            return this
+            return builderClass()
         }
-        fun attackDamage(default: Float, max: Float = 50f): Builder{
+        fun attackDamage(default: Float, max: Float = 50f): U{
             aD = ValidatedFloat(default,max,0f)
-            return this
+            return builderClass()
         }
-        fun miningLevel(default: Int, max: Int = MiningLevels.NETHERITE): Builder{
+        fun miningLevel(default: Int, max: Int = MiningLevels.NETHERITE): U{
             mL = ValidatedInt(default,max,1)
-            return this
+            return builderClass()
         }
-        fun enchantability(default: Int, max: Int): BUilder{
+        fun enchantability(default: Int, max: Int): U{
             e = ValidatedInt(default,max,1)
-            return this
+            return builderClass()
         }
-        fun repairIngredient(ingredient: Ingredient): Builder{
+        fun repairIngredient(ingredient: Ingredient): U{
             rI = ValidatedIngredient(ingredient)
-            return this
+            return builderClass()
         }
         abstract fun build(): T
     }
