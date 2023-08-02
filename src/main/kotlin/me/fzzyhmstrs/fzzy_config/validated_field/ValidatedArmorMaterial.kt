@@ -14,7 +14,7 @@ open class ValidatedArmorMaterial protected constructor(
     knockbackResistanceDefault: ValidatedFloat,
     toughnessDefault: ValidatedFloat)
     :
-    ArmorMaterial
+    ArmorMaterial, ConfigSerializable
 {
     private val BASE_DURABILITY = intArrayOf(13, 15, 16, 11)
 
