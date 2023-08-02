@@ -9,6 +9,7 @@ import net.fabricmc.loader.api.FabricLoader
 import java.io.File
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaType
 
 /**
@@ -156,7 +157,7 @@ object SyncedConfigHelperV1 {
         val json = JsonObject()
         val fields = config::class.java.declaredFields
         val orderById = fields.withIndex().associate { it.value.name to it.index }
-        for (it in config.javaClass.kotlin.declaredMemberProperties.sortedBy { orderById[it.name] }) {
+        for (it in config.javaClass.kotlin.memberProperties.sortedBy { orderById[it.name] }) {
             if (it is KMutableProperty<*>){
                 val propVal = it.get(config)
                 val name = it.name
@@ -184,7 +185,7 @@ object SyncedConfigHelperV1 {
         var error = false
         val fields = config::class.java.declaredFields
         val orderById = fields.withIndex().associate { it.value.name to it.index }
-        for (it in config.javaClass.kotlin.declaredMemberProperties.sortedBy { orderById[it.name] }){
+        for (it in config.javaClass.kotlin.memberProperties.sortedBy { orderById[it.name] }){
             if (it is KMutableProperty<*>){
                 val propVal = it.get(config)
                 val name = it.name

@@ -5,6 +5,7 @@ import net.minecraft.network.PacketByteBuf
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberProperties
 
 /**
  * Adds auto-syncing capabilities to an inheriting class, used by the SyncedConfigRegistry to automatically sync the config classes over the network to the client.
@@ -17,7 +18,7 @@ import kotlin.reflect.full.declaredMemberProperties
  */
 interface ServerClientSynced{
     fun readFromServer(buf: PacketByteBuf){
-        val nameMap = this.javaClass.kotlin.declaredMemberProperties.associate { it.name to it }
+        val nameMap = this.javaClass.kotlin.memberProperties.associate { it.name to it }
         val propCount = buf.readInt()
         for (i in 1..propCount){
             val name = buf.readString()
@@ -33,8 +34,8 @@ interface ServerClientSynced{
     }
     
     fun writeToClient(buf: PacketByteBuf){
-        buf.writeInt(this.javaClass.kotlin.declaredMemberProperties.size)
-        for (it in this.javaClass.kotlin.declaredMemberProperties){
+        buf.writeInt(this.javaClass.kotlin.memberProperties.size)
+        for (it in this.javaClass.kotlin.memberProperties){
             if (it.visibility == KVisibility.PUBLIC) {
                 val propVal = it.get(this)
                 if (propVal is ServerClientSynced) {
