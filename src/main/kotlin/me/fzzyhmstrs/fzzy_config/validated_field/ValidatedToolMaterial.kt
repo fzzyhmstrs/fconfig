@@ -10,11 +10,10 @@ open class ValidatedToolMaterial protected constructor(
     attackDamageDefault: ValidatedFloat,
     miningLevelDefault: ValidatedInt,
     enchantabilityDefault: ValidatedInt,
-    repairIngredientDefault: ValidatedStringList)
+    repairIngredientDefault: ValidatedIngredient)
     :
     ToolMaterial
 {
-
     var durability = durabilityDefault
     var miningSpeedMultiplier = miningSpeedDefault
     var attackDamage = attackDamageDefault
@@ -23,26 +22,63 @@ open class ValidatedToolMaterial protected constructor(
     var repairIngredient = repairIngredientDefault
 
     override fun getDurability(): Int {
-        TODO("Not yet implemented")
+        return durability.get()
     }
 
     override fun getMiningSpeedMultiplier(): Float {
-        TODO("Not yet implemented")
+        return miningSpeedMultiplier.get()
     }
 
     override fun getAttackDamage(): Float {
-        TODO("Not yet implemented")
+        return attackDamage.get()
     }
 
     override fun getMiningLevel(): Int {
-        TODO("Not yet implemented")
+        return miningLevel.get()
     }
 
     override fun getEnchantability(): Int {
-        TODO("Not yet implemented")
+        return enchantability.get()
     }
 
     override fun getRepairIngredient(): Ingredient {
-        TODO("Not yet implemented")
+        return repairIngredient.get()
+    }
+
+    open class Builder(){
+        protected var d = ValidatedInt(1,1,0)
+        protected var mSM = ValidatedFloat(1f,1f,0f)
+        protected var aD = ValidatedFloat(1f,1f,0f)
+        protected var mL = ValidatedInt(1,4,0)
+        protected var e = ValidatedInt(1,35,0)
+        protected var rI = ValidatedIngredient(Ingredient.empty())
+
+        fun durability(default: Int, max: Int = Short.MAX_VALUE): Builder{
+            d = ValidatedInt(default,max,0)
+            return this
+        }
+        fun miningSpeedMultiplier(default: Float, max: Float = 20f): Builder{
+            mSM = ValidatedFloat(default, max, 1f)
+            return this
+        }
+        fun attackDamage(default: Float, max: Float = 50f): Builder{
+            aD = ValidatedFloat(default,max,0f)
+            return this
+        }
+        fun miningLevel(default: Int, max: Int = MiningLevels.NETHERITE): Builder{
+            mL = ValidatedInt(default,max,1)
+            return this
+        }
+        fun enchantability(default: Int, max: Int): BUilder{
+            e = ValidatedInt(default,max,1)
+            return this
+        }
+        fun repairIngredient(ingredient: Ingredient): Builder{
+            rI = ValidatedIngredient(ingredient)
+            return this
+        }
+        open fun build(): ValidatedToolMaterial{
+            return ValidatedToolMaterial(d, mSM, aD, mL, e, rI)
+        }
     }
 }
