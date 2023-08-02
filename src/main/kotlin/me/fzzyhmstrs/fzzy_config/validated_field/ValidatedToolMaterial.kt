@@ -12,7 +12,7 @@ open class ValidatedToolMaterial protected constructor(
     enchantabilityDefault: ValidatedInt,
     repairIngredientDefault: ValidatedIngredient)
     :
-    ToolMaterial
+    ToolMaterial, ConfigSerializable
 {
     var durability = durabilityDefault
     var miningSpeedMultiplier = miningSpeedDefault
