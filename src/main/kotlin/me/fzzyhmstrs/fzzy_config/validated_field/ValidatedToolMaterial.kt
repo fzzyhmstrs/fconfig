@@ -45,7 +45,13 @@ open class ValidatedToolMaterial protected constructor(
         return repairIngredient.get()
     }
 
-    open class Builder(){
+    class Builder: AbstractBuilder<ValidatedToolMaterial>{
+        override fun build(): ValidatedToolMaterial {
+            return ValidatedToolMaterial(d, mSM, aD, mL, e, rI)
+        }
+    }
+    
+    abstract class AbstractBuilder<T: ValidatedToolMaterial>(){
         protected var d = ValidatedInt(1,1,0)
         protected var mSM = ValidatedFloat(1f,1f,0f)
         protected var aD = ValidatedFloat(1f,1f,0f)
@@ -77,8 +83,6 @@ open class ValidatedToolMaterial protected constructor(
             rI = ValidatedIngredient(ingredient)
             return this
         }
-        open fun build(): ValidatedToolMaterial{
-            return ValidatedToolMaterial(d, mSM, aD, mL, e, rI)
-        }
+        abstract fun build(): T
     }
 }
