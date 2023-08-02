@@ -4,6 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import me.fzzyhmstrs.fzzy_config.config_util.ValidationResult
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.recipe.Ingredient
 import net.minecraft.util.Identifier
 
 /**
@@ -11,9 +12,9 @@ import net.minecraft.util.Identifier
  *
  * Ingredients are serilaized in the standard format for MineCraft ingredients as seen in eg. Recipe JSONs. Validation is only done on deserialization.
  */
-class ValidatedIdentifier(defaultValue: Ingredient)
+class ValidatedIngredient(defaultValue: Ingredient)
   : 
-  ValidatedField<Ingredient>(defaultValue) 
+  ValidatedField<Ingredient>(defaultValue)
 {
 
     override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<Ingredient> {
