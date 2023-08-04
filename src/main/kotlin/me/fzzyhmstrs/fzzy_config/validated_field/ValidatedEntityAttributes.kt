@@ -33,6 +33,16 @@ class ValidatedEntityAttributes(
         return builderInstance
     }
 
+    fun getAttributes(): Map<EntityAttribute,Double>{
+        val map: MutableMap<EntityAttribute,Double> = mutableMapOf()
+        for (entry in storedMap){
+            val id = Identifier.tryParse(entry.key) ?: continue
+            val attribute = Registries.ATTRIBUTE.get(id) ?: continue
+            map[attribute] = entry.value
+        }
+        return map
+    }
+
     private fun initializeMap(attributes: Map<EntityAttribute, Double>): Map<String, Double>{
         val map: MutableMap<String,Double> = mutableMapOf()
         for (entry in attributes){
