@@ -85,7 +85,7 @@ open class ValidatedToolMaterial protected constructor(
         protected var mSM = ValidatedFloat(1f,1f,0f)
         protected var aD = ValidatedFloat(1f,1f,0f)
         protected var mL = ValidatedInt(1,4,0)
-        protected var e = ValidatedInt(1,35,0)
+        protected var e = ValidatedInt(1,50,0)
         protected var rI = ValidatedIngredient(Ingredient.empty())
 
         abstract fun builderClass(): U
@@ -103,10 +103,10 @@ open class ValidatedToolMaterial protected constructor(
             return builderClass()
         }
         fun miningLevel(default: Int, max: Int = MiningLevels.NETHERITE): U{
-            mL = ValidatedInt(default,max,1)
+            mL = ValidatedInt(default,max,0)
             return builderClass()
         }
-        fun enchantability(default: Int, max: Int): U{
+        fun enchantability(default: Int, max: Int = 50): U{
             e = ValidatedInt(default,max,1)
             return builderClass()
         }

@@ -9,6 +9,8 @@ import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
 import me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedSeries
 import me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedStringList
 import net.minecraft.entity.EquipmentSlot
+import net.minecraft.entity.EquipmentSlot.Type
+import net.minecraft.item.ArmorItem
 import net.minecraft.item.ArmorMaterial
 import net.minecraft.item.ToolMaterial
 import net.minecraft.recipe.Ingredient
@@ -48,11 +50,11 @@ open class ValidatedArmorMaterial protected constructor(
     override fun getEnchantability(): Int{
         return enchantability.get()
     }
-    override fun getProtectionAmount(slot: EquipmentSlot): Int{
-        return protectionAmounts.get()[slot.entitySlotId]
+    override fun getProtection(type: ArmorItem.Type): Int{
+        return protectionAmounts.get()[type.equipmentSlot.entitySlotId]
     }
-    override fun getDurability(slot: EquipmentSlot): Int{
-        return BASE_DURABILITY[slot.entitySlotId] * durabilityMultiplier.get()
+    override fun getDurability(type: ArmorItem.Type): Int{
+        return BASE_DURABILITY[type.equipmentSlot.entitySlotId] * durabilityMultiplier.get()
     }
     override fun getKnockbackResistance(): Float{
         return knockbackResistance.get()
