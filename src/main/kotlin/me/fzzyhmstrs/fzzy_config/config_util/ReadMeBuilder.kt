@@ -5,6 +5,7 @@ import me.fzzyhmstrs.fzzy_config.interfaces.ReadMeTextProvider
 import me.fzzyhmstrs.fzzy_config.interfaces.ReadMeWriter
 import java.util.function.Function
 import kotlin.reflect.KMutableProperty
+import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
 
@@ -61,7 +62,7 @@ open class ReadMeBuilder(
         val fields = this::class.java.declaredFields
         val orderById = fields.withIndex().associate { it.value.name to it.index }
         for (it in this.javaClass.kotlin.declaredMemberProperties.sortedBy { orderById[it.name] }){
-            if (it is KMutableProperty<*>) {
+            if (it is KMutableProperty<*>  && it.visibility == KVisibility.PUBLIC) {
                 val propVal = it.get(this)
                 val annotation = it.findAnnotation<ReadMeText>()
                 if(annotation != null){

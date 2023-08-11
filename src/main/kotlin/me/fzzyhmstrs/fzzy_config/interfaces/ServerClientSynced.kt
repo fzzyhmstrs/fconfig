@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.interfaces
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
 import net.minecraft.network.PacketByteBuf
 import kotlin.reflect.KMutableProperty
@@ -41,9 +42,16 @@ interface ServerClientSynced{
                 if (propVal is ServerClientSynced) {
                     buf.writeString(it.name)
                     propVal.writeToClient(buf)
-                } else if (it is KMutableProperty<*> && propVal != null) {
-                    buf.writeString(it.name)
-                    buf.writeString(SyncedConfigHelperV1.gson.toJson(propVal, it.returnType.javaClass))
+                } else if (it is KMutableProperty<*> && propVal != null && it.visibility == KVisibility.PUBLIC) {
+                    try{
+                        val str = SyncedConfigHelperV1.gson.toJson(propVal, it.returnType.javaClass)
+                        buf.writeString(it.name)
+                        buf.writeString(str)
+                    } catch (e: Exception) {
+                        FC.LOGGER.error(it.toString())
+                        e.printStackTrace()
+                        buf.writeString("private_skipped")
+                    }
                 } else {
                     buf.writeString("private_skipped")
                 }

@@ -6,6 +6,7 @@ import com.google.gson.JsonParser
 import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
 import me.fzzyhmstrs.fzzy_config.config_util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
+import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
 import me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedStringList
 import net.fabricmc.yarn.constants.MiningLevels
 import net.minecraft.item.ToolMaterial
@@ -19,7 +20,7 @@ open class ValidatedToolMaterial protected constructor(
     enchantabilityDefault: ValidatedInt,
     repairIngredientDefault: ValidatedIngredient)
     :
-    ToolMaterial, ConfigSerializable
+    ToolMaterial, ConfigSerializable, ServerClientSynced
 {
     var durability = durabilityDefault
     var miningSpeedMultiplier = miningSpeedDefault

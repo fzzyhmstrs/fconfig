@@ -6,6 +6,7 @@ import com.google.gson.JsonParser
 import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
 import me.fzzyhmstrs.fzzy_config.config_util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
+import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
 import me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedSeries
 import me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedStringList
 import net.minecraft.entity.EquipmentSlot
@@ -27,7 +28,7 @@ open class ValidatedArmorMaterial protected constructor(
     knockbackResistanceDefault: ValidatedFloat,
     toughnessDefault: ValidatedFloat)
     :
-    ArmorMaterial, ConfigSerializable
+    ArmorMaterial, ConfigSerializable, ServerClientSynced
 {
     private val BASE_DURABILITY = intArrayOf(13, 15, 16, 11)
 

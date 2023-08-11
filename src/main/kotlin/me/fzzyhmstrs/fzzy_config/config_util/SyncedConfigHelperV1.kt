@@ -8,6 +8,7 @@ import me.fzzyhmstrs.fzzy_config.interfaces.OldClass
 import net.fabricmc.loader.api.FabricLoader
 import java.io.File
 import kotlin.reflect.KMutableProperty
+import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaType
@@ -158,7 +159,7 @@ object SyncedConfigHelperV1 {
         val fields = config::class.java.declaredFields
         val orderById = fields.withIndex().associate { it.value.name to it.index }
         for (it in config.javaClass.kotlin.memberProperties.sortedBy { orderById[it.name] }) {
-            if (it is KMutableProperty<*>){
+            if (it is KMutableProperty<*> && it.visibility == KVisibility.PUBLIC){
                 val propVal = it.get(config)
                 val name = it.name
                 val el = if (propVal is ConfigSerializable){
