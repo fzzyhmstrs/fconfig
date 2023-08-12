@@ -4,9 +4,12 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config_util.ReadMeBuilder
 import me.fzzyhmstrs.fzzy_config.interfaces.SyncedConfig
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
+import net.minecraft.resource.ResourceReloader
 import net.minecraft.util.Identifier
 
 /**
@@ -47,8 +50,22 @@ object SyncedConfigRegistry {
                 ServerPlayNetworking.send(player, SYNC_CONFIG_PACKET, buf)
             }
         }
-    }
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, _ ->
+            val players = server.playerManager.playerList
+            for (player in players) {
+                newConfigs.forEach {
+                    if (it.value is ResourceReloader) {
+                        val buf = PacketByteBufs.create()
+                        buf.writeString(it.key)
+                        it.value.writeToClient(buf)
+                        ServerPlayNetworking.send(player, SYNC_CONFIG_PACKET, buf)
+                    }
+                }
+            }
 
+        }
+
+    }
 
     /**
      * Synced Configurations are registered here. If using a [SyncedConfigWithReadme](me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigWithReadMe) or similar helper class, this registration is done automatically in their init methods.
