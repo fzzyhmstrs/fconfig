@@ -97,8 +97,8 @@ open class ValidatedArmorMaterial protected constructor(
         protected var e = ValidatedInt(1,50,0)
         protected var pA = ValidatedSeries(arrayOf(1,1,1,1),Int::class.java, {a,b -> a >= 0 && b >= 0})
         protected var dM = ValidatedInt(1,100,0)
-        protected var kR = ValidatedFloat(0f,0.25f,0f)
-        protected var t = ValidatedFloat(0f,1f,0f)
+        protected var kR = ValidatedFloat(0f,0.5f,0f)
+        protected var t = ValidatedFloat(0f,10f,0f)
 
         abstract fun builderClass(): U
         
@@ -119,10 +119,10 @@ open class ValidatedArmorMaterial protected constructor(
             return builderClass()
         }
         fun knockbackResistance(default: Float): U{
-            kR = ValidatedFloat(default,0.25f,0f)
+            kR = ValidatedFloat(default,0.5f,0f)
             return builderClass()
         }
-        fun toughness(default: Float, max: Float = 5f): U{
+        fun toughness(default: Float, max: Float = 10f): U{
             t = ValidatedFloat(default,max,0f)
             return builderClass()
         }

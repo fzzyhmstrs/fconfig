@@ -29,4 +29,9 @@ open class ValidatedStringBoolMap(
         invalidEntryMessage,
         KeyDeserializer.STRING
     ) {
+
+        constructor(defaultValue:Map<String,Boolean>,
+                    mapEntryValidator: BiPredicate<String,Boolean> = BiPredicate{_,_ -> true},
+                    invalidEntryMessage: String = "None")
+                : this(defaultValue, mapEntryValidator,BiFunction{ _, it -> it}, invalidEntryMessage)
 }

@@ -35,4 +35,11 @@ open class ValidatedStringKeyMap<T>(
         KeyDeserializer.STRING,
         entryDeserializer
     ) {
+    constructor(defaultValue:Map<String,T>,
+                type:Class<T>,
+                mapEntryValidator: BiPredicate<String,T> = BiPredicate{_,_ -> true},
+                invalidEntryMessage: String = "None",
+                entryDeserializer: EntryDeserializer<T> =
+                    EntryDeserializer { json -> SyncedConfigHelperV1.gson.fromJson(json, type) })
+            : this(defaultValue,type, mapEntryValidator,BiFunction{ _, it -> it}, invalidEntryMessage, entryDeserializer)
 }

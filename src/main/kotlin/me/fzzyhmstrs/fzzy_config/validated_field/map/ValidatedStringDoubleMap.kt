@@ -29,4 +29,9 @@ open class ValidatedStringDoubleMap(
         invalidEntryMessage,
         KeyDeserializer.STRING
     ) {
+
+    constructor(defaultValue:Map<String,Double>,
+                mapEntryValidator: BiPredicate<String,Double> = BiPredicate{_,_ -> true},
+                invalidEntryMessage: String = "None")
+            : this(defaultValue, mapEntryValidator,BiFunction{ _, it -> it}, invalidEntryMessage)
 }
