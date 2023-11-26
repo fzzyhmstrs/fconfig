@@ -1,11 +1,14 @@
 package me.fzzyhmstrs.fzzy_config.interfaces
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.config_util.NonSync
+import me.fzzyhmstrs.fzzy_config.config_util.ReadMeText
 import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
 import net.minecraft.network.PacketByteBuf
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 
 /**
@@ -40,17 +43,27 @@ interface ServerClientSynced{
             if (it.visibility == KVisibility.PUBLIC) {
                 val propVal = it.get(this)
                 if (propVal is ServerClientSynced) {
-                    buf.writeString(it.name)
-                    propVal.writeToClient(buf)
-                } else if (it is KMutableProperty<*> && propVal != null && it.visibility == KVisibility.PUBLIC) {
-                    try{
-                        val str = SyncedConfigHelperV1.gson.toJson(propVal, it.returnType.javaClass)
-                        buf.writeString(it.name)
-                        buf.writeString(str)
-                    } catch (e: Exception) {
-                        FC.LOGGER.error(it.toString())
-                        e.printStackTrace()
+                    val annotation = it.findAnnotation<NonSync>()
+                    if (annotation != null){
                         buf.writeString("private_skipped")
+                    } else {
+                        buf.writeString(it.name)
+                        propVal.writeToClient(buf)
+                    }
+                } else if (it is KMutableProperty<*> && propVal != null && it.visibility == KVisibility.PUBLIC) {
+                    val annotation = it.findAnnotation<NonSync>()
+                    if (annotation != null) {
+                        buf.writeString("private_skipped")
+                    } else {
+                        try {
+                            val str = SyncedConfigHelperV1.gson.toJson(propVal, it.returnType.javaClass)
+                            buf.writeString(it.name)
+                            buf.writeString(str)
+                        } catch (e: Exception) {
+                            FC.LOGGER.error(it.toString())
+                            e.printStackTrace()
+                            buf.writeString("private_skipped")
+                        }
                     }
                 } else {
                     buf.writeString("private_skipped")

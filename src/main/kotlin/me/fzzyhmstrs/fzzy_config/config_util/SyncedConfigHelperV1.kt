@@ -80,6 +80,28 @@ object SyncedConfigHelperV1 {
         }
     }
 
+    fun <T : Any> save(file: String, child: String = "", base: String = FC.MOD_ID, configClass: T) {
+        val (dir,dirCreated) = makeDir(child, base)
+        if (!dirCreated) {
+            return
+        }
+        val f = File(dir, file)
+        try {
+            if (f.exists()) {
+                val str = serializeConfig(configClass)
+                f.writeText(str)
+            } else if (!f.createNewFile()) {
+                FC.LOGGER.error("Failed to open config file ($file), config not saved.")
+            } else {
+                val str = serializeConfig(configClass)
+                f.writeText(str)
+            }
+        } catch (e: Exception) {
+            FC.LOGGER.error("Failed to save config file $file!")
+            e.printStackTrace()
+        }
+    }
+
     /**
      * Generator method for updating an existing config to a new version (Rev. >0). This method follows the same basic sequence of tasks as [readOrCreateAndValidate] with the following additions
      * 1. First determines if an old version of the config file exists.

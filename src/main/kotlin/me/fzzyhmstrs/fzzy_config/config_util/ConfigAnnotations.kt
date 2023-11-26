@@ -27,3 +27,9 @@ annotation class ClientModifiable()
  */
 @Target(AnnotationTarget.PROPERTY,AnnotationTarget.CLASS)
 annotation class ReadMeText(val translationKey: String = "",val description: String = "", val header: Array<String> = [])
+
+/**
+ * A config property marked as NonSync won't be automagically scraped by the
+ */
+@Target(AnnotationTarget.PROPERTY)
+annotation class NonSync()
