@@ -11,7 +11,7 @@ import net.minecraft.network.PacketByteBuf
  *
  * This class is sealed as all primitive types are captured by its extensions. To validate a number, use one of the subclasses.
  */
-sealed class ValidatedNumber<T>(private val numberClass: Class<T>, defaultValue: T, private val minValue: T, private val maxValue: T)  : ValidatedField<T>(defaultValue) where T: Number, T: Comparable<T>{
+sealed class ValidatedNumber<T>(private val numberClass: Class<T>, private val defaultValue: T, private val minValue: T, private val maxValue: T)  : ValidatedField<T>(defaultValue) where T: Number, T: Comparable<T>{
 
     init{
         if (minValue > maxValue){
@@ -46,6 +46,10 @@ sealed class ValidatedNumber<T>(private val numberClass: Class<T>, defaultValue:
 
     override fun readmeText(): String{
         return "Number with a default of $storedValue, a minimum of $minValue, and a maximum of $maxValue"
+    }
+
+    fun reset() {
+        this.validateAndSet(defaultValue)
     }
 
 }
