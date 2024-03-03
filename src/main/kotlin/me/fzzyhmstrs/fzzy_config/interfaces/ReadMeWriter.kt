@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.interfaces
 
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
 import java.io.File
 import java.io.FileWriter
 

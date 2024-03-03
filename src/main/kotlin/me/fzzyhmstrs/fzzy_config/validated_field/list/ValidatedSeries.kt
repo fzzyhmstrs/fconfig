@@ -2,8 +2,8 @@ package me.fzzyhmstrs.fzzy_config.validated_field.list
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
-import me.fzzyhmstrs.fzzy_config.config_util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
 import net.minecraft.network.PacketByteBuf
 import java.util.function.BiPredicate

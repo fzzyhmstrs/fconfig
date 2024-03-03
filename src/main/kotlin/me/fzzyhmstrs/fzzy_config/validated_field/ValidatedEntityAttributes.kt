@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validated_field
 
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.config_util.ConfigSection
+import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.validated_field.map.ValidatedStringDoubleMap
 import net.minecraft.entity.attribute.DefaultAttributeContainer
 import net.minecraft.entity.attribute.EntityAttribute
@@ -28,7 +28,7 @@ class ValidatedEntityAttributes(
         for (entry in storedMap){
             val id = Identifier.tryParse(entry.key) ?: continue
             val attribute = Registries.ATTRIBUTE.get(id) ?: continue
-            builderInstance.add(attribute,entry.value)
+            builderInstance.add(Registries.ATTRIBUTE.getEntry(attribute),entry.value)
         }
         return builderInstance
     }

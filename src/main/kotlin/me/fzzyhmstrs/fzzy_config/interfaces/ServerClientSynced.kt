@@ -1,13 +1,11 @@
 package me.fzzyhmstrs.fzzy_config.interfaces
 
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.config_util.NonSync
-import me.fzzyhmstrs.fzzy_config.config_util.ReadMeText
-import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.NonSync
+import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
 import net.minecraft.network.PacketByteBuf
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility
-import kotlin.reflect.full.declaredMemberProperties
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 
@@ -36,7 +34,7 @@ interface ServerClientSynced{
             }
         }
     }
-    
+
     fun writeToClient(buf: PacketByteBuf){
         buf.writeInt(this.javaClass.kotlin.memberProperties.size)
         for (it in this.javaClass.kotlin.memberProperties){

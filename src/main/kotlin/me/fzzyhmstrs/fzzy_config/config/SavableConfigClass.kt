@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.config_util
+package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
 
@@ -16,15 +16,15 @@ import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
  * @see ServerClientSynced
  * @see SyncedConfigWithReadMe
  */
-open class ConfigClass(
+open class SavableConfigClass(
+    private val file: String,
+    private val base: String,
     headerText: Header = Header(),
     decorator: LineDecorating = LineDecorator.DEFAULT)
     :
-    ReadMeBuilder("default", headerText = headerText, decorator = decorator),
-    ServerClientSynced
+    ConfigClass(headerText, decorator)
 {
-    /**
-     * Secondary constructor that builds a simple header using only configLabel
-     */
-    constructor(configLabel: String): this(Header.Builder().literal().add(configLabel).build())
+    fun save(){
+        SyncedConfigHelperV1.save(file,base = base, configClass = this)
+    }
 }

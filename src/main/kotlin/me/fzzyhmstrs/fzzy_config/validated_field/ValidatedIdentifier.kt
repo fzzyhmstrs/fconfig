@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
-import me.fzzyhmstrs.fzzy_config.config_util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.config.ValidationResult
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
@@ -18,8 +18,8 @@ class ValidatedIdentifier(
     defaultValue: Identifier,
     private val validIds: Collection<Identifier> = listOf(),
     private val invalidIdMessage: String = "None")
-  : 
-  ValidatedField<Identifier>(defaultValue) 
+  :
+  ValidatedField<Identifier>(defaultValue)
 {
 
     init{

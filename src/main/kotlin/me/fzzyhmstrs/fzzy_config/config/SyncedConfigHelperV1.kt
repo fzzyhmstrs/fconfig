@@ -1,17 +1,20 @@
-package me.fzzyhmstrs.fzzy_config.config_util
+package me.fzzyhmstrs.fzzy_config.config
 
 import com.google.gson.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.serializer
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
-import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
 import me.fzzyhmstrs.fzzy_config.interfaces.OldClass
+import me.fzzyhmstrs.fzzy_config.interfacesV2.FzzySerializable
 import net.fabricmc.loader.api.FabricLoader
+import net.peanuuutz.tomlkt.*
 import java.io.File
-import kotlin.reflect.KMutableProperty
-import kotlin.reflect.KVisibility
-import kotlin.reflect.full.declaredMemberProperties
+import java.lang.reflect.Field
+import java.lang.reflect.Modifier.isTransient
+import kotlin.reflect.*
 import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.javaType
 
 /**
  * Helper object that provides methods for reading, creating, and de/serializing configuration JSON's.
@@ -55,10 +58,11 @@ object SyncedConfigHelperV1 {
             return configClass()
         }
         val f = File(dir, file)
+        val errors = mutableListOf<String>()
         try {
             if (f.exists()) {
                 val str = f.readLines().joinToString("\n")
-                val readConfig = deserializeConfig(configClass(), JsonParser.parseString(str))
+                val readConfig = deserializeConfig(configClass(), str, errors)
                 if (readConfig.isError()) {
                     FC.LOGGER.warn("Errors found in $file per above log entries, attempting to correct invalid inputs automatically.")
                     val correctedConfig = serializeConfig(readConfig.get())
@@ -125,25 +129,37 @@ object SyncedConfigHelperV1 {
             return configClass()
         }
         val p = File(dir, previous)
+        val pErrors = mutableListOf<String>()
         try {
             if (p.exists()) {
                 val pStr = p.readLines().joinToString("\n")
                 //println(">>> Found Old config:")
                 //println(pStr)
-                val previousConfig = deserializeConfig(previousClass(), JsonParser.parseString(pStr))
+                val previousConfig = deserializeConfig(previousClass(), pStr, pErrors)
                 if (previousConfig.isError()){
                     FC.LOGGER.error("Old config $previous had errors, attempted to correct before updating.")
+                    FC.LOGGER.error(">>>>>>>>>>>>>>>>>>>")
+                    for (pError in pErrors){
+                        FC.LOGGER.error(pError)
+                    }
+                    FC.LOGGER.error(">>>>>>>>>>>>>>>>>>>")
                 }
                 val newClass = previousConfig.get().generateNewClass()
                 val f = File(dir,file)
+                val fErrors = mutableListOf<String>()
                 if (f.exists()){
                     p.delete() //attempts to delete the now useless old config version file
                     val str = f.readLines().joinToString("")
                     //println(">>> Found config:")
                     //println(str)
-                    val readConfig = deserializeConfig(configClass(), JsonParser.parseString(str))
+                    val readConfig = deserializeConfig(configClass(), str, fErrors)
                     if (readConfig.isError()){
                         FC.LOGGER.warn("Errors found in $file per above logs, attempting to correct invalid inputs automatically.")
+                        FC.LOGGER.warn(">>>>>>>>>>>>>>>>>>>")
+                        for (fError in fErrors){
+                            FC.LOGGER.warn(fError)
+                        }
+                        FC.LOGGER.warn(">>>>>>>>>>>>>>>>>>>")
                         val correctedConfig = serializeConfig(readConfig.get())
                         //println(">>> Corrected config:")
                         //println(correctedConfig)
@@ -176,7 +192,7 @@ object SyncedConfigHelperV1 {
      *
      * [ValidatedField] *cannot* typically be serialized properly by GSON, as the validation information is meant to be hidden from the .json file itself, staying in code as a secure key of sorts. Without that context, GSON doesn't have enough context to properly serialize or deserialize a ValidatedField, and it is *STRONGLY* recommended not to expose the valdiation to the config file, as this defeats the validation by allowing for user editing of validation parameters.
      */
-    fun serializeConfig(config: Any): String{
+    /*fun serializeConfig(config: Any): String{
         val json = JsonObject()
         val fields = config::class.java.declaredFields
         val orderById = fields.withIndex().associate { it.value.name to it.index }
@@ -193,6 +209,33 @@ object SyncedConfigHelperV1 {
             }
         }
         return gson.toJson(json)
+    }*/
+
+    fun <T: Any> serializeConfig(config: T, ignoreNonSync: Boolean = true): String{
+        val toml = TomlTableBuilder()
+        //val json = JsonObject()
+        //println(config::class.java.declaredFields.map { it.annotations })
+        val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
+        //println(fields.map { it.annotations })
+
+        val orderById = fields.withIndex().associate { it.value.name to it.index }
+        println(config.javaClass.kotlin.memberProperties.filter { if(ignoreNonSync) true else !isNonSync(it) })
+        for (it in config.javaClass.kotlin.memberProperties.filter { orderById.containsKey(it.name) && if(ignoreNonSync) true else !isNonSync(it) }.sortedBy { orderById[it.name] }) {
+            if (it is KMutableProperty<*> && it.visibility == KVisibility.PUBLIC){
+                val propVal = it.get(config)
+                val name = it.name
+                val el = if (propVal is FzzySerializable){
+                    propVal.serialize()
+                } else if (propVal != null) {
+                    encodeToTomlElement(propVal, it.returnType) ?: TomlNull
+                } else {
+                    TomlNull
+                }
+                val tomlAnnotations = tomlAnnotations(it)
+                toml.element(name,el,tomlAnnotations)
+            }
+        }
+        return Toml.encodeToString(toml.build())
     }
 
     /**
@@ -202,11 +245,11 @@ object SyncedConfigHelperV1 {
      *
      * [ValidatedField] *cannot* typically be serialized properly by GSON, as the validation information is meant to be hidden from the .json file itself, staying in code as a secure key of sorts. Without that context, GSON doesn't have enough context to properly serialize or deserialize a ValidatedField, and it is *STRONGLY* recommended not to expose the valdiation to the config file, as this defeats the validation by allowing for user editing of validation parameters.
      */
-    fun <T: Any> deserializeConfig(config: T, json: JsonElement): ValidationResult<T> {
+    /*fun <T: Any> deserializeConfig(config: T, json: JsonElement): ValidationResult<T> {
         if (!json.isJsonObject) return ValidationResult.error(config,"Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
         val jsonObject = json.asJsonObject
         var error = false
-        val fields = config::class.java.declaredFields
+        val fields = config::class.java.declaredFields.filter { !isTransient(it) }
         val orderById = fields.withIndex().associate { it.value.name to it.index }
         for (it in config.javaClass.kotlin.memberProperties.sortedBy { orderById[it.name] }){
             if (it is KMutableProperty<*>){
@@ -233,6 +276,74 @@ object SyncedConfigHelperV1 {
         } else {
             ValidationResult.error(config,"Errors found!")
         }
+    }*/
+
+    fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): ValidationResult<T> {
+        val toml = try {
+            Toml.parseToTomlTable(string)
+        } catch (e:Exception){
+            return  ValidationResult.error(config,"Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
+        }
+        println(toml)
+        val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
+        val orderById = fields.withIndex().associate { it.value.name to it.index }
+        for (it in config.javaClass.kotlin.memberProperties.filter { orderById.containsKey(it.name) && if(ignoreNonSync) true else !isNonSync(it) }.sortedBy { orderById[it.name] }){
+            if (it is KMutableProperty<*>){
+                val propVal = it.get(config)
+                val name = it.name
+                val tomlElement = if(toml.containsKey(name)) {
+                    toml.get(name)
+                } else {
+                    errorBuilder.add("Key [$name] not found in TOML file.")
+                    continue
+                }
+                if (tomlElement == null){
+                    errorBuilder.add("TomlElement [$name] was null!.")
+                    continue
+                }
+                if (propVal is FzzySerializable){
+                    val result = propVal.deserialize(tomlElement, name)
+                    if(result.isError()){
+                        errorBuilder.add(result.getError())
+                    }
+                } else {
+                    it.setter.call(config, decodeFromTomlElement(tomlElement, it.returnType).also { println(it) })
+                }
+            }
+        }
+        return if (errorBuilder.isEmpty()) {
+            ValidationResult.success(config)
+        } else {
+            ValidationResult.error(config,"Errors found while deserializing Config ${config.javaClass.canonicalName}!")
+        }
+    }
+
+    fun encodeToTomlElement(a: Any, clazz: KType): TomlElement?{
+        return try {
+            val strat = Toml.serializersModule.serializer(clazz)
+            Toml. encodeToTomlElement(strat, a)
+        } catch (e: Exception){
+            null
+        }
+    }
+
+    fun decodeFromTomlElement(element: TomlElement, clazz: KType): Any?{
+        try {
+            val strat = Toml.serializersModule.serializer(clazz) as? KSerializer<*> ?: return null
+            return Toml.decodeFromTomlElement(strat, element)
+        } catch (e: Exception){
+            return null
+        }
+    }
+
+    private fun isNonSync(property: KProperty<*>): Boolean{
+        return property.annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
+    }
+    private fun isNonSync(field: Field): Boolean{
+        return field.annotations.firstOrNull { (it is Transient) }?.let { true } ?: false
+    }
+    private fun <T: Any> tomlAnnotations(field: KProperty1<T, *>): List<Annotation>{
+        return field.annotations.filter { it is TomlComment || it is TomlInline || it is TomlBlockArray || it is TomlMultilineString || it is TomlLiteralString || it is TomlInteger }
     }
 
     /**

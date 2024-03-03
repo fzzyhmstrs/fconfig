@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validated_field.map
 
-import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
 import java.util.function.BiFunction
 import java.util.function.BiPredicate
 

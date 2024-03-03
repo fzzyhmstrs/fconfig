@@ -1,4 +1,6 @@
-package me.fzzyhmstrs.fzzy_config.config_util
+package me.fzzyhmstrs.fzzy_config.config
+
+import me.fzzyhmstrs.fzzy_config.FC
 
 /**
  * A result of any type T that is wrapped with an optional error message
@@ -34,11 +36,34 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
     fun get(): T{
         return storedVal
     }
+
+    fun writeError(errors: List<String>){
+        if (!isError())return
+        FC.LOGGER.error(">>>>>>>>>>>>>>>")
+        FC.LOGGER.error(getError())
+        FC.LOGGER.error(">>>>>>>>>>>>>>>")
+        for (e in errors){
+            FC.LOGGER.error(e)
+        }
+        FC.LOGGER.error(">>>>>>>>>>>>>>>")
+    }
+
+    fun writeWarning(errors: List<String>){
+        if (!isError())return
+        FC.LOGGER.warn(">>>>>>>>>>>>>>>")
+        FC.LOGGER.warn(getError())
+        FC.LOGGER.warn(">>>>>>>>>>>>>>>")
+        for (e in errors){
+            FC.LOGGER.warn(e)
+        }
+        FC.LOGGER.warn(">>>>>>>>>>>>>>>")
+    }
+
     companion object{
         /**
          * Create a validation result with this if validation was successful. No error message needed as no errors were found.
          */
-        fun <T>success(storedVal: T): ValidationResult<T>{
+        fun <T : Any>success(storedVal: T): ValidationResult<T>{
             return ValidationResult(storedVal)
         }
 

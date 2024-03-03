@@ -2,6 +2,7 @@ plugins {
     id("fabric-loom")
     val kotlinVersion: String by System.getProperties()
     kotlin("jvm").version(kotlinVersion)
+    kotlin("plugin.serialization") version "1.9.22"
     id("com.modrinth.minotaur") version "2.+"
 }
 base {
@@ -28,6 +29,12 @@ dependencies {
     val fabricKotlinVersion: String by project
     modImplementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
 
+    val tomlktVersion: String by project
+    implementation("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+
 }
 tasks {
     val javaVersion = JavaVersion.VERSION_17
@@ -39,8 +46,8 @@ tasks {
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions { jvmTarget = javaVersion.toString() }
-        sourceCompatibility = javaVersion.toString()
-        targetCompatibility = javaVersion.toString()
+        //java.sourceCompatibility = javaVersion
+        //targetCompatibility = javaVersion.toString()
     }
     jar { from("LICENSE") { rename { "${it}_${base.archivesName}" } } }
     processResources {

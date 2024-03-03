@@ -2,8 +2,8 @@ package me.fzzyhmstrs.fzzy_config.validated_field.list
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1
-import me.fzzyhmstrs.fzzy_config.config_util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
 import net.minecraft.network.PacketByteBuf
 import java.util.function.Predicate
@@ -31,7 +31,7 @@ open class ValidatedList<R>(
     private val listEntryValidator: Predicate<R> = Predicate {true},
     private val invalidEntryMessage: String = "None",
     private val entryDeserializer: EntryDeserializer<R> = EntryDeserializer { json ->  SyncedConfigHelperV1.gson.fromJson(json,lType)})
-    : 
+    :
     ValidatedField<List<R>>(defaultValue),
     List<R>
 {
@@ -48,7 +48,7 @@ open class ValidatedList<R>(
                     try{
                         val el = entryDeserializer.deserialize(jsonEl)
                         list.add(el)
-                    } catch (e: Exception){
+                    } catch (e: Exception) {
                         errorList.add(jsonEl)
                     }
                 }

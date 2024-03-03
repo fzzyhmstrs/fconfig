@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.interfaces
 
 /**
- * OldClass defines an old revision of a ConfigClass for use in [me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigHelperV1.readOrCreateUpdatedAndValidate]
+ * OldClass defines an old revision of a ConfigClass for use in [me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1.readOrCreateUpdatedAndValidate]
  *
  * SAM: [generateNewClass], returns the post-updated version of the new class revision.
  */

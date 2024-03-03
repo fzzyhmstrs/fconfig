@@ -1,8 +1,9 @@
-package me.fzzyhmstrs.fzzy_config.config_util
+package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.interfaces.ReadMeTextProvider
 import me.fzzyhmstrs.fzzy_config.interfaces.ReadMeWriter
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import java.util.function.Function
 import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KVisibility

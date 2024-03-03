@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.config_util
+package me.fzzyhmstrs.fzzy_config.config
 
 /**
  * (Currently unused) A property or section marked as Lockable can be locked by the client player.
@@ -13,8 +13,11 @@ annotation class Lockable()
  *
  * This annotation should be reserved for non-functional configs like cosmetics, similarly to [Lockable]
  */
-@Target(AnnotationTarget.PROPERTY,AnnotationTarget.CLASS)
+@Target(AnnotationTarget.PROPERTY,AnnotationTarget.FIELD,AnnotationTarget.CLASS)
 annotation class ClientModifiable()
+
+@Target(AnnotationTarget.PROPERTY,AnnotationTarget.FIELD,AnnotationTarget.CLASS)
+annotation class ClientOperatorOnly(val opLevel: Int = 2)
 
 /**
  * Used to define custom text for the config Readme and GUI
