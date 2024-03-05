@@ -320,7 +320,7 @@ object ConfigHelper {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Any> serializeDirtyToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): TomlElement{
+    fun <T: Any> serializeDirtyToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement{
         //used to build a TOML table piece by piece
         val toml = TomlTableBuilder()
         try {
@@ -377,7 +377,7 @@ object ConfigHelper {
     }
 
     @JvmStatic
-    fun <T: Any> serializeDirty(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): String{
+    fun <T: Any> serializeDirty(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String{
         return Toml.encodeToString(serializeDirtyToToml(config,errorBuilder,ignoreNonSync))
     }
 
