@@ -116,11 +116,31 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
         val oldVal = storedValue
         val tVal1 = validateAndCorrectInputs(input)
         storedValue = tVal1.get()
-        if (oldVal != storedValue) markDirty()
         if (tVal1.isError()){
             return ValidationResult.error(tVal1.get(),"Error validating and setting input [$input]. Corrected to [${tVal1.get()}] >>>> Possible reasons: [${tVal1.getError()}]")
         }
         return ValidationResult.success(storedValue)
+    }
+
+    open fun setAndUpdate(input: T) {
+        val oldVal = storedValue
+        val tVal1 = validateAndCorrectInputs(input)
+        storedValue = tVal1.get()
+        if (tVal1.isError()){
+            UpdateManager.addUpdateMessage(AcText.translatable("validated_field.update.error",tVal1.getError(),oldVal.toString(),storedValue.toString())
+        }
+        val update = Update(updateMessage(oldVal, storedValue), Callable{ () -> set(oldVal) }, Callable { () -> set(tVal1.get()) })
+        update(update)
+    }
+
+    open fun updateMessage(old: T, new: T): Text {
+        return FcText.translatable("validated_field.update", old.toString(), new.toString())
+    }
+
+    private fun set(input: T): Text{
+        val text = FcText.translatable("validated_field.set", input.toString(), storedValue.toString())
+        storedValue = input
+        return text
     }
 
     /**
