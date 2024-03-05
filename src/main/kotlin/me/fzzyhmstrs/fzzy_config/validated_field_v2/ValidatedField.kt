@@ -21,30 +21,33 @@ import net.peanuuutz.tomlkt.TomlElement
  *
  */
 
-abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySerializable, DirtyMarkable {
+abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySerializable, Updatable {
 
-    private var dirty = false
+    private var pushedValue: T? = null
+    private var updateKey = ""
 
-    private val dirtyListeners: MutableList<DirtyMarkableContaining> = mutableListOf()
-
-    override fun markDirty() {
-        dirty = true
+    override fun getUpdateKey(): String {
+        return updateKey
+    }
+    override fun setUpdateKey(key: String) {
+        updateKey = key
+    }
+    override fun pushState(){
+        pushedValue = copyStoredValue()
+    }
+    override fun peekState(){
+        if (pushedValue == null) return false
+        return pushedValue != storedValue
+    }
+    override fun popState(): Boolean{
+        if (pushedValue == null) return false
+        val updated = pushedValue != storedValue
+        pushedValue = null
+        return updated
     }
 
-    override fun isDirty(): Boolean {
-        return dirty
-    }
-
-    override fun addDirtyListener(listener: DirtyMarkableContaining){
-        dirtyListeners.add(listener)
-    }
-
-    override fun updateListeners(update: Callable<ValidationResult<Boolean>>){
-        dirtyListeners.forEach{
-            it.update(update)
-        }
-    }
-
+    abstract fun copyStoredValue(): T
+    
     @Deprecated("use deserializeHeldValue to avoid accidentally overwriting validation and error reporting")
     override fun deserialize(
         toml: TomlElement,
@@ -84,7 +87,6 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
 
     @Deprecated("use serializeHeldValue for consistency", ReplaceWith("serializeHeldValue()"))
     override fun serialize(errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
-        dirty = false
         return serializeHeldValue()
     }
 
