@@ -45,7 +45,7 @@ object ConfigHelper {
     */
     @JvmStatic
     fun <T: Config> registerConfig(config: T): T{
-        SyncedConfigRegistry.register(Identifier(config.folder, config.name), config)
+        SyncedConfigRegistry.register(config)
         return config
     }
 
