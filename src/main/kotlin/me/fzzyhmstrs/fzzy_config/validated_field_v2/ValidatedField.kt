@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_config.validated_field_v2
 
 import me.fzzyhmstrs.fzzy_config.config.*
 import me.fzzyhmstrs.fzzy_config.interfaces.DirtyMarkable
+import me.fzzyhmstrs.fzzy_config.interfaces.DirtyMarkableContaining
 import me.fzzyhmstrs.fzzy_config.interfaces.FzzySerializable
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -24,21 +25,24 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
 
     private var dirty = false
 
-    private val dirtyListeners: MutableList<DirtyMarkable> = mutableListOf()
+    private val dirtyListeners: MutableList<DirtyMarkableContaining> = mutableListOf()
 
     override fun markDirty() {
         dirty = true
-        dirtyListeners.forEach {
-            it.markDirty()
-        }
     }
 
     override fun isDirty(): Boolean {
         return dirty
     }
 
-    override fun addDirtyListener(listener: DirtyMarkable){
+    override fun addDirtyListener(listener: DirtyMarkableContaining){
         dirtyListeners.add(listener)
+    }
+
+    override fun updateListeners(update: Callable<ValidationResult<Boolean>>){
+        dirtyListeners.forEach{
+            it.update(update)
+        }
     }
 
     @Deprecated("use deserializeHeldValue to avoid accidentally overwriting validation and error reporting")
@@ -80,6 +84,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
 
     @Deprecated("use serializeHeldValue for consistency", ReplaceWith("serializeHeldValue()"))
     override fun serialize(errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
+        dirty = false
         return serializeHeldValue()
     }
 
