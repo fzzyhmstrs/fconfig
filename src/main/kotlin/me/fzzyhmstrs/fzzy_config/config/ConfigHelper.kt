@@ -33,6 +33,39 @@ import kotlin.reflect.jvm.javaField
 object ConfigHelper {
 
     /**
+    * Registers a [Config] to the [SyncedConfigRegistry]. Use if you have custom initialization to perform.
+    * 
+    * Configs registered this way still have to handle their own initialization. That is to say, they have to be instantiated and passed to the registry in a timely manner, otherwise they will not be loaded in time for CONFIGURATION stage syncing with clients.
+    *
+    * Loading with the Fabric [ModInitializer] is a convenient and typical way to achieve this.
+    * @param T the config type, any subclass of [Config]
+    * @param config the config to register
+    * @author fzzyhmstrs
+    * @since 0.2.0
+    */
+    @JvmStatic
+    fun <T: Config> registerConfig(config: T): T{
+        SyncedConfigRegistry.register(Identifier(config.folder, config.name), config)
+        return config
+    }
+
+    /**
+    * Creates and registers a Config.
+    * Performs the entire creation, loading, validation, and registration process on a config class. Internally performs the two steps
+    * 1) [readOrCreateAndValidate]
+    * 2) [registerConfig]
+    * @param T the config type, any subclass of [Config]
+    * @param configClass supplier of T
+    * @return loaded, validated, and registered instance of T
+    * @author fzzyhmstrs
+    * @since 0.2.0
+    */
+    @JvmStatic
+    fun <T:Config> registerAndLoadConfig(configClass: () -> T): T{
+        return registerConfig(readOrCreateAndValidate(configClass))
+    }
+
+    /**
      * Reads in from File or Creates a new config class, and writes out any corrections, updates, or new content to File.
      *
      * Config Class and File generator with [Version] updating support, automatic validation and correction, and detailed error reporting. Use this to generate the actual config class instance to be used in-game. See the Example Config for typical usage case.
