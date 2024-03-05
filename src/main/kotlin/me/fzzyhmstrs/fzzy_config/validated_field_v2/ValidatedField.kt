@@ -1,21 +1,13 @@
 package me.fzzyhmstrs.fzzy_config.validated_field_v2
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.*
-import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
-import me.fzzyhmstrs.fzzy_config.interfaces.ReadMeTextProvider
-import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
-import me.fzzyhmstrs.fzzy_config.interfacesV2.FzzySerializable
+import me.fzzyhmstrs.fzzy_config.interfaces.DirtyMarkable
+import me.fzzyhmstrs.fzzy_config.interfaces.FzzySerializable
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.Widget
 import net.minecraft.network.PacketByteBuf
 import net.peanuuutz.tomlkt.TomlElement
-import kotlin.reflect.full.hasAnnotation
 
 /**
  * Validated Field Collection - serialization is indistinguishable from their wrapped values, but deserialized into a validated wrapper
@@ -26,14 +18,36 @@ import kotlin.reflect.full.hasAnnotation
  *
  * @param storedValue T. The wrapped value that this field validates, serializes, and syncs between server and client.
  *
- * @see ConfigSerializable
- * @see ServerClientSynced
- * @see ReadMeTextProvider
  */
 
-abstract class ValidatedField<T>(protected var storedValue: T): FzzySerializable {
+abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySerializable, DirtyMarkable {
 
-    override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Boolean> {
+    private var dirty = false
+
+    private val dirtyListeners: MutableList<DirtyMarkable> = mutableListOf()
+
+    override fun markDirty() {
+        dirty = true
+        dirtyListeners.forEach {
+            it.markDirty()
+        }
+    }
+
+    override fun isDirty(): Boolean {
+        return dirty
+    }
+
+    override fun addDirtyListener(listener: DirtyMarkable){
+        dirtyListeners.add(listener)
+    }
+
+    @Deprecated("use deserializeHeldValue to avoid accidentally overwriting validation and error reporting")
+    override fun deserialize(
+        toml: TomlElement,
+        errorBuilder: MutableList<String>,
+        fieldName: String,
+        ignoreNonSync: Boolean
+    ): ValidationResult<Boolean> {
         val tVal = deserializeHeldValue(toml, fieldName)
         if (tVal.isError()){
             return ValidationResult.error(false,"Error deserializing config entry [$fieldName], using default value [${tVal.get()}]  >>> Possible reasons: ${tVal.getError()}")
@@ -65,7 +79,7 @@ abstract class ValidatedField<T>(protected var storedValue: T): FzzySerializable
      */
 
     @Deprecated("use serializeHeldValue for consistency", ReplaceWith("serializeHeldValue()"))
-    override fun serialize(): TomlElement {
+    override fun serialize(errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
         return serializeHeldValue()
     }
 
@@ -84,9 +98,23 @@ abstract class ValidatedField<T>(protected var storedValue: T): FzzySerializable
 
     protected abstract fun validate(input: T): ValidationResult<T>
 
-    @Environment(EnvType.CLIENT)
-    abstract fun createWidget(): Widget
+    protected abstract fun reset()
 
+    /**
+     * A setter method for the [storedValue] that first validates the value being set and then stores the post-validation result.
+     *
+     * @param input T. the pre-validation input of type T that will be validated and then stored, where T is the type of the wrapped value in this field.
+     */
+    open fun validateAndSet(input: T): ValidationResult<T> {
+        val oldVal = storedValue
+        val tVal1 = validateAndCorrectInputs(input)
+        storedValue = tVal1.get()
+        if (oldVal != storedValue) markDirty()
+        if (tVal1.isError()){
+            return ValidationResult.error(tVal1.get(),"Error validating and setting input [$input]. Corrected to [${tVal1.get()}] >>>> Possible reasons: [${tVal1.getError()}]")
+        }
+        return ValidationResult.success(storedValue)
+    }
 
     /**
      * Get the wrapped value with this method
@@ -97,19 +125,9 @@ abstract class ValidatedField<T>(protected var storedValue: T): FzzySerializable
         return storedValue
     }
 
-    /**
-     * A setter method for the [storedValue] that first validates the value being set and then stores the post-validation result.
-     *
-     * @param input T. the pre-validation input of type T that will be validated and then stored, where T is the type of the wrapped value in this field.
-     */
-    open fun validateAndSet(input: T) {
-        val tVal1 = validateAndCorrectInputs(input)
-        if (tVal1.isError()){
-            FC.LOGGER.error("Manually entered config entry had errors, corrected to [${tVal1.get()}]")
-            FC.LOGGER.error("  >>> Possible reasons: ${tVal1.getError()}")
-        }
-        storedValue = tVal1.get()
-    }
+    @Environment(EnvType.CLIENT)
+    abstract fun createWidget(): Widget
+
 
     /**
      * An EntryDeserializer can be used to deserialize an individual field entry for intermediate validation. An example of this can be seen in [ValidatedList](me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedList)
@@ -119,7 +137,7 @@ abstract class ValidatedField<T>(protected var storedValue: T): FzzySerializable
      * @see me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedList
      */
     fun interface EntryDeserializer<T>{
-        fun deserialize(json: JsonElement): T
+        fun deserialize(toml: TomlElement): T
     }
 
     fun interface EntryValidator<T> {

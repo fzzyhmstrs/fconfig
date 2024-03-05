@@ -1,9 +1,11 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field.map
 
-import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.ConfigHelper
 import java.util.function.BiFunction
 import java.util.function.BiPredicate
 
+*/
 /**
  * Subclass of [ValidatedMap] that restricts keys to string values
  *
@@ -14,7 +16,8 @@ import java.util.function.BiPredicate
  * @param mapEntryValidator BiPredicate<String,T>, optional. If not provided, will always test true (no validation). Pass a BiPredicate that tests both the key and entry against your specific criteria. True passes validation, false fails.
  * @param invalidEntryMessage String, optional. Provide a message detailing the criteria the user needs to follow in the case they make a mistake.
  * @param entryDeserializer EntryDeserializer<T>, optional. If not provided, will attempt to use GSON to parse the values. Otherwise, provide a deserializer that parses the provided JsonElement.
- */
+ *//*
+
 
 open class ValidatedStringKeyMap<T>(
     defaultValue:Map<String,T>,
@@ -23,7 +26,7 @@ open class ValidatedStringKeyMap<T>(
     mapEntryCorrector: BiFunction<String, T, T> = BiFunction{ _, it -> it},
     invalidEntryMessage: String = "None",
     entryDeserializer: EntryDeserializer<T> =
-        EntryDeserializer { json -> SyncedConfigHelperV1.gson.fromJson(json, type) })
+        EntryDeserializer { json -> ConfigHelper.gson.fromJson(json, type) })
     :
     ValidatedMap<String, T>(
         defaultValue,
@@ -40,6 +43,6 @@ open class ValidatedStringKeyMap<T>(
                 mapEntryValidator: BiPredicate<String,T> = BiPredicate{_,_ -> true},
                 invalidEntryMessage: String = "None",
                 entryDeserializer: EntryDeserializer<T> =
-                    EntryDeserializer { json -> SyncedConfigHelperV1.gson.fromJson(json, type) })
+                    EntryDeserializer { json -> ConfigHelper.gson.fromJson(json, type) })
             : this(defaultValue,type, mapEntryValidator,BiFunction{ _, it -> it}, invalidEntryMessage, entryDeserializer)
-}
+}*/

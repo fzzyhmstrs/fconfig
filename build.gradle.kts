@@ -31,6 +31,7 @@ dependencies {
 
     val tomlktVersion: String by project
     implementation("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
+    include("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 

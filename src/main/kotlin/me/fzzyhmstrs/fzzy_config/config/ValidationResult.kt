@@ -63,14 +63,14 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         /**
          * Create a validation result with this if validation was successful. No error message needed as no errors were found.
          */
-        fun <T : Any>success(storedVal: T): ValidationResult<T>{
+        fun <T : Any>success(storedVal: T): ValidationResult<T> {
             return ValidationResult(storedVal)
         }
 
         /**
          * Create a validation result with this if there was a problem during validation. Typically in this case, [storedVal] will be the default value associated with this validation. A valid instance of T must always be passed back. Add a descriptive error message to [error]
          */
-        fun <T>error(storedVal: T, error: String): ValidationResult<T>{
+        fun <T>error(storedVal: T, error: String): ValidationResult<T> {
             return ValidationResult(storedVal,error)
         }
     }

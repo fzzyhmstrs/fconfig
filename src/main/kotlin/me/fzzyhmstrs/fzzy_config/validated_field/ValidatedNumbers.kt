@@ -1,16 +1,19 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
-import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.ConfigHelper
 import me.fzzyhmstrs.fzzy_config.config.ValidationResult
 import net.minecraft.network.PacketByteBuf
 
+*/
 /**
  * Collection of ValidatedFields for the primitive Numbers collection.
  *
  * This class is sealed as all primitive types are captured by its extensions. To validate a number, use one of the subclasses.
- */
+ *//*
+
 sealed class ValidatedNumber<T>(private val numberClass: Class<T>, private val defaultValue: T, private val minValue: T, private val maxValue: T)  : ValidatedField<T>(defaultValue) where T: Number, T: Comparable<T>{
 
     init{
@@ -21,7 +24,7 @@ sealed class ValidatedNumber<T>(private val numberClass: Class<T>, private val d
 
     override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<T> {
         val i = try{
-            ValidationResult.success(SyncedConfigHelperV1.gson.fromJson(json, numberClass))
+            ValidationResult.success(ConfigHelper.gson.fromJson(json, numberClass))
         } catch (e: Exception){
             ValidationResult.error(storedValue,"json [$json] at key [$fieldName] is not a properly formatted number")
         }
@@ -54,6 +57,7 @@ sealed class ValidatedNumber<T>(private val numberClass: Class<T>, private val d
 
 }
 
+*/
 /**
  * A validated integer value
  *
@@ -62,7 +66,8 @@ sealed class ValidatedNumber<T>(private val numberClass: Class<T>, private val d
  * @param defaultValue Int. The default stored value.
  * @param maxValue Int. The maximum valid value this can contain.
  * @param minValue Int, optional. The minimum allowable value. If empty, this defaults to 0.
- */
+ *//*
+
 class ValidatedInt(defaultValue: Int,maxValue: Int, minValue:Int = 0): ValidatedNumber<Int>(Int::class.java,defaultValue,minValue,maxValue){
     override fun toBuf(buf: PacketByteBuf) {
         buf.writeInt(storedValue)
@@ -72,6 +77,7 @@ class ValidatedInt(defaultValue: Int,maxValue: Int, minValue:Int = 0): Validated
     }
 }
 
+*/
 /**
  * A validated float value
  *
@@ -80,7 +86,8 @@ class ValidatedInt(defaultValue: Int,maxValue: Int, minValue:Int = 0): Validated
  * @param defaultValue Float. The default stored value.
  * @param maxValue Float. The maximum valid value this can contain.
  * @param minValue Float, optional. The minimum allowable value. If empty, this defaults to 0f.
- */
+ *//*
+
 class ValidatedFloat(defaultValue: Float,maxValue: Float, minValue:Float = 0f): ValidatedNumber<Float>(Float::class.java,defaultValue,minValue,maxValue){
     override fun toBuf(buf: PacketByteBuf) {
         buf.writeFloat(storedValue)
@@ -90,6 +97,7 @@ class ValidatedFloat(defaultValue: Float,maxValue: Float, minValue:Float = 0f): 
     }
 }
 
+*/
 /**
  * A validated double value
  *
@@ -98,7 +106,8 @@ class ValidatedFloat(defaultValue: Float,maxValue: Float, minValue:Float = 0f): 
  * @param defaultValue Double. The default stored value.
  * @param maxValue Double. The maximum valid value this can contain.
  * @param minValue Double, optional. The minimum allowable value. If empty, this defaults to 0.0.
- */
+ *//*
+
 class ValidatedDouble(defaultValue: Double,maxValue: Double, minValue:Double = 0.0): ValidatedNumber<Double>(Double::class.java,defaultValue,minValue,maxValue){
     override fun toBuf(buf: PacketByteBuf) {
         buf.writeDouble(storedValue)
@@ -108,6 +117,7 @@ class ValidatedDouble(defaultValue: Double,maxValue: Double, minValue:Double = 0
     }
 }
 
+*/
 /**
  * A validated long value
  *
@@ -116,7 +126,8 @@ class ValidatedDouble(defaultValue: Double,maxValue: Double, minValue:Double = 0
  * @param defaultValue Long. The default stored value.
  * @param maxValue Long. The maximum valid value this can contain.
  * @param minValue Long, optional. The minimum allowable value. If empty, this defaults to 0L.
- */
+ *//*
+
 class ValidatedLong(defaultValue: Long,maxValue: Long, minValue:Long = 0L): ValidatedNumber<Long>(Long::class.java,defaultValue,minValue,maxValue){
     override fun toBuf(buf: PacketByteBuf) {
         buf.writeLong(storedValue)
@@ -126,6 +137,7 @@ class ValidatedLong(defaultValue: Long,maxValue: Long, minValue:Long = 0L): Vali
     }
 }
 
+*/
 /**
  * A validated short value
  *
@@ -134,7 +146,8 @@ class ValidatedLong(defaultValue: Long,maxValue: Long, minValue:Long = 0L): Vali
  * @param defaultValue Short. The default stored value.
  * @param maxValue Short. The maximum valid value this can contain.
  * @param minValue Short, optional. The minimum allowable value. If empty, this defaults to 0.
- */
+ *//*
+
 class ValidatedShort(defaultValue: Short,maxValue: Short, minValue:Short = 0): ValidatedNumber<Short>(Short::class.java,defaultValue,minValue,maxValue){
     override fun toBuf(buf: PacketByteBuf) {
         buf.writeShort(storedValue.toInt())
@@ -144,6 +157,7 @@ class ValidatedShort(defaultValue: Short,maxValue: Short, minValue:Short = 0): V
     }
 }
 
+*/
 /**
  * A validated byte value
  *
@@ -152,7 +166,8 @@ class ValidatedShort(defaultValue: Short,maxValue: Short, minValue:Short = 0): V
  * @param defaultValue Byte. The default stored value.
  * @param maxValue Byte. The maximum valid value this can contain.
  * @param minValue Byte, optional. The minimum allowable value. If empty, this defaults to 0.
- */
+ *//*
+
 class ValidatedByte(defaultValue: Byte,maxValue: Byte, minValue:Byte = 0): ValidatedNumber<Byte>(Byte::class.java,defaultValue,minValue,maxValue){
     override fun toBuf(buf: PacketByteBuf) {
         buf.writeByte(storedValue.toInt())
@@ -160,4 +175,4 @@ class ValidatedByte(defaultValue: Byte,maxValue: Byte, minValue:Byte = 0): Valid
     override fun fromBuf(buf: PacketByteBuf): Byte {
         return buf.readByte()
     }
-}
+}*/

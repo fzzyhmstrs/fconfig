@@ -1,10 +1,11 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field
 
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.config.ReadMeText
 import net.minecraft.util.math.ColorHelper
 import java.awt.Color
 
+*/
 /**
  * A pre-built [ConfigSection] that stores a color value in RGBA format
  *
@@ -18,16 +19,15 @@ import java.awt.Color
  * @param decorator LineDecorating, optional. If not provided, [LineDecorator.DEFAULT](me.fzzyhmstrs.fzzy_config.config_util.ReadMeBuilder.LineDecorator.DEFAULT) will be used.
  *
  * @exception IllegalArgumentException if the
- * */
+ * *//*
+
 open class ValidatedColor(
     defaultR: Int,
     defaultG: Int,
     defaultB: Int,
-    defaultA: Int = Int.MIN_VALUE,
-    headerText: Header = Header(),
-    decorator: LineDecorating = LineDecorator.DEFAULT)
+    defaultA: Int = Int.MIN_VALUE)
     :
-    ConfigSection(headerText,decorator)
+    ConfigSection()
 {
 
     init{
@@ -37,34 +37,34 @@ open class ValidatedColor(
         if((defaultA<0 && defaultA!=Int.MIN_VALUE) || defaultA>255) throw IllegalArgumentException("Transparency portion of validated color not provided a default value between 0 and 255")
     }
 
-    @ReadMeText("fc.config.validated_color_r")
     var r = ValidatedInt(defaultR,255,0)
-    @ReadMeText("fc.config.validated_color_g")
     var g = ValidatedInt(defaultG,255,0)
-    @ReadMeText("fc.config.validated_color_b")
     var b = ValidatedInt(defaultB,255,0)
-    @ReadMeText("fc.config.validated_color_a")
     var a = if(defaultA != Int.MIN_VALUE){
         ValidatedInt(defaultA,255,0)
     } else {
         ValidatedInt(255,255,255)
     }
 
-    /**
+    */
+/**
      * Helper method to get this ValidatedColor as a color int in ARGB format
      *
      * @return Int in ARGB format (0xFFAA5500)
-     */
+     *//*
+
     fun getAsInt(): Int{
         return ColorHelper.Argb.getArgb(a.get(),r.get(),g.get(),b.get())
     }
 
-    /**
+    */
+/**
      * Helper method to get this ValidatedColor as a Java [Color] instance
      *
      * @return Color, a [Color] with the ARGB data of this ValidatedColor.
-     */
+     *//*
+
     fun getAsColor(): Color {
         return Color(r.get(),g.get(),b.get(),a.get())
     }
-}
+}*/

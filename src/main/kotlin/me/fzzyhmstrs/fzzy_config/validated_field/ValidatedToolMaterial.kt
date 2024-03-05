@@ -1,12 +1,14 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.ConfigHelper
 import me.fzzyhmstrs.fzzy_config.config.ValidationResult
 import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
 import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.number.ValidatedInt
 import net.fabricmc.yarn.constants.MiningLevels
 import net.minecraft.item.ToolMaterial
 import net.minecraft.recipe.Ingredient
@@ -16,7 +18,8 @@ open class ValidatedToolMaterial protected constructor(
     miningSpeedDefault: ValidatedFloat,
     attackDamageDefault: ValidatedFloat,
     miningLevelDefault: ValidatedInt,
-    enchantabilityDefault: ValidatedInt)
+    enchantabilityDefault: ValidatedInt
+)
     :
     ToolMaterial, ConfigSerializable, ServerClientSynced
 {
@@ -51,7 +54,7 @@ open class ValidatedToolMaterial protected constructor(
     }
 
     override fun serialize(): JsonElement {
-        val str = SyncedConfigHelperV1.serializeConfig(this)
+        val str = ConfigHelper.serializeConfig(this,)
         return JsonParser.parseString(str)
     }
 
@@ -66,7 +69,7 @@ open class ValidatedToolMaterial protected constructor(
     }
 
     override fun toString(): String {
-        return SyncedConfigHelperV1.serializeConfig(this)
+        return ConfigHelper.serializeConfig(this,)
     }
 
     class Builder: AbstractBuilder<ValidatedToolMaterial, Builder>() {
@@ -109,4 +112,4 @@ open class ValidatedToolMaterial protected constructor(
         }
         abstract fun build(): T
     }
-}
+}*/

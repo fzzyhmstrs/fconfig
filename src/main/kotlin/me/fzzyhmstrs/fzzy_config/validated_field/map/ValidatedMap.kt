@@ -1,8 +1,9 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field.map
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.ConfigHelper
 import me.fzzyhmstrs.fzzy_config.config.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField.EntryDeserializer
@@ -11,6 +12,7 @@ import net.minecraft.network.PacketByteBuf
 import java.util.function.BiFunction
 import java.util.function.BiPredicate
 
+*/
 /**
  * A validated [Map] collection.
  *
@@ -26,7 +28,8 @@ import java.util.function.BiPredicate
  * @param invalidEntryMessage String, optional. Provide a message detailing the criteria the user needs to follow in the case they make a mistake.
  * @param keyDeserializer KeyDeserializer<R>, optional. If not provided, will attempt to use GSON to parse the keys. Otherwise, provide a deserializer that parses the passed key string.
  * @param entryDeserializer EntryDeserializer<T>, optional. If not provided, will attempt to use GSON to parse the values. Otherwise, provide a deserializer that parses the provided JsonElement.
- */
+ *//*
+
 open class ValidatedMap<R,T>(
     defaultValue: Map<R,T>,
     private val keyType: Class<R>,
@@ -35,15 +38,15 @@ open class ValidatedMap<R,T>(
     private val mapEntryCorrector: BiFunction<R,T,T> = BiFunction{ _, it -> it},
     private val invalidEntryMessage: String = "None",
     private val keyDeserializer: KeyDeserializer<R> =
-        KeyDeserializer {str -> SyncedConfigHelperV1.gson.fromJson(str, keyType)},
+        KeyDeserializer {str -> ConfigHelper.gson.fromJson(str, keyType)},
     private val entryDeserializer: EntryDeserializer<T> =
-        EntryDeserializer { json -> SyncedConfigHelperV1.gson.fromJson(json, valueType) })
+        EntryDeserializer { json -> ConfigHelper.gson.fromJson(json, valueType) })
     :
     ValidatedField<Map<R, T>>(defaultValue),
     Map<R,T>
 {
 
-    override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<Map<R,T>> {
+    override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<Map<R, T>> {
         return try{
             if (!json.isJsonObject){
                 ValidationResult.error(storedValue,"Couldn't deserialize map [$json] from key [$fieldName] in config class [${this.javaClass.enclosingClass?.canonicalName}]")
@@ -85,7 +88,7 @@ open class ValidatedMap<R,T>(
         return gson.toJsonTree(storedValue,storedValue.javaClass)
     }
 
-    override fun validateAndCorrectInputs(input: Map<R,T>): ValidationResult<Map<R,T>> {
+    override fun validateAndCorrectInputs(input: Map<R,T>): ValidationResult<Map<R, T>> {
         val tempList: MutableMap<R,T> = mutableMapOf()
         val errorList1: MutableList<String> = mutableListOf()
         val errorList2: MutableList<String> = mutableListOf()
@@ -118,13 +121,15 @@ open class ValidatedMap<R,T>(
         return deserializeHeldValue(JsonParser.parseString(buf.readString()),"").get()
     }
 
-    /**
+    */
+/**
      * functional interface for parsing keys in ValidatedMaps.
      *
      * A set of default implementations is provided for several basic types.
      *
      * SAM: [deserialize]. takes a string key, returns a deserialized instance of T
-     */
+     *//*
+
     fun interface KeyDeserializer<T>{
         fun deserialize(string: String): T
         companion object{
@@ -164,4 +169,4 @@ open class ValidatedMap<R,T>(
         return storedValue.isEmpty()
     }
 
-}
+}*/

@@ -1,13 +1,15 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field.list
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.ConfigHelper
 import me.fzzyhmstrs.fzzy_config.config.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
 import net.minecraft.network.PacketByteBuf
 import java.util.function.Predicate
 
+*/
 /**
  * A validated list of objects
  *
@@ -24,13 +26,14 @@ import java.util.function.Predicate
  * @param listEntryValidator Predicate<R>, optional. If not provided, validation will always pass (no validation). The supplied predicate should return true on validation success, false on fail.
  * @param invalidEntryMessage String, optional. Provide a message detailing the criteria the user needs to follow in the case they make a mistake.
  * @param entryDeserializer EntryDeserializer<R>, optional. If not provided, will attempt to use GSON to parse the values. Otherwise, provide a deserializer that parses the provided JsonElement.
- */
+ *//*
+
 open class ValidatedList<R>(
     defaultValue: List<R>,
     private val lType: Class<R>,
     private val listEntryValidator: Predicate<R> = Predicate {true},
     private val invalidEntryMessage: String = "None",
-    private val entryDeserializer: EntryDeserializer<R> = EntryDeserializer { json ->  SyncedConfigHelperV1.gson.fromJson(json,lType)})
+    private val entryDeserializer: EntryDeserializer<R> = EntryDeserializer { json ->  ConfigHelper.gson.fromJson(json,lType)})
     :
     ValidatedField<List<R>>(defaultValue),
     List<R>
@@ -137,4 +140,4 @@ open class ValidatedList<R>(
     override fun subList(fromIndex: Int, toIndex: Int): List<R> {
         return storedValue.subList(fromIndex, toIndex)
     }
-}
+}*/

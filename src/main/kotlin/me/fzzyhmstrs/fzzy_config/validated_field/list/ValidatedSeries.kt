@@ -1,8 +1,9 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field.list
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
-import me.fzzyhmstrs.fzzy_config.config.SyncedConfigHelperV1
+import me.fzzyhmstrs.fzzy_config.config.ConfigHelper
 import me.fzzyhmstrs.fzzy_config.config.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
 import net.minecraft.network.PacketByteBuf
@@ -13,7 +14,7 @@ class ValidatedSeries<T: Comparable<T>>(
     valueType: Class<T>,
     private val seriesValidator: BiPredicate<T, T>,
     private val invalidEntryMessage: String = "None",
-    private val entryDeserializer: EntryDeserializer<T> = EntryDeserializer { json ->  SyncedConfigHelperV1.gson.fromJson(json,valueType)})
+    private val entryDeserializer: EntryDeserializer<T> = EntryDeserializer { json ->  ConfigHelper.gson.fromJson(json,valueType)})
     :
     ValidatedField<Array<T>>(inputSeries)
 {
@@ -89,4 +90,4 @@ class ValidatedSeries<T: Comparable<T>>(
     override fun fromBuf(buf: PacketByteBuf): Array<T> {
         return deserializeHeldValue(JsonParser.parseString(buf.readString()),"").get()
     }
-}
+}*/

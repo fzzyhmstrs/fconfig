@@ -14,7 +14,7 @@ object FC: ModInitializer {
     val LOGGER: Logger = LoggerFactory.getLogger("fzzy_config")
 
     override fun onInitialize() {
-        SyncedConfigRegistry.registerServer()
+        SyncedConfigRegistry.registerAll()
     }
 }
 
