@@ -11,32 +11,8 @@ import net.peanuuutz.tomlkt.TomlElement
  */
 open class ConfigSection()
     :
-    FzzySerializable,
-    DirtySerializable,
-    DirtyMarkable
+    FzzySerializable
 {
-
-    private var dirty = false
-
-    private val dirtyListeners: MutableList<DirtyMarkable> = mutableListOf()
-
-    override fun markDirty() {
-        dirty = true
-    }
-
-    override fun isDirty(): Boolean {
-        return dirty
-    }
-
-    override fun addDirtyListener(listener: DirtyMarkableContaining){
-        dirtyListeners.add(listener)
-    }
-
-    override fun updateListeners(update: Callable<ValidationResult<Boolean>>){
-        dirtyListeners.forEach{
-            it.update(update)
-        }
-    }
 
     override fun serialize(errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
         return ConfigHelper.serializeToToml(this,errorBuilder,ignoreNonSync)
