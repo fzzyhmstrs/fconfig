@@ -16,4 +16,5 @@ interface DirtyMarkable {
     fun markDirty()
     fun isDirty(): Boolean
     fun addDirtyListener(listener:DirtyMarkableContaining)
+    fun updateListeners(update: Callable<ValidationResult<Boolean>>)
 }
