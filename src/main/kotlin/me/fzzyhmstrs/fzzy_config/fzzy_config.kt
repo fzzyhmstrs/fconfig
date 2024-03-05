@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory
 object FC: ModInitializer {
     const val MOD_ID = "fzzy_config"
     val LOGGER: Logger = LoggerFactory.getLogger("fzzy_config")
+    val fcRandom = Random(System.currentTimeMillis())
 
     override fun onInitialize() {
         SyncedConfigRegistry.registerAll()
@@ -19,7 +20,6 @@ object FC: ModInitializer {
 }
 
 object FCC: ClientModInitializer {
-    val acRandom = Random(System.currentTimeMillis())
 
     override fun onInitializeClient() {
         SyncedConfigRegistry.registerClient()
