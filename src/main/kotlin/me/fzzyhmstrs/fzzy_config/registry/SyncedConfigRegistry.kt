@@ -24,14 +24,37 @@ object SyncedConfigRegistry {
 
     private val newConfigs : MutableMap<String, Config> = mutableMapOf()
 
+    fun <T: Config> updateServer(config: T){
+        val errors = mutableListOf<String>()
+        val configString = ConfigHelper.serializeDirty(config,errors)
+        if (errors.isNotEmpty()){
+            val errorsResult = ValidationResult.error(true, "Critical error(s) encountered while serializing client-updated Config Class! Output may not be complete.")
+            errorsResult.writeError(errors)
+        }
+        val payload = ConfigC2SUpdateCustomPayload(config.getId().toString(),configString)
+        ClientPlayNetworking.send(payload)
+    }
+
     internal fun registerClient() {
+        //receives the entire NonSync config sent by the server during CONFIGURATION stage
         ClientConfigurationNetworking.registerGlobalReceiver(ConfigS2CSyncCustomPayload.type){payload, _ ->
             val id = payload.id
             val configString = payload.serializedConfig
             if (newConfigs.containsKey(id)){
                 val config = newConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
-                val result = ConfigHelper.deserializeConfig(config, configString, errors, false)
+                val result = ConfigHelper.deserializeConfig(config, configString, errors, false) //Don't ignore NonSync on a syncronization action
+                result.first.writeError(errors)
+            }
+        }
+        //receives the dirty config update from the server after a client pushes changes to it.
+        ClientPlayNetworking.registerGlobalReceiver(ConfigS2CUpdateCustomPayload.type){payload, _ ->
+            val id = payload.id
+            val configString = payload.serializedConfig
+            if (newConfigs.containsKey(id)){
+                val config = newConfigs[id] ?: return@registerGlobalReceiver
+                val errors = mutableListOf<String>()
+                val result = ConfigHelper.deserializeDirty(config, configString, errors)
                 result.first.writeError(errors)
             }
         }
@@ -42,10 +65,14 @@ object SyncedConfigRegistry {
         PayloadTypeRegistry.configurationS2C().register(ConfigS2CSyncCustomPayload.type, ConfigS2CSyncCustomPayload.codec)
         PayloadTypeRegistry.playC2S().register(ConfigS2CSyncCustomPayload.type, ConfigS2CSyncCustomPayload.codec)
         PayloadTypeRegistry.playS2C().register(ConfigS2CSyncCustomPayload.type, ConfigS2CSyncCustomPayload.codec)
+        PayloadTypeRegistry.playC2S().register(ConfigS2CUpdateCustomPayload.type, ConfigS2CUpdateCustomPayload.codec)
+        PayloadTypeRegistry.playS2C().register(ConfigS2CUpdateCustomPayload.type, ConfigS2CUpdateCustomPayload.codec)
+        PayloadTypeRegistry.playC2S().register(ConfigC2SUpdateCustomPayload.type, ConfigC2SUpdateCustomPayload.codec)
+        PayloadTypeRegistry.playS2C().register(ConfigC2SUpdateCustomPayload.type, ConfigC2SUpdateCustomPayload.codec)
         ServerConfigurationConnectionEvents.CONFIGURE.register { handler, _ ->
             for ((id, config) in newConfigs) {
                 val syncErrors = mutableListOf<String>()
-                val payload = ConfigS2CSyncCustomPayload(id, ConfigHelper.serializeConfig(config, syncErrors, false))
+                val payload = ConfigS2CSyncCustomPayload(id, ConfigHelper.serializeConfig(config, syncErrors, false)) //Don't ignore NonSync on a syncronization action 
                 if (syncErrors.isNotEmpty()){
                     val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C configuration stage sync.")
                     syncError.writeError(syncErrors)
@@ -60,7 +87,7 @@ object SyncedConfigRegistry {
             for (player in players) {
                 for ((id, config) in newConfigs) {
                     val syncErrors = mutableListOf<String>()
-                    val payload = ConfigS2CSyncCustomPayload(id, ConfigHelper.serializeConfig(config, syncErrors, false))
+                    val payload = ConfigS2CSyncCustomPayload(id, ConfigHelper.serializeConfig(config, syncErrors, false)) //Don't ignore NonSync on a syncronization action
                     if (syncErrors.isNotEmpty()){
                         val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C datapack reload sync.")
                         syncError.writeError(syncErrors)
@@ -68,7 +95,21 @@ object SyncedConfigRegistry {
                     ServerPlayNetworking.send(player, payload)
                 }
             }
-
+        }
+        ServerPlayNetworking.registerGlobalReceiver(ConfigC2SUpdateCustomPayload.type){payload, context ->
+            val id = payload.id
+            val configString = payload.serializedConfig
+            if (newConfigs.containsKey(id)){
+                val config = newConfigs[id] ?: return@registerGlobalReceiver
+                val errors = mutableListOf<String>()
+                val result = ConfigHelper.deserializeDirty(config, configString, errors)
+                result.first.writeError(errors)
+                for (player in context.player.server.playerManager.playerList){
+                    if (player == context.player) continue // don't push back to the player that just sent the update
+                    val payload = ConfigS2CSyncCustomPayload(id, configString)
+                    ServerPlayNetworking.send(player, payload)
+                }
+            }
         }
 
     }
@@ -79,7 +120,7 @@ object SyncedConfigRegistry {
      * @param id the unique string ID of this config. using identifier notation (namespace:path) may help ensure uniqueness
      * @param config a [SyncedConfig] to pass into the registry map
      */
-    fun registerConfig(id: String, config: Config){
-        newConfigs[id] = config
+    fun registerConfig(config: Config){
+        newConfigs[config.getId().toString()] = config
     }
 }
