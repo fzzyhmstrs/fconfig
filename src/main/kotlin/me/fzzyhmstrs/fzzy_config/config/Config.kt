@@ -2,6 +2,13 @@ package me.fzzyhmstrs.fzzy_config.config
 
 open class Config(val name: String, val folder: String, val subfolder: String = "") {
 
+    open fun getId(): Identifier{
+        return if (folder.isNotEmpty())
+            Identifier(folder, name)
+        else
+            Identifier(FC.MOD_ID,name)
+    }
+    
     /**
      * Saves the config to file. Called by FzzyConfig every time a config update is pushed from a client.
      *
