@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.interfaces
 
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.concurrent.Callable
 
 /**
  * Implementing class can mark itself dirty, as well as pass that state along to listeners
@@ -14,5 +15,5 @@ import org.jetbrains.annotations.ApiStatus.Internal
 interface DirtyMarkable {
     fun markDirty()
     fun isDirty(): Boolean
-    fun addDirtyListener(listener:DirtyMarkable)
+    fun addDirtyListener(listener:DirtyMarkableContaining)
 }
