@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.interfaces.DirtyMarkable
+import me.fzzyhmstrs.fzzy_config.interfaces.DirtyMarkableContaining
 import me.fzzyhmstrs.fzzy_config.interfaces.DirtySerializable
 import me.fzzyhmstrs.fzzy_config.interfaces.FzzySerializable
 import net.peanuuutz.tomlkt.TomlElement
@@ -21,17 +22,20 @@ open class ConfigSection()
 
     override fun markDirty() {
         dirty = true
-        dirtyListeners.forEach {
-            it.markDirty()
-        }
     }
 
     override fun isDirty(): Boolean {
         return dirty
     }
 
-    override fun addDirtyListener(listener: DirtyMarkable){
+    override fun addDirtyListener(listener: DirtyMarkableContaining){
         dirtyListeners.add(listener)
+    }
+
+    override fun updateListeners(update: Callable<ValidationResult<Boolean>>){
+        dirtyListeners.forEach{
+            it.update(update)
+        }
     }
 
     override fun serialize(errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
