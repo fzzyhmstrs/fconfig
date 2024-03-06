@@ -40,8 +40,12 @@ class ValidatedEnum<T>(protected val defaultValue: T, private val enum: Class<T>
         validateAndSet(defaultValue)
     }
 
-    override fun createWidget(): Widget {
+    override fun createEntry(name: Text, desc: Text): ConfigEntry {
         TODO("Not yet implemented")
+    }
+
+    override fun description(): Text {
+        return FcText.translatable(descriptionKey(),valuesMap.keys.toString())
     }
 
     /**
