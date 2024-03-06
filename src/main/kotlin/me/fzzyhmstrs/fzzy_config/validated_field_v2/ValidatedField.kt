@@ -134,6 +134,8 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
         storedValue = tVal1.get()
         if (tVal1.isError()){
             UpdateManager.addUpdateMessage(FcText.translatable("validated_field.update.error",tVal1.getError(),oldVal.toString(),storedValue.toString()))
+        } else {
+            UpdateManager.addUpdateMessage(updateMessage(oldVal, storedValue))
         }
         val update = Update(updateMessage(oldVal, storedValue), { set(oldVal) }, { set(tVal1.get()) })
         update(update)
@@ -160,10 +162,30 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
         return storedValue
     }
 
+    fun createEntry(): ConfigEntry{
+        val translation = translation().takIf{ it.getString() != translationKey() } ?: FcText.literal(this::class.java.simpleName)
+        val description = description().takIf{ it.getString() != descriptionKey() } ?: FcText.empty()
+        return createEntry(translation(), description())
+    }
+
     @Environment(EnvType.CLIENT)
-    abstract fun createWidget(): Widget
+    abstract fun createEntry(name: Text, desc: Text): ConfigEntry
 
+    override fun translationKey(): String {
+        return getUpdateKey()
+    }
+    override fun translation(): Text {
+        return FcText.translatable(translationKey())
+    }
 
+    override fun descriptionKey(): String {
+        return getUpdateKey() + ".desc"
+    }
+    override fun description(): Text {
+        return FcText.translatable(descriptionKey())
+    }
+
+    
     /**
      * Deserializes individual entries in a complex [ValidatedField]
      *
