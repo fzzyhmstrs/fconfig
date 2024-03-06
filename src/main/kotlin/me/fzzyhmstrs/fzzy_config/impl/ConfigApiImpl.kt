@@ -212,53 +212,13 @@ object ConfigApiImpl {
         return Toml.encodeToString(serializeToToml(config,errorBuilder,ignoreNonSync))
     }
 
-    internal fun <T: Any> serializeDirtyToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement{
+    internal fun <T: Config> serializeUpdateToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement{
         //used to build a TOML table piece by piece
         val toml = TomlTableBuilder()
-        /*try {
-            //kotlin member properties filtered by [field map contains it && if NonSync matters, it isn't NonSync]. NonSync does not matter by default
-            for (it in config.javaClass.kotlin.memberProperties.filter {
-                !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-                && if (ignoreNonSync) true else !ConfigHelperImpl.isNonSync(it)
-                && it.visibility == KVisibility.PUBLIC
-            }) {
-                //has to be a public mutable property. private and protected and vals another way to have serialization ignore
-                if (it is KMutableProperty<*> && it.visibility == KVisibility.PUBLIC) {
-                    //get the actual [thing] from the property
-                    val propVal = it.get(config)
-                    //thing needs to be markable as `dirty`
-                    if (propVal !is DirtyMarkable) continue
-                    //not dirty? ignore
-                    if (!propVal.isDirty()) continue
-                    //things name
-                    val name = it.name
-                    val el = when (propVal) {
-                        is DirtySerializable -> { //DirtySerializable gets priority.
-                            try {
-                                propVal.serializeDirty(errorBuilder, ignoreNonSync)
-                            } catch (e: Exception) {
-                                errorBuilder.add("Problem encountered with serialization of [$name]: ${e.localizedMessage}")
-                                TomlNull
-                            }
-                        }
-                        is FzzySerializable -> { // next a plain FzzySerializable will get entirely serialized
-                            try {
-                                propVal.serialize(errorBuilder, ignoreNonSync)
-                            } catch (e: Exception) {
-                                errorBuilder.add("Problem encountered with serialization of [$name]: ${e.localizedMessage}")
-                                TomlNull
-                            }
-                        }
-                        else -> {
-                            errorBuilder.add("Element marked as Dirty, but not serializable: [$name]")
-                            continue
-                        }
-                    }
-                    //scrape all the TomlAnnotations associated
-                    val tomlAnnotations = ConfigHelperImpl.tomlAnnotations(it)
-                    //add the element to the TomlTable, with annotations
-                    toml.element(name, el, tomlAnnotations)
-                }
+        try {
+            val updates = UpdateManager.getSyncUpdates(config, ignoreNonSync)
+            for ((key, serializable) in updates) {
+                toml.element(key,serializable.serialize(errorBuilder, ignoreNonSync))
             }
         } catch (e: Exception){
             errorBuilder.add("Critical error encountered while serializing config!: ${e.localizedMessage}")
@@ -268,8 +228,8 @@ object ConfigApiImpl {
         return toml.build()
     }
 
-    internal fun <T: Any> serializeDirty(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String{
-        return Toml.encodeToString(serializeDirtyToToml(config,errorBuilder,ignoreNonSync))
+    internal fun <T: Config> serializeUpdate(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String{
+        return Toml.encodeToString(serializeUpdateToToml(config,errorBuilder,ignoreNonSync))
     }
 
     internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): ValidationResult<T> {
@@ -346,12 +306,18 @@ object ConfigApiImpl {
         return Pair(deserializeFromToml(config, toml, errorBuilder, ignoreNonSync), version)
     }
 
-    internal fun <T: Any> deserializeDirtyFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
-        /*val inboundErrorSize = errorBuilder.size
+    internal fun <T: Config> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
+        val inboundErrorSize = errorBuilder.size
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
             return ValidationResult.error(config,"Improper TOML format passed to deserializeDirtyFromToml")
         }
+        try {
+            walk(config, config.getId().toShortTranslationKey(), ignoreNonSync) {str, v -> toml[UpdateManager.toDashSeparatedScope(str)]?.let{ if(v is FzzySerializable) v.deserialize(it,errorBuilder,str,ignoreNonSync) }}
+        } catch(e: Exception){
+            errorBuilder.add("Critical error encountered while deserializing update")
+        }
+        /*
         try {
             val propMap = config.javaClass.kotlin.memberProperties.filter {
                 !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
@@ -360,7 +326,7 @@ object ConfigApiImpl {
                         && it is KMutableProperty<*>
                         && it.visibility == KVisibility.PUBLIC
             }.associateBy { it.name }
-            for (key in toml.keys){
+            for (key in toml.keys) {
                 if (!propMap.containsKey(key)){
                     errorBuilder.add("TomlTable sent for deserialization includes key not present in receiver class!: [$key]")
                 }
@@ -401,7 +367,7 @@ object ConfigApiImpl {
         )
     }
 
-    internal fun <T: Any> deserializeDirty(config: T, string: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
+    internal fun <T: Config> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception){
@@ -410,7 +376,7 @@ object ConfigApiImpl {
                 "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing"
             )
         }
-        return deserializeDirtyFromToml(config, toml, errorBuilder, ignoreNonSync)
+        return deserializeUpdateFromToml(config, toml, errorBuilder, ignoreNonSync)
     }
 
     internal fun makeDir(folder: String, subfolder: String): Pair<File,Boolean>{
