@@ -8,7 +8,7 @@ import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 
-class ValidatedIdentifier(protected val defaultValue: Identifier, private val validator: EntryValidator = EntryValidator{ i, t -> ValidationResult.success(i) }): ValidatedField<Indentifier>(defaultValue) {
+class ValidatedIdentifier(defaultValue: Identifier, private val validator: EntryValidator = EntryValidator{ i, t -> ValidationResult.success(i) }): ValidatedField<Indentifier>(defaultValue) {
 
     override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
@@ -30,10 +30,6 @@ class ValidatedIdentifier(protected val defaultValue: Identifier, private val va
 
     override fun validate(input: T, type: ValidationType): ValidationResult<T> {
         return validator.validate(input, type)
-    }
-
-    override fun reset() {
-        validateAndSet(defaultValue)
     }
 
     override fun createEntry(name: Text, desc: Text): ConfigEntry {
