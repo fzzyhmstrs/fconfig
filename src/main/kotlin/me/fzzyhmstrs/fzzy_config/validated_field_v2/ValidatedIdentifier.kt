@@ -10,7 +10,7 @@ import net.peanuuutz.tomlkt.TomlLiteral
 
 class ValidatedIdentifier(protected val defaultValue: Identifier, private val validator: EntryValidator = EntryValidator{ i, t -> ValidationResult.success(i) }): ValidatedField<Indentifier>(defaultValue) {
 
-    override fun deserializeHeldValue(toml: TomlElement, fieldName: String): ValidationResult<T> {
+    override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
             val string = toml.toString()
             val chkId = Identifier.tryParse(string) ?: return ValidationResult.error(storedValue,"Invalid identifier at setting [$fieldName].")
@@ -20,8 +20,8 @@ class ValidatedIdentifier(protected val defaultValue: Identifier, private val va
         }
     }
 
-    override fun serializeHeldValue(): TomlElement {
-        return TomlLiteral(storedValue.toString())
+    override fun serializeEntry(input: T): TomlElement {
+        return TomlLiteral(input.toString())
     }
     override fun validateAndCorrectInputs(input: T, type: ValidationType): ValidationResult<T> {
         val result = validator.validate(input, type)
