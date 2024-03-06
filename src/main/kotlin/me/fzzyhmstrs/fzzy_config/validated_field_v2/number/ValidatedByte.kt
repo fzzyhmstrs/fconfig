@@ -13,7 +13,7 @@ class ValidatedByte(defaultValue: Byte, maxValue: Byte, minValue: Byte): Validat
         return storedValue
     }
 
-    override fun deserializeHeldValue(toml: TomlElement, fieldName: String): ValidationResult<Byte> {
+    override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<Byte> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toByte())
         } catch (e: Exception){
@@ -21,8 +21,8 @@ class ValidatedByte(defaultValue: Byte, maxValue: Byte, minValue: Byte): Validat
         }
     }
 
-    override fun serializeHeldValue(): TomlElement {
-        return TomlLiteral(storedValue)
+    override fun serializeEntry(input: T): TomlElement {
+        return TomlLiteral(input)
     }
 
     override fun createWidget(): Widget {
