@@ -13,29 +13,19 @@ class ValidatedLong(defaultValue: Long, maxValue: Long, minValue: Long): Validat
         return storedValue
     }
 
-    override fun deserializeHeldValue(toml: TomlElement, fieldName: String): ValidationResult<Long> {
+    override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<Long> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toLong())
         } catch (e: Exception){
-            ValidationResult.error(defaultValue,"Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(defaultValue,"Problem deserializing ValidatedLong [$fieldName]: ${e.localizedMessage}")
         }
     }
 
-    override fun serializeHeldValue(): TomlElement {
-        return TomlLiteral(storedValue)
+    override fun serializeEntry(input: T): TomlElement {
+        return TomlLiteral(input)
     }
 
     override fun createWidget(): Widget {
         TODO("Not yet implemented")
     }
-
-    override fun translationKey(): String {
-        return "validated.fallback.long"
-    }
-
-    override fun descriptionKey(): String {
-        return "validated.fallback.long.desc"
-    }
-
-
 }
