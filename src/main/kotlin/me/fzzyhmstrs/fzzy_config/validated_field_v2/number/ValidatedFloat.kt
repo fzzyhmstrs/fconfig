@@ -13,7 +13,7 @@ class ValidatedFloat(defaultValue: Float, maxValue: Float, minValue: Float): Val
         return storedValue
     }
 
-    override fun deserializeHeldValue(toml: TomlElement, fieldName: String): ValidationResult<Float> {
+    override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<Float> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toFloat())
         } catch (e: Exception){
@@ -21,21 +21,11 @@ class ValidatedFloat(defaultValue: Float, maxValue: Float, minValue: Float): Val
         }
     }
 
-    override fun serializeHeldValue(): TomlElement {
-        return TomlLiteral(storedValue)
+    override fun serializeEntry(input: T): TomlElement {
+        return TomlLiteral(input)
     }
 
     override fun createWidget(): Widget {
         TODO("Not yet implemented")
     }
-
-    override fun translationKey(): String {
-        return "validated.fallback.float"
-    }
-
-    override fun descriptionKey(): String {
-        return "validated.fallback.int.float"
-    }
-
-
 }
