@@ -1,21 +1,18 @@
 package me.fzzyhmstrs.fzzy_config.config
 
-import me.fzzyhmstrs.fzzy_config.interfaces.DirtyMarkable
-import me.fzzyhmstrs.fzzy_config.interfaces.DirtyMarkableContaining
-import me.fzzyhmstrs.fzzy_config.interfaces.DirtySerializable
-import me.fzzyhmstrs.fzzy_config.interfaces.FzzySerializable
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.impl.FzzySerializable
+import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import net.peanuuutz.tomlkt.TomlElement
 
 /**
  *
  */
-open class ConfigSection()
-    :
-    FzzySerializable
-{
+open class ConfigSection: FzzySerializable, Walkable {
 
     override fun serialize(errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
-        return ConfigHelper.serializeToToml(this,errorBuilder,ignoreNonSync)
+        return ConfigApi.serializeToToml(this,errorBuilder,ignoreNonSync)
     }
 
     override fun deserialize(
@@ -24,11 +21,11 @@ open class ConfigSection()
         fieldName: String,
         ignoreNonSync: Boolean
     ): ValidationResult<Boolean> {
-        val result = ConfigHelper.deserializeFromToml(this, toml, errorBuilder, ignoreNonSync)
+        val result = ConfigApi.deserializeFromToml(this, toml, errorBuilder, ignoreNonSync)
         return if (result.isError()) return ValidationResult.error(true, result.getError()) else ValidationResult.success(false)
     }
 
     override fun toString(): String {
-        return ConfigHelper.serializeConfig(this, mutableListOf())
+        return ConfigApi.serializeConfig(this, mutableListOf())
     }
 }

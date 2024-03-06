@@ -4,8 +4,8 @@ package me.fzzyhmstrs.fzzy_config.validated_field
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.JsonParser
-import me.fzzyhmstrs.fzzy_config.config.ConfigHelper
-import me.fzzyhmstrs.fzzy_config.config.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ConfigHelper
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.interfaces.ConfigSerializable
 import me.fzzyhmstrs.fzzy_config.interfaces.ServerClientSynced
 import me.fzzyhmstrs.fzzy_config.validated_field_v2.number.ValidatedInt

@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validated_field_v2.number
 
-import me.fzzyhmstrs.fzzy_config.config.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validated_field_v2.ValidatedField
 
 sealed class ValidatedNumber<T>(protected val defaultValue: T, private val minValue: T, private val maxValue: T): ValidatedField<T>(defaultValue) where T: Number, T:Comparable<T> {

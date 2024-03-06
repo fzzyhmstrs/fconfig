@@ -1,6 +1,6 @@
-package me.fzzyhmstrs.fzzy_config.interfaces
+package me.fzzyhmstrs.fzzy_config.impl
 
-import me.fzzyhmstrs.fzzy_config.config.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import net.peanuuutz.tomlkt.TomlElement
 
 /**

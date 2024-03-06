@@ -1,14 +1,19 @@
 package me.fzzyhmstrs.fzzy_config.config
 
-open class Config(val name: String, val folder: String, val subfolder: String = "") {
+import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.impl.Walkable
+import net.minecraft.util.Identifier
 
-    open fun getId(): Identifier{
+open class Config(val name: String, val folder: String, val subfolder: String = ""): Walkable {
+
+    open fun getId(): Identifier {
         return if (folder.isNotEmpty())
             Identifier(folder, name)
         else
             Identifier(FC.MOD_ID,name)
     }
-    
+
     /**
      * Saves the config to file. Called by FzzyConfig every time a config update is pushed from a client.
      *
@@ -17,7 +22,7 @@ open class Config(val name: String, val folder: String, val subfolder: String = 
      * @since 0.2.0
      */
     fun save(){
-        ConfigHelper.save(name,folder,subfolder,this)
+        ConfigApi.save(name,folder,subfolder,this)
     }
 
     /**

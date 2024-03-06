@@ -1,13 +1,18 @@
 package me.fzzyhmstrs.fzzy_config.validated_field_v2
 
+import me.fzzyhmstrs.fzzy_config.api.StringTranslatable
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.*
-import me.fzzyhmstrs.fzzy_config.interfaces.DirtyMarkable
-import me.fzzyhmstrs.fzzy_config.interfaces.DirtyMarkableContaining
-import me.fzzyhmstrs.fzzy_config.interfaces.FzzySerializable
+import me.fzzyhmstrs.fzzy_config.impl.FzzySerializable
+import me.fzzyhmstrs.fzzy_config.updates.Updatable
+import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.Update
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.Widget
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 
 /**
@@ -21,7 +26,7 @@ import net.peanuuutz.tomlkt.TomlElement
  *
  */
 
-abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySerializable, Updatable {
+abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySerializable, Updatable, StringTranslatable {
 
     private var pushedValue: T? = null
     private var updateKey = ""
@@ -35,8 +40,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
     override fun pushState(){
         pushedValue = copyStoredValue()
     }
-    override fun peekState(){
-        if (pushedValue == null) return false
+    override fun peekState(): Boolean {
         return pushedValue != storedValue
     }
     override fun popState(): Boolean{
@@ -47,7 +51,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
     }
 
     abstract fun copyStoredValue(): T
-    
+
     @Deprecated("use deserializeHeldValue to avoid accidentally overwriting validation and error reporting")
     override fun deserialize(
         toml: TomlElement,
@@ -96,10 +100,9 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
      * Perform input validation and correction in this method. A simple example can be seen in [ValidatedNumber], where this method bounds the input number to within the max and min values provided.
      *
      * @param input T. An instance of type T to be validated and corrected as needed, where T is the type of value wrapped in this Field.
-     *
      * @return a [ValidationResult] that wraps the validated and/or corrected result of type T, along with an error message if needed.
-     *
-     * @see ValidatedNumber
+     * @author fzzyhmstrs
+     * @since 0.2.0
      */
     protected abstract fun validateAndCorrectInputs(input: T): ValidationResult<T>
 
@@ -111,6 +114,9 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
      * A setter method for the [storedValue] that first validates the value being set and then stores the post-validation result.
      *
      * @param input T. the pre-validation input of type T that will be validated and then stored, where T is the type of the wrapped value in this field.
+     * @return ValidationResult of the input, after corrections, with applicable error messages.
+     * @author fzzyhmstrs
+     * @since 0.1.0
      */
     open fun validateAndSet(input: T): ValidationResult<T> {
         val oldVal = storedValue
@@ -127,9 +133,9 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
         val tVal1 = validateAndCorrectInputs(input)
         storedValue = tVal1.get()
         if (tVal1.isError()){
-            UpdateManager.addUpdateMessage(AcText.translatable("validated_field.update.error",tVal1.getError(),oldVal.toString(),storedValue.toString())
+            UpdateManager.addUpdateMessage(FcText.translatable("validated_field.update.error",tVal1.getError(),oldVal.toString(),storedValue.toString()))
         }
-        val update = Update(updateMessage(oldVal, storedValue), Callable{ () -> set(oldVal) }, Callable { () -> set(tVal1.get()) })
+        val update = Update(updateMessage(oldVal, storedValue), { set(oldVal) }, { set(tVal1.get()) })
         update(update)
     }
 
@@ -147,6 +153,8 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
      * Get the wrapped value with this method
      *
      * @return The wrapped value inside this Field
+     * @author fzzyhmstrs
+     * @since 0.1.0
      */
     open fun get(): T{
         return storedValue
@@ -157,16 +165,25 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
 
 
     /**
-     * An EntryDeserializer can be used to deserialize an individual field entry for intermediate validation. An example of this can be seen in [ValidatedList](me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedList)
+     * Deserializes individual entries in a complex [ValidatedField]
      *
-     * SAM: [deserialize] takes a JsonElement, returns a deserialized instance of T
-     *
-     * @see me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedList
+     * SAM: [deserialize] takes a TomlElement, returns a deserialized instance of T
+     * @author fzzyhmstrs
+     * @since 0.1.1
      */
-    fun interface EntryDeserializer<T>{
+    fun interface EntryDeserializer<T> {
         fun deserialize(toml: TomlElement): T
     }
 
+    /**
+     * Validates individual entries in a complex [ValidatedField].
+     *
+     * For example, in a [ValidatedList], individual new additions need to be validated, and validation of the entire list will take place as a piece-wise validation of each element, to preserve as much of the valid contents as possible
+     *
+     * SAM: [validate] takes an input of type T, returns a [ValidationResult]<T>
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun interface EntryValidator<T> {
         fun validate(input: T): ValidationResult<T>
     }

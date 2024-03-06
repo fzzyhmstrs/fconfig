@@ -1,11 +1,14 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
-import me.fzzyhmstrs.fzzy_config.config.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.ValidatedField
 import net.minecraft.network.PacketByteBuf
 import java.util.function.Predicate
 
+*/
 /**
  * A validated general String. Not recommended for use with identifier or enum strings.
  *
@@ -17,7 +20,8 @@ import java.util.function.Predicate
  *
  * @see ValidatedEnum
  * @see ValidatedIdentifier
- */
+ *//*
+
 class ValidatedString(
   defaultValue: String,
   private val strValidator: Predicate<String> = Predicate {true},
@@ -63,4 +67,4 @@ class ValidatedString(
     override fun fromBuf(buf: PacketByteBuf): String {
         return buf.readString()
     }
-}
+}*/

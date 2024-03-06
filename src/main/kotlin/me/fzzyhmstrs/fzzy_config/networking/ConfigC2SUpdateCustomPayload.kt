@@ -19,7 +19,7 @@ class ConfigC2SUpdateCustomPayload(val id: String, val serializedConfig: String)
     }
 
     companion object{
-        val type: Id<ConfigS2CSyncCustomPayload> = CustomPayload.id("fzzy_config:config_c2s_update")
+        val type: Id<ConfigC2SUpdateCustomPayload> = CustomPayload.id("fzzy_config:config_c2s_update")
         val codec: PacketCodec<PacketByteBuf, ConfigC2SUpdateCustomPayload> = CustomPayload.codecOf({c, b -> c.write(b) }, {b -> ConfigC2SUpdateCustomPayload(b)})
     }
 }

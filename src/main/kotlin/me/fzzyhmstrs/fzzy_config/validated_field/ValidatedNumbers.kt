@@ -3,8 +3,8 @@ package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
-import me.fzzyhmstrs.fzzy_config.config.ConfigHelper
-import me.fzzyhmstrs.fzzy_config.config.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ConfigHelper
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import net.minecraft.network.PacketByteBuf
 
 */

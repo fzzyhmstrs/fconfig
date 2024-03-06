@@ -1,17 +1,21 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
-import me.fzzyhmstrs.fzzy_config.config.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.ValidatedField
 import net.minecraft.network.PacketByteBuf
 
+*/
 /**
  * A validated boolean value.
  *
  * Since booleans typically don't need much actual input validation as there are only two possible values, the majority of validation is actually JSON Syntax validation. If there is a syntax or other parsing error (for example, a player accidentally enters an integer instead of true or false), the validation will pass back the stored/default value.
  *
  * @param defaultValue Boolean. The default setting for this validated boolean.
- */
+ *//*
+
 class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultValue){
 
     override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<Boolean> {
@@ -41,4 +45,4 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
     override fun fromBuf(buf: PacketByteBuf): Boolean {
         return buf.readBoolean()
     }
-}
+}*/

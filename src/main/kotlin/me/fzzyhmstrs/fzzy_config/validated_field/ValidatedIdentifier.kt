@@ -1,11 +1,14 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
-import me.fzzyhmstrs.fzzy_config.config.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.ValidatedField
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
+*/
 /**
  * A validated [Identifier] value
  *
@@ -13,7 +16,8 @@ import net.minecraft.util.Identifier
  *
  * @param validIds Collection<Identifier>, optional. A collection of valid identifiers the user can select from. If left empty any validly formatted identifier will pass validation.
  * @param invalidIdMessage String, optional. Provide a message detailing the criteria the user needs to follow in the case they make a mistake. For example, "Needs to be a registered item identifier." would be a good invalidIdMessage for validIds limited to `Registries.ITEM`. For reference, all the identifiers in a minecraft Registry can be acquired by calling `getIds()`.
- */
+ *//*
+
 class ValidatedIdentifier(
     defaultValue: Identifier,
     private val validIds: Collection<Identifier> = listOf(),
@@ -65,4 +69,4 @@ class ValidatedIdentifier(
     override fun fromBuf(buf: PacketByteBuf): Identifier {
         return buf.readIdentifier()
     }
-}
+}*/

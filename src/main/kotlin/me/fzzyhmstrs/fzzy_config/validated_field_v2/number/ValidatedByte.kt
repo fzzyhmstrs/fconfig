@@ -1,13 +1,17 @@
 package me.fzzyhmstrs.fzzy_config.validated_field_v2.number
 
-import me.fzzyhmstrs.fzzy_config.config.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import net.minecraft.client.gui.widget.Widget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
-import net.peanuuutz.tomlkt.toInt
+import net.peanuuutz.tomlkt.toByte
 
-class ValidatedInt(defaultValue: Byte, maxValue: Byte, minValue: Byte): ValidatedNumber<Byte>(defaultValue, minValue, maxValue) {
+class ValidatedByte(defaultValue: Byte, maxValue: Byte, minValue: Byte): ValidatedNumber<Byte>(defaultValue, minValue, maxValue) {
+
+    override fun copyStoredValue(): Byte {
+        return storedValue
+    }
 
     override fun deserializeHeldValue(toml: TomlElement, fieldName: String): ValidationResult<Byte> {
         return try{
@@ -25,5 +29,12 @@ class ValidatedInt(defaultValue: Byte, maxValue: Byte, minValue: Byte): Validate
         TODO("Not yet implemented")
     }
 
+    override fun translationKey(): String {
+        return "validated.fallback.byte"
+    }
+
+    override fun descriptionKey(): String {
+        return "validated.fallback.byte.desc"
+    }
 
 }

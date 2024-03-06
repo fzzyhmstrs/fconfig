@@ -1,10 +1,13 @@
+/*
 package me.fzzyhmstrs.fzzy_config.validated_field
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
-import me.fzzyhmstrs.fzzy_config.config.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.ValidatedField
 import net.minecraft.network.PacketByteBuf
 
+*/
 /**
  * A validated Enum value from the provided enum class.
  *
@@ -12,7 +15,8 @@ import net.minecraft.network.PacketByteBuf
  *
  * @param defaultValue T extends Enum<T>. The default Enum option for this field.
  * @param enum Class<T>. The java class of the stored Enum.
- */
+ *//*
+
 class ValidatedEnum<T:Enum<T>>(defaultValue: T, enum: Class<T>): ValidatedField<T>(defaultValue) {
 
     private val valuesMap: Map<String,T>
@@ -57,4 +61,4 @@ class ValidatedEnum<T:Enum<T>>(defaultValue: T, enum: Class<T>): ValidatedField<
     override fun fromBuf(buf: PacketByteBuf): T {
         return valuesMap[buf.readString()]?:storedValue
     }
-}
+}*/

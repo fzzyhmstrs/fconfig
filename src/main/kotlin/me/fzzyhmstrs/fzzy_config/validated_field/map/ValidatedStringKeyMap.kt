@@ -1,7 +1,7 @@
 /*
 package me.fzzyhmstrs.fzzy_config.validated_field.map
 
-import me.fzzyhmstrs.fzzy_config.config.ConfigHelper
+import me.fzzyhmstrs.fzzy_config.api.ConfigHelper
 import java.util.function.BiFunction
 import java.util.function.BiPredicate
 
