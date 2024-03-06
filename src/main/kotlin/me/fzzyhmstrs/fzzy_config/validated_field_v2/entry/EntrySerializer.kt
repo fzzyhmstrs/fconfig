@@ -11,5 +11,5 @@ import net.peanuuutz.tomlkt.TomlElement
  */
 @FunctionalInterface
 fun interface EntrySerializer<T> {
-    fun serializeEntry(entry: T): TomlElement
+    fun serializeEntry(input: T): TomlElement
 }
