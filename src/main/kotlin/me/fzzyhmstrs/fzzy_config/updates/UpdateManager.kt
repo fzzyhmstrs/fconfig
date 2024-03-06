@@ -108,9 +108,9 @@ object UpdateManager{
         ConfigApiImpl.walk(config,config.getId().toShortTranslationKey(),true) {str, v -> if (v is Updatable) v.setUpdateKey(str)}
     }
 
-    fun<T: Config> getSyncUpdates(config: T): Map<String, FzzySerializable> {
+    fun<T: Config> getSyncUpdates(config: T, ignoreNonSync: Boolean = false): Map<String, FzzySerializable> {
         val map: MutableMap<String, FzzySerializable> = mutableMapOf()
-        ConfigApiImpl.walk(config,config.getId().toShortTranslationKey(),false) {str, v -> if (v is Updatable && v is FzzySerializable) { if (needsUpdatePop(v)) map[str] = v }}
+        ConfigApiImpl.walk(config,config.getId().toShortTranslationKey(), ignoreNonSync) {str, v -> if (v is Updatable && v is FzzySerializable) { if (needsUpdatePop(v)) map[str] = v }}
         return map
     }
 
