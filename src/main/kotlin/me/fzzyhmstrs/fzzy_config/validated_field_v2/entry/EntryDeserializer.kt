@@ -9,6 +9,7 @@ import net.peanuuutz.tomlkt.TomlElement
  * @author fzzyhmstrs
  * @since 0.1.1
  */
+@FunctionalInterface
 fun interface EntryDeserializer<T> {
     fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<T>
 }
