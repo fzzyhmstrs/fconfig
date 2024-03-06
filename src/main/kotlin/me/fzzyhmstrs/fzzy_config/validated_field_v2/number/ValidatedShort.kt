@@ -14,7 +14,7 @@ class ValidatedShort(defaultValue: Short, maxValue: Short, minValue: Short): Val
     }
 
 
-    override fun deserializeHeldValue(toml: TomlElement, fieldName: String): ValidationResult<Short> {
+    override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<Short> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toShort())
         } catch (e: Exception){
@@ -22,20 +22,11 @@ class ValidatedShort(defaultValue: Short, maxValue: Short, minValue: Short): Val
         }
     }
 
-    override fun serializeHeldValue(): TomlElement {
-        return TomlLiteral(storedValue)
+    override fun serializeEntry(input: T): TomlElement {
+        return TomlLiteral(input)
     }
 
     override fun createWidget(): Widget {
         TODO("Not yet implemented")
     }
-
-    override fun translationKey(): String {
-        return "validated.fallback.short"
-    }
-
-    override fun descriptionKey(): String {
-        return "validated.fallback.short.desc"
-    }
-
 }
