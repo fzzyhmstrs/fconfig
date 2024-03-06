@@ -8,7 +8,7 @@ import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 
-class ValidatedEnum<T>(protected val defaultValue: T, private val enum: Class<T>, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) where T: Enum<T>, T:StringTranslatable {
+class ValidatedEnum<T>(defaultValue: T, private val enum: Class<T>, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) where T: Enum<T>, T:StringTranslatable {
 
     private val valuesMap: Map<String, T> = enum.enumConstants.associateBy { it.name }
     override fun copyStoredValue(): T {
@@ -34,10 +34,6 @@ class ValidatedEnum<T>(protected val defaultValue: T, private val enum: Class<T>
 
     override fun validate(input: T): ValidationResult<T> {
         return ValidationResult.success(input)
-    }
-
-    override fun reset() {
-        validateAndSet(defaultValue)
     }
 
     override fun createEntry(name: Text, desc: Text): ConfigEntry {
