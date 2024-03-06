@@ -13,7 +13,7 @@ class ValidatedInt(defaultValue: Int, maxValue: Int, minValue: Int): ValidatedNu
         return storedValue
     }
 
-    override fun deserializeHeldValue(toml: TomlElement, fieldName: String): ValidationResult<Int> {
+    override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<Int> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toInt())
         } catch (e: Exception){
@@ -21,21 +21,11 @@ class ValidatedInt(defaultValue: Int, maxValue: Int, minValue: Int): ValidatedNu
         }
     }
 
-    override fun serializeHeldValue(): TomlElement {
-        return TomlLiteral(storedValue)
+    override fun serializeEntry(input: T): TomlElement {
+        return TomlLiteral(input)
     }
 
     override fun createWidget(): Widget {
         TODO("Not yet implemented")
     }
-
-    override fun translationKey(): String {
-        return "validated.fallback.int"
-    }
-
-    override fun descriptionKey(): String {
-        return "validated.fallback.int.desc"
-    }
-
-
 }
