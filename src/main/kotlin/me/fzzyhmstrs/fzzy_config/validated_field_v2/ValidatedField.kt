@@ -67,7 +67,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
         if (tVal.isError()){
             return ValidationResult.error(false,"Error deserializing config entry [$fieldName], using default value [${tVal.get()}]  >>> Possible reasons: ${tVal.getError()}")
         }
-        val tVal2 = validateAndCorrectInputs(tVal.get(), ValidationType.WEAK)
+        val tVal2 = correctEntry(tVal.get(), ValidationType.WEAK)
         storedValue = tVal2.get()
         if (tVal2.isError()){
             return ValidationResult.error(false,"Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]  >>> Possible reasons: ${tVal2.getError()}")
@@ -94,7 +94,6 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    protected abstract fun validateAndCorrectInputs(input: T, type: ValidationType): ValidationResult<T>
 
     protected open fun reset(){
         storedValue = defaultValue
@@ -110,7 +109,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
      */
     open fun validateAndSet(input: T): ValidationResult<T> {
         val oldVal = storedValue
-        val tVal1 = validateAndCorrectInputs(input, ValidationType.WEAK)
+        val tVal1 = correctEntry(input, ValidationType.WEAK)
         storedValue = tVal1.get()
         if (tVal1.isError()){
             return ValidationResult.error(tVal1.get(),"Error validating and setting input [$input]. Corrected to [${tVal1.get()}] >>>> Possible reasons: [${tVal1.getError()}]")
@@ -120,7 +119,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
 
     open fun setAndUpdate(input: T) {
         val oldVal = storedValue
-        val tVal1 = validateAndCorrectInputs(input, ValidationType.STRONG)
+        val tVal1 = correctEntry(input, ValidationType.STRONG)
         storedValue = tVal1.get()
         if (tVal1.isError()){
             UpdateManager.addUpdateMessage(FcText.translatable("validated_field.update.error",tVal1.getError(),oldVal.toString(),storedValue.toString()))
