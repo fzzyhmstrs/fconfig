@@ -14,7 +14,7 @@ class ValidatedDouble(defaultValue: Double, maxValue: Double, minValue: Double):
     }
 
 
-    override fun deserializeHeldValue(toml: TomlElement, fieldName: String): ValidationResult<Double> {
+    override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<Double> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toDouble())
         } catch (e: Exception){
@@ -22,20 +22,11 @@ class ValidatedDouble(defaultValue: Double, maxValue: Double, minValue: Double):
         }
     }
 
-    override fun serializeHeldValue(): TomlElement {
-        return TomlLiteral(storedValue)
+    override fun serializeEntry(input: T): TomlElement {
+        return TomlLiteral(input)
     }
 
     override fun createWidget(): Widget {
         TODO("Not yet implemented")
     }
-
-    override fun translationKey(): String {
-        return "validated.fallback.double"
-    }
-
-    override fun descriptionKey(): String {
-        return "validated.fallback.double.desc"
-    }
-
 }
