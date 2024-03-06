@@ -23,10 +23,11 @@ import net.peanuuutz.tomlkt.TomlElement
  * Helper methods are provided to more easily sync configs directly via [PacketByteBuf]s, rather than serializing and then deserializing the entire JSON
  *
  * @param storedValue T. The wrapped value that this field validates, serializes, and syncs between server and client.
- *
+ * @author fzzyhmstrs
+ * @since 0.1.0
  */
 
-abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySerializable, Updatable, StringTranslatable {
+abstract class ValidatedField<T: Any>(protected var storedValue: T, protected val defaultValue: T = storedValue): FzzySerializable, EntryHandler<T>, Updatable, StringTranslatable {
 
     private var pushedValue: T? = null
     private var updateKey = ""
@@ -36,6 +37,9 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
     }
     override fun setUpdateKey(key: String) {
         updateKey = key
+    }
+    override fun restoreDefault(){
+        reset()
     }
     override fun pushState(){
         pushedValue = copyStoredValue()
@@ -52,18 +56,18 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
 
     abstract fun copyStoredValue(): T
 
-    @Deprecated("use deserializeHeldValue to avoid accidentally overwriting validation and error reporting")
+    @Deprecated("use deserializeEntry to avoid accidentally overwriting validation and error reporting")
     override fun deserialize(
         toml: TomlElement,
         errorBuilder: MutableList<String>,
         fieldName: String,
         ignoreNonSync: Boolean
     ): ValidationResult<Boolean> {
-        val tVal = deserializeHeldValue(toml, fieldName)
+        val tVal = deserializeEntry(toml, fieldName)
         if (tVal.isError()){
             return ValidationResult.error(false,"Error deserializing config entry [$fieldName], using default value [${tVal.get()}]  >>> Possible reasons: ${tVal.getError()}")
         }
-        val tVal2 = validateAndCorrectInputs(tVal.get())
+        val tVal2 = validateAndCorrectInputs(tVal.get(), ValidationType.WEAK)
         storedValue = tVal2.get()
         if (tVal2.isError()){
             return ValidationResult.error(false,"Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]  >>> Possible reasons: ${tVal2.getError()}")
@@ -71,30 +75,16 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
         return ValidationResult.success(true)
     }
 
-
-    /**
-     * Deserializes the wrapped value for updating [storedValue]. The goal of this method is to deserialize only the wrapped value. If an integer is wrapped, deserilaization should look exactly the same as a plain integer (except for locking).
-     *
-     * @param json JsonElement. The json element to be deserialized. Passed in from [deserialize] after lock-checking
-     *
-     * @param fieldName String. The declared name of the property for use in error reporting. With a property declared like "var propName1: Clazz()", fieldName will be "propName1"
-     *
-     * @return A [ValidationResult] that wraps an instance of the value to be stored, as well as a stored error message if the deserialization had an error.
-     */
-    protected abstract fun deserializeHeldValue(toml: TomlElement, fieldName: String): ValidationResult<T>
-
     /**
      * Serializes the wrapped value of this validated field, and ONLY the wrapped value. Validation is maintained internally. If this field stores an Int, serialization is equivalent to a JSON Primitive storing an integer value.
      *
      * @return A JSON Element with the serialized wrapped value contained within.
      */
 
-    @Deprecated("use serializeHeldValue for consistency", ReplaceWith("serializeHeldValue()"))
+    @Deprecated("use serializeEntry for consistency and to enable usage in list- and map-based Fields", ReplaceWith("serializeEntry(input: T)"))
     override fun serialize(errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
-        return serializeHeldValue()
+        return serializeEntry(storedValue)
     }
-
-    protected abstract fun serializeHeldValue(): TomlElement
 
     /**
      * Perform input validation and correction in this method. A simple example can be seen in [ValidatedNumber], where this method bounds the input number to within the max and min values provided.
@@ -104,11 +94,11 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    protected abstract fun validateAndCorrectInputs(input: T): ValidationResult<T>
+    protected abstract fun validateAndCorrectInputs(input: T, type: ValidationType): ValidationResult<T>
 
-    protected abstract fun validate(input: T): ValidationResult<T>
-
-    protected abstract fun reset()
+    protected open fun reset(){
+        storedValue = defaultValue
+    }
 
     /**
      * A setter method for the [storedValue] that first validates the value being set and then stores the post-validation result.
@@ -120,7 +110,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
      */
     open fun validateAndSet(input: T): ValidationResult<T> {
         val oldVal = storedValue
-        val tVal1 = validateAndCorrectInputs(input)
+        val tVal1 = validateAndCorrectInputs(input, ValidationType.WEAK)
         storedValue = tVal1.get()
         if (tVal1.isError()){
             return ValidationResult.error(tVal1.get(),"Error validating and setting input [$input]. Corrected to [${tVal1.get()}] >>>> Possible reasons: [${tVal1.getError()}]")
@@ -130,7 +120,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
 
     open fun setAndUpdate(input: T) {
         val oldVal = storedValue
-        val tVal1 = validateAndCorrectInputs(input)
+        val tVal1 = validateAndCorrectInputs(input, ValidationType.STRONG)
         storedValue = tVal1.get()
         if (tVal1.isError()){
             UpdateManager.addUpdateMessage(FcText.translatable("validated_field.update.error",tVal1.getError(),oldVal.toString(),storedValue.toString()))
@@ -185,29 +175,16 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T): FzzySeriali
         return FcText.translatable(descriptionKey())
     }
 
-    
-    /**
-     * Deserializes individual entries in a complex [ValidatedField]
-     *
-     * SAM: [deserialize] takes a TomlElement, returns a deserialized instance of T
-     * @author fzzyhmstrs
-     * @since 0.1.1
-     */
-    fun interface EntryDeserializer<T> {
-        fun deserialize(toml: TomlElement): T
+    fun toList(vararg elements: T): ValidatedList<T, EntryHandler<T>>{
+        return ValidatedList(listOf(elements), this)
+    }
+    fun toList(collection: Collection<T>): ValidatedList<T, EntryHandler<T>>{
+        return ValidatedList(list.toList(), this)
     }
 
-    /**
-     * Validates individual entries in a complex [ValidatedField].
-     *
-     * For example, in a [ValidatedList], individual new additions need to be validated, and validation of the entire list will take place as a piece-wise validation of each element, to preserve as much of the valid contents as possible
-     *
-     * SAM: [validate] takes an input of type T, returns a [ValidationResult]<T>
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    fun interface EntryValidator<T> {
-        fun validate(input: T): ValidationResult<T>
+    enum class ValidationType{
+        WEAK,
+        FULL
     }
 
 }
