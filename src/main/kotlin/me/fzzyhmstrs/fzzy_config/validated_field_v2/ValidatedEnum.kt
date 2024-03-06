@@ -15,7 +15,7 @@ class ValidatedEnum<T>(protected val defaultValue: T, private val enum: Class<T>
         return storedValue
     }
 
-    override fun deserializeHeldValue(toml: TomlElement, fieldName: String): ValidationResult<T> {
+    override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
             val string = toml.toString()
             val chkEnum = valuesMap[string] ?: return ValidationResult.error(storedValue,"Invalid enum selection at setting [$fieldName]. Possible values are: [${valuesMap.keys}]")
@@ -25,8 +25,8 @@ class ValidatedEnum<T>(protected val defaultValue: T, private val enum: Class<T>
         }
     }
 
-    override fun serializeHeldValue(): TomlElement {
-        return TomlLiteral(storedValue.name)
+    override fun serializeEntry(input: T): TomlElement {
+        return TomlLiteral(input.name)
     }
     override fun validateAndCorrectInputs(input: T): ValidationResult<T> {
         return ValidationResult.success(input)
