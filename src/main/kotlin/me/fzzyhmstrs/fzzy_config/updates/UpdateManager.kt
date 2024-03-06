@@ -32,13 +32,28 @@ object UpdateManager{
     //   ex. 'mymod.items.dropRates.oceanChests'
 
     private val updateMap: MutableMap<String, Updater> = mutableMapOf()
-    private val changeHistory: LinkedList<Text> = LinkedList()
-    private val changeHistory: MutableMap<String, ArrayListMultimap<Long, Text>>
-    private var changeCount = 0
+    private val changeHistory: MutableMap<String, ArrayListMultimap<Long, Text>> = mutableMapOf()
     private var currentScope = ""
     
     fun setScope(scope: String){
         currentScope = scope
+    }
+
+    fun flush(){
+        updateMap.clear()
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+        FC.LOGGER.info("Completed config updates:")
+        FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
+        for ((scope, updateLog) in changeHistory){
+            for ((time, updates) in updateLog){
+                for (update in updates) {
+                    FC.LOGGER.info("Updated scope [$scope] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time),ZoneId.systemDefault()))}]: [${update.toString()}]")
+                }
+            }
+        }
+        FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
+        changeHistory.clear()
+        
     }
 
     fun needsUpdatePop(updatable: Updatable): Boolean {
@@ -82,7 +97,7 @@ object UpdateManager{
     }
 
     fun addUpdateMessage(key: String,text: Text) {
-        changeHistory.push(text)
+        changeHistory.computeIfAbsent(key){ArrayListMultimap.create()}.put(System.currentTimeMillis(),text)
     }
 
     fun getScopedUpdates(scope: String): Collection<Updater> {
