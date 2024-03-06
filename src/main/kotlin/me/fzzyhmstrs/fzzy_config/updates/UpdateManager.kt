@@ -114,7 +114,7 @@ object UpdateManager{
         return map
     }
 
-    private fun toDashSeparatedScope(string: String): String{
+    fun toDashSeparatedScope(string: String): String{
         return string.replace('.','-')
     }
 
