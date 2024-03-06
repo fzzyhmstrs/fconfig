@@ -28,13 +28,4 @@ class ValidatedByte(defaultValue: Byte, maxValue: Byte, minValue: Byte): Validat
     override fun createWidget(): Widget {
         TODO("Not yet implemented")
     }
-
-    override fun translationKey(): String {
-        return "validated.fallback.byte"
-    }
-
-    override fun descriptionKey(): String {
-        return "validated.fallback.byte.desc"
-    }
-
 }
