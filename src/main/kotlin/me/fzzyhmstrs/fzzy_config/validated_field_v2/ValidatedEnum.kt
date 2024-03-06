@@ -44,20 +44,6 @@ class ValidatedEnum<T>(protected val defaultValue: T, private val enum: Class<T>
         TODO("Not yet implemented")
     }
 
-    override fun translationKey(): String {
-        return "validated.fallback.enum"
-    }
-    override fun translation(): Text {
-        return FcText.translatable(translationKey(),enum.simpleName)
-    }
-
-    override fun descriptionKey(): String {
-        return "validated.fallback.enum.desc"
-    }
-    override fun description(): Text {
-        return FcText.translatable(descriptionKey(),valuesMap.keys.toString())
-    }
-
     /**
      * Determines which type of selector widget will be used for the Enum option, default is POPUP
      */
