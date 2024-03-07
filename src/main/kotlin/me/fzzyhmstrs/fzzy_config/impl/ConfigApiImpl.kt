@@ -440,6 +440,17 @@ object ConfigApiImpl {
         return version?.version ?: 0
     }
 
+    internal fun printChangeHistory(history: List<String>, player: PlayerEntity? = null){
+        FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
+        FC.LOGGER.info("Completed config updates:")
+        if (player != null) 
+            FC.LOGGER.info("Updates made by: ${player.name}")
+        FC.LOGGER.info("-------------------------")
+        for (str in history)
+            FC.LOGGER.info(str)
+        FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
+    }
+
     internal fun<T: Walkable> walk(config: T, prefix: String, ignoreNonSync: Boolean,  walkAction: BiConsumer<String, Any?>){
         for (property in config.javaClass.kotlin.memberProperties.filter {
             !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
