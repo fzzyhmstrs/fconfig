@@ -5,32 +5,32 @@ import me.fzzyhmstrs.fzzy_config.util.Update
 import net.minecraft.text.Text
 import java.util.*
 
-class Updater{
+internal class Updater{
     private val undoStack: LinkedList<Update> = LinkedList()
     private val redoStack: LinkedList<Update> = LinkedList()
 
-    fun update(update: Update){
+    internal fun update(update: Update){
         redoStack.clear() //invalidate the redo stack, as it may conflict with the new applied update
         undoStack.push(update)
     }
 
-    fun canUndo(): Boolean{
+    internal fun canUndo(): Boolean{
         return undoStack.isNotEmpty()
     }
 
-    fun canRedo(): Boolean{
+    internal fun canRedo(): Boolean{
         return redoStack.isNotEmpty()
     }
 
-    fun getUndoDesc(): Text {
+    internal fun getUndoDesc(): Text {
         return if(canUndo()) undoStack.peek().desc else FcText.empty()
     }
 
-    fun getRedoText(): Text{
+    internal fun getRedoText(): Text{
         return if(canRedo()) redoStack.peek().desc else FcText.empty()
     }
 
-    fun undo(): Text{
+    internal fun undo(): Text{
         if (!canUndo()) return FcText.empty()
         val update = undoStack.pop()
         val undoDesc = update.undo.call()
@@ -38,7 +38,7 @@ class Updater{
         return undoDesc
     }
 
-    fun redo(): Text{
+    internal fun redo(): Text{
         if (!canRedo()) return FcText.empty()
         val update = redoStack.pop()
         val redoDesc = update.redo.call()
@@ -46,7 +46,7 @@ class Updater{
         return redoDesc
     }
 
-    fun revert(redo: Boolean = true){
+    internal fun revert(redo: Boolean = true){
         while (undoStack.isNotEmpty()){
             val update = undoStack.pop()
             update.undo.call()
@@ -55,7 +55,7 @@ class Updater{
         }
     }
 
-    fun changeCount(): Int{
+    internal fun changeCount(): Int{
         return undoStack.size
     }
 
