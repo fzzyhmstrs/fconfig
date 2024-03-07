@@ -47,17 +47,18 @@ object UpdateManager{
 
     fun flush(){
         updateMap.clear()
-        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
-        FC.LOGGER.info("Completed config updates:")
-        FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
-        for ((scope, updateLog) in changeHistory){
-            for ((time, updates) in updateLog.entries()){
-                FC.LOGGER.info("Updated scope [$scope] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: [${updates.string}]")
+        if (changeHistory.isNotEmpty()) {
+            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+            FC.LOGGER.info("Completed config updates:")
+            FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
+            for ((scope, updateLog) in changeHistory){
+                for ((time, updates) in updateLog.entries()){
+                    FC.LOGGER.info("Updated scope [$scope] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: [${updates.string}]")
+                }
             }
+            FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
         }
-        FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
         changeHistory.clear()
-
     }
 
     fun needsUpdatePop(updatable: Updatable): Boolean {
