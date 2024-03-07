@@ -3,9 +3,10 @@ package me.fzzyhmstrs.fzzy_config.math
 import com.mojang.brigadier.StringReader
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.math.Expression.Companion.NamedExpression
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.random.Random
-import java.lang.StringBuilder
 import kotlin.math.pow
 import kotlin.reflect.typeOf
 
@@ -27,6 +28,15 @@ fun interface Expression {
                 return parseExpression(reader, context,1000)
             } catch (e: Exception){
                 throw IllegalStateException("Error parsing math equation [$context]: ${e.localizedMessage}")
+            }
+        }
+
+        fun tryParse(str: String): ValidationResult<Expression?> {
+            return try {
+                val reader = StringReader(str)
+                ValidationResult.success(parseExpression(reader, str,1000))
+            } catch (e: Exception){
+                ValidationResult.error(null, e.localizedMessage)
             }
         }
 

@@ -1,10 +1,16 @@
 package me.fzzyhmstrs.fzzy_config.updates
 
+import com.google.common.collect.ArrayListMultimap
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.FzzySerializable
 import me.fzzyhmstrs.fzzy_config.util.Update
 import net.minecraft.text.Text
-import java.util.*
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 object UpdateManager{
 
@@ -22,7 +28,7 @@ object UpdateManager{
     // Subsection
     //   sections add a layer to the scope. stacks.
     //   ex. 'dropRates'
-    //   
+    //
     // Element
     //   finally the element terminates the scope
     //   ex. 'oceanChests'
@@ -34,7 +40,7 @@ object UpdateManager{
     private val updateMap: MutableMap<String, Updater> = mutableMapOf()
     private val changeHistory: MutableMap<String, ArrayListMultimap<Long, Text>> = mutableMapOf()
     private var currentScope = ""
-    
+
     fun setScope(scope: String){
         currentScope = scope
     }
@@ -45,15 +51,13 @@ object UpdateManager{
         FC.LOGGER.info("Completed config updates:")
         FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
         for ((scope, updateLog) in changeHistory){
-            for ((time, updates) in updateLog){
-                for (update in updates) {
-                    FC.LOGGER.info("Updated scope [$scope] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time),ZoneId.systemDefault()))}]: [${update.toString()}]")
-                }
+            for ((time, updates) in updateLog.entries()){
+                FC.LOGGER.info("Updated scope [$scope] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: [${updates.string}]")
             }
         }
         FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
         changeHistory.clear()
-        
+
     }
 
     fun needsUpdatePop(updatable: Updatable): Boolean {
@@ -64,14 +68,13 @@ object UpdateManager{
     }
 
     fun needsUpdatePeek(updatable: Updatable): Boolean {
-        val updater = updateMap[key] ?: return false
+        val updater = updateMap[updatable.getUpdateKey()] ?: return false
         if (!updater.canUndo()) return false
         return updatable.peekState()
     }
 
     fun update(key: String, update: Update) {
         updateMap[key]?.update(update)
-        changeCount++
     }
 
     fun getChangeCount(scope: String): Int {
@@ -89,7 +92,7 @@ object UpdateManager{
     fun revert(scope: String) {
         for (update in getScopedUpdates(scope)){
             update.revert()
-        }        
+        }
     }
 
     fun revertCurrent() {
@@ -105,12 +108,12 @@ object UpdateManager{
     }
 
     fun<T: Config> applyKeys(config: T) {
-        ConfigApiImpl.walk(config,config.getId().toShortTranslationKey(),true) {str, v -> if (v is Updatable) v.setUpdateKey(str)}
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {str, v -> if (v is Updatable) v.setUpdateKey(str)}
     }
 
-    fun<T: Config> getSyncUpdates(config: T, ignoreNonSync: Boolean = false): Map<String, FzzySerializable> {
+    internal fun<T: Config> getSyncUpdates(config: T, ignoreNonSync: Boolean = false): Map<String, FzzySerializable> {
         val map: MutableMap<String, FzzySerializable> = mutableMapOf()
-        ConfigApiImpl.walk(config,config.getId().toShortTranslationKey(), ignoreNonSync) {str, v -> if (v is Updatable && v is FzzySerializable) { if (needsUpdatePop(v)) map[toDashSeparatedScope(str)] = v }}
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(), ignoreNonSync) {str, v -> if (v is Updatable && v is FzzySerializable) { if (needsUpdatePop(v)) map[toDashSeparatedScope(str)] = v }}
         return map
     }
 

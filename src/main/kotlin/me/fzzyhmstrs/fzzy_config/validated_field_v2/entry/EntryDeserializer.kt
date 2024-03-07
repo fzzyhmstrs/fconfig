@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validated_field_v2.entry
 
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import net.peanuuutz.tomlkt.TomlElement
 
 /**

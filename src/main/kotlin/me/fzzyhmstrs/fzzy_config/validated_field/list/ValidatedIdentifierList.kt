@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validated_field.list
 
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.list.ValidatedList
 import net.minecraft.util.Identifier
 import java.util.function.Predicate
 
@@ -22,6 +23,6 @@ open class ValidatedIdentifierList(
         Identifier::class.java,
         listEntryValidator,
         invalidEntryMessage
-    ) 
+    )
 {
 }

@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validated_field_v2.entry
 
-import net.peanuuutz.tomlkt.TomlElement
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.ValidatedField
 
 /**
  * Deserializes individual entries in a complex [ValidatedField]
@@ -11,5 +12,5 @@ import net.peanuuutz.tomlkt.TomlElement
  */
 @FunctionalInterface
 fun interface EntryCorrector<T> {
-    fun correctEntry(input: T, type: ValidationType): T
+    fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T>
 }

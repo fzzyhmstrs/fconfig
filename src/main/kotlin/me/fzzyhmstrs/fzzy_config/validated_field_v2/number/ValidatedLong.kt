@@ -1,7 +1,8 @@
 package me.fzzyhmstrs.fzzy_config.validated_field_v2.number
 
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
-import net.minecraft.client.gui.widget.Widget
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.entry.Entry
+import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
@@ -21,11 +22,15 @@ class ValidatedLong(defaultValue: Long, maxValue: Long, minValue: Long): Validat
         }
     }
 
-    override fun serializeEntry(input: T): TomlElement {
+    override fun serializeEntry(input: Long): TomlElement {
         return TomlLiteral(input)
     }
 
-    override fun createWidget(): Widget {
+    override fun instanceEntry(): Entry<Long> {
+        return ValidatedLong(defaultValue, maxValue, minValue)
+    }
+
+    override fun widgetEntry(): ClickableWidget {
         TODO("Not yet implemented")
     }
 }

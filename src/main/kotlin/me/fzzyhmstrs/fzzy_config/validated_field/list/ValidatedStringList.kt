@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validated_field.list
 
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.list.ValidatedList
 import java.util.function.Predicate
 
 /**
@@ -19,6 +20,6 @@ open class ValidatedStringList(
         String::class.java,
         listEntryValidator,
         invalidEntryMessage
-    ) 
+    )
 {
 }

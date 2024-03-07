@@ -8,6 +8,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import net.fabricmc.loader.api.FabricLoader
 import net.peanuuutz.tomlkt.*
 import java.io.File
@@ -223,7 +224,7 @@ object ConfigApiImpl {
         } catch (e: Exception){
             errorBuilder.add("Critical error encountered while serializing config!: ${e.localizedMessage}")
             return toml.build()
-        }*/
+        }
         //serialize the TomlTable to its string representation
         return toml.build()
     }
@@ -313,7 +314,7 @@ object ConfigApiImpl {
             return ValidationResult.error(config,"Improper TOML format passed to deserializeDirtyFromToml")
         }
         try {
-            walk(config, config.getId().toShortTranslationKey(), ignoreNonSync) {str, v -> toml[UpdateManager.toDashSeparatedScope(str)]?.let{ if(v is FzzySerializable) v.deserialize(it,errorBuilder,str,ignoreNonSync) }}
+            walk(config, config.getId().toTranslationKey(), ignoreNonSync) {str, v -> toml[UpdateManager.toDashSeparatedScope(str)]?.let{ if(v is FzzySerializable) v.deserialize(it,errorBuilder,str,ignoreNonSync) }}
         } catch(e: Exception){
             errorBuilder.add("Critical error encountered while deserializing update")
         }
@@ -417,8 +418,7 @@ object ConfigApiImpl {
     internal fun isNonSync(property: KProperty<*>): Boolean{
         return property.annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
     }
-    internal fun <T: Any> tomlAnnotations(property: KProperty1<T, *>): List<Annotation> {
-
+    internal fun tomlAnnotations(property: KAnnotatedElement): List<Annotation> {
         return property.annotations.map { mapJvmAnnotations(it) }.filter { it is TomlComment || it is TomlInline || it is TomlBlockArray || it is TomlMultilineString || it is TomlLiteralString || it is TomlInteger }
     }
     internal fun mapJvmAnnotations(input: Annotation): Annotation{

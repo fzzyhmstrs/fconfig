@@ -62,17 +62,79 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
     companion object{
         /**
-         * Create a validation result with this if validation was successful. No error message needed as no errors were found.
+         * Create a successful validation result if validation was successful.
+         *
+         * No error message needed as no errors were found.
+         * @param T Type of result
+         * @param storedVal result instance of type T
+         * @return the successful ValidationResult
+         * @author fzzyhmstrs
+         * @since 0.1.0
          */
-        fun <T : Any>success(storedVal: T): ValidationResult<T> {
+        fun <T>success(storedVal: T): ValidationResult<T> {
             return ValidationResult(storedVal)
         }
 
         /**
-         * Create a validation result with this if there was a problem during validation. Typically in this case, [storedVal] will be the default value associated with this validation. A valid instance of T must always be passed back. Add a descriptive error message to [error]
+         * Create a validation result with this if there was a problem during validation.
+         *
+         * In this case, typically, [storedVal] will be the default value associated with this validation. A valid instance of T must always be passed back. Add a descriptive error message to [error]
+         * @param T Type of result
+         * @param storedVal default or fallback instance of type T
+         * @param error string with error message
+         * @return the errored ValidationResult
+         * @author fzzyhmstrs
+         * @since 0.1.0
          */
         fun <T>error(storedVal: T, error: String): ValidationResult<T> {
             return ValidationResult(storedVal,error)
         }
+
+        /**
+         * Convenience shortcut for creating a matching success or error depending on a boolean state.
+         *
+         * Used if the value returned will be the same regardless of validation, eg. in the case of [EntryValidator][me.fzzyhmstrs.fzzy_config.validated_field_v2.entry.EntryValidator] usage, where no changes are being made to the result
+         * @param T Type of result
+         * @param storedVal default or fallback instance of type T
+         * @param valid test applied to determine validation or error.
+         * @param error string with error message
+         * @return the errored ValidationResult
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun <T>predicated(storedVal: T, valid: Boolean, error: String): ValidationResult<T>{
+            return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, error)
+        }
+
+        /**
+         * Wraps the new value provided in a ValidationResult with whatever error may be there.
+         *
+         * Useful if the Validation is performed on an incompatible type, but the error is desired.
+         * @param T type of result
+         * @param newVal the new value to wrap in the existing result
+         * @return ValidationResult with the state and error of the previous result with the newly supplied Type and Value
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun <T> ValidationResult<*>.wrap(newVal: T): ValidationResult<T>{
+            return ValidationResult(newVal, this.error)
+        }
+
+        /**
+         * Adds another test, and potentially another error, to a Validation.
+         */
+        fun <T> ValidationResult<T>.also(newTest: Boolean, error: String): ValidationResult<T>{
+            return if(!newTest) {
+                val totalError = if(this.isError()){
+                    "${this.error}, also $error"
+                } else {
+                    error
+                }
+                ValidationResult(this.storedVal, error)
+            } else {
+                this
+            }
+        }
+
     }
 }

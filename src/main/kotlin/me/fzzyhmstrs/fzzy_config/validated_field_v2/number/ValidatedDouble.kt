@@ -1,7 +1,8 @@
 package me.fzzyhmstrs.fzzy_config.validated_field_v2.number
 
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
-import net.minecraft.client.gui.widget.Widget
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.entry.Entry
+import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
@@ -13,7 +14,6 @@ class ValidatedDouble(defaultValue: Double, maxValue: Double, minValue: Double):
         return storedValue
     }
 
-
     override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<Double> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toDouble())
@@ -22,11 +22,15 @@ class ValidatedDouble(defaultValue: Double, maxValue: Double, minValue: Double):
         }
     }
 
-    override fun serializeEntry(input: T): TomlElement {
+    override fun serializeEntry(input: Double): TomlElement {
         return TomlLiteral(input)
     }
 
-    override fun createWidget(): Widget {
+    override fun instanceEntry(): Entry<Double> {
+        return ValidatedDouble(defaultValue, maxValue, minValue)
+    }
+
+    override fun widgetEntry(): ClickableWidget {
         TODO("Not yet implemented")
     }
 }

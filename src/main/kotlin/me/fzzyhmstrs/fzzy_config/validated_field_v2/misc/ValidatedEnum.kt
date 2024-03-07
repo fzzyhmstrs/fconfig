@@ -1,9 +1,12 @@
-package me.fzzyhmstrs.fzzy_config.validated_field_v2
+package me.fzzyhmstrs.fzzy_config.validated_field_v2.misc
 
 import me.fzzyhmstrs.fzzy_config.api.StringTranslatable
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import net.minecraft.client.gui.widget.Widget
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.entry.Entry
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.entry.EntryValidator
+import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -28,20 +31,25 @@ class ValidatedEnum<T>(defaultValue: T, private val enum: Class<T>, private val 
     override fun serializeEntry(input: T): TomlElement {
         return TomlLiteral(input.name)
     }
-    override fun validateAndCorrectInputs(input: T): ValidationResult<T> {
+
+    override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         return ValidationResult.success(input)
     }
 
-    override fun validate(input: T): ValidationResult<T> {
+    override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         return ValidationResult.success(input)
     }
 
-    override fun createEntry(name: Text, desc: Text): ConfigEntry {
+    override fun widgetEntry(): ClickableWidget {
         TODO("Not yet implemented")
     }
 
     override fun description(): Text {
         return FcText.translatable(descriptionKey(),valuesMap.keys.toString())
+    }
+
+    override fun instanceEntry(): Entry<T> {
+        return ValidatedEnum(this.defaultValue,this.enum, this.widgetType)
     }
 
     /**

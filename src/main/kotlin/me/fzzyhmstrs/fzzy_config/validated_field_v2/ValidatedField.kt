@@ -8,9 +8,9 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Update
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
-import net.minecraft.client.gui.widget.Widget
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.entry.Entry
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.validated_field_v2.list.ValidatedList
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
@@ -27,7 +27,12 @@ import net.peanuuutz.tomlkt.TomlElement
  * @since 0.1.0
  */
 
-abstract class ValidatedField<T: Any>(protected var storedValue: T, protected val defaultValue: T = storedValue): FzzySerializable, EntryHandler<T>, Updatable, StringTranslatable {
+abstract class ValidatedField<T: Any>(protected var storedValue: T, protected val defaultValue: T = storedValue):
+    FzzySerializable,
+    Entry<T>,
+    Updatable,
+    StringTranslatable
+{
 
     private var pushedValue: T? = null
     private var updateKey = ""
@@ -67,7 +72,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
         if (tVal.isError()){
             return ValidationResult.error(false,"Error deserializing config entry [$fieldName], using default value [${tVal.get()}]  >>> Possible reasons: ${tVal.getError()}")
         }
-        val tVal2 = correctEntry(tVal.get(), ValidationType.WEAK)
+        val tVal2 = correctEntry(tVal.get(), EntryValidator.ValidationType.WEAK)
         storedValue = tVal2.get()
         if (tVal2.isError()){
             return ValidationResult.error(false,"Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]  >>> Possible reasons: ${tVal2.getError()}")
@@ -109,7 +114,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
      */
     open fun validateAndSet(input: T): ValidationResult<T> {
         val oldVal = storedValue
-        val tVal1 = correctEntry(input, ValidationType.WEAK)
+        val tVal1 = correctEntry(input, EntryValidator.ValidationType.WEAK)
         storedValue = tVal1.get()
         if (tVal1.isError()){
             return ValidationResult.error(tVal1.get(),"Error validating and setting input [$input]. Corrected to [${tVal1.get()}] >>>> Possible reasons: [${tVal1.getError()}]")
@@ -119,12 +124,12 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
 
     open fun setAndUpdate(input: T) {
         val oldVal = storedValue
-        val tVal1 = correctEntry(input, ValidationType.STRONG)
+        val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
         storedValue = tVal1.get()
         if (tVal1.isError()){
-            UpdateManager.addUpdateMessage(FcText.translatable("validated_field.update.error",tVal1.getError(),oldVal.toString(),storedValue.toString()))
+            UpdateManager.addUpdateMessage(getUpdateKey(),FcText.translatable("validated_field.update.error",tVal1.getError(),oldVal.toString(),storedValue.toString()))
         } else {
-            UpdateManager.addUpdateMessage(updateMessage(oldVal, storedValue))
+            UpdateManager.addUpdateMessage(getUpdateKey(),updateMessage(oldVal, storedValue))
         }
         val update = Update(updateMessage(oldVal, storedValue), { set(oldVal) }, { set(tVal1.get()) })
         update(update)
@@ -151,39 +156,18 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
         return storedValue
     }
 
-    fun createEntry(): ConfigEntry{
-        val translation = translation().takIf{ it.getString() != translationKey() } ?: FcText.literal(this::class.java.simpleName)
-        val description = description().takIf{ it.getString() != descriptionKey() } ?: FcText.empty()
-        return createEntry(translation(), description())
-    }
-
-    @Environment(EnvType.CLIENT)
-    abstract fun createEntry(name: Text, desc: Text): ConfigEntry
-
     override fun translationKey(): String {
         return getUpdateKey()
-    }
-    override fun translation(): Text {
-        return FcText.translatable(translationKey())
     }
 
     override fun descriptionKey(): String {
         return getUpdateKey() + ".desc"
     }
-    override fun description(): Text {
-        return FcText.translatable(descriptionKey())
-    }
 
-    fun toList(vararg elements: T): ValidatedList<T, EntryHandler<T>>{
-        return ValidatedList(listOf(elements), this)
+    fun toList(vararg elements: T): ValidatedList<T> {
+        return ValidatedList(listOf(*elements), this)
     }
-    fun toList(collection: Collection<T>): ValidatedList<T, EntryHandler<T>>{
-        return ValidatedList(list.toList(), this)
+    fun toList(collection: Collection<T>): ValidatedList<T> {
+        return ValidatedList(collection.toList(), this)
     }
-
-    enum class ValidationType{
-        WEAK,
-        FULL
-    }
-
 }
