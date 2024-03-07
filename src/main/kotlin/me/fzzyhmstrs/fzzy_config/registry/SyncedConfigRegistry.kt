@@ -27,14 +27,14 @@ object SyncedConfigRegistry {
 
     private val newConfigs : MutableMap<String, Config> = mutableMapOf()
 
-    fun <T: Config> updateServer(config: T){
+    fun <T: Config> updateServer(config: T, changeHistory: List<String>){
         val errors = mutableListOf<String>()
         val configString = ConfigApi.serializeDirty(config,errors)
         if (errors.isNotEmpty()){
             val errorsResult = ValidationResult.error(true, "Critical error(s) encountered while serializing client-updated Config Class! Output may not be complete.")
             errorsResult.writeError(errors)
         }
-        val payload = ConfigC2SUpdateCustomPayload(config.getId().toString(),configString)
+        val payload = ConfigC2SUpdateCustomPayload(config.getId().toString(),configString, changeHistory)
         ClientPlayNetworking.send(payload)
     }
 
@@ -107,6 +107,8 @@ object SyncedConfigRegistry {
                 val errors = mutableListOf<String>()
                 val result = ConfigApi.deserializeDirty(config, configString, errors)
                 result.writeError(errors)
+                val changes = payload.changeHistory
+                ConfigApiImpl.printChangeHistory(changes, id, context.player())
                 for (player in context.player().server.playerManager.playerList){
                     if (player == context.player()) continue // don't push back to the player that just sent the update
                     val newPayload = ConfigS2CSyncCustomPayload(id, configString)
