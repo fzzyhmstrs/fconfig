@@ -314,7 +314,7 @@ object ConfigApiImpl {
             return ValidationResult.error(config,"Improper TOML format passed to deserializeDirtyFromToml")
         }
         try {
-            walk(config, config.getId().toTranslationKey(), ignoreNonSync) {str, v -> toml[UpdateManager.toDashSeparatedScope(str)]?.let{ if(v is FzzySerializable) v.deserialize(it,errorBuilder,str,ignoreNonSync) }}
+            walk(config, config.getId().toTranslationKey(), ignoreNonSync) {str, v -> toml[str]?.let{ if(v is FzzySerializable) v.deserialize(it,errorBuilder,str,ignoreNonSync) }}
         } catch(e: Exception){
             errorBuilder.add("Critical error encountered while deserializing update")
         }

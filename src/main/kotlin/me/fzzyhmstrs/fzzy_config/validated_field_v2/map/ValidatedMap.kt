@@ -12,21 +12,7 @@ import java.util.regex.Pattern
 
 class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: Entry<String>, private val valueHandler: Entry<V>): ValidatedField<Map<String,V>>(defaultValue) {
 
-    private val keyValidator: EntryValidator<String> = EntryValidator { input, type ->
-        keyHandler.validateEntry(input, type).also(validatorPattern.matcher(input).matches(),"Illegal characters in Map Key, needs to be [a-z0-9_-]")
-    }
-
-    private val keyCorrector: EntryCorrector<String> = EntryCorrector { input, type ->
-        val firstTest = validatorPattern.matcher(input).matches()
-        var characterError = ""
-        if (!firstTest){
-            val updatedInput = input.replace(replacerRegex,"_")
-            characterError = "Invalid characters found. [$input] corrected to []"
-        }
-        keyHandler.validateEntry(input, type).also(validatorPattern.matcher(input).matches(),"Illegal characters in Map Key, needs to be [a-z0-9_-]")
-    }
-    val validatorPattern = Pattern.compile("[a-z0-9_-]")
-    val replacerRegex = Pattern.compile("((?![a-z0-9_-]).)").toRegex()
+    //((?![a-z0-9_-]).) in case I need it...
 
     override fun deserializeEntry(toml: TomlElement, fieldName: String): ValidationResult<Map<String, V>> {
         return try {
