@@ -440,9 +440,9 @@ object ConfigApiImpl {
         return version?.version ?: 0
     }
 
-    internal fun printChangeHistory(history: List<String>, player: PlayerEntity? = null){
+    internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null){
         FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
-        FC.LOGGER.info("Completed config updates:")
+        FC.LOGGER.info("Completed updates for config: [$id]")
         if (player != null) 
             FC.LOGGER.info("Updates made by: ${player.name}")
         FC.LOGGER.info("-------------------------")
