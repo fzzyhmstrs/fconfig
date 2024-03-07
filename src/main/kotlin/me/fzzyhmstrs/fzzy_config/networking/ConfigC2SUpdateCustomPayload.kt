@@ -5,13 +5,29 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
 
-class ConfigC2SUpdateCustomPayload(val id: String, val serializedConfig: String): CustomPayload {
+class ConfigC2SUpdateCustomPayload(val id: String, val serializedConfig: String, val changeHistory: List<String>): CustomPayload {
 
-    constructor(buf: PacketByteBuf): this(buf.readString(),buf.readString())
+    constructor(buf: PacketByteBuf): this(buf.readString(),buf.readString(),readList(buf))
 
     fun write(buf: PacketByteBuf){
         buf.writeString(id)
         buf.writeString(serializedConfig)
+    }
+
+    private fun readList(buf: PacketByteBuf): List<String>{
+        val size = buf.readVarInt()
+        val list: MutableList<String> = mutableListOf()
+        for (i in 1..size){
+            list.add(buf.readString()
+        }
+        return list
+    }
+
+    private fun writeList(buf: PacketByteBuf) {
+        buf.writeVarInt(changeHistory.size)
+        for (str in changeHistory) {
+            buf.writeString(str)
+        }
     }
 
     override fun getId(): CustomPayload.Id<out CustomPayload> {
