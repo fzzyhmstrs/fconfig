@@ -46,15 +46,9 @@ object UpdateManager{
     }
 
     fun flush(): List<String>{
+        setScope("")
         updateMap.clear()
         val updates = buildChangeLogHistory()
-        if (changeHistory.isNotEmpty()) {
-            
-            FC.LOGGER.info("Completed config updates:")
-            FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
-            
-            FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
-        }
         changeHistory.clear()
         return updates
     }
