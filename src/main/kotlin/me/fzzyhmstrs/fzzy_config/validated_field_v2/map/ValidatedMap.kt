@@ -8,7 +8,6 @@ import me.fzzyhmstrs.fzzy_config.validated_field_v2.entry.EntryCorrector
 import me.fzzyhmstrs.fzzy_config.validated_field_v2.entry.EntryValidator
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlTable
-import java.util.regex.Pattern
 
 class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: Entry<String>, private val valueHandler: Entry<V>): ValidatedField<Map<String,V>>(defaultValue) {
 
@@ -21,10 +20,20 @@ class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: 
             val keyErrors: MutableList<String> = mutableListOf()
             val valueErrors: MutableList<String> = mutableListOf()
             for ((key, el) in table.entries){
-                val keyResult = keyHandler.validateEntry()
+                val keyResult = keyHandler.validateEntry(key,EntryValidator.ValidationType.WEAK)
+                if(keyResult.isError()){
+                    keyErrors.add("Skipping key!: ${keyResult.getError()}")
+                    continue
+                }
+                val valueResult = valueHandler.deserializeEntry(el,"{$fieldName, @key: $key}")
+                if(valueResult.isError()){
+                    valueErrors.add(valueResult.getError())
+                }
+                map[keyResult.get()] = valueResult.get()
             }
+            return ValidationResult.predicated(map,keyErrors.isEmpty() & valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors"
         } catch (e: Exception){
-
+            return ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}"
         }
     }
 
