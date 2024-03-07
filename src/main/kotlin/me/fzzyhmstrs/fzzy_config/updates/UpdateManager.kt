@@ -107,7 +107,7 @@ object UpdateManager{
         return (if(scope.isEmpty()) updateMap.keys else updateMap.keys.filter{ it.startsWith(scope) }).mapNotNull { updateMap[it] }
     }
 
-    fun<T: Config> applyKeys(config: T) {
+    internal fun<T: Config> applyKeys(config: T) {
         ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {str, v -> if (v is Updatable) v.setUpdateKey(str)}
     }
 
