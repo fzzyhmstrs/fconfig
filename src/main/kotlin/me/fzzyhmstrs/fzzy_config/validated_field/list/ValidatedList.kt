@@ -1,143 +1,136 @@
-/*
 package me.fzzyhmstrs.fzzy_config.validated_field.list
 
-import com.google.gson.JsonElement
-import com.google.gson.JsonParser
-import me.fzzyhmstrs.fzzy_config.api.ConfigHelper
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
-import net.minecraft.network.PacketByteBuf
-import java.util.function.Predicate
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryValidator
+import net.minecraft.client.gui.widget.ClickableWidget
+import net.peanuuutz.tomlkt.TomlArrayBuilder
+import net.peanuuutz.tomlkt.TomlElement
+import net.peanuuutz.tomlkt.asTomlArray
 
-*/
-/**
- * A validated list of objects
- *
- * Validated Lists deserialize their contents line-by-line, which allows fail-soft behavior of deserialization of entries. If only one entry has a syntax error, for example, it will simply be logged and skipped.
- *
- * Validation is performed by the provided entry validator.
- *
- * ValidatedList implements kotlin [List], enabling direct usage of the validated field in the same manner as a normal List<T>. For manipulation of the entire list contents, it is recommended to extract the stored list directly with [get]
- *
- * There are several pre-defined List type subclasses that may be preferable to use over this "raw" implementation.
- *
- * @param defaultValue List<R>. The default list settings
- * @param lType Class<R>. The java class of the stored objects
- * @param listEntryValidator Predicate<R>, optional. If not provided, validation will always pass (no validation). The supplied predicate should return true on validation success, false on fail.
- * @param invalidEntryMessage String, optional. Provide a message detailing the criteria the user needs to follow in the case they make a mistake.
- * @param entryDeserializer EntryDeserializer<R>, optional. If not provided, will attempt to use GSON to parse the values. Otherwise, provide a deserializer that parses the provided JsonElement.
- *//*
+class ValidatedList<T: Any>(defaultValue: List<T>, private val entryHandler: Entry<T>): ValidatedField<List<T>>(defaultValue), List<T> {
 
-open class ValidatedList<R>(
-    defaultValue: List<R>,
-    private val lType: Class<R>,
-    private val listEntryValidator: Predicate<R> = Predicate {true},
-    private val invalidEntryMessage: String = "None",
-    private val entryDeserializer: EntryDeserializer<R> = EntryDeserializer { json ->  ConfigHelper.gson.fromJson(json,lType)})
-    :
-    ValidatedField<List<R>>(defaultValue),
-    List<R>
-{
-
-    override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<List<R>> {
+    override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {
         return try{
-            if (!json.isJsonArray) {
-                ValidationResult.error(storedValue,"Couldn't deserialize list [$json] from key [$fieldName] in config class [${this.javaClass.enclosingClass?.canonicalName}]")
-            } else {
-                val list: MutableList<R> = mutableListOf()
-                val errorList: MutableList<JsonElement> = mutableListOf()
-                val jsonArray = json.asJsonArray
-                for (jsonEl in jsonArray){
-                    try{
-                        val el = entryDeserializer.deserialize(jsonEl)
-                        list.add(el)
-                    } catch (e: Exception) {
-                        errorList.add(jsonEl)
-                    }
-                }
-                if(errorList.isEmpty()){
-                    ValidationResult.success(list)
-                } else {
-                    ValidationResult.error(list,"Errors in list at key [$fieldName], the following elements couldn't be deserialized and were skipped: $errorList")
+            val array = toml.asTomlArray()
+            val list: MutableList<T> = mutableListOf()
+            val errors: MutableList<String> = mutableListOf()
+            for ((index, el) in array.content.withIndex()){
+                val result = entryHandler.deserializeEntry(el, errors, "$fieldName[$index]", true).report(errors)
+                if (!result.isError()){
+                    list.add(result.get())
                 }
             }
-        } catch(e: Exception){
-            ValidationResult.error(storedValue,"Couldn't deserialize list [$json] from key [$fieldName] in config class [${this.javaClass.enclosingClass?.canonicalName}]")
-        }
-    }
-
-    override fun serializeHeldValue(): JsonElement {
-        return gson.toJsonTree(storedValue,storedValue.javaClass)
-    }
-
-    override fun validateAndCorrectInputs(input: List<R>): ValidationResult<List<R>> {
-        val tempList: MutableList<R> = mutableListOf()
-        val errorList:MutableList<String> = mutableListOf()
-        input.forEach {
-            if(listEntryValidator.test(it)){
-                tempList.add(it)
+            if (errors.isNotEmpty()) {
+                ValidationResult.error(list, "Error(s) encountered while deserializing list, some entries were skipped: $errors")
             } else {
-                errorList.add(it.toString())
+                ValidationResult.success(list)
             }
+        } catch (e: Exception){
+            ValidationResult.error(defaultValue,"Critical error enountered while deserializing list [$fieldName], using defaults.")
         }
-        if (errorList.isNotEmpty()){
-            return ValidationResult.error(tempList, "Config list has errors, entries need to follow these constraints: $invalidEntryMessage. The following entries couldn't be validated and were removed: $errorList")
+    }
+
+    override fun serialize(input: List<T>): ValidationResult<TomlElement> {
+        val toml = TomlArrayBuilder()
+        val errors: MutableList<String> = mutableListOf()
+        try {
+            for (entry in input) {
+                val tomlEntry = entryHandler.serializeEntry(entry, errors, true)
+                val annotations = ConfigApiImpl.tomlAnnotations(entry::class.java.kotlin)
+                toml.element(tomlEntry, annotations)
+            }
+        } catch (e: Exception){
+            return ValidationResult.error(toml.build(),"Critical error encountered while serializing list: ${e.localizedMessage}")
         }
-        return ValidationResult.success(input)
+        return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
 
-    override fun readmeText(): String{
-        return "List of values that meet the following criteria: $invalidEntryMessage"
+    override fun correctEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
+        val list: MutableList<T> = mutableListOf()
+        val errors: MutableList<String> = mutableListOf()
+        for (entry in input){
+            val result = entryHandler.correctEntry(entry, type)
+            list.add(result.get())
+            if (result.isError()) errors.add(result.getError())
+        }
+        return if (errors.isNotEmpty()){
+            ValidationResult.error(list,"Errors corrected in list: $errors")
+        } else {
+            ValidationResult.success(list)
+        }
     }
 
-    override fun toBuf(buf: PacketByteBuf) {
-        buf.writeString(gson.toJson(serializeHeldValue()))
+    override fun validateEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
+        val errors: MutableList<String> = mutableListOf()
+        for (entry in input){
+            val result = entryHandler.validateEntry(entry, type)
+            if (result.isError()) errors.add(result.getError())
+        }
+        return if (errors.isNotEmpty()){
+            ValidationResult.error(input,"Errors corrected in list: $errors")
+        } else {
+            ValidationResult.success(input)
+        }
     }
 
-    override fun fromBuf(buf: PacketByteBuf): List<R> {
-        return deserializeHeldValue(JsonParser.parseString(buf.readString()),"").get()
+    override fun copyStoredValue(): List<T> {
+        return storedValue.toList()
     }
 
+    override fun instanceEntry(): Entry<List<T>> {
+        return ValidatedList(defaultValue, entryHandler)
+    }
+
+    override fun widgetEntry(): ClickableWidget {
+        TODO("Not yet implemented")
+    }
+
+    // List Interface
+    //////////////////////////////////
     override val size: Int
         get() = storedValue.size
 
-    override fun contains(element: R): Boolean {
-        return storedValue.contains(element)
-    }
-
-    override fun containsAll(elements: Collection<R>): Boolean {
-        return storedValue.containsAll(elements)
-    }
-
-    override fun get(index: Int): R {
-        return storedValue.get(index)
-    }
-
-    override fun indexOf(element: R): Int {
-        return storedValue.indexOf(element)
+    override fun get(index: Int): T {
+        return storedValue[index]
     }
 
     override fun isEmpty(): Boolean {
         return storedValue.isEmpty()
     }
 
-    override fun iterator(): Iterator<R> {
+    override fun iterator(): Iterator<T> {
         return storedValue.iterator()
     }
 
-    override fun lastIndexOf(element: R): Int {
-        return storedValue.lastIndexOf(element)
-    }
-
-    override fun listIterator(): ListIterator<R> {
+    override fun listIterator(): ListIterator<T> {
         return storedValue.listIterator()
     }
 
-    override fun listIterator(index: Int): ListIterator<R> {
+    override fun listIterator(index: Int): ListIterator<T> {
         return storedValue.listIterator(index)
     }
 
-    override fun subList(fromIndex: Int, toIndex: Int): List<R> {
+    override fun subList(fromIndex: Int, toIndex: Int): List<T> {
         return storedValue.subList(fromIndex, toIndex)
     }
-}*/
+
+    override fun lastIndexOf(element: T): Int {
+        return storedValue.lastIndexOf(element)
+    }
+
+    override fun indexOf(element: T): Int {
+        return storedValue.indexOf(element)
+    }
+
+    override fun containsAll(elements: Collection<T>): Boolean {
+        return storedValue.containsAll(elements)
+    }
+
+    override fun contains(element: T): Boolean {
+        return storedValue.contains(element)
+    }
+}

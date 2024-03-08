@@ -1,8 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.registry
 
-import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.ConfigC2SUpdateCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.ConfigS2CSyncCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.ConfigS2CUpdateCustomPayload
@@ -15,13 +16,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 
 /**
- * The registry for [SyncedConfig] instances.
+ * The registry for [Config] instances.
  *
- * This is not a "true" registry in the Minecraft since; as such there are not the typical helper methods like get(), getId(), etc.
- *
- * This registry's scope is much narrower, with its only intended goal being automatic synchronization of configurations on the JOIN event.
- *
- * Most users will not have to directly interact with this registry at all, as this is handled in the background of helper classes
+ * This is not a "true" registry in the Minecraft since; as such there are not the typical helper methods like get(), getId(), etc. This registry's scope is much narrower, handling synchronization and updates of Configs.
  */
 object SyncedConfigRegistry {
 
@@ -29,7 +26,7 @@ object SyncedConfigRegistry {
 
     fun <T: Config> updateServer(config: T, changeHistory: List<String>){
         val errors = mutableListOf<String>()
-        val configString = ConfigApi.serializeDirty(config,errors)
+        val configString = ConfigApi.serializeUpdate(config,errors)
         if (errors.isNotEmpty()){
             val errorsResult = ValidationResult.error(true, "Critical error(s) encountered while serializing client-updated Config Class! Output may not be complete.")
             errorsResult.writeError(errors)
@@ -57,7 +54,7 @@ object SyncedConfigRegistry {
             if (newConfigs.containsKey(id)){
                 val config = newConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
-                val result = ConfigApi.deserializeDirty(config, configString, errors)
+                val result = ConfigApi.deserializeUpdate(config, configString, errors)
                 result.writeError(errors)
             }
         }
@@ -105,7 +102,7 @@ object SyncedConfigRegistry {
             if (newConfigs.containsKey(id)){
                 val config = newConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
-                val result = ConfigApi.deserializeDirty(config, configString, errors)
+                val result = ConfigApi.deserializeUpdate(config, configString, errors)
                 result.writeError(errors)
                 val changes = payload.changeHistory
                 ConfigApiImpl.printChangeHistory(changes, id, context.player())

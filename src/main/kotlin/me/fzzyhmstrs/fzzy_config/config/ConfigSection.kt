@@ -2,27 +2,31 @@ package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
-import me.fzzyhmstrs.fzzy_config.impl.FzzySerializable
 import me.fzzyhmstrs.fzzy_config.impl.Walkable
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryDeserializer
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
 import net.peanuuutz.tomlkt.TomlElement
 
 /**
  *
  */
-open class ConfigSection: FzzySerializable, Walkable {
+open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection> {
 
-    override fun serialize(errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
+    override fun serializeEntry(
+        input: ConfigSection?,
+        errorBuilder: MutableList<String>,
+        ignoreNonSync: Boolean
+    ): TomlElement {
         return ConfigApi.serializeToToml(this,errorBuilder,ignoreNonSync)
     }
 
-    override fun deserialize(
+    override fun deserializeEntry(
         toml: TomlElement,
         errorBuilder: MutableList<String>,
         fieldName: String,
         ignoreNonSync: Boolean
-    ): ValidationResult<Boolean> {
-        val result = ConfigApi.deserializeFromToml(this, toml, errorBuilder, ignoreNonSync)
-        return if (result.isError()) return ValidationResult.error(true, result.getError()) else ValidationResult.success(false)
+    ): ValidationResult<ConfigSection> {
+        return ConfigApi.deserializeFromToml(this, toml, errorBuilder, ignoreNonSync)
     }
 
     override fun toString(): String {

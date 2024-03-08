@@ -1,7 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.updates
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.Update
 import net.minecraft.text.Text
 import java.util.*
 

@@ -15,7 +15,7 @@ fun interface Expression {
     fun eval(vars: Map<Char,Double>): Double
 
     @Suppress("SameParameterValue")
-    companion object{
+    companion object {
 
         val CODEC = Codec.STRING.comapFlatMap(
             {s -> try{ DataResult.success(parse(s, s)) } catch(e:Exception) { DataResult.error { "Error while deserializing math equation: ${e.localizedMessage}" }}},

@@ -1,172 +1,92 @@
-/*
 package me.fzzyhmstrs.fzzy_config.validated_field.map
 
-import com.google.gson.JsonElement
-import com.google.gson.JsonParser
-import me.fzzyhmstrs.fzzy_config.api.ConfigHelper
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField.EntryDeserializer
-import me.fzzyhmstrs.fzzy_config.validated_field.map.ValidatedMap.KeyDeserializer
-import net.minecraft.network.PacketByteBuf
-import java.util.function.BiFunction
-import java.util.function.BiPredicate
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryValidator
+import net.minecraft.client.gui.widget.ClickableWidget
+import net.peanuuutz.tomlkt.TomlElement
+import net.peanuuutz.tomlkt.TomlTableBuilder
+import net.peanuuutz.tomlkt.asTomlTable
 
-*/
-/**
- * A validated [Map] collection.
- *
- * This class is very "raw" in the sense that it can't do very much automatically and requires that input from the user. As such, it's recommended to use one of the pre-defined subclasses except in special circumstances where those don't fit the use case.
- *
- * Validation is performed both on deserialization, where problems in deserialization of individual entries are trimmed from the resulting map and added to an error log message; and in validation, where the provided validator is tested.
- *
- * ValidatedMap implements kotlin [Map], enabling direct usage of the validated field in the same manner as a normal Map<K,V>. For manipulation of the entire map contents, it is recommended to extract the stored list directly with [get]
- *
- * @param keyType Class<R>. A java class of the key type.
- * @param valueType Class<T>. A java class of the value type.
- * @param mapEntryCorrector BiPredicate<R,T>, optional. If not provided, will always test true (no validation). Pass a BiPredicate that tests both the key and entry against your specific criteria. True passes validation, false fails.
- * @param invalidEntryMessage String, optional. Provide a message detailing the criteria the user needs to follow in the case they make a mistake.
- * @param keyDeserializer KeyDeserializer<R>, optional. If not provided, will attempt to use GSON to parse the keys. Otherwise, provide a deserializer that parses the passed key string.
- * @param entryDeserializer EntryDeserializer<T>, optional. If not provided, will attempt to use GSON to parse the values. Otherwise, provide a deserializer that parses the provided JsonElement.
- *//*
+class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: Entry<String>, private val valueHandler: Entry<V>): ValidatedField<Map<String,V>>(defaultValue) {
+    override fun copyStoredValue(): Map<String, V> {
+        return storedValue.toMap()
+    }
 
-open class ValidatedMap<R,T>(
-    defaultValue: Map<R,T>,
-    private val keyType: Class<R>,
-    private val valueType: Class<T>,
-    private val mapEntryValidator: BiPredicate<R,T> = BiPredicate{_,_ -> true},
-    private val mapEntryCorrector: BiFunction<R,T,T> = BiFunction{ _, it -> it},
-    private val invalidEntryMessage: String = "None",
-    private val keyDeserializer: KeyDeserializer<R> =
-        KeyDeserializer {str -> ConfigHelper.gson.fromJson(str, keyType)},
-    private val entryDeserializer: EntryDeserializer<T> =
-        EntryDeserializer { json -> ConfigHelper.gson.fromJson(json, valueType) })
-    :
-    ValidatedField<Map<R, T>>(defaultValue),
-    Map<R,T>
-{
+    override fun instanceEntry(): Entry<Map<String, V>> {
+        return ValidatedMap(storedValue, keyHandler, valueHandler)
+    }
 
-    override fun deserializeHeldValue(json: JsonElement, fieldName: String): ValidationResult<Map<R, T>> {
-        return try{
-            if (!json.isJsonObject){
-                ValidationResult.error(storedValue,"Couldn't deserialize map [$json] from key [$fieldName] in config class [${this.javaClass.enclosingClass?.canonicalName}]")
-            } else {
-                val map: MutableMap<R,T> = mutableMapOf()
-                val errorList: MutableList<String> = mutableListOf()
-                val jsonObject = json.asJsonObject
-                for (entry in jsonObject.entrySet()) {
-                    try {
-                        val keyTry = keyDeserializer.deserialize(entry.key)
-                        try {
-                            val entryTry = entryDeserializer.deserialize(entry.value)
-                            map[keyTry] = entryTry
-                        } catch (e: Exception){
-                            println("exception in value deserialization ${entry.value}")
-                            errorList.add(entry.toString())
-                        }
-                    } catch (e: Exception){
-                        println("exception in key deserialization ${entry.key}")
-                        e.printStackTrace()
-                        errorList.add(entry.toString())
-                    }
-                }
-                if (errorList.isEmpty()) {
-                    ValidationResult.success(map)
-                } else {
-                    ValidationResult.error(map,"Errors in map at key [$fieldName], the following entries couldn't be deserialized and were skipped: $errorList")
-                }
+    override fun widgetEntry(): ClickableWidget {
+        TODO("Not yet implemented")
+    }
+
+    override fun serialize(input: Map<String, V>): ValidationResult<TomlElement> {
+        val table = TomlTableBuilder()
+        val errors: MutableList<String> = mutableListOf()
+        return try {
+            for ((key, value) in storedValue) {
+                val annotations = ConfigApiImpl.tomlAnnotations(value::class.java.kotlin)
+                val el = valueHandler.serializeEntry(value, errors, true)
+                table.element(key, el, annotations)
             }
-
-
-            //ValidationResult.success(gson.fromJson(json,lType.type))
-        } catch(e: Exception){
-            ValidationResult.error(storedValue,"Couldn't deserialize map [$json] from key [$fieldName] in config class [${this.javaClass.enclosingClass?.canonicalName}]")
+            return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
+        } catch (e: Exception){
+            ValidationResult.predicated(table.build(), errors.isEmpty(), "Critical exception encountered while serializing map: ${e.localizedMessage}")
         }
     }
 
-    override fun serializeHeldValue(): JsonElement {
-        return gson.toJsonTree(storedValue,storedValue.javaClass)
+    //((?![a-z0-9_-]).) in case I need it...
+
+    override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Map<String, V>> {
+        return try {
+            val table = toml.asTomlTable()
+            val map: MutableMap<String,V> = mutableMapOf()
+            val keyErrors: MutableList<String> = mutableListOf()
+            val valueErrors: MutableList<String> = mutableListOf()
+            for ((key, el) in table.entries){
+                val keyResult = keyHandler.validateEntry(key,EntryValidator.ValidationType.WEAK)
+                if(keyResult.isError()){
+                    keyErrors.add("Skipping key!: ${keyResult.getError()}")
+                    continue
+                }
+                val valueResult = valueHandler.deserializeEntry(el,valueErrors,"{$fieldName, @key: $key}", true).report(valueErrors)
+                map[keyResult.get()] = valueResult.get()
+            }
+            ValidationResult.predicated(map,keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors")
+        } catch (e: Exception){
+            ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
+        }
     }
 
-    override fun validateAndCorrectInputs(input: Map<R,T>): ValidationResult<Map<R, T>> {
-        val tempList: MutableMap<R,T> = mutableMapOf()
-        val errorList1: MutableList<String> = mutableListOf()
-        val errorList2: MutableList<String> = mutableListOf()
-        for (it in input){
-            if (!mapEntryValidator.test(it.key,it.value)){
-                errorList1.add(it.toString())
+    override fun validateEntry(input: Map<String, V>, type: EntryValidator.ValidationType): ValidationResult<Map<String, V>> {
+        val keyErrors: MutableList<String> = mutableListOf()
+        val valueErrors: MutableList<String> = mutableListOf()
+        for ((key, value) in input){
+            keyHandler.validateEntry(key,type).report(keyErrors)
+            valueHandler.validateEntry(value,type).report(valueErrors)
+        }
+        return ValidationResult.predicated(input,keyErrors.isEmpty() && valueErrors.isEmpty(), "Map validation had errors: key=${keyErrors}, value=$valueErrors")
+    }
+
+    override fun correctEntry(
+        input: Map<String, V>,
+        type: EntryValidator.ValidationType
+    ): ValidationResult<Map<String, V>> {
+        val map: MutableMap<String,V> = mutableMapOf()
+        val keyErrors: MutableList<String> = mutableListOf()
+        val valueErrors: MutableList<String> = mutableListOf()
+        for ((key, value) in input){
+            val keyResult = keyHandler.validateEntry(key,type).report(keyErrors)
+            if (keyResult.isError()){
                 continue
             }
-            val temp = mapEntryCorrector.apply(it.key,it.value)
-            if (temp != it.value){
-                errorList2.add(it.toString())
-            }
-            tempList[it.key] = temp
+            map[key] = valueHandler.correctEntry(value,type).report(valueErrors).report(valueErrors).get()
         }
-        if (errorList1.isNotEmpty() || errorList2.isNotEmpty()){
-            return ValidationResult.error(tempList, "Config map has errors, entries need to follow these constraints: $invalidEntryMessage. Invalid entries that were skipped: $errorList1. Corrected entries: $errorList2.")
-        }
-        return ValidationResult.success(input)
+        return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
     }
 
-    override fun readmeText(): String{
-        return "Map of key-value pairs that meet the following criteria: $invalidEntryMessage"
-    }
-
-    override fun toBuf(buf: PacketByteBuf) {
-        buf.writeString(gson.toJson(serializeHeldValue()))
-    }
-
-    override fun fromBuf(buf: PacketByteBuf): Map<R, T> {
-        return deserializeHeldValue(JsonParser.parseString(buf.readString()),"").get()
-    }
-
-    */
-/**
-     * functional interface for parsing keys in ValidatedMaps.
-     *
-     * A set of default implementations is provided for several basic types.
-     *
-     * SAM: [deserialize]. takes a string key, returns a deserialized instance of T
-     *//*
-
-    fun interface KeyDeserializer<T>{
-        fun deserialize(string: String): T
-        companion object{
-            val STRING: KeyDeserializer<String> = KeyDeserializer {str -> str}
-            val BOOLEAN: KeyDeserializer<Boolean> = KeyDeserializer { str -> "true".equals(str,true)}
-            val INT: KeyDeserializer<Int> = KeyDeserializer {str -> Integer.parseInt(str)}
-            val FLOAT: KeyDeserializer<Float> = KeyDeserializer {str -> java.lang.Float.parseFloat(str)}
-            val DOUBLE: KeyDeserializer<Double> = KeyDeserializer {str -> java.lang.Double.parseDouble(str)}
-            val LONG: KeyDeserializer<Long> = KeyDeserializer {str -> java.lang.Long.parseLong(str)}
-            val SHORT: KeyDeserializer<Short> = KeyDeserializer {str -> java.lang.Short.parseShort(str)}
-            val BYTE: KeyDeserializer<Byte> = KeyDeserializer {str -> java.lang.Byte.parseByte(str)}
-        }
-    }
-
-    override val entries: Set<Map.Entry<R, T>>
-        get() = storedValue.entries
-    override val keys: Set<R>
-        get() = storedValue.keys
-    override val size: Int
-        get() = storedValue.size
-    override val values: Collection<T>
-        get() = storedValue.values
-
-    override fun containsKey(key: R): Boolean {
-        return storedValue.containsKey(key)
-    }
-
-    override fun containsValue(value: T): Boolean {
-        return storedValue.containsValue(value)
-    }
-
-    override fun get(key: R): T? {
-        return storedValue[key]
-    }
-
-    override fun isEmpty(): Boolean {
-        return storedValue.isEmpty()
-    }
-
-}*/
+}

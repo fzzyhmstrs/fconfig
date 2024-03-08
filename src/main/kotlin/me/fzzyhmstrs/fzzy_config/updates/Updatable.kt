@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.updates
 
-import me.fzzyhmstrs.fzzy_config.util.Update
 import org.jetbrains.annotations.ApiStatus.Internal
 
 /**

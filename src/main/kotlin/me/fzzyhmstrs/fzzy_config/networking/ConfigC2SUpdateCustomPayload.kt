@@ -12,15 +12,7 @@ class ConfigC2SUpdateCustomPayload(val id: String, val serializedConfig: String,
     fun write(buf: PacketByteBuf){
         buf.writeString(id)
         buf.writeString(serializedConfig)
-    }
-
-    private fun readList(buf: PacketByteBuf): List<String>{
-        val size = buf.readVarInt()
-        val list: MutableList<String> = mutableListOf()
-        for (i in 1..size){
-            list.add(buf.readString()
-        }
-        return list
+        writeList(buf)
     }
 
     private fun writeList(buf: PacketByteBuf) {
@@ -37,5 +29,13 @@ class ConfigC2SUpdateCustomPayload(val id: String, val serializedConfig: String,
     companion object{
         val type: Id<ConfigC2SUpdateCustomPayload> = CustomPayload.id("fzzy_config:config_c2s_update")
         val codec: PacketCodec<PacketByteBuf, ConfigC2SUpdateCustomPayload> = CustomPayload.codecOf({c, b -> c.write(b) }, {b -> ConfigC2SUpdateCustomPayload(b)})
+        private fun readList(buf: PacketByteBuf): List<String>{
+            val size = buf.readVarInt()
+            val list: MutableList<String> = mutableListOf()
+            for (i in 1..size){
+                list.add(buf.readString())
+            }
+            return list
+        }
     }
 }

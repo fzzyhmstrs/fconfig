@@ -9,7 +9,10 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryDeserializer
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.entity.player.PlayerEntity
 import net.peanuuutz.tomlkt.*
 import java.io.File
 import java.lang.reflect.Modifier
@@ -174,10 +177,10 @@ object ConfigApiImpl {
                     val propVal = it.get(config)
                     //things name
                     val name = it.name
-                    //serialize the element. FzzySerializable elements will have a set serialization method
-                    val el = if (propVal is FzzySerializable) {
+                    //serialize the element. EntrySerializer elements will have a set serialization method
+                    val el = if (propVal is EntrySerializer<*>) { //is EntrySerializer
                         try {
-                            propVal.serialize(errorBuilder, ignoreNonSync)
+                            propVal.serializeEntry(null, errorBuilder, ignoreNonSync)
                         } catch (e: Exception) {
                             errorBuilder.add("Problem encountered with serialization of [$name]: ${e.localizedMessage}")
                             TomlNull
@@ -219,7 +222,7 @@ object ConfigApiImpl {
         try {
             val updates = UpdateManager.getSyncUpdates(config, ignoreNonSync)
             for ((key, serializable) in updates) {
-                toml.element(key,serializable.serialize(errorBuilder, ignoreNonSync))
+                toml.element(key,serializable.serializeEntry(null, errorBuilder, ignoreNonSync))
             }
         } catch (e: Exception){
             errorBuilder.add("Critical error encountered while serializing config!: ${e.localizedMessage}")
@@ -259,8 +262,8 @@ object ConfigApiImpl {
                         errorBuilder.add("TomlElement [$name] was null!.")
                         continue
                     }
-                    if (propVal is FzzySerializable) {
-                        val result = propVal.deserialize(tomlElement,errorBuilder, name, ignoreNonSync)
+                    if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
+                        val result = propVal.deserializeEntry(tomlElement,errorBuilder, name, ignoreNonSync)
                         if (result.isError()) {
                             errorBuilder.add(result.getError())
                         }
@@ -268,7 +271,7 @@ object ConfigApiImpl {
                         try {
                             it.setter.call(
                                 config,
-                                ConfigApiImpl.decodeFromTomlElement(tomlElement, it.returnType).also { println(it) })
+                                decodeFromTomlElement(tomlElement, it.returnType).also { println(it) })
                         } catch (e: Exception) {
                             errorBuilder.add("Error deserializing raw field [$name]: ${e.localizedMessage}")
                         }
@@ -314,58 +317,11 @@ object ConfigApiImpl {
             return ValidationResult.error(config,"Improper TOML format passed to deserializeDirtyFromToml")
         }
         try {
-            walk(config, config.getId().toTranslationKey(), ignoreNonSync) {str, v -> toml[str]?.let{ if(v is FzzySerializable) v.deserialize(it,errorBuilder,str,ignoreNonSync) }}
+            walk(config, config.getId().toTranslationKey(), ignoreNonSync) {str, v -> toml[str]?.let{ if(v is EntryDeserializer<*>) v.deserializeEntry(it,errorBuilder,str,ignoreNonSync) }}
         } catch(e: Exception){
             errorBuilder.add("Critical error encountered while deserializing update")
         }
-        /*
-        try {
-            val propMap = config.javaClass.kotlin.memberProperties.filter {
-                !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-                        && toml.containsKey(it.name)
-                        && if (ignoreNonSync) true else !ConfigHelperImpl.isNonSync(it)
-                        && it is KMutableProperty<*>
-                        && it.visibility == KVisibility.PUBLIC
-            }.associateBy { it.name }
-            for (key in toml.keys) {
-                if (!propMap.containsKey(key)){
-                    errorBuilder.add("TomlTable sent for deserialization includes key not present in receiver class!: [$key]")
-                }
-            }
-            for ((key, tomlElement) in toml.entries) {
-                val it = propMap[key]
-                if (it == null || it !is KMutableProperty<*>){
-                    errorBuilder.add("Immutable or mismatched/missing property found in sync of Dirty Data from key [$key]: ignoreNonSync: $ignoreNonSync")
-                    continue
-                }
-                val propVal = it.get(config)
-                val name = it.name
-                if (propVal is DirtySerializable) {
-                    val result = propVal.deserializeDirty(tomlElement,errorBuilder, name, ignoreNonSync)
-                    if (result.isError()) {
-                        errorBuilder.add(result.getError())
-                    }
-                } else if (propVal is DirtyMarkable && propVal is FzzySerializable) {
-                    val result = propVal.deserialize(tomlElement,errorBuilder, name, ignoreNonSync)
-                    if (result.isError()) {
-                        errorBuilder.add(result.getError())
-                    }
-                } else {
-                    errorBuilder.add("Property [$name] wasn't DirtySerializable or FzzySerializable")
-                }
-            }
-        } catch (e: Exception){
-            errorBuilder.add("Critical error encountered while deserializing")
-        }*/
-        /*return if (inboundErrorSize == errorBuilder.size) {
-            ValidationResult.success(config)
-        } else {
-            ValidationResult.error(config, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
-        }*/
-        return ValidationResult.error(
-            config,
-            "Errors found while deserializing Config ${config.javaClass.canonicalName}!"
-        )
+        return ValidationResult.predicated(config, errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
     }
 
     internal fun <T: Config> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
@@ -443,15 +399,15 @@ object ConfigApiImpl {
     internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null){
         FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
         FC.LOGGER.info("Completed updates for config: [$id]")
-        if (player != null) 
+        if (player != null)
             FC.LOGGER.info("Updates made by: ${player.name}")
         FC.LOGGER.info("-------------------------")
         for (str in history)
-            FC.LOGGER.info("    " + str)
+            FC.LOGGER.info("    $str")
         FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
     }
 
-    internal fun<T: Walkable> walk(config: T, prefix: String, ignoreNonSync: Boolean,  walkAction: BiConsumer<String, Any?>){
+    fun<T: Walkable> walk(config: T, prefix: String, ignoreNonSync: Boolean,  walkAction: BiConsumer<String, Any?>){
         for (property in config.javaClass.kotlin.memberProperties.filter {
             !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
             && it is KMutableProperty<*>
@@ -459,12 +415,10 @@ object ConfigApiImpl {
         ) {
             val newPrefix = prefix + "." + property.name
             val propVal = property.get(config)
-            if (propVal is Walkable){
-                walk(propVal,newPrefix,ignoreNonSync,walkAction)
-            }
             walkAction.accept(newPrefix, propVal)
+            if (propVal is Walkable){
+                walk(propVal, newPrefix, ignoreNonSync, walkAction)
+            }
         }
     }
-
-
 }

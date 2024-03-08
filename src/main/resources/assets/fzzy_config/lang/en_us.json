@@ -2,5 +2,7 @@
 	"fc.config.validated_color_r": "Red part of an RGBA color; enter an integer between 0 and 255.",
 	"fc.config.validated_color_g": "Green part of an RGBA color; enter an integer between 0 and 255.",
 	"fc.config.validated_color_b": "Blue part of an RGBA color; enter an integer between 0 and 255.",
-	"fc.config.validated_color_a": "Alpha part of an RGBA color; enter an integer between 0 (transparent) and 255 (opaque). The mod author may lock this to 255 only."
+	"fc.config.validated_color_a": "Alpha part of an RGBA color; enter an integer between 0 (transparent) and 255 (opaque). The mod author may lock this to 255 only.",
+	"test.walkable.testChildDave.testChildBool": "Test Child Dave's Boolean",
+	"test.walkable.testChildDave.testChildBool.desc": "Dave's favorite boolean. Please treat it well."
 }

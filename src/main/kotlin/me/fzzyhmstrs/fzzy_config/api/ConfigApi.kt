@@ -8,8 +8,8 @@ import me.fzzyhmstrs.fzzy_config.annotations.Version
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.deserializeFromToml
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.impl.FzzySerializable
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
 import net.peanuuutz.tomlkt.*
 import java.io.File
 
@@ -110,7 +110,7 @@ object ConfigApi {
      * Serialize a config class to a TomlElement
      *
      * Custom serializer, powered by TomlKt. Serialization occurs in two ways
-     * 1) [FzzySerializable] elements are serialized with their custom `serialize` method
+     * 1) [EntrySerializer] elements are serialized with their custom `serialize` method
      * 2) "Raw" properties and fields are serialized with the TomlKt by-class-type serialization.
      *
      * Will serialize the available TomlAnnotations, for use in proper formatting, comment generation, etc.
@@ -158,7 +158,7 @@ object ConfigApi {
      *
      * FzzyConfig has a system for marking changes made as `dirty`, and only resynchronizing elements that were actually changed. This method is used internally by [DirtySerializable]
      *
-     * @param T Type of the config to serialize. Can be any Non-Null type.
+     * @param T Type of the config to serialize. A subclass of [Config].
      * @param config the config instance to serialize from
      * @param errorBuilder the error list. error messages are appended to this for display after the serialization call
      * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to serialize the entire config (ex: saving to file), use false for syncing (ex: initial sync server -> client)
@@ -167,16 +167,16 @@ object ConfigApi {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Any> serializeDirtyToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement{
-        return ConfigApiImpl.serializeDirtyToToml(config, errorBuilder, ignoreNonSync)
+    fun <T: Config> serializeUpdateToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement{
+        return ConfigApiImpl.serializeUpdateToToml(config, errorBuilder, ignoreNonSync)
     }
 
     /**
      * TODO()
      */
     @JvmStatic
-    fun <T: Any> serializeDirty(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String{
-        return ConfigApiImpl.serializeDirty(config, errorBuilder, ignoreNonSync)
+    fun <T: Config> serializeUpdate(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String{
+        return ConfigApiImpl.serializeUpdate(config, errorBuilder, ignoreNonSync)
     }
 
 
@@ -184,7 +184,7 @@ object ConfigApi {
      * Deserializes a config class from a TomlElement
      *
      * Custom deserializer, powered by TomlKt. Deserialization focuses on validation and building a useful error message. Deserialization happens in two ways
-     * 1) [FzzySerializable] elements are deserialized with their custom `deserialize` method
+     * 1) [EntrySerializer] elements are deserialized with their custom `deserialize` method
      * 2) "Raw" properties and fields are deserialized with the TomlKt by-class-type deserialization.
      *
      * Configs are deserialized "in place". That is to say, the deserializer iterates over the relevant field and properties of a pre-instantiated "default" config class. Each relevant field/property is filled in with the results of deserializing from the TomlElement at the matching TomlTable key. If for some reason there is a critical error, the initial config passed in, with whatever deserialization was successfully completed, will be returned as a fallback.
@@ -229,7 +229,7 @@ object ConfigApi {
      *
      * FzzyConfig has a system for marking changes made as `dirty`, and only resynchronizing elements that were actually changed. This method is used internally by [DirtySerializable]
      *
-     * @param T the config type. Can be any Non-Null type.
+     * @param T the config type. A subclass of [Config].
      * @param config the config pre-deserialization
      * @param toml the TomlElement to deserialize from. Needs to be a TomlTable
      * @param errorBuilder a mutableList of strings the original caller of deserialization can use to print a detailed error log
@@ -239,8 +239,8 @@ object ConfigApi {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Any> deserializeDirtyFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
-        return ConfigApiImpl.deserializeDirtyFromToml(config, toml, errorBuilder, ignoreNonSync)
+    fun <T: Config> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
+        return ConfigApiImpl.deserializeUpdateFromToml(config, toml, errorBuilder, ignoreNonSync)
     }
 
     /**
@@ -248,7 +248,7 @@ object ConfigApi {
      *
      * Extension of [deserializeDirtyFromToml] that deserializes directly from a string. Use to read from a file or packet.
      *
-     * @param T the config type. can be Any non-null type.
+     * @param T the config type. A subclass of [Config].
      * @param config the config pre-deserialization
      * @param string the string to deserialize from. Needs to be valid Toml.
      * @param errorBuilder a mutableList of strings the original caller of deserialization can use to print a detailed error log
@@ -258,8 +258,8 @@ object ConfigApi {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Any> deserializeDirty(config: T, string: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
-        return ConfigApiImpl.deserializeDirty(config, string, errorBuilder, ignoreNonSync)
+    fun <T: Config> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
+        return ConfigApiImpl.deserializeUpdate(config, string, errorBuilder, ignoreNonSync)
     }
 
     /**

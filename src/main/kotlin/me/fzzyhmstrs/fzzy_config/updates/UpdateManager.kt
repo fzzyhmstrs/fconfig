@@ -1,11 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.updates
 
 import com.google.common.collect.ArrayListMultimap
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.impl.FzzySerializable
-import me.fzzyhmstrs.fzzy_config.util.Update
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
 import net.minecraft.text.Text
 import java.time.Instant
 import java.time.LocalDateTime
@@ -48,7 +46,7 @@ object UpdateManager{
     fun flush(): List<String>{
         setScope("")
         updateMap.clear()
-        val updates = buildChangeLogHistory()
+        val updates = buildChangeHistoryLog()
         changeHistory.clear()
         return updates
     }
@@ -64,14 +62,14 @@ object UpdateManager{
         return list
     }
 
-    fun needsUpdatePop(updatable: Updatable): Boolean {
+    internal fun needsUpdatePop(updatable: Updatable): Boolean {
         val key = updatable.getUpdateKey()
         val updater = updateMap[key] ?: return false
         if (!updater.canUndo()) return false
         return updatable.popState()
     }
 
-    fun needsUpdatePeek(updatable: Updatable): Boolean {
+    internal fun needsUpdatePeek(updatable: Updatable): Boolean {
         val updater = updateMap[updatable.getUpdateKey()] ?: return false
         if (!updater.canUndo()) return false
         return updatable.peekState()
@@ -107,7 +105,7 @@ object UpdateManager{
         changeHistory.computeIfAbsent(key){ArrayListMultimap.create()}.put(System.currentTimeMillis(),text)
     }
 
-    fun getScopedUpdates(scope: String): Collection<Updater> {
+    internal fun getScopedUpdates(scope: String): Collection<Updater> {
         return (if(scope.isEmpty()) updateMap.keys else updateMap.keys.filter{ it.startsWith(scope) }).mapNotNull { updateMap[it] }
     }
 
@@ -115,9 +113,9 @@ object UpdateManager{
         ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {str, v -> if (v is Updatable) v.setUpdateKey(str)}
     }
 
-    internal fun<T: Config> getSyncUpdates(config: T, ignoreNonSync: Boolean = false): Map<String, FzzySerializable> {
-        val map: MutableMap<String, FzzySerializable> = mutableMapOf()
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(), ignoreNonSync) {str, v -> if (v is Updatable && v is FzzySerializable) { if (needsUpdatePop(v)) map[str] = v }}
+    internal fun<T: Config> getSyncUpdates(config: T, ignoreNonSync: Boolean = false): Map<String, EntrySerializer<*>> {
+        val map: MutableMap<String, EntrySerializer<*>> = mutableMapOf()
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(), ignoreNonSync) {str, v -> if (v is Updatable && v is EntrySerializer<*>) { if (needsUpdatePop(v)) map[str] = v }}
         return map
     }
 }
