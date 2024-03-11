@@ -8,7 +8,13 @@ import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
 import net.peanuuutz.tomlkt.TomlElement
 
 /**
+ * A section of a [Config]
  *
+ * Use to organize related sub-topics of a larger config. Auto GUI creation will use sections to create separate "layers" of GUI for the player to drill down into. Recommended practice is to group all sections at the beginning or end of a Config, so the section widgets in the GUI are grouped together, and the non-grouped entries are also all together.
+ *
+ * Follows the same rules as a Config regarding setting definitions. See the documentation for []Config] for details.
+ * @author fzzyhmstrs
+ * @since 0.2.0
  */
 open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection> {
 

@@ -6,12 +6,16 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryValidator
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.registry.Registries
+import net.minecraft.registry.Registry
+import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
 
+@Suppress("unused")
 class ValidatedIdentifier(private val defaultValue: String, private val allowableIds: Supplier<List<Identifier>>, private val validator: EntryValidator<String> = default(allowableIds)):
     Entry<String>,
     Updatable,
@@ -173,13 +177,44 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
 
     companion object{
 
+        @JvmStatic
         val DEFAULT_WEAK: EntryValidator<String> = EntryValidator { i, _ -> ValidationResult.predicated(i,Identifier.tryParse(i) != null, "Unparsable Identifier") }
 
+        @JvmStatic
         fun default(supplier: Supplier<List<Identifier>>): EntryValidator<String>{
             return EntryValidator.Builder<String>()
                 .weak(DEFAULT_WEAK)
                 .strong { i, t -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { supplier.get().contains(it) } ?: false), "Identifier invalid or not allowed") }
                 .build()
+        }
+
+        /**
+         * builds an EntryValidator with always-strong behavior
+         *
+         * Use if your identifier list is available both at loading (during modInitializtion, typically), and during updating (in-game).
+         * @param supplier a supplier of valid ids
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        fun strong(supplier: Supplier<List<Identifier>>): EntryValidator<String>{
+            return EntryValidator.Builder<String>()
+                .weak { i, t -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { supplier.get().contains(it) } ?: false), "Identifier invalid or not allowed") }
+                .strong { i, t -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { supplier.get().contains(it) } ?: false), "Identifier invalid or not allowed") }
+                .build()
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        fun <T> fromTag(tag: TagKey<T>): Supplier<List<Identifier>>{
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(tag.registry().value)
+            if (maybeRegistry.isEmpty) return Supplier { listOf() }
+            val registry = maybeRegistry.get() as? Registry<T> ?: return Supplier { listOf() }
+            return Supplier {  registry.iterateEntries(tag).mapNotNull {registry.getId(it.value()) } }
+        }
+
+        @Deprecated("Make sure your list is available at Validation time!")
+        fun<T> List<T>.supply(): Supplier<List<T>>{
+            return Supplier { this }
         }
 
     }

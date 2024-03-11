@@ -1,8 +1,11 @@
 package me.fzzyhmstrs.fzzy_config.validated_field.map
 
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
+import me.fzzyhmstrs.fzzy_config.validated_field.misc.ValidatedIdentifier
+import me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedInt
 import net.minecraft.util.Identifier
 
+@Suppress("unused")
 class ValidatedMapBuilder<V: Any> {
     private var keyHandler: Entry<String>? = null
     private var valueHandler: Entry<V>? = null
@@ -58,5 +61,14 @@ class ValidatedMapBuilder<V: Any> {
         return this
     }
 
+    fun build(): ValidatedMap<V>{
+        return ValidatedMap(defaults,keyHandler!!,valueHandler!!)
+    }
+
+    companion object{
+        val test = ValidatedMapBuilder<Int>()
+            .keyHandler(ValidatedIdentifier("minecraft:stick",{ listOf() }))
+            .valueHandler(ValidatedInt(1,100,0))
+    }
 
 }

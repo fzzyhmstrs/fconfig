@@ -44,12 +44,12 @@ object ConfigApiImpl {
                 return configClass()
             }
             //create our file
-            val f = File(dir, name)
+            val f = File(dir, "$name.toml")
             if (f.exists()) {
                 val fErrorsIn = mutableListOf<String>()
                 val str = f.readLines().joinToString("\n")
                 val classInstance = configClass()
-                val classVersion = ConfigApiImpl.getVersion(classInstance::class)
+                val classVersion = getVersion(classInstance::class)
                 val (readConfigResult, readVersion) = deserializeConfig(classInstance, str, fErrorsIn)
                 val readConfig = readConfigResult.get()
                 val needsUpdating = classVersion > readVersion
@@ -118,7 +118,7 @@ object ConfigApiImpl {
             if (!dirCreated) {
                 return
             }
-            val f = File(dir, name)
+            val f = File(dir, "$name.toml")
             if (f.exists()) {
                 val fErrorsOut = mutableListOf<String>()
                 val str = serializeConfig(configClass, fErrorsOut)
@@ -157,13 +157,13 @@ object ConfigApiImpl {
     internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): TomlElement{
         //used to build a TOML table piece by piece
         val toml = TomlTableBuilder()
-        val version = ConfigApiImpl.getVersion(config::class)
-        val headerAnnotations = ConfigApiImpl.tomlHeaderAnnotations(config::class).toMutableList()
+        val version = getVersion(config::class)
+        val headerAnnotations = tomlHeaderAnnotations(config::class).toMutableList()
         headerAnnotations.add(TomlHeaderComment("Don't change this! Version used to track needed updates."))
         toml.element("version", TomlLiteral(version),headerAnnotations.map { TomlComment(it.text) })
         try {
             //java fields are ordered in declared order, apparently not so for Kotlin properties. use these first to get ordering. skip Transient
-            val fields = config::class.java.declaredFields.filter { !Modifier.isTransient(it.modifiers) }
+            val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
             //generate an index map, so I can order the properties based on name
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             //kotlin member properties filtered by [field map contains it && if NonSync matters, it isn't NonSync]. NonSync does not matter by default
@@ -188,7 +188,7 @@ object ConfigApiImpl {
                         //fallback is to use by-type TOML serialization
                     } else if (propVal != null) {
                         try {
-                            ConfigApiImpl.encodeToTomlElement(propVal, it.returnType) ?: TomlNull
+                            encodeToTomlElement(propVal, it.returnType) ?: TomlNull
                         } catch (e: Exception) {
                             errorBuilder.add("Problem encountered with raw data during serialization of [$name]: ${e.localizedMessage}")
                             TomlNull
@@ -199,7 +199,7 @@ object ConfigApiImpl {
                         TomlNull
                     }
                     //scrape all the TomlAnnotations associated
-                    val tomlAnnotations = ConfigApiImpl.tomlAnnotations(it)
+                    val tomlAnnotations = tomlAnnotations(it)
                     //add the element to the TomlTable, with annotations
                     toml.element(name, el, tomlAnnotations)
                 }

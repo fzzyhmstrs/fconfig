@@ -28,7 +28,7 @@ object ConfigApi {
     *
     * Configs registered this way still have to handle their own initialization. That is to say, they have to be instantiated and passed to the registry in a timely manner, otherwise they will not be loaded in time for CONFIGURATION stage syncing with clients.
     *
-    * Loading with the Fabric [ModInitializer] is a convenient and typical way to achieve this.
+    * Loading with the Fabric [ModInitializer][net.fabricmc.api.ModInitializer] is a convenient and typical way to achieve this.
     * @param T the config type, any subclass of [Config]
     * @param config the config to register
     * @author fzzyhmstrs
@@ -61,7 +61,7 @@ object ConfigApi {
      * Config Class and File generator with [Version] updating support, automatic validation and correction, and detailed error reporting. Use this to generate the actual config class instance to be used in-game. See the Example Config for typical usage case.
      *
      * @param T The config class type. Must be a subclass of [Config]
-     * @param name String. The config name, will become the file name. In an identifier, would be the "path"
+     * @param name String. The config name, will become the file name. In an identifier, would be the "path". Adds ".toml" to the name for reading/writing to file automatically.
      * @param folder String, optional. A base config folder name. If left out, will write to the main config directory (not recommended). In an Identifier, this would be the "namespace"
      * @param subfolder String, optional. A subfolder name if desired. By default, blank. The file will appear in the base "namespace" folder if no child is given.
      * @param configClass () -> T. A provider of instances of the config class itself. In Kotlin this can typically be written like `{ MyConfigClass() }`
@@ -75,7 +75,7 @@ object ConfigApi {
     }
 
     /**
-     * overload of [readOrCreateAndValidate] that automatically applies the name, folder, and subfolder from the config itself.
+     * overload of [readOrCreateAndValidate] that automatically applies the name, folder, and subfolder from the config itself. Automatically adds ".toml" to the name for reading and writing.
      *
      * @param T type of config being created. Any subclass of [Config]
      * @param configClass supplier of T
@@ -156,7 +156,7 @@ object ConfigApi {
     /**
      * serializes `dirty` elements in a Config for syncing with a server or secondary clients.
      *
-     * FzzyConfig has a system for marking changes made as `dirty`, and only resynchronizing elements that were actually changed. This method is used internally by [DirtySerializable]
+     * FzzyConfig has a system for marking changes made as `dirty`, and only resynchronizing elements that were actually changed. This method generates the Toml of only those changes.
      *
      * @param T Type of the config to serialize. A subclass of [Config].
      * @param config the config instance to serialize from
@@ -172,7 +172,17 @@ object ConfigApi {
     }
 
     /**
-     * TODO()
+     * serializes `dirty` elements in a Config for syncing with a server or secondary clients.
+     *
+     * Extension of [serializeUpdateToToml] that generates a String output. Use for synchronization.
+     *
+     * @param T Type of the config to serialize. A subclass of [Config].
+     * @param config the config instance to serialize from
+     * @param errorBuilder the error list. error messages are appended to this for display after the serialization call
+     * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to serialize the entire config (ex: saving to file), use false for syncing (ex: initial sync server -> client)
+     * @return Returns a String representation of the serialized config [TomlElement] for writing to file
+     * @author fzzyhmstrs
+     * @since 0.2.0
      */
     @JvmStatic
     fun <T: Config> serializeUpdate(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String{
@@ -227,7 +237,7 @@ object ConfigApi {
     /**
      * Deserializes received dirty-only config from [TomlElement].
      *
-     * FzzyConfig has a system for marking changes made as `dirty`, and only resynchronizing elements that were actually changed. This method is used internally by [DirtySerializable]
+     * FzzyConfig has a system for marking changes made as `dirty`, and only resynchronizing elements that were actually changed.
      *
      * @param T the config type. A subclass of [Config].
      * @param config the config pre-deserialization
@@ -246,7 +256,7 @@ object ConfigApi {
     /**
      * Deserializes the updated portions of a config from a string.
      *
-     * Extension of [deserializeDirtyFromToml] that deserializes directly from a string. Use to read from a file or packet.
+     * Extension of [deserializeUpdateFromToml] that deserializes directly from a string. Use to read from a file or packet.
      *
      * @param T the config type. A subclass of [Config].
      * @param config the config pre-deserialization
