@@ -5,7 +5,7 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
 
-class ConfigS2CUpdateCustomPayload(val id: String, val serializedConfig: String): CustomPayload {
+class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: String): CustomPayload {
 
     constructor(buf: PacketByteBuf): this(buf.readString(),buf.readString())
 
@@ -14,12 +14,12 @@ class ConfigS2CUpdateCustomPayload(val id: String, val serializedConfig: String)
         buf.writeString(serializedConfig)
     }
 
-    override fun getId(): CustomPayload.Id<out CustomPayload> {
+    override fun getId(): Id<out CustomPayload> {
         return type
     }
 
     companion object{
-        val type: Id<ConfigS2CUpdateCustomPayload> = CustomPayload.id("fzzy_config:config_s2c_update")
-        val codec: PacketCodec<PacketByteBuf, ConfigS2CUpdateCustomPayload> = CustomPayload.codecOf({c, b -> c.write(b) }, {b -> ConfigS2CUpdateCustomPayload(b)})
+        val type: Id<ConfigSyncS2CCustomPayload> = CustomPayload.id("fzzy_config:config_sync_s2c")
+        val codec: PacketCodec<PacketByteBuf, ConfigSyncS2CCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> ConfigSyncS2CCustomPayload(b)})
     }
 }

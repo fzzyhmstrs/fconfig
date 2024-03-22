@@ -1,8 +1,10 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.StringTranslatable
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.impl.Walkable
+import me.fzzyhmstrs.fzzy_config.updates.UpdateKeyed
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
 import net.peanuuutz.tomlkt.TomlElement
@@ -16,14 +18,16 @@ import net.peanuuutz.tomlkt.TomlElement
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection> {
+open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, UpdateKeyed, StringTranslatable {
+
+    private var sectionKey = "fc.config.generic.section"
 
     override fun serializeEntry(
         input: ConfigSection?,
         errorBuilder: MutableList<String>,
         ignoreNonSync: Boolean
     ): TomlElement {
-        return ConfigApi.serializeToToml(this,errorBuilder,ignoreNonSync)
+        return ConfigApi.serializeToToml(this, errorBuilder, ignoreNonSync)
     }
 
     override fun deserializeEntry(
@@ -33,6 +37,22 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
         ignoreNonSync: Boolean
     ): ValidationResult<ConfigSection> {
         return ConfigApi.deserializeFromToml(this, toml, errorBuilder, ignoreNonSync)
+    }
+
+    override fun translationKey(): String {
+        return getUpdateKey()
+    }
+
+    override fun descriptionKey(): String {
+        return getUpdateKey() + ".desc"
+    }
+
+    override fun getUpdateKey(): String {
+        return sectionKey
+    }
+
+    override fun setUpdateKey(key: String) {
+        sectionKey = key
     }
 
     override fun toString(): String {

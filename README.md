@@ -51,3 +51,20 @@ _Currently under development_
     - Replicates updates to all clients
     - Live updating of ConfigScreen??
       - Need a check for change of currently-being-edited field
+
+### Screen Construction
+Basic component needs of the GUI side of things
+- Generic Config Screen Layer that can be utilized at any layer
+  - Needs to know its scope
+  - Needs to be able to instance its ListWidget
+  - Needs to be able to instance its Scope buttons at the top
+- Generic Entry
+- Changes button
+- Apply Button
+- Done Button
+- Change Log Button (TextlessButton)
+- PopupWidget implementation as ParentElement
+  - PopupWidgets for List-type fields (List, Map)
+  - PopupWidget for Color
+  - PopupWidget for forwarding a setting
+- ClickableWidgets for all fields

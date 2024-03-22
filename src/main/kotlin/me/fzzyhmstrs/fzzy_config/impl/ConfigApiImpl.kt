@@ -5,19 +5,21 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.*
+import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
+import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.entity.player.PlayerEntity
 import net.peanuuutz.tomlkt.*
 import java.io.File
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
-import java.util.function.BiConsumer
 import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
@@ -25,13 +27,47 @@ import kotlin.reflect.jvm.javaField
 
 object ConfigApiImpl {
 
-    internal fun <T: Config> registerConfig(config: T): T{
+    private val isClient by lazy {
+        FabricLoader.getInstance().environmentType == EnvType.CLIENT
+    }
+
+    internal fun <T: Config> registerConfig(config: T, registerType: RegisterType): T{
+        return when(registerType){
+            RegisterType.BOTH -> registerBoth(config)
+            RegisterType.SYNC -> registerSynced(config)
+            RegisterType.CLIENT -> registerClient(config)
+        }
+    }
+
+    internal fun <T: Config> registerBoth(config: T): T{
+        SyncedConfigRegistry.registerConfig(config)
+        return registerClient(config)
+    }
+    internal fun <T: Config> registerSynced(config: T): T{
         SyncedConfigRegistry.registerConfig(config)
         return config
     }
+    internal fun <T: Config> registerClient(config: T): T{
+        if(isClient)
+            ConfigApiImplClient.registerConfig(config)
+        return config
+    }
 
-    internal fun <T: Config> registerAndLoadConfig(configClass: () -> T): T{
-        return registerConfig(readOrCreateAndValidate(configClass))
+    internal fun <T: Config> registerAndLoadConfig(configClass: () -> T, registerType: RegisterType): T{
+        return when(registerType){
+            RegisterType.BOTH -> registerAndLoadBoth(configClass)
+            RegisterType.SYNC -> registerAndLoadSynced(configClass)
+            RegisterType.CLIENT -> registerAndLoadClient(configClass)
+        }
+    }
+    private fun <T: Config> registerAndLoadBoth(configClass: () -> T): T{
+        return registerBoth(readOrCreateAndValidate(configClass))
+    }
+    private fun <T: Config> registerAndLoadSynced(configClass: () -> T): T{
+        return registerSynced(readOrCreateAndValidate(configClass))
+    }
+    private fun <T: Config> registerAndLoadClient(configClass: () -> T): T{
+        return registerClient(readOrCreateAndValidate(configClass))
     }
 
     internal fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T{
@@ -154,6 +190,11 @@ object ConfigApiImpl {
         save(configClass.name,configClass.folder,configClass.subfolder, configClass)
     }
 
+    internal fun openScreen(scope: String){
+        if (isClient)
+            ConfigApiImplClient.openScreen(scope)
+    }
+
     internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): TomlElement{
         //used to build a TOML table piece by piece
         val toml = TomlTableBuilder()
@@ -236,6 +277,12 @@ object ConfigApiImpl {
         return Toml.encodeToString(serializeUpdateToToml(config,errorBuilder,ignoreNonSync))
     }
 
+    internal fun serializeEntry(entry: Entry<*>, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): String{
+        val toml = TomlTableBuilder()
+        toml.element("entry", entry.serializeEntry(null,errorBuilder, ignoreNonSync))
+        return Toml.encodeToString(toml.build())
+    }
+
     internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): ValidationResult<T> {
         val inboundErrorSize = errorBuilder.size
         if (toml !is TomlTable) {
@@ -292,11 +339,7 @@ object ConfigApiImpl {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception){
-            return  Pair(
-                ValidationResult.error(
-                    config,
-                    "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing"
-                ),0)
+            return  Pair(ValidationResult.error(config, "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing"),0)
         }
         val version = if(toml.containsKey("version")){
             try {
@@ -317,7 +360,7 @@ object ConfigApiImpl {
             return ValidationResult.error(config,"Improper TOML format passed to deserializeDirtyFromToml")
         }
         try {
-            walk(config, config.getId().toTranslationKey(), ignoreNonSync) {str, v -> toml[str]?.let{ if(v is EntryDeserializer<*>) v.deserializeEntry(it,errorBuilder,str,ignoreNonSync) }}
+            walk(config, config.getId().toTranslationKey(), ignoreNonSync) {_, str, v, _ -> toml[str]?.let{ if(v is EntryDeserializer<*>) v.deserializeEntry(it,errorBuilder,str,ignoreNonSync) }}
         } catch(e: Exception){
             errorBuilder.add("Critical error encountered while deserializing update")
         }
@@ -328,12 +371,19 @@ object ConfigApiImpl {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception){
-            return ValidationResult.error(
-                config,
-                "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing"
-            )
+            return ValidationResult.error(config, "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
         }
         return deserializeUpdateFromToml(config, toml, errorBuilder, ignoreNonSync)
+    }
+
+    internal fun deserializeEntry(entry: Entry<*>, string: String, scope: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<*> {
+        val toml = try {
+            Toml.parseToTomlTable(string)
+        } catch (e:Exception){
+            return ValidationResult.error(null, "Toml $string isn't properly formatted to be deserialized")
+        }
+        val element = toml["entry"] ?: return ValidationResult.error(null, "Toml $string doesn't contain needed 'entry' key")
+        return entry.deserializeEntry(element, errorBuilder, scope, ignoreNonSync)
     }
 
     internal fun makeDir(folder: String, subfolder: String): Pair<File,Boolean>{
@@ -372,7 +422,10 @@ object ConfigApiImpl {
     }
 
     internal fun isNonSync(property: KProperty<*>): Boolean{
-        return property.annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
+        return isNonSync(property.annotations)
+    }
+    internal fun isNonSync(annotations: List<Annotation>): Boolean{
+        return annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
     }
     internal fun tomlAnnotations(property: KAnnotatedElement): List<Annotation> {
         return property.annotations.map { mapJvmAnnotations(it) }.filter { it is TomlComment || it is TomlInline || it is TomlBlockArray || it is TomlMultilineString || it is TomlLiteralString || it is TomlInteger }
@@ -395,10 +448,22 @@ object ConfigApiImpl {
         val version = clazz.findAnnotation<Version>()
         return version?.version ?: 0
     }
+    internal fun hasNeededPermLevel(playerPermLevel: Int, defaultPerm: Int, annotations: List<Annotation>): Boolean {
+        if (ConfigApiImpl.isNonSync(annotations)) return true
+        for (annotation in annotations){
+            if (annotation is WithPerms)
+                return playerPermLevel >= annotation.opLevel
+        }
+        for (annotation in annotations){
+            if (annotation is ClientModifiable)
+                return true
+        }
+        return playerPermLevel >= defaultPerm
+    }
 
     internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null){
         FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
-        FC.LOGGER.info("Completed updates for config: [$id]")
+        FC.LOGGER.info("Completed updates for configs: [$id]")
         if (player != null)
             FC.LOGGER.info("Updates made by: ${player.name}")
         FC.LOGGER.info("-------------------------")
@@ -407,7 +472,7 @@ object ConfigApiImpl {
         FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
     }
 
-    fun<T: Walkable> walk(config: T, prefix: String, ignoreNonSync: Boolean,  walkAction: BiConsumer<String, Any?>){
+    fun<T: Walkable> walk(config: T, prefix: String, ignoreNonSync: Boolean,  walkAction: WalkAction){
         for (property in config.javaClass.kotlin.memberProperties.filter {
             !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
             && it is KMutableProperty<*>
@@ -415,10 +480,14 @@ object ConfigApiImpl {
         ) {
             val newPrefix = prefix + "." + property.name
             val propVal = property.get(config)
-            walkAction.accept(newPrefix, propVal)
+            walkAction.act(prefix, newPrefix, propVal, property.annotations)
             if (propVal is Walkable){
                 walk(propVal, newPrefix, ignoreNonSync, walkAction)
             }
         }
+    }
+
+    fun interface WalkAction{
+        fun act(oldPrefix: String, newPrefix: String, element: Any?, annotations: List<Annotation>)
     }
 }

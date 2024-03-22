@@ -11,7 +11,7 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
 
-class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: Entry<String>, private val valueHandler: Entry<V>): ValidatedField<Map<String,V>>(defaultValue) {
+class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: Entry<String>, private val valueHandler: Entry<V>): ValidatedField<Map<String, V>>(defaultValue) {
     override fun copyStoredValue(): Map<String, V> {
         return storedValue.toMap()
     }
@@ -48,7 +48,7 @@ class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: 
             val keyErrors: MutableList<String> = mutableListOf()
             val valueErrors: MutableList<String> = mutableListOf()
             for ((key, el) in table.entries){
-                val keyResult = keyHandler.validateEntry(key,EntryValidator.ValidationType.WEAK)
+                val keyResult = keyHandler.validateEntry(key, EntryValidator.ValidationType.WEAK)
                 if(keyResult.isError()){
                     keyErrors.add("Skipping key!: ${keyResult.getError()}")
                     continue

@@ -1,7 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validated_field.entry
 
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
 
 /**
  * Deserializes individual entries in a complex [ValidatedField]

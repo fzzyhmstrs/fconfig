@@ -39,10 +39,20 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
     override fun setUpdateKey(key: String) {
         updateKey = key
     }
-    override fun restoreDefault(){
+
+    override fun isDefault(): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun restore(){
         storedValue = defaultValue
         cachedIdentifier = Identifier(storedValue)
     }
+
+    override fun revert() {
+        TODO("Not yet implemented")
+    }
+
     override fun pushState(){
         pushedValue = String(storedValue.toCharArray())
     }
@@ -181,7 +191,7 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
         val DEFAULT_WEAK: EntryValidator<String> = EntryValidator { i, _ -> ValidationResult.predicated(i,Identifier.tryParse(i) != null, "Unparsable Identifier") }
 
         @JvmStatic
-        fun default(supplier: Supplier<List<Identifier>>): EntryValidator<String>{
+        fun default(supplier: Supplier<List<Identifier>>): EntryValidator<String> {
             return EntryValidator.Builder<String>()
                 .weak(DEFAULT_WEAK)
                 .strong { i, t -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { supplier.get().contains(it) } ?: false), "Identifier invalid or not allowed") }
@@ -197,19 +207,31 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
          * @since 0.2.0
          */
         @JvmStatic
-        fun strong(supplier: Supplier<List<Identifier>>): EntryValidator<String>{
+        fun strong(supplier: Supplier<List<Identifier>>): EntryValidator<String> {
             return EntryValidator.Builder<String>()
                 .weak { i, t -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { supplier.get().contains(it) } ?: false), "Identifier invalid or not allowed") }
                 .strong { i, t -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { supplier.get().contains(it) } ?: false), "Identifier invalid or not allowed") }
                 .build()
         }
 
+        @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> fromTag(tag: TagKey<T>): Supplier<List<Identifier>>{
+        fun <T> fromTag(defaultValue: Identifier, tag: TagKey<T>): ValidatedIdentifier{
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(tag.registry().value)
-            if (maybeRegistry.isEmpty) return Supplier { listOf() }
-            val registry = maybeRegistry.get() as? Registry<T> ?: return Supplier { listOf() }
-            return Supplier {  registry.iterateEntries(tag).mapNotNull {registry.getId(it.value()) } }
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(defaultValue.toString(), { listOf() })
+            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(defaultValue.toString(), { listOf() })
+            return ValidatedIdentifier(defaultValue.toString(), {  registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } })
+        }
+
+        @JvmStatic
+        fun <T> fromRegistry(defaultValue: Identifier, registry: Registry<T>): ValidatedIdentifier {
+            return ValidatedIdentifier(defaultValue.toString(), {  registry.ids.toList() })
+        }
+
+        @JvmStatic
+        @Deprecated("Make sure your list is available at Validation time!")
+        fun fromList(defaultValue: Identifier, list: List<Identifier>): ValidatedIdentifier{
+            return ValidatedIdentifier(defaultValue.toString(), list.supply())
         }
 
         @Deprecated("Make sure your list is available at Validation time!")

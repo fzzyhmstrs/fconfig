@@ -3,10 +3,13 @@ package me.fzzyhmstrs.fzzy_config.registry
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.networking.ConfigC2SUpdateCustomPayload
-import me.fzzyhmstrs.fzzy_config.networking.ConfigS2CSyncCustomPayload
-import me.fzzyhmstrs.fzzy_config.networking.ConfigS2CUpdateCustomPayload
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
+import me.fzzyhmstrs.fzzy_config.networking.ConfigSyncS2CCustomPayload
+import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateC2SCustomPayload
+import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateS2CCustomPayload
+import me.fzzyhmstrs.fzzy_config.networking.SettingForwardCustomPayload
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -14,6 +17,7 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.entity.player.PlayerEntity
 
 /**
  * The registry for [Config] instances.
@@ -22,57 +26,77 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
  */
 object SyncedConfigRegistry {
 
-    private val newConfigs : MutableMap<String, Config> = mutableMapOf()
+    private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
 
-    fun <T: Config> updateServer(config: T, changeHistory: List<String>){
+    fun forwardSetting(entry: Entry<*>, player: PlayerEntity, scope: String) {
+        val errors: MutableList<String> = mutableListOf()
+        val update = ConfigApiImpl.serializeEntry(entry,errors,true)
+        val uuid = player.uuid
+        ClientPlayNetworking.send(SettingForwardCustomPayload(update,uuid,scope))
+    }
+
+    fun <T: Config> updateServer(configs: List<T>, changeHistory: List<String>, playerPerm: Int){
         val errors = mutableListOf<String>()
-        val configString = ConfigApi.serializeUpdate(config,errors)
+        val serializedConfigs: MutableMap<String,String> = mutableMapOf()
+        for (config in configs) {
+            serializedConfigs[config.getId().toTranslationKey()] = ConfigApi.serializeUpdate(config, errors)
+        }
         if (errors.isNotEmpty()){
             val errorsResult = ValidationResult.error(true, "Critical error(s) encountered while serializing client-updated Config Class! Output may not be complete.")
             errorsResult.writeError(errors)
         }
-        val payload = ConfigC2SUpdateCustomPayload(config.getId().toString(),configString, changeHistory)
-        ClientPlayNetworking.send(payload)
+        ClientPlayNetworking.send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
     }
 
     internal fun registerClient() {
         //receives the entire NonSync config sent by the server during CONFIGURATION stage
-        ClientConfigurationNetworking.registerGlobalReceiver(ConfigS2CSyncCustomPayload.type){payload, _ ->
+        ClientConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.type){ payload, _ ->
             val id = payload.id
             val configString = payload.serializedConfig
-            if (newConfigs.containsKey(id)){
-                val config = newConfigs[id] ?: return@registerGlobalReceiver
+            if (syncedConfigs.containsKey(id)){
+                val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
-                val result = ConfigApi.deserializeConfig(config, configString, errors, false) //Don't ignore NonSync on a syncronization action
+                val result = ConfigApi.deserializeConfig(config, configString, errors, false) //Don't ignore NonSync on a synchronization action
                 result.first.writeError(errors)
             }
         }
         //receives the dirty config update from the server after a client pushes changes to it.
-        ClientPlayNetworking.registerGlobalReceiver(ConfigS2CUpdateCustomPayload.type){ payload, _ ->
-            val id = payload.id
-            val configString = payload.serializedConfig
-            if (newConfigs.containsKey(id)){
-                val config = newConfigs[id] ?: return@registerGlobalReceiver
-                val errors = mutableListOf<String>()
-                val result = ConfigApi.deserializeUpdate(config, configString, errors)
-                result.writeError(errors)
+        ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.type){ payload, _ ->
+            val serializedConfigs = payload.updates
+            for ((id, configString) in serializedConfigs) {
+                if (syncedConfigs.containsKey(id)) {
+                    val config = syncedConfigs[id] ?: return@registerGlobalReceiver
+                    val errors = mutableListOf<String>()
+                    val result = ConfigApi.deserializeUpdate(config, configString, errors)
+                    result.writeError(errors)
+                }
             }
+        }
+
+        ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type){ payload, _ ->
+            val update = payload.update
+            val sendingUuid = payload.player
+            val scope = payload.scope
+            ConfigApiImplClient.handleForwardedUpdate(update, sendingUuid, scope)
         }
     }
 
     internal fun registerAll() {
-        PayloadTypeRegistry.configurationC2S().register(ConfigS2CSyncCustomPayload.type, ConfigS2CSyncCustomPayload.codec)
-        PayloadTypeRegistry.configurationS2C().register(ConfigS2CSyncCustomPayload.type, ConfigS2CSyncCustomPayload.codec)
-        PayloadTypeRegistry.playC2S().register(ConfigS2CSyncCustomPayload.type, ConfigS2CSyncCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(ConfigS2CSyncCustomPayload.type, ConfigS2CSyncCustomPayload.codec)
-        PayloadTypeRegistry.playC2S().register(ConfigS2CUpdateCustomPayload.type, ConfigS2CUpdateCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(ConfigS2CUpdateCustomPayload.type, ConfigS2CUpdateCustomPayload.codec)
-        PayloadTypeRegistry.playC2S().register(ConfigC2SUpdateCustomPayload.type, ConfigC2SUpdateCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(ConfigC2SUpdateCustomPayload.type, ConfigC2SUpdateCustomPayload.codec)
+        PayloadTypeRegistry.configurationC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        PayloadTypeRegistry.playC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        PayloadTypeRegistry.playS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        PayloadTypeRegistry.playC2S().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
+        PayloadTypeRegistry.playS2C().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
+        PayloadTypeRegistry.playC2S().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
+        PayloadTypeRegistry.playS2C().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
+        PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
+        PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
+
         ServerConfigurationConnectionEvents.CONFIGURE.register { handler, _ ->
-            for ((id, config) in newConfigs) {
+            for ((id, config) in syncedConfigs) {
                 val syncErrors = mutableListOf<String>()
-                val payload = ConfigS2CSyncCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, false)) //Don't ignore NonSync on a syncronization action
+                val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, false)) //Don't ignore NonSync on a syncronization action
                 if (syncErrors.isNotEmpty()){
                     val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C configuration stage sync.")
                     syncError.writeError(syncErrors)
@@ -81,13 +105,12 @@ object SyncedConfigRegistry {
             }
         }
 
-
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, _ ->
             val players = server.playerManager.playerList
             for (player in players) {
-                for ((id, config) in newConfigs) {
+                for ((id, config) in syncedConfigs) {
                     val syncErrors = mutableListOf<String>()
-                    val payload = ConfigS2CSyncCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, false)) //Don't ignore NonSync on a syncronization action
+                    val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, false)) //Don't ignore NonSync on a syncronization action
                     if (syncErrors.isNotEmpty()){
                         val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C datapack reload sync.")
                         syncError.writeError(syncErrors)
@@ -96,33 +119,37 @@ object SyncedConfigRegistry {
                 }
             }
         }
-        ServerPlayNetworking.registerGlobalReceiver(ConfigC2SUpdateCustomPayload.type){ payload, context ->
-            val id = payload.id
-            val configString = payload.serializedConfig
-            if (newConfigs.containsKey(id)){
-                val config = newConfigs[id] ?: return@registerGlobalReceiver
-                val errors = mutableListOf<String>()
-                val result = ConfigApi.deserializeUpdate(config, configString, errors)
-                result.writeError(errors)
-                val changes = payload.changeHistory
-                ConfigApiImpl.printChangeHistory(changes, id, context.player())
-                for (player in context.player().server.playerManager.playerList){
-                    if (player == context.player()) continue // don't push back to the player that just sent the update
-                    val newPayload = ConfigS2CSyncCustomPayload(id, configString)
-                    ServerPlayNetworking.send(player, newPayload)
+
+        ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
+            val serializedConfigs = payload.updates
+            for ((id,configString) in serializedConfigs) {
+                if (syncedConfigs.containsKey(id)) {
+                    val config = syncedConfigs[id] ?: continue
+                    val errors = mutableListOf<String>()
+                    val result = ConfigApi.deserializeUpdate(config, configString, errors)
+                    result.writeError(errors)
                 }
             }
+            for (player in context.player().server.playerManager.playerList) {
+                if (player == context.player()) continue // don't push back to the player that just sent the update
+                val newPayload = ConfigUpdateS2CCustomPayload(serializedConfigs)
+                ServerPlayNetworking.send(player, newPayload)
+            }
+            val changes = payload.changeHistory
+            ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
         }
 
+        ServerPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type){ payload, context ->
+            val uuid = payload.player
+            val receivingPlayer = context.player().server.playerManager.getPlayer(uuid) ?: return@registerGlobalReceiver
+            val scope = payload.scope
+            val update = payload.update
+            val sendingPlayer = context.player()
+            ServerPlayNetworking.send(receivingPlayer,SettingForwardCustomPayload(update,sendingPlayer.uuid,scope))
+        }
     }
 
-    /**
-     * Synced Configurations are registered here. If using a [SyncedConfigWithReadme](me.fzzyhmstrs.fzzy_config.config_util.SyncedConfigWithReadMe) or similar helper class, this registration is done automatically in their init methods.
-     *
-     * @param id the unique string ID of this config. using identifier notation (namespace:path) may help ensure uniqueness
-     * @param config a [SyncedConfig] to pass into the registry map
-     */
-    fun registerConfig(config: Config){
-        newConfigs[config.getId().toString()] = config
+    internal fun registerConfig(config: Config){
+        syncedConfigs[config.getId().toTranslationKey()] = config
     }
 }

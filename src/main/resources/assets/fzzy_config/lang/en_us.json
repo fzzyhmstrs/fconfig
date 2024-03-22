@@ -1,8 +1,32 @@
 {
-	"fc.config.validated_color_r": "Red part of an RGBA color; enter an integer between 0 and 255.",
-	"fc.config.validated_color_g": "Green part of an RGBA color; enter an integer between 0 and 255.",
-	"fc.config.validated_color_b": "Blue part of an RGBA color; enter an integer between 0 and 255.",
-	"fc.config.validated_color_a": "Alpha part of an RGBA color; enter an integer between 0 (transparent) and 255 (opaque). The mod author may lock this to 255 only.",
+	"fc.validated_field.color.r": "Red part of an RGBA color; enter an integer between 0 and 255.",
+	"fc.validated_field.color.g": "Green part of an RGBA color; enter an integer between 0 and 255.",
+	"fc.validated_field.color.b": "Blue part of an RGBA color; enter an integer between 0 and 255.",
+	"fc.validated_field.color.a": "Alpha part of an RGBA color; enter an integer between 0 (transparent) and 255 (opaque). The mod author may lock this to 255 only.",
+	"fc.validated_field.update.error": "Encountered error while updating field [%1$s] from [%2$s] to [%3$s]: %4$s",
+	"fc.validated_field.revert.error": "Encountered error while reverting field [%1$s]: %2$s",
+	"fc.validated_field.update": "Updated field [%1$s] from [%2$s] to [%3$s]",
+	"fc.validated_field.revert": "Reverted field [%1$s] from [%2$s] to the previous value of [%3$s]",
+
 	"test.walkable.testChildDave.testChildBool": "Test Child Dave's Boolean",
-	"test.walkable.testChildDave.testChildBool.desc": "Dave's favorite boolean. Please treat it well."
+	"test.walkable.testChildDave.testChildBool.desc": "Dave's favorite boolean. Please treat it well.",
+
+	"fc.config.generic.section" : "Config Section",
+	"fc.config.generic.section.desc" : "This Config Section doesn't implement it's translation key. The screen doesn't know what to call it!",
+	"fc.config.generic.field" : "Setting",
+	"fc.config.generic.field.desc" : "This Setting doesn't implement it's translation key. The screen doesn't know what to call it!",
+
+	"fc.button.revert": "Revert",
+	"fc.button.revert.message": "Revert %s changes",
+	"fc.button.revert.active": "Revert this entry",
+	"fc.button.revert.inactive": "No changes to revert",
+	"fc.button.restore.active": "Restore this entries default value",
+	"fc.button.restore.inactive": "Value is default",
+	"fc.button.forward.active": "Forward this entry to another player",
+	"fc.button.forward.inactive": "No-one to forward settings to",
+	"fc.button.changelog.active": "Forward this entry to another player",
+	"fc.button.changelog.inactive": "No-one to forward settings to",
+	"fc.button.noPerms": "Can't Edit",
+	"fc.button.noPerms.desc": "You don't have the proper permissions to edit this entry.",
+	"fc.button.navigate": "Navigate to %s"
 }

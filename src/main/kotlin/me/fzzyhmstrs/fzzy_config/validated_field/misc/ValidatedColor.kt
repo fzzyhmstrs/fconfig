@@ -49,7 +49,8 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
         TODO("Not yet implemented")
     }
 
-    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, val alphaMode: Boolean): EntryHandler<ColorHolder>{
+    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, val alphaMode: Boolean):
+        EntryHandler<ColorHolder> {
 
         private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
 

@@ -19,7 +19,7 @@ fun interface EntryValidator<T: Any> {
     class Builder<T: Any>{
         private var ifStrong: EntryValidator<T> = EntryValidator{ i, t -> ValidationResult.success(i) }
         private var ifWeak: EntryValidator<T> = EntryValidator{ i, t -> ValidationResult.success(i) }
-        fun strong(validator: EntryValidator<T>): Builder<T>{
+        fun strong(validator: EntryValidator<T>): Builder<T> {
             ifStrong = validator
             return this
         }
@@ -27,7 +27,7 @@ fun interface EntryValidator<T: Any> {
             ifStrong = EntryValidator { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
             return this
         }
-        fun weak(validator: EntryValidator<T>): Builder<T>{
+        fun weak(validator: EntryValidator<T>): Builder<T> {
             ifWeak = validator
             return this
         }
@@ -35,7 +35,7 @@ fun interface EntryValidator<T: Any> {
             ifWeak = EntryValidator { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
             return this
         }
-        fun build(): EntryValidator<T>{
+        fun build(): EntryValidator<T> {
             return EntryValidator{ i, t -> if(t == ValidationType.WEAK) ifWeak.validateEntry(i,t) else ifStrong.validateEntry(i,t) }
         }
     }

@@ -14,7 +14,7 @@ val modVersion: String by project
 version = modVersion
 val mavenGroup: String by project
 group = mavenGroup
-println("## Changelog for Amethyst Core $modVersion \n\n" + log.readText())
+println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
 repositories {
 }
 dependencies {
@@ -34,8 +34,13 @@ dependencies {
     include("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-
-
+}
+sourceSets{
+    main{
+        kotlin{
+            exclude ( "me/fzzyhmstrs/fzzy_config/examples/**" )
+        }
+    }
 }
 tasks {
     val javaVersion = JavaVersion.VERSION_17
@@ -50,7 +55,9 @@ tasks {
         //java.sourceCompatibility = javaVersion
         //targetCompatibility = javaVersion.toString()
     }
-    jar { from("LICENSE") { rename { "${it}_${base.archivesName}" } } }
+    jar {
+        from("LICENSE") { rename { "${it}_${base.archivesName}" } }
+    }
     processResources {
         inputs.property("version", project.version)
         filesMatching("fabric.mod.json") { expand(mutableMapOf("version" to project.version)) }

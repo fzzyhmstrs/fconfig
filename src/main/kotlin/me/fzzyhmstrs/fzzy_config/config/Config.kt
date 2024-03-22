@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.StringTranslatable
 import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import net.minecraft.util.Identifier
 
@@ -32,7 +33,7 @@ import net.minecraft.util.Identifier
  * @since 0.2.0
  */
 @Suppress("unused")
-open class Config(val name: String, val folder: String, val subfolder: String = ""): Walkable {
+open class Config(val name: String, val folder: String, val subfolder: String = ""): Walkable, StringTranslatable {
 
 
     /**
@@ -50,6 +51,13 @@ open class Config(val name: String, val folder: String, val subfolder: String = 
             Identifier(folder, name)
         else
             Identifier(FC.MOD_ID,name)
+    }
+
+    /**
+     * The default permission level of entries in this config.
+     */
+    open fun defaultPermLevel(): Int {
+        return 2
     }
 
     /**
@@ -75,5 +83,13 @@ open class Config(val name: String, val folder: String, val subfolder: String = 
      * @since 0.2.0
      */
     open fun update(deserializedVersion: Int){}
+
+    override fun translationKey(): String {
+        return getId().toTranslationKey()
+    }
+
+    override fun descriptionKey(): String {
+        return getId().toTranslationKey("",".desc")
+    }
 
 }

@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen
 
+import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable

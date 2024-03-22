@@ -10,11 +10,13 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.peanuuutz.tomlkt.*
 import java.io.File
 
 /**
- * Helper object for de/serialization of config files.
+ * API for de/serialization, registration, and loading of config files.
  *
  * De/serialized from File, string, or raw TomlElement. File read is performed with validation and correction.
  *
@@ -24,35 +26,38 @@ import java.io.File
 object ConfigApi {
 
     /**
-    * Registers a [Config] to the [SyncedConfigRegistry]. Use if you have custom initialization to perform.
-    *
-    * Configs registered this way still have to handle their own initialization. That is to say, they have to be instantiated and passed to the registry in a timely manner, otherwise they will not be loaded in time for CONFIGURATION stage syncing with clients.
-    *
-    * Loading with the Fabric [ModInitializer][net.fabricmc.api.ModInitializer] is a convenient and typical way to achieve this.
-    * @param T the config type, any subclass of [Config]
-    * @param config the config to register
-    * @author fzzyhmstrs
-    * @since 0.2.0
-    */
+     * Registers a [Config] to the [SyncedConfigRegistry]. Use if you have custom initialization to perform.
+     *
+     * Configs registered this way still have to handle their own initialization. That is to say, they have to be instantiated and passed to the registry in a timely manner, otherwise they will not be loaded in time for CONFIGURATION stage syncing with clients.
+     *
+     * Loading with the Fabric [ModInitializer][net.fabricmc.api.ModInitializer] is a convenient and typical way to achieve this.
+     * @param T the config type, any subclass of [Config]
+     * @param config the config to register
+     * @param registerType enum of [RegisterType] that defines which registries to register to. defaults to [RegisterType.BOTH]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     @JvmStatic
-    fun <T: Config> registerConfig(config: T): T{
-        return ConfigApiImpl.registerConfig(config)
+    fun <T: Config> registerConfig(config: T, registerType: RegisterType = RegisterType.BOTH): T{
+        return ConfigApiImpl.registerConfig(config, registerType)
     }
 
     /**
-    * Creates and registers a Config.
-    * Performs the entire creation, loading, validation, and registration process on a config class. Internally performs the two steps
-    * 1) [readOrCreateAndValidate]
-    * 2) [registerConfig]
-    * @param T the config type, any subclass of [Config]
-    * @param configClass supplier of T
-    * @return loaded, validated, and registered instance of T
-    * @author fzzyhmstrs
-    * @since 0.2.0
-    */
+     * Creates and registers a Config.
+     * Performs the entire creation, loading, validation, and registration process on a config class. Internally performs the two steps
+     * 1) [readOrCreateAndValidate]
+     * 2) [registerConfig]
+     * @param T the config type, any subclass of [Config]
+     * @param configClass supplier of T
+     * @param registerType enum of [RegisterType] that defines which registries to register to. defaults to [RegisterType.BOTH]
+     * @return loaded, validated, and registered instance of T
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     @JvmStatic
-    fun <T: Config> registerAndLoadConfig(configClass: () -> T): T{
-        return ConfigApiImpl.registerAndLoadConfig(configClass)
+    fun <T: Config> registerAndLoadConfig(configClass: () -> T, registerType: RegisterType = RegisterType.BOTH): T{
+        return ConfigApiImpl.registerAndLoadConfig(configClass, registerType)
     }
 
     /**
@@ -69,6 +74,7 @@ object ConfigApi {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
+    @Deprecated("It is strongly recommended to use readOrCreateAndValidate(configClass) for consistent application of names")
     @JvmStatic
     fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T{
         return ConfigApiImpl.readOrCreateAndValidate(name, folder, subfolder, configClass)
@@ -91,8 +97,14 @@ object ConfigApi {
     /**
      * Saves a config to file without reading or updating.
      *
-     * Performs a config save. Use after a Mod is updated via gui and/or command. Does not perform any validation or reading/deleting of old or redundant files.
+     * Performs a config save. Use after a Mod is updated via gui and/or command. Does not perform any validation or reading/deleting of old or redundant files. This is used automatically by FzzyConfig when a client updates client-sided settings or receives and accepts a forwarded setting, and when the server receives a server update from a valid client.
+     * @param T the type of the config, any subclass of [Config]
+     * @param name the name of the config. Needs to match to the naming used in [readOrCreateAndValidate]
+     * @param folder the folder the config is stored in. Needs to match the folder used in [readOrCreateAndValidate]
+     * @param subfolder the subfolder inside folder that the config is stored in. Needs to match the subfolder used in [readOrCreateAndValidate]
+     * @param configClass instance of the config to save
      */
+    @Deprecated("It is strongly recommended to use save(configClass) for consistent application of names")
     @JvmStatic
     fun <T : Config> save(name: String, folder: String = "", subfolder: String = "", configClass: T) {
         ConfigApiImpl.save(name, folder, subfolder, configClass)
@@ -100,10 +112,18 @@ object ConfigApi {
 
     /**
      * Overload of [save] that automatically fills in name, folder, and subfolder from the config itself.
+     *
+     * It is TODO()
      */
     @JvmStatic
     fun <T : Config> save(configClass: T) {
         ConfigApiImpl.save(configClass)
+    }
+
+
+    @Environment(EnvType.CLIENT)
+    fun openScreen(scope: String){
+        ConfigApiImpl.openScreen(scope)
     }
 
     /**
@@ -263,7 +283,7 @@ object ConfigApi {
      * @param string the string to deserialize from. Needs to be valid Toml.
      * @param errorBuilder a mutableList of strings the original caller of deserialization can use to print a detailed error log
      * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to deserialize the entire config (ex: loading from file), use false for syncing (ex: initial sync server -> client)
-     * @return Returns a [Pair]: [ValidationResult] and [Int].The validation result includes the config and any applicable errors, the int deserializes the [Version] of the file
+     * @return Returns [ValidationResult].The validation result includes the config and any applicable errors
      * @author fzzyhmstrs
      * @since 0.2.0
      */

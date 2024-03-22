@@ -7,7 +7,6 @@ import me.fzzyhmstrs.fzzy_config.config.*
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.updates.Update
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedList
@@ -27,6 +26,7 @@ import net.peanuuutz.tomlkt.TomlElement
  * @since 0.1.0
  */
 
+@Suppress("DeprecatedCallableAddReplaceWith")
 abstract class ValidatedField<T: Any>(protected var storedValue: T, protected val defaultValue: T = storedValue):
     Entry<T>,
     Updatable,
@@ -36,21 +36,48 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
     private var pushedValue: T? = null
     private var updateKey = ""
 
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun getUpdateKey(): String {
         return updateKey
     }
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun setUpdateKey(key: String) {
         updateKey = key
     }
-    override fun restoreDefault(){
-        reset()
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun isDefault(): Boolean {
+        return defaultValue == storedValue
     }
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun restore(){
+        reset()
+        UpdateManager.addUpdateMessage(getUpdateKey(), FcText.translatable("fc.validated_field.default",translation(), defaultValue.toString()))
+    }
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun revert() {
+        if(pushedValue != null){
+            try {
+                pushedValue?.let {
+                    storedValue = it
+                    UpdateManager.addUpdateMessage(getUpdateKey(), FcText.translatable("fc.validated_field.revert",translation(), storedValue.toString(), pushedValue.toString()))
+                }
+
+            } catch (e: Exception){
+                UpdateManager.addUpdateMessage(getUpdateKey(),FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
+            }
+        } else {
+            UpdateManager.addUpdateMessage(getUpdateKey(),FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
+        }
+    }
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun pushState(){
         pushedValue = copyStoredValue()
     }
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun peekState(): Boolean {
         return pushedValue != storedValue
     }
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun popState(): Boolean{
         if (pushedValue == null) return false
         val updated = pushedValue != storedValue
@@ -60,7 +87,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
 
     abstract fun copyStoredValue(): T
 
-    @Deprecated("use deserializeEntry to avoid accidentally overwriting validation and error reporting")
+    @Deprecated("use deserialize to avoid accidentally overwriting validation and error reporting")
     override fun deserializeEntry(
         toml: TomlElement,
         errorBuilder: MutableList<String>,
@@ -89,7 +116,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
      */
 
     @Deprecated(
-        "use serializeEntry for consistency and to enable usage in list- and map-based Fields",
+        "use serialize for consistency and to enable usage in list- and map-based Fields",
         ReplaceWith("serializeEntry(input: T)")
     )
     override fun serializeEntry(input: T?, errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
@@ -133,23 +160,20 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
         val oldVal = storedValue
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
         storedValue = tVal1.get()
-        if (tVal1.isError()){
-            UpdateManager.addUpdateMessage(getUpdateKey(),FcText.translatable("validated_field.update.error",tVal1.getError(),oldVal.toString(),storedValue.toString()))
+        val message = if (tVal1.isError()){
+            FcText.translatable("fc.validated_field.update.error",translation(),oldVal.toString(),storedValue.toString(),tVal1.getError())
         } else {
-            UpdateManager.addUpdateMessage(getUpdateKey(),updateMessage(oldVal, storedValue))
+            updateMessage(oldVal, storedValue)
         }
-        val update = Update(updateMessage(oldVal, storedValue), { set(oldVal) }, { set(tVal1.get()) })
-        update(update)
+        update(message)
     }
 
     open fun updateMessage(old: T, new: T): Text {
-        return FcText.translatable("validated_field.update", old.toString(), new.toString())
+        return FcText.translatable("fc.validated_field.update",translation(), old.toString(), new.toString())
     }
 
-    private fun set(input: T): Text{
-        val text = FcText.translatable("validated_field.set", input.toString(), storedValue.toString())
+    private fun set(input: T){
         storedValue = input
-        return text
     }
 
     /**
