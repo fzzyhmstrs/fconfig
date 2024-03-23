@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
-import me.fzzyhmstrs.fzzy_config.api.StringTranslatable
+import me.fzzyhmstrs.fzzy_config.api.Translatable
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -67,13 +67,13 @@ object FcText {
     }
 
     fun Any?.translation(fallback: String): Text {
-        return if(this is StringTranslatable)
+        return if(this is Translatable)
             this.translation().takeIf { it.string != this.translationKey() } ?: translatable(fallback).formatted(Formatting.DARK_RED)
         else
             translatable(fallback).formatted(Formatting.DARK_RED)
     }
     fun Any?.description(fallback: String): Text {
-        return if(this is StringTranslatable)
+        return if(this is Translatable)
             this.description().takeIf { it.string != this.descriptionKey() } ?: translatable(fallback).formatted(Formatting.DARK_RED)
         else
             translatable(fallback).formatted(Formatting.DARK_RED)

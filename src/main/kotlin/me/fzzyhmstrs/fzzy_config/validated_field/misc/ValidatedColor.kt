@@ -42,17 +42,21 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
     }
 
     override fun instanceEntry(): Entry<ColorHolder> {
-        return ValidatedColor(defaultValue.r,defaultValue.g,defaultValue.b,defaultValue.a, defaultValue.alphaMode)
+        return defaultValue.instance()
     }
 
     override fun widgetEntry(): ClickableWidget {
         TODO("Not yet implemented")
     }
 
-    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, val alphaMode: Boolean):
+    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, private val alphaMode: Boolean):
         EntryHandler<ColorHolder> {
 
         private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
+
+        fun instance(): ValidatedColor{
+            return ValidatedColor(r,g,b,a,alphaMode)
+        }
 
         override fun serializeEntry(
             input: ColorHolder?,

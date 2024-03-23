@@ -10,7 +10,11 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 
-class ValidatedExpression(defaultValue: String, private val validator: EntryValidator<String> = EntryValidator{ i, _ -> Expression.tryParse(i).wrap(i)}): ValidatedField<String>(defaultValue), Expression {
+class ValidatedExpression(defaultValue: String, private val validator: EntryValidator<String> = EntryValidator{ i, _ -> Expression.tryParse(i).wrap(i)})
+    :
+    ValidatedField<String>(defaultValue),
+    Expression
+{
 
     private var parsedString = defaultValue
     private var parsedExpression = Expression.parse(defaultValue, defaultValue)
@@ -31,7 +35,7 @@ class ValidatedExpression(defaultValue: String, private val validator: EntryVali
         return try {
             val string = toml.toString()
             ValidationResult.success(string)
-        } catch (e: Exception){
+        } catch (e: Exception) {
             ValidationResult.error(storedValue,"Critical error deserializing math expression [$fieldName]: ${e.localizedMessage}")
         }
     }

@@ -5,11 +5,12 @@ import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
 import java.util.function.Predicate
 
 /**
- * Validates individual entries in a complex [ValidatedField].
+ * Validates individual entries in a complex [Entry].
  *
- * For example, in a [ValidatedList], individual new additions need to be validated, and validation of the entire list will take place as a piece-wise validation of each element, to preserve as much of the valid contents as possible
+ * For example, in a [ValidatedList][me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedList], individual new additions need to be validated, and validation of the entire list will take place as a piece-wise validation of each element, to preserve as much of the valid contents as possible
  *
- * SAM: [validateEntry] takes an input of type T, returns a [ValidationResult]<T>
+ * SAM: [validateEntry] takes an input of type T and a [ValidationType], returns a [ValidationResult]<T>
+ * @param T the non-null type of the Entry stored value
  * @author fzzyhmstrs
  * @since 0.2.0
  */

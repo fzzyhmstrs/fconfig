@@ -1,25 +1,30 @@
 package me.fzzyhmstrs.fzzy_config.validated_field.misc
 
-import me.fzzyhmstrs.fzzy_config.api.StringTranslatable
+import me.fzzyhmstrs.fzzy_config.api.Translatable
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
+import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryValidator
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
+import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
+import java.util.function.Predicate
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
 
 @Suppress("unused")
-class ValidatedIdentifier(private val defaultValue: String, private val allowableIds: Supplier<List<Identifier>>, private val validator: EntryValidator<String> = default(allowableIds)):
+class ValidatedIdentifier(private val defaultValue: String, private val allowableIds: AllowableIdentifiers, private val validator: EntryValidator<String> = default(allowableIds)):
     Entry<String>,
     Updatable,
-    StringTranslatable,
+    Translatable,
     Comparable<Identifier>
 {
 
@@ -39,26 +44,37 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
     override fun setUpdateKey(key: String) {
         updateKey = key
     }
-
     override fun isDefault(): Boolean {
-        TODO("Not yet implemented")
+        return storedValue == defaultValue
     }
-
     override fun restore(){
         storedValue = defaultValue
         cachedIdentifier = Identifier(storedValue)
     }
-
     override fun revert() {
-        TODO("Not yet implemented")
-    }
+        if(pushedValue != null){
+            try {
+                pushedValue?.let {
+                    storedValue = it
+                    UpdateManager.addUpdateMessage(getUpdateKey(), FcText.translatable("fc.validated_field.revert",translation(), storedValue, pushedValue.toString()))
+                }
 
+            } catch (e: Exception){
+                UpdateManager.addUpdateMessage(getUpdateKey(), FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
+            }
+        } else {
+            UpdateManager.addUpdateMessage(getUpdateKey(), FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
+        }
+    }
+    @Deprecated("Internal Method, don't use unless you know what you are doing!")
     override fun pushState(){
         pushedValue = String(storedValue.toCharArray())
     }
+    @Deprecated("Internal Method, don't use unless you know what you are doing!")
     override fun peekState(): Boolean {
         return pushedValue != storedValue
     }
+    @Deprecated("Internal Method, don't use unless you know what you are doing!")
     override fun popState(): Boolean{
         if (pushedValue == null) return false
         val updated = pushedValue != storedValue
@@ -74,7 +90,8 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
     ): ValidationResult<String> {
         return try {
             val string = toml.toString()
-            if(Identifier.tryParse(string) == null) return ValidationResult.error(storedValue,"Invalid identifier [$fieldName].")
+            Identifier.tryParse(string)?.let { cachedIdentifier = it } ?: return ValidationResult.error(storedValue,"Invalid identifier [$fieldName].")
+            storedValue = string
             ValidationResult.success(string)
         } catch (e: Exception){
             ValidationResult.error(storedValue,"Critical error deserializing identifier [$fieldName]: ${e.localizedMessage}")
@@ -109,17 +126,13 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
     ////////////////////////
 
     /**
-     * {@return the path of the identifier}
+     * @return the path of the cached Identifier
      */
     fun getPath(): String {
         return cachedIdentifier.path
     }
-
     /**
-     * {@return the namespace of the identifier}
-     *
-     *
-     * This returns {@value #DEFAULT_NAMESPACE} for identifiers created without a namespace.
+     * @return the namespace of the cached Identifier
      */
     fun getNamespace(): String {
         return cachedIdentifier.namespace
@@ -185,59 +198,101 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
         return cachedIdentifier.toTranslationKey(prefix, suffix)
     }
 
+    @Suppress("DeprecatedCallableAddReplaceWith")
     companion object{
 
         @JvmStatic
         val DEFAULT_WEAK: EntryValidator<String> = EntryValidator { i, _ -> ValidationResult.predicated(i,Identifier.tryParse(i) != null, "Unparsable Identifier") }
 
-        @JvmStatic
-        fun default(supplier: Supplier<List<Identifier>>): EntryValidator<String> {
-            return EntryValidator.Builder<String>()
-                .weak(DEFAULT_WEAK)
-                .strong { i, t -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { supplier.get().contains(it) } ?: false), "Identifier invalid or not allowed") }
-                .build()
-        }
-
         /**
-         * builds an EntryValidator with always-strong behavior
+         * builds a String EntryValidator with default behavior
          *
-         * Use if your identifier list is available both at loading (during modInitializtion, typically), and during updating (in-game).
-         * @param supplier a supplier of valid ids
+         * Use if your identifier list may not be available at load-time (during modInitializtion, typically), but will be available during updating (in-game). Lists from a Tag or Registry are easy examples, as the registry may not be fully populated yet, and the tag may not be loaded.
+         * @param allowableIds an [AllowableIdentifiers] instance.
          * @author fzzyhmstrs
          * @since 0.2.0
          */
         @JvmStatic
-        fun strong(supplier: Supplier<List<Identifier>>): EntryValidator<String> {
+        fun default(allowableIds: AllowableIdentifiers): EntryValidator<String> {
             return EntryValidator.Builder<String>()
-                .weak { i, t -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { supplier.get().contains(it) } ?: false), "Identifier invalid or not allowed") }
-                .strong { i, t -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { supplier.get().contains(it) } ?: false), "Identifier invalid or not allowed") }
+                .weak(DEFAULT_WEAK)
+                .strong { i, _ -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { allowableIds.test(it) } ?: false), "Identifier invalid or not allowed") }
                 .build()
         }
 
+        /**
+         * builds a String EntryValidator with always-strong behavior
+         *
+         * Use if your identifier list is available both at loading (during modInitializtion, typically), and during updating (in-game).
+         * @param allowableIds an [AllowableIdentifiers] instance.
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        fun strong(allowableIds: AllowableIdentifiers): EntryValidator<String> {
+            return EntryValidator.Builder<String>()
+                .weak { i, _ -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { allowableIds.test(it) } ?: false), "Identifier invalid or not allowed") }
+                .strong { i, _ -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { allowableIds.test(it) } ?: false), "Identifier invalid or not allowed") }
+                .build()
+        }
+
+        /**
+         * Builds a ValidatedIdentifier based on an allowable tag of values
+         * @param defaultValue the default value of the ValidatedIdentifier
+         * @param tag the tag of allowable values to choose from
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> fromTag(defaultValue: Identifier, tag: TagKey<T>): ValidatedIdentifier{
+        fun <T> ofTag(defaultValue: Identifier, tag: TagKey<T>): ValidatedIdentifier{
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(tag.registry().value)
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(defaultValue.toString(), { listOf() })
-            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(defaultValue.toString(), { listOf() })
-            return ValidatedIdentifier(defaultValue.toString(), {  registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } })
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(defaultValue.toString(), AllowableIdentifiers({ false }, { listOf() }))
+            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(defaultValue.toString(), AllowableIdentifiers({ false }, { listOf() }))
+            val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
+            return ValidatedIdentifier(defaultValue.toString(), AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier))
+        }
+        /**
+         * Builds a ValidatedIdentifier based on an allowable tag of values
+         * @param defaultValue the default value of the ValidatedIdentifier
+         * @param registry the registry whose ids are valid for this identifier
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>): ValidatedIdentifier {
+            return ValidatedIdentifier(defaultValue.toString(), AllowableIdentifiers({ id -> registry.containsId(id) }, { registry.ids.toList() }))
+        }
+
+        /**
+         * Builds a ValidatedIdentifier based on an allowable tag of values
+         * @param defaultValue the default value of the ValidatedIdentifier
+         * @param registry the registry whose ids are valid for this identifier
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
+            return ValidatedIdentifier(
+                defaultValue.toString(),
+                AllowableIdentifiers(
+                    { id -> registry.containsId(id) && predicate.test ((registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
+                    { registry.ids.filter { id -> predicate.test ((registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } }
+                )
+            )
         }
 
         @JvmStatic
-        fun <T> fromRegistry(defaultValue: Identifier, registry: Registry<T>): ValidatedIdentifier {
-            return ValidatedIdentifier(defaultValue.toString(), {  registry.ids.toList() })
+        @Deprecated("Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
+        fun ofList(defaultValue: Identifier, list: List<Identifier>): ValidatedIdentifier{
+            val allowableIds = AllowableIdentifiers({ id -> list.contains(id) }, list.supply())
+            val validator = strong(allowableIds)
+            return ValidatedIdentifier(defaultValue.toString(), allowableIds, validator)
         }
 
-        @JvmStatic
-        @Deprecated("Make sure your list is available at Validation time!")
-        fun fromList(defaultValue: Identifier, list: List<Identifier>): ValidatedIdentifier{
-            return ValidatedIdentifier(defaultValue.toString(), list.supply())
-        }
-
-        @Deprecated("Make sure your list is available at Validation time!")
+        @Deprecated("Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
         fun<T> List<T>.supply(): Supplier<List<T>>{
             return Supplier { this }
         }
-
     }
 }

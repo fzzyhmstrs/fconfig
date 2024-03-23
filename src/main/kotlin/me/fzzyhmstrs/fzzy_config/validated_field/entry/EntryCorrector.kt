@@ -3,11 +3,12 @@ package me.fzzyhmstrs.fzzy_config.validated_field.entry
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 
 /**
- * Deserializes individual entries in a complex [ValidatedField]
+ * Deserializes individual entries in a complex [Entry]
  *
- * SAM: [deserialize] takes a TomlElement, returns a deserialized instance of T
+ * SAM: [correctEntry] takes a TomlElement, returns a deserialized instance of T
+ * @param T the type of the Entry stored value
  * @author fzzyhmstrs
- * @since 0.1.1
+ * @since 0.2.0
  */
 @FunctionalInterface
 fun interface EntryCorrector<T> {

@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.api.StringTranslatable
+import me.fzzyhmstrs.fzzy_config.api.Translatable
 import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import net.minecraft.util.Identifier
 
@@ -33,7 +33,7 @@ import net.minecraft.util.Identifier
  * @since 0.2.0
  */
 @Suppress("unused")
-open class Config(val name: String, val folder: String, val subfolder: String = ""): Walkable, StringTranslatable {
+open class Config(val name: String, val folder: String, val subfolder: String = ""): Walkable, Translatable {
 
 
     /**
@@ -70,7 +70,7 @@ open class Config(val name: String, val folder: String, val subfolder: String = 
      * @since 0.2.0
      */
     fun save(){
-        ConfigApi.save(name,folder,subfolder,this)
+        ConfigApi.save(this)
     }
 
     /**

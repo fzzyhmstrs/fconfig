@@ -9,12 +9,16 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.success
  * Used to provide contextual error information "upstream" of where the error was encountered, which allows for better logging where upstream elements can collate error messages passed back to them into an organized and sensible error log.
  *
  * This class has a private constructor to force the use of the pre-defined static instantiation methods [success] and [error]
+ * @author fzzyhmstrs
+ * @since 0.1.0
  */
 class ValidationResult<T> private constructor(private val storedVal: T, private val error: String = ""){
     /**
      * Boolean check to determine if this result is holding an error
      *
      * @return Boolean, true is an error, false not.
+     * @author fzzyhmstrs
+     * @since 0.1.0
      */
     fun isError(): Boolean{
         return error.isNotEmpty()
@@ -24,6 +28,8 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * Supplies the error message stored within
      *
      * @return String, the error message stored, or "" if no error is within
+     * @author fzzyhmstrs
+     * @since 0.1.0
      */
     fun getError(): String{
         return error
@@ -33,11 +39,20 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * Gets the wrapped result value
      *
      * @return T. The result being wrapped and passed by this ValidationResult.
+     * @author fzzyhmstrs
+     * @since 0.1.0
      */
     fun get(): T{
         return storedVal
     }
 
+    /**
+     * Writes an error log to console if this validation result is errored
+     *
+     * @param errors List<String> of secondary errors to add to the log
+     * @author fzzyhmstrs
+     * @since 0.1.0
+     */
     fun writeError(errors: List<String>){
         if (!isError())return
         FC.LOGGER.error(">>>>>>>>>>>>>>>")
@@ -48,7 +63,13 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
         FC.LOGGER.error(">>>>>>>>>>>>>>>")
     }
-
+    /**
+     * Writes a warning log to console if this validation result is errored
+     *
+     * @param errors List<String> of secondary warning to add to the log
+     * @author fzzyhmstrs
+     * @since 0.1.0
+     */
     fun writeWarning(errors: List<String>){
         if (!isError())return
         FC.LOGGER.warn(">>>>>>>>>>>>>>>")
@@ -122,6 +143,11 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
         /**
          * Adds another test, and potentially another error, to a Validation.
+         * @param newTest Boolean result of another validation test
+         * @param error error message if the newTest fails validation
+         * @return ValidationResult with this stored value, possibly a new error state and new error message
+         * @author fzzyhmstrs
+         * @since 0.2.0
          */
         fun <T> ValidationResult<T>.also(newTest: Boolean, error: String): ValidationResult<T>{
             return if(!newTest) {
@@ -130,7 +156,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 } else {
                     error
                 }
-                ValidationResult(this.storedVal, error)
+                ValidationResult(this.storedVal, totalError)
             } else {
                 this
             }
@@ -138,8 +164,12 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
         /**
          * reports error to a provided string list
+         * @param errorBuilder MutableList<String> for appending errors.
+         * @return ValidationResult. returns itself
+         * @author fzzyhmstrs
+         * @since 0.2.0
          */
-        fun <T> ValidationResult<T>.report(errorBuilder: MutableList<String>): ValidationResult<T>{
+        fun <T> ValidationResult<T>.report(errorBuilder: MutableList<String>): ValidationResult<T> {
             if (this.isError()) errorBuilder.add(this.error)
             return this
         }

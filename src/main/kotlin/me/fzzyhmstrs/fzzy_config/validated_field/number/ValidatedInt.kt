@@ -8,7 +8,32 @@ import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 import net.peanuuutz.tomlkt.toInt
 
-class ValidatedInt(defaultValue: Int, maxValue: Int, minValue: Int): ValidatedNumber<Int>(defaultValue, minValue, maxValue) {
+/**
+ * A validated integer number
+ *
+ * @param defaultValue Int. the default value of this wrapper
+ * @param maxValue Int. the maximum allowed value, inclusive
+ * @param minValue Int. the minimum allowed value, inclusive
+ * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedNumber.WidgetType]
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedInt]
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxInt]
+ * @author fzzyhmstrs
+ * @since 0.1.0
+ */
+class ValidatedInt(defaultValue: Int, maxValue: Int, minValue: Int, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Int>(defaultValue, minValue, maxValue) {
+
+    /**
+     * an unbounded validated int number.
+     *
+     * The validation will be limited to ensuring the value de/serializes as a int, since there are no bounds.
+     *
+     * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedNumber.WidgetType.TEXTBOX]
+     * @param defaultValue Int. the default value of this wrapper
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedInt]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(defaultValue: Int): this(defaultValue, Int.MAX_VALUE, Int.MIN_VALUE, WidgetType.TEXTBOX)
 
     override fun copyStoredValue(): Int {
         return storedValue
@@ -27,7 +52,7 @@ class ValidatedInt(defaultValue: Int, maxValue: Int, minValue: Int): ValidatedNu
     }
 
     override fun instanceEntry(): Entry<Int> {
-        return ValidatedInt(defaultValue, maxValue, minValue)
+        return ValidatedInt(defaultValue, maxValue, minValue, widgetType)
     }
 
     override fun widgetEntry(): ClickableWidget {

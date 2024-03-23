@@ -5,13 +5,53 @@ import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.math.Expression.Companion.NamedExpression
+import me.fzzyhmstrs.fzzy_config.validated_field.misc.ValidatedExpression
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.random.Random
 import kotlin.math.pow
 import kotlin.reflect.typeOf
 
+/**
+ * An evaluatable math expression
+ *
+ * Typical usage involves evaluating named doubles in a math equation with matching variable names.
+ *
+ * Default operations and functions supported:
+ * - {constant values} - any double constant value: 5.0
+ * - {variable values} - any single-character letter: 'x', 'y'. Must match to the characters the evaluation side expects
+ * - {+} - addition
+ * - {-} - subtraction
+ * - {*} - multiplication
+ * - {/} - division
+ * - {%} - modulus
+ * - {^} - power
+ * - {(...)} - parentheses
+ * - {sqrt(...)} - square root
+ * - {ciel(...)} - round up
+ * - {floor(...)} - round down
+ * - {round(...)} - round nearest
+ * - {ln(...)} - natural logarithm
+ * - {log(exp,power)} - logarithm of <expression> to <power>: log(5,5) is log5(5)
+ * - {log10(...)} - log 10
+ * - {log2(...)} - log 2
+ * - {abs(...)} - absolute value
+ * - {sin(...)} - sine (radians)
+ * - {cos(...)} - cosine (radians)
+ * - {incr(exp,incr)} - round incrementally: incr(0.913,0.1) will return 0.90
+ * - {mathHelper methods} - Expression will reflectively evaluate any valid [MathHelper] method that takes doubles and returns doubles
+ * @see validated for use in configs
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ExampleMath]
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 @FunctionalInterface
 fun interface Expression {
+
+    /**
+     * Evaluates the math expression
+     * @param vars Map<Char, Double> - map of the input variables. The Char used must match the variable characters used in the string expression and visa-versa
+     * @return Double - The result of the expression evaluation
+     */
     fun eval(vars: Map<Char,Double>): Double
 
     @Suppress("SameParameterValue")
@@ -22,6 +62,31 @@ fun interface Expression {
             {e -> e.toString()}
         )
 
+        /**
+         * parses an expression
+         *
+         * @param str the math expression to try parsing. Used as the expression context (this is typical)
+         * @return Expression parsed from the passed string
+         * @throws IllegalStateException when parsing fails
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        fun parse(str: String): Expression {
+            return parse(str, str)
+        }
+        /**
+         * parses an expression
+         *
+         * @param str the math expression to try parsing
+         * @param context the context the expression is coming from
+         * @return Expression parsed from the passed string
+         * @throws IllegalStateException when parsing fails
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        @Deprecated("Consider using parse(str) to automatically pass the string expression as it's own context")
         fun parse(str: String, context: String): Expression {
             try {
                 val reader = StringReader(str)
@@ -31,6 +96,14 @@ fun interface Expression {
             }
         }
 
+        /**
+         * attempts to parse an expression, failing null instead of throwing
+         * @param str the math expression to try parsing
+         * @return ValidationResult<Expression?> wrapping an Expression if parsing succeeds, or null if it fails (with the exception message passed back with the Result)
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
         fun tryParse(str: String): ValidationResult<Expression?> {
             return try {
                 val reader = StringReader(str)
@@ -38,6 +111,21 @@ fun interface Expression {
             } catch (e: Exception){
                 ValidationResult.error(null, e.localizedMessage)
             }
+        }
+
+        /**
+         * Generates a validated Expression for use in configs
+         *
+         * @param str String. the default math expression to be used in the [ValidatedExpression]
+         * @return ValidatedExpression wrapping the passed string as it's default expression
+         * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandMath]
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        fun validated(str: String): ValidatedExpression{
+            parse(str)
+            return ValidatedExpression(str)
         }
 
         private val expressions: Map<String, NamedExpression> = mapOf(

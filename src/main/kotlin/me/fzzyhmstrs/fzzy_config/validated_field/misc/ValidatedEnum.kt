@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validated_field.misc
 
-import me.fzzyhmstrs.fzzy_config.api.StringTranslatable
+import me.fzzyhmstrs.fzzy_config.api.Translatable
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
@@ -11,9 +11,9 @@ import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 
-class ValidatedEnum<T>(defaultValue: T, private val enum: Class<T>, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) where T: Enum<T>, T:StringTranslatable {
+class ValidatedEnum<T>(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) where T: Enum<T>, T:Translatable {
 
-    private val valuesMap: Map<String, T> = enum.enumConstants.associateBy { it.name }
+    private val valuesMap: Map<String, T> = defaultValue::class.java.enumConstants.associateBy { it.name }
     override fun copyStoredValue(): T {
         return storedValue
     }
@@ -49,7 +49,7 @@ class ValidatedEnum<T>(defaultValue: T, private val enum: Class<T>, private val 
     }
 
     override fun instanceEntry(): Entry<T> {
-        return ValidatedEnum(this.defaultValue,this.enum, this.widgetType)
+        return ValidatedEnum(this.defaultValue,this.widgetType)
     }
 
     /**

@@ -8,7 +8,32 @@ import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 import net.peanuuutz.tomlkt.toFloat
 
-class ValidatedFloat(defaultValue: Float, maxValue: Float, minValue: Float): ValidatedNumber<Float>(defaultValue, minValue, maxValue) {
+/**
+ * A validated float number
+ *
+ * @param defaultValue Float. the default value of this wrapper
+ * @param maxValue Float. the maximum allowed value, inclusive
+ * @param minValue Float. the minimum allowed value, inclusive
+ * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedNumber.WidgetType]
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedFloat]
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxFloat]
+ * @author fzzyhmstrs
+ * @since 0.1.0
+ */
+class ValidatedFloat(defaultValue: Float, maxValue: Float, minValue: Float, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Float>(defaultValue, minValue, maxValue) {
+
+    /**
+     * an unbounded validated float number.
+     *
+     * The validation will be limited to ensuring the value de/serializes as a float, since there are no bounds.
+     *
+     * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedNumber.WidgetType.TEXTBOX]
+     * @param defaultValue Float. the default value of this wrapper
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedFloat]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(defaultValue: Float): this(defaultValue, Float.MAX_VALUE, -Float.MAX_VALUE, WidgetType.TEXTBOX)
 
     override fun copyStoredValue(): Float {
         return storedValue
@@ -27,7 +52,7 @@ class ValidatedFloat(defaultValue: Float, maxValue: Float, minValue: Float): Val
     }
 
     override fun instanceEntry(): Entry<Float> {
-        return ValidatedFloat(defaultValue, maxValue, minValue)
+        return ValidatedFloat(defaultValue, maxValue, minValue, widgetType)
     }
 
     override fun widgetEntry(): ClickableWidget {

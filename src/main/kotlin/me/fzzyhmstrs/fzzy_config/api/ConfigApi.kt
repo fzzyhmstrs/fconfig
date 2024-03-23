@@ -52,6 +52,7 @@ object ConfigApi {
      * @param configClass supplier of T
      * @param registerType enum of [RegisterType] that defines which registries to register to. defaults to [RegisterType.BOTH]
      * @return loaded, validated, and registered instance of T
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -74,8 +75,8 @@ object ConfigApi {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    @Deprecated("It is strongly recommended to use readOrCreateAndValidate(configClass) for consistent application of names")
     @JvmStatic
+    @Deprecated("Consider readOrCreateAndValidate(configClass) for consistent application of names")
     fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T{
         return ConfigApiImpl.readOrCreateAndValidate(name, folder, subfolder, configClass)
     }
@@ -103,24 +104,36 @@ object ConfigApi {
      * @param folder the folder the config is stored in. Needs to match the folder used in [readOrCreateAndValidate]
      * @param subfolder the subfolder inside folder that the config is stored in. Needs to match the subfolder used in [readOrCreateAndValidate]
      * @param configClass instance of the config to save
+     * @see [save]
      */
-    @Deprecated("It is strongly recommended to use save(configClass) for consistent application of names")
     @JvmStatic
-    fun <T : Config> save(name: String, folder: String = "", subfolder: String = "", configClass: T) {
+    @Deprecated("save(configClass) is strongly recommended instead, for consistent application of names")
+    fun <T : Config> saveManual(name: String, folder: String = "", subfolder: String = "", configClass: T) {
         ConfigApiImpl.save(name, folder, subfolder, configClass)
     }
 
     /**
      * Overload of [save] that automatically fills in name, folder, and subfolder from the config itself.
-     *
-     * It is TODO()
+     * @param T subclass of [Config]
+     * @param configClass instance of T to be saved
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.MyConfig.saveMe]
+     * @author fzzyhmstrs
+     * @since 0.2.0
      */
     @JvmStatic
     fun <T : Config> save(configClass: T) {
         ConfigApiImpl.save(configClass)
     }
 
-
+    /**
+     * Opens a config GUI
+     *
+     * Configs to be opened must be registered to the [ClientConfigRegistry][me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry] via [registerConfig] or [registerAndLoadConfig]
+     * @param scope the scope of the config screen to be opened. To open a selection screen of every config in a mod namespace, pass that namespace.
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ConfigGuiOpener]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     @Environment(EnvType.CLIENT)
     fun openScreen(scope: String){
         ConfigApiImpl.openScreen(scope)
@@ -174,43 +187,6 @@ object ConfigApi {
     }
 
     /**
-     * serializes `dirty` elements in a Config for syncing with a server or secondary clients.
-     *
-     * FzzyConfig has a system for marking changes made as `dirty`, and only resynchronizing elements that were actually changed. This method generates the Toml of only those changes.
-     *
-     * @param T Type of the config to serialize. A subclass of [Config].
-     * @param config the config instance to serialize from
-     * @param errorBuilder the error list. error messages are appended to this for display after the serialization call
-     * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to serialize the entire config (ex: saving to file), use false for syncing (ex: initial sync server -> client)
-     * @return Returns a [TomlElement] of the serialized config
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun <T: Config> serializeUpdateToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement{
-        return ConfigApiImpl.serializeUpdateToToml(config, errorBuilder, ignoreNonSync)
-    }
-
-    /**
-     * serializes `dirty` elements in a Config for syncing with a server or secondary clients.
-     *
-     * Extension of [serializeUpdateToToml] that generates a String output. Use for synchronization.
-     *
-     * @param T Type of the config to serialize. A subclass of [Config].
-     * @param config the config instance to serialize from
-     * @param errorBuilder the error list. error messages are appended to this for display after the serialization call
-     * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to serialize the entire config (ex: saving to file), use false for syncing (ex: initial sync server -> client)
-     * @return Returns a String representation of the serialized config [TomlElement] for writing to file
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun <T: Config> serializeUpdate(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String{
-        return ConfigApiImpl.serializeUpdate(config, errorBuilder, ignoreNonSync)
-    }
-
-
-    /**
      * Deserializes a config class from a TomlElement
      *
      * Custom deserializer, powered by TomlKt. Deserialization focuses on validation and building a useful error message. Deserialization happens in two ways
@@ -252,44 +228,6 @@ object ConfigApi {
     @JvmStatic
     fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): Pair<ValidationResult<T>,Int> {
         return ConfigApiImpl.deserializeConfig(config, string, errorBuilder, ignoreNonSync)
-    }
-
-    /**
-     * Deserializes received dirty-only config from [TomlElement].
-     *
-     * FzzyConfig has a system for marking changes made as `dirty`, and only resynchronizing elements that were actually changed.
-     *
-     * @param T the config type. A subclass of [Config].
-     * @param config the config pre-deserialization
-     * @param toml the TomlElement to deserialize from. Needs to be a TomlTable
-     * @param errorBuilder a mutableList of strings the original caller of deserialization can use to print a detailed error log
-     * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to deserialize the entire config (ex: loading from file), use false for syncing (ex: initial sync server -> client)
-     * @return Returns a [ValidationResult] with the config included, and any error message if applicable
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun <T: Config> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
-        return ConfigApiImpl.deserializeUpdateFromToml(config, toml, errorBuilder, ignoreNonSync)
-    }
-
-    /**
-     * Deserializes the updated portions of a config from a string.
-     *
-     * Extension of [deserializeUpdateFromToml] that deserializes directly from a string. Use to read from a file or packet.
-     *
-     * @param T the config type. A subclass of [Config].
-     * @param config the config pre-deserialization
-     * @param string the string to deserialize from. Needs to be valid Toml.
-     * @param errorBuilder a mutableList of strings the original caller of deserialization can use to print a detailed error log
-     * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to deserialize the entire config (ex: loading from file), use false for syncing (ex: initial sync server -> client)
-     * @return Returns [ValidationResult].The validation result includes the config and any applicable errors
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun <T: Config> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
-        return ConfigApiImpl.deserializeUpdate(config, string, errorBuilder, ignoreNonSync)
     }
 
     /**

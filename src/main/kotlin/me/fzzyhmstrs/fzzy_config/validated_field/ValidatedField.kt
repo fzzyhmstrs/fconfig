@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validated_field
 
-import me.fzzyhmstrs.fzzy_config.api.StringTranslatable
+import me.fzzyhmstrs.fzzy_config.api.Translatable
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.config.*
@@ -30,7 +30,7 @@ import net.peanuuutz.tomlkt.TomlElement
 abstract class ValidatedField<T: Any>(protected var storedValue: T, protected val defaultValue: T = storedValue):
     Entry<T>,
     Updatable,
-    StringTranslatable
+    Translatable
 {
 
     private var pushedValue: T? = null

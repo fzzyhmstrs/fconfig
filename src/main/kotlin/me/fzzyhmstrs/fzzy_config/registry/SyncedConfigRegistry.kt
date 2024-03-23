@@ -39,7 +39,7 @@ object SyncedConfigRegistry {
         val errors = mutableListOf<String>()
         val serializedConfigs: MutableMap<String,String> = mutableMapOf()
         for (config in configs) {
-            serializedConfigs[config.getId().toTranslationKey()] = ConfigApi.serializeUpdate(config, errors)
+            serializedConfigs[config.getId().toTranslationKey()] = ConfigApiImpl.serializeUpdate(config, errors)
         }
         if (errors.isNotEmpty()){
             val errorsResult = ValidationResult.error(true, "Critical error(s) encountered while serializing client-updated Config Class! Output may not be complete.")
@@ -67,7 +67,7 @@ object SyncedConfigRegistry {
                 if (syncedConfigs.containsKey(id)) {
                     val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                     val errors = mutableListOf<String>()
-                    val result = ConfigApi.deserializeUpdate(config, configString, errors)
+                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
                     result.writeError(errors)
                 }
             }
@@ -126,7 +126,7 @@ object SyncedConfigRegistry {
                 if (syncedConfigs.containsKey(id)) {
                     val config = syncedConfigs[id] ?: continue
                     val errors = mutableListOf<String>()
-                    val result = ConfigApi.deserializeUpdate(config, configString, errors)
+                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
                     result.writeError(errors)
                 }
             }

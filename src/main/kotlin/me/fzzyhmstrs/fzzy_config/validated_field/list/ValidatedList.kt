@@ -11,6 +11,9 @@ import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
 
+/**
+ *
+ */
 class ValidatedList<T: Any>(defaultValue: List<T>, private val entryHandler: Entry<T>): ValidatedField<List<T>>(defaultValue), List<T> {
 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {

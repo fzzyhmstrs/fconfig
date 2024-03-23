@@ -36,13 +36,18 @@ object ClientConfigRegistry {
     }
 
     @Environment(EnvType.CLIENT)
-    fun handleForwardedUpdate(update: String, player: UUID, scope: String){
+    internal fun handleForwardedUpdate(update: String, player: UUID, scope: String){
         val namespaceScope = getValidScope(scope)
         if (namespaceScope == null){
-            FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
+            FC.LOGGER.error("Failed to handle a forwarded setting. Invalid scope provided: [$scope]")
             return
         }
-
+        val manager = configScreenManagers[namespaceScope]
+        if (manager == null){
+            FC.LOGGER.error("Failed to handle a forwarded setting. Unknown scope provided: [$scope]")
+            return
+        }
+        manager.receiveForwardedUpdate(update, player, scope)
     }
 
     @Environment(EnvType.CLIENT)

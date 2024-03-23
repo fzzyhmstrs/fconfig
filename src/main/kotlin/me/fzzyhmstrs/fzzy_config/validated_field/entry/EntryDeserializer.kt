@@ -4,11 +4,12 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import net.peanuuutz.tomlkt.TomlElement
 
 /**
- * Deserializes individual entries in a complex [ValidatedField]
+ * Deserializes individual entries in a complex [Entry]
  *
- * SAM: [deserialize] takes a TomlElement, returns a deserialized instance of T
+ * SAM: [deserializeEntry] takes a TomlElement, errorBuilder list, fieldName, and ignoreNonSync boolean, returns [ValidationResult]<T> with the deserialized or fallback value
+ * @param T the type of the Entry stored value
  * @author fzzyhmstrs
- * @since 0.1.1
+ * @since 0.2.0
  */
 @FunctionalInterface
 fun interface EntryDeserializer<T> {

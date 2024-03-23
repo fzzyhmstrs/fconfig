@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.validated_field.map.ValidatedMap
@@ -23,10 +24,24 @@ internal class MyConfig: Config("my_config","fzzy_config") {
 
         var sectionMap = ValidatedMap(
             mapOf(),
-            ValidatedIdentifier.fromTag(Registries.ITEM.getId(Items.IRON_AXE),ItemTags.AXES),
+            ValidatedIdentifier.ofTag(Registries.ITEM.getId(Items.IRON_AXE),ItemTags.AXES),
             ValidatedDouble(1.0,1.0,0.0)
         )
+    }
 
+    fun saveMe(){
+        /**
+         * Saves the config to file.
+         *
+         * Called by FzzyConfig every time a config update is pushed from a client. Use if you have some custom method for altering configurations and need to save the changes to file. Only recommended to use this on the client for client-only settings
+         *
+         * Only automatically saves on the client-side if [NonSync][me.fzzyhmstrs.fzzy_config.annotations.NonSync] fields were altered.
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun save() {
+            ConfigApi.save(this)
+        }
     }
 
 
