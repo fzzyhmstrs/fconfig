@@ -33,8 +33,7 @@ import kotlin.math.min
 @Environment(EnvType.CLIENT)
 class ConfigScreenManager(private val scope: String, private val configs: List<Config>) {
 
-    private val rootScreen: ConfigScreenBuilder = TODO()
-    private val screens: Map<String, ConfigScreenBuilder> = TODO()
+    private val screens: Map<String, ConfigScreenBuilder>
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
 
 
@@ -48,12 +47,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
 
     fun openScreen(scope: String = this.scope){
         configs.forEach { UpdateManager.pushStates(it) }
-        if(scope == this.scope){
-            val screen = rootScreen.build()
-            MinecraftClient.getInstance().currentScreen = screen
-        } else {
-            openScopedScreen(scope)
-        }
+        openScopedScreen(scope)        
     }
 
     private fun openScopedScreen(scope: String){
@@ -99,7 +93,13 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
             }
         }
         val scopes = functionMap.keySet().toList()
-
+        val scopeButtonFunctions = buildScopeButtons(nameMap)
+        val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
+        for((scope, entryBuilders) in functionMap){
+            val name = nameMap[scope] ?: continue
+            builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, entryBuilders)
+        }
+        this.screens = builders
     }
 
     private fun buildScopeButtons(nameMap: Map<String,Text>): Map<String, Function<ConfigScreen,ClickableWidget>>{
@@ -115,9 +115,14 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
             }
     }
 
-    private fun buildBuilder(scope: String, scopes: List<String>, nameMap: Map<String,Text>, entryBuilders: List<Function<ConfigListWidget,ConfigEntry>>): ConfigScreenBuilder{
+    private fun buildBuilder(name:Text, scope: String, scopes: List<String>, scopeButtonFunctions: Map<String, Function<ConfigScreen,ClickableWidget>>, entryBuilders: List<Function<ConfigListWidget,ConfigEntry>>): ConfigScreenBuilder{
         val parentScopes = scopes.filter { scope.contains(it) }.sortedBy { it.length }
-        TODO()
+        val functionList: MutableList<ConfigScreen, ClickableWidget> = mutableListOf()
+        for(fScope in parentScopes) {
+            functionList.add(scopeButtonFunctions[fScope] ?: continue)
+        }
+        
+        
     }
 
     private fun hasNeededPermLevel(playerPermLevel: Int, defaultPerm: Int, annotations: List<Annotation>): Boolean {
