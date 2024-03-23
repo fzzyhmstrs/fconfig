@@ -121,8 +121,14 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
         for(fScope in parentScopes) {
             functionList.add(scopeButtonFunctions[fScope] ?: continue)
         }
-        
-        
+        val configListFunction = Function { screen ->
+            val listWidget = ConfigListWidget(MinecraftClient.getInstance(), screen)
+            for (entryBuilder in entryBuilders){
+                listWidget.add(entryBuilder.apply(listWidget))
+            }
+            listWidget
+        }
+        return ConfigScreenBuilder { ConfigScreen(name, scope, entriesWidget, functionList) }
     }
 
     private fun hasNeededPermLevel(playerPermLevel: Int, defaultPerm: Int, annotations: List<Annotation>): Boolean {
