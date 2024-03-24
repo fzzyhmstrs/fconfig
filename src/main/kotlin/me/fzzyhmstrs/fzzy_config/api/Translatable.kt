@@ -32,11 +32,11 @@ interface Translatable {
         return FcText.translatableWithFallback(translationKey(),this::class.java.simpleName)
     }
     /**
-     * The translated [Text] description from the [descriptionKey]. Falls back to "No description provided" (non-translated)
+     * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     fun description(): Text{
-        return FcText.translatableWithFallback(descriptionKey(),"No description provided")
+        return FcText.translatableWithFallback(descriptionKey(),"")
     }
 }
