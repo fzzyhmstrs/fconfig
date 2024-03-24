@@ -20,7 +20,7 @@ import net.peanuuutz.tomlkt.toDouble
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedDouble(defaultValue: Double, maxValue: Double, minValue: Double, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Double>(defaultValue, minValue, maxValue) {
+class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: Double, minValue: Double, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Double>(defaultValue, minValue, maxValue) {
 
     /**
      * an unbounded validated double number.

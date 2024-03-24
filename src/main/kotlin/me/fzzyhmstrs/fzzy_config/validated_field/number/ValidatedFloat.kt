@@ -20,7 +20,7 @@ import net.peanuuutz.tomlkt.toFloat
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedFloat(defaultValue: Float, maxValue: Float, minValue: Float, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Float>(defaultValue, minValue, maxValue) {
+class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Float, minValue: Float, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Float>(defaultValue, minValue, maxValue) {
 
     /**
      * an unbounded validated float number.

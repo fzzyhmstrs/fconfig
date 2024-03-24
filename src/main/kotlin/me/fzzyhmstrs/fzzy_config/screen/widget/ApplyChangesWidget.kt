@@ -7,10 +7,10 @@ import net.minecraft.text.MutableText
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-class RevertChangesWidget(private val changesSupplier: Supplier<Int>, private val pressAction: Consumer<RevertChangesWidget>): PressableWidget(0,0,80,20,FcText.translatable("fc.button.revert")) {
+class ApplyChangesWidget(private val changesSupplier: Supplier<Int>, private val pressAction: Consumer<ApplyChangesWidget>): PressableWidget(0,0,80,20,FcText.translatable("fc.button.apply")) {
 
     override fun getNarrationMessage(): MutableText {
-        return FcText.translatable("fc.button.revert.message",changesSupplier.get())
+        return FcText.translatable("fc.button.apply.message", changesSupplier.get())
     }
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {

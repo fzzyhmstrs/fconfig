@@ -20,7 +20,7 @@ import net.peanuuutz.tomlkt.toLong
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedLong(defaultValue: Long, maxValue: Long, minValue: Long, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Long>(defaultValue, minValue, maxValue) {
+class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long, minValue: Long, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Long>(defaultValue, minValue, maxValue) {
 
     /**
      * an unbounded validated long number.

@@ -20,7 +20,7 @@ import net.peanuuutz.tomlkt.toShort
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedShort(defaultValue: Short, maxValue: Short, minValue: Short, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Short>(defaultValue, minValue, maxValue) {
+class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Short, minValue: Short, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Short>(defaultValue, minValue, maxValue) {
 
     /**
      * an unbounded validated short number.

@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
-import me.fzzyhmstrs.fzzy_config.screen.ConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext

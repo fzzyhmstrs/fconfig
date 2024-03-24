@@ -6,33 +6,43 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.validated_field.misc.ValidatedIdentifier
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
 
 /**
- * a validated list
+ * Validated List of Identifiers
  *
  * This [ValidatedField] implements [List], so you can directly sue it as if it were an immutable list
- * @param T any non-null type
- * @param defaultValue default list of values
- * @param entryHandler [Entry] used to handle individual list entries
- * @sample
- * @see [me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validated]
- *
+ * This is separate from a ValidatedList<Identifier> because [ValidatedIdentifier] is actually an [Entry]<String> under the hood. This class works directly with Identifier lists, instead of needing to abstract them to String lists.
+ * @param defaultValue the default Identifier list
+ * @param entryHandler [ValidatedIdentifier] handling the entry validation
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedIdList]
+ * @see [me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validatedList]
+ * @see [me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validatedTag]
+ * @see [me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validatedRegistry]
+ * @author fzzyhmstrs
+ * @since 0.2.0
  */
-class ValidatedList<T: Any>(defaultValue: List<T>, private val entryHandler: Entry<T>): ValidatedField<List<T>>(defaultValue), List<T> {
+class ValidatedIdentifierList(defaultValue: List<Identifier>, private val entryHandler: ValidatedIdentifier): ValidatedField<List<Identifier>>(defaultValue), List<Identifier> {
 
-    override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {
+    override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<Identifier>> {
         return try{
             val array = toml.asTomlArray()
-            val list: MutableList<T> = mutableListOf()
+            val list: MutableList<Identifier> = mutableListOf()
             val errors: MutableList<String> = mutableListOf()
             for ((index, el) in array.content.withIndex()){
                 val result = entryHandler.deserializeEntry(el, errors, "$fieldName[$index]", true).report(errors)
                 if (!result.isError()){
-                    list.add(result.get())
+                    val id = Identifier.tryParse(result.get())
+                    if (id == null){
+                        errors.add("Uncaught validation issue with entry [${result.get()}], skipping!")
+                        continue
+                    }
+                    list.add(id)
                 }
             }
             if (errors.isNotEmpty()) {
@@ -45,12 +55,12 @@ class ValidatedList<T: Any>(defaultValue: List<T>, private val entryHandler: Ent
         }
     }
 
-    override fun serialize(input: List<T>): ValidationResult<TomlElement> {
+    override fun serialize(input: List<Identifier>): ValidationResult<TomlElement> {
         val toml = TomlArrayBuilder()
         val errors: MutableList<String> = mutableListOf()
         try {
             for (entry in input) {
-                val tomlEntry = entryHandler.serializeEntry(entry, errors, true)
+                val tomlEntry = entryHandler.serializeEntry(entry.toString(), errors, true)
                 val annotations = ConfigApiImpl.tomlAnnotations(entry::class.java.kotlin)
                 toml.element(tomlEntry, annotations)
             }
@@ -60,12 +70,17 @@ class ValidatedList<T: Any>(defaultValue: List<T>, private val entryHandler: Ent
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
 
-    override fun correctEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
-        val list: MutableList<T> = mutableListOf()
+    override fun correctEntry(input: List<Identifier>, type: EntryValidator.ValidationType): ValidationResult<List<Identifier>> {
+        val list: MutableList<Identifier> = mutableListOf()
         val errors: MutableList<String> = mutableListOf()
         for (entry in input){
-            val result = entryHandler.correctEntry(entry, type)
-            list.add(result.get())
+            val result = entryHandler.correctEntry(entry.toString(), type)
+            val id = Identifier.tryParse(result.get())
+            if (id == null){
+                errors.add("Uncaught correction issue with entry [${result.get()}], skipping!")
+                continue
+            }
+            list.add(id)
             if (result.isError()) errors.add(result.getError())
         }
         return if (errors.isNotEmpty()){
@@ -75,10 +90,10 @@ class ValidatedList<T: Any>(defaultValue: List<T>, private val entryHandler: Ent
         }
     }
 
-    override fun validateEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
+    override fun validateEntry(input: List<Identifier>, type: EntryValidator.ValidationType): ValidationResult<List<Identifier>> {
         val errors: MutableList<String> = mutableListOf()
         for (entry in input){
-            val result = entryHandler.validateEntry(entry, type)
+            val result = entryHandler.validateEntry(entry.toString(), type)
             if (result.isError()) errors.add(result.getError())
         }
         return if (errors.isNotEmpty()){
@@ -88,12 +103,12 @@ class ValidatedList<T: Any>(defaultValue: List<T>, private val entryHandler: Ent
         }
     }
 
-    override fun copyStoredValue(): List<T> {
+    override fun copyStoredValue(): List<Identifier> {
         return storedValue.toList()
     }
 
-    override fun instanceEntry(): Entry<List<T>> {
-        return ValidatedList(defaultValue, entryHandler)
+    override fun instanceEntry(): Entry<List<Identifier>> {
+        return ValidatedIdentifierList(defaultValue, entryHandler)
     }
 
     override fun widgetEntry(): ClickableWidget {
@@ -105,7 +120,7 @@ class ValidatedList<T: Any>(defaultValue: List<T>, private val entryHandler: Ent
     override val size: Int
         get() = storedValue.size
 
-    override fun get(index: Int): T {
+    override fun get(index: Int): Identifier {
         return storedValue[index]
     }
 
@@ -113,35 +128,35 @@ class ValidatedList<T: Any>(defaultValue: List<T>, private val entryHandler: Ent
         return storedValue.isEmpty()
     }
 
-    override fun iterator(): Iterator<T> {
+    override fun iterator(): Iterator<Identifier> {
         return storedValue.iterator()
     }
 
-    override fun listIterator(): ListIterator<T> {
+    override fun listIterator(): ListIterator<Identifier> {
         return storedValue.listIterator()
     }
 
-    override fun listIterator(index: Int): ListIterator<T> {
+    override fun listIterator(index: Int): ListIterator<Identifier> {
         return storedValue.listIterator(index)
     }
 
-    override fun subList(fromIndex: Int, toIndex: Int): List<T> {
+    override fun subList(fromIndex: Int, toIndex: Int): List<Identifier> {
         return storedValue.subList(fromIndex, toIndex)
     }
 
-    override fun lastIndexOf(element: T): Int {
+    override fun lastIndexOf(element: Identifier): Int {
         return storedValue.lastIndexOf(element)
     }
 
-    override fun indexOf(element: T): Int {
+    override fun indexOf(element: Identifier): Int {
         return storedValue.indexOf(element)
     }
 
-    override fun containsAll(elements: Collection<T>): Boolean {
+    override fun containsAll(elements: Collection<Identifier>): Boolean {
         return storedValue.containsAll(elements)
     }
 
-    override fun contains(element: T): Boolean {
+    override fun contains(element: Identifier): Boolean {
         return storedValue.contains(element)
     }
 }

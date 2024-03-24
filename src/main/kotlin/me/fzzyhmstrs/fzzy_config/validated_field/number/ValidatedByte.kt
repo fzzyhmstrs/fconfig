@@ -20,7 +20,7 @@ import net.peanuuutz.tomlkt.toByte
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedByte(defaultValue: Byte, maxValue: Byte, minValue: Byte, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Byte>(defaultValue, minValue, maxValue) {
+class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte, minValue: Byte, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Byte>(defaultValue, minValue, maxValue) {
 
     /**
      * an unbounded validated byte number.

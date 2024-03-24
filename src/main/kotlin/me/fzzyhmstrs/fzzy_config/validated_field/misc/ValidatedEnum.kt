@@ -11,7 +11,7 @@ import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 
-class ValidatedEnum<T>(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) where T: Enum<T>, T:Translatable {
+class ValidatedEnum<T> @JvmOverloads constructor(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) where T: Enum<T>, T:Translatable {
 
     private val valuesMap: Map<String, T> = defaultValue::class.java.enumConstants.associateBy { it.name }
     override fun copyStoredValue(): T {

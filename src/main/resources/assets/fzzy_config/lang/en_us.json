@@ -28,5 +28,8 @@
 	"fc.button.changelog.inactive": "No-one to forward settings to",
 	"fc.button.noPerms": "Can't Edit",
 	"fc.button.noPerms.desc": "You don't have the proper permissions to edit this entry.",
-	"fc.button.navigate": "Navigate to %s"
+	"fc.button.navigate": "Navigate to %s",
+	"fc.button.apply": "Apply",
+	"fc.button.apply.message": "Apply %s changes",
+	"fc.button.apply.desc": "Applies changes without exiting the screen"
 }

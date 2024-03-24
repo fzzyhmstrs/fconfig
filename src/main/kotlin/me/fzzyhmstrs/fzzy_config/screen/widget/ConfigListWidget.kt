@@ -1,5 +1,6 @@
-package me.fzzyhmstrs.fzzy_config.screen
+package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.screen.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ElementListWidget
@@ -17,6 +18,10 @@ class ConfigListWidget(minecraftClient: MinecraftClient, parent: ConfigScreen) :
 
     fun getClient(): MinecraftClient{
         return this.client
+    }
+
+    fun add(entry: ConfigEntry){
+        this.addEntry(entry)
     }
 
 }

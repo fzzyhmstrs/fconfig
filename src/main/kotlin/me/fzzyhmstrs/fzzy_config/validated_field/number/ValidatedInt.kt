@@ -20,12 +20,13 @@ import net.peanuuutz.tomlkt.toInt
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedInt(defaultValue: Int, maxValue: Int, minValue: Int, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Int>(defaultValue, minValue, maxValue) {
+
+class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, minValue: Int, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Int>(defaultValue, minValue, maxValue) {
 
     /**
      * an unbounded validated int number.
      *
-     * The validation will be limited to ensuring the value de/serializes as a int, since there are no bounds.
+     * The validation will be limited to ensuring the value de/serializes as an int, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Int. the default value of this wrapper

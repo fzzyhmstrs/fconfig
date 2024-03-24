@@ -10,6 +10,7 @@ import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigForwardableEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigUpdatableEntry
+import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.NoPermsButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.ScreenOpenButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
@@ -33,21 +34,39 @@ import kotlin.math.min
 @Environment(EnvType.CLIENT)
 class ConfigScreenManager(private val scope: String, private val configs: List<Config>) {
 
-    private val screens: Map<String, ConfigScreenBuilder>
+    private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
-
 
     init{
         prepareScreens()
     }
 
-    fun receiveForwardedUpdate(update: String, player: UUID, scope: String){
-
+    fun receiveForwardedUpdate(update: String, player: UUID, scope: String) {
+        var entry: Entry<*>? = null
+        for (config in configs){
+            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){_, new, thing, _ ->
+                if (new == scope){
+                    if(thing is Entry<*>){
+                        entry = thing
+                        return@walk
+                    }
+                }
+            }
+            if (entry != null)
+                break
+        }
+        if (entry == null)
+            return
+        try {
+            forwardedUpdates.add(ForwardedUpdate(update, player, entry!!))
+        } catch (e: Exception){
+            //empty catch block to avoid stupid crashes
+        }
     }
 
     fun openScreen(scope: String = this.scope){
         configs.forEach { UpdateManager.pushStates(it) }
-        openScopedScreen(scope)        
+        openScopedScreen(scope)
     }
 
     private fun openScopedScreen(scope: String){
@@ -65,7 +84,36 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
     }
 
     private fun prepareSingleConfigScreen(playerPermLevel: Int) {
-
+        val functionMap: ArrayListMultimap<String, Function<ConfigListWidget, ConfigEntry>> = ArrayListMultimap.create()
+        val nameMap: MutableMap<String,Text> = mutableMapOf()
+        val config = configs[0]
+        val defaultPermLevel = config.defaultPermLevel()
+        //putting the config buttons themselves, in the base scope. ex: "my_mod"
+        functionMap.put(scope, screenOpenEntryBuilder(config.translation(), config.description(), config.getId().toTranslationKey()))
+        nameMap[config.getId().toTranslationKey()] = config.translation()
+        //walking the config, base scope passed to walk is ex: "my_mod.my_config"
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){old, new, thing, annotations ->
+            if(thing is Walkable){
+                nameMap[new] = thing.translation("fc.config.generic.section")
+                functionMap.put(old, screenOpenEntryBuilder(thing.translation("fc.config.generic.section"), thing.description("fc.config.generic.section.desc"), new))
+            } else if (thing is Updatable && thing is Entry<*>){
+                if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations))
+                    if (ConfigApiImpl.isNonSync(annotations))
+                        functionMap.put(old, forwardableEntryBuilder(thing.translation("fc.config.generic.field"), thing.description("fc.config.generic.field.desc"), thing))
+                    else
+                        functionMap.put(old, updatableEntryBuilder(thing.translation("fc.config.generic.field"), thing.description("fc.config.generic.field.desc"), thing))
+                else
+                    functionMap.put(old, noPermsEntryBuilder(thing.translation("fc.config.generic.field"), thing.description("fc.config.generic.field.desc")))
+            }
+        }
+        val scopes = functionMap.keySet().toList()
+        val scopeButtonFunctions = buildScopeButtons(nameMap)
+        val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
+        for((scope, entryBuilders) in functionMap.asMap()){
+            val name = nameMap[scope] ?: continue
+            builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, entryBuilders.toList())
+        }
+        this.screens = builders
     }
 
     private fun prepareMultiConfigScreens(playerPermLevel: Int) {
@@ -76,8 +124,8 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
             //putting the config buttons themselves, in the base scope. ex: "my_mod"
             functionMap.put(scope, screenOpenEntryBuilder(config.translation(), config.description(), config.getId().toTranslationKey()))
             nameMap[config.getId().toTranslationKey()] = config.translation()
-            //walking the config, base scope passed to walk is ex: my_mod.my_config"
-            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),false){old, new, thing, annotations ->
+            //walking the config, base scope passed to walk is ex: "my_mod.my_config"
+            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){old, new, thing, annotations ->
                 if(thing is Walkable){
                     nameMap[new] = thing.translation("fc.config.generic.section")
                     functionMap.put(old, screenOpenEntryBuilder(thing.translation("fc.config.generic.section"), thing.description("fc.config.generic.section.desc"), new))
@@ -95,18 +143,17 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
         val scopes = functionMap.keySet().toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
         val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
-        for((scope, entryBuilders) in functionMap){
+        for((scope, entryBuilders) in functionMap.asMap()){
             val name = nameMap[scope] ?: continue
-            builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, entryBuilders)
+            builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, entryBuilders.toList())
         }
         this.screens = builders
     }
 
     private fun buildScopeButtons(nameMap: Map<String,Text>): Map<String, Function<ConfigScreen,ClickableWidget>>{
         val textRenderer = MinecraftClient.getInstance().textRenderer
-        return nameMap
-            .mapValues { (name, translation) ->
-                Function {screen ->
+        return nameMap.mapValues { (name, translation) ->
+                Function { _ ->
                     ButtonWidget.builder(translation) { openScopedScreen(name) }
                         .dimensions(0, 0, min(100,textRenderer.getWidth(translation) + 8),20)
                         .narrationSupplier{ _ -> FcText.translatable("fc.button.navigate",translation) }
@@ -117,18 +164,18 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
 
     private fun buildBuilder(name:Text, scope: String, scopes: List<String>, scopeButtonFunctions: Map<String, Function<ConfigScreen,ClickableWidget>>, entryBuilders: List<Function<ConfigListWidget,ConfigEntry>>): ConfigScreenBuilder{
         val parentScopes = scopes.filter { scope.contains(it) }.sortedBy { it.length }
-        val functionList: MutableList<ConfigScreen, ClickableWidget> = mutableListOf()
+        val functionList: MutableList<Function<ConfigScreen, ClickableWidget>> = mutableListOf()
         for(fScope in parentScopes) {
             functionList.add(scopeButtonFunctions[fScope] ?: continue)
         }
-        val configListFunction = Function { screen ->
+        val configListFunction = Function { screen: ConfigScreen ->
             val listWidget = ConfigListWidget(MinecraftClient.getInstance(), screen)
             for (entryBuilder in entryBuilders){
                 listWidget.add(entryBuilder.apply(listWidget))
             }
             listWidget
         }
-        return ConfigScreenBuilder { ConfigScreen(name, scope, entriesWidget, functionList) }
+        return ConfigScreenBuilder { ConfigScreen(name, scope, this, configListFunction, functionList) }
     }
 
     private fun hasNeededPermLevel(playerPermLevel: Int, defaultPerm: Int, annotations: List<Annotation>): Boolean {
@@ -191,10 +238,14 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
         TODO()
     }
 
+    internal fun apply(){
+        TODO()
+    }
+
     fun interface ConfigScreenBuilder{
         fun build(): ConfigScreen
     }
 
-    internal class ForwardedUpdate(update: String, player: UUID, entry: Entry<*>)
+    internal class ForwardedUpdate(val update: String, val player: UUID, val entry: Entry<*>)
 
 }

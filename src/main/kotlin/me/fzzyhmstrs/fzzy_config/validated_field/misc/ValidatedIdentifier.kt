@@ -16,12 +16,22 @@ import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
+import java.util.function.BiPredicate
 import java.util.function.Predicate
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
 
+/**
+ * A validated Identifier field.
+ *
+ * NOTE: The base handler of this validated field is actually string. As such, usage in, for example, a [ValidatedList][me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedList] will yield a List<String>
+ * @param defaultValue String, the string value of the default identifier
+ * @param allowableIds [AllowableIdentifiers] instance. Defines the predicate for valid ids, and the supplier of valid id lists
+ * @param validator [EntryValidator]<String> handles validation of individual entries
+ */
 @Suppress("unused")
-class ValidatedIdentifier(private val defaultValue: String, private val allowableIds: AllowableIdentifiers, private val validator: EntryValidator<String> = default(allowableIds)):
+class ValidatedIdentifier(private val defaultValue: String, private val allowableIds: AllowableIdentifiers, private val validator: EntryValidator<String> = default(allowableIds))
+    :
     Entry<String>,
     Updatable,
     Translatable,
@@ -240,6 +250,7 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
          * Builds a ValidatedIdentifier based on an allowable tag of values
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param tag the tag of allowable values to choose from
+         * @return [ValidatedIdentifier] wrapping the provided default and tag
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -252,10 +263,31 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
             val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
             return ValidatedIdentifier(defaultValue.toString(), AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier))
         }
+
         /**
          * Builds a ValidatedIdentifier based on an allowable tag of values
+         *
+         * Uses "minecraft:air" as the default value.
+         * @param tag the tag of allowable values to choose from
+         * @return [ValidatedIdentifier] wrapping the provided tag
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        @Suppress("UNCHECKED_CAST")
+        @Deprecated("Only use for validation in a list or map")
+        fun <T> ofTag(tag: TagKey<T>): ValidatedIdentifier{
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(tag.registry().value)
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier("minecraft:air", AllowableIdentifiers({ false }, { listOf() }))
+            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier("minecraft:air", AllowableIdentifiers({ false }, { listOf() }))
+            val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
+            return ValidatedIdentifier("minecraft:air", AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier))
+        }
+        /**
+         * Builds a ValidatedIdentifier based on an allowable registry of values
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param registry the registry whose ids are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the provided default and registry
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -265,9 +297,11 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
         }
 
         /**
-         * Builds a ValidatedIdentifier based on an allowable tag of values
+         * Builds a ValidatedIdentifier based on an allowable registry of values, filtered by the provided predicate
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param registry the registry whose ids are valid for this identifier
+         * @param predicate Predicate<RegistryEntry> tests an allowable subset of the registry
+         * @return [ValidatedIdentifier] wrapping the provided default and predicated registry
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -282,6 +316,52 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
             )
         }
 
+        /**
+         * Builds a ValidatedIdentifier based on an allowable registry of values
+         *
+         * Uses "minecraft:air" as the default value
+         * @param registry the registry whose ids are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the provided registry
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        @Deprecated("Only use for validation in a list or map")
+        fun <T> ofRegistry(registry: Registry<T>): ValidatedIdentifier {
+            return ValidatedIdentifier("minecraft:air", AllowableIdentifiers({ id -> registry.containsId(id) }, { registry.ids.toList() }))
+        }
+
+        /**
+         * Builds a ValidatedIdentifier based on an allowable registry of values, filtered by the provided predicate
+         *
+         * Uses "minecraft:air" as the default value
+         * @param registry the registry whose ids are valid for this identifier
+         * @param predicate [BiPredicate]<RegistryEntry> tests an allowable subset of the registry
+         * @return [ValidatedIdentifier] wrapping the provided predicated registry
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        @Deprecated("Only use for validation in a list or map")
+        fun <T> ofRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifier {
+            return ValidatedIdentifier(
+                "minecraft:air",
+                AllowableIdentifiers(
+                    { id -> registry.containsId(id) && predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
+                    { registry.ids.filter { id -> predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } }
+                )
+            )
+        }
+        /**
+         * Builds a ValidatedIdentifier based on an allowable list of values
+         *
+         * This list should be available and complete at validation time
+         * @param defaultValue the default value of the ValidatedIdentifier
+         * @param list the list whose entries are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the provided default and list
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         @JvmStatic
         @Deprecated("Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
         fun ofList(defaultValue: Identifier, list: List<Identifier>): ValidatedIdentifier{
@@ -290,6 +370,30 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
             return ValidatedIdentifier(defaultValue.toString(), allowableIds, validator)
         }
 
+        /**
+         * Builds a ValidatedIdentifier based on an allowable list of values
+         *
+         * This list should be available and complete at validation time
+         *
+         * uses "minecraft:air" as the default value
+         * @param list the list whose entries are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the provided list
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        @Deprecated("Use only for validation of a list or map. Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
+        fun ofList(list: List<Identifier>): ValidatedIdentifier{
+            val allowableIds = AllowableIdentifiers({ id -> list.contains(id) }, list.supply())
+            val validator = strong(allowableIds)
+            return ValidatedIdentifier("minecraft:air", allowableIds, validator)
+        }
+
+        /**
+         * wraps a list in a [Supplier]
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         @Deprecated("Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
         fun<T> List<T>.supply(): Supplier<List<T>>{
             return Supplier { this }
