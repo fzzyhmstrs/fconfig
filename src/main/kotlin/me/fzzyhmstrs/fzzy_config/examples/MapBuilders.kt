@@ -1,16 +1,13 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
 import me.fzzyhmstrs.fzzy_config.api.Translatable
-import me.fzzyhmstrs.fzzy_config.validated_field.map.ValidatedEnumMap
-import me.fzzyhmstrs.fzzy_config.validated_field.map.ValidatedIdentifierMap
-import me.fzzyhmstrs.fzzy_config.validated_field.map.ValidatedMap
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validated
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.ValidatedIdentifier
-import me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedFloat
-import me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedInt
-import net.minecraft.item.Item
-import net.minecraft.item.Items
-import net.minecraft.registry.Registries
+import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedEnumMap
+import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedIdentifierMap
+import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedMap
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 

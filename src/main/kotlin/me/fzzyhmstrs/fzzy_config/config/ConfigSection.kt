@@ -5,8 +5,8 @@ import me.fzzyhmstrs.fzzy_config.api.Translatable
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateKeyed
-import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryDeserializer
-import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.validation.entry.EntryDeserializer
+import me.fzzyhmstrs.fzzy_config.validation.entry.EntrySerializer
 import net.peanuuutz.tomlkt.TomlElement
 
 /**

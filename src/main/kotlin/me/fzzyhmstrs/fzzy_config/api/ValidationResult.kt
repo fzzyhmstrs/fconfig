@@ -114,7 +114,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         /**
          * Convenience shortcut for creating a matching success or error depending on a boolean state.
          *
-         * Used if the value returned will be the same regardless of validation, eg. in the case of [EntryValidator][me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryValidator] usage, where no changes are being made to the result
+         * Used if the value returned will be the same regardless of validation, eg. in the case of [EntryValidator][me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator] usage, where no changes are being made to the result
          * @param T Type of result
          * @param storedVal default or fallback instance of type T
          * @param valid test applied to determine validation or error.

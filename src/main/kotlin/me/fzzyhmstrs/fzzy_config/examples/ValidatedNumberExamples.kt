@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validated
-import me.fzzyhmstrs.fzzy_config.validated_field.number.*
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.number.*
 
 internal object ValidatedNumberExamples {
 

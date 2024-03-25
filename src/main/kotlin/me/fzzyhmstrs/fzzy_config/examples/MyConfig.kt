@@ -3,10 +3,10 @@ package me.fzzyhmstrs.fzzy_config.examples
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.validated_field.map.ValidatedMap
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.ValidatedBoolean
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.ValidatedIdentifier
-import me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedDouble
+import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedMap
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
 import net.minecraft.item.Items
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.ItemTags

@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.examples.java;
 
-import me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedInt;
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt;
 
 public class ValidatedNumberJava {
 

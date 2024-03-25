@@ -2,16 +2,14 @@ package me.fzzyhmstrs.fzzy_config.examples
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.EnumTranslatable
-import me.fzzyhmstrs.fzzy_config.api.Translatable
 import me.fzzyhmstrs.fzzy_config.math.Expression
-import me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedList
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validated
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validatedIds
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validatedList
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validatedRegistry
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.Shorthand.validatedTag
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.ValidatedEnum
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.ValidatedIdentifier
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validatedColor
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validatedIds
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validatedList
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validatedRegistry
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validatedTag
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
 import net.minecraft.item.SwordItem
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.BlockTags
@@ -19,7 +17,6 @@ import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 import java.awt.Color
 import java.util.function.BiPredicate
-import java.util.function.Predicate
 
 internal object ValidatedShorthands {
 
@@ -73,6 +70,10 @@ internal object ValidatedShorthands {
 
     //Shorthand validated Color. The color values in the Color will be the default color components
     val shorthandColor = Color(255,255,128,255).validated()
+
+    //Shorthand validated Color from a base color int. The color values in the Color will be the default color components.
+    //In this example, the color does not accept transparency
+    val shorthandColorInt = 0xFF5500.validatedColor(false)
 
     //Shorthand boolean. the bool used is the default
     val shorthandBool = true.validated()

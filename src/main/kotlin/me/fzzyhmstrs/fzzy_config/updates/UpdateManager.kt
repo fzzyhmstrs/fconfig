@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.updates
 
 import com.google.common.collect.ArrayListMultimap
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.validation.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import net.minecraft.text.Text
 import java.time.Instant

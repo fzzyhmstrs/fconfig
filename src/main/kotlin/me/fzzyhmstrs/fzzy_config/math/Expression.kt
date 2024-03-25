@@ -5,7 +5,7 @@ import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.math.Expression.Companion.NamedExpression
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.ValidatedExpression
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.random.Random
 import kotlin.math.pow

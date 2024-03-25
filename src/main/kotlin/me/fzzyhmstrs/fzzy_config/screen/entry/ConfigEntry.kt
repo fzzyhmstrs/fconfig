@@ -5,19 +5,20 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
+import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
-import net.minecraft.text.PlainTextContent
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
-open class ConfigEntry(protected val name: Text, description: Text, protected val parent: ConfigListWidget, protected val widget: ClickableWidget): ElementListWidget.Entry<ConfigEntry>() {
+open class ConfigEntry(val name: Text, protected val description: Text, protected val parent: ConfigListWidget, protected val widget: ClickableWidget): ElementListWidget.Entry<ConfigEntry>() {
 
     init {
-        widget.message = name
-        if(description.content != PlainTextContent.EMPTY){
+        if(description.string != "") {
             widget.tooltip = Tooltip.of(description)
         }
     }
@@ -59,5 +60,12 @@ open class ConfigEntry(protected val name: Text, description: Text, protected va
 
     override fun selectableChildren(): MutableList<out Selectable> {
         return mutableListOf(widget)
+    }
+
+    override fun setFocused(focused: Boolean) {
+        if(description.string != "") {
+            widget.tooltip = Tooltip.of(description)
+        }
+        super.setFocused(focused)
     }
 }

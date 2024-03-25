@@ -18,7 +18,7 @@ import net.minecraft.util.Identifier
  * FzzyConfig can interact with three types of vars
  * 1) {Not Recommended} "Bare" properties. Your standard property (ex: `var myOption = 5`). These properties won't be validated, corrected, and won't show up in Config Guis. For an internal server-only setting, this may be an appropriate choice, but generally strongly recommended to use a Validation wrapper.
  * 2) {Recommended} [ConfigSection]. Inner "sections" of a Config. Can be used to organize related topics of a larger config. Interfaces with the auto-GUI system as a "sub-layer". A button will allow the user to drill down into the section, showing only the options for that section. Sections automatically de/serialize updated entries back to the server/clients like #3 below.
- * 3) {Recommended} [ValidatedField][me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField] properties, or custom [Entry][me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry] implementations. These properties offer a wide array of powerful benefits to the user and the implementer
+ * 3) {Recommended} [ValidatedField][me.fzzyhmstrs.fzzy_config.validation.ValidatedField] properties, or custom [Entry][me.fzzyhmstrs.fzzy_config.validation.entry.Entry] implementations. These properties offer a wide array of powerful benefits to the user and the implementer
  * - Validation. Inputs are automatically validated
  * - Correction. Invalid inputs are automatically corrected, reverted, or skipped.
  * - Gui Support. FzzyConfigs auto-generated GUIs only take Entry's into account when building their GUI layers. The internal validation is used to build meaningful and helpful widgets with helpful tooltips and auto-suggestions, where possible. Entry's are auto-synced back to the server and other listening clients based on user permission level
@@ -28,8 +28,8 @@ import net.minecraft.util.Identifier
  * @author fzzyhmstrs
  * @see ConfigApi
  * @see ConfigSection
- * @see me.fzzyhmstrs.fzzy_config.validated_field.ValidatedField
- * @see me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
+ * @see me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+ * @see me.fzzyhmstrs.fzzy_config.validation.entry.Entry
  * @since 0.2.0
  */
 @Suppress("unused")

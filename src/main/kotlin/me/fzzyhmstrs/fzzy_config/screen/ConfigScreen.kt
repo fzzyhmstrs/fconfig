@@ -6,12 +6,12 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
-import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.literal
-import me.fzzyhmstrs.fzzy_config.util.FcText.translatable
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.*
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
@@ -23,7 +23,7 @@ import java.util.function.Function
 @Environment(EnvType.CLIENT)
 class ConfigScreen(title: Text, private val scope: String, private val manager: ConfigScreenManager, private val entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen,ClickableWidget>>) : Screen(title) {
 
-    private var parent: Screen? = null
+    internal var parent: Screen? = null
     private var onClose: Consumer<ConfigScreen> = Consumer {_ -> this.client?.currentScreen = parent}
     private var onOpen: Consumer<ConfigScreen> = Consumer { _ -> }
 
@@ -54,7 +54,7 @@ class ConfigScreen(title: Text, private val scope: String, private val manager: 
         val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
         for (scopeButton in parentScopesButtons){
             directionalLayoutWidget.add(scopeButton.apply(this))
-            directionalLayoutWidget.add(TextWidget(" > ".literal(),this.textRenderer))
+            directionalLayoutWidget.add(TextWidget(" > ".lit(),this.textRenderer))
         }
         directionalLayoutWidget.add(TextWidget(this.title,this.textRenderer))
 
@@ -65,11 +65,11 @@ class ConfigScreen(title: Text, private val scope: String, private val manager: 
     private fun initFooter(){
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //change history button
-        directionalLayoutWidget.add(TextlessConfigActionWidget(Identifier(FC.MOD_ID,"widget/action/changelog"), FcText.translatable("fc.button.changelog.active"), FcText.translatable("fc.button.changelog.inactive"),{ UpdateManager.hasChangeHistory() } ) { popupChangelogWidget() })
+        directionalLayoutWidget.add(TextlessConfigActionWidget(Identifier(FC.MOD_ID,"widget/action/changelog"), "fc.button.changelog.active".translate(), "fc.button.changelog.inactive".translate(),{ UpdateManager.hasChangeHistory() } ) { popupChangelogWidget() })
         //revert changes button
-        directionalLayoutWidget.add(ChangesWidget("fc.button.revert".translatable(), { i -> "fc.button.revert.message".translatable(i) },{UpdateManager.getChangeCount(scope)},{ _ -> UpdateManager.revert(scope)}))
+        directionalLayoutWidget.add(ChangesWidget("fc.button.revert".translate(), { i -> "fc.button.revert.message".translate(i) }, {UpdateManager.getChangeCount(scope)}, { _ -> UpdateManager.revert(scope)}))
         //apply button
-        directionalLayoutWidget.add(ChangesWidget("fc.button.apply".translatable(), { i -> "fc.button.apply.message".translatable(i) },{UpdateManager.getChangeCount(scope)},{ _ -> manager.apply()}))
+        directionalLayoutWidget.add(ChangesWidget("fc.button.apply".translate(), { i -> "fc.button.apply.message".translate(i) }, {UpdateManager.getChangeCount(scope)}, { _ -> manager.apply()}))
         //done button
         directionalLayoutWidget.add(ButtonWidget.builder(ScreenTexts.DONE) { _ -> manager.apply(); close() }.build())
     }
@@ -128,9 +128,13 @@ class ConfigScreen(title: Text, private val scope: String, private val manager: 
         return popupWidget?.charTyped(chr, modifiers) ?: super.charTyped(chr, modifiers)
     }
 
-    fun setPopup(widget: PopupWidget){
+    override fun addScreenNarrations(messageBuilder: NarrationMessageBuilder) {
+        popupWidget?.appendNarrations(messageBuilder) ?: super.addScreenNarrations(messageBuilder)
+    }
+
+    fun setPopup(widget: PopupWidget?){
         popupWidget?.onClose()
-        widget.position(width, height)
+        widget?.position(width, height)
         popupWidget = widget
     }
 

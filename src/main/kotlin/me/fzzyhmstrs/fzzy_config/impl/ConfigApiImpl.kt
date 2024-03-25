@@ -10,13 +10,9 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
-import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
-import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntryDeserializer
-import me.fzzyhmstrs.fzzy_config.validated_field.entry.EntrySerializer
-import me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedByte
-import me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedInt
-import me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedLong
-import me.fzzyhmstrs.fzzy_config.validated_field.number.ValidatedShort
+import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
+import me.fzzyhmstrs.fzzy_config.validation.entry.EntryDeserializer
+import me.fzzyhmstrs.fzzy_config.validation.entry.EntrySerializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.entity.player.PlayerEntity

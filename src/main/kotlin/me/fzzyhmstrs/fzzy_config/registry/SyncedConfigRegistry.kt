@@ -3,7 +3,7 @@ package me.fzzyhmstrs.fzzy_config.registry
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
+import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.networking.ConfigSyncS2CCustomPayload

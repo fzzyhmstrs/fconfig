@@ -19,7 +19,7 @@ import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.description
 import me.fzzyhmstrs.fzzy_config.util.FcText.translation
-import me.fzzyhmstrs.fzzy_config.validated_field.entry.Entry
+import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -175,7 +175,12 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
             }
             listWidget
         }
-        return ConfigScreenBuilder { ConfigScreen(name, scope, this, configListFunction, functionList) }
+        return ConfigScreenBuilder {
+            val screen = ConfigScreen(name, scope, this, configListFunction, functionList)
+            val currentScreen = MinecraftClient.getInstance().currentScreen
+            screen.parent = currentScreen
+            screen
+        }
     }
 
     private fun hasNeededPermLevel(playerPermLevel: Int, defaultPerm: Int, annotations: List<Annotation>): Boolean {

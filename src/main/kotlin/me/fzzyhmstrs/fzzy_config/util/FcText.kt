@@ -58,12 +58,12 @@ object FcText {
         return Text.of(this)
     }
 
-    fun String.literal(): MutableText{
+    fun String.lit(): MutableText{
         return literal(this)
     }
 
-    fun String.translatable(vararg args: Any): MutableText{
-        return FcText.translatable(this, args)
+    fun String.translate(vararg args: Any): MutableText{
+        return translatable(this, args)
     }
 
     fun Any?.translation(fallback: String): Text {

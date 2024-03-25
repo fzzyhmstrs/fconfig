@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
-import me.fzzyhmstrs.fzzy_config.validated_field.list.ValidatedIdentifierList
-import me.fzzyhmstrs.fzzy_config.validated_field.misc.ValidatedIdentifier
+import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedIdentifierList
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 

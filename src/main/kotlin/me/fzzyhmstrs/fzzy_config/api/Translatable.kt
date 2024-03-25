@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.api
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 
 /**
@@ -28,7 +29,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun translation(): Text{
+    fun translation(): MutableText{
         return FcText.translatableWithFallback(translationKey(),this::class.java.simpleName)
     }
     /**
@@ -36,7 +37,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun description(): Text{
+    fun description(): MutableText{
         return FcText.translatableWithFallback(descriptionKey(),"")
     }
 }
