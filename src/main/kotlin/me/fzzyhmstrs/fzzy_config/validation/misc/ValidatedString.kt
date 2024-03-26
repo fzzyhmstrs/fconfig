@@ -10,6 +10,8 @@ import net.peanuuutz.tomlkt.asTomlLiteral
 
 /*
  * A validated string value
+ * 
+ * Ensure you don't actually want another string-like Validation before use, such as [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier] or [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum]
  * @param defaultValue String default for the setting
  * @param checker [EntryChecker] defining validation and correction for the string inputs.
  * @see [Builder]
