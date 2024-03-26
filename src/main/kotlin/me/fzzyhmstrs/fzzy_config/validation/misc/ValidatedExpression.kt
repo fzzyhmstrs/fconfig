@@ -13,10 +13,12 @@ import net.peanuuutz.tomlkt.TomlLiteral
 /**
  * A validated math expression
  *
+ * This [ValidatedField] is itself an expression, so you can call eval() or evalSafe() on it directly
  * @param defaultValue String representation of the desired math expression, parsed to a cached [Expression] internally.
  * @param validVars Set<Char> representing the valid variable characters the user can utilize in their expression.
  * @param validator [EntryValidator], validates entered math strings
  * @Sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedExpression]
+ * @Sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.evalExpression]
  * throws IllegalStateException if the provided defaultValue is not a parsable Expression.
  * @author fzzyhmstrs
  * @since 0.2.0 
