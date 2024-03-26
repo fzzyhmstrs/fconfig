@@ -55,6 +55,7 @@ fun interface Expression {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
+    @Deprecated("Where possible use safeEval() to avoid throwing exceptions on evaluation failure")
     fun eval(vars: Map<Char,Double>): Double
 
     @Suppress("SameParameterValue")
