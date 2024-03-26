@@ -25,12 +25,22 @@ import java.util.function.UnaryOperator
  * A validated Identifier field.
  *
  * NOTE: The base handler of this validated field is actually string. As such, usage in, for example, a [ValidatedList][me.fzzyhmstrs.fzzy_config.validation.list.ValidatedList] will yield a List<String>
+ * 
+ * There are various shortcut methods available for building ValidatedIdentifiers more easily than with the primary constructor. Check out options in the See Also section
  * @param defaultValue String, the string value of the default identifier
  * @param allowableIds [AllowableIdentifiers] instance. Defines the predicate for valid ids, and the supplier of valid id lists
- * @param validator [EntryValidator]<String> handles validation of individual entries
+ * @param validator [EntryValidator]<String> handles validation of individual entries. Defaults to validation based on the predicate provided in allowableIds
+ * @see [me.fzzyhmstrs.fzzy_config.validation.list.ValidatedIdentifierList]
+ * @see [me.fzzyhmstrs.fzzy_config.validation.map.ValidatedIdentifierMap]
+ * @see [ofTag]
+ * @see [ofRegistry]
+ * @see [ofList]
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.validatedIdentifier]
+ * @author fzzyhmstrs
+ * @since 0.1.2
  */
 @Suppress("unused")
-class ValidatedIdentifier(private val defaultValue: String, private val allowableIds: AllowableIdentifiers, private val validator: EntryValidator<String> = default(allowableIds))
+class ValidatedIdentifier @JvmOverloads constructor(private val defaultValue: String, private val allowableIds: AllowableIdentifiers, private val validator: EntryValidator<String> = default(allowableIds))
     :
     Entry<String>,
     Updatable,
