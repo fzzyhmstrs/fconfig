@@ -10,7 +10,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 
-class ValidatedExpression(defaultValue: String, private val validator: EntryValidator<String> = EntryValidator{ i, _ -> Expression.tryParse(i).wrap(i)})
+class ValidatedExpression(defaultValue: String, private val validVars: Set<Char> = setOf(), private val validator: EntryValidator<String> = EntryValidator{ i, _ -> Expression.tryTest(i, validVars).wrap(i)})
     :
     ValidatedField<String>(defaultValue),
     Expression
