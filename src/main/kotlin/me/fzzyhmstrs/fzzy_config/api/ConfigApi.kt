@@ -16,9 +16,9 @@ import net.peanuuutz.tomlkt.*
 import java.io.File
 
 /**
- * API for de/serialization, registration, and loading of config files.
+ * API for management of config files.
  *
- * De/serialized from File, string, or raw TomlElement. File read is performed with validation and correction.
+ * Configs can de/serialized from File, string, or raw TomlElement. File read is performed with validation and correction.
  *
  * @author fzzyhmstrs
  * @since 0.1.0

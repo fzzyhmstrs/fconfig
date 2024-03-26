@@ -1,12 +1,13 @@
 package me.fzzyhmstrs.fzzy_config.screen
 
 import com.google.common.collect.ArrayListMultimap
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable
 import me.fzzyhmstrs.fzzy_config.annotations.WithPerms
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.Walkable
+import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigForwardableEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigUpdatableEntry
@@ -15,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.NoPermsButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.ScreenOpenButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
+import me.fzzyhmstrs.fzzy_config.updates.UpdateApplier
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.description
@@ -26,13 +28,13 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.Function
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
-class ConfigScreenManager(private val scope: String, private val configs: List<Config>) {
+class ConfigScreenManager(private val scope: String, private val configs: List<Config>): UpdateApplier {
 
     private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
@@ -176,7 +178,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
             listWidget
         }
         return ConfigScreenBuilder {
-            val screen = ConfigScreen(name, scope, this, configListFunction, functionList)
+            val screen = ConfigScreen(name,this, configListFunction, functionList)
             val currentScreen = MinecraftClient.getInstance().currentScreen
             screen.parent = currentScreen
             screen
@@ -213,8 +215,8 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
                 desc,
                 parent,
                 entry.widgetEntry(),
-                TextlessConfigActionWidget(Identifier(FC.MOD_ID,"widget/action/revert"),FcText.translatable("fc.button.revert.active"),FcText.translatable("fc.button.revert.inactive"),{ entry.peekState() } ) { entry.revert() },
-                TextlessConfigActionWidget(Identifier(FC.MOD_ID,"widget/action/restore"),FcText.translatable("fc.button.restore.active"),FcText.translatable("fc.button.restore.inactive"),{ !entry.isDefault() } ) { entry.restore() })
+                TextlessConfigActionWidget("widget/action/revert".fcId(), "widget/action/revert_inactive".fcId(),"widget/action/revert_highlighted".fcId(), FcText.translatable("fc.button.revert.active"),FcText.translatable("fc.button.revert.inactive"),{ entry.peekState() } ) { entry.revert() },
+                TextlessConfigActionWidget("widget/action/restore".fcId(), "widget/action/restore_inactive".fcId(),"widget/action/restore_highlighted".fcId(), FcText.translatable("fc.button.restore.active"),FcText.translatable("fc.button.restore.inactive"),{ !entry.isDefault() } ) { entry.restore() })
         }
     }
 
@@ -225,9 +227,9 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
                 desc,
                 parent,
                 entry.widgetEntry(),
-                TextlessConfigActionWidget(Identifier(FC.MOD_ID,"widget/action/revert"),FcText.translatable("fc.button.revert.active"),FcText.translatable("fc.button.revert.inactive"),{ entry.peekState() } ) { entry.revert() },
-                TextlessConfigActionWidget(Identifier(FC.MOD_ID,"widget/action/restore"),FcText.translatable("fc.button.restore.active"),FcText.translatable("fc.button.restore.inactive"),{ !entry.isDefault() } ) { entry.restore() },
-                TextlessConfigActionWidget(Identifier(FC.MOD_ID,"widget/action/forward"),FcText.translatable("fc.button.forward.active"),FcText.translatable("fc.button.forward.inactive"),{ MinecraftClient.getInstance()?.networkHandler?.playerList?.let { it.size > 1 } ?: false } ) { popupForwardingWidget(entry) })
+                TextlessConfigActionWidget("widget/action/revert".fcId(), "widget/action/revert_inactive".fcId(),"widget/action/revert_highlighted".fcId(), FcText.translatable("fc.button.revert.active"),FcText.translatable("fc.button.revert.inactive"),{ entry.peekState() } ) { entry.revert() },
+                TextlessConfigActionWidget("widget/action/restore".fcId(), "widget/action/restore_inactive".fcId(),"widget/action/restore_highlighted".fcId(), FcText.translatable("fc.button.restore.active"),FcText.translatable("fc.button.restore.inactive"),{ !entry.isDefault() } ) { entry.restore() },
+                TextlessConfigActionWidget("widget/action/forward".fcId(),"widget/action/forward_inactive".fcId(),"widget/action/forward_highlighted".fcId(), FcText.translatable("fc.button.forward.active"),FcText.translatable("fc.button.forward.inactive"),{ MinecraftClient.getInstance()?.networkHandler?.playerList?.let { it.size > 1 } ?: false } ) { popupEntryForwardingWidget(entry) })
         }
     }
 
@@ -239,18 +241,41 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
         return Function { parent -> ConfigEntry(name, desc, parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) } ) }
     }
 
-    private fun <T> popupForwardingWidget(entry: T) where T: Updatable, T: Entry<*> {
+    private fun <T> popupEntryForwardingWidget(entry: T) where T: Updatable, T: Entry<*> {
         TODO()
     }
 
-    internal fun apply(){
-        TODO()
+    @Internal
+    override fun apply() {
+        SyncedConfigRegistry.updateServer(this.configs,UpdateManager.flush(),getPlayerPermissionLevel())
+
+    }
+    @Internal
+    override fun revert() {
+        UpdateManager.revertAll()
+    }
+    @Internal
+    override fun changes(): Int {
+        return UpdateManager.getAllChangeCount()
+    }
+    @Internal
+    override fun changesWidget() {
+        TODO("Not yet implemented")
+    }
+    @Internal
+    override fun hasForwards(): Boolean {
+        return forwardedUpdates.isNotEmpty()
+    }
+    @Internal
+    override fun forwardedWidget() {
+        TODO("Not yet implemented")
     }
 
-    fun interface ConfigScreenBuilder{
+
+    internal fun interface ConfigScreenBuilder {
         fun build(): ConfigScreen
     }
 
-    internal class ForwardedUpdate(val update: String, val player: UUID, val entry: Entry<*>)
+    private class ForwardedUpdate(val update: String, val player: UUID, val entry: Entry<*>)
 
 }

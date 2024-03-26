@@ -227,7 +227,7 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
             return EntryValidator.Builder<String>()
                 .weak(DEFAULT_WEAK)
                 .strong { i, _ -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { allowableIds.test(it) } ?: false), "Identifier invalid or not allowed") }
-                .build()
+                .buildValidator()
         }
 
         /**
@@ -243,7 +243,7 @@ class ValidatedIdentifier(private val defaultValue: String, private val allowabl
             return EntryValidator.Builder<String>()
                 .weak { i, _ -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { allowableIds.test(it) } ?: false), "Identifier invalid or not allowed") }
                 .strong { i, _ -> ValidationResult.predicated(i, (Identifier.tryParse(i)?.let { allowableIds.test(it) } ?: false), "Identifier invalid or not allowed") }
-                .build()
+                .buildValidator()
         }
 
         /**

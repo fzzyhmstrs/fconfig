@@ -1,8 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import com.mojang.blaze3d.systems.RenderSystem
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -15,12 +16,9 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.ButtonTextures
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.input.KeyCodes
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.text.MutableText
@@ -73,9 +71,9 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     }
 
     companion object{
-        private val CONFIRM_TEXTURE = Identifier(FC.MOD_ID,"widget/slider/active")
-        private val CONFIRM_INACTIVE_TEXTURE = Identifier(FC.MOD_ID,"widget/slider/inactive")
-        private val CONFIRM_HIGHLIGHTED_TEXTURE = Identifier(FC.MOD_ID,"widget/slider/highlighted")
+        private val CONFIRM_TEXTURE = "widget/action/confirm".fcId()
+        private val CONFIRM_INACTIVE_TEXTURE = "widget/action/confirm_inactive".fcId()
+        private val CONFIRM_HIGHLIGHTED_TEXTURE = "widget/action/confirm_highlighted".fcId()
     }
 
     @Environment(EnvType.CLIENT)
@@ -210,44 +208,16 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     }
 
     @Environment(EnvType.CLIENT)
-    protected class ConfirmButtonTextFieldWidget<T: Number>(private val wrappedValue: Supplier<T>, private val validationProvider: Function<Double,ValidationResult<T>>, private val valueApplier: Consumer<T>):
+    protected class ConfirmButtonTextFieldWidget<T: Number>(wrappedValue: Supplier<T>, validationProvider: Function<Double,ValidationResult<T>>, private val valueApplier: Consumer<T>):
         ClickableWidget(0,0, 90, 20, FcText.empty())
     {
-        companion object {
-            private val TEXTURES =
-                ButtonTextures(Identifier("widget/text_field"), Identifier("widget/text_field_highlighted"))
-
-        }
-        private val textFieldWidget = TextFieldWidget(MinecraftClient.getInstance().textRenderer,70,20,FcText.empty())
-        private var storedValue = wrappedValue.get()
-        private var isValid = true
+        private val textFieldWidget = ValidationBackedNumberFieldWidget(70,20, wrappedValue, validationProvider)
         private var confirmActive = false
         private var confirmHovered = false
 
-        private fun isValidTest(s: String): Boolean {
-            val test = s.toDoubleOrNull()
-            if (test == null) {
-                this.tooltip = Tooltip.of("fc.validated_field.number.textbox.invalid".translate())
-                return false
-            }
-            val result = validationProvider.apply(test)
-            return if(result.isError()) {
-                this.tooltip = Tooltip.of(result.getError().lit())
-                false
-            } else {
-                this.storedValue = result.get()
-                confirmActive = isChanged()
-                true
-            }
-        }
 
-        private fun isChanged(): Boolean{
-            return storedValue != wrappedValue.get()
-        }
-
-        init {
-            textFieldWidget.setChangedListener { s -> isValid = isValidTest(s) }
-            textFieldWidget.text = wrappedValue.get().toString()
+        private fun isChanged(): Boolean {
+            return textFieldWidget.isChanged()
         }
 
         override fun getNarrationMessage(): MutableText {
@@ -275,10 +245,6 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             context.drawGuiTexture(getConfirmTexture(), x + getWidth() - 20, y, 20, getHeight())
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            return super.mouseClicked(mouseX, mouseY, button)
-        }
-
         override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
             builder.put(NarrationPart.TITLE, this.narrationMessage)
             if (active) {
@@ -293,7 +259,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
             if (KeyCodes.isToggle(keyCode)) {
                 if (isChanged()) {
-                    valueApplier.accept(storedValue)
+                    valueApplier.accept(textFieldWidget.getValue())
                     confirmActive = isChanged()
                     return true
                 }
@@ -308,7 +274,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         override fun onClick(mouseX: Double, mouseY: Double) {
             if(mouseX >= (x + 70) && mouseY >= y && mouseX < x + width && mouseY < y + height) {
                 if (isChanged()) {
-                    valueApplier.accept(storedValue)
+                    valueApplier.accept(textFieldWidget.getValue())
                     confirmActive = isChanged()
                     return
                 }

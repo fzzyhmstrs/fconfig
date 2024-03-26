@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.registry
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -10,6 +11,7 @@ import me.fzzyhmstrs.fzzy_config.networking.ConfigSyncS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateC2SCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.SettingForwardCustomPayload
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -121,7 +123,17 @@ object SyncedConfigRegistry {
         }
 
         ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
+            val permLevel = payload.playerPerm
             val serializedConfigs = payload.updates
+            if(!context.player().hasPermissionLevel(permLevel)){
+                FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes to the Server Config! Their perm level: ${getPlayerPermissionLevel(context.player())}, perm level synced from client: $permLevel")
+                val changes = payload.changeHistory
+                ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
+                for (player in context.player().server.playerManager.playerList){
+                    if(player.hasPermissionLevel(2))
+                        player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
+                }
+            }
             for ((id,configString) in serializedConfigs) {
                 if (syncedConfigs.containsKey(id)) {
                     val config = syncedConfigs[id] ?: continue
@@ -147,6 +159,14 @@ object SyncedConfigRegistry {
             val sendingPlayer = context.player()
             ServerPlayNetworking.send(receivingPlayer,SettingForwardCustomPayload(update,sendingPlayer.uuid,scope))
         }
+    }
+
+    private fun getPlayerPermissionLevel(player: PlayerEntity): Int{
+        var i = 0
+        while(player.hasPermissionLevel(i)){
+            i++
+        }
+        return i
     }
 
     internal fun registerConfig(config: Config){

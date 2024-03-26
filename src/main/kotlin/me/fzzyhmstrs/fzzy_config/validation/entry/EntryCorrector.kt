@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.entry
 
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import java.util.function.Predicate
 
 /**
  * Deserializes individual entries in a complex [Entry]
@@ -13,4 +14,45 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 @FunctionalInterface
 fun interface EntryCorrector<T> {
     fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T>
+
+    class Builder<T:Any>: AbstractBuilder<T,Builder<T>>(){
+        override fun builder(): Builder<T> {
+            return this
+        }
+    }
+
+    abstract class AbstractBuilder<T: Any, E: AbstractBuilder<T,E>> {
+        private var ifStrong: EntryCorrector<T> = EntryCorrector{ i, t -> ValidationResult.success(i) }
+        private var ifWeak: EntryCorrector<T> = EntryCorrector{ i, t -> ValidationResult.success(i) }
+        protected abstract fun builder(): E
+        fun strong(corrector: EntryCorrector<T>): E {
+            ifStrong = corrector
+            return builder()
+        }
+        fun strong(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
+            ifStrong = EntryCorrector { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            return builder()
+        }
+        fun weak(corrector: EntryCorrector<T>): E {
+            ifWeak = corrector
+            return builder()
+        }
+        fun weak(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
+            ifWeak = EntryCorrector { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            return builder()
+        }
+        fun both(corrector: EntryCorrector<T>): E {
+            ifStrong = corrector
+            ifWeak = corrector
+            return builder()
+        }
+        fun both(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
+            ifStrong = EntryCorrector { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            ifWeak = EntryCorrector { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            return builder()
+        }
+        fun buildCorrector(): EntryCorrector<T> {
+            return EntryCorrector{ i, t -> if(t == EntryValidator.ValidationType.WEAK) ifWeak.correctEntry(i,t) else ifStrong.correctEntry(i,t) }
+        }
+    }
 }

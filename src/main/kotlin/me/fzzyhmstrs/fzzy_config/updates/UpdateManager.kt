@@ -80,15 +80,15 @@ object UpdateManager{
     }
 
     fun getChangeCount(scope: String): Int {
-        return getScopedUpdates(scope).size
+        return getScopedUpdates(scope).filter { it.value.peekState() }.size
+    }
+
+    fun getAllChangeCount(): Int {
+        return getChangeCount("")
     }
 
     fun getCurrentChangeCount(): Int {
         return getChangeCount(currentScope)
-    }
-
-    fun getTotalChangeCount(): Int {
-        return getChangeCount("")
     }
 
     fun revert(scope: String) {
@@ -96,7 +96,9 @@ object UpdateManager{
             update.revert()
         }
     }
-
+    fun revertAll() {
+        revert("")
+    }
     fun revertCurrent() {
         revert(currentScope)
     }

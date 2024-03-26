@@ -11,7 +11,9 @@ import java.util.function.Consumer
 import java.util.function.Supplier
 
 class TextlessConfigActionWidget(
-    private val icon: Identifier,
+    private val activeIcon: Identifier,
+    private val inactiveIcon: Identifier,
+    private val highlightedIcon: Identifier,
     private val activeNarration: Text,
     private val inactiveNarration: Text,
     private val canPress: Supplier<Boolean>,
@@ -20,10 +22,19 @@ class TextlessConfigActionWidget(
     PressableWidget(0,0, 20, 20, FcText.empty())
 {
 
+    private fun getTex(): Identifier{
+        if(!active)
+            return inactiveIcon
+        return if (hovered || isFocused)
+            highlightedIcon
+        else
+            activeIcon
+    }
+
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = canPress.get()
-        super.renderWidget(context, mouseX, mouseY, delta)
-        context.drawGuiTexture(icon, x, y, getWidth(), getHeight())
+        //super.renderWidget(context, mouseX, mouseY, delta)
+        context.drawGuiTexture(getTex(), x, y, getWidth(), getHeight())
     }
 
     override fun getNarrationMessage(): MutableText {

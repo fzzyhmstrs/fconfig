@@ -9,12 +9,14 @@ import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntrySerializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity
 import net.peanuuutz.tomlkt.*
 import java.io.File

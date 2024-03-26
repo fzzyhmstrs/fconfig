@@ -2,7 +2,10 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.pos.*
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.screen.Screen
@@ -18,6 +21,7 @@ import java.util.function.BiFunction
 import java.util.function.Function
 import kotlin.math.min
 
+@Environment(EnvType.CLIENT)
 open class PopupWidget
     private constructor(
         private var message: Text,
@@ -37,7 +41,7 @@ open class PopupWidget
 {
 
     companion object{
-        private val BACKGROUND = Identifier(FC.MOD_ID,"widget/popup/background")
+        private val BACKGROUND = "widget/popup/background".fcId()
     }
 
     private var x: Int = 0
@@ -115,6 +119,7 @@ open class PopupWidget
         }
     }
 
+    @Environment(EnvType.CLIENT)
     class Builder(private val title: Text, spacingW: Int = 4, spacingH: Int = 4) {
 
         private var width: Int = MinecraftClient.getInstance().textRenderer.getWidth(title) + 8
@@ -175,12 +180,28 @@ open class PopupWidget
             var maxH = height
             for (posEl in elements.values){
                 maxW = (posEl.getRight() + 4).takeIf { it > maxW } ?: maxW //4 = outer edge padding
+                maxW += ((posEl.getLeft() -4).takeIf { it < 0 } ?: 0) * -1 //4 = outer edge padding
                 maxH = (posEl.getBottom() + 4).takeIf { it > maxH } ?: maxH //4 = outer edge padding
             }
             updateWidth(maxW)
             updateHeight(maxH)
         }
 
+        fun <E> addElementSpacedBoth(id: String, element: E, parent: String, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Element, E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingW = spacingW, spacingH = spacingH), element, parent, positions)
+            elements[id] = posEl
+            return this
+        }
+        fun <E> addElementSpacedW(id: String, element: E, parent: String, spacingW: Int, vararg positions: Position): Builder where E: Element, E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingW = spacingW), element, parent, positions)
+            elements[id] = posEl
+            return this
+        }
+        fun <E> addElementSpacedH(id: String, element: E, parent: String, spacingH: Int, vararg positions: Position): Builder where E: Element, E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingH = spacingH), element, parent, positions)
+            elements[id] = posEl
+            return this
+        }
         fun <E> addElement(id: String, element: E, parent: String, vararg positions: Position): Builder where E: Element, E: Widget {
             val posEl = createPositionedElement(set, element, parent, positions)
             elements[id] = posEl
@@ -215,6 +236,7 @@ open class PopupWidget
 
         fun build(): PopupWidget{
             attemptRecomputeDims()
+            attemptRecomputeDims() // we'll do two passes to try to cover weird cases where first pass doesn't cover everything
             val children: MutableList<Element> = mutableListOf()
             val drawables: MutableList<Drawable> = mutableListOf()
             val selectables: MutableList<Selectable> = mutableListOf()
@@ -228,6 +250,9 @@ open class PopupWidget
             val positioner: BiConsumer<Int, Int> = BiConsumer { x, y ->
                 xPos.set(x)
                 yPos.set(y)
+                for (posEl in elements.values){
+                    posEl.update()
+                }
             }
             return PopupWidget(title, width, height, positionX, positionY, positioner, onClose, children, selectables, drawables)
         }
@@ -243,7 +268,7 @@ open class PopupWidget
             }
         }
 
-        sealed interface Position{
+        sealed interface Position {
             fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos,Pos>
         }
 
@@ -285,6 +310,16 @@ open class PopupWidget
             VERTICAL_TO_RIGHT_EDGE {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                     return Pair(RelPos(parent.x, parent.elWidth() - el.width), prevY)
+                }
+            },
+            CENTERED_HORIZONTALLY {
+                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                    return Pair(RelPos(parent.x, parent.elWidth()/2 - el.width/2), prevY)
+                }
+            },
+            CENTERED_VERTICALLY {
+                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                    return Pair(prevX, RelPos(parent.y, parent.elHeight()/2 - el.height/2))
                 }
             }
         }
@@ -331,9 +366,13 @@ open class PopupWidget
             fun elHeight(): Int {
                 return element.height
             }
+            fun update(){
+                element.x = x.get()
+                element.y = y.get()
+            }
         }
 
         @Internal
-        class PosSet(val x: Pos, val y: Pos, val w: Pos, val h: Pos, val spacingW: Int, val spacingH: Int)
+        data class PosSet(val x: Pos, val y: Pos, val w: Pos, val h: Pos, val spacingW: Int, val spacingH: Int)
     }
 }

@@ -1,8 +1,21 @@
 {
-	"fc.validated_field.color.r": "Red part of an RGBA color; enter an integer between 0 and 255.",
-	"fc.validated_field.color.g": "Green part of an RGBA color; enter an integer between 0 and 255.",
-	"fc.validated_field.color.b": "Blue part of an RGBA color; enter an integer between 0 and 255.",
-	"fc.validated_field.color.a": "Alpha part of an RGBA color; enter an integer between 0 (transparent) and 255 (opaque). The mod author may lock this to 255 only.",
+	"fc.validated_field.color.r": "R",
+	"fc.validated_field.color.g": "G",
+	"fc.validated_field.color.b": "B",
+	"fc.validated_field.color.a": "A",
+	"fc.validated_field.color.hl": "Hue Light Map",
+	"fc.validated_field.color.s": "Saturation Slider",
+	"fc.validated_field.color.r.desc": "Enter an integer between 0 and 255",
+	"fc.validated_field.color.g.desc": "Enter an integer between 0 and 255",
+	"fc.validated_field.color.b.desc": "Enter an integer between 0 and 255",
+	"fc.validated_field.color.a.desc": "Enter an integer between 0 and 255",
+	"fc.validated_field.color.a.desc_locked": "Alpha is locked to 255.",
+	"fc.validated_field.color.s.desc": "Use hue brightness map to change those values",
+	"fc.validated_field.color.s.usage.keyboard": "Press up or down arrow keys to change color saturation",
+	"fc.validated_field.color.hl.desc": "Only assigns hue and brightness. Use saturation slider to change saturation.",
+	"fc.validated_field.color.hl.usage.keyboard": "Press left or right arrow to change color hue. Press up or down arrow to change color brightness",
+	"fc.validated_field.color.hl.usage.mouse": "Click the map to assign a hue and light value",
+	"fc.validated_field.color.int.desc": "Hexadecimal color representation.",
 	"fc.validated_field.update.error": "Encountered error while updating field [%1$s] from [%2$s] to [%3$s]: %4$s",
 	"fc.validated_field.revert.error": "Encountered error while reverting field [%1$s]: %2$s",
 	"fc.validated_field.update": "Updated field [%1$s] from [%2$s] to [%3$s]",
@@ -15,6 +28,8 @@
 
 	"test.walkable.testChildDave.testChildBool": "Test Child Dave's Boolean",
 	"test.walkable.testChildDave.testChildBool.desc": "Dave's favorite boolean. Please treat it well.",
+
+	"fc.networking.permission.cheat": "Player [%1$s] may have tried cheating server config options! See the server logs for details.",
 
 	"fc.config.generic.section" : "Config Section",
 	"fc.config.generic.section.desc" : "This Config Section doesn't implement it's translation key. The screen doesn't know what to call it!",
@@ -29,13 +44,16 @@
 	"fc.button.restore.inactive": "Value is default",
 	"fc.button.forward.active": "Forward this entry to another player",
 	"fc.button.forward.inactive": "No-one to forward settings to",
-	"fc.button.changelog.active": "Forward this entry to another player",
-	"fc.button.changelog.inactive": "No-one to forward settings to",
+	"fc.button.changelog.active": "Change history",
+	"fc.button.changelog.inactive": "No changes yet",
+	"fc.button.alert.active": "Forwarded settings",
+	"fc.button.alert.inactive": "No forwarded settings",
 	"fc.button.noPerms": "Can't Edit",
 	"fc.button.noPerms.desc": "You don't have the proper permissions to edit this entry.",
 	"fc.button.navigate": "Navigate to %s",
 	"fc.button.apply": "Apply",
 	"fc.button.apply.message": "Apply %s changes",
 	"fc.button.apply.desc": "Applies changes without exiting the screen"
+
 
 }

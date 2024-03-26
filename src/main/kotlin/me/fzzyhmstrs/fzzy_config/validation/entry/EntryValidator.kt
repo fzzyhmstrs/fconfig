@@ -16,26 +16,45 @@ import java.util.function.Predicate
 fun interface EntryValidator<T: Any> {
     fun validateEntry(input: T, type: ValidationType): ValidationResult<T>
 
-    class Builder<T: Any>{
+    class Builder<T: Any>: AbstractBuilder<T, Builder<T>>() {
+        override fun builder(): Builder<T> {
+            return this
+        }
+    }
+
+    abstract class AbstractBuilder<T: Any, E: AbstractBuilder<T,E>> {
         private var ifStrong: EntryValidator<T> = EntryValidator{ i, t -> ValidationResult.success(i) }
         private var ifWeak: EntryValidator<T> = EntryValidator{ i, t -> ValidationResult.success(i) }
-        fun strong(validator: EntryValidator<T>): Builder<T> {
+
+        protected abstract fun builder(): E
+
+        fun strong(validator: EntryValidator<T>): E {
             ifStrong = validator
-            return this
+            return builder()
         }
-        fun strong(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): Builder<T> {
+        fun strong(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
             ifStrong = EntryValidator { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
-            return this
+            return builder()
         }
-        fun weak(validator: EntryValidator<T>): Builder<T> {
+        fun weak(validator: EntryValidator<T>): E {
             ifWeak = validator
-            return this
+            return builder()
         }
-        fun weak(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): Builder<T> {
+        fun weak(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
             ifWeak = EntryValidator { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
-            return this
+            return builder()
         }
-        fun build(): EntryValidator<T> {
+        fun both(validator: EntryValidator<T>): E {
+            ifStrong = validator
+            ifWeak = validator
+            return builder()
+        }
+        fun both(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
+            ifStrong = EntryValidator { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            ifWeak = EntryValidator { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            return builder()
+        }
+        fun buildValidator(): EntryValidator<T> {
             return EntryValidator{ i, t -> if(t == ValidationType.WEAK) ifWeak.validateEntry(i,t) else ifStrong.validateEntry(i,t) }
         }
     }
