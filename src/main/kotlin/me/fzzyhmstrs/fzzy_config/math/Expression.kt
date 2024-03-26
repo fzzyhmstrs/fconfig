@@ -51,6 +51,8 @@ fun interface Expression {
      * Evaluates the math expression
      * @param vars Map<Char, Double> - map of the input variables. The Char used must match the variable characters used in the string expression and visa-versa
      * @return Double - The result of the expression evaluation
+     * @author fzzyhmstrs
+     * @since 0.2.0
      */
     fun eval(vars: Map<Char,Double>): Double
 
@@ -114,18 +116,58 @@ fun interface Expression {
         }
 
         /**
-         * Generates a validated Expression for use in configs
-         *
-         * @param str String. the default math expression to be used in the [ValidatedExpression]
-         * @return ValidatedExpression wrapping the passed string as it's default expression
-         * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandMath]
+         * Attempts to parse and evaluate an expression with dummy values, faling null instead of throwing
+         * @param str the math expression to try parsing
+         * @param vars [Set] of valid variable characters. This method will build a dummy Map<Char,Double> to test eval() of the expression
+         * @return ValidationResult<Expression?> wrapping an Expression if parsing succeeds, or null if it fails (with the exception message passed back with the Result)
          * @author fzzyhmstrs
          * @since 0.2.0
          */
         @JvmStatic
-        fun validated(str: String): ValidatedExpression{
+        fun tryTest(str: String, vars: Set<Char>): ValidationResult<Expression?>{
+            val result = tryParse(str)
+            if (result.isError() || set.isEmpty()) return result
+            val varMap = vars.associate { it -> it to 0.0 }
+            return try {
+                result.get().eval(varMap)
+                result
+            } catch(e: Exception){
+                ValidationResult.error(null,"Incorrect variables used in expression: [$str], available: [$vars]")
+            }
+        }
+
+        /**
+         * Generates a validated Expression for use in configs
+         *
+         * @param str String. the default math expression to be used in the [ValidatedExpression]
+         * @param vars Set<Char> defining the relevant and allowable variable names
+         * @return ValidatedExpression wrapping the passed string as it's default expression
+         * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandMath]
+         * @throws IllegalStateException
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun validated(str: String, vars: Set<Char> = setOf()): ValidatedExpression{
             parse(str)
-            return ValidatedExpression(str)
+            return ValidatedExpression(str, vars)
+        }
+
+        /**
+         * Evaluates an expression with a fallback. Will fail to fallback instead of throwing
+         * @param vars Map<Char, Double> - map of the input variables. The Char used must match the variable characters used in the string expression and visa-versa
+         * @param fallback Double - fallback value in case eval() throws
+         * @return Double - The result of the expression evaluation
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun Expression.safeEval(vars: Map<Char,Double>, fallback: Double): Double{
+            return try{
+                this.eval(vars)
+            } catch(e: Exception) {
+                fallback
+            }
         }
 
         private val expressions: Map<String, NamedExpression> = mapOf(
