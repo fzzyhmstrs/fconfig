@@ -20,9 +20,24 @@ import java.awt.Color
 import java.util.function.Predicate
 import java.util.function.Supplier
 
+/**
+ * A validated color value
+ * 
+ * This is a [ValidatedField] of type [ColorHolder], a basic Color data class.
+ * @param r the default red component, 0 to 255
+ * @param g the default green component, 0 to 255
+ * @param b the default blue component, 0 to 255
+ * @param a the default alpha(transparency) component, 0 to 255 or Int.MIN_VALUE to set the color as opaque. Defaults to Int.MIN_VALUE
+ * @see [validatedColor]
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColor]
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorOpaque]
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorString]
+ * @author fzzyhmstrs
+ * since 0.1.2
+ */
 class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
 
-    constructor(r: Int, g: Int, b: Int, a: Int = Int.MIN_VALUE): super(ColorHolder(r, g, b, if(a > Int.MIN_VALUE) a else 255, a > Int.MIN_VALUE)){
+    @JvmOverloads constructor(r: Int, g: Int, b: Int, a: Int = Int.MIN_VALUE): super(ColorHolder(r, g, b, if(a > Int.MIN_VALUE) a else 255, a > Int.MIN_VALUE)) {
         if(r<0 || r>255) throw IllegalArgumentException("Red portion of validated color not provided a default value between 0 and 255")
         if(g<0 || g>255) throw IllegalArgumentException("Green portion of validated color not provided a default value between 0 and 255")
         if(b<0 || b>255) throw IllegalArgumentException("Blue portion of validated color not provided a default value between 0 and 255")
@@ -33,7 +48,7 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
     fun toHexString(): String{
         return if(get().opaque()) String.format("%06X", get().toInt()) else String.format("%08X", get().toInt())
     }
-    fun setFromHexString(s: String){
+    fun setFromHexString(s: String) {
         val colorInt = try {
             Integer.parseUnsignedInt(s, 16)
         } catch (e: Exception){
@@ -71,50 +86,70 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
         TODO("Not yet implemented")
     }
 
-    private fun validatedString(): ValidatedString {
-        fun isNotF(chr: Char): Boolean{
-            return chr != 'f' && chr != 'F'
-        }
-        fun toHexChar(chr: Char): Char{
-            val chk = Character.digit(chr,16)
-            return if(chk == -1) '0' else chr
-        }
-        fun transform(s: String): String{
-            var ss = ""
-            for (chr in s){
-                ss += toHexChar(chr)
+    private fun validatedString(): ValidatedString{
+        return validatedString(toHexString(), this.get().opaque())
+    }
+
+    companion object {
+        fun String.validatedColor(transparent: Boolean = true): ValidatedColor {
+            val str = this.replace("#","").replace("0x","")
+            val validatedString = validatedString(str, !transparent)
+            val result = validatedString.validateEntry(str, EntryValidator.ValidationType.WEAK)
+            if (result.isError())
+                throw IllegalStateException(result.getError())
+            val colorInt = val colorInt = try {
+                Integer.parseUnsignedInt(s, 16)
+            } catch (e: Exception){
+                throw IllegalStateException("Error parsing shorthand Expression [$this]")
             }
-            return ss
+            return Color(i, transparent).validated(transparent)
         }
-        return ValidatedString.Builder(toHexString())
-            .both { s,_ ->
-                if (s.length > 8)
-                    ValidationResult.error(s,"String too long for a valid color Integer")
-                else
-                    try{
-                        Integer.parseUnsignedInt(s, 16)
-                        ValidationResult.success(s)
-                    }catch (e: Exception){
-                        ValidationResult.error(s,"String not parsable as color Integer: ${e.localizedMessage}")
-                    }
+
+        private fun validatedString(str: String, opaque: Boolean): ValidatedString {
+            fun isNotF(chr: Char): Boolean{
+                return chr != 'f' && chr != 'F'
             }
-            .withCorrector()
-            .both { s,_ ->
-                if(s.contains('#'))
-                    ValidationResult.error(s.replace("#",""), "'#' prefixes not allowed")
-                else if(s.contains("0x"))
-                    ValidationResult.error(s.replace("0x",""), "'0x' prefixes not allowed")
-                else if(s.length > 8)
-                    ValidationResult.error(s.substring(0,8), "Too long. 8 characters maximum")
-                else if(s.length == 7 && isNotF(s[0]) && this.get().opaque())
-                    ValidationResult.error(s.replaceRange(0,1,if(s[0].isLowerCase())"f" else "F"), "Opaque colors only.")
-                else if(s.length == 8 && (isNotF(s[0]) || isNotF(s[1])) && this.get().opaque())
-                    ValidationResult.error(s.replaceRange(0,2,"${if(s[0].isLowerCase())"f" else "F"}${if(s[1].isLowerCase())"f" else "F"}"), "Opaque colors only.")
-                else
-                    s.let { transform(it) }.let { if(it == s) ValidationResult.success(it) else ValidationResult.error(it,"Invalid characters found in color string") }
-                ValidationResult.success(s)
+            fun toHexChar(chr: Char): Char{
+                val chk = Character.digit(chr,16)
+                return if(chk == -1) '0' else chr
             }
-            .build()
+            fun transform(s: String): String{
+                var ss = ""
+                for (chr in s){
+                    ss += toHexChar(chr)
+                }
+                return ss
+            }
+            return ValidatedString.Builder(str)
+                .both { s,_ ->
+                    if (s.length > 8)
+                        ValidationResult.error(s,"String too long for a valid color Integer")
+                    else
+                        try{
+                            Integer.parseUnsignedInt(s, 16)
+                            ValidationResult.success(s)
+                        }catch (e: Exception){
+                            ValidationResult.error(s,"String not parsable as color Integer: ${e.localizedMessage}")
+                        }
+                }
+                .withCorrector()
+                .both { s,_ ->
+                    if(s.contains('#'))
+                        ValidationResult.error(s.replace("#",""), "'#' prefixes not allowed")
+                    else if(s.contains("0x"))
+                        ValidationResult.error(s.replace("0x",""), "'0x' prefixes not allowed")
+                    else if(s.length > 8)
+                        ValidationResult.error(s.substring(0,8), "Too long. 8 characters maximum")
+                    else if(s.length == 7 && isNotF(s[0]) && opaque)
+                        ValidationResult.error(s.replaceRange(0,1,if(s[0].isLowerCase())"f" else "F"), "Opaque colors only.")
+                    else if(s.length == 8 && (isNotF(s[0]) || isNotF(s[1])) && opaque)
+                        ValidationResult.error(s.replaceRange(0,2,"${if(s[0].isLowerCase())"f" else "F"}${if(s[1].isLowerCase())"f" else "F"}"), "Opaque colors only.")
+                    else
+                        s.let { transform(it) }.let { if(it == s) ValidationResult.success(it) else ValidationResult.error(it,"Invalid characters found in color string") }
+                    ValidationResult.success(s)
+                }
+                .build()
+        }
     }
 
     data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, private val alphaMode: Boolean):
