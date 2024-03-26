@@ -10,7 +10,18 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 
-class ValidatedExpression(defaultValue: String, private val validVars: Set<Char> = setOf(), private val validator: EntryValidator<String> = EntryValidator{ i, _ -> Expression.tryTest(i, validVars).wrap(i)})
+/**
+ * A validated math expression
+ *
+ * @param defaultValue String representation of the desired math expression, parsed to a cached [Expression] internally.
+ * @param validVars Set<Char> representing the valid variable characters the user can utilize in their expression.
+ * @param validator [EntryValidator], validates entered math strings
+ * @Sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedExpression]
+ * throws IllegalStateException if the provided defaultValue is not a parsable Expression.
+ * @author fzzyhmstrs
+ * @since 0.2.0 
+ */
+class ValidatedExpression @JvmOverloads constructor(defaultValue: String, private val validVars: Set<Char> = setOf(), private val validator: EntryValidator<String> = EntryValidator{ i, _ -> Expression.tryTest(i, validVars).wrap(i)})
     :
     ValidatedField<String>(defaultValue),
     Expression
