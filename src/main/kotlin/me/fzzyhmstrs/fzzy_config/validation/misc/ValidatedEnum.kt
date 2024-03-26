@@ -28,7 +28,12 @@ import kotlin.math.max
 /**
  * A validated Enum Class
  * @param T the enum type. An [Enum] that is [Translatable]
- * @param defaultValue
+ * @param defaultValue Enum Constant used as the default for this setting
+ * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.TestEnum]
+ * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedEnum]
+ * @author fzzyhmstrs
+ * @since 0.2.0
  */
 class ValidatedEnum<T> @JvmOverloads constructor(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) where T: Enum<T>, T:Translatable {
 
@@ -82,7 +87,7 @@ class ValidatedEnum<T> @JvmOverloads constructor(defaultValue: T, private val wi
     /**
      * Determines which type of selector widget will be used for the Enum option, default is POPUP
      */
-    enum class WidgetType{
+    enum class WidgetType {
         /**
          * Will display a button with the currently selected option, clicking the button will pop up a window with the available options to select from. Selecting a new option will close the popup.
          */
