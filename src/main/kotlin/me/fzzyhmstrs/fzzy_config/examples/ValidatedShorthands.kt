@@ -79,7 +79,7 @@ internal object ValidatedShorthands {
     val shorthandBool = true.validated()
 
     //Shorthand math Expression. This is directly in the Expression class itself, not in the Shorthand object
-    val shorthandMath = Expression.validated("x * 0.5")
+    val shorthandMath = Expression.validated("x * 0.5", setOf('x'))
 
     //example shorthand validated list. Shown is an identifier list. Note that identifier lists are actually string lists
     val shorthandList = listOf("minecraft:stick").validated(ValidatedIdentifier.ofRegistry(Identifier("stick"),Registries.ITEM))
