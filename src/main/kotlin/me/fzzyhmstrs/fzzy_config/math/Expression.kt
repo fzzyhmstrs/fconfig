@@ -51,6 +51,7 @@ fun interface Expression {
      * Evaluates the math expression
      * @param vars Map<Char, Double> - map of the input variables. The Char used must match the variable characters used in the string expression and visa-versa
      * @return Double - The result of the expression evaluation
+     * @throws IllegalStateException if the evaluation hits a critical error. Often this will be because an expected variable is not passed to vars
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -143,7 +144,7 @@ fun interface Expression {
          * @param vars Set<Char> defining the relevant and allowable variable names
          * @return ValidatedExpression wrapping the passed string as it's default expression
          * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandMath]
-         * @throws IllegalStateException
+         * @throws IllegalStateException if the passed string is not parsable
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -158,7 +159,7 @@ fun interface Expression {
          * Evaluates an expression with a fallback. Will fail to fallback instead of throwing
          * @param vars Map<Char, Double> - map of the input variables. The Char used must match the variable characters used in the string expression and visa-versa
          * @param fallback Double - fallback value in case eval() throws
-         * @return Double - The result of the expression evaluation
+         * @return Double - The result of the expression evaluation or the fallback if evaluation fails
          * @author fzzyhmstrs
          * @since 0.2.0
          */
