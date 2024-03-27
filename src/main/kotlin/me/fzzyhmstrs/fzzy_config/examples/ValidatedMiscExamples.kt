@@ -1,7 +1,13 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
-import me.fzzyhmstrs.fzzy_config.math.Expression.evalSafe
+import me.fzzyhmstrs.fzzy_config.api.EnumTranslatable
+import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.math.Expression.Impl.evalSafe
+import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
+import net.minecraft.registry.Registries
+import net.minecraft.util.Identifier
 
 object ValidatedMiscExamples{
 
@@ -19,7 +25,7 @@ object ValidatedMiscExamples{
     val validatedColorString = "D6FF00AA".validatedColor(true)
 
     //example enum class used in the validated enum below
-    //Note the implementation of EnumTranslatable
+    //Note the implementation of EnumTranslatable, not required, but strongly recommended
     enum class TestEnum: EnumTranslatable {
         VERY,
         COOL,
@@ -31,8 +37,8 @@ object ValidatedMiscExamples{
 
     // example validated Enum. COOL is the default value. This enum is going to use a Cycling style of widget for the GUI, much like vanilla. This is optional.
     val validatedEnum = ValidatedEnum(TestEnum.COOL, ValidatedEnum.WidgetType.CYCLING)
-    
-    // example validated Expression; automatically parses and caches the Math Expression input in string form. 
+
+    // example validated Expression; automatically parses and caches the Math Expression input in string form.
     // The user can input any equation they like as long as it uses x, y, both, or neither expected variables passed in the set
     val validatedExpression = ValidatedExpression("2.5 * x ^ 2 - 45 * y", setOf('x', 'y'))
 
@@ -46,14 +52,14 @@ object ValidatedMiscExamples{
 
     //Example validated identifier. Note that this "raw" usage of the constructor is not recommended in most cases.
     //For instance, in this case, an implmentation of ofRegistry(Registry, BiPredicate) would be advisable
-    val validatedIdentifier = ValidatedIdentifier(Identifier("oak_planks"), AllowableIdentifiers({ id -> id.toString().contains("planks") }, { Registries.BLOCK.ids.filter { it.toString().contains("planks") } })
+    val validatedIdentifier = ValidatedIdentifier(Identifier("oak_planks"), AllowableIdentifiers({ id -> id.toString().contains("planks") }, { Registries.BLOCK.ids.filter { it.toString().contains("planks") } }))
 
     //example validated string. This is built using the Builder, which is typically recommended except in special circumstances
     //this string requires that lowercase chicken be included in the string
     val validatedString = ValidatedString.Builder("chickenfrog")
-                              .both { s,_ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'." }
+                              .both { s,_ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
                               .withCorrector()
-                              .both { s,_ -> 
+                              .both { s,_ ->
                                   if(s.contains("chicken")){
                                       ValidationResult.success(s)
                                   } else {

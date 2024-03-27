@@ -13,7 +13,7 @@ import net.minecraft.text.PlainTextContent
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
-open class ConfigUpdatableEntry(
+internal open class ConfigUpdatableEntry(
     name: Text,
     description: Text,
     parent: ConfigListWidget,

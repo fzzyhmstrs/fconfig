@@ -14,7 +14,7 @@ import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
 
-class ValidatedEnumMap<K,V: Any>(defaultValue: Map<K,V>, private val keyHandler: Entry<K>, private val valueHandler: Entry<V>): ValidatedField<Map<K, V>>(defaultValue) where K:Enum<K>, K: Translatable{
+class ValidatedEnumMap<K:Enum<K>,V: Any>(defaultValue: Map<K,V>, private val keyHandler: Entry<K>, private val valueHandler: Entry<V>): ValidatedField<Map<K, V>>(defaultValue){
     override fun copyStoredValue(): Map<K, V> {
         return storedValue.toMap()
     }
@@ -123,81 +123,85 @@ class ValidatedEnumMap<K,V: Any>(defaultValue: Map<K,V>, private val keyHandler:
         fun keyHandler(defaultValue: K): BuilderWithKey<K,V>{
             return BuilderWithKey<K,V>(ValidatedEnum(defaultValue))
         }
+
+        class BuilderWithKey<K,V: Any> internal constructor (private val keyHandler: Entry<K>)where K: Enum<K>, K: Translatable{
+            /**
+             * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
+             * @param valueHandler an [Entry] used as a handler for values.
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
+            fun valueHandler(valueHandler: Entry<V>): BuilderWithValue<K,V>{
+                return BuilderWithValue(valueHandler,keyHandler)
+            }
+
+            class BuilderWithValue<K,V: Any>internal constructor (private val valueHandler: Entry<V>, private val keyHandler: Entry<K>)where K: Enum<K>, K: Translatable{
+                private var defaults: Map<K,V> = mapOf()
+
+                /**
+                 * Defines the default map used in the ValidatedMap
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param defaults Map<K,V> of default values
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun defaults(defaults: Map<K,V>): BuilderWithValue<K,V>{
+                    this.defaults = defaults
+                    return this
+                }
+                /**
+                 * Defines the default map used in the ValidatedMap
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param defaults vararg Pair<K,V> of default key-value pairs
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun defaults(vararg defaults: Pair<K,V>): BuilderWithValue<K,V>{
+                    this.defaults = mapOf(*defaults)
+                    return this
+                }
+                /**
+                 * Defines a single default key-value pair
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param default single Pair<K,V> to define a single key-value pair map of defaults
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun default(default: Pair<K,V>): BuilderWithValue<K,V>{
+                    this.defaults = mapOf(default)
+                    return this
+                }
+                /**
+                 * Defines a single default key-value pair
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param key single K to define the default map key
+                 * @param value single V to define the default map value
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun default(key: K, value: V): BuilderWithValue<K,V>{
+                    this.defaults = mapOf(key to value)
+                    return this
+                }
+                /**
+                 * Builds the Builder into a ValidatedEnumMap
+                 * @return ValidatedEnumMap based on the builder inputs
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun build(): ValidatedEnumMap<K,V>{
+                    return ValidatedEnumMap(defaults,keyHandler,valueHandler)
+                }
+            }
+        }
+
+
     }
 
-    class BuilderWithKey<K,V: Any> internal constructor (private val keyHandler: Entry<K>)where K: Enum<K>, K: Translatable{
-        /**
-         * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
-         * @param valueHandler an [Entry] used as a handler for values.
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun valueHandler(valueHandler: Entry<V>): BuilderWithValue<K,V>{
-            return BuilderWithValue(valueHandler,keyHandler)
-        }
-    }
 
-    class BuilderWithValue<K,V: Any>internal constructor (private val valueHandler: Entry<V>, private val keyHandler: Entry<K>)where K: Enum<K>, K: Translatable{
-        private var defaults: Map<K,V> = mapOf()
-
-        /**
-         * Defines the default map used in the ValidatedMap
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param defaults Map<K,V> of default values
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun defaults(defaults: Map<K,V>): BuilderWithValue<K,V>{
-            this.defaults = defaults
-            return this
-        }
-        /**
-         * Defines the default map used in the ValidatedMap
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param defaults vararg Pair<K,V> of default key-value pairs
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun defaults(vararg defaults: Pair<K,V>): BuilderWithValue<K,V>{
-            this.defaults = mapOf(*defaults)
-            return this
-        }
-        /**
-         * Defines a single default key-value pair
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param default single Pair<K,V> to define a single key-value pair map of defaults
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun default(default: Pair<K,V>): BuilderWithValue<K,V>{
-            this.defaults = mapOf(default)
-            return this
-        }
-        /**
-         * Defines a single default key-value pair
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param key single K to define the default map key
-         * @param value single V to define the default map value
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun default(key: K, value: V): BuilderWithValue<K,V>{
-            this.defaults = mapOf(key to value)
-            return this
-        }
-        /**
-         * Builds the Builder into a ValidatedEnumMap
-         * @return ValidatedEnumMap based on the builder inputs
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun build(): ValidatedEnumMap<K,V>{
-            return ValidatedEnumMap(defaults,keyHandler,valueHandler)
-        }
-    }
 
 }

@@ -13,7 +13,7 @@ import net.minecraft.text.PlainTextContent
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
-open class ConfigForwardableEntry(
+internal open class ConfigForwardableEntry(
     name: Text,
     description: Text,
     parent: ConfigListWidget,

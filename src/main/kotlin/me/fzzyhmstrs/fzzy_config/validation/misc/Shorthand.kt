@@ -1,9 +1,15 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.api.Translatable
+import me.fzzyhmstrs.fzzy_config.math.Expression.Impl.validated
+import me.fzzyhmstrs.fzzy_config.updates.Updatable
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedIdentifierList
 import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedList
+import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedIdentifierMap
+import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedMap
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.shorthandValidationMap
 import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.registry.Registry
@@ -13,6 +19,8 @@ import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.awt.Color
 import java.util.function.BiPredicate
+import kotlin.reflect.full.starProjectedType
+import kotlin.reflect.typeOf
 
 /**
  * Shorthand extension functions for simple field types
@@ -118,7 +126,7 @@ object Shorthand {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <E> E.validated(): ValidatedEnum<E> where E: Enum<E>, E: Translatable {
+    fun <E: Enum<E>> E.validated(): ValidatedEnum<E> {
         return ValidatedEnum(this)
     }
 
@@ -134,6 +142,20 @@ object Shorthand {
     @JvmStatic
     fun Boolean.validated(): ValidatedBoolean {
         return ValidatedBoolean(this)
+    }
+
+    /**
+     * Shorthand validated Identifier
+     *
+     * Boolean used will be the default
+     * @return ValidatedBoolean wrapping the boolean passed
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandBool]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmStatic
+    fun Identifier.validated(): ValidatedIdentifier{
+        return ValidatedIdentifier(this)
     }
 
     /**
@@ -191,7 +213,8 @@ object Shorthand {
      * @since 0.2.0
      */
     @JvmStatic
-    fun List<Identifier>.validated(handler: ValidatedIdentifier): ValidatedIdentifierList{
+    @JvmOverloads
+    fun List<Identifier>.validated(handler: ValidatedIdentifier = ValidatedIdentifier(Identifier("air"))): ValidatedIdentifierList {
         return ValidatedIdentifierList(this, handler)
     }
     /**
@@ -254,19 +277,39 @@ object Shorthand {
      */
     @JvmStatic
     @Deprecated("Use only for validation of a list or map. Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
-    fun List<Identifier>.validatedList(list: List<Identifier>): ValidatedIdentifierList{
+    fun List<Identifier>.validatedList(list: List<Identifier>): ValidatedIdentifierList {
         return ValidatedIdentifierList(this, ValidatedIdentifier.ofList(list))
     }
 
     @Internal
-    val shorthandValidationMap = mapOf(
+    val shorthandValidationMap: Map<Class<*>,ValidatedField<*>> = mapOf(
         java.lang.Integer::class.java to ValidatedInt(0),
         java.lang.Short::class.java to ValidatedShort(0.toShort()),
         java.lang.Byte::class.java to ValidatedByte(0.toByte()),
         java.lang.Long::class.java to ValidatedLong(0L),
         java.lang.Double::class.java to ValidatedDouble(0.0),
-        java.lang.Float::class.java to ValidatedFloat(0f)
+        java.lang.Float::class.java to ValidatedFloat(0f),
+        java.lang.String::class.java to ValidatedString("list"),
+        Identifier::class.java to ValidatedIdentifier(Identifier("air")),
+        java.lang.Boolean::class.java to ValidatedBoolean(true)
     )
+
+    internal fun basicValidation(input: Any?): ValidatedField<*>? {
+        return when (input) {
+            is Int -> input.validated()
+            is Short -> input.validated()
+            is Long -> input.validated()
+            is Byte -> input.validated()
+            is Double -> input.validated()
+            is Float -> input.validated()
+            is Boolean -> input.validated()
+            is Enum<*> -> ValidatedEnum(input)
+            is Color -> input.validated()
+            is Identifier -> input.validated()
+            is String -> ValidatedString(input)
+            else -> null
+        }
+    }
 
     /**
      * Shorthand validated number List

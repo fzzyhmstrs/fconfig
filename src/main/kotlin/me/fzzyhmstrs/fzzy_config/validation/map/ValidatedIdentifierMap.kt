@@ -49,19 +49,19 @@ class ValidatedIdentifierMap<V: Any>(defaultValue: Map<Identifier,V>, private va
             val map: MutableMap<Identifier,V> = mutableMapOf()
             val keyErrors: MutableList<String> = mutableListOf()
             val valueErrors: MutableList<String> = mutableListOf()
-            for ((key, el) in table.entries){
-                val keyResult = keyHandler.validateEntry(key, EntryValidator.ValidationType.WEAK)
+            for ((key, el) in table.entries) {
+                val keyId = Identifier.tryParse(key)
+                if (keyId == null){
+                    keyErrors.add("Skipping key!: $key is an invalid identifier")
+                    continue
+                }
+                val keyResult = keyHandler.validateEntry(keyId, EntryValidator.ValidationType.WEAK)
                 if(keyResult.isError()){
                     keyErrors.add("Skipping key!: ${keyResult.getError()}")
                     continue
                 }
                 val valueResult = valueHandler.deserializeEntry(el,valueErrors,"{$fieldName, @key: $key}", true).report(valueErrors)
-                val id = Identifier.tryParse(keyResult.get())
-                if (id == null){
-                    keyErrors.add("Skipping key!: Uncaught issue with identifier [$key] during validation")
-                    continue
-                }
-                map[id] = valueResult.get()
+                map[keyResult.get()] = valueResult.get()
             }
             ValidationResult.predicated(map,keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors")
         } catch (e: Exception){
@@ -73,7 +73,7 @@ class ValidatedIdentifierMap<V: Any>(defaultValue: Map<Identifier,V>, private va
         val keyErrors: MutableList<String> = mutableListOf()
         val valueErrors: MutableList<String> = mutableListOf()
         for ((key, value) in input){
-            keyHandler.validateEntry(key.toString(),type).report(keyErrors)
+            keyHandler.validateEntry(key,type).report(keyErrors)
             valueHandler.validateEntry(value,type).report(valueErrors)
         }
         return ValidationResult.predicated(input,keyErrors.isEmpty() && valueErrors.isEmpty(), "Map validation had errors: key=${keyErrors}, value=$valueErrors")
@@ -84,7 +84,7 @@ class ValidatedIdentifierMap<V: Any>(defaultValue: Map<Identifier,V>, private va
         val keyErrors: MutableList<String> = mutableListOf()
         val valueErrors: MutableList<String> = mutableListOf()
         for ((key, value) in input){
-            val keyResult = keyHandler.validateEntry(key.toString(),type).report(keyErrors)
+            val keyResult = keyHandler.validateEntry(key,type).report(keyErrors)
             if (keyResult.isError()){
                 continue
             }
@@ -113,80 +113,79 @@ class ValidatedIdentifierMap<V: Any>(defaultValue: Map<Identifier,V>, private va
         fun keyHandler(handler: ValidatedIdentifier): BuilderWithKey<V>{
             return BuilderWithKey<V>(handler)
         }
-    }
 
-    class BuilderWithKey<V: Any> internal constructor(private val keyHandler: ValidatedIdentifier) {
-        /**
-         * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
-         * @param handler an [Entry] used as a handler for values.
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun valueHandler(handler: Entry<V>): BuilderWithValue<V>{
-            return BuilderWithValue(handler, keyHandler)
+        class BuilderWithKey<V: Any> internal constructor(private val keyHandler: ValidatedIdentifier) {
+            /**
+             * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
+             * @param handler an [Entry] used as a handler for values.
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
+            fun valueHandler(handler: Entry<V>): BuilderWithValue<V>{
+                return BuilderWithValue(handler, keyHandler)
+            }
+
+            class BuilderWithValue<V: Any> internal constructor(private val valueHandler: Entry<V>, private val keyHandler: ValidatedIdentifier){
+                private var defaults: Map<Identifier,V> = mapOf()
+                /**
+                 * Defines the default map used in the ValidatedMap
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param defaults Map<Identifier,V> of default values
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun defaults(defaults: Map<Identifier,V>): BuilderWithValue<V>{
+                    this.defaults = defaults
+                    return this
+                }
+                /**
+                 * Defines the default map used in the ValidatedMap
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param defaults vararg Pair<Identifier,V> of default key-value pairs
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun defaults(vararg defaults: Pair<Identifier,V>): BuilderWithValue<V>{
+                    this.defaults = mapOf(*defaults)
+                    return this
+                }
+                /**
+                 * Defines a single default key-value pair
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param default single Pair<Identifier,V> to define a single key-value pair map of defaults
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun default(default: Pair<Identifier,V>): BuilderWithValue<V>{
+                    this.defaults = mapOf(default)
+                    return this
+                }
+                /**
+                 * Defines a single default key-value pair
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param key single String to define the default map key
+                 * @param value single V to define the default map value
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun default(key: Identifier, value: V): BuilderWithValue<V>{
+                    this.defaults = mapOf(key to value)
+                    return this
+                }
+                /**
+                 * Builds the Builder into a ValidatedIdentifierMap
+                 * @return ValidatedIdentifierMap based on the builder inputs
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun build(): ValidatedIdentifierMap<V> {
+                    return ValidatedIdentifierMap(defaults,keyHandler,valueHandler)
+                }
+            }
         }
     }
-
-    class BuilderWithValue<V: Any> internal constructor(private val valueHandler: Entry<V>, private val keyHandler: ValidatedIdentifier){
-        private var defaults: Map<Identifier,V> = mapOf()
-        /**
-         * Defines the default map used in the ValidatedMap
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param defaults Map<Identifier,V> of default values
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun defaults(defaults: Map<Identifier,V>): BuilderWithValue<V>{
-            this.defaults = defaults
-            return this
-        }
-        /**
-         * Defines the default map used in the ValidatedMap
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param defaults vararg Pair<Identifier,V> of default key-value pairs
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun defaults(vararg defaults: Pair<Identifier,V>): BuilderWithValue<V>{
-            this.defaults = mapOf(*defaults)
-            return this
-        }
-        /**
-         * Defines a single default key-value pair
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param default single Pair<Identifier,V> to define a single key-value pair map of defaults
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun default(default: Pair<Identifier,V>): BuilderWithValue<V>{
-            this.defaults = mapOf(default)
-            return this
-        }
-        /**
-         * Defines a single default key-value pair
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param key single String to define the default map key
-         * @param value single V to define the default map value
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun default(key: Identifier, value: V): BuilderWithValue<V>{
-            this.defaults = mapOf(key to value)
-            return this
-        }
-        /**
-         * Builds the Builder into a ValidatedIdentifierMap
-         * @return ValidatedIdentifierMap based on the builder inputs
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun build(): ValidatedIdentifierMap<V> {
-            return ValidatedIdentifierMap(defaults,keyHandler,valueHandler)
-        }
-    }
-
 }

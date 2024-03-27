@@ -10,7 +10,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-object UpdateManager{
+object UpdateManager {
 
     // Important Base Concept: SCOPE
     // basically a string mapping of the "location" of an element in a config layout, not disimilar to a file path
@@ -37,22 +37,12 @@ object UpdateManager{
 
     private val updateMap: MutableMap<String, Updatable> = mutableMapOf()
     private val changeHistory: MutableMap<String, ArrayListMultimap<Long, Text>> = mutableMapOf()
-    private var currentScope = ""
-
-    fun setScope(scope: String) {
-        currentScope = scope
-    }
 
     fun flush(): List<String> {
-        setScope("")
         updateMap.clear()
         val updates = buildChangeHistoryLog()
         changeHistory.clear()
         return updates
-    }
-
-    fun hasChangeHistory(): Boolean{
-        return changeHistory.isNotEmpty()
     }
 
     fun buildChangeHistoryLog(): List<String> {
@@ -66,59 +56,29 @@ object UpdateManager{
         return list
     }
 
-    internal fun clear(updatable: Updatable) {
-        updateMap.remove(updatable.getUpdateKey())
-    }
-
     internal fun update(updatable: Updatable, updateMessage: Text) {
         updateMap.computeIfAbsent(updatable.getUpdateKey()) { updatable }
         addUpdateMessage(updatable.getUpdateKey(),updateMessage)
     }
 
-    fun hasChanges(scope: String): Boolean{
-        return getChangeCount(scope) > 0
+    fun changes(): Int {
+        return updateMap.filter { it.value.peekState() }.size
     }
 
-    fun getChangeCount(scope: String): Int {
-        return getScopedUpdates(scope).filter { it.value.peekState() }.size
-    }
-
-    fun getAllChangeCount(): Int {
-        return getChangeCount("")
-    }
-
-    fun getCurrentChangeCount(): Int {
-        return getChangeCount(currentScope)
-    }
-
-    fun revert(scope: String) {
-        for ((updateScope,update) in getScopedUpdates(scope)){
+    fun revertAll() {
+        for (update in updateMap.values){
             update.revert()
         }
     }
-    fun revertAll() {
-        revert("")
-    }
-    fun revertCurrent() {
-        revert(currentScope)
-    }
 
-    fun restore(scope: String) {
-        for ((updateScope,update) in getScopedUpdates(scope)){
+    fun restoreAll() {
+        for (update in updateMap.values){
             update.restore()
         }
     }
 
-    fun restoreCurrent() {
-        restore(currentScope)
-    }
-
     fun addUpdateMessage(key: String,text: Text) {
         changeHistory.computeIfAbsent(key){ArrayListMultimap.create()}.put(System.currentTimeMillis(),text)
-    }
-
-    private fun getScopedUpdates(scope: String): Map<String,Updatable> {
-        return if(scope.isEmpty()) updateMap else updateMap.filterKeys { it.startsWith(scope) }
     }
 
     internal fun<T: Config> applyKeys(config: T) {

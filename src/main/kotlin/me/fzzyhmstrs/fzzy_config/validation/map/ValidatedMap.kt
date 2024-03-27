@@ -110,129 +110,133 @@ class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: 
         fun keyHandler(handler: Entry<String>): BuilderWithKey<V>{
             return BuilderWithKey<V>(handler)
         }
+
+        class BuilderWithKey<V: Any> internal constructor(private val keyHandler: Entry<String>) {
+            /**
+             * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
+             * @param handler an [Entry] used as a handler for values.
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
+            fun valueHandler(handler: Entry<V>): BuilderWithValue<V>{
+                return BuilderWithValue(handler, keyHandler)
+            }
+
+            class BuilderWithValue<V: Any> internal constructor(private val valueHandler: Entry<V>, private val keyHandler: Entry<String>){
+                private var defaults: Map<String,V> = mapOf()
+                /**
+                 * Defines the default map used in the ValidatedMap
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param defaults Map<String,V> of default values
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun defaults(defaults: Map<String,V>): BuilderWithValue<V>{
+                    this.defaults = defaults
+                    return this
+                }
+                /**
+                 * Defines the default map used in the ValidatedMap
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param defaults vararg Pair<String,V> of default key-value pairs
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun defaults(vararg defaults: Pair<String,V>): BuilderWithValue<V>{
+                    this.defaults = mapOf(*defaults)
+                    return this
+                }
+                /**
+                 * Defines a single default key-value pair
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param default single Pair<String,V> to define a single key-value pair map of defaults
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun default(default: Pair<String,V>): BuilderWithValue<V>{
+                    this.defaults = mapOf(default)
+                    return this
+                }
+                /**
+                 * Defines a single default key-value pair
+                 *
+                 * If defaults aren't set, the default map will be empty
+                 * @param key single String to define the default map key
+                 * @param value single V to define the default map value
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun default(key: String, value: V): BuilderWithValue<V>{
+                    this.defaults = mapOf(key to value)
+                    return this
+                }
+                /**
+                 * Defines the default map used in the ValidatedMap
+                 *
+                 * This map will be converted to a Map<String,V> internally. If defaults aren't set, the default map will be empty
+                 * @param defaults Map<Identifier,V> of default values
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun defaultIds(defaults: Map<Identifier,V>): BuilderWithValue<V>{
+                    this.defaults = defaults.mapKeys { e -> e.key.toString() }
+                    return this
+                }
+                /**
+                 * Defines the default map used in the ValidatedMap
+                 *
+                 * This map will be converted to a Map<String,V> internally. If defaults aren't set, the default map will be empty
+                 * @param defaults vararg Pair<Identifier,V> of default key-value pairs
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun defaultIds(vararg defaults: Pair<Identifier,V>): BuilderWithValue<V>{
+                    this.defaults = (defaults).associate { p -> Pair(p.first.toString(),p.second) }
+                    return this
+                }
+                /**
+                 * Defines a single default key-value pair
+                 *
+                 * This pair will be converted to a Pair<String,V> internally. If defaults aren't set, the default map will be empty
+                 * @param default single Pair<Identifier,V> to define a single key-value pair map of defaults
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun defaultId(default: Pair<Identifier,V>): BuilderWithValue<V>{
+                    this.defaults = mapOf(Pair(default.first.toString(),default.second))
+                    return this
+                }
+                /**
+                 * Defines a single default key-value pair
+                 *
+                 * This pair will be converted to a Pair<String,V> internally. If defaults aren't set, the default map will be empty
+                 * @param key single Identifier to define the default map key
+                 * @param value single V to define the default map value
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun defaultId(key: Identifier, value: V): BuilderWithValue<V>{
+                    this.defaults = mapOf(key.toString() to value)
+                    return this
+                }
+                /**
+                 * Builds the Builder into a ValidatedMap
+                 * @return ValidatedMap based on the builder inputs
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
+                fun build(): ValidatedMap<V> {
+                    return ValidatedMap(defaults,keyHandler,valueHandler)
+                }
+            }
+        }
+
+
     }
 
-    class BuilderWithKey<V: Any> internal constructor(private val keyHandler: Entry<String>) {
-        /**
-         * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
-         * @param handler an [Entry] used as a handler for values.
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun valueHandler(handler: Entry<V>): BuilderWithValue<V>{
-            return BuilderWithValue(handler, keyHandler)
-        }
-    }
 
-    class BuilderWithValue<V: Any> internal constructor(private val valueHandler: Entry<V>, private val keyHandler: Entry<String>){
-        private var defaults: Map<String,V> = mapOf()
-        /**
-         * Defines the default map used in the ValidatedMap
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param defaults Map<String,V> of default values
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun defaults(defaults: Map<String,V>): BuilderWithValue<V>{
-            this.defaults = defaults
-            return this
-        }
-        /**
-         * Defines the default map used in the ValidatedMap
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param defaults vararg Pair<String,V> of default key-value pairs
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun defaults(vararg defaults: Pair<String,V>): BuilderWithValue<V>{
-            this.defaults = mapOf(*defaults)
-            return this
-        }
-        /**
-         * Defines a single default key-value pair
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param default single Pair<String,V> to define a single key-value pair map of defaults
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun default(default: Pair<String,V>): BuilderWithValue<V>{
-            this.defaults = mapOf(default)
-            return this
-        }
-        /**
-         * Defines a single default key-value pair
-         *
-         * If defaults aren't set, the default map will be empty
-         * @param key single String to define the default map key
-         * @param value single V to define the default map value
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun default(key: String, value: V): BuilderWithValue<V>{
-            this.defaults = mapOf(key to value)
-            return this
-        }
-        /**
-         * Defines the default map used in the ValidatedMap
-         *
-         * This map will be converted to a Map<String,V> internally. If defaults aren't set, the default map will be empty
-         * @param defaults Map<Identifier,V> of default values
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun defaultIds(defaults: Map<Identifier,V>): BuilderWithValue<V>{
-            this.defaults = defaults.mapKeys { e -> e.key.toString() }
-            return this
-        }
-        /**
-         * Defines the default map used in the ValidatedMap
-         *
-         * This map will be converted to a Map<String,V> internally. If defaults aren't set, the default map will be empty
-         * @param defaults vararg Pair<Identifier,V> of default key-value pairs
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun defaultIds(vararg defaults: Pair<Identifier,V>): BuilderWithValue<V>{
-            this.defaults = (defaults).associate { p -> Pair(p.first.toString(),p.second) }
-            return this
-        }
-        /**
-         * Defines a single default key-value pair
-         *
-         * This pair will be converted to a Pair<String,V> internally. If defaults aren't set, the default map will be empty
-         * @param default single Pair<Identifier,V> to define a single key-value pair map of defaults
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun defaultId(default: Pair<Identifier,V>): BuilderWithValue<V>{
-            this.defaults = mapOf(Pair(default.first.toString(),default.second))
-            return this
-        }
-        /**
-         * Defines a single default key-value pair
-         *
-         * This pair will be converted to a Pair<String,V> internally. If defaults aren't set, the default map will be empty
-         * @param key single Identifier to define the default map key
-         * @param value single V to define the default map value
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun defaultId(key: Identifier, value: V): BuilderWithValue<V>{
-            this.defaults = mapOf(key.toString() to value)
-            return this
-        }
-        /**
-         * Builds the Builder into a ValidatedMap
-         * @return ValidatedMap based on the builder inputs
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun build(): ValidatedMap<V> {
-            return ValidatedMap(defaults,keyHandler,valueHandler)
-        }
-    }
 
 }

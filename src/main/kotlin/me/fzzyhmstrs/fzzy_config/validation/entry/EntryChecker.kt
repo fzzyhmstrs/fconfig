@@ -21,5 +21,11 @@ interface EntryChecker<T: Any>: EntryValidator<T>, EntryCorrector<T>{
         }
     }
 
+    companion object {
+        fun <T: Any> any(): EntryChecker<T>{
+            return Impl({ s, _ -> ValidationResult.success(s)}, { s, _ -> ValidationResult.success(s)})
+        }
+    }
+
 
 }

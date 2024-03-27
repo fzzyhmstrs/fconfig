@@ -21,7 +21,7 @@ import net.peanuuutz.tomlkt.TomlLiteral
  * @Sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.evalExpression]
  * throws IllegalStateException if the provided defaultValue is not a parsable Expression.
  * @author fzzyhmstrs
- * @since 0.2.0 
+ * @since 0.2.0
  */
 class ValidatedExpression @JvmOverloads constructor(defaultValue: String, private val validVars: Set<Char> = setOf(), private val validator: EntryValidator<String> = EntryValidator{ i, _ -> Expression.tryTest(i, validVars).wrap(i)})
     :
@@ -32,6 +32,7 @@ class ValidatedExpression @JvmOverloads constructor(defaultValue: String, privat
     private var parsedString = defaultValue
     private var parsedExpression = Expression.parse(defaultValue, defaultValue)
 
+    @Deprecated("Where possible use safeEval() to avoid throwing exceptions on evaluation failure")
     override fun eval(vars: Map<Char,Double>): Double {
         if (parsedString != storedValue) {
             val tryExpression = try {
@@ -71,7 +72,7 @@ class ValidatedExpression @JvmOverloads constructor(defaultValue: String, privat
     }
 
     override fun instanceEntry(): Entry<String> {
-        return ValidatedExpression(defaultValue, validator)
+        return ValidatedExpression(copyStoredValue(), validVars, validator)
     }
 
     override fun widgetEntry(): ClickableWidget {

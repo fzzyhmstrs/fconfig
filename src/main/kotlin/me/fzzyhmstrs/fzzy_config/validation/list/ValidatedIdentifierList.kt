@@ -37,12 +37,7 @@ class ValidatedIdentifierList(defaultValue: List<Identifier>, private val entryH
             for ((index, el) in array.content.withIndex()){
                 val result = entryHandler.deserializeEntry(el, errors, "$fieldName[$index]", true).report(errors)
                 if (!result.isError()){
-                    val id = Identifier.tryParse(result.get())
-                    if (id == null){
-                        errors.add("Uncaught validation issue with entry [${result.get()}], skipping!")
-                        continue
-                    }
-                    list.add(id)
+                    list.add(result.get())
                 }
             }
             if (errors.isNotEmpty()) {
@@ -60,7 +55,7 @@ class ValidatedIdentifierList(defaultValue: List<Identifier>, private val entryH
         val errors: MutableList<String> = mutableListOf()
         try {
             for (entry in input) {
-                val tomlEntry = entryHandler.serializeEntry(entry.toString(), errors, true)
+                val tomlEntry = entryHandler.serializeEntry(entry, errors, true)
                 val annotations = ConfigApiImpl.tomlAnnotations(entry::class.java.kotlin)
                 toml.element(tomlEntry, annotations)
             }
@@ -74,13 +69,8 @@ class ValidatedIdentifierList(defaultValue: List<Identifier>, private val entryH
         val list: MutableList<Identifier> = mutableListOf()
         val errors: MutableList<String> = mutableListOf()
         for (entry in input){
-            val result = entryHandler.correctEntry(entry.toString(), type)
-            val id = Identifier.tryParse(result.get())
-            if (id == null){
-                errors.add("Uncaught correction issue with entry [${result.get()}], skipping!")
-                continue
-            }
-            list.add(id)
+            val result = entryHandler.correctEntry(entry, type)
+            list.add(result.get())
             if (result.isError()) errors.add(result.getError())
         }
         return if (errors.isNotEmpty()){
@@ -93,7 +83,7 @@ class ValidatedIdentifierList(defaultValue: List<Identifier>, private val entryH
     override fun validateEntry(input: List<Identifier>, type: EntryValidator.ValidationType): ValidationResult<List<Identifier>> {
         val errors: MutableList<String> = mutableListOf()
         for (entry in input){
-            val result = entryHandler.validateEntry(entry.toString(), type)
+            val result = entryHandler.validateEntry(entry, type)
             if (result.isError()) errors.add(result.getError())
         }
         return if (errors.isNotEmpty()){

@@ -8,7 +8,7 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ElementListWidget
 
 
-class ConfigListWidget(minecraftClient: MinecraftClient, parent: ConfigScreen) :
+internal class ConfigListWidget(minecraftClient: MinecraftClient, parent: ConfigScreen) :
     ElementListWidget<ConfigEntry>(minecraftClient, parent.width, parent.layout.contentHeight, parent.layout.headerHeight, 24)
 {
     override fun getRowWidth(): Int {

@@ -15,7 +15,7 @@ import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
-open class ConfigEntry(val name: Text, protected val description: Text, protected val parent: ConfigListWidget, protected val widget: ClickableWidget): ElementListWidget.Entry<ConfigEntry>() {
+internal open class ConfigEntry(val name: Text, protected val description: Text, protected val parent: ConfigListWidget, protected val widget: ClickableWidget): ElementListWidget.Entry<ConfigEntry>() {
 
     init {
         if(description.string != "") {

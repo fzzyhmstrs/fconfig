@@ -66,16 +66,28 @@ object FcText {
         return translatable(this, args)
     }
 
-    fun Any?.translation(fallback: String): Text {
+    fun Any?.translation(fallback: String): MutableText {
         return if(this is Translatable)
-            this.translation().takeIf { it.string != this.translationKey() } ?: translatable(fallback).formatted(Formatting.DARK_RED)
+            this.translation().takeIf { it.string != this.translationKey() } ?: translatable(fallback).formatted(Formatting.ITALIC)
         else
-            translatable(fallback).formatted(Formatting.DARK_RED)
+            translatable(fallback).formatted(Formatting.ITALIC)
+    }
+    fun Any?.transLit(literalFallback: String): MutableText {
+        return if(this is Translatable)
+            this.translation().takeIf { it.string != this.translationKey() } ?: literal(literalFallback).formatted(Formatting.ITALIC)
+        else
+            literal(literalFallback).formatted(Formatting.ITALIC)
     }
     fun Any?.description(fallback: String): Text {
         return if(this is Translatable)
-            this.description().takeIf { it.string != this.descriptionKey() } ?: translatable(fallback).formatted(Formatting.DARK_RED)
+            this.description().takeIf { it.string != this.descriptionKey() } ?: translatable(fallback).formatted(Formatting.ITALIC)
         else
-            translatable(fallback).formatted(Formatting.DARK_RED)
+            translatable(fallback).formatted(Formatting.ITALIC)
+    }
+    fun Any?.descLit(literalFallback: String): Text {
+        return if(this is Translatable)
+            this.description().takeIf { it.string != this.descriptionKey() } ?: literal(literalFallback).formatted(Formatting.ITALIC)
+        else
+            literal(literalFallback).formatted(Formatting.ITALIC)
     }
 }

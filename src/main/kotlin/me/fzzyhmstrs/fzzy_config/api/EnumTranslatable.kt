@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.api
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 
 /**
@@ -53,7 +54,7 @@ interface EnumTranslatable: Translatable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    override fun translation(): Text{
+    override fun translation(): MutableText{
         return FcText.translatableWithFallback(translationKey(),(this as Enum<*>).name)
     }
 }

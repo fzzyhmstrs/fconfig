@@ -8,9 +8,9 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 
-/*
+/**
  * A validated string value
- * 
+ *
  * Ensure you don't actually want another string-like Validation before use, such as [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier] or [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum]
  * @param defaultValue String default for the setting
  * @param checker [EntryChecker] defining validation and correction for the string inputs.
@@ -20,6 +20,11 @@ import net.peanuuutz.tomlkt.asTomlLiteral
  * @since 0.2.0
  */
 class ValidatedString(defaultValue: String, private val checker: EntryChecker<String>): ValidatedField<String>(defaultValue) {
+
+    /**
+     *
+     */
+    constructor(defaultValue: String): this(defaultValue, EntryChecker.any())
 
     override fun copyStoredValue(): String {
         return String(storedValue.toCharArray())

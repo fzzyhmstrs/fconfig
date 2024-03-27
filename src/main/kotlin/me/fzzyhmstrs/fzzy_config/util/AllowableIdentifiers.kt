@@ -11,4 +11,8 @@ class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private
     fun get(): List<Identifier>{
         return supplier.get()
     }
+
+    companion object{
+        val ANY = AllowableIdentifiers({true},{listOf()})
+    }
 }

@@ -4,7 +4,6 @@ import com.mojang.brigadier.StringReader
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
-import me.fzzyhmstrs.fzzy_config.math.Expression.Companion.NamedExpression
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.random.Random
@@ -59,7 +58,7 @@ fun interface Expression {
     fun eval(vars: Map<Char,Double>): Double
 
     @Suppress("SameParameterValue")
-    companion object {
+    companion object Impl {
 
         val CODEC = Codec.STRING.comapFlatMap(
             {s -> try{ DataResult.success(parse(s, s)) } catch(e:Exception) { DataResult.error { "Error while deserializing math equation: ${e.localizedMessage}" }}},
@@ -128,10 +127,10 @@ fun interface Expression {
         @JvmStatic
         fun tryTest(str: String, vars: Set<Char>): ValidationResult<Expression?>{
             val result = tryParse(str)
-            if (result.isError() || set.isEmpty()) return result
+            if (result.isError() || vars.isEmpty()) return result
             val varMap = vars.associate { it -> it to 0.0 }
             return try {
-                result.get().eval(varMap)
+                result.get()?.eval(varMap)
                 result
             } catch(e: Exception){
                 ValidationResult.error(null,"Incorrect variables used in expression: [$str], available: [$vars]")
@@ -164,7 +163,7 @@ fun interface Expression {
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun Expression.safeEval(vars: Map<Char,Double>, fallback: Double): Double{
+        fun Expression.evalSafe(vars: Map<Char,Double>, fallback: Double): Double{
             return try{
                 this.eval(vars)
             } catch(e: Exception) {

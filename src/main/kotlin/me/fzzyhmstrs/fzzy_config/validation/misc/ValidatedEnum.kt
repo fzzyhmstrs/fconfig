@@ -5,6 +5,9 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translation
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
@@ -14,6 +17,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.MutableText
@@ -27,7 +31,7 @@ import kotlin.math.max
 
 /**
  * A validated Enum Class
- * @param T the enum type. An [Enum] that is [Translatable]
+ * @param T the enum type. Any [Enum]
  * @param defaultValue Enum Constant used as the default for this setting
  * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.TestEnum]
@@ -35,7 +39,7 @@ import kotlin.math.max
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedEnum<T> @JvmOverloads constructor(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) where T: Enum<T>, T:Translatable {
+class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
 
     private val valuesMap: Map<String, T> = defaultValue::class.java.enumConstants.associateBy { it.name }
     override fun copyStoredValue(): T {
@@ -99,10 +103,10 @@ class ValidatedEnum<T> @JvmOverloads constructor(defaultValue: T, private val wi
     }
 
     @Environment(EnvType.CLIENT)
-    private class EnumPopupButtonWidget<T>(private val name: Text, private val valueSupplier: Supplier<T>, private val parent: ValidatedEnum<T>): PressableWidget(0,0,90,20, FcText.empty()) where T: Enum<T>, T:Translatable {
+    private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, private val valueSupplier: Supplier<T>, private val parent: ValidatedEnum<T>): PressableWidget(0,0,90,20, FcText.empty()) {
 
         override fun getMessage(): Text {
-            return valueSupplier.get().translation()
+            return valueSupplier.get().let { it.transLit(it.name) }
         }
 
         override fun getNarrationMessage(): MutableText {
@@ -120,12 +124,12 @@ class ValidatedEnum<T> @JvmOverloads constructor(defaultValue: T, private val wi
             var buttonWidth = 86
             val constants = valueSupplier.get()::class.java.enumConstants
             for (const in constants) {
-                buttonWidth = max(buttonWidth, textRenderer.getWidth(const.translation()))
+                buttonWidth = max(buttonWidth, textRenderer.getWidth(const.let { it.transLit(it.name) }))
             }
             buttonWidth = max(150, buttonWidth + 4)
             var prevParent = "title"
             for (const in constants){
-                val button = EnumOptionWidget(const, buttonWidth, {c -> (c as Enum<T>) == valueSupplier.get()}, { parent.setAndUpdate(const); (MinecraftClient.getInstance().currentScreen as? ConfigScreen)?.setPopup(null) })
+                val button = EnumOptionWidget(const, buttonWidth, {c -> (c as Enum<*>) == valueSupplier.get()}, { parent.setAndUpdate(const); (MinecraftClient.getInstance().currentScreen as? ConfigScreen)?.setPopup(null) })
                 builder.addElement(const.name,button,prevParent,PopupWidget.Builder.PositionRelativePos.BELOW)
                 prevParent = const.name
             }
@@ -138,7 +142,11 @@ class ValidatedEnum<T> @JvmOverloads constructor(defaultValue: T, private val wi
     }
 
     @Environment(EnvType.CLIENT)
-    private class EnumOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val valueApplier: Consumer<T>): PressableWidget(0,0,width,20, thisVal.translation()) where T: Enum<T>, T:Translatable{
+    private class EnumOptionWidget<T: Enum<*>>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val valueApplier: Consumer<T>): PressableWidget(0,0,width,20, thisVal.transLit(thisVal.name)) {
+
+        init {
+            thisVal.descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
+        }
 
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activePredicate.test(thisVal)
@@ -146,7 +154,7 @@ class ValidatedEnum<T> @JvmOverloads constructor(defaultValue: T, private val wi
         }
 
         override fun getNarrationMessage(): MutableText {
-            return thisVal.translation()
+            return thisVal.transLit(thisVal.name)
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
@@ -160,13 +168,16 @@ class ValidatedEnum<T> @JvmOverloads constructor(defaultValue: T, private val wi
     }
 
     @Environment(EnvType.CLIENT)
-    private class CyclingOptionsWidget<T>(private val valueSupplier: Supplier<T>, private val valueApplier: Consumer<T>): PressableWidget(0,0,90,20, valueSupplier.get().translation()) where T: Enum<T>, T:Translatable{
+    private class CyclingOptionsWidget<T: Enum<*>>(private val valueSupplier: Supplier<T>, private val valueApplier: Consumer<T>): PressableWidget(0,0,90,20, valueSupplier.get().let { it.transLit(it.name) }) {
 
         private val constants = valueSupplier.get()::class.java.enumConstants
 
+        init {
+            valueSupplier.get().descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
+        }
 
         override fun getNarrationMessage(): MutableText {
-            return valueSupplier.get().translation()
+            return valueSupplier.get().let { it.transLit(it.name) }
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
@@ -176,7 +187,8 @@ class ValidatedEnum<T> @JvmOverloads constructor(defaultValue: T, private val wi
         override fun onPress() {
             val newIndex = (constants.indexOf(valueSupplier.get()) + 1).takeIf { it < constants.size } ?: 0
             val newConst = constants[newIndex]
-            message = newConst.translation()
+            message = newConst.let { it.transLit(it.name) }
+            newConst.descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
             valueApplier.accept(newConst)
         }
 

@@ -82,7 +82,7 @@ internal object ValidatedShorthands {
     val shorthandMath = Expression.validated("x * 0.5", setOf('x'))
 
     //example shorthand validated list. Shown is an identifier list. Note that identifier lists are actually string lists
-    val shorthandList = listOf("minecraft:stick").validated(ValidatedIdentifier.ofRegistry(Identifier("stick"),Registries.ITEM))
+    val shorthandList = listOf(Identifier("stick")).validated(ValidatedIdentifier.ofRegistry(Identifier("stick"),Registries.ITEM))
 
     //example Number-based shorthand list
     val shorthandNumberList = listOf(1,2,5,10).validated()

@@ -256,7 +256,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
     }
     @Internal
     override fun changes(): Int {
-        return UpdateManager.getAllChangeCount()
+        return UpdateManager.changes()
     }
     @Internal
     override fun changesWidget() {

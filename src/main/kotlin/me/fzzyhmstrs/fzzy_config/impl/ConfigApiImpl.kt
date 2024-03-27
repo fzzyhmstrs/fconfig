@@ -11,14 +11,18 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity
 import net.peanuuutz.tomlkt.*
+import org.jetbrains.annotations.ApiStatus
 import java.io.File
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
@@ -312,7 +316,7 @@ object ConfigApiImpl {
                         continue
                     }
                     if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
-                        val result = propVal.deserializeEntry(tomlElement,errorBuilder, name, ignoreNonSync)
+                        val result = propVal.deserializeEntry(tomlElement, errorBuilder, name, ignoreNonSync)
                         if (result.isError()) {
                             errorBuilder.add(result.getError())
                         }
@@ -450,6 +454,7 @@ object ConfigApiImpl {
         val version = clazz.findAnnotation<Version>()
         return version?.version ?: 0
     }
+
     internal fun hasNeededPermLevel(playerPermLevel: Int, defaultPerm: Int, annotations: List<Annotation>): Boolean {
         if (ConfigApiImpl.isNonSync(annotations)) return true
         for (annotation in annotations){

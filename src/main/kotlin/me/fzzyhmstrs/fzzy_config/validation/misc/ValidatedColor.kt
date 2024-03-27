@@ -6,6 +6,7 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.DrawContext
@@ -22,7 +23,7 @@ import java.util.function.Supplier
 
 /**
  * A validated color value
- * 
+ *
  * This is a [ValidatedField] of type [ColorHolder], a basic Color data class.
  * @param r the default red component, 0 to 255
  * @param g the default green component, 0 to 255
@@ -86,7 +87,7 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
         TODO("Not yet implemented")
     }
 
-    private fun validatedString(): ValidatedString{
+    private fun validatedString(): ValidatedString {
         return validatedString(toHexString(), this.get().opaque())
     }
 
@@ -97,12 +98,12 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
             val result = validatedString.validateEntry(str, EntryValidator.ValidationType.WEAK)
             if (result.isError())
                 throw IllegalStateException(result.getError())
-            val colorInt = val colorInt = try {
-                Integer.parseUnsignedInt(s, 16)
+            val colorInt = try {
+                Integer.parseUnsignedInt(str, 16)
             } catch (e: Exception){
                 throw IllegalStateException("Error parsing shorthand Expression [$this]")
             }
-            return Color(i, transparent).validated(transparent)
+            return Color(colorInt, transparent).validated(transparent)
         }
 
         private fun validatedString(str: String, opaque: Boolean): ValidatedString {
