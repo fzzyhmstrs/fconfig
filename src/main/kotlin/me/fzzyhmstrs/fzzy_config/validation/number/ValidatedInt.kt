@@ -36,6 +36,19 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      */
     constructor(defaultValue: Int): this(defaultValue, Int.MAX_VALUE, Int.MIN_VALUE, WidgetType.TEXTBOX)
 
+    /**
+     * an unbounded validated int number with default of 0.
+     *
+     * The validation will be limited to ensuring the value de/serializes as an int, since there are no bounds.
+     *
+     * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     * @param defaultValue Int. the default value of this wrapper
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedInt]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(): this(0, Int.MAX_VALUE, Int.MIN_VALUE, WidgetType.TEXTBOX)
+
     override fun copyStoredValue(): Int {
         return storedValue
     }
