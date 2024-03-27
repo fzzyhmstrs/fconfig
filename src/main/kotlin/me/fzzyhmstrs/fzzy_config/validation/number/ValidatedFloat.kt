@@ -35,6 +35,19 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
      */
     constructor(defaultValue: Float): this(defaultValue, Float.MAX_VALUE, -Float.MAX_VALUE, WidgetType.TEXTBOX)
 
+    /**
+     * an unbounded validated float number with default of 0f.
+     *
+     * The validation will be limited to ensuring the value de/serializes as a float, since there are no bounds.
+     *
+     * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     * @param defaultValue Float. the default value of this wrapper
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedFloat]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(): this(0f, Float.MAX_VALUE, -Float.MAX_VALUE, WidgetType.TEXTBOX)
+
     override fun copyStoredValue(): Float {
         return storedValue
     }
