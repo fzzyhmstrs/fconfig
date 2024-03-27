@@ -88,7 +88,7 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
     }
 
     override fun instanceEntry(): Entry<ColorHolder> {
-        return defaultValue.instance()
+        return storedValue.instance()
     }
 
     override fun widgetEntry(): ClickableWidget {
