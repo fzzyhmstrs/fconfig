@@ -50,9 +50,34 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
      * An unbounded validated identifier
      *
      * Validation will be limited to ensuring inputs are valid identifiers
+     * @param defaultValue [Identifier] the default identifier for this valdiation
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.unboundedIdentifier]
+     * @author fzzyhmstrs
+     * @since 0.2.0
      */
     constructor(defaultValue: Identifier): this(defaultValue, AllowableIdentifiers.ANY)
 
+    /**
+     * An unbounded validated identifier constructed from a string
+     *
+     * Validation will be limited to ensuring inputs are valid identifiers
+     * @param defaultValue [Identifier] the default identifier for this valdiation
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.stringIdentifier]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(defaultValue: String): this(Identifier(defaultValue), AllowableIdentifiers.ANY)
+
+    /**
+     * An unbounded validated identifier constructed from namespace and path strings
+     *
+     * Validation will be limited to ensuring inputs are valid identifiers
+     * @param defaultValue [Identifier] the default identifier for this valdiation
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.stringStringIdentifier]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(defaultNamespace: String, defaultPath: String): this(Identifier(defaultNamespace, defaultPath), AllowableIdentifiers.ANY)
 
     override fun copyStoredValue(): Identifier {
         return Identifier(storedValue.toString())
