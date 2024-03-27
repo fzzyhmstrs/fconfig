@@ -35,6 +35,19 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
      */
     constructor(defaultValue: Double): this(defaultValue, Double.MAX_VALUE, -Double.MAX_VALUE, WidgetType.TEXTBOX)
 
+    /**
+     * an unbounded validated double number with default of 0.0.
+     *
+     * The validation will be limited to ensuring the value de/serializes as a double, since there are no bounds.
+     *
+     * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     * @param defaultValue Double. the default value of this wrapper
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedDouble]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(): this(0.0, Double.MAX_VALUE, -Double.MAX_VALUE, WidgetType.TEXTBOX)
+
     override fun copyStoredValue(): Double {
         return storedValue
     }
