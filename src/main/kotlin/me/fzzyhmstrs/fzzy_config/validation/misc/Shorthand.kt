@@ -326,6 +326,10 @@ object Shorthand {
         return ValidatedList(this, entry)
     }
 
+    fun List<Int>.validated(): ValidatedList<Int>{
+        return ValidatedList(this, 0.validated())
+    }
+
     /**
      * Shorthand Validated Identifier using the [TagKey] for validation
      *
