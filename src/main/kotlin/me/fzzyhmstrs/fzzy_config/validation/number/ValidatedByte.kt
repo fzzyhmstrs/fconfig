@@ -28,12 +28,25 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      * The validation will be limited to ensuring the value de/serializes as a byte, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @param defaultValue Float. the default value of this wrapper
+     * @param defaultValue Byte. the default value of this wrapper
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedByte]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     constructor(defaultValue: Byte): this(defaultValue, Byte.MAX_VALUE, Byte.MIN_VALUE, WidgetType.TEXTBOX)
+
+    /**
+     * an unbounded validated byte number with a default of 0b
+     *
+     * The validation will be limited to ensuring the value de/serializes as a byte, since there are no bounds.
+     *
+     * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     * @param defaultValue Byte. the default value of this wrapper
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyByte]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(): this(0, Byte.MAX_VALUE, Byte.MIN_VALUE, WidgetType.TEXTBOX)
 
     override fun copyStoredValue(): Byte {
         return storedValue
