@@ -34,6 +34,20 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
      * @since 0.2.0
      */
     constructor(defaultValue: Long): this(defaultValue, Long.MAX_VALUE, Long.MIN_VALUE, WidgetType.TEXTBOX)
+
+    /**
+     * an unbounded validated long number with default value 0L.
+     *
+     * The validation will be limited to ensuring the value de/serializes as a long, since there are no bounds.
+     *
+     * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     * @param defaultValue Long. the default value of this wrapper
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedLong]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(): this(0L, Long.MAX_VALUE, Long.MIN_VALUE, WidgetType.TEXTBOX)
+    
     override fun copyStoredValue(): Long {
         return storedValue
     }
