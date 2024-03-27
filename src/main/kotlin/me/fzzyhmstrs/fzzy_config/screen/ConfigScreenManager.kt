@@ -133,19 +133,22 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
             nameMap[config.getId().toTranslationKey()] = config.translation()
             //walking the config, base scope passed to walk is ex: "my_mod.my_config"
             ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){old, new, thing, annotations ->
-                if(thing is Walkable){
+                if(thing is Walkable) {
                     val fieldName = new.substringAfterLast('.')
                     val name = thing.transLit(fieldName.split(regex).map{it.replaceFirstChar{ it.uppercase() }}.joinToString(" "))
                     nameMap[new] = name
                     functionMap.put(old, screenOpenEntryBuilder(name, thing.descLit(getComments(annotations)), new))
-                } else if (thing is Updatable && thing is Entry<*>){
+                } else if (thing is Updatable && thing is Entry<*>) {
+                    val fieldName = new.substringAfterLast('.')
+                    val name = thing.transLit(fieldName.split(regex).map{it.replaceFirstChar{ it.uppercase() }}.joinToString(" "))
+                    nameMap[new] = name
                     if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations))
                         if (ConfigApiImpl.isNonSync(annotations))
-                            functionMap.put(old, forwardableEntryBuilder(thing.translation("fc.config.generic.field"), thing.description("fc.config.generic.field.desc"), thing))
+                            functionMap.put(old, forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), thing))
                         else
-                            functionMap.put(old, updatableEntryBuilder(thing.translation("fc.config.generic.field"), thing.description("fc.config.generic.field.desc"), thing))
+                            functionMap.put(old, updatableEntryBuilder(name, thing.description(getComments(annotations)), thing))
                     else
-                        functionMap.put(old, noPermsEntryBuilder(thing.translation("fc.config.generic.field"), thing.description("fc.config.generic.field.desc")))
+                        functionMap.put(old, noPermsEntryBuilder(name, thing.description(getComments(annotations))))
                 }
             }
         }
