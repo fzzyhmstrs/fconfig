@@ -22,7 +22,13 @@ import net.peanuuutz.tomlkt.asTomlLiteral
 class ValidatedString(defaultValue: String, private val checker: EntryChecker<String>): ValidatedField<String>(defaultValue) {
 
     /**
-     *
+     * An unbounded validated string value
+     * 
+     * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
+     * @param defaultValue String, the efault string for this setting
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.unboundedString]
+     * @author fzzyhmstrs
+     * @since 0.2.0
      */
     constructor(defaultValue: String): this(defaultValue, EntryChecker.any())
 
