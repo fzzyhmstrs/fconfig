@@ -31,7 +31,7 @@ class ValidatedEnumMap<K:Enum<K>,V: Any>(defaultValue: Map<K,V>, private val key
         val table = TomlTableBuilder()
         val errors: MutableList<String> = mutableListOf()
         return try {
-            for ((key, value) in storedValue) {
+            for ((key, value) in input) {
                 val annotations = ConfigApiImpl.tomlAnnotations(value::class.java.kotlin)
                 val el = valueHandler.serializeEntry(value, errors, true)
                 table.element(key, el, annotations)
