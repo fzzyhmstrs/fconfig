@@ -35,6 +35,19 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
      */
     constructor(defaultValue: Short): this(defaultValue, Short.MAX_VALUE, Short.MIN_VALUE, WidgetType.TEXTBOX)
 
+    /**
+     * an unbounded validated short number with default value 0.
+     *
+     * The validation will be limited to ensuring the value de/serializes as a short, since there are no bounds.
+     *
+     * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     * @param defaultValue Short. the default value of this wrapper
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedShort]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(): this(0, Short.MAX_VALUE, Short.MIN_VALUE, WidgetType.TEXTBOX)
+
     override fun copyStoredValue(): Short {
         return storedValue
     }
