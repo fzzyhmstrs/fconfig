@@ -29,6 +29,17 @@ class ValidatedExpression @JvmOverloads constructor(defaultValue: String, privat
     Expression
 {
 
+    /**
+     * A validated math expression with default equation of "0"
+     *
+     * This constructor is primarily intended for validation usage in other ValidatedFields (such as lists or maps)
+     * 
+     * This [ValidatedField] is itself an expression, so you can call eval() or evalSafe() on it directly.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(): this("0")
+    
     private var parsedString = defaultValue
     private var parsedExpression = Expression.parse(defaultValue, defaultValue)
 
