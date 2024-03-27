@@ -12,6 +12,7 @@ import net.peanuuutz.tomlkt.toBoolean
 
 /**
  * a validated boolean value
+ * 
  * Since there is basically nothing to validate on a boolean, this primarily serves to parse and correct issues with de/serialization.
  * @param defaultValue the default boolean state
  * @see [me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated]
@@ -21,6 +22,18 @@ import net.peanuuutz.tomlkt.toBoolean
  */
 class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultValue) {
 
+    /**
+     * A validated boolean value wth  default 'true' value
+     *
+     * Since there is basically nothing to validate on a boolean, this primarily serves to parse and correct issues with de/serialization.
+     * @param defaultValue the default boolean state
+     * @see [me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated]
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedBool]
+     * @author fzzyhmstrs
+     * since 0.2.0
+     */
+    constructor(): this(true)
+    
     override fun copyStoredValue(): Boolean {
         return storedValue
     }
