@@ -31,90 +31,6 @@ import kotlin.reflect.typeOf
 object Shorthand {
 
     /**
-     * Shorthand validated int
-     *
-     * Will be unbounded, and the number used will be the default value
-     * @return [ValidatedInt] wrapping the extended plain Int
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandInt]
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun Int.validated(): ValidatedInt {
-        return ValidatedInt(this)
-    }
-
-    /**
-     * Shorthand validated byte
-     *
-     * Will be unbounded, and the number used will be the default value
-     * @return [ValidatedByte] wrapping the extended plain Byte
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandByte]
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun Byte.validated(): ValidatedByte {
-        return ValidatedByte(this)
-    }
-
-    /**
-     * Shorthand validated double
-     *
-     * Will be unbounded, and the number used will be the default value
-     * @return [ValidatedDouble] wrapping the extended plain Double
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandDouble]
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun Double.validated(): ValidatedDouble {
-        return ValidatedDouble(this)
-    }
-
-    /**
-     * Shorthand validated short
-     *
-     * Will be unbounded, and the number used will be the default value
-     * @return [ValidatedShort] wrapping the extended plain Short
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandShort]
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun Short.validated(): ValidatedShort {
-        return ValidatedShort(this)
-    }
-
-    /**
-     * Shorthand validated long
-     *
-     * Will be unbounded, and the number used will be the default value
-     * @return [ValidatedLong] wrapping the extended plain Long
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandLong]
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun Long.validated(): ValidatedLong {
-        return ValidatedLong(this)
-    }
-
-    /**
-     * Shorthand validated float
-     *
-     * Will be unbounded, and the number used will be the default value
-     * @return ValidatedFloat wrapping the extended plain Float
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandFloat]
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun Float.validated(): ValidatedFloat {
-        return ValidatedFloat(this)
-    }
-
-    /**
      * Shorthand validated Enum
      *
      * Enum constant used will be the default
@@ -128,20 +44,6 @@ object Shorthand {
     @JvmStatic
     fun <E: Enum<E>> E.validated(): ValidatedEnum<E> {
         return ValidatedEnum(this)
-    }
-
-    /**
-     * Shorthand validated Boolean
-     *
-     * Boolean used will be the default
-     * @return ValidatedBoolean wrapping the boolean passed
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandBool]
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    fun Boolean.validated(): ValidatedBoolean {
-        return ValidatedBoolean(this)
     }
 
     /**
@@ -326,8 +228,44 @@ object Shorthand {
         return ValidatedList(this, entry)
     }
 
+    @JvmStatic
     fun List<Int>.validated(): ValidatedList<Int>{
         return ValidatedList(this, 0.validated())
+    }
+
+    @JvmStatic
+    fun List<Byte>.validated(): ValidatedList<Byte>{
+        return ValidatedList(this, 0.toByte().validated())
+    }
+
+    @JvmStatic
+    fun List<Short>.validated(): ValidatedList<Short>{
+        return ValidatedList(this, 0.toShort().validated())
+    }
+
+    @JvmStatic
+    fun List<Long>.validated(): ValidatedList<Long>{
+        return ValidatedList(this, 0L.validated())
+    }
+
+    @JvmStatic
+    fun List<Double>.validated(): ValidatedList<Double>{
+        return ValidatedList(this, 0.0.validated())
+    }
+
+    @JvmStatic
+    fun List<Float>.validated(): ValidatedList<Float>{
+        return ValidatedList(this, 0f.validated())
+    }
+
+    @JvmStatic
+    fun List<Boolean>.validated(): ValidatedList<Boolean>{
+        return ValidatedList(this, true.validated())
+    }
+
+    @JvmStatic
+    inline fun <T: Enum<*>> List<T>.validated(): ValidatedList<T>{
+        return ValidatedList(this, ValidatedEnum(T::class.java.enumConstants[0]))
     }
 
     /**
