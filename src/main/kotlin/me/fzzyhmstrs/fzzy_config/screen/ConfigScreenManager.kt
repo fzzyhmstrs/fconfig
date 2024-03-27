@@ -38,7 +38,8 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
 
     private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
-
+    private val regex = Regex("(?=\\p{Lu})")
+    
     init{
         prepareScreens()
     }
@@ -85,6 +86,8 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
         }
     }
 
+    //move translation and description to descLit and transLit, with fallback of fieldName and TomlComment, if any.
+    
     private fun prepareSingleConfigScreen(playerPermLevel: Int) {
         val functionMap: ArrayListMultimap<String, Function<ConfigListWidget, ConfigEntry>> = ArrayListMultimap.create()
         val nameMap: MutableMap<String,Text> = mutableMapOf()
@@ -129,8 +132,10 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
             //walking the config, base scope passed to walk is ex: "my_mod.my_config"
             ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){old, new, thing, annotations ->
                 if(thing is Walkable){
-                    nameMap[new] = thing.translation("fc.config.generic.section")
-                    functionMap.put(old, screenOpenEntryBuilder(thing.translation("fc.config.generic.section"), thing.description("fc.config.generic.section.desc"), new))
+                    val fieldName = new.substringAfterLast('.')
+                    val name = thing.transLit(fieldName.split(regex).map{it.replaceFirstChar{ it.uppercase() }}.joinToString(" "))
+                    nameMap[new] = name
+                    functionMap.put(old, screenOpenEntryBuilder(name, thing.descLit(getComments(annotations)), new))
                 } else if (thing is Updatable && thing is Entry<*>){
                     if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations))
                         if (ConfigApiImpl.isNonSync(annotations))
@@ -150,6 +155,18 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
             builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, entryBuilders.toList())
         }
         this.screens = builders
+    }
+
+    private fun getComments(annotations: List<Annotation>): String{
+        var comment = ""
+        for (annotation in annotations){
+            if (annotation is TomlComment){
+                comment += annotation.text
+            } else if(annotation is Comment){
+                comment += annotation.value
+            }
+        }
+        return comment
     }
 
     private fun buildScopeButtons(nameMap: Map<String,Text>): Map<String, Function<ConfigScreen,ClickableWidget>>{
