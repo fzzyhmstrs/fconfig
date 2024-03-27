@@ -29,7 +29,7 @@ class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: 
         val table = TomlTableBuilder()
         val errors: MutableList<String> = mutableListOf()
         return try {
-            for ((key, value) in storedValue) {
+            for ((key, value) in input) {
                 val annotations = ConfigApiImpl.tomlAnnotations(value::class.java.kotlin)
                 val el = valueHandler.serializeEntry(value, errors, true)
                 table.element(key, el, annotations)
