@@ -44,6 +44,14 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
         if(b<0 || b>255) throw IllegalArgumentException("Blue portion of validated color not provided a default value between 0 and 255")
         if((a<0 && a!=Int.MIN_VALUE) || a>255) throw IllegalArgumentException("Transparency portion of validated color not provided a default value between 0 and 255")
     }
+
+    /**
+     * A validated color value with or without transparency enabled and with default color 0xFFFFFFFF (opaque white)
+     * @param transparent Boolean, whether or not this color supports transparency
+     * 
+     */
+    @JvmOverloads constructor(transparent: Boolean = true): super(ColorHolder(255, 255, 255, 255, transparent))
+    
     private constructor(r: Int, g: Int, b: Int, a: Int, alphaMode: Boolean): super(ColorHolder(r, g, b, a, alphaMode))
 
     fun toHexString(): String{
