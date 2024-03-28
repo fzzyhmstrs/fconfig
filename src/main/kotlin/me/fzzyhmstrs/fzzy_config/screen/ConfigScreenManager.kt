@@ -36,7 +36,7 @@ import java.util.function.Function
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
-class ConfigScreenManager(private val scope: String, private val configs: List<Config>): UpdateApplier {
+class ConfigScreenManager(private val scope: String, private val clientChecker: Predicate<Config>, private val configs: List<Pair<Config,Boolean>>): UpdateApplier {
 
     private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
@@ -48,7 +48,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
 
     internal fun receiveForwardedUpdate(update: String, player: UUID, scope: String) {
         var entry: Entry<*>? = null
-        for (config in configs){
+        for ((config,_) in configs){
             ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){_, new, thing, _ ->
                 if (new == scope){
                     if(thing is Entry<*>){
@@ -70,7 +70,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
     }
 
     internal fun openScreen(scope: String = this.scope){
-        configs.forEach { UpdateManager.pushStates(it) }
+        configs.forEach { UpdateManager.pushStates(it.first) }
         openScopedScreen(scope)
     }
 
@@ -94,7 +94,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
         val functionMap: ArrayListMultimap<String, Function<ConfigListWidget, ConfigEntry>> = ArrayListMultimap.create()
         val nameMap: MutableMap<String,Text> = mutableMapOf()
         val config = configs[0]
-        walkConfig(config, functionMap, nameMap, playerPermLevel)
+        walkConfig(config.first, functionMap, nameMap, if(config.second) 4 else playerPermLevel)
         val scopes = functionMap.keySet().toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
         val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
@@ -109,7 +109,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
         val functionMap: ArrayListMultimap<String, Function<ConfigListWidget, ConfigEntry>> = ArrayListMultimap.create()
         val nameMap: MutableMap<String,Text> = mutableMapOf()
         for (config in configs) {
-            walkConfig(config, functionMap, nameMap, playerPermLevel)
+            walkConfig(config.first, functionMap, nameMap, if(config.second) 4 else playerPermLevel)
         }
         val scopes = functionMap.keySet().toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
@@ -125,7 +125,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
         val defaultPermLevel = config.defaultPermLevel()
         //putting the config buttons themselves, in the base scope. ex: "my_mod"
         functionMap.put(scope, screenOpenEntryBuilder(config.translation(), config.description(), config.getId().toTranslationKey()))
-        nameMap[config.getId().toTranslationKey()] = config.translation()
+        nameMap[config.getId().toTranslationKey()] = config.transLit(config::class.java.simpleName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){old, new, thing, annotations ->
             if(thing is Walkable) {
