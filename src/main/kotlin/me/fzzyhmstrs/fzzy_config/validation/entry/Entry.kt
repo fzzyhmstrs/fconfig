@@ -16,7 +16,7 @@ package me.fzzyhmstrs.fzzy_config.validation.entry
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-interface Entry<T: Any>: EntryHandler<T>, EntryWidget {
+interface Entry<T: Any>: EntryHandler<T>, EntryWidget<T>, EntryApplier<T>, EntrySupplier<T> {
     fun instanceEntry(): Entry<T>
 
 }

@@ -4,66 +4,83 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.util.Identifier
-import net.peanuuutz.tomlkt.TomlElement
-import net.peanuuutz.tomlkt.TomlTableBuilder
-import net.peanuuutz.tomlkt.asTomlTable
+import net.peanuuutz.tomlkt.*
 
-class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: Entry<String>, private val valueHandler: Entry<V>): ValidatedField<Map<String, V>>(defaultValue) {
-    override fun copyStoredValue(): Map<String, V> {
+/**
+ * A validated Map of arbitrary (Validated) keys and values
+ *
+ * NOTE: This construct is handled as an array of array pairs in TOML. It will not look like a traditional TOML map.
+ * @param K Any non-null type with an associated [Entry] to handle key-related tasks
+ * @param V Any non-null type with an associated [Entry] to handle value-related tasks
+ * @param defaultValue Map<K,V> the default map for this validation
+ * @param keyHandler [Entry] for handling keys
+ * @param valueHandler [Entry] for handling values
+ * @see [Builder] Using the builder is recommended for more clear construction
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedMap
+ */
+class ValidatedMap<K: Any,V: Any>(defaultValue: Map<K,V>, private val keyHandler: Entry<K>, private val valueHandler: Entry<V>): ValidatedField<Map<K, V>>(defaultValue) {
+    override fun copyStoredValue(): Map<K, V> {
         return storedValue.toMap()
     }
 
-    override fun instanceEntry(): Entry<Map<String, V>> {
-        return ValidatedMap(storedValue, keyHandler, valueHandler)
+    override fun instanceEntry(): Entry<Map<K, V>> {
+        return ValidatedMap(copyStoredValue(), keyHandler, valueHandler)
     }
 
-    override fun widgetEntry(): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
         TODO("Not yet implemented")
     }
 
-    override fun serialize(input: Map<String, V>): ValidationResult<TomlElement> {
-        val table = TomlTableBuilder()
+    override fun serialize(input: Map<K, V>): ValidationResult<TomlElement> {
+        val mapArray = TomlArrayBuilder(input.size)
         val errors: MutableList<String> = mutableListOf()
         return try {
             for ((key, value) in input) {
-                val annotations = ConfigApiImpl.tomlAnnotations(value::class.java.kotlin)
-                val el = valueHandler.serializeEntry(value, errors, true)
-                table.element(key, el, annotations)
+                val pairArray = TomlArrayBuilder(2)
+                val keyAnnotations = ConfigApiImpl.tomlAnnotations(key::class.java.kotlin)
+                val valueAnnotations = ConfigApiImpl.tomlAnnotations(value::class.java.kotlin)
+                val keyEl = keyHandler.serializeEntry(key, errors, true)
+                val valueEl = valueHandler.serializeEntry(value, errors, true)
+                pairArray.element(keyEl, keyAnnotations)
+                pairArray.element(valueEl, valueAnnotations)
+                mapArray.element(pairArray.build())
             }
-            return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
+            return ValidationResult.predicated(mapArray.build(), errors.isEmpty(), "Errors found while serializing map!")
         } catch (e: Exception){
-            ValidationResult.predicated(table.build(), errors.isEmpty(), "Critical exception encountered while serializing map: ${e.localizedMessage}")
+            ValidationResult.predicated(mapArray.build(), errors.isEmpty(), "Critical exception encountered while serializing map: ${e.localizedMessage}")
         }
     }
 
     //((?![a-z0-9_-]).) in case I need it...
 
-    override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Map<String, V>> {
+    override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Map<K, V>> {
         return try {
-            val table = toml.asTomlTable()
-            val map: MutableMap<String,V> = mutableMapOf()
+            val mapArray = toml.asTomlArray()
+            val map: MutableMap<K,V> = mutableMapOf()
             val keyErrors: MutableList<String> = mutableListOf()
             val valueErrors: MutableList<String> = mutableListOf()
-            for ((key, el) in table.entries){
-                val keyResult = keyHandler.validateEntry(key, EntryValidator.ValidationType.WEAK)
-                if(keyResult.isError()){
-                    keyErrors.add("Skipping key!: ${keyResult.getError()}")
+            for (pairEl in mapArray){
+                val pairArray = pairEl.asTomlArray()
+                val key = pairArray[0]
+                val keyResult = keyHandler.deserializeEntry(key,keyErrors,"{$fieldName, @key: $key}", true).report(keyErrors)
+                if (keyResult.isError()){
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(el,valueErrors,"{$fieldName, @key: $key}", true).report(valueErrors)
+                val value = pairArray[1]
+                val valueResult = valueHandler.deserializeEntry(value,valueErrors,"{$fieldName, @key: $key}", true).report(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
-            ValidationResult.predicated(map,keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors")
+            ValidationResult.predicated(map,keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: key = $keyErrors, value = $valueErrors")
         } catch (e: Exception){
             ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
         }
     }
 
-    override fun validateEntry(input: Map<String, V>, type: EntryValidator.ValidationType): ValidationResult<Map<String, V>> {
+    override fun validateEntry(input: Map<K, V>, type: EntryValidator.ValidationType): ValidationResult<Map<K, V>> {
         val keyErrors: MutableList<String> = mutableListOf()
         val valueErrors: MutableList<String> = mutableListOf()
         for ((key, value) in input){
@@ -73,11 +90,8 @@ class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: 
         return ValidationResult.predicated(input,keyErrors.isEmpty() && valueErrors.isEmpty(), "Map validation had errors: key=${keyErrors}, value=$valueErrors")
     }
 
-    override fun correctEntry(
-        input: Map<String, V>,
-        type: EntryValidator.ValidationType
-    ): ValidationResult<Map<String, V>> {
-        val map: MutableMap<String,V> = mutableMapOf()
+    override fun correctEntry(input: Map<K, V>,type: EntryValidator.ValidationType): ValidationResult<Map<K, V>> {
+        val map: MutableMap<K,V> = mutableMapOf()
         val keyErrors: MutableList<String> = mutableListOf()
         val valueErrors: MutableList<String> = mutableListOf()
         for ((key, value) in input){
@@ -87,7 +101,7 @@ class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: 
             }
             map[key] = valueHandler.correctEntry(value,type).report(valueErrors).report(valueErrors).get()
         }
-        return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
+        return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key = ${keyErrors}, value = $valueErrors")
     }
 
     /**
@@ -100,39 +114,39 @@ class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: 
      * @since 0.2.0
      */
     @Suppress("unused")
-    class Builder<V: Any> {
+    class Builder<K: Any,V: Any> {
         /**
          * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map keys
          * @param handler an [Entry] used as a handler for keys.
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun keyHandler(handler: Entry<String>): BuilderWithKey<V>{
-            return BuilderWithKey<V>(handler)
+        fun keyHandler(handler: Entry<K>): BuilderWithKey<K,V>{
+            return BuilderWithKey<K,V>(handler)
         }
 
-        class BuilderWithKey<V: Any> internal constructor(private val keyHandler: Entry<String>) {
+        class BuilderWithKey<K: Any, V: Any> internal constructor(private val keyHandler: Entry<K>) {
             /**
              * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
              * @param handler an [Entry] used as a handler for values.
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            fun valueHandler(handler: Entry<V>): BuilderWithValue<V>{
-                return BuilderWithValue(handler, keyHandler)
+            fun valueHandler(handler: Entry<V>): BuilderWithValue<K,V>{
+                return BuilderWithValue<K,V>(handler, keyHandler)
             }
 
-            class BuilderWithValue<V: Any> internal constructor(private val valueHandler: Entry<V>, private val keyHandler: Entry<String>){
-                private var defaults: Map<String,V> = mapOf()
+            class BuilderWithValue<K: Any,V: Any> internal constructor(private val valueHandler: Entry<V>, private val keyHandler: Entry<K>){
+                private var defaults: Map<K,V> = mapOf()
                 /**
                  * Defines the default map used in the ValidatedMap
                  *
                  * If defaults aren't set, the default map will be empty
-                 * @param defaults Map<String,V> of default values
+                 * @param defaults Map<K,V> of default values
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun defaults(defaults: Map<String,V>): BuilderWithValue<V>{
+                fun defaults(defaults: Map<K,V>): BuilderWithValue<K,V>{
                     this.defaults = defaults
                     return this
                 }
@@ -140,11 +154,11 @@ class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: 
                  * Defines the default map used in the ValidatedMap
                  *
                  * If defaults aren't set, the default map will be empty
-                 * @param defaults vararg Pair<String,V> of default key-value pairs
+                 * @param defaults vararg Pair<K,V> of default key-value pairs
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun defaults(vararg defaults: Pair<String,V>): BuilderWithValue<V>{
+                fun defaults(vararg defaults: Pair<K,V>): BuilderWithValue<K,V>{
                     this.defaults = mapOf(*defaults)
                     return this
                 }
@@ -152,11 +166,11 @@ class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: 
                  * Defines a single default key-value pair
                  *
                  * If defaults aren't set, the default map will be empty
-                 * @param default single Pair<String,V> to define a single key-value pair map of defaults
+                 * @param default single Pair<K,V> to define a single key-value pair map of defaults
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun default(default: Pair<String,V>): BuilderWithValue<V>{
+                fun default(default: Pair<K,V>): BuilderWithValue<K,V>{
                     this.defaults = mapOf(default)
                     return this
                 }
@@ -164,71 +178,16 @@ class ValidatedMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: 
                  * Defines a single default key-value pair
                  *
                  * If defaults aren't set, the default map will be empty
-                 * @param key single String to define the default map key
+                 * @param key single K to define the default map key
                  * @param value single V to define the default map value
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun default(key: String, value: V): BuilderWithValue<V>{
+                fun default(key: K, value: V): BuilderWithValue<K,V> {
                     this.defaults = mapOf(key to value)
                     return this
                 }
-                /**
-                 * Defines the default map used in the ValidatedMap
-                 *
-                 * This map will be converted to a Map<String,V> internally. If defaults aren't set, the default map will be empty
-                 * @param defaults Map<Identifier,V> of default values
-                 * @author fzzyhmstrs
-                 * @since 0.2.0
-                 */
-                fun defaultIds(defaults: Map<Identifier,V>): BuilderWithValue<V>{
-                    this.defaults = defaults.mapKeys { e -> e.key.toString() }
-                    return this
-                }
-                /**
-                 * Defines the default map used in the ValidatedMap
-                 *
-                 * This map will be converted to a Map<String,V> internally. If defaults aren't set, the default map will be empty
-                 * @param defaults vararg Pair<Identifier,V> of default key-value pairs
-                 * @author fzzyhmstrs
-                 * @since 0.2.0
-                 */
-                fun defaultIds(vararg defaults: Pair<Identifier,V>): BuilderWithValue<V>{
-                    this.defaults = (defaults).associate { p -> Pair(p.first.toString(),p.second) }
-                    return this
-                }
-                /**
-                 * Defines a single default key-value pair
-                 *
-                 * This pair will be converted to a Pair<String,V> internally. If defaults aren't set, the default map will be empty
-                 * @param default single Pair<Identifier,V> to define a single key-value pair map of defaults
-                 * @author fzzyhmstrs
-                 * @since 0.2.0
-                 */
-                fun defaultId(default: Pair<Identifier,V>): BuilderWithValue<V>{
-                    this.defaults = mapOf(Pair(default.first.toString(),default.second))
-                    return this
-                }
-                /**
-                 * Defines a single default key-value pair
-                 *
-                 * This pair will be converted to a Pair<String,V> internally. If defaults aren't set, the default map will be empty
-                 * @param key single Identifier to define the default map key
-                 * @param value single V to define the default map value
-                 * @author fzzyhmstrs
-                 * @since 0.2.0
-                 */
-                fun defaultId(key: Identifier, value: V): BuilderWithValue<V>{
-                    this.defaults = mapOf(key.toString() to value)
-                    return this
-                }
-                /**
-                 * Builds the Builder into a ValidatedMap
-                 * @return ValidatedMap based on the builder inputs
-                 * @author fzzyhmstrs
-                 * @since 0.2.0
-                 */
-                fun build(): ValidatedMap<V> {
+                fun build(): ValidatedMap<K,V> {
                     return ValidatedMap(defaults,keyHandler,valueHandler)
                 }
             }

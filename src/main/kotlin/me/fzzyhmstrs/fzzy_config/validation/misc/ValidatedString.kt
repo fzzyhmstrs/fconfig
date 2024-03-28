@@ -23,7 +23,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
 
     /**
      * An unbounded validated string value
-     * 
+     *
      * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
      * @param defaultValue String, the efault string for this setting
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.unboundedString]
@@ -31,6 +31,16 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
      * @since 0.2.0
      */
     constructor(defaultValue: String): this(defaultValue, EntryChecker.any())
+
+    /**
+     * An unbounded validated string value with empty default value
+     *
+     * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.emptyString]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(): this("", EntryChecker.any())
 
     override fun copyStoredValue(): String {
         return String(storedValue.toCharArray())
@@ -56,7 +66,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
         return ValidationResult.success(input)
     }
 
-    override fun widgetEntry(): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
         TODO("Not yet implemented")
     }
 

@@ -51,25 +51,40 @@ object ValidatedMiscExamples{
     }
 
     //Example validated identifier. Note that this "raw" usage of the constructor is not recommended in most cases.
-    //For instance, in this case, an implmentation of ofRegistry(Registry, BiPredicate) would be advisable
+    //For instance, in this case, an implementation of ofRegistry(Registry, BiPredicate) would be advisable
     val validatedIdentifier = ValidatedIdentifier(Identifier("oak_planks"), AllowableIdentifiers({ id -> id.toString().contains("planks") }, { Registries.BLOCK.ids.filter { it.toString().contains("planks") } }))
+
+    //Unbounded validated Identifier. Any valid Identifier will be allowed
+    val unboundedIdentifier = ValidatedIdentifier(Identifier("nether_star"))
+
+    //Unbounded validated Identifier directly from string. Any valid Identifier will be allowed
+    val stringIdentifier = ValidatedIdentifier("nether_star")
+
+    //Unbounded validated Identifier directly from string nbamespace and path. Any valid Identifier will be allowed
+    val stringStringIdentifier = ValidatedIdentifier("minecraft","nether_star")
 
     //example validated string. This is built using the Builder, which is typically recommended except in special circumstances
     //this string requires that lowercase chicken be included in the string
     val validatedString = ValidatedString.Builder("chickenfrog")
-                              .both { s,_ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
-                              .withCorrector()
-                              .both { s,_ ->
-                                  if(s.contains("chicken")){
-                                      ValidationResult.success(s)
-                                  } else {
-                                      if(s.contains("chicken", true)){
-                                          val s2 = s.replace(Regex("(?i)chicken"),"chicken")
-                                          ValidationResult.error(s2,"'chicken' needs to be lowercase in the string")
-                                      } else {
-                                          ValidationResult.error(s,"String must contain the lowercase word 'chicken'")
-                                      }
-                                  }
-                              }
-                              .build()
+        .both { s,_ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
+        .withCorrector()
+        .both { s,_ ->
+            if(s.contains("chicken")){
+                ValidationResult.success(s)
+            } else {
+                if(s.contains("chicken", true)){
+                    val s2 = s.replace(Regex("(?i)chicken"),"chicken")
+                    ValidationResult.error(s2,"'chicken' needs to be lowercase in the string")
+                } else {
+                    ValidationResult.error(s,"String must contain the lowercase word 'chicken'")
+                }
+            }
+        }
+        .build()
+
+    //Unbounded validated string. Any valid string will be allowed
+    val unboundedString = ValidatedString("hamsters")
+
+    //Empty validated string. Any valid string will be allowed, and the default value is ""
+    val emptyString = ValidatedString()
 }

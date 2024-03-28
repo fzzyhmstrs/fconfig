@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
@@ -14,13 +15,28 @@ import net.peanuuutz.tomlkt.toLong
  * @param defaultValue Long. the default value of this wrapper
  * @param maxValue Long. the maximum allowed value, inclusive
  * @param minValue Long. the minimum allowed value, inclusive
- * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType]
+ * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedLong]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxLong]
  * @author fzzyhmstrs
  * @since 0.1.0
  */
 class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long, minValue: Long, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Long>(defaultValue, minValue, maxValue) {
+
+    /**
+     * A validated long number generated with a [LongRange].
+     *
+     * The validation will be limited to ensuring the value de/serializes as a long, since there are no bounds.
+     *
+     * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     * @param defaultValue Long. the default value of this wrapper
+     * @param defaultValue Long. the default value of this wrapper
+     * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedLong]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmOverloads constructor(defaultValue: Long, range: LongRange, widgetType: WidgetType = WidgetType.SLIDER): this(defaultValue, range.last, range.first, widgetType)
 
     /**
      * an unbounded validated long number.
@@ -41,13 +57,12 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
      * The validation will be limited to ensuring the value de/serializes as a long, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @param defaultValue Long. the default value of this wrapper
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedLong]
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyLong]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     constructor(): this(0L, Long.MAX_VALUE, Long.MIN_VALUE, WidgetType.TEXTBOX)
-    
+
     override fun copyStoredValue(): Long {
         return storedValue
     }
@@ -68,7 +83,7 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
         return ValidatedLong(defaultValue, maxValue, minValue, widgetType)
     }
 
-    override fun widgetEntry(): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Long>): ClickableWidget {
         TODO("Not yet implemented")
     }
 }

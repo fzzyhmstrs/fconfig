@@ -2,14 +2,10 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.api.Translatable
 import me.fzzyhmstrs.fzzy_config.math.Expression.Impl.validated
-import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedIdentifierList
 import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedList
-import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedIdentifierMap
-import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedMap
-import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.shorthandValidationMap
 import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.registry.Registry
@@ -19,8 +15,6 @@ import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.awt.Color
 import java.util.function.BiPredicate
-import kotlin.reflect.full.starProjectedType
-import kotlin.reflect.typeOf
 
 /**
  * Shorthand extension functions for simple field types
@@ -44,6 +38,11 @@ object Shorthand {
     @JvmStatic
     fun <E: Enum<E>> E.validated(): ValidatedEnum<E> {
         return ValidatedEnum(this)
+    }
+
+    @JvmStatic
+    fun <E: Enum<E>> Class<E>.validated(): ValidatedEnum<E> {
+        return ValidatedEnum(this.enumConstants[0])
     }
 
     /**
@@ -198,13 +197,13 @@ object Shorthand {
 
     internal fun basicValidation(input: Any?): ValidatedField<*>? {
         return when (input) {
-            is Int -> input.validated()
-            is Short -> input.validated()
-            is Long -> input.validated()
-            is Byte -> input.validated()
-            is Double -> input.validated()
-            is Float -> input.validated()
-            is Boolean -> input.validated()
+            is Int -> ValidatedInt()
+            is Short -> ValidatedShort()
+            is Long -> ValidatedLong()
+            is Byte -> ValidatedByte()
+            is Double -> ValidatedDouble()
+            is Float -> ValidatedFloat()
+            is Boolean -> ValidatedBoolean()
             is Enum<*> -> ValidatedEnum(input)
             is Color -> input.validated()
             is Identifier -> input.validated()
@@ -230,41 +229,41 @@ object Shorthand {
 
     @JvmStatic
     fun List<Int>.validated(): ValidatedList<Int>{
-        return ValidatedList(this, 0.validated())
+        return ValidatedList(this, ValidatedInt())
     }
 
     @JvmStatic
     fun List<Byte>.validated(): ValidatedList<Byte>{
-        return ValidatedList(this, 0.toByte().validated())
+        return ValidatedList(this, ValidatedByte())
     }
 
     @JvmStatic
     fun List<Short>.validated(): ValidatedList<Short>{
-        return ValidatedList(this, 0.toShort().validated())
+        return ValidatedList(this, ValidatedShort())
     }
 
     @JvmStatic
     fun List<Long>.validated(): ValidatedList<Long>{
-        return ValidatedList(this, 0L.validated())
+        return ValidatedList(this, ValidatedLong())
     }
 
     @JvmStatic
     fun List<Double>.validated(): ValidatedList<Double>{
-        return ValidatedList(this, 0.0.validated())
+        return ValidatedList(this, ValidatedDouble())
     }
 
     @JvmStatic
     fun List<Float>.validated(): ValidatedList<Float>{
-        return ValidatedList(this, 0f.validated())
+        return ValidatedList(this, ValidatedFloat())
     }
 
     @JvmStatic
     fun List<Boolean>.validated(): ValidatedList<Boolean>{
-        return ValidatedList(this, true.validated())
+        return ValidatedList(this, ValidatedBoolean())
     }
 
     @JvmStatic
-    inline fun <T: Enum<*>> List<T>.validated(): ValidatedList<T>{
+    inline fun <reified T: Enum<*>> List<T>.validated(): ValidatedList<T>{
         return ValidatedList(this, ValidatedEnum(T::class.java.enumConstants[0]))
     }
 

@@ -5,6 +5,7 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
@@ -14,7 +15,19 @@ import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
 
-class ValidatedEnumMap<K:Enum<K>,V: Any>(defaultValue: Map<K,V>, private val keyHandler: Entry<K>, private val valueHandler: Entry<V>): ValidatedField<Map<K, V>>(defaultValue){
+/**
+ * A Validated Map<Enum,V>
+ *
+ * NOTE: The map does not need to be an EnumMap, but can be
+ * @param K key type, any Enum
+ * @param V any non-null type with a valid [Entry] for handling
+ * @param defaultValue the default map
+ * @param keyHandler the Enum handler, typically a [ValidatedEnum]
+ * @param valueHandler the value handler, an [Entry]
+ * @see Builder using the builder is recommended
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedMap
+ */
+class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val keyHandler: Entry<K>, private val valueHandler: Entry<V>): ValidatedField<Map<K, V>>(defaultValue){
     override fun copyStoredValue(): Map<K, V> {
         return storedValue.toMap()
     }
@@ -23,7 +36,7 @@ class ValidatedEnumMap<K:Enum<K>,V: Any>(defaultValue: Map<K,V>, private val key
         return ValidatedEnumMap(storedValue, keyHandler, valueHandler)
     }
 
-    override fun widgetEntry(): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
         TODO("Not yet implemented")
     }
 
@@ -98,10 +111,11 @@ class ValidatedEnumMap<K:Enum<K>,V: Any>(defaultValue: Map<K,V>, private val key
      * @author fzzyhmstrs
      * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.TestEnum
      * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.enumTest
+     * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.enumEnumMapTest
      * @since 0.2.0
      */
     @Suppress("unused", "DeprecatedCallableAddReplaceWith")
-    class Builder<K,V: Any> where K: Enum<K>, K: Translatable {
+    class Builder<K,V: Any> where K: Enum<*> {
         /**
          * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map keys
          * @param handler an [Entry] used as a handler for keys. Typically a [ValidatedEnum]
@@ -124,7 +138,7 @@ class ValidatedEnumMap<K:Enum<K>,V: Any>(defaultValue: Map<K,V>, private val key
             return BuilderWithKey<K,V>(ValidatedEnum(defaultValue))
         }
 
-        class BuilderWithKey<K,V: Any> internal constructor (private val keyHandler: Entry<K>)where K: Enum<K>, K: Translatable{
+        class BuilderWithKey<K,V: Any> internal constructor (private val keyHandler: Entry<K>)where K: Enum<*>{
             /**
              * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
              * @param valueHandler an [Entry] used as a handler for values.
@@ -135,7 +149,7 @@ class ValidatedEnumMap<K:Enum<K>,V: Any>(defaultValue: Map<K,V>, private val key
                 return BuilderWithValue(valueHandler,keyHandler)
             }
 
-            class BuilderWithValue<K,V: Any>internal constructor (private val valueHandler: Entry<V>, private val keyHandler: Entry<K>)where K: Enum<K>, K: Translatable{
+            class BuilderWithValue<K,V: Any>internal constructor (private val valueHandler: Entry<V>, private val keyHandler: Entry<K>)where K: Enum<*>{
                 private var defaults: Map<K,V> = mapOf()
 
                 /**

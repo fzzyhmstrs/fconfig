@@ -20,29 +20,6 @@ import java.util.function.BiPredicate
 
 internal object ValidatedShorthands {
 
-    //Shorthand unbounded int. The int is the default value
-    val shorthandInt = 12.validated()
-
-
-    //Shorthand unbounded byte. The byte is the default value
-    val shorthandByte = 12.toByte().validated()
-
-
-    //Shorthand unbounded byte. The byte is the default value
-    val shorthandShort = 12.toShort().validated()
-
-
-    //Shorthand unbounded long. The long is the default value
-    val shorthandLong = 100L.validated()
-
-
-    //Shorthand unbounded double. The double is the default value
-    val shorthandDouble = 4.0.validated()
-
-
-    //Shorthand unbounded float. The float is the default value
-    val shorthandFloat = 4f.validated()
-
     enum class TestEnum: EnumTranslatable {
         TEST,
         MORE,
@@ -74,9 +51,6 @@ internal object ValidatedShorthands {
     //Shorthand validated Color from a base color int. The color values in the Color will be the default color components.
     //In this example, the color does not accept transparency
     val shorthandColorInt = 0xFF5500.validatedColor(false)
-
-    //Shorthand boolean. the bool used is the default
-    val shorthandBool = true.validated()
 
     //Shorthand math Expression. This is directly in the Expression class itself, not in the Shorthand object
     val shorthandMath = Expression.validated("x * 0.5", setOf('x'))

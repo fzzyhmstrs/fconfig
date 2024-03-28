@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_config.validation.entry
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
+import java.util.function.Supplier
 
 /**
  * Interface handles an [Entry] creating a ClickableWidget
@@ -14,8 +15,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
  * @since 0.2.0
  */
 @Environment(EnvType.CLIENT)
-@FunctionalInterface
-fun interface EntryWidget {
+interface EntryWidget<T: Any> {
     @Environment(EnvType.CLIENT)
-    fun widgetEntry(): ClickableWidget
+    fun widgetEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget
 }

@@ -125,6 +125,14 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
 
     abstract fun serialize(input: T): ValidationResult<TomlElement>
 
+    override fun supplyEntry(): T {
+        return get()
+    }
+
+    override fun applyEntry(input: T) {
+        setAndUpdate(input)
+    }
+
     /**
      * Perform input validation and correction in this method. A simple example can be seen in [ValidatedNumber], where this method bounds the input number to within the max and min values provided.
      *

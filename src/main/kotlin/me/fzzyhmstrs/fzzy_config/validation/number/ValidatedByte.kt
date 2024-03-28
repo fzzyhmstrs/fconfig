@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
@@ -14,7 +15,7 @@ import net.peanuuutz.tomlkt.toByte
  * @param defaultValue Byte. the default value of this wrapper
  * @param maxValue Byte. the maximum allowed value, inclusive
  * @param minValue Byte. the minimum allowed value, inclusive
- * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType]
+ * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedByte]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxByte]
  * @author fzzyhmstrs
@@ -41,7 +42,6 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      * The validation will be limited to ensuring the value de/serializes as a byte, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @param defaultValue Byte. the default value of this wrapper
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyByte]
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -68,7 +68,7 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
         return ValidatedByte(defaultValue, maxValue, minValue, widgetType)
     }
 
-    override fun widgetEntry(): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Byte>): ClickableWidget {
         TODO("Not yet implemented")
     }
 }

@@ -5,6 +5,7 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -50,7 +51,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
      * An unbounded validated identifier
      *
      * Validation will be limited to ensuring inputs are valid identifiers
-     * @param defaultValue [Identifier] the default identifier for this valdiation
+     * @param defaultValue [Identifier] the default identifier for this validation
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.unboundedIdentifier]
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -61,7 +62,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
      * An unbounded validated identifier constructed from a string
      *
      * Validation will be limited to ensuring inputs are valid identifiers
-     * @param defaultValue [Identifier] the default identifier for this valdiation
+     * @param defaultValue [String] the default identifier (in string form) for this validation
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.stringIdentifier]
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -72,7 +73,8 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
      * An unbounded validated identifier constructed from namespace and path strings
      *
      * Validation will be limited to ensuring inputs are valid identifiers
-     * @param defaultValue [Identifier] the default identifier for this valdiation
+     * @param defaultNamespace [String] the default namespace for this validation
+     * @param defaultPath [String] the default path for this validation
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.stringStringIdentifier]
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -110,7 +112,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
         return ValidatedIdentifier(copyStoredValue(), allowableIds, validator)
     }
 
-    override fun widgetEntry(): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {
         TODO("Not yet implemented")
     }
 

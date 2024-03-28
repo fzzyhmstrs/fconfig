@@ -3,10 +3,18 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.math.Expression
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.PressableWidget
+import net.minecraft.text.MutableText
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 
@@ -33,13 +41,13 @@ class ValidatedExpression @JvmOverloads constructor(defaultValue: String, privat
      * A validated math expression with default equation of "0"
      *
      * This constructor is primarily intended for validation usage in other ValidatedFields (such as lists or maps)
-     * 
+     *
      * This [ValidatedField] is itself an expression, so you can call eval() or evalSafe() on it directly.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     constructor(): this("0")
-    
+
     private var parsedString = defaultValue
     private var parsedExpression = Expression.parse(defaultValue, defaultValue)
 
@@ -86,7 +94,25 @@ class ValidatedExpression @JvmOverloads constructor(defaultValue: String, privat
         return ValidatedExpression(copyStoredValue(), validVars, validator)
     }
 
-    override fun widgetEntry(): ClickableWidget {
+    @Environment(EnvType.CLIENT)
+    override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
         TODO("Not yet implemented")
+    }
+
+    @Environment(EnvType.CLIENT)
+    class ExpressionPopupWidget(private val entry: ValidatedExpression): PressableWidget(0,0,90,20,entry.supplyEntry().lit()){
+
+        override fun getNarrationMessage(): MutableText {
+            return "fc.validated_field.expression".translate()
+        }
+
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
+            appendDefaultNarrations(builder)
+        }
+
+        override fun onPress() {
+            TODO("Not yet implemented")
+        }
+
     }
 }

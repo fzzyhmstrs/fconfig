@@ -3,7 +3,8 @@ package me.fzzyhmstrs.fzzy_config.examples
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedMap
+import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedIdentifierMap
+import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedStringMap
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
@@ -22,7 +23,7 @@ internal class MyConfig: Config("my_config","fzzy_config") {
 
         var sectionBoolean = ValidatedBoolean(true)
 
-        var sectionMap = ValidatedMap(
+        var sectionMap = ValidatedIdentifierMap(
             mapOf(),
             ValidatedIdentifier.ofTag(Registries.ITEM.getId(Items.IRON_AXE),ItemTags.AXES),
             ValidatedDouble(1.0,1.0,0.0)

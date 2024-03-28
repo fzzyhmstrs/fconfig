@@ -14,6 +14,17 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.success
  */
 class ValidationResult<T> private constructor(private val storedVal: T, private val error: String = ""){
     /**
+     * Boolean check to determine if this result is valid (no errors)
+     *
+     * @return Boolean, true is NOT an error, false an error.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun isValid(): Boolean{
+        return error.isEmpty()
+    }
+
+    /**
      * Boolean check to determine if this result is holding an error
      *
      * @return Boolean, true is an error, false not.

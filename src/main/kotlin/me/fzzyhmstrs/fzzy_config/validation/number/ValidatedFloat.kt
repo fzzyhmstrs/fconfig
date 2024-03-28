@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
@@ -14,7 +15,7 @@ import net.peanuuutz.tomlkt.toFloat
  * @param defaultValue Float. the default value of this wrapper
  * @param maxValue Float. the maximum allowed value, inclusive
  * @param minValue Float. the minimum allowed value, inclusive
- * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType]
+ * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedFloat]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxFloat]
  * @author fzzyhmstrs
@@ -41,8 +42,7 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
      * The validation will be limited to ensuring the value de/serializes as a float, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @param defaultValue Float. the default value of this wrapper
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedFloat]
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyFloat]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -68,7 +68,7 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
         return ValidatedFloat(defaultValue, maxValue, minValue, widgetType)
     }
 
-    override fun widgetEntry(): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Float>): ClickableWidget {
         TODO("Not yet implemented")
     }
 }

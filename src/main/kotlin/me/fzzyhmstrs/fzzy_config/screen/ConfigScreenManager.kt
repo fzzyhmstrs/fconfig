@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_config.screen
 
 import com.google.common.collect.ArrayListMultimap
 import me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable
+import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.annotations.WithPerms
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.fcId
@@ -19,8 +20,9 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateApplier
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.description
-import me.fzzyhmstrs.fzzy_config.util.FcText.translation
+import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
+import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -28,6 +30,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
+import net.peanuuutz.tomlkt.TomlComment
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.Function
@@ -39,12 +42,12 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
     private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
     private val regex = Regex("(?=\\p{Lu})")
-    
+
     init{
         prepareScreens()
     }
 
-    fun receiveForwardedUpdate(update: String, player: UUID, scope: String) {
+    internal fun receiveForwardedUpdate(update: String, player: UUID, scope: String) {
         var entry: Entry<*>? = null
         for (config in configs){
             ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){_, new, thing, _ ->
@@ -67,7 +70,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
         }
     }
 
-    fun openScreen(scope: String = this.scope){
+    internal fun openScreen(scope: String = this.scope){
         configs.forEach { UpdateManager.pushStates(it) }
         openScopedScreen(scope)
     }
@@ -87,32 +90,12 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
     }
 
     //move translation and description to descLit and transLit, with fallback of fieldName and TomlComment, if any.
-    
+
     private fun prepareSingleConfigScreen(playerPermLevel: Int) {
         val functionMap: ArrayListMultimap<String, Function<ConfigListWidget, ConfigEntry>> = ArrayListMultimap.create()
         val nameMap: MutableMap<String,Text> = mutableMapOf()
         val config = configs[0]
-        val defaultPermLevel = config.defaultPermLevel()
-        //putting the config buttons themselves, in the base scope. ex: "my_mod"
-        functionMap.put(scope, screenOpenEntryBuilder(config.translation(), config.description(), config.getId().toTranslationKey()))
-        nameMap[config.getId().toTranslationKey()] = config.translation()
-        //walking the config, base scope passed to walk is ex: "my_mod.my_config"
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){old, new, thing, annotations ->
-            if(thing is Walkable){
-                val fieldName = new.substringAfterLast('.')
-                val name = thing.transLit(fieldName.split(regex).map{it.replaceFirstChar{ it.uppercase() }}.joinToString(" "))
-                nameMap[new] = name
-                functionMap.put(old, screenOpenEntryBuilder(name, thing.description(getComments(annotations)), new))
-            } else if (thing is Updatable && thing is Entry<*>){
-                if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations))
-                    if (ConfigApiImpl.isNonSync(annotations))
-                        functionMap.put(old, forwardableEntryBuilder(thing.translation("fc.config.generic.field"), thing.description("fc.config.generic.field.desc"), thing))
-                    else
-                        functionMap.put(old, updatableEntryBuilder(thing.translation("fc.config.generic.field"), thing.description("fc.config.generic.field.desc"), thing))
-                else
-                    functionMap.put(old, noPermsEntryBuilder(thing.translation("fc.config.generic.field"), thing.description("fc.config.generic.field.desc")))
-            }
-        }
+        walkConfig(config, functionMap, nameMap, playerPermLevel)
         val scopes = functionMap.keySet().toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
         val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
@@ -127,30 +110,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
         val functionMap: ArrayListMultimap<String, Function<ConfigListWidget, ConfigEntry>> = ArrayListMultimap.create()
         val nameMap: MutableMap<String,Text> = mutableMapOf()
         for (config in configs) {
-            val defaultPermLevel = config.defaultPermLevel()
-            //putting the config buttons themselves, in the base scope. ex: "my_mod"
-            functionMap.put(scope, screenOpenEntryBuilder(config.translation(), config.description(), config.getId().toTranslationKey()))
-            nameMap[config.getId().toTranslationKey()] = config.translation()
-            //walking the config, base scope passed to walk is ex: "my_mod.my_config"
-            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){old, new, thing, annotations ->
-                if(thing is Walkable) {
-                    val fieldName = new.substringAfterLast('.')
-                    val name = thing.transLit(fieldName.split(regex).map{it.replaceFirstChar{ it.uppercase() }}.joinToString(" "))
-                    nameMap[new] = name
-                    functionMap.put(old, screenOpenEntryBuilder(name, thing.descLit(getComments(annotations)), new))
-                } else if (thing is Updatable && thing is Entry<*>) {
-                    val fieldName = new.substringAfterLast('.')
-                    val name = thing.transLit(fieldName.split(regex).map{it.replaceFirstChar{ it.uppercase() }}.joinToString(" "))
-                    nameMap[new] = name
-                    if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations))
-                        if (ConfigApiImpl.isNonSync(annotations))
-                            functionMap.put(old, forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), thing))
-                        else
-                            functionMap.put(old, updatableEntryBuilder(name, thing.description(getComments(annotations)), thing))
-                    else
-                        functionMap.put(old, noPermsEntryBuilder(name, thing.description(getComments(annotations))))
-                }
-            }
+            walkConfig(config, functionMap, nameMap, playerPermLevel)
         }
         val scopes = functionMap.keySet().toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
@@ -160,6 +120,33 @@ class ConfigScreenManager(private val scope: String, private val configs: List<C
             builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, entryBuilders.toList())
         }
         this.screens = builders
+    }
+
+    private fun walkConfig(config: Config, functionMap: ArrayListMultimap<String, Function<ConfigListWidget, ConfigEntry>>, nameMap: MutableMap<String, Text>, playerPermLevel: Int){
+        val defaultPermLevel = config.defaultPermLevel()
+        //putting the config buttons themselves, in the base scope. ex: "my_mod"
+        functionMap.put(scope, screenOpenEntryBuilder(config.translation(), config.description(), config.getId().toTranslationKey()))
+        nameMap[config.getId().toTranslationKey()] = config.translation()
+        //walking the config, base scope passed to walk is ex: "my_mod.my_config"
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){old, new, thing, annotations ->
+            if(thing is Walkable) {
+                val fieldName = new.substringAfterLast('.')
+                val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+                nameMap[new] = name
+                functionMap.put(old, screenOpenEntryBuilder(name, thing.descLit(getComments(annotations)), new))
+            } else if (thing is Updatable && thing is Entry<*>) {
+                val fieldName = new.substringAfterLast('.')
+                val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+                nameMap[new] = name
+                if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations))
+                    if (ConfigApiImpl.isNonSync(annotations))
+                        functionMap.put(old, forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), thing))
+                    else
+                        functionMap.put(old, updatableEntryBuilder(name, thing.descLit(getComments(annotations)), thing))
+                else
+                    functionMap.put(old, noPermsEntryBuilder(name, thing.descLit(getComments(annotations))))
+            }
+        }
     }
 
     private fun getComments(annotations: List<Annotation>): String{

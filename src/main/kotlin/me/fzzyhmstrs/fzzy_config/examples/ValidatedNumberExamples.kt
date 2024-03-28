@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
-import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 
 internal object ValidatedNumberExamples {
@@ -12,10 +11,13 @@ internal object ValidatedNumberExamples {
     val textBoxInt = ValidatedInt(20, 40, 5, ValidatedNumber.WidgetType.TEXTBOX)
 
     //Example unbounded ValidatedInt. Can be any valid integer value. Widget forced to "textbox" style
+    val rangedInt = ValidatedInt(20, 0..40)
+
+    //Example unbounded ValidatedInt. Can be any valid integer value. Widget forced to "textbox" style
     val unboundedInt = ValidatedInt(20)
 
-    //Shorthand unbounded int. The int is the default value
-    val shorthandInt = 12.validated()
+    //Example validation-only Int (unless your default happens to be 0)
+    val emptyInt = ValidatedInt()
 
 
     //Example ValidatedByte. Defaults to 4, allowable range 8 to 0. Uses a Slider widget
@@ -27,8 +29,8 @@ internal object ValidatedNumberExamples {
     //Example unbounded ValidatedByte. Can be any valid integer value. Widget forced to "textbox" style
     val unboundedByte = ValidatedByte(4)
 
-    //Shorthand unbounded byte. The byte is the default value
-    val shorthandByte = 12.toByte().validated()
+    //Example validation-only Byte (unless your default happens to be 0)
+    val emptyByte = ValidatedByte()
 
 
     //Example ValidatedShort. Defaults to 4, allowable range 8 to 0. Uses a Slider widget
@@ -40,8 +42,8 @@ internal object ValidatedNumberExamples {
     //Example unbounded ValidatedShort. Can be any valid integer value. Widget forced to "textbox" style
     val unboundedShort = ValidatedShort(128)
 
-    //Shorthand unbounded byte. The byte is the default value
-    val shorthandShort = 12.toShort().validated()
+    //Example validation-only Short (unless your default happens to be 0)
+    val emptyShort = ValidatedShort()
 
 
     //Example ValidatedLong. Defaults to 1000000L, allowable range 10000000000L to 0L. Uses a Slider widget
@@ -51,11 +53,13 @@ internal object ValidatedNumberExamples {
     val textBoxLong = ValidatedLong(1000000L, 10000000000L, 0L, ValidatedNumber.WidgetType.TEXTBOX)
 
     //Example unbounded ValidatedLong. Can be any valid integer value. Widget forced to "textbox" style
+    val rangedLong = ValidatedLong(1000000L)
+
+    //Example unbounded ValidatedLong. Can be any valid integer value. Widget forced to "textbox" style
     val unboundedLong = ValidatedLong(1000000L)
 
-    //Shorthand unbounded long. The long is the default value
-    val shorthandLong = 100L.validated()
-
+    //Example validation-only Long (unless your default happens to be 0L)
+    val emptyLong = ValidatedLong()
 
     //Example ValidatedDouble. Defaults to 2.0, allowable range 3.0 to 1.0. Uses a Slider widget
     val validatedDouble = ValidatedDouble(2.0, 3.0, 1.0)
@@ -66,8 +70,8 @@ internal object ValidatedNumberExamples {
     //Example unbounded ValidatedDouble. Can be any valid integer value. Widget forced to "textbox" style
     val unboundedDouble = ValidatedDouble(2.0)
 
-    //Shorthand unbounded double. The double is the default value
-    val shorthandDouble = 4.0.validated()
+    //Example validation-only Double (unless your default happens to be 0.0)
+    val emptyDouble = ValidatedDouble()
 
 
     //Example ValidatedFloat. Defaults to 2f, allowable range 3f to 1f. Uses a Slider widget
@@ -79,7 +83,6 @@ internal object ValidatedNumberExamples {
     //Example unbounded ValidatedFloat. Can be any valid integer value. Widget forced to "textbox" style
     val unboundedFloat = ValidatedFloat(2f)
 
-    //Shorthand unbounded float. The float is the default value
-    val shorthandFloat = 4f.validated()
-
+    //Example validation-only Float (unless your default happens to be 0f)
+    val emptyFloat = ValidatedFloat()
 }

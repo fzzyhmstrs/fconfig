@@ -4,6 +4,7 @@ import me.fzzyhmstrs.fzzy_config.api.ValidationResult
 import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
@@ -101,7 +102,7 @@ class ValidatedIdentifierList(defaultValue: List<Identifier>, private val entryH
         return ValidatedIdentifierList(defaultValue, entryHandler)
     }
 
-    override fun widgetEntry(): ClickableWidget {
+    override fun widgetEntry(choicePredicate: ChoiceValidator<List<Identifier>>): ClickableWidget {
         TODO("Not yet implemented")
     }
 
