@@ -1,12 +1,11 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.api.ValidationResult
-import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.wrap
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.math.Expression
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
 import net.fabricmc.api.EnvType
@@ -79,7 +78,8 @@ class ValidatedExpression @JvmOverloads constructor(defaultValue: String, privat
 
     override fun correctEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
         val result = validateEntry(input, type)
-        return if(result.isError()) {ValidationResult.error(storedValue, "Invalid identifier [$input] found, reset to [$storedValue]: ${result.getError()}")} else result
+        return if(result.isError()) {
+            ValidationResult.error(storedValue, "Invalid identifier [$input] found, reset to [$storedValue]: ${result.getError()}")} else result
     }
 
     override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {

@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
-import me.fzzyhmstrs.fzzy_config.api.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement

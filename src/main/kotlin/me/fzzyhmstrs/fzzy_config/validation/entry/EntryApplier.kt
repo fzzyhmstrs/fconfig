@@ -1,8 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.validation.entry
 
-import me.fzzyhmstrs.fzzy_config.api.ValidationResult
-import java.util.function.Predicate
-
 /**
  * Applies input values into a complex [Entry]
  *

@@ -1,15 +1,12 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.api.Translatable
-import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
-import me.fzzyhmstrs.fzzy_config.util.FcText.translation
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
 import net.fabricmc.api.EnvType
@@ -27,7 +24,6 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import java.util.function.Consumer
 import java.util.function.Predicate
-import java.util.function.Supplier
 import kotlin.math.max
 
 /**
@@ -91,14 +87,20 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
 
     /**
      * Determines which type of selector widget will be used for the Enum option, default is POPUP
+     * @author fzzyhmstrs
+     * @since 0.2.0
      */
     enum class WidgetType {
         /**
          * Will display a button with the currently selected option, clicking the button will pop up a window with the available options to select from. Selecting a new option will close the popup.
+         * @author fzzyhmstrs
+         * @since 0.2.0
          */
         POPUP,
         /**
          * A traditional MC cycling button widget, iterating through the enum options in order
+         * @author fzzyhmstrs
+         * @since 0.2.0
          */
         CYCLING
     }

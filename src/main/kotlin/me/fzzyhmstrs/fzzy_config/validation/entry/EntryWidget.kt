@@ -1,9 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.validation.entry
 
+import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
-import java.util.function.Supplier
 
 /**
  * Interface handles an [Entry] creating a ClickableWidget

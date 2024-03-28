@@ -3,7 +3,7 @@ package me.fzzyhmstrs.fzzy_config.math
 import com.mojang.brigadier.StringReader
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
-import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.random.Random
@@ -125,7 +125,7 @@ fun interface Expression {
          * @since 0.2.0
          */
         @JvmStatic
-        fun tryTest(str: String, vars: Set<Char>): ValidationResult<Expression?>{
+        fun tryTest(str: String, vars: Set<Char>): ValidationResult<Expression?> {
             val result = tryParse(str)
             if (result.isError() || vars.isEmpty()) return result
             val varMap = vars.associate { it -> it to 0.0 }

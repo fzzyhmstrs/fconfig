@@ -38,7 +38,14 @@ dependencies {
 sourceSets{
     main{
         kotlin{
-            exclude ( "me/fzzyhmstrs/fzzy_config/examples/**" )
+            val includeExamples: String by project
+            if (!includeExamples.toBoolean()) {
+                exclude("me/fzzyhmstrs/fzzy_config/examples/**")
+            }
+            val testMode: String by project
+            if (!testMode.toBoolean()) {
+                exclude("me/fzzyhmstrs/fzzy_config/test/**")
+            }
         }
     }
 }

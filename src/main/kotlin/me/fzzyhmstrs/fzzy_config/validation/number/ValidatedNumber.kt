@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import com.mojang.blaze3d.systems.RenderSystem
-import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -208,7 +208,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     }
 
     @Environment(EnvType.CLIENT)
-    protected class ConfirmButtonTextFieldWidget<T: Number>(wrappedValue: Supplier<T>, validationProvider: Function<Double,ValidationResult<T>>, private val valueApplier: Consumer<T>):
+    protected class ConfirmButtonTextFieldWidget<T: Number>(wrappedValue: Supplier<T>, validationProvider: Function<Double, ValidationResult<T>>, private val valueApplier: Consumer<T>):
         ClickableWidget(0,0, 90, 20, FcText.empty())
     {
         private val textFieldWidget = ValidationBackedNumberFieldWidget(70,20, wrappedValue, validationProvider)

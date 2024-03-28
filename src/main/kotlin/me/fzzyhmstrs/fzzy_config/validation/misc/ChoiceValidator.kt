@@ -1,6 +1,7 @@
-package me.fzzyhmstrs.fzzy_config.validation.entry
+package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
 import java.util.function.Predicate
 
 /**
@@ -30,7 +31,7 @@ class ChoiceValidator<T: Any>(private val  predicate: ValuesPredicate<T>): Entry
     }
 
     companion object {
-        fun <T: Any> any(): ChoiceValidator<T>{
+        fun <T: Any> any(): ChoiceValidator<T> {
             return ChoiceValidator(ValuesPredicate(null,null))
         }
     }

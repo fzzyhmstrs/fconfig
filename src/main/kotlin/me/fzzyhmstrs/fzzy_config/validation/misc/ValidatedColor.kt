@@ -1,9 +1,8 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.api.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.entry.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
@@ -162,8 +161,7 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
         }
     }
 
-    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, private val alphaMode: Boolean):
-        EntryHandler<ColorHolder> {
+    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, private val alphaMode: Boolean): EntryHandler<ColorHolder> {
 
         private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
 

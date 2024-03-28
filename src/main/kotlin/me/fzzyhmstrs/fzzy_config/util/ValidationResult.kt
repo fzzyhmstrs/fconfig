@@ -1,7 +1,7 @@
-package me.fzzyhmstrs.fzzy_config.api
+package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.api.ValidationResult.Companion.success
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.success
 
 /**
  * A result of any type T that is wrapped with an optional error message
@@ -134,7 +134,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun <T>predicated(storedVal: T, valid: Boolean, error: String): ValidationResult<T>{
+        fun <T>predicated(storedVal: T, valid: Boolean, error: String): ValidationResult<T> {
             return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, error)
         }
 
@@ -148,7 +148,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun <T> ValidationResult<*>.wrap(newVal: T): ValidationResult<T>{
+        fun <T> ValidationResult<*>.wrap(newVal: T): ValidationResult<T> {
             return ValidationResult(newVal, this.error)
         }
 
@@ -160,7 +160,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun <T> ValidationResult<T>.also(newTest: Boolean, error: String): ValidationResult<T>{
+        fun <T> ValidationResult<T>.also(newTest: Boolean, error: String): ValidationResult<T> {
             return if(!newTest) {
                 val totalError = if(this.isError()){
                     "${this.error}, also $error"
