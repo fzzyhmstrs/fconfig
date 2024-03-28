@@ -169,6 +169,10 @@ object SyncedConfigRegistry {
         return i
     }
 
+    internal fun hasConfig(id: String): Boolean{
+        return syncedConfigs.containsKey(id)
+    }
+
     internal fun registerConfig(config: Config){
         syncedConfigs[config.getId().toTranslationKey()] = config
     }
