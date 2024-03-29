@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.validation.entry
+package me.fzzyhmstrs.fzzy_config.entry
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 
@@ -10,9 +10,10 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-interface EntryChecker<T: Any>: EntryValidator<T>, EntryCorrector<T>{
+interface EntryChecker<T: Any>: EntryValidator<T>, EntryCorrector<T> {
 
-    class Impl<T: Any>(private val validator: EntryValidator<T>, private val corrector: EntryCorrector<T>): EntryChecker<T> {
+    class Impl<T: Any>(private val validator: EntryValidator<T>, private val corrector: EntryCorrector<T>):
+        EntryChecker<T> {
         override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
             return validator.validateEntry(input, type)
         }
@@ -22,7 +23,7 @@ interface EntryChecker<T: Any>: EntryValidator<T>, EntryCorrector<T>{
     }
 
     companion object {
-        fun <T: Any> any(): EntryChecker<T>{
+        fun <T: Any> any(): EntryChecker<T> {
             return Impl({ s, _ -> ValidationResult.success(s)}, { s, _ -> ValidationResult.success(s)})
         }
     }

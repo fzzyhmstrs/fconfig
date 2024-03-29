@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.Entry
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -18,10 +18,23 @@ import net.peanuuutz.tomlkt.toByte
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedByte]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxByte]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.1.0
  */
 class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte, minValue: Byte, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Byte>(defaultValue, minValue, maxValue) {
+
+    /**
+     * A validated byte number with a default selected from the min of the allowable range.
+     * @param minValue Byte. the minimum allowed value, inclusive
+     * @param maxValue Byte. the maximum allowed value, inclusive
+     * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxByte]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmOverloads
+    constructor(minValue: Byte,maxValue: Byte,widgetType: WidgetType = WidgetType.SLIDER): this(minValue,maxValue, minValue, widgetType)
 
     /**
      * an unbounded validated byte number.

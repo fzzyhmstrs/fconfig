@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.validation.entry
+package me.fzzyhmstrs.fzzy_config.entry
 
 /**
  * Applies input values into a complex [Entry]

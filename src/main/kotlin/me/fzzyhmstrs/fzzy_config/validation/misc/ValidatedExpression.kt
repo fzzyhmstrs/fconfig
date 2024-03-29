@@ -6,8 +6,8 @@ import me.fzzyhmstrs.fzzy_config.math.Expression
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -26,7 +26,8 @@ import net.peanuuutz.tomlkt.TomlLiteral
  * @param validator [EntryValidator], validates entered math strings
  * @Sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedExpression]
  * @Sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.evalExpression]
- * throws IllegalStateException if the provided defaultValue is not a parsable Expression.
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @throws IllegalStateException if the provided defaultValue is not a parsable Expression.
  * @author fzzyhmstrs
  * @since 0.2.0
  */

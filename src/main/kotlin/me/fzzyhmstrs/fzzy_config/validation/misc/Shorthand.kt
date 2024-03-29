@@ -1,12 +1,11 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import com.ibm.icu.lang.UCharacter
 import me.fzzyhmstrs.fzzy_config.api.Translatable
-import me.fzzyhmstrs.fzzy_config.math.Expression.Impl.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedIdentifierList
 import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedList
-import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.registry.Registry
 import net.minecraft.registry.entry.RegistryEntry
@@ -227,46 +226,6 @@ object Shorthand {
         return ValidatedList(this, entry)
     }
 
-    @JvmStatic
-    fun List<Int>.validated(): ValidatedList<Int>{
-        return ValidatedList(this, ValidatedInt())
-    }
-
-    @JvmStatic
-    fun List<Byte>.validated(): ValidatedList<Byte>{
-        return ValidatedList(this, ValidatedByte())
-    }
-
-    @JvmStatic
-    fun List<Short>.validated(): ValidatedList<Short>{
-        return ValidatedList(this, ValidatedShort())
-    }
-
-    @JvmStatic
-    fun List<Long>.validated(): ValidatedList<Long>{
-        return ValidatedList(this, ValidatedLong())
-    }
-
-    @JvmStatic
-    fun List<Double>.validated(): ValidatedList<Double>{
-        return ValidatedList(this, ValidatedDouble())
-    }
-
-    @JvmStatic
-    fun List<Float>.validated(): ValidatedList<Float>{
-        return ValidatedList(this, ValidatedFloat())
-    }
-
-    @JvmStatic
-    fun List<Boolean>.validated(): ValidatedList<Boolean>{
-        return ValidatedList(this, ValidatedBoolean())
-    }
-
-    @JvmStatic
-    inline fun <reified T: Enum<*>> List<T>.validated(): ValidatedList<T>{
-        return ValidatedList(this, ValidatedEnum(T::class.java.enumConstants[0]))
-    }
-
     /**
      * Shorthand Validated Identifier using the [TagKey] for validation
      *
@@ -316,6 +275,7 @@ object Shorthand {
      *
      * Does not have a default value, so should only be for list or map validation
      * @return [ValidatedIdentifier] using the list for validation.
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandListIds
      * @author fzzyhmstrs
      * @since 0.2.0
      */

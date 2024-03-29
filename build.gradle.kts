@@ -5,18 +5,52 @@ plugins {
     kotlin("plugin.serialization") version "1.9.22"
     id("com.modrinth.minotaur") version "2.+"
 }
+
 base {
     val archivesBaseName: String by project
     archivesName.set(archivesBaseName)
 }
+
 val log: File = file("changelog.md")
 val modVersion: String by project
 version = modVersion
 val mavenGroup: String by project
 group = mavenGroup
 println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
+
 repositories {
 }
+
+sourceSets{
+    main{
+        kotlin{
+            val includeExamples: String by project
+            if (!includeExamples.toBoolean()) {
+                exclude("me/fzzyhmstrs/fzzy_config/examples/**")
+            }
+            val testMode: String by project
+            if (!testMode.toBoolean()) {
+                exclude("me/fzzyhmstrs/fzzy_config/test/**")
+            }
+        }
+    }
+    create("testmod"){
+        compileClasspath += sourceSets.main.get().compileClasspath
+        runtimeClasspath += sourceSets.main.get().runtimeClasspath
+    }
+}
+
+val testmodImplementation by configurations.getting{
+    extendsFrom(configurations.implementation.get())
+}
+
+idea {
+    module {
+        testSources.from(sourceSets["testmod"].java.srcDirs)
+        testSources.from(sourceSets["testmod"].kotlin.srcDirs)
+    }
+}
+
 dependencies {
     val minecraftVersion: String by project
     minecraft("com.mojang:minecraft:$minecraftVersion")
@@ -34,21 +68,18 @@ dependencies {
     include("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    testmodImplementation(sourceSets.main.get().output)
 }
-sourceSets{
-    main{
-        kotlin{
-            val includeExamples: String by project
-            if (!includeExamples.toBoolean()) {
-                exclude("me/fzzyhmstrs/fzzy_config/examples/**")
-            }
-            val testMode: String by project
-            if (!testMode.toBoolean()) {
-                exclude("me/fzzyhmstrs/fzzy_config/test/**")
-            }
+
+/*loom{
+    runs {
+        testModClient{
+
         }
     }
-}
+}*/
+
 tasks {
     val javaVersion = JavaVersion.VERSION_17
     withType<JavaCompile> {

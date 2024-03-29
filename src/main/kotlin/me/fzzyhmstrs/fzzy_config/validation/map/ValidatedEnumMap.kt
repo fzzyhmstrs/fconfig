@@ -6,8 +6,8 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
@@ -18,7 +18,7 @@ import net.peanuuutz.tomlkt.asTomlTable
 /**
  * A Validated Map<Enum,V>
  *
- * NOTE: The map does not need to be an EnumMap, but can be
+ * NOTE: The provided map does not need to be an EnumMap, but it can be
  * @param K key type, any Enum
  * @param V any non-null type with a valid [Entry] for handling
  * @param defaultValue the default map
@@ -26,6 +26,9 @@ import net.peanuuutz.tomlkt.asTomlTable
  * @param valueHandler the value handler, an [Entry]
  * @see Builder using the builder is recommended
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedMap
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @author fzzyhmstrs
+ * @since 0.2.0
  */
 class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val keyHandler: Entry<K>, private val valueHandler: Entry<V>): ValidatedField<Map<K, V>>(defaultValue){
     override fun copyStoredValue(): Map<K, V> {

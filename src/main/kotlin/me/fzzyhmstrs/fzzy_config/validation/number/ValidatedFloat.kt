@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.Entry
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -18,10 +18,23 @@ import net.peanuuutz.tomlkt.toFloat
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedFloat]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxFloat]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.1.0
  */
 class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Float, minValue: Float, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Float>(defaultValue, minValue, maxValue) {
+
+    /**
+     * A validated float number with a default selected from the min of the allowable range.
+     * @param minValue Float. the minimum allowed value, inclusive
+     * @param maxValue Float. the maximum allowed value, inclusive
+     * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxFloat]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmOverloads
+    constructor(minValue: Float,maxValue: Float, widgetType: WidgetType = WidgetType.SLIDER): this(minValue, maxValue, minValue, widgetType)
 
     /**
      * an unbounded validated float number.

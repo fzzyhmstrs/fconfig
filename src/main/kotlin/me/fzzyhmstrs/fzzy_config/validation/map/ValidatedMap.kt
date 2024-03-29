@@ -5,8 +5,8 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.*
 
@@ -21,6 +21,9 @@ import net.peanuuutz.tomlkt.*
  * @param valueHandler [Entry] for handling values
  * @see [Builder] Using the builder is recommended for more clear construction
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedMap
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @author fzzyhmstrs
+ * @since 0.2.0
  */
 class ValidatedMap<K: Any,V: Any>(defaultValue: Map<K,V>, private val keyHandler: Entry<K>, private val valueHandler: Entry<V>): ValidatedField<Map<K, V>>(defaultValue) {
     override fun copyStoredValue(): Map<K, V> {

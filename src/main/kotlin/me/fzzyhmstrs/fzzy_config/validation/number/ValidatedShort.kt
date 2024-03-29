@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.Entry
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -18,10 +18,23 @@ import net.peanuuutz.tomlkt.toShort
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedShort]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxShort]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.1.0
  */
 class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Short, minValue: Short, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Short>(defaultValue, minValue, maxValue) {
+
+    /**
+     * A validated short number with a default selected from the min of the allowable range.
+     * @param minValue Short. the minimum allowed value, inclusive
+     * @param maxValue Short. the maximum allowed value, inclusive
+     * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxShort]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmOverloads
+    constructor(minValue: Short, maxValue: Short, widgetType: WidgetType = WidgetType.SLIDER): this(minValue, maxValue, minValue, widgetType)
 
     /**
      * an unbounded validated short number.

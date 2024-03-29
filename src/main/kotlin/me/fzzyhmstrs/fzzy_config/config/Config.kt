@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.config
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.Translatable
 import me.fzzyhmstrs.fzzy_config.fcId
@@ -26,11 +25,12 @@ import net.minecraft.util.Identifier
  * @param name the name of the config, this will be the file name and the path of the default config ID used in registration. NOTE: Do not add a file type to this name. That is done automatically where needed
  * @param folder the folder inside the config folder the config will be saved in. Can be "", which will put the file in the base config folder. If not "", this will be used as the namespace of the default ID, otherwise "fzzy_config" will be used. In this case, it's recommended to override [getId] with the ID you want for the config. Common groups of namespace will be the first "layer" of the Config GUI (all like namespace in one group), so it's recommended to use a common namespace (modid, generally)
  * @param subfolder optional. puts the config into a subfolder inside the folder specified in [folder]. Does not affect ID or GUI layout
- * @author fzzyhmstrs
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.lang
  * @see ConfigApi
  * @see ConfigSection
  * @see me.fzzyhmstrs.fzzy_config.validation.ValidatedField
- * @see me.fzzyhmstrs.fzzy_config.validation.entry.Entry
+ * @see me.fzzyhmstrs.fzzy_config.entry.Entry
+ * @author fzzyhmstrs
  * @since 0.2.0
  */
 @Suppress("unused")

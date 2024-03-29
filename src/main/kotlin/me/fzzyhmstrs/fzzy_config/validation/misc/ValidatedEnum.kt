@@ -7,8 +7,8 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -33,6 +33,7 @@ import kotlin.math.max
  * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.TestEnum]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedEnum]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -108,7 +109,8 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
     @Environment(EnvType.CLIENT)
     private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: Entry<T>): PressableWidget(0,0,90,20, FcText.empty()) {
 
-        val constants = entry.supplyEntry()::class.java.enumConstants.filter { choicePredicate.validateEntry(it,EntryValidator.ValidationType.STRONG).isValid() }
+        val constants = entry.supplyEntry()::class.java.enumConstants.filter { choicePredicate.validateEntry(it,
+            EntryValidator.ValidationType.STRONG).isValid() }
 
         override fun getMessage(): Text {
             return entry.supplyEntry().let { it.transLit(it.name) }
@@ -174,7 +176,8 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
     @Environment(EnvType.CLIENT)
     private class CyclingOptionsWidget<T: Enum<*>>(choicePredicate: ChoiceValidator<T>, private val entry: Entry<T>): PressableWidget(0,0,90,20, entry.supplyEntry().let { it.transLit(it.name) }) {
 
-        private val constants = entry.supplyEntry()::class.java.enumConstants.filter { choicePredicate.validateEntry(it,EntryValidator.ValidationType.STRONG).isValid() }
+        private val constants = entry.supplyEntry()::class.java.enumConstants.filter { choicePredicate.validateEntry(it,
+            EntryValidator.ValidationType.STRONG).isValid() }
 
         init {
             entry.supplyEntry().descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }

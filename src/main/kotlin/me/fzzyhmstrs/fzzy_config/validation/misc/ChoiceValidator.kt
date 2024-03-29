@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import java.util.function.Predicate
 
 /**
@@ -10,7 +10,7 @@ import java.util.function.Predicate
  * This is only an EntryValidator, used in Lists and Maps to define the valid new choices you can make
  * @param predicate a [ValuesPredicate] that defines the valid choices the user can make
  * @author fzzyhmstrs
- * since 0.1.0
+ * since 0.2.0
  */
 class ChoiceValidator<T: Any>(private val  predicate: ValuesPredicate<T>): EntryValidator<T> {
 

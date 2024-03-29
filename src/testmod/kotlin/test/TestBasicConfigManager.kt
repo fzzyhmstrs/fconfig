@@ -1,18 +1,23 @@
-package me.fzzyhmstrs.fzzy_config.test
+package test
 
 import me.fzzyhmstrs.fzzy_config.updates.UpdateApplier
 
 class TestBasicConfigManager: UpdateApplier {
+
+    private var changes: Int = 0
+
     override fun apply() {
+        changes++
         println("Applying updated values!!")
     }
 
     override fun revert() {
+        changes = 0
         println("Reverting updated values :>")
     }
 
     override fun changes(): Int {
-        return 0
+        return changes
     }
 
     override fun changesWidget() {

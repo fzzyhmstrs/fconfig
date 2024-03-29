@@ -1,7 +1,10 @@
 package me.fzzyhmstrs.fzzy_config.updates
 
+import org.jetbrains.annotations.VisibleForTesting
+
+@VisibleForTesting
 @JvmDefaultWithCompatibility
-internal interface UpdateApplier {
+interface UpdateApplier {
     fun apply()
     fun revert()
     fun changes(): Int

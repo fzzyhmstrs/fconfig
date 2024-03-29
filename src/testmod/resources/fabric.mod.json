@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "fzzy_config_test",
+  "version": "${version}",
+  "name": "Fzzy Config",
+  "description": "TestMod for Fzzy Config",
+  "authors": [
+    "fzzyhmstrs"
+  ],
+  "license": "MIT License",
+  "icon": "assets/fzzy_config_test/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "me.fzzyhmstrs.fzzy_config_test.FC"
+      }
+    ],
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "me.fzzyhmstrs.fzzy_config.FCC"
+      }
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.14.13",
+    "fabric": "*",
+    "fabric-language-kotlin": ">=1.7.4+kotlin.1.6.21",
+    "minecraft": ">=1.19.3",
+    "java": ">=17"
+  }
+}

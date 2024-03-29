@@ -1,8 +1,12 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryChecker
+import me.fzzyhmstrs.fzzy_config.entry.EntryCorrector
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.entry.*
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -16,10 +20,31 @@ import net.peanuuutz.tomlkt.asTomlLiteral
  * @param checker [EntryChecker] defining validation and correction for the string inputs.
  * @see [Builder]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedString]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.2.0
  */
 class ValidatedString(defaultValue: String, private val checker: EntryChecker<String>): ValidatedField<String>(defaultValue) {
+
+    /**
+     * A validated string value validated with Regex
+     *
+     * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
+     * @param defaultValue String, the efault string for this setting
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.regexString]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(defaultValue: String, regex: String): this(defaultValue, object : EntryChecker<String>{
+        private val re = Regex(regex)
+        override fun correctEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
+            val newVal = re.findAll(input).map { it.value }.joinToString("")
+            return validateEntry(input, type).wrap(newVal)
+        }
+        override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
+            return ValidationResult.predicated(input,re.matches(input),"String doesn't meet regex [$regex]")
+        }
+    })
 
     /**
      * An unbounded validated string value
@@ -96,10 +121,10 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
                 return this
             }
             fun corrector(corrector: EntryCorrector<String>): ValidatedString{
-                return ValidatedString(defaultValue,EntryChecker.Impl(validator,corrector))
+                return ValidatedString(defaultValue, EntryChecker.Impl(validator,corrector))
             }
             fun build(): ValidatedString{
-                return ValidatedString(defaultValue,EntryChecker.Impl(validator,this.buildCorrector()))
+                return ValidatedString(defaultValue, EntryChecker.Impl(validator,this.buildCorrector()))
             }
         }
     }

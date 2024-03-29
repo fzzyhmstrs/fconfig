@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.Entry
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -18,10 +18,23 @@ import net.peanuuutz.tomlkt.toDouble
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedDouble]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxDouble]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.1.0
  */
 class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: Double, minValue: Double, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Double>(defaultValue, minValue, maxValue) {
+
+    /**
+     * A validated double number with a default selected from the min of the allowable range.
+     * @param minValue Double. the minimum allowed value, inclusive
+     * @param maxValue Double. the maximum allowed value, inclusive
+     * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxDouble]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmOverloads
+    constructor(minValue: Double, maxValue: Double, widgetType: WidgetType = WidgetType.SLIDER): this(minValue, maxValue, minValue, widgetType)
 
     /**
      * an unbounded validated double number.

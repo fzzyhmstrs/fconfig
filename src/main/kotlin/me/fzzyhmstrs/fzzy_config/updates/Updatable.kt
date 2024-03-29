@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.updates
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import net.minecraft.text.Text
 import org.jetbrains.annotations.ApiStatus.Internal
 
@@ -12,7 +13,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @since 0.2.0
  */
 @Internal
-internal interface Updatable: UpdateKeyed {
+internal interface Updatable: EntryKeyed {
     fun update(updateMessage: Text){ //pushes an update to the UpdateManager based on its key, so the manager can track individual change "threads"
         UpdateManager.update(this, updateMessage)
     }

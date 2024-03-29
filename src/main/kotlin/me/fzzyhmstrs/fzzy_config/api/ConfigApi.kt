@@ -10,7 +10,7 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.peanuuutz.tomlkt.*

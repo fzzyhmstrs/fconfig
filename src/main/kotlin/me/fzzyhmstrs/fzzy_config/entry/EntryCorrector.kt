@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.validation.entry
+package me.fzzyhmstrs.fzzy_config.entry
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.util.function.Predicate
@@ -15,13 +15,13 @@ import java.util.function.Predicate
 fun interface EntryCorrector<T> {
     fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T>
 
-    class Builder<T:Any>: AbstractBuilder<T,Builder<T>>(){
+    class Builder<T:Any>: AbstractBuilder<T, Builder<T>>(){
         override fun builder(): Builder<T> {
             return this
         }
     }
 
-    abstract class AbstractBuilder<T: Any, E: AbstractBuilder<T,E>> {
+    abstract class AbstractBuilder<T: Any, E: AbstractBuilder<T, E>> {
         private var ifStrong: EntryCorrector<T> = EntryCorrector{ i, t -> ValidationResult.success(i) }
         private var ifWeak: EntryCorrector<T> = EntryCorrector{ i, t -> ValidationResult.success(i) }
         protected abstract fun builder(): E

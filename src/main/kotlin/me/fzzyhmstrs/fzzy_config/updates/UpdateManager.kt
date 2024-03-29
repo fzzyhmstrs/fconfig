@@ -2,7 +2,8 @@ package me.fzzyhmstrs.fzzy_config.updates
 
 import com.google.common.collect.ArrayListMultimap
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import net.minecraft.text.Text
 import java.time.Instant
@@ -57,8 +58,8 @@ object UpdateManager {
     }
 
     internal fun update(updatable: Updatable, updateMessage: Text) {
-        updateMap.computeIfAbsent(updatable.getUpdateKey()) { updatable }
-        addUpdateMessage(updatable.getUpdateKey(),updateMessage)
+        updateMap.computeIfAbsent(updatable.getEntryKey()) { updatable }
+        addUpdateMessage(updatable.getEntryKey(),updateMessage)
     }
 
     fun changes(): Int {
@@ -82,7 +83,7 @@ object UpdateManager {
     }
 
     internal fun<T: Config> applyKeys(config: T) {
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {_, str, v, _ -> if (v is UpdateKeyed) v.setUpdateKey(str)}
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {_, str, v, _ -> if (v is EntryKeyed) v.setEntryKey(str)}
     }
 
     internal fun<T: Config> pushStates(config: T) {

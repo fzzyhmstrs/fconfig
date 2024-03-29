@@ -3,9 +3,9 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -33,8 +33,10 @@ import java.util.function.Supplier
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColor]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorOpaque]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorString]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @throws IllegalStateException if the input RGBA values aren't in bounds (not in the range 0..255)
  * @author fzzyhmstrs
- * since 0.1.2
+ * @since 0.1.2
  */
 class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
 
@@ -161,7 +163,8 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
         }
     }
 
-    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, private val alphaMode: Boolean): EntryHandler<ColorHolder> {
+    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, private val alphaMode: Boolean):
+        EntryHandler<ColorHolder> {
 
         private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
 

@@ -5,8 +5,8 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
@@ -35,6 +35,7 @@ import java.util.function.UnaryOperator
  * @see [ofRegistry]
  * @see [ofList]
  * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedIdentifier]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.1.2
  */
@@ -152,11 +153,11 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
     }
 
     override fun translationKey(): String {
-        return getUpdateKey()
+        return getEntryKey()
     }
 
     override fun descriptionKey(): String {
-        return getUpdateKey() + ".desc"
+        return getEntryKey() + ".desc"
     }
 
     override fun equals(other: Any?): Boolean {

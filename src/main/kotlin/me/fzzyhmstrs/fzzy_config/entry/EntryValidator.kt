@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.validation.entry
+package me.fzzyhmstrs.fzzy_config.entry
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.util.function.Predicate
@@ -22,7 +22,7 @@ fun interface EntryValidator<T: Any> {
         }
     }
 
-    abstract class AbstractBuilder<T: Any, E: AbstractBuilder<T,E>> {
+    abstract class AbstractBuilder<T: Any, E: AbstractBuilder<T, E>> {
         private var ifStrong: EntryValidator<T> = EntryValidator{ i, t -> ValidationResult.success(i) }
         private var ifWeak: EntryValidator<T> = EntryValidator{ i, t -> ValidationResult.success(i) }
 

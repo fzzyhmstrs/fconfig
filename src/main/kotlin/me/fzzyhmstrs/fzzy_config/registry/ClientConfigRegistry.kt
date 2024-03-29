@@ -30,7 +30,7 @@ object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.values.toList())
+                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { Pair(it.value,SyncedConfigRegistry.hasConfig(it.key)) })
         }
         manager.openScreen(scope)
     }

@@ -5,14 +5,30 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedEnumMap.Builder
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
 
+/**
+ * A Validated Map<String,V>
+ *
+ * NOTE: The provided map does not need to be an EnumMap, but it can be
+ * @param V any non-null type with a valid [Entry] for handling
+ * @param defaultValue the default map
+ * @param keyHandler the key handler, an [Entry]<String>, typically a [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString]
+ * @param valueHandler the value handler, an [Entry]
+ * @see Builder using the builder is recommended
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedMap
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @author fzzyhmstrs
+ * @since 0.1.0
+ */
 class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: Entry<String>, private val valueHandler: Entry<V>): ValidatedField<Map<String, V>>(defaultValue) {
     override fun copyStoredValue(): Map<String, V> {
         return storedValue.toMap()

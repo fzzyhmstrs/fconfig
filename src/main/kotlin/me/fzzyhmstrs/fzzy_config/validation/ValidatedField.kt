@@ -7,8 +7,8 @@ import me.fzzyhmstrs.fzzy_config.config.*
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
-import me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedList
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.Text
@@ -22,6 +22,7 @@ import net.peanuuutz.tomlkt.TomlElement
  * Helper methods are provided to more easily sync configs directly via [PacketByteBuf]s, rather than serializing and then deserializing the entire JSON
  *
  * @param storedValue T. The wrapped value that this field validates, serializes, and syncs between server and client.
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.lang
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -37,11 +38,11 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
     private var updateKey = ""
 
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun getUpdateKey(): String {
+    override fun getEntryKey(): String {
         return updateKey
     }
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun setUpdateKey(key: String) {
+    override fun setEntryKey(key: String) {
         updateKey = key
     }
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
@@ -51,7 +52,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun restore(){
         reset()
-        UpdateManager.addUpdateMessage(getUpdateKey(), FcText.translatable("fc.validated_field.default",translation(), defaultValue.toString()))
+        UpdateManager.addUpdateMessage(getEntryKey(), FcText.translatable("fc.validated_field.default",translation(), defaultValue.toString()))
     }
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun revert() {
@@ -59,14 +60,14 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
             try {
                 pushedValue?.let {
                     storedValue = it
-                    UpdateManager.addUpdateMessage(getUpdateKey(), FcText.translatable("fc.validated_field.revert",translation(), storedValue.toString(), pushedValue.toString()))
+                    UpdateManager.addUpdateMessage(getEntryKey(), FcText.translatable("fc.validated_field.revert",translation(), storedValue.toString(), pushedValue.toString()))
                 }
 
             } catch (e: Exception){
-                UpdateManager.addUpdateMessage(getUpdateKey(),FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
+                UpdateManager.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
             }
         } else {
-            UpdateManager.addUpdateMessage(getUpdateKey(),FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
+            UpdateManager.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
         }
     }
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
@@ -192,11 +193,11 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
     }
 
     override fun translationKey(): String {
-        return getUpdateKey()
+        return getEntryKey()
     }
 
     override fun descriptionKey(): String {
-        return getUpdateKey() + ".desc"
+        return getEntryKey() + ".desc"
     }
 
     fun toList(vararg elements: T): ValidatedList<T> {

@@ -82,6 +82,10 @@ object ValidatedMiscExamples{
         }
         .build()
 
+    //string validated with regex. provides entry correction in the form of stripping invalid characters from the input string, leaving only the valid regex matching sections
+    //the regex provided in this example matches to Uppercase characters. AbCdE would fail validation, and would correct to ACE.
+    val regexString = ValidatedString("ABCDE", "\\p{Lu}")
+
     //Unbounded validated string. Any valid string will be allowed
     val unboundedString = ValidatedString("hamsters")
 

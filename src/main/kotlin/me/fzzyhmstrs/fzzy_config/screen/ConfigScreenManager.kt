@@ -22,7 +22,7 @@ import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
-import me.fzzyhmstrs.fzzy_config.validation.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.Entry
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -33,10 +33,11 @@ import net.peanuuutz.tomlkt.TomlComment
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.Function
+import java.util.function.Predicate
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
-class ConfigScreenManager(private val scope: String, private val clientChecker: Predicate<Config>, private val configs: List<Pair<Config,Boolean>>): UpdateApplier {
+class ConfigScreenManager(private val scope: String, private val configs: List<Pair<Config,Boolean>>): UpdateApplier {
 
     private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
@@ -261,7 +262,7 @@ class ConfigScreenManager(private val scope: String, private val clientChecker: 
 
     @Internal
     override fun apply() {
-        SyncedConfigRegistry.updateServer(this.configs,UpdateManager.flush(),getPlayerPermissionLevel())
+        SyncedConfigRegistry.updateServer(this.configs.map { it.first },UpdateManager.flush(),getPlayerPermissionLevel())
 
     }
     @Internal
