@@ -2,7 +2,6 @@ package me.fzzyhmstrs.fzzy_config.api
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 
 /**
  * SubInterface of [Translatable] for use with Enums

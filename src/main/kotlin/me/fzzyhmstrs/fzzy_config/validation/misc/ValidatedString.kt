@@ -1,12 +1,12 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryChecker
 import me.fzzyhmstrs.fzzy_config.entry.EntryCorrector
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString.Builder
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -99,7 +99,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
         TODO("Not yet implemented")
     }
 
-    override fun instanceEntry(): Entry<String> {
+    override fun instanceEntry(): ValidatedString {
         return ValidatedString(String(defaultValue.toCharArray()), this.checker)
     }
 

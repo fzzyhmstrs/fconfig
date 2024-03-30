@@ -1,11 +1,10 @@
 package me.fzzyhmstrs.fzzy_config.impl
 
-import me.fzzyhmstrs.fzzy_config.api.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
+import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.PopupScreen
 import java.util.*
 
 object ConfigApiImplClient {

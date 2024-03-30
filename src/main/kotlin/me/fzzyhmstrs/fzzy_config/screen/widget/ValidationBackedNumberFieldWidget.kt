@@ -1,9 +1,11 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -17,7 +19,7 @@ import java.util.function.Function
 import java.util.function.Supplier
 
 @Environment(EnvType.CLIENT)
-class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int, private val wrappedValue: Supplier<T>, private val validationProvider: Function<Double, ValidationResult<T>>, private val listener: Consumer<T> = Consumer { _ ->}):
+class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int, private val wrappedValue: Supplier<T>,private val choiceValidator: ChoiceValidator<T>, private val validationProvider: Function<Double, ValidationResult<T>>, private val listener: Consumer<T> = Consumer { _ ->}):
     TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty())
 {
 
@@ -26,7 +28,7 @@ class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int, priv
     private var confirmActive = false
     private var prefix: Text? = null
 
-    fun prefixed(prefix: Text): ValidationBackedNumberFieldWidget<T>{
+    fun prefixed(prefix: Text): ValidationBackedNumberFieldWidget<T> {
         this.prefix = prefix
         return this
     }
@@ -48,11 +50,18 @@ class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int, priv
             setEditableColor(Formatting.RED.colorValue?:0xFFFFFF)
             false
         } else {
-            this.storedValue = result.get()
-            listener.accept(storedValue)
-            confirmActive = isChanged()
-            setEditableColor(0xFFFFFF)
-            true
+            val result2 = choiceValidator.validateEntry(result.get(),EntryValidator.ValidationType.STRONG)
+            if (result2.isError()){
+                this.tooltip = Tooltip.of(result.getError().lit())
+                setEditableColor(Formatting.RED.colorValue?:0xFFFFFF)
+                false
+            } else {
+                this.storedValue = result.get()
+                listener.accept(storedValue)
+                confirmActive = isChanged()
+                setEditableColor(0xFFFFFF)
+                true
+            }
         }
     }
 

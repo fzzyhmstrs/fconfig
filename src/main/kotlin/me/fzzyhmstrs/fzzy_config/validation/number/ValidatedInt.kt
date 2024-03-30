@@ -1,9 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
@@ -22,7 +19,7 @@ import net.peanuuutz.tomlkt.toInt
  * @since 0.1.0
  */
 
-class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, minValue: Int, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Int>(defaultValue, minValue, maxValue) {
+class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, minValue: Int, widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Int>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated int number generated with an [IntRange].
@@ -100,12 +97,12 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
         return ValidationResult.success(TomlLiteral(input))
     }
 
-    override fun instanceEntry(): Entry<Int> {
+    override fun instanceEntry(): ValidatedInt {
         return ValidatedInt(defaultValue, maxValue, minValue, widgetType)
     }
 
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Int>): ClickableWidget {
-        TODO("Not yet implemented")
+    override fun convert(input: Double): Int {
+        return input.toInt()
     }
 
     override fun toString(): String {

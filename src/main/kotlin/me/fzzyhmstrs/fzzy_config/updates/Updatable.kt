@@ -3,7 +3,7 @@ package me.fzzyhmstrs.fzzy_config.updates
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import net.minecraft.text.Text
 
-internal interface Updatable: EntryKeyed {
+interface Updatable: EntryKeyed {
     fun getUpdateManager(): UpdateManager?
     fun setUpdateManager(manager: UpdateManager)
     fun update(updateMessage: Text){ //pushes an update to the UpdateManager based on its key, if one is present, so the manager can track changes

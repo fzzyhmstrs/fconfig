@@ -1,16 +1,16 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
-import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
+
 //@sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.lang
 class ValidatedChoice<T: Any>(defaultValue: T, private val choices: List<T>, private val handler: EntryHandler<T>, widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
 
@@ -57,7 +57,7 @@ class ValidatedChoice<T: Any>(defaultValue: T, private val choices: List<T>, pri
         TODO()
     }
 
-    override fun instanceEntry(): Entry<T> {
+    override fun instanceEntry(): ValidatedChoice<T> {
         return ValidatedChoice(copyStoredValue(),this.choices,this.handler)
     }
 

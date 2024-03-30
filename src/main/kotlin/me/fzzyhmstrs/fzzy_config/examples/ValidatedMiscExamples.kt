@@ -1,9 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
 import me.fzzyhmstrs.fzzy_config.api.EnumTranslatable
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.evalSafe
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
+import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.evalSafe
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
 import net.minecraft.registry.Registries

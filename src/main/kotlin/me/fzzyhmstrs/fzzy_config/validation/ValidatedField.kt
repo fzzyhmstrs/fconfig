@@ -1,13 +1,13 @@
 package me.fzzyhmstrs.fzzy_config.validation
 
 import me.fzzyhmstrs.fzzy_config.api.Translatable
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.Text
@@ -28,7 +28,7 @@ import net.peanuuutz.tomlkt.TomlElement
 
 @Suppress("DeprecatedCallableAddReplaceWith")
 abstract class ValidatedField<T>(protected var storedValue: T, protected val defaultValue: T = storedValue):
-    Entry<T>,
+    Entry<T,ValidatedField<T>>,
     Updatable,
     Translatable
 {
@@ -190,11 +190,12 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     /**
      * Get the wrapped value with this method
      *
+     * This method is implemented from [java.util.function.Supplier].
      * @return The wrapped value inside this Field
      * @author fzzyhmstrs
      * @since 0.1.0
      */
-    open fun get(): T{
+    override fun get(): T{
         return storedValue
     }
 

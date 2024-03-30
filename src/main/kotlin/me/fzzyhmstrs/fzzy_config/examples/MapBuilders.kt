@@ -11,7 +11,7 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
-import java.util.EnumMap
+import java.util.*
 
 object MapBuilders {
 

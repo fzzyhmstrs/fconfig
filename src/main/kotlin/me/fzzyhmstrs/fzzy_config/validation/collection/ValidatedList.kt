@@ -1,14 +1,14 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
-import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.validated
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -29,7 +29,14 @@ import net.peanuuutz.tomlkt.asTomlArray
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T>): ValidatedField<List<T>>(defaultValue), List<T> {
+class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,*>): ValidatedField<List<T>>(defaultValue), List<T> {
+
+    init {
+        for(thing in defaultValue){
+            if (entryHandler.validateEntry(thing,EntryValidator.ValidationType.WEAK).isError())
+                throw IllegalStateException("Default List entry [$thing] not valid per entryHandler provided")
+        }
+    }
 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {
         return try{
@@ -39,7 +46,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T>
             for ((index, el) in array.content.withIndex()){
                 val result = entryHandler.deserializeEntry(el, errors, "$fieldName[$index]", true).report(errors)
                 if (!result.isError()){
-                    list.add(result.get())
+                    list.add(index,result.get())
                 }
             }
             if (errors.isNotEmpty()) {
@@ -106,7 +113,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T>
         return storedValue.toList()
     }
 
-    override fun instanceEntry(): Entry<List<T>> {
+    override fun instanceEntry(): ValidatedList<T> {
         return ValidatedList(copyStoredValue(), entryHandler)
     }
 
@@ -164,7 +171,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T>
         /**
          * attempts to create a ValidatedList from the provided list and Entry
          *
-         * This is utilized by [me.fzzyhmstrs.fzzy_config.updates.UpdateManager] to create ValidatedLists reflectively
+         * This is utilized by [me.fzzyhmstrs.fzzy_config.updates.UpdateManagerImpl] to create ValidatedLists reflectively
          * @param T List type
          * @param list input List<T>
          * @param entry Entry of *any* type. Will attempt to cast it to a properly-typed Entry, or fail soft to null
@@ -172,9 +179,9 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T>
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun <T> tryMake(list: List<T>, entry: Entry<*>): ValidatedList<T>?{
+        fun <T> tryMake(list: List<T>, entry: Entry<*,*>): ValidatedList<T>?{
             return try{
-                ValidatedList(list, entry as Entry<T>)
+                ValidatedList(list, entry as Entry<T,*>)
             } catch (e: Exception){
                 null
             }

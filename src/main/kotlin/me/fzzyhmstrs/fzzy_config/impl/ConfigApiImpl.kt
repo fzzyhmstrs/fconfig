@@ -6,13 +6,14 @@ import kotlinx.serialization.serializer
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
-import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validation.BasicValidationProvider
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.entity.player.PlayerEntity
@@ -257,7 +258,7 @@ object ConfigApiImpl {
         return Toml.encodeToString(serializeToToml(config,errorBuilder,ignoreNonSync))
     }
 
-    private fun <T: Config> serializeUpdateToToml(config: T, manager: UpdateManager, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement {
+    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement where M: UpdateManager, M:BasicValidationProvider{
         val toml = TomlTableBuilder()
         try {
             walk(config,config.getId().toTranslationKey(),false) { _,str,v,prop,_ ->
@@ -281,11 +282,11 @@ object ConfigApiImpl {
         return toml.build()
     }
 
-    internal fun <T: Config> serializeUpdate(config: T, manager: UpdateManager, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String {
+    internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String where M: UpdateManager, M:BasicValidationProvider{
         return Toml.encodeToString(serializeUpdateToToml(config,manager,errorBuilder,ignoreNonSync))
     }
 
-    internal fun serializeEntry(entry: Entry<*>, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): String{
+    internal fun serializeEntry(entry: Entry<*,*>, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): String{
         val toml = TomlTableBuilder()
         toml.element("entry", entry.serializeEntry(null,errorBuilder, ignoreNonSync))
         return Toml.encodeToString(toml.build())
@@ -395,7 +396,7 @@ object ConfigApiImpl {
         return deserializeUpdateFromToml(config, toml, errorBuilder, ignoreNonSync)
     }
 
-    internal fun deserializeEntry(entry: Entry<*>, string: String, scope: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<*> {
+    internal fun deserializeEntry(entry: Entry<*,*>, string: String, scope: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<*> {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception){

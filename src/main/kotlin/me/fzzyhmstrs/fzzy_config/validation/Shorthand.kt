@@ -6,7 +6,6 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.*
-import net.fabricmc.api.ModInitializer
 import net.minecraft.registry.Registry
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
@@ -98,7 +97,7 @@ object Shorthand {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Any> List<T>.validated(handler: Entry<T>): ValidatedList<T> {
+    fun <T: Any> List<T>.validated(handler: Entry<T,*>): ValidatedList<T> {
         return ValidatedList(this, handler)
     }
 
@@ -174,7 +173,7 @@ object Shorthand {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Any> Set<T>.validated(handler: Entry<T>): ValidatedSet<T> {
+    fun <T: Any> Set<T>.validated(handler: Entry<T,*>): ValidatedSet<T> {
         return ValidatedSet(this, handler)
     }
 
@@ -262,7 +261,7 @@ object Shorthand {
      */
     @JvmStatic
     inline fun <reified T: Number> List<T>.validated(): ValidatedList<T> {
-        val entry = shorthandValidationMap[T::class.java] as? Entry<T> ?: throw IllegalStateException("Incompatible shorthand type [${T::class.java}] in List")
+        val entry = shorthandValidationMap[T::class.java] as? Entry<T,*> ?: throw IllegalStateException("Incompatible shorthand type [${T::class.java}] in List")
         return ValidatedList(this, entry)
     }
 
@@ -277,7 +276,7 @@ object Shorthand {
      */
     @JvmStatic
     inline fun <reified T: Number> Set<T>.validated(): ValidatedSet<T> {
-        val entry = shorthandValidationMap[T::class.java] as? Entry<T> ?: throw IllegalStateException("Incompatible shorthand type [${T::class.java}] in List")
+        val entry = shorthandValidationMap[T::class.java] as? Entry<T,*> ?: throw IllegalStateException("Incompatible shorthand type [${T::class.java}] in List")
         return ValidatedSet(this, entry)
     }
 

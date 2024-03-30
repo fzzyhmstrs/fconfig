@@ -1,9 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
@@ -21,7 +18,7 @@ import net.peanuuutz.tomlkt.toShort
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Short, minValue: Short, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Short>(defaultValue, minValue, maxValue) {
+class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Short, minValue: Short, widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Short>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated short number with a default selected from the min of the allowable range.
@@ -76,12 +73,12 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
         return ValidationResult.success(TomlLiteral(input))
     }
 
-    override fun instanceEntry(): Entry<Short> {
+    override fun instanceEntry(): ValidatedShort {
         return ValidatedShort(defaultValue, maxValue, minValue, widgetType)
     }
 
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Short>): ClickableWidget {
-        TODO("Not yet implemented")
+    override fun convert(input: Double): Short {
+        return input.toInt().toShort()
     }
 
     override fun toString(): String {

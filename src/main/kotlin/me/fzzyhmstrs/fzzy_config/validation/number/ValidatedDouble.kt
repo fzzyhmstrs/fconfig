@@ -1,9 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
@@ -21,7 +18,7 @@ import net.peanuuutz.tomlkt.toDouble
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: Double, minValue: Double, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Double>(defaultValue, minValue, maxValue) {
+class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: Double, minValue: Double, widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Double>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated double number with a default selected from the min of the allowable range.
@@ -76,12 +73,12 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
         return ValidationResult.success(TomlLiteral(input))
     }
 
-    override fun instanceEntry(): Entry<Double> {
-        return ValidatedDouble(defaultValue, maxValue, minValue, widgetType)
+    override fun instanceEntry(): ValidatedDouble {
+        return ValidatedDouble(copyStoredValue(), maxValue, minValue, widgetType)
     }
 
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Double>): ClickableWidget {
-        TODO("Not yet implemented")
+    override fun convert(input: Double): Double {
+        return input
     }
 
     override fun toString(): String {

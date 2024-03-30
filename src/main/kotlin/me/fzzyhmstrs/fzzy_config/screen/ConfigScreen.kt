@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.screen
 
-import me.fzzyhmstrs.fzzy_config.api.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget

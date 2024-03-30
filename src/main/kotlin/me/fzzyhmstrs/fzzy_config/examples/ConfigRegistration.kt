@@ -1,10 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 
 internal object ConfigRegistration {
 

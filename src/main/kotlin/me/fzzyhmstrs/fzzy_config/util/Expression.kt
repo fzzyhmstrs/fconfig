@@ -3,6 +3,8 @@ package me.fzzyhmstrs.fzzy_config.util
 import com.mojang.brigadier.StringReader
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
+import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.NamedExpression
+import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.validated
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.random.Random

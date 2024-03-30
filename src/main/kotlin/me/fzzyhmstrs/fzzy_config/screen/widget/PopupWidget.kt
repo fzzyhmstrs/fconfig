@@ -1,7 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.fabricmc.api.EnvType
@@ -14,7 +13,6 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.gui.widget.Widget
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
@@ -27,6 +25,7 @@ open class PopupWidget
         private var message: Text,
         private val width: Int,
         private val height: Int,
+        private val closeOnClickOutOfBounds: Boolean,
         private val positionX: BiFunction<Int,Int,Int>,
         private val positionY: BiFunction<Int,Int,Int>,
         private val positioner: BiConsumer<Int,Int>,
@@ -127,6 +126,7 @@ open class PopupWidget
         private var positionX: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var positionY: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var onClose = Runnable { }
+        private var clickOutOfBounds = true
 
         private val xPos = RelPos(ImmutablePos(4),0)
         private val yPos = RelPos(ImmutablePos(4),0)
@@ -234,6 +234,11 @@ open class PopupWidget
             return this
         }
 
+        fun closeOnClickOutOfBounds(): Builder{
+            this.clickOutOfBounds = true
+            return this
+        }
+
         fun build(): PopupWidget{
             attemptRecomputeDims()
             attemptRecomputeDims() // we'll do two passes to try to cover weird cases where first pass doesn't cover everything
@@ -254,7 +259,7 @@ open class PopupWidget
                     posEl.update()
                 }
             }
-            return PopupWidget(title, width, height, positionX, positionY, positioner, onClose, children, selectables, drawables)
+            return PopupWidget(title, width, height, clickOutOfBounds, positionX, positionY, positioner, onClose, children, selectables, drawables)
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

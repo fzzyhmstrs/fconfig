@@ -14,6 +14,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
  * @author fzzyhmstrs
  * @since 0.2.0
  */
+@FunctionalInterface
 @Environment(EnvType.CLIENT)
 interface EntryWidget<T> {
     @Environment(EnvType.CLIENT)

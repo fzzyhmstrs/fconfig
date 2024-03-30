@@ -1,14 +1,15 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum.WidgetType
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -83,7 +84,7 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
         return FcText.translatable(descriptionKey(),valuesMap.keys.toString())
     }
 
-    override fun instanceEntry(): Entry<T> {
+    override fun instanceEntry(): ValidatedEnum<T> {
         return ValidatedEnum(this.defaultValue,this.widgetType)
     }
 
@@ -112,7 +113,7 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
     }
 
     @Environment(EnvType.CLIENT)
-    private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: Entry<T>): PressableWidget(0,0,90,20, FcText.empty()) {
+    private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: Entry<T,*>): PressableWidget(0,0,90,20, FcText.empty()) {
 
         val constants = entry.supplyEntry()::class.java.enumConstants.filter { choicePredicate.validateEntry(it,
             EntryValidator.ValidationType.STRONG).isValid() }
@@ -179,7 +180,7 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
     }
 
     @Environment(EnvType.CLIENT)
-    private class CyclingOptionsWidget<T: Enum<*>>(choicePredicate: ChoiceValidator<T>, private val entry: Entry<T>): PressableWidget(0,0,90,20, entry.supplyEntry().let { it.transLit(it.name) }) {
+    private class CyclingOptionsWidget<T: Enum<*>>(choicePredicate: ChoiceValidator<T>, private val entry: Entry<T,*>): PressableWidget(0,0,90,20, entry.supplyEntry().let { it.transLit(it.name) }) {
 
         private val constants = entry.supplyEntry()::class.java.enumConstants.filter { choicePredicate.validateEntry(it,
             EntryValidator.ValidationType.STRONG).isValid() }

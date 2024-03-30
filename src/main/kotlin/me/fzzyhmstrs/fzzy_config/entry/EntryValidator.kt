@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.entry
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator.ValidationType
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.util.function.Predicate
 
@@ -13,6 +14,7 @@ import java.util.function.Predicate
  * @author fzzyhmstrs
  * @since 0.2.0
  */
+@FunctionalInterface
 fun interface EntryValidator<T> {
     fun validateEntry(input: T, type: ValidationType): ValidationResult<T>
 

@@ -1,13 +1,13 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
-import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -27,7 +27,14 @@ import net.peanuuutz.tomlkt.asTomlArray
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T>): ValidatedField<Set<T>>(defaultValue), Set<T> {
+class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>): ValidatedField<Set<T>>(defaultValue), Set<T> {
+
+    init {
+        for(thing in defaultValue){
+            if (entryHandler.validateEntry(thing,EntryValidator.ValidationType.WEAK).isError())
+                throw IllegalStateException("Default Set entry [$thing] not valid per entryHandler provided")
+        }
+    }
 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Set<T>> {
         return try{
@@ -104,7 +111,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T>):
         return storedValue.toSet()
     }
 
-    override fun instanceEntry(): Entry<Set<T>> {
+    override fun instanceEntry(): ValidatedSet<T> {
         return ValidatedSet(copyStoredValue(), entryHandler)
     }
 
@@ -138,7 +145,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T>):
         /**
          * attempts to create a ValidatedSet from the provided set and Entry
          *
-         * This is utilized by [me.fzzyhmstrs.fzzy_config.updates.UpdateManager] to create ValidatedSets reflectively
+         * This is utilized by [me.fzzyhmstrs.fzzy_config.updates.UpdateManagerImpl] to create ValidatedSets reflectively
          * @param T Set type
          * @param set input Set<T>
          * @param entry Entry of *any* type. Will attempt to cast it to a properly-typed Entry, or fail soft to null
@@ -146,9 +153,9 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T>):
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun <T> tryMake(set: Set<T>, entry: Entry<*>): ValidatedSet<T>?{
+        fun <T> tryMake(set: Set<T>, entry: Entry<*,*>): ValidatedSet<T>?{
             return try{
-                ValidatedSet(set, entry as Entry<T>)
+                ValidatedSet(set, entry as Entry<T,*>)
             } catch (e: Exception){
                 null
             }

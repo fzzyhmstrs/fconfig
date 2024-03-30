@@ -1,9 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
@@ -21,7 +18,7 @@ import net.peanuuutz.tomlkt.toByte
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte, minValue: Byte, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Byte>(defaultValue, minValue, maxValue) {
+class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte, minValue: Byte, widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Byte>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated byte number with a default selected from the min of the allowable range.
@@ -76,12 +73,12 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
         return ValidationResult.success(TomlLiteral(input))
     }
 
-    override fun instanceEntry(): Entry<Byte> {
-        return ValidatedByte(defaultValue, maxValue, minValue, widgetType)
+    override fun instanceEntry(): ValidatedByte {
+        return ValidatedByte(copyStoredValue(), maxValue, minValue, widgetType)
     }
 
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Byte>): ClickableWidget {
-        TODO("Not yet implemented")
+    override fun convert(input: Double): Byte {
+        return input.toInt().toByte()
     }
 
     override fun toString(): String {

@@ -1,12 +1,13 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
-import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap.Builder
+import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.util.Identifier
@@ -26,12 +27,22 @@ import net.peanuuutz.tomlkt.asTomlTable
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val keyHandler: ValidatedIdentifier, private val valueHandler: Entry<V>): ValidatedField<Map<Identifier, V>>(defaultValue) {
+class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val keyHandler: ValidatedIdentifier, private val valueHandler: Entry<V,*>): ValidatedField<Map<Identifier, V>>(defaultValue) {
+
+    init {
+        for((key,value) in defaultValue){
+            if (keyHandler.validateEntry(key,EntryValidator.ValidationType.WEAK).isError())
+                throw IllegalStateException("Default Map key [$key] not valid per keyHandler provided")
+            if (valueHandler.validateEntry(value,EntryValidator.ValidationType.WEAK).isError())
+                throw IllegalStateException("Default Map value [$value] not valid per valueHandler provided")
+        }
+    }
+
     override fun copyStoredValue(): Map<Identifier, V> {
         return storedValue.toMap()
     }
 
-    override fun instanceEntry(): Entry<Map<Identifier, V>> {
+    override fun instanceEntry(): ValidatedIdentifierMap<V> {
         return ValidatedIdentifierMap(storedValue, keyHandler, valueHandler)
     }
 
@@ -114,9 +125,9 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
     }
 
     companion object{
-        fun<V> tryMake(map: Map<Identifier,V>, keyHandler: Entry<*>, valueHandler: Entry<*>): ValidatedIdentifierMap<V>?{
+        fun<V> tryMake(map: Map<Identifier,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedIdentifierMap<V>?{
             return try {
-                ValidatedIdentifierMap(map,keyHandler as ValidatedIdentifier, valueHandler as Entry<V>)
+                ValidatedIdentifierMap(map,keyHandler as ValidatedIdentifier, valueHandler as Entry<V,*>)
             } catch (e: Exception){
                 return null
             }
@@ -151,11 +162,11 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            fun valueHandler(handler: Entry<V>): BuilderWithValue<V> {
+            fun valueHandler(handler: Entry<V,*>): BuilderWithValue<V> {
                 return BuilderWithValue(handler, keyHandler)
             }
 
-            class BuilderWithValue<V: Any> internal constructor(private val valueHandler: Entry<V>, private val keyHandler: ValidatedIdentifier){
+            class BuilderWithValue<V: Any> internal constructor(private val valueHandler: Entry<V,*>, private val keyHandler: ValidatedIdentifier){
                 private var defaults: Map<Identifier,V> = mapOf()
                 /**
                  * Defines the default map used in the ValidatedMap

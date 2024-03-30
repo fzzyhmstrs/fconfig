@@ -3,12 +3,14 @@ package me.fzzyhmstrs.fzzy_config.entry
 /**
  * A base Entry for configs.
  *
- * Performs 6 basic functions
+ * Performs 8 basic functions
  * - serialize contents
  * - deserialize input
  * - validate updates
  * - correct errors
  * - provide widgets
+ * - apply inputs
+ * - supply outputs
  * - create instances
  *
  * SAM: [instanceEntry] creates an instance of this entry. Should be a copy of the original where possible
@@ -16,7 +18,7 @@ package me.fzzyhmstrs.fzzy_config.entry
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-interface Entry<T>: EntryHandler<T>, EntryWidget<T>, EntryApplier<T>, EntrySupplier<T> {
-    fun instanceEntry(): Entry<T>
+interface Entry<T, E: Entry<T,E>>: EntryHandler<T>, EntryWidget<T>, EntryApplier<T>, EntrySupplier<T> {
+    fun instanceEntry(): E
 
 }

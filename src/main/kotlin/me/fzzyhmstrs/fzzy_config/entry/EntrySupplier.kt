@@ -1,5 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.entry
 
+import java.util.function.Supplier
+
 /**
  * Supplies values from a complex [Entry]
  *
@@ -9,7 +11,10 @@ package me.fzzyhmstrs.fzzy_config.entry
  * @since 0.2.0
  */
 @FunctionalInterface
-fun interface EntrySupplier<T> {
-    fun supplyEntry(): T
+@JvmDefaultWithCompatibility
+fun interface EntrySupplier<T>: Supplier<T> {
+    fun supplyEntry(): T{
+        return get()
+    }
 
 }

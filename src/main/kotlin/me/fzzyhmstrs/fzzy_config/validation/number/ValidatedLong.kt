@@ -1,9 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
@@ -21,7 +18,7 @@ import net.peanuuutz.tomlkt.toLong
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long, minValue: Long, private val widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Long>(defaultValue, minValue, maxValue) {
+class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long, minValue: Long, widgetType: WidgetType = WidgetType.SLIDER): ValidatedNumber<Long>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated long number generated with a [LongRange].
@@ -99,12 +96,12 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
         return ValidationResult.success(TomlLiteral(input))
     }
 
-    override fun instanceEntry(): Entry<Long> {
+    override fun instanceEntry(): ValidatedLong {
         return ValidatedLong(defaultValue, maxValue, minValue, widgetType)
     }
 
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Long>): ClickableWidget {
-        TODO("Not yet implemented")
+    override fun convert(input: Double): Long {
+        return input.toLong()
     }
 
     override fun toString(): String {

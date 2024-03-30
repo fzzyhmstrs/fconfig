@@ -5,9 +5,8 @@ import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.minecraft.util.Identifier
 import org.slf4j.Logger
-import kotlin.random.Random
-
 import org.slf4j.LoggerFactory
+import kotlin.random.Random
 
 object FC: ModInitializer {
     const val MOD_ID = "fzzy_config"

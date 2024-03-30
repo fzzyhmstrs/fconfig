@@ -1,14 +1,15 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import com.mojang.blaze3d.systems.RenderSystem
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.SLIDER
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX
 import net.fabricmc.api.EnvType
@@ -31,7 +32,7 @@ import java.util.function.Function
 import java.util.function.Supplier
 import kotlin.math.max
 
-sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, protected val maxValue: T): ValidatedField<T>(defaultValue) where T: Number, T:Comparable<T> {
+sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, protected val maxValue: T, protected val widgetType: WidgetType): ValidatedField<T>(defaultValue) where T: Number, T:Comparable<T> {
 
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
@@ -47,6 +48,19 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         else if(input < minValue)
             return ValidationResult.error(input, "Validated number [$input] above the valid range [$minValue] to [$maxValue]")
         return ValidationResult.success(input)
+    }
+
+    protected abstract fun convert(input: Double): T
+
+    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
+        return when(widgetType){
+            SLIDER -> {
+                ConfirmButtonSliderWidget(this,this.minValue, this.maxValue, choicePredicate, {d -> convert(d) }, { setAndUpdate(it) })
+            }
+            TEXTBOX -> {
+                ConfirmButtonTextFieldWidget(this,choicePredicate,{d -> this.validateEntry(convert(d),EntryValidator.ValidationType.STRONG)}, { setAndUpdate(it) })
+            }
+        }
     }
 
     /**
@@ -77,7 +91,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     }
 
     @Environment(EnvType.CLIENT)
-    protected open class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val converter: Function<Double,T>, private val valueApplier: Consumer<T>):
+    protected open class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double,T>, private val valueApplier: Consumer<T>):
         ClickableWidget(0, 0, 90, 20, wrappedValue.get().toString().lit()) {
         companion object{
             private val TEXTURE = Identifier("widget/slider")
@@ -91,6 +105,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         private var confirmActive = false
         private var value: T = wrappedValue.get()
         private val increment = max((maxValue.toDouble() - minValue.toDouble())/ 70.0, 1.0)
+        private var isValid = validator.validateEntry(wrappedValue.get(),EntryValidator.ValidationType.STRONG).isValid()
 
         private fun isChanged(): Boolean{
             return value != wrappedValue.get()
@@ -122,7 +137,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            this.confirmActive = isChanged()
+            this.confirmActive = isChanged() && isValid
             confirmHovered = mouseX >= (x + 70) && mouseY >= y && mouseX < x + width && mouseY < y + height
             val minecraftClient = MinecraftClient.getInstance()
             context.setShaderColor(1.0f, 1.0f, 1.0f, alpha)
@@ -160,9 +175,9 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
             if (KeyCodes.isToggle(keyCode)) {
-                if(isChanged()) {
+                if(this.confirmActive) {
                     valueApplier.accept(value)
-                    this.confirmActive = isChanged()
+                    this.confirmActive = isChanged() && isValid
                 }
             }
             val bl = keyCode == GLFW.GLFW_KEY_LEFT
@@ -183,13 +198,14 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         private fun setValue(value: Double) {
             this.value = converter.apply(value)
             this.message = value.toString().lit()
+            this.isValid = validator.validateEntry(this.value,EntryValidator.ValidationType.STRONG).isValid()
         }
 
         override fun onClick(mouseX: Double, mouseY: Double) {
             if(mouseX >= (x + 70).toDouble() && mouseY >= y.toDouble() && mouseX < (x + width).toDouble() && mouseY < (y + height).toDouble())
-                if(isChanged()){
+                if(confirmActive){
                     valueApplier.accept(value)
-                    this.confirmActive = isChanged()
+                    this.confirmActive = isChanged() && isValid
                     return
                 }
             setValueFromMouse(mouseX)
@@ -208,10 +224,10 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     }
 
     @Environment(EnvType.CLIENT)
-    protected class ConfirmButtonTextFieldWidget<T: Number>(wrappedValue: Supplier<T>, validationProvider: Function<Double, ValidationResult<T>>, private val valueApplier: Consumer<T>):
+    protected class ConfirmButtonTextFieldWidget<T: Number>(wrappedValue: Supplier<T>, choiceValidator: ChoiceValidator<T>, validationProvider: Function<Double, ValidationResult<T>>, private val valueApplier: Consumer<T>):
         ClickableWidget(0,0, 90, 20, FcText.empty())
     {
-        private val textFieldWidget = ValidationBackedNumberFieldWidget(70,20, wrappedValue, validationProvider)
+        private val textFieldWidget = ValidationBackedNumberFieldWidget(70,20, wrappedValue, choiceValidator, validationProvider)
         private var confirmActive = false
         private var confirmHovered = false
 
@@ -258,7 +274,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
             if (KeyCodes.isToggle(keyCode)) {
-                if (isChanged()) {
+                if (confirmActive) {
                     valueApplier.accept(textFieldWidget.getValue())
                     confirmActive = isChanged()
                     return true

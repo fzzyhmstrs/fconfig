@@ -1,12 +1,14 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.api.Translatable
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier.Companion.ofList
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier.Companion.ofRegistry
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier.Companion.ofTag
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
@@ -119,7 +121,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
         return validator.validateEntry(input, type)
     }
 
-    override fun instanceEntry(): Entry<Identifier> {
+    override fun instanceEntry(): ValidatedIdentifier {
         return ValidatedIdentifier(copyStoredValue(), allowableIds, validator)
     }
 

@@ -5,10 +5,12 @@ import me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.annotations.WithPerms
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenManager.ConfigScreenBuilder
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigForwardableEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigUpdatableEntry
@@ -18,11 +20,10 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.ScreenOpenButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateApplier
-import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.updates.UpdateManagerImpl
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
-import me.fzzyhmstrs.fzzy_config.entry.Entry
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -33,7 +34,6 @@ import net.peanuuutz.tomlkt.TomlComment
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.Function
-import java.util.function.Predicate
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
@@ -42,7 +42,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
     private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
     private val regex = Regex("(?=\\p{Lu})")
-    private var manager: UpdateManager = UpdateManager()
+    private var manager: UpdateManagerImpl = UpdateManagerImpl()
 
     init{
         prepareScreens()
@@ -50,11 +50,11 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
     }
 
     internal fun receiveForwardedUpdate(update: String, player: UUID, scope: String) {
-        var entry: Entry<*>? = null
+        var entry: Entry<*,*>? = null
         for ((config,_) in configs){
             ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){_, new, thing, _, _ ->
                 if (new == scope){
-                    if(thing is Entry<*>){
+                    if(thing is Entry<*,*>){
                         entry = thing
                         return@walk
                     }
@@ -74,7 +74,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
 
     internal fun openScreen(scope: String = this.scope) {
         if (MinecraftClient.getInstance().currentScreen !is ConfigScreen) {
-            manager = UpdateManager()
+            manager = UpdateManagerImpl()
             configs.forEach { manager.pushStates(it.first) }
         }
         openScopedScreen(scope)
@@ -139,7 +139,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
                 val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                 nameMap[new] = name
                 functionMap.put(old, screenOpenEntryBuilder(name, thing.descLit(getComments(annotations)), new))
-            } else if (thing is Updatable && thing is Entry<*>) {
+            } else if (thing is Updatable && thing is Entry<*,*>) {
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                 nameMap[new] = name
@@ -152,7 +152,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
                 else
                     functionMap.put(old, noPermsEntryBuilder(name, thing.descLit(getComments(annotations))))
             } else if (thing != null) {
-                val basicValidation = manager.basicValidationStrategy(thing,prop.returnType)
+                val basicValidation = manager.basicValidationStrategy(thing,prop.returnType)?.instanceEntry()
                 if (basicValidation != null) {
                     val fieldName = new.substringAfterLast('.')
                     val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
@@ -245,7 +245,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         return i
     }
 
-    private fun <T> updatableEntryBuilder(name: Text, desc: Text, entry: T): Function<ConfigListWidget, ConfigEntry> where T: Updatable, T: Entry<*> {
+    private fun <T> updatableEntryBuilder(name: Text, desc: Text, entry: T): Function<ConfigListWidget, ConfigEntry> where T: Updatable, T: Entry<*,*> {
         return Function { parent ->
             ConfigUpdatableEntry(
                 name,
@@ -257,7 +257,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         }
     }
 
-    private fun <T> forwardableEntryBuilder(name: Text, desc: Text, entry: T): Function<ConfigListWidget, ConfigEntry> where T: Updatable, T: Entry<*> {
+    private fun <T> forwardableEntryBuilder(name: Text, desc: Text, entry: T): Function<ConfigListWidget, ConfigEntry> where T: Updatable, T: Entry<*,*> {
         return Function { parent ->
             ConfigForwardableEntry(
                 name,
@@ -278,14 +278,14 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         return Function { parent -> ConfigEntry(name, desc, parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) } ) }
     }
 
-    private fun <T> popupEntryForwardingWidget(entry: T) where T: Updatable, T: Entry<*> {
+    private fun <T> popupEntryForwardingWidget(entry: T) where T: Updatable, T: Entry<*,*> {
         TODO()
     }
 
     @Internal
     override fun apply() {
-        val updates = this.configs.filter { !it.second }.associate { it.first.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.first,manager, mutableListOf()) }
-        SyncedConfigRegistry.updateServer(updates, UpdateManager.INSTANCE.flush(), getPlayerPermissionLevel())
+        val updates = this.configs.filter { !it.second }.associate { it.first.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.first, manager, mutableListOf()) }
+        SyncedConfigRegistry.updateServer(updates, manager.flush(), getPlayerPermissionLevel())
         for (config in configs){
             config.first.save()
         }
@@ -293,11 +293,11 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
     }
     @Internal
     override fun revert() {
-        UpdateManager.INSTANCE.revertAll()
+        manager.revertAll()
     }
     @Internal
     override fun changes(): Int {
-        return UpdateManager.INSTANCE.changes()
+        return manager.changes()
     }
     @Internal
     override fun changesWidget() {
@@ -317,6 +317,6 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         fun build(): ConfigScreen
     }
 
-    private class ForwardedUpdate(val update: String, val player: UUID, val entry: Entry<*>)
+    private class ForwardedUpdate(val update: String, val player: UUID, val entry: Entry<*,*>)
 
 }

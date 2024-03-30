@@ -2,9 +2,7 @@ package me.fzzyhmstrs.fzzy_config.registry
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.networking.ConfigSyncS2CCustomPayload
@@ -12,6 +10,7 @@ import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateC2SCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.SettingForwardCustomPayload
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -30,9 +29,8 @@ object SyncedConfigRegistry {
 
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
 
-    fun forwardSetting(entry: Entry<*>, player: PlayerEntity, scope: String) {
+    fun forwardSetting(update: String, player: PlayerEntity, scope: String) {
         val errors: MutableList<String> = mutableListOf()
-        val update = ConfigApiImpl.serializeEntry(entry,errors,true)
         val uuid = player.uuid
         ClientPlayNetworking.send(SettingForwardCustomPayload(update,uuid,scope))
     }
