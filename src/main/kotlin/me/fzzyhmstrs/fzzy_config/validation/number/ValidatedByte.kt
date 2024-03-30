@@ -11,13 +11,12 @@ import net.peanuuutz.tomlkt.toByte
 
 /**
  * A validated byte number
- *
  * @param defaultValue Byte. the default value of this wrapper
  * @param maxValue Byte. the maximum allowed value, inclusive
  * @param minValue Byte. the minimum allowed value, inclusive
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedByte]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxByte]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedByte
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxByte
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.1.0
@@ -29,7 +28,7 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      * @param minValue Byte. the minimum allowed value, inclusive
      * @param maxValue Byte. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxByte]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxByte
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -43,7 +42,7 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Byte. the default value of this wrapper
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedByte]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedByte
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -55,7 +54,7 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      * The validation will be limited to ensuring the value de/serializes as a byte, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyByte]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyByte
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -83,5 +82,17 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Byte>): ClickableWidget {
         TODO("Not yet implemented")
+    }
+
+    override fun toString(): String {
+        val validation = if(minValue==Byte.MIN_VALUE && maxValue== Byte.MAX_VALUE)
+            "Unbounded"
+        else if(minValue == Byte.MIN_VALUE)
+            "less than $maxValue"
+        else if (maxValue == Byte.MAX_VALUE)
+            "greater than $minValue"
+        else
+            "between $minValue and $maxValue"
+        return "Validated Byte[value=$storedValue, validation=$validation]"
     }
 }

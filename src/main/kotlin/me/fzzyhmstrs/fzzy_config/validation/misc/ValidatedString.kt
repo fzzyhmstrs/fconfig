@@ -18,9 +18,9 @@ import net.peanuuutz.tomlkt.asTomlLiteral
  * Ensure you don't actually want another string-like Validation before use, such as [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier] or [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum]
  * @param defaultValue String default for the setting
  * @param checker [EntryChecker] defining validation and correction for the string inputs.
- * @see [Builder]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedString]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedString
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @see Builder
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -43,6 +43,10 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
         }
         override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
             return ValidationResult.predicated(input,re.matches(input),"String doesn't meet regex [$regex]")
+        }
+
+        override fun toString(): String {
+            return "RegexChecker[pattern=$regex]"
         }
     })
 
@@ -97,6 +101,10 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
 
     override fun instanceEntry(): Entry<String> {
         return ValidatedString(String(defaultValue.toCharArray()), this.checker)
+    }
+
+    override fun toString(): String {
+        return "Validated String[value=$storedValue, validation=$checker]"
     }
 
     /*

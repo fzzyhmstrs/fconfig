@@ -11,13 +11,12 @@ import net.peanuuutz.tomlkt.toInt
 
 /**
  * A validated integer number
- *
  * @param defaultValue Int. the default value of this wrapper
  * @param maxValue Int. the maximum allowed value, inclusive
  * @param minValue Int. the minimum allowed value, inclusive
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedInt]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxInt]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedInt
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxInt
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.1.0
@@ -30,7 +29,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * @param defaultValue Int. the default value of this wrapper
      * @param range [IntRange]. the allowable range of this Validated Int
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.rangedDefaultedInt]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.rangedDefaultedInt
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -41,7 +40,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * A validated int number with a default selected from the min of the allowable range.
      * @param range [IntRange]. the allowable range of this Validated Int
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.rangedInt]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.rangedInt
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -53,7 +52,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * @param minValue Int. the minimum allowed value, inclusive
      * @param maxValue Int. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxInt]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxInt
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -67,7 +66,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Int. the default value of this wrapper
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedInt]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedInt
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -79,7 +78,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * The validation will be limited to ensuring the value de/serializes as an int, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyInt]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyInt
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -107,5 +106,17 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Int>): ClickableWidget {
         TODO("Not yet implemented")
+    }
+
+    override fun toString(): String {
+        val validation = if(minValue==Int.MIN_VALUE && maxValue== Int.MAX_VALUE)
+            "Unbounded"
+        else if(minValue == Int.MIN_VALUE)
+            "less than $maxValue"
+        else if (maxValue == Int.MAX_VALUE)
+            "greater than $minValue"
+        else
+            "between $minValue and $maxValue"
+        return "Validated Int[value=$storedValue, validation=$validation]"
     }
 }

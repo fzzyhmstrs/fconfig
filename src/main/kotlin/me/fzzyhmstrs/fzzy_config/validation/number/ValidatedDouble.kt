@@ -11,13 +11,12 @@ import net.peanuuutz.tomlkt.toDouble
 
 /**
  * A validated double number
- *
  * @param defaultValue Double. the default value of this wrapper
  * @param maxValue Double. the maximum allowed value, inclusive
  * @param minValue Double. the minimum allowed value, inclusive
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedDouble]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxDouble]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedDouble
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxDouble
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.1.0
@@ -29,7 +28,7 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
      * @param minValue Double. the minimum allowed value, inclusive
      * @param maxValue Double. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxDouble]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxDouble
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -43,7 +42,7 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Double. the default value of this wrapper
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedDouble]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedDouble
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -55,7 +54,7 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
      * The validation will be limited to ensuring the value de/serializes as a double, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyDouble]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyDouble
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -83,5 +82,17 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Double>): ClickableWidget {
         TODO("Not yet implemented")
+    }
+
+    override fun toString(): String {
+        val validation = if(minValue==-Double.MAX_VALUE && maxValue== Double.MAX_VALUE)
+            "Unbounded"
+        else if(minValue == -Double.MAX_VALUE)
+            "less than $maxValue"
+        else if (maxValue == Double.MAX_VALUE)
+            "greater than $minValue"
+        else
+            "between $minValue and $maxValue"
+        return "Validated Double[value=$storedValue, validation=$validation]"
     }
 }

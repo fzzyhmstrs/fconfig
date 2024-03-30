@@ -6,7 +6,7 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.DrawContext
@@ -49,14 +49,26 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
 
     /**
      * A validated color value with or without transparency enabled and with default color 0xFFFFFFFF (opaque white)
-     * @param transparent Boolean, whether or not this color supports transparency
-     *
+     * @param transparent Boolean, whether this color supports transparency
+     * @author fzzyhmstrs
+     * @since 0.2.0
      */
-    @JvmOverloads constructor(transparent: Boolean = true): super(ColorHolder(255, 255, 255, 255, transparent))
+    @JvmOverloads
+    constructor(transparent: Boolean = true): super(ColorHolder(255, 255, 255, 255, transparent))
+
+    /**
+     * A validated color value built from a jwt [Color] with or without transparency enabled
+     * @param color [Color] defining the RGBA of this validated color
+     * @param transparent Boolean, whether this color supports transparency
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmOverloads
+    constructor(color: Color, transparent: Boolean = true): this(color.red,color.green,color.blue,color.alpha, transparent)
 
     private constructor(r: Int, g: Int, b: Int, a: Int, alphaMode: Boolean): super(ColorHolder(r, g, b, a, alphaMode))
 
-    fun toHexString(): String{
+    fun toHexString(): String {
         return if(get().opaque()) String.format("%06X", get().toInt()) else String.format("%08X", get().toInt())
     }
     fun setFromHexString(s: String) {
@@ -96,6 +108,16 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
     override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): ClickableWidget {
         TODO("Not yet implemented")
     }
+
+    override fun toString(): String {
+        val validation = if(get().opaque())
+            "RGB 0..255, no Transparency"
+        else
+            "RGBA 0.255"
+        return "ValidatedColor[value=${toHexString()}, validation=$validation]"
+    }
+
+    /////////////////////////
 
     private fun validatedString(): ValidatedString {
         return validatedString(toHexString(), this.get().opaque())

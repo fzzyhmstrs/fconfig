@@ -1,12 +1,12 @@
-package me.fzzyhmstrs.fzzy_config.validation.misc
+package me.fzzyhmstrs.fzzy_config.validation
 
-import com.ibm.icu.lang.UCharacter
 import me.fzzyhmstrs.fzzy_config.api.Translatable
-import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedIdentifierList
-import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedList
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
+import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.*
+import net.fabricmc.api.ModInitializer
 import net.minecraft.registry.Registry
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
@@ -40,7 +40,7 @@ object Shorthand {
     }
 
     @JvmStatic
-    fun <E: Enum<E>> Class<E>.validated(): ValidatedEnum<E> {
+    fun <E: Enum<*>> Class<E>.validated(): ValidatedEnum<E> {
         return ValidatedEnum(this.enumConstants[0])
     }
 
@@ -54,7 +54,7 @@ object Shorthand {
      * @since 0.2.0
      */
     @JvmStatic
-    fun Identifier.validated(): ValidatedIdentifier{
+    fun Identifier.validated(): ValidatedIdentifier {
         return ValidatedIdentifier(this)
     }
 
@@ -103,34 +103,18 @@ object Shorthand {
     }
 
     /**
-     * Shorthand Validated Identifier List
-     *
-     * List used will be the default
-     * @param handler [ValidatedIdentifier] for handling list entries
-     * @return [ValidatedIdentifierList] wrapping the list and validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandIdentifierList]
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @JvmStatic
-    @JvmOverloads
-    fun List<Identifier>.validated(handler: ValidatedIdentifier = ValidatedIdentifier(Identifier("air"))): ValidatedIdentifierList {
-        return ValidatedIdentifierList(this, handler)
-    }
-    /**
      * Shorthand Validated Identifier List, validated with a tag
      *
      * List used will be the default
      * @param tagKey [TagKey] used for validating inputs.
-     * @return [ValidatedIdentifierList] wrapping the list and tag validation
+     * @return [ValidatedList] wrapping the list and tag validation
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandTagIdList]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
-    @Deprecated("Use only for validation of a list or map.")
-    fun List<Identifier>.validatedTag(tagKey: TagKey<*>): ValidatedIdentifierList{
-        return ValidatedIdentifierList(this, ValidatedIdentifier.ofTag(tagKey))
+    fun List<Identifier>.validatedTag(tagKey: TagKey<*>): ValidatedList<Identifier> {
+        return ValidatedList(this, ValidatedIdentifier.ofTag(tagKey))
     }
     /**
      * Shorthand Validated Identifier List, validated with a registry
@@ -138,15 +122,14 @@ object Shorthand {
      * List used will be the default
      * @param T the registry type
      * @param registry [Registry] used to validate entries
-     * @return [ValidatedIdentifierList] wrapping the list and registry validation
+     * @return [ValidatedList] wrapping the list and registry validation
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandRegistryIdList]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
-    @Deprecated("Use only for validation of a list or map.")
-    fun<T: Any> List<Identifier>.validatedRegistry(registry: Registry<T>): ValidatedIdentifierList{
-        return ValidatedIdentifierList(this, ValidatedIdentifier.ofRegistry(registry))
+    fun<T: Any> List<Identifier>.validatedRegistry(registry: Registry<T>): ValidatedList<Identifier> {
+        return ValidatedList(this, ValidatedIdentifier.ofRegistry(registry))
     }
     /**
      * Shorthand Validated Identifier List, validated with a predicated registry
@@ -155,31 +138,108 @@ object Shorthand {
      * @param T the registry type
      * @param registry [Registry] used to validate entries
      * @param predicate [BiPredicate]<Identifier,[RegistryEntry]>
-     * @return [ValidatedIdentifierList] wrapping the list and predicated registry validation
+     * @return [ValidatedList] wrapping the list and predicated registry validation
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandPredicatedRegistryIdList]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
-    @Deprecated("Use only for validation of a list or map.")
-    fun<T: Any> List<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifierList{
-        return ValidatedIdentifierList(this, ValidatedIdentifier.ofRegistry(registry, predicate))
+    fun<T: Any> List<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedList<Identifier> {
+        return ValidatedList(this, ValidatedIdentifier.ofRegistry(registry, predicate))
     }
     /**
      * Shorthand Validated Identifier List, validated with a list
      *
      * List used will be the default
      * @param list [List] providing valid inputs to the list
-     * @return [ValidatedIdentifierList] wrapping the list and list validation
+     * @return [ValidatedList] wrapping the list and list validation
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandListIdList]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
-    @Deprecated("Use only for validation of a list or map. Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
-    fun List<Identifier>.validatedList(list: List<Identifier>): ValidatedIdentifierList {
-        return ValidatedIdentifierList(this, ValidatedIdentifier.ofList(list))
+    @Deprecated("Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
+    fun List<Identifier>.validatedList(list: List<Identifier>): ValidatedList<Identifier> {
+        return ValidatedList(this, ValidatedIdentifier.ofList(list))
     }
+
+    /**
+     * Shorthand validated Set
+     *
+     * set used will be the default set
+     * @param handler [Entry] for handling the set values.
+     * @return [ValidatedSet] wrapping the set and provided handler
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandSet]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmStatic
+    fun <T: Any> Set<T>.validated(handler: Entry<T>): ValidatedSet<T> {
+        return ValidatedSet(this, handler)
+    }
+
+    /**
+     * Shorthand Validated Identifier Set, validated with a tag
+     *
+     * Set used will be the default
+     * @param tagKey [TagKey] used for validating inputs.
+     * @return [ValidatedSet] wrapping the set and tag validation
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandTagIdSet]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmStatic
+    fun Set<Identifier>.validatedTag(tagKey: TagKey<*>): ValidatedSet<Identifier> {
+        return ValidatedSet(this, ValidatedIdentifier.ofTag(tagKey))
+    }
+    /**
+     * Shorthand Validated Identifier Set, validated with a registry
+     *
+     * Set used will be the default
+     * @param T the registry type
+     * @param registry [Registry] used to validate entries
+     * @return [ValidatedSet] wrapping the set and registry validation
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandRegistryIdSet]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmStatic
+    fun<T: Any> Set<Identifier>.validatedRegistry(registry: Registry<T>): ValidatedSet<Identifier> {
+        return ValidatedSet(this, ValidatedIdentifier.ofRegistry(registry))
+    }
+    /**
+     * Shorthand Validated Identifier Set, validated with a predicated registry
+     *
+     * Set used will be the default
+     * @param T the registry type
+     * @param registry [Registry] used to validate entries
+     * @param predicate [BiPredicate]<Identifier,[RegistryEntry]>
+     * @return [ValidatedSet] wrapping the set and predicated registry validation
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandPredicatedRegistryIdSet]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmStatic
+    fun<T: Any> Set<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedSet<Identifier> {
+        return ValidatedSet(this, ValidatedIdentifier.ofRegistry(registry, predicate))
+    }
+    /**
+     * Shorthand Validated Identifier Set, validated with a list
+     *
+     * Set used will be the default
+     * @param list [List] providing valid inputs to the set
+     * @return [ValidatedSet] wrapping the set and list validation
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandListIdSet]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmStatic
+    @Deprecated("Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
+    fun Set<Identifier>.validatedList(list: List<Identifier>): ValidatedSet<Identifier> {
+        return ValidatedSet(this, ValidatedIdentifier.ofList(list))
+    }
+
+
 
     @Internal
     val shorthandValidationMap: Map<Class<*>,ValidatedField<*>> = mapOf(
@@ -188,28 +248,8 @@ object Shorthand {
         java.lang.Byte::class.java to ValidatedByte(0.toByte()),
         java.lang.Long::class.java to ValidatedLong(0L),
         java.lang.Double::class.java to ValidatedDouble(0.0),
-        java.lang.Float::class.java to ValidatedFloat(0f),
-        java.lang.String::class.java to ValidatedString("list"),
-        Identifier::class.java to ValidatedIdentifier(Identifier("air")),
-        java.lang.Boolean::class.java to ValidatedBoolean(true)
+        java.lang.Float::class.java to ValidatedFloat(0f)
     )
-
-    internal fun basicValidation(input: Any?): ValidatedField<*>? {
-        return when (input) {
-            is Int -> ValidatedInt()
-            is Short -> ValidatedShort()
-            is Long -> ValidatedLong()
-            is Byte -> ValidatedByte()
-            is Double -> ValidatedDouble()
-            is Float -> ValidatedFloat()
-            is Boolean -> ValidatedBoolean()
-            is Enum<*> -> ValidatedEnum(input)
-            is Color -> input.validated()
-            is Identifier -> input.validated()
-            is String -> ValidatedString(input)
-            else -> null
-        }
-    }
 
     /**
      * Shorthand validated number List
@@ -227,6 +267,21 @@ object Shorthand {
     }
 
     /**
+     * Shorthand validated number Set
+     *
+     * set used will be the default set. Automatically provides a default handler based on the type of Number provided
+     * @return [ValidatedSet] wrapping the set
+     * [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandNumberSet]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmStatic
+    inline fun <reified T: Number> Set<T>.validated(): ValidatedSet<T> {
+        val entry = shorthandValidationMap[T::class.java] as? Entry<T> ?: throw IllegalStateException("Incompatible shorthand type [${T::class.java}] in List")
+        return ValidatedSet(this, entry)
+    }
+
+    /**
      * Shorthand Validated Identifier using the [TagKey] for validation
      *
      * Does not have a default value, so should only be for list or map validation
@@ -237,7 +292,7 @@ object Shorthand {
      */
     @JvmStatic
     @Deprecated("Use only for validation of a list or map.")
-    fun TagKey<*>.validatedIds(): ValidatedIdentifier{
+    fun TagKey<*>.validatedIds(): ValidatedIdentifier {
         return ValidatedIdentifier.ofTag(this)
     }
     /**
@@ -251,7 +306,7 @@ object Shorthand {
      */
     @JvmStatic
     @Deprecated("Use only for validation of a list or map.")
-    fun Registry<*>.validatedIds(): ValidatedIdentifier{
+    fun Registry<*>.validatedIds(): ValidatedIdentifier {
         return ValidatedIdentifier.ofRegistry(this)
     }
     /**
@@ -267,7 +322,7 @@ object Shorthand {
      */
     @JvmStatic
     @Deprecated("Use only for validation of a list or map.")
-    fun <T: Any> Registry<T>.validatedIds(predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifier{
+    fun <T: Any> Registry<T>.validatedIds(predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifier {
         return ValidatedIdentifier.ofRegistry(this, predicate)
     }
     /**
@@ -281,7 +336,7 @@ object Shorthand {
      */
     @JvmStatic
     @Deprecated("Use only for validation of a list or map. Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
-    fun List<Identifier>.validatedIds(): ValidatedIdentifier{
+    fun List<Identifier>.validatedIds(): ValidatedIdentifier {
         return ValidatedIdentifier.ofList(this)
     }
 }

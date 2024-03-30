@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
-import me.fzzyhmstrs.fzzy_config.math.Expression
+import me.fzzyhmstrs.fzzy_config.util.Expression
 
 object ExampleMath {
 

@@ -3,8 +3,7 @@ package me.fzzyhmstrs.fzzy_config.examples
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedIdentifierMap
-import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedStringMap
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
@@ -14,7 +13,9 @@ import net.minecraft.registry.tag.ItemTags
 
 internal class MyConfig: Config("my_config","fzzy_config") {
 
-    var bareDouble = 5.0 //this won't have most of the features of the lib
+    var bareDouble = 5.0 // this won't have most of the features of the lib
+
+    var booleanThing = false //yay, booleanssssss
 
     var validatedDouble = ValidatedDouble(5.0,10.0,0.0) //this has automatic validation, error correction, and will auto-generate a widget in the GUI for user selection
 

@@ -10,4 +10,4 @@ package me.fzzyhmstrs.fzzy_config.entry
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-interface EntryHandler<T: Any>: EntrySerializer<T>, EntryDeserializer<T>, EntryValidator<T>, EntryCorrector<T>
+interface EntryHandler<T>: EntrySerializer<T>, EntryDeserializer<T>, EntryValidator<T>, EntryCorrector<T>

@@ -1,10 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
 import me.fzzyhmstrs.fzzy_config.api.Translatable
-import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedEnumMap
-import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedIdentifierMap
-import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedStringMap
-import me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedEnumMap
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString

@@ -12,13 +12,13 @@ import java.util.function.Predicate
  * @author fzzyhmstrs
  * since 0.2.0
  */
-class ChoiceValidator<T: Any>(private val  predicate: ValuesPredicate<T>): EntryValidator<T> {
+class ChoiceValidator<T>(private val  predicate: ValuesPredicate<T>): EntryValidator<T> {
 
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         return ValidationResult.predicated(input, predicate.test(input), "Value not allowed")
     }
 
-    class ValuesPredicate<T: Any>(private val disallowedValues: List<T>?, private val allowableValues: List<T>?): Predicate<T>{
+    class ValuesPredicate<T>(private val disallowedValues: List<T>?, private val allowableValues: List<T>?): Predicate<T>{
         override fun test(t: T): Boolean {
             return if(disallowedValues != null){
                 if (allowableValues != null){
@@ -31,7 +31,7 @@ class ChoiceValidator<T: Any>(private val  predicate: ValuesPredicate<T>): Entry
     }
 
     companion object {
-        fun <T: Any> any(): ChoiceValidator<T> {
+        fun <T> any(): ChoiceValidator<T> {
             return ChoiceValidator(ValuesPredicate(null,null))
         }
     }

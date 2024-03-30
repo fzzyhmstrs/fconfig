@@ -3,13 +3,12 @@ package me.fzzyhmstrs.fzzy_config.validation
 import me.fzzyhmstrs.fzzy_config.api.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
-import me.fzzyhmstrs.fzzy_config.config.*
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.validation.list.ValidatedList
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
@@ -28,7 +27,7 @@ import net.peanuuutz.tomlkt.TomlElement
  */
 
 @Suppress("DeprecatedCallableAddReplaceWith")
-abstract class ValidatedField<T: Any>(protected var storedValue: T, protected val defaultValue: T = storedValue):
+abstract class ValidatedField<T>(protected var storedValue: T, protected val defaultValue: T = storedValue):
     Entry<T>,
     Updatable,
     Translatable
@@ -36,7 +35,16 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
 
     private var pushedValue: T? = null
     private var updateKey = ""
+    private var updateManager: UpdateManager? = null
 
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun getUpdateManager(): UpdateManager? {
+        return updateManager
+    }
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun setUpdateManager(manager: UpdateManager) {
+        this.updateManager = manager
+    }
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun getEntryKey(): String {
         return updateKey
@@ -52,7 +60,7 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun restore(){
         reset()
-        UpdateManager.addUpdateMessage(getEntryKey(), FcText.translatable("fc.validated_field.default",translation(), defaultValue.toString()))
+        updateManager?.addUpdateMessage(getEntryKey(), FcText.translatable("fc.validated_field.default",translation(), defaultValue.toString()))
     }
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun revert() {
@@ -60,14 +68,14 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
             try {
                 pushedValue?.let {
                     storedValue = it
-                    UpdateManager.addUpdateMessage(getEntryKey(), FcText.translatable("fc.validated_field.revert",translation(), storedValue.toString(), pushedValue.toString()))
+                    updateManager?.addUpdateMessage(getEntryKey(), FcText.translatable("fc.validated_field.revert",translation(), storedValue.toString(), pushedValue.toString()))
                 }
 
             } catch (e: Exception){
-                UpdateManager.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
+                updateManager?.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
             }
         } else {
-            UpdateManager.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
+            updateManager?.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
         }
     }
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
@@ -124,6 +132,14 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
         return (if(input != null) serialize(input) else serialize(storedValue)).report(errorBuilder).get()
     }
 
+    fun trySerialize(input: Any?, errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement?{
+        return try {
+            serializeEntry(input as T?,errorBuilder, ignoreNonSync)
+        } catch (e: Exception){
+            null
+        }
+    }
+
     abstract fun serialize(input: T): ValidationResult<TomlElement>
 
     override fun supplyEntry(): T {
@@ -133,15 +149,6 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
     override fun applyEntry(input: T) {
         setAndUpdate(input)
     }
-
-    /**
-     * Perform input validation and correction in this method. A simple example can be seen in [ValidatedNumber], where this method bounds the input number to within the max and min values provided.
-     *
-     * @param input T. An instance of type T to be validated and corrected as needed, where T is the type of value wrapped in this Field.
-     * @return a [ValidationResult] that wraps the validated and/or corrected result of type T, along with an error message if needed.
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
 
     protected open fun reset(){
         storedValue = defaultValue
@@ -156,7 +163,6 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
      * @since 0.1.0
      */
     open fun validateAndSet(input: T): ValidationResult<T> {
-        val oldVal = storedValue
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.WEAK)
         storedValue = tVal1.get()
         if (tVal1.isError()){
@@ -200,9 +206,25 @@ abstract class ValidatedField<T: Any>(protected var storedValue: T, protected va
         return getEntryKey() + ".desc"
     }
 
+    /**
+     * wraps the provided values into a [ValidatedList] with this field as validation
+     * @param elements the inputs for the list generation. Same type as this field
+     * @return [ValidatedList] wrapping the provided values and this field as validation
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.listFromFieldVararg
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun toList(vararg elements: T): ValidatedList<T> {
         return ValidatedList(listOf(*elements), this)
     }
+    /**
+     * wraps the provided collection into a [ValidatedList] with this field as validation
+     * @param collection the collection to wrap. Same type as this field
+     * @return [ValidatedList] wrapping the collection and this field as validation
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.listFromFieldCollection
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun toList(collection: Collection<T>): ValidatedList<T> {
         return ValidatedList(collection.toList(), this)
     }

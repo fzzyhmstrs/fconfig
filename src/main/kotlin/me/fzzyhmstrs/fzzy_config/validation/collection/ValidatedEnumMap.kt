@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.validation.map
+package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.api.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -30,7 +30,7 @@ import net.peanuuutz.tomlkt.asTomlTable
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val keyHandler: Entry<K>, private val valueHandler: Entry<V>): ValidatedField<Map<K, V>>(defaultValue){
+class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandler: Entry<K>, private val valueHandler: Entry<V>): ValidatedField<Map<K, V>>(defaultValue){
     override fun copyStoredValue(): Map<K, V> {
         return storedValue.toMap()
     }
@@ -48,7 +48,14 @@ class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val key
         val errors: MutableList<String> = mutableListOf()
         return try {
             for ((key, value) in input) {
-                val annotations = ConfigApiImpl.tomlAnnotations(value::class.java.kotlin)
+                val annotations = if (value != null)
+                    try {
+                        ConfigApiImpl.tomlAnnotations(value!!::class)
+                    } catch (e: Exception){
+                        listOf()
+                    }
+                else
+                    listOf()
                 val el = valueHandler.serializeEntry(value, errors, true)
                 table.element(key, el, annotations)
             }
@@ -105,6 +112,17 @@ class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val key
         return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
     }
 
+    companion object{
+        fun<K:Enum<*>,V> tryMake(map: Map<K,V>, keyHandler: Entry<*>, valueHandler: Entry<*>): ValidatedEnumMap<K,V>?{
+            return try {
+                ValidatedEnumMap(map,keyHandler as Entry<K>, valueHandler as Entry<V>)
+            } catch (e: Exception){
+                return null
+            }
+        }
+    }
+
+
     /**
      * Builds a ValidatedEnumMap
      *
@@ -126,7 +144,7 @@ class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val key
          * @since 0.2.0
          */
         @Deprecated("For basic ValidatedEnum implementation, see keyHandler(defaultValue: K)")
-        fun keyHandler(handler: Entry<K>): BuilderWithKey<K,V>{
+        fun keyHandler(handler: Entry<K>): BuilderWithKey<K, V> {
             return BuilderWithKey<K,V>(handler)
         }
         /**
@@ -137,7 +155,7 @@ class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val key
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun keyHandler(defaultValue: K): BuilderWithKey<K,V>{
+        fun keyHandler(defaultValue: K): BuilderWithKey<K, V> {
             return BuilderWithKey<K,V>(ValidatedEnum(defaultValue))
         }
 
@@ -148,7 +166,7 @@ class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val key
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            fun valueHandler(valueHandler: Entry<V>): BuilderWithValue<K,V>{
+            fun valueHandler(valueHandler: Entry<V>): BuilderWithValue<K, V> {
                 return BuilderWithValue(valueHandler,keyHandler)
             }
 
@@ -163,7 +181,7 @@ class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val key
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun defaults(defaults: Map<K,V>): BuilderWithValue<K,V>{
+                fun defaults(defaults: Map<K,V>): BuilderWithValue<K, V> {
                     this.defaults = defaults
                     return this
                 }
@@ -175,7 +193,7 @@ class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val key
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun defaults(vararg defaults: Pair<K,V>): BuilderWithValue<K,V>{
+                fun defaults(vararg defaults: Pair<K,V>): BuilderWithValue<K, V> {
                     this.defaults = mapOf(*defaults)
                     return this
                 }
@@ -187,7 +205,7 @@ class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val key
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun default(default: Pair<K,V>): BuilderWithValue<K,V>{
+                fun default(default: Pair<K,V>): BuilderWithValue<K, V> {
                     this.defaults = mapOf(default)
                     return this
                 }
@@ -200,7 +218,7 @@ class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val key
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun default(key: K, value: V): BuilderWithValue<K,V>{
+                fun default(key: K, value: V): BuilderWithValue<K, V> {
                     this.defaults = mapOf(key to value)
                     return this
                 }
@@ -210,7 +228,7 @@ class ValidatedEnumMap<K:Enum<*>,V: Any>(defaultValue: Map<K,V>, private val key
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun build(): ValidatedEnumMap<K,V>{
+                fun build(): ValidatedEnumMap<K, V> {
                     return ValidatedEnumMap(defaults,keyHandler,valueHandler)
                 }
             }

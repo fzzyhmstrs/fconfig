@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.examples
 
 import me.fzzyhmstrs.fzzy_config.api.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.math.Expression.Impl.evalSafe
+import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.evalSafe
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
@@ -62,6 +62,9 @@ object ValidatedMiscExamples{
 
     //Unbounded validated Identifier directly from string nbamespace and path. Any valid Identifier will be allowed
     val stringStringIdentifier = ValidatedIdentifier("minecraft","nether_star")
+
+    //Unbounded validated Identifier with a dummy default. used only for validation of other things
+    val emptyIdentifier = ValidatedIdentifier()
 
     //example validated string. This is built using the Builder, which is typically recommended except in special circumstances
     //this string requires that lowercase chicken be included in the string

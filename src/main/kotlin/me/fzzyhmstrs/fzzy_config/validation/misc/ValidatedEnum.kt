@@ -31,9 +31,10 @@ import kotlin.math.max
  * @param T the enum type. Any [Enum]
  * @param defaultValue Enum Constant used as the default for this setting
  * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.TestEnum]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedEnum]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.TestEnum
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedEnum
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedEnumMap
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -84,6 +85,10 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
 
     override fun instanceEntry(): Entry<T> {
         return ValidatedEnum(this.defaultValue,this.widgetType)
+    }
+
+    override fun toString(): String {
+        return "Validated Enum[value=$storedValue, validation=$valuesMap]"
     }
 
     /**

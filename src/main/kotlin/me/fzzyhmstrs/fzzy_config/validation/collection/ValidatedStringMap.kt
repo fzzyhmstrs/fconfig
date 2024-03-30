@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.validation.map
+package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
@@ -7,8 +7,7 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.validation.map.ValidatedEnumMap.Builder
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
@@ -29,7 +28,7 @@ import net.peanuuutz.tomlkt.asTomlTable
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHandler: Entry<String>, private val valueHandler: Entry<V>): ValidatedField<Map<String, V>>(defaultValue) {
+class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler: Entry<String>, private val valueHandler: Entry<V>): ValidatedField<Map<String, V>>(defaultValue) {
     override fun copyStoredValue(): Map<String, V> {
         return storedValue.toMap()
     }
@@ -47,7 +46,14 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
         val errors: MutableList<String> = mutableListOf()
         return try {
             for ((key, value) in input) {
-                val annotations = ConfigApiImpl.tomlAnnotations(value::class.java.kotlin)
+                val annotations = if (value != null)
+                    try {
+                        ConfigApiImpl.tomlAnnotations(value!!::class)
+                    } catch (e: Exception){
+                        listOf()
+                    }
+                else
+                    listOf()
                 val el = valueHandler.serializeEntry(value, errors, true)
                 table.element(key, el, annotations)
             }
@@ -107,6 +113,16 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
         return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
     }
 
+    companion object{
+        fun<V> tryMake(map: Map<String,V>, keyHandler: Entry<*>, valueHandler: Entry<*>): ValidatedStringMap<V>?{
+            return try {
+                ValidatedStringMap(map,keyHandler as Entry<String>, valueHandler as Entry<V>)
+            } catch (e: Exception){
+                return null
+            }
+        }
+    }
+
     /**
      * Builds a ValidatedMap
      *
@@ -124,7 +140,7 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun keyHandler(handler: Entry<String>): BuilderWithKey<V>{
+        fun keyHandler(handler: Entry<String>): BuilderWithKey<V> {
             return BuilderWithKey<V>(handler)
         }
 
@@ -135,7 +151,7 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            fun valueHandler(handler: Entry<V>): BuilderWithValue<V>{
+            fun valueHandler(handler: Entry<V>): BuilderWithValue<V> {
                 return BuilderWithValue(handler, keyHandler)
             }
 
@@ -149,7 +165,7 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun defaults(defaults: Map<String,V>): BuilderWithValue<V>{
+                fun defaults(defaults: Map<String,V>): BuilderWithValue<V> {
                     this.defaults = defaults
                     return this
                 }
@@ -161,7 +177,7 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun defaults(vararg defaults: Pair<String,V>): BuilderWithValue<V>{
+                fun defaults(vararg defaults: Pair<String,V>): BuilderWithValue<V> {
                     this.defaults = mapOf(*defaults)
                     return this
                 }
@@ -173,7 +189,7 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun default(default: Pair<String,V>): BuilderWithValue<V>{
+                fun default(default: Pair<String,V>): BuilderWithValue<V> {
                     this.defaults = mapOf(default)
                     return this
                 }
@@ -186,7 +202,7 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun default(key: String, value: V): BuilderWithValue<V>{
+                fun default(key: String, value: V): BuilderWithValue<V> {
                     this.defaults = mapOf(key to value)
                     return this
                 }
@@ -198,7 +214,7 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun defaultIds(defaults: Map<Identifier,V>): BuilderWithValue<V>{
+                fun defaultIds(defaults: Map<Identifier,V>): BuilderWithValue<V> {
                     this.defaults = defaults.mapKeys { e -> e.key.toString() }
                     return this
                 }
@@ -210,7 +226,7 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun defaultIds(vararg defaults: Pair<Identifier,V>): BuilderWithValue<V>{
+                fun defaultIds(vararg defaults: Pair<Identifier,V>): BuilderWithValue<V> {
                     this.defaults = (defaults).associate { p -> Pair(p.first.toString(),p.second) }
                     return this
                 }
@@ -222,7 +238,7 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun defaultId(default: Pair<Identifier,V>): BuilderWithValue<V>{
+                fun defaultId(default: Pair<Identifier,V>): BuilderWithValue<V> {
                     this.defaults = mapOf(Pair(default.first.toString(),default.second))
                     return this
                 }
@@ -235,7 +251,7 @@ class ValidatedStringMap<V: Any>(defaultValue: Map<String,V>, private val keyHan
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                fun defaultId(key: Identifier, value: V): BuilderWithValue<V>{
+                fun defaultId(key: Identifier, value: V): BuilderWithValue<V> {
                     this.defaults = mapOf(key.toString() to value)
                     return this
                 }

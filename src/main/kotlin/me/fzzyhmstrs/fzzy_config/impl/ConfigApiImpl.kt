@@ -257,24 +257,32 @@ object ConfigApiImpl {
         return Toml.encodeToString(serializeToToml(config,errorBuilder,ignoreNonSync))
     }
 
-    internal fun <T: Config> serializeUpdateToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement{
-        //used to build a TOML table piece by piece
+    private fun <T: Config> serializeUpdateToToml(config: T, manager: UpdateManager, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement {
         val toml = TomlTableBuilder()
         try {
-            val updates = UpdateManager.getSyncUpdates(config, ignoreNonSync)
-            for ((key, serializable) in updates) {
-                toml.element(key,serializable.serializeEntry(null, errorBuilder, ignoreNonSync))
+            walk(config,config.getId().toTranslationKey(),false) { _,str,v,prop,_ ->
+                if(manager.hasUpdate(str)){
+                    if(v is EntrySerializer<*>){
+                        toml.element(str, v.serializeEntry(null, errorBuilder, ignoreNonSync))
+                    } else if (v != null) {
+                        val basicValidation = manager.basicValidationStrategy(v,prop.returnType)
+                        if (basicValidation != null){
+                            val el = basicValidation.trySerialize(v, errorBuilder, ignoreNonSync)
+                            if (el != null)
+                                toml.element(str, el)
+                        }
+                    }
+                }
             }
         } catch (e: Exception){
-            errorBuilder.add("Critical error encountered while serializing config!: ${e.localizedMessage}")
+            errorBuilder.add("Critical error encountered while serializing config update!: ${e.localizedMessage}")
             return toml.build()
         }
-        //serialize the TomlTable to its string representation
         return toml.build()
     }
 
-    internal fun <T: Config> serializeUpdate(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String{
-        return Toml.encodeToString(serializeUpdateToToml(config,errorBuilder,ignoreNonSync))
+    internal fun <T: Config> serializeUpdate(config: T, manager: UpdateManager, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): String {
+        return Toml.encodeToString(serializeUpdateToToml(config,manager,errorBuilder,ignoreNonSync))
     }
 
     internal fun serializeEntry(entry: Entry<*>, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): String{
@@ -316,9 +324,7 @@ object ConfigApiImpl {
                         }
                     } else {
                         try {
-                            it.setter.call(
-                                config,
-                                decodeFromTomlElement(tomlElement, it.returnType).also { println(it) })
+                            it.setter.call(config, decodeFromTomlElement(tomlElement, it.returnType))
                         } catch (e: Exception) {
                             errorBuilder.add("Error deserializing raw field [$name]: ${e.localizedMessage}")
                         }
@@ -353,14 +359,27 @@ object ConfigApiImpl {
         return Pair(deserializeFromToml(config, toml, errorBuilder, ignoreNonSync), version)
     }
 
-    internal fun <T: Config> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
+    private fun <T: Config> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
         val inboundErrorSize = errorBuilder.size
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
             return ValidationResult.error(config,"Improper TOML format passed to deserializeDirtyFromToml")
         }
         try {
-            walk(config, config.getId().toTranslationKey(), ignoreNonSync) {_, str, v, _ -> toml[str]?.let{ if(v is EntryDeserializer<*>) v.deserializeEntry(it,errorBuilder,str,ignoreNonSync) }}
+            walk(config, config.getId().toTranslationKey(), ignoreNonSync) {_, str, v, prop, _ -> toml[str]?.let{
+                if(v is EntryDeserializer<*>) {
+                    v.deserializeEntry(it, errorBuilder, str, ignoreNonSync)
+                } else if (v != null){
+                    val basicValidation = UpdateManager.INSTANCE.basicValidationStrategy(v,prop.returnType)
+                    if (basicValidation != null){
+                        val thing = basicValidation.deserializeEntry(it, errorBuilder, str, ignoreNonSync)
+                        if (prop is KMutableProperty<*> && prop.visibility == KVisibility.PUBLIC){
+                            prop.setter.call(config, thing.get())
+                        }
+                    }
+                }
+            }
+            }
         } catch(e: Exception){
             errorBuilder.add("Critical error encountered while deserializing update")
         }
@@ -473,7 +492,7 @@ object ConfigApiImpl {
         FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
     }
 
-    fun<T: Walkable> walk(config: T, prefix: String, ignoreNonSync: Boolean,  walkAction: WalkAction){
+    fun<W: Walkable> walk(config: W, prefix: String, ignoreNonSync: Boolean,  walkAction: WalkAction){
         for (property in config.javaClass.kotlin.memberProperties.filter {
             !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
             && it is KMutableProperty<*>
@@ -481,7 +500,7 @@ object ConfigApiImpl {
         ) {
             val newPrefix = prefix + "." + property.name
             val propVal = property.get(config)
-            walkAction.act(prefix, newPrefix, propVal, property.annotations)
+            walkAction.act(prefix, newPrefix, propVal, property, property.annotations)
             if (propVal is Walkable){
                 walk(propVal, newPrefix, ignoreNonSync, walkAction)
             }
@@ -489,6 +508,6 @@ object ConfigApiImpl {
     }
 
     fun interface WalkAction{
-        fun act(oldPrefix: String, newPrefix: String, element: Any?, annotations: List<Annotation>)
+        fun act(oldPrefix: String, newPrefix: String, element: Any?, elementProp: KProperty<*>, annotations: List<Annotation>)
     }
 }

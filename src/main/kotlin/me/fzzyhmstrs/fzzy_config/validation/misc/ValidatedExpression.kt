@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
-import me.fzzyhmstrs.fzzy_config.math.Expression
+import me.fzzyhmstrs.fzzy_config.util.Expression
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -24,14 +24,24 @@ import net.peanuuutz.tomlkt.TomlLiteral
  * @param defaultValue String representation of the desired math expression, parsed to a cached [Expression] internally.
  * @param validVars Set<Char> representing the valid variable characters the user can utilize in their expression.
  * @param validator [EntryValidator], validates entered math strings
- * @Sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedExpression]
- * @Sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.evalExpression]
+ * @Sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedExpression
+ * @Sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.evalExpression
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @throws IllegalStateException if the provided defaultValue is not a parsable Expression.
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedExpression @JvmOverloads constructor(defaultValue: String, private val validVars: Set<Char> = setOf(), private val validator: EntryValidator<String> = EntryValidator{ i, _ -> Expression.tryTest(i, validVars).wrap(i)})
+class ValidatedExpression @JvmOverloads constructor(
+    defaultValue: String,
+    private val validVars: Set<Char> = setOf(),
+    private val validator: EntryValidator<String> = object: EntryValidator<String>{
+        override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
+            return Expression.tryTest(input, validVars).wrap(input)
+        }
+        override fun toString(): String{
+            return "Dummy test with valid variable chars"
+        }
+    })
     :
     ValidatedField<String>(defaultValue),
     Expression
@@ -98,6 +108,10 @@ class ValidatedExpression @JvmOverloads constructor(defaultValue: String, privat
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
         TODO("Not yet implemented")
+    }
+
+    override fun toString(): String {
+        return "Validated Expression[value=$parsedExpression, vars=$validVars, validation=$validator]"
     }
 
     @Environment(EnvType.CLIENT)

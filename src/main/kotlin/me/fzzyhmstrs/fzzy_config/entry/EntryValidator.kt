@@ -13,7 +13,7 @@ import java.util.function.Predicate
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-fun interface EntryValidator<T: Any> {
+fun interface EntryValidator<T> {
     fun validateEntry(input: T, type: ValidationType): ValidationResult<T>
 
     class Builder<T: Any>: AbstractBuilder<T, Builder<T>>() {

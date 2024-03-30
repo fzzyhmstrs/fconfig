@@ -29,13 +29,13 @@ import java.util.function.UnaryOperator
  * @param defaultValue String, the string value of the default identifier
  * @param allowableIds [AllowableIdentifiers] instance. Defines the predicate for valid ids, and the supplier of valid id lists
  * @param validator [EntryValidator]<String> handles validation of individual entries. Defaults to validation based on the predicate provided in allowableIds
- * @see [me.fzzyhmstrs.fzzy_config.validation.list.ValidatedIdentifierList]
- * @see [me.fzzyhmstrs.fzzy_config.validation.map.ValidatedIdentifierMap]
- * @see [ofTag]
- * @see [ofRegistry]
- * @see [ofList]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedIdentifier]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedIdentifier
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap
+ * @see ofTag
+ * @see ofRegistry
+ * @see ofList
+
  * @author fzzyhmstrs
  * @since 0.1.2
  */
@@ -80,6 +80,16 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
      * @since 0.2.0
      */
     constructor(defaultNamespace: String, defaultPath: String): this(Identifier(defaultNamespace, defaultPath), AllowableIdentifiers.ANY)
+
+    /**
+     * An unbounded validated identifier with a dummy default value
+     *
+     * Validation will be limited to ensuring inputs are valid identifiers
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.emptyIdentifier]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    constructor(): this(Identifier("c:/c"), AllowableIdentifiers.ANY)
 
     override fun copyStoredValue(): Identifier {
         return Identifier(storedValue.toString())

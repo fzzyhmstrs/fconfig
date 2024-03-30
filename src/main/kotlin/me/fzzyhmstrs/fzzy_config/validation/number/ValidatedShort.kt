@@ -11,13 +11,12 @@ import net.peanuuutz.tomlkt.toShort
 
 /**
  * A validated short number
- *
  * @param defaultValue Short. the default value of this wrapper
  * @param maxValue Short. the maximum allowed value, inclusive
  * @param minValue Short. the minimum allowed value, inclusive
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedShort]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxShort]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedShort
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxShort
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @author fzzyhmstrs
  * @since 0.1.0
@@ -29,7 +28,7 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
      * @param minValue Short. the minimum allowed value, inclusive
      * @param maxValue Short. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxShort]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxShort
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -43,7 +42,7 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Short. the default value of this wrapper
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedShort]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedShort
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -55,7 +54,7 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
      * The validation will be limited to ensuring the value de/serializes as a short, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyShort]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyShort
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -83,5 +82,17 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Short>): ClickableWidget {
         TODO("Not yet implemented")
+    }
+
+    override fun toString(): String {
+        val validation = if(minValue==Short.MIN_VALUE && maxValue== Short.MAX_VALUE)
+            "Unbounded"
+        else if(minValue == Short.MIN_VALUE)
+            "less than $maxValue"
+        else if (maxValue == Short.MAX_VALUE)
+            "greater than $minValue"
+        else
+            "between $minValue and $maxValue"
+        return "Validated Short[value=$storedValue, validation=$validation]"
     }
 }

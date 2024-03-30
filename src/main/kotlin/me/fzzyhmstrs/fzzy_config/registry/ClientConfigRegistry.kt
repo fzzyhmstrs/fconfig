@@ -30,7 +30,7 @@ object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { Pair(it.value,SyncedConfigRegistry.hasConfig(it.key)) })
+                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { Pair(it.value, SyncedConfigRegistry.hasConfig(it.key)) })
         }
         manager.openScreen(scope)
     }
@@ -64,7 +64,7 @@ object ClientConfigRegistry {
     @Environment(EnvType.CLIENT)
     internal fun registerConfig(config: Config){
         validScopes.add(config.getId().namespace)
-        UpdateManager.applyKeys(config)
+        UpdateManager.INSTANCE.applyKeys(config)
         clientConfigs[config.getId().toTranslationKey()] = config
     }
 }

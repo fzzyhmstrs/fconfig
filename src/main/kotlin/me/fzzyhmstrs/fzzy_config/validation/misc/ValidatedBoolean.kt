@@ -62,6 +62,10 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
         return ValidationResult.success(input)
     }
 
+    override fun instanceEntry(): Entry<Boolean> {
+        return ValidatedBoolean(copyStoredValue())
+    }
+
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<Boolean>): ClickableWidget {
         return ButtonWidget.builder(
@@ -74,7 +78,7 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
             .build()
     }
 
-    override fun instanceEntry(): Entry<Boolean> {
-        return ValidatedBoolean(this.defaultValue)
+    override fun toString(): String {
+        return "Validated Boolean[value=$storedValue, validation=true or false]"
     }
 }

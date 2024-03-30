@@ -42,15 +42,17 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
     private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
     private val regex = Regex("(?=\\p{Lu})")
+    private var manager: UpdateManager = UpdateManager()
 
     init{
         prepareScreens()
+
     }
 
     internal fun receiveForwardedUpdate(update: String, player: UUID, scope: String) {
         var entry: Entry<*>? = null
         for ((config,_) in configs){
-            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){_, new, thing, _ ->
+            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){_, new, thing, _, _ ->
                 if (new == scope){
                     if(thing is Entry<*>){
                         entry = thing
@@ -70,14 +72,17 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         }
     }
 
-    internal fun openScreen(scope: String = this.scope){
-        configs.forEach { UpdateManager.pushStates(it.first) }
+    internal fun openScreen(scope: String = this.scope) {
+        if (MinecraftClient.getInstance().currentScreen !is ConfigScreen) {
+            manager = UpdateManager()
+            configs.forEach { manager.pushStates(it.first) }
+        }
         openScopedScreen(scope)
     }
 
     private fun openScopedScreen(scope: String){
         val screen = screens[scope]?.build() ?: return
-        MinecraftClient.getInstance().currentScreen = screen
+        MinecraftClient.getInstance().setScreen(screen)
     }
 
     private fun prepareScreens(){
@@ -128,7 +133,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         functionMap.put(scope, screenOpenEntryBuilder(config.translation(), config.description(), config.getId().toTranslationKey()))
         nameMap[config.getId().toTranslationKey()] = config.transLit(config::class.java.simpleName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){old, new, thing, annotations ->
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {old, new, thing, prop, annotations ->
             if(thing is Walkable) {
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
@@ -138,6 +143,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                 nameMap[new] = name
+                thing.setUpdateManager(manager)
                 if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations))
                     if (ConfigApiImpl.isNonSync(annotations))
                         functionMap.put(old, forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), thing))
@@ -145,6 +151,23 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
                         functionMap.put(old, updatableEntryBuilder(name, thing.descLit(getComments(annotations)), thing))
                 else
                     functionMap.put(old, noPermsEntryBuilder(name, thing.descLit(getComments(annotations))))
+            } else if (thing != null) {
+                val basicValidation = manager.basicValidationStrategy(thing,prop.returnType)
+                if (basicValidation != null) {
+                    val fieldName = new.substringAfterLast('.')
+                    val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+                    nameMap[new] = name
+                    basicValidation.setEntryKey(new)
+                    basicValidation.pushState()
+                    basicValidation.setUpdateManager(manager)
+                    if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations))
+                        if (ConfigApiImpl.isNonSync(annotations))
+                            functionMap.put(old, forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), basicValidation))
+                        else
+                            functionMap.put(old, updatableEntryBuilder(name, thing.descLit(getComments(annotations)), basicValidation))
+                    else
+                        functionMap.put(old, noPermsEntryBuilder(name, thing.descLit(getComments(annotations))))
+                }
             }
         }
     }
@@ -194,8 +217,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         }
         return ConfigScreenBuilder {
             val screen = ConfigScreen(name,this, configListFunction, functionList)
-            val currentScreen = MinecraftClient.getInstance().currentScreen
-            screen.parent = currentScreen
+            screen.parent = MinecraftClient.getInstance().currentScreen
             screen
         }
     }
@@ -262,16 +284,20 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
 
     @Internal
     override fun apply() {
-        SyncedConfigRegistry.updateServer(this.configs.map { it.first },UpdateManager.flush(),getPlayerPermissionLevel())
+        val updates = this.configs.filter { !it.second }.associate { it.first.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.first,manager, mutableListOf()) }
+        SyncedConfigRegistry.updateServer(updates, UpdateManager.INSTANCE.flush(), getPlayerPermissionLevel())
+        for (config in configs){
+            config.first.save()
+        }
 
     }
     @Internal
     override fun revert() {
-        UpdateManager.revertAll()
+        UpdateManager.INSTANCE.revertAll()
     }
     @Internal
     override fun changes(): Int {
-        return UpdateManager.changes()
+        return UpdateManager.INSTANCE.changes()
     }
     @Internal
     override fun changesWidget() {

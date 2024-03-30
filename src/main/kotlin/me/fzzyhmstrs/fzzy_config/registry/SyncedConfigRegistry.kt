@@ -37,16 +37,7 @@ object SyncedConfigRegistry {
         ClientPlayNetworking.send(SettingForwardCustomPayload(update,uuid,scope))
     }
 
-    fun <T: Config> updateServer(configs: List<T>, changeHistory: List<String>, playerPerm: Int){
-        val errors = mutableListOf<String>()
-        val serializedConfigs: MutableMap<String,String> = mutableMapOf()
-        for (config in configs) {
-            serializedConfigs[config.getId().toTranslationKey()] = ConfigApiImpl.serializeUpdate(config, errors)
-        }
-        if (errors.isNotEmpty()){
-            val errorsResult = ValidationResult.error(true, "Critical error(s) encountered while serializing client-updated Config Class! Output may not be complete.")
-            errorsResult.writeError(errors)
-        }
+    fun updateServer(serializedConfigs: Map<String,String>, changeHistory: List<String>, playerPerm: Int){
         ClientPlayNetworking.send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
     }
 
