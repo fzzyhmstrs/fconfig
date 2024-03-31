@@ -21,14 +21,14 @@ import java.util.*
 open class PopupWidgetScreen(title: Text) : Screen(title) {
 
     private val popupWidgets: LinkedList<PopupWidget> = LinkedList()
-    private val fillColor = Color(55,55,55,55).rgb
+    private val fillColor = Color(45,45,45,90).rgb
 
     private fun activeWidget(): PopupWidget?{
         return popupWidgets.peek()
     }
 
     protected open fun initPopup() {
-        popupWidgets.forEach {
+        popupWidgets.descendingIterator().forEach {
             it.position(width,height)
         }
     }
@@ -40,10 +40,14 @@ open class PopupWidgetScreen(title: Text) : Screen(title) {
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         super.render(context, mouseX, mouseY, delta)
-        for (popup in popupWidgets.descendingIterator()){
-            RenderSystem.disableDepthTest()
+        for ((index,popup) in popupWidgets.descendingIterator().withIndex()){
             context.fill(0,0,width,height,fillColor)
-            popup.render(context, mouseX, mouseY, delta)
+            this.applyBlur(delta)
+            if(index == popupWidgets.lastIndex)
+                popup.render(context, mouseX, mouseY, delta)
+            else
+                popup.render(context, 0, 0, delta)
+            context.matrices.translate(0f,0f,500f)
         }
     }
 
@@ -51,6 +55,9 @@ open class PopupWidgetScreen(title: Text) : Screen(title) {
         val popupWidget = activeWidget() ?: return super.mouseClicked(mouseX, mouseY, button)
         if (popupWidget.isMouseOver(mouseX, mouseY)){
             return popupWidget.mouseClicked(mouseX, mouseY, button)
+        } else {
+            if(popupWidget.closesOnMissedClick())
+                setPopup(null)
         }
         return false
     }
@@ -73,8 +80,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title) {
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         val popupWidget = activeWidget() ?: return super.keyPressed(keyCode, scanCode, modifiers)
         if (keyCode == GLFW.GLFW_KEY_ESCAPE){
-            popupWidget.onClose()
-            popupWidgets.pop()
+            setPopup(null)
             return true
         }
         return popupWidget.keyPressed(keyCode, scanCode, modifiers)
@@ -95,6 +101,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title) {
     fun setPopup(widget: PopupWidget?){
         if(widget == null){
             popupWidgets.pop().onClose()
+            popupWidgets.peek()?.blur()
         } else {
             popupWidgets.push(widget)
             widget.position(width,height)

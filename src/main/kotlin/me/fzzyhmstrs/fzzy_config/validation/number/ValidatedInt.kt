@@ -15,6 +15,7 @@ import net.peanuuutz.tomlkt.toInt
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedInt
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxInt
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.java.ValidatedNumberJava.validatedInt
  * @author fzzyhmstrs
  * @since 0.1.0
  */

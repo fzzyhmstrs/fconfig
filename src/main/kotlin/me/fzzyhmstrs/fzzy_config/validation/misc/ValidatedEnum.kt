@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApiClient
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreen
@@ -141,15 +142,13 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
             buttonWidth = max(150, buttonWidth + 4)
             var prevParent = "title"
             for (const in constants){
-                val button = EnumOptionWidget(const, buttonWidth, {c -> (c as Enum<*>) != entry.supplyEntry()}, { entry.applyEntry(it); (MinecraftClient.getInstance().currentScreen as? ConfigScreen)?.setPopup(null) })
+                val button = EnumOptionWidget(const, buttonWidth, {c -> (c as Enum<*>) != entry.supplyEntry()}, { entry.applyEntry(it); ConfigApiClient.setPopup(null) })
                 builder.addElement(const.name,button,prevParent,PopupWidget.Builder.PositionRelativePos.BELOW)
                 prevParent = const.name
             }
             builder.positionX(PopupWidget.Builder.boundedByScreen { w -> this.x + this.width/2 - w/2 })
             builder.positionY(PopupWidget.Builder.boundedByScreen { this.y - 20 })
-            (MinecraftClient.getInstance().currentScreen as? ConfigScreen)?.setPopup(
-                builder.build()
-            )
+            ConfigApiClient.setPopup(builder.build())
         }
     }
 

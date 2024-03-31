@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "DeprecatedCallableAddReplaceWith")
 
 package me.fzzyhmstrs.fzzy_config.api
 
@@ -237,7 +237,7 @@ object ConfigApi {
      * Used to create a directory in the config parent directory inside the .minecraft folder. If the directory can't be created, the right member of the returning Pair will be false.
      *
      * @param folder the base folder for created directories. Should be considered analogous to the 'namespace' for a mod using this lib
-     * @param subfolder subfolders for specific configs. Will typically be blank
+     * @param subfolder sub-folders for specific configs. Will typically be blank
      * @return A Pair<File, Boolean>, with a [File] instance and whether the directory could be successfully created
      * @author fzzyhmstrs
      * @since 0.1.0

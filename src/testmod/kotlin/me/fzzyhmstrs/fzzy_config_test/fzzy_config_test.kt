@@ -1,16 +1,16 @@
-
+package me.fzzyhmstrs.fzzy_config_test
 import com.mojang.brigadier.CommandDispatcher
-import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import me.fzzyhmstrs.fzzy_config_test.test.TestPopupScreen
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import kotlin.random.Random
-
-import java.util.*
 
 object FC: ModInitializer {
     const val MOD_ID = "fzzy_config_test"
@@ -23,14 +23,28 @@ object FC: ModInitializer {
 
 object FCC: ClientModInitializer {
 
+    var openDamnScreen = ""
+
     override fun onInitializeClient() {
         ClientCommandRegistrationCallback.EVENT.register{ dispatcher, _ ->
             registerClientCommands(dispatcher)
         }
+        ClientTickEvents.START_CLIENT_TICK.register{client ->
+            if (openDamnScreen != "") {
+                client.setScreen(TestPopupScreen())
+                openDamnScreen = ""
+            }
+        }
     }
 
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>){
-
+        dispatcher.register(
+            ClientCommandManager.literal("test_screen_1")
+                .executes{ context ->
+                    openDamnScreen = "please"
+                    1
+                }
+        )
     }
 }
 

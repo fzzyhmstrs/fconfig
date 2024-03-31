@@ -10,6 +10,7 @@ import net.minecraft.client.gui.*
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.gui.widget.Widget
 import net.minecraft.text.Text
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
 import java.util.function.Function
+import java.util.function.Supplier
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
@@ -53,6 +55,15 @@ open class PopupWidget
         this.onClose.run()
     }
 
+    fun closesOnMissedClick(): Boolean{
+        return closeOnClickOutOfBounds
+    }
+
+    open fun blur() {
+        val guiNavigationPath = this.focusedPath
+        guiNavigationPath?.setFocused(false)
+    }
+
     fun position(screenWidth: Int, screenHeight: Int){
         this.x = positionX.apply(screenWidth,width) //screenWidth/2 - width/2
         this.y = positionY.apply(screenHeight,height) //screenHeight/2 - height/2
@@ -67,12 +78,17 @@ open class PopupWidget
         RenderSystem.enableBlend()
         context.drawGuiTexture(BACKGROUND, x, y, width, height)
         for (drawable in drawables) {
+            RenderSystem.disableDepthTest()
             drawable.render(context, mouseX, mouseY, delta)
         }
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         return super.mouseClicked(mouseX, mouseY, button).takeIf { it } ?: isMouseOver(mouseX, mouseY)
+    }
+
+    override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
+        return mouseX >= x.toDouble() && mouseY >= y.toDouble() && mouseX < (x + width).toDouble() && mouseY < (y + height).toDouble()
     }
 
     override fun setFocused(focused: Element?) {
@@ -121,17 +137,17 @@ open class PopupWidget
     @Environment(EnvType.CLIENT)
     class Builder(private val title: Text, spacingW: Int = 4, spacingH: Int = 4) {
 
-        private var width: Int = MinecraftClient.getInstance().textRenderer.getWidth(title) + 8
+        private var width: Int = MinecraftClient.getInstance().textRenderer.getWidth(title) + 12
         private var height: Int = 17
         private var positionX: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var positionY: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var onClose = Runnable { }
         private var clickOutOfBounds = true
 
-        private val xPos = RelPos(ImmutablePos(4),0)
-        private val yPos = RelPos(ImmutablePos(4),0)
-        private val wPos = RelPos(xPos,width)
-        private val hPos = RelPos(yPos,height)
+        private val xPos = RelPos(ImmutablePos(6),0)
+        private val yPos = RelPos(ImmutablePos(6),0)
+        private val wPos = RelPos(xPos,width - 12)
+        private val hPos = RelPos(yPos,height - 12)
         private val set = PosSet(xPos,yPos,wPos,hPos,spacingW,spacingH)
 
         private val titleElement: PositionedElement<TextWidget> = createInitialElement()
@@ -140,14 +156,12 @@ open class PopupWidget
         )
 
         private fun updateWidth(newWidth: Int) {
-            if(newWidth <= width) return
             width = newWidth
-            wPos.set(newWidth)
+            wPos.set(newWidth - 12)
         }
         private fun updateHeight(newHeight: Int) {
-            if(newHeight <= height) return
             height = newHeight
-            hPos.set(newHeight)
+            hPos.set(newHeight - 12)
         }
 
         private fun createInitialElement(): PositionedElement<TextWidget>{
@@ -155,8 +169,8 @@ open class PopupWidget
             if(set.spacingH < 4)
                 widget.height = widget.height + ((4 - set.spacingH) * 2)
             val posX = SuppliedPos(xPos,0) { (wPos.get() - xPos.get()) / 2 - widget.width / 2 }
-            val posY = RelPos(yPos, set.spacingH)
-            return PositionedElement(widget,posX,posY,PositionGlobalAlignment.ALIGN_CENTERED)
+            val posY = RelPos(yPos, 0)
+            return PositionedElement(widget,posX,posY,PositionGlobalAlignment.ALIGN_CENTER)
         }
 
         private fun<E> createPositionedElement(set: PosSet, el: E, parent: String, positions: Array<out Position>): PositionedElement<E> where E: Element, E: Widget{
@@ -176,16 +190,20 @@ open class PopupWidget
         }
 
         private fun attemptRecomputeDims(){
-            var maxW = width
-            var maxH = height
-            for (posEl in elements.values){
-                maxW = (posEl.getRight() + 4).takeIf { it > maxW } ?: maxW //4 = outer edge padding
-                maxW += ((posEl.getLeft() -4).takeIf { it < 0 } ?: 0) * -1 //4 = outer edge padding
-                maxH = (posEl.getBottom() + 4).takeIf { it > maxH } ?: maxH //4 = outer edge padding
+            var maxW = 0
+            var maxH = 0
+            for ((name,posEl) in elements){
+                println("[$name, ${posEl.x}, ${posEl.elWidth()}]");
+                maxW = (posEl.getRight() + 6 - ((posEl.getLeft() -6).takeIf { it < 0 } ?: 0)).takeIf { it > maxW } ?: maxW //6 = outer edge padding
+                maxH = (posEl.getBottom() + 6).takeIf { it > maxH } ?: maxH //6 = outer edge padding
+                println(maxW)
+                println(maxH)
             }
             updateWidth(maxW)
             updateHeight(maxH)
         }
+
+        var lastEl = "title"
 
         fun <E> addElementSpacedBoth(id: String, element: E, parent: String, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Element, E: Widget {
             val posEl = createPositionedElement(set.copy(spacingW = spacingW, spacingH = spacingH), element, parent, positions)
@@ -202,13 +220,29 @@ open class PopupWidget
             elements[id] = posEl
             return this
         }
-        fun <E> addElement(id: String, element: E, parent: String, vararg positions: Position): Builder where E: Element, E: Widget {
-            val posEl = createPositionedElement(set, element, parent, positions)
+        fun <E> addElementSpacedBoth(id: String, element: E, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Element, E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingW = spacingW, spacingH = spacingH), element, lastEl, positions)
             elements[id] = posEl
             return this
         }
+        fun <E> addElementSpacedW(id: String, element: E, spacingW: Int, vararg positions: Position): Builder where E: Element, E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingW = spacingW), element, lastEl, positions)
+            elements[id] = posEl
+            return this
+        }
+        fun <E> addElementSpacedH(id: String, element: E, spacingH: Int, vararg positions: Position): Builder where E: Element, E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingH = spacingH), element, lastEl, positions)
+            elements[id] = posEl
+            return this
+        }
+        fun <E> addElement(id: String, element: E, parent: String, vararg positions: Position): Builder where E: Element, E: Widget {
+            val posEl = createPositionedElement(set, element, parent, positions)
+            elements[id] = posEl
+            lastEl = id
+            return this
+        }
         fun <E> addElement(id: String, element: E, vararg positions: Position): Builder where E: Element, E: Widget {
-            return addElement(id, element, "", *positions)
+            return addElement(id, element, lastEl, *positions)
         }
 
         fun width(width: Int): Builder{
@@ -234,8 +268,8 @@ open class PopupWidget
             return this
         }
 
-        fun closeOnClickOutOfBounds(): Builder{
-            this.clickOutOfBounds = true
+        fun noCloseOnClick(): Builder{
+            this.clickOutOfBounds = false
             return this
         }
 
@@ -256,6 +290,8 @@ open class PopupWidget
                 xPos.set(x)
                 yPos.set(y)
                 for (posEl in elements.values){
+                    if (posEl.alignment == PositionGlobalAlignment.ALIGN_JUSTIFY)
+                        (posEl.element as? ClickableWidget)?.width = width - 12
                     posEl.update()
                 }
             }
@@ -265,6 +301,10 @@ open class PopupWidget
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         companion object {
+
+            fun at(a: Supplier<Int>): BiFunction<Int,Int,Int>{
+                return BiFunction { sd, d -> min(sd - d, a.get()) }
+            }
             fun boundedByScreen(f: Function<Int, Int>): BiFunction<Int,Int,Int>{
                 return BiFunction { sd, d -> min(sd - d, f.apply(d)) }
             }
@@ -291,7 +331,7 @@ open class PopupWidget
             },
             RIGHT {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(parent.x,el.width + globalSet.spacingW),prevY)
+                    return Pair(RelPos(parent.x,parent.elWidth() + globalSet.spacingW),prevY)
                 }
             }
         }
@@ -314,12 +354,12 @@ open class PopupWidget
             },
             VERTICAL_TO_RIGHT_EDGE {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(parent.x, parent.elWidth() - el.width), prevY)
+                    return Pair(SuppliedPos(parent.x, 0){ parent.elWidth() - el.width }, prevY)
                 }
             },
             CENTERED_HORIZONTALLY {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(parent.x, parent.elWidth()/2 - el.width/2), prevY)
+                    return Pair(SuppliedPos(parent.x, 0) { parent.elWidth()/2 - el.width/2 }, prevY)
                 }
             },
             CENTERED_VERTICALLY {
@@ -331,7 +371,7 @@ open class PopupWidget
         enum class PositionGlobalAlignment: PositionAlignment {
             ALIGN_RIGHT {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(globalSet.w,-el.width), prevY)
+                    return Pair(SuppliedPos(globalSet.w,0) {-el.width}, prevY)
                 }
             },
             ALIGN_LEFT {
@@ -344,7 +384,7 @@ open class PopupWidget
                     return Pair(SuppliedPos(globalSet.x,0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
                 }
             },
-            ALIGN_CENTERED {
+            ALIGN_CENTER {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                     return Pair(SuppliedPos(globalSet.x,0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
                 }

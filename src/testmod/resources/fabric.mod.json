@@ -20,15 +20,15 @@
     "client": [
       {
         "adapter": "kotlin",
-        "value": "me.fzzyhmstrs.fzzy_config.FCC"
+        "value": "me.fzzyhmstrs.fzzy_config_test.FCC"
       }
     ]
   },
   "depends": {
-    "fabricloader": ">=0.14.13",
+    "fabricloader": ">=0.15.7",
     "fabric": "*",
     "fabric-language-kotlin": ">=1.7.4+kotlin.1.6.21",
-    "minecraft": ">=1.19.3",
+    "minecraft": ">=1.20.1",
     "java": ">=17"
   }
 }

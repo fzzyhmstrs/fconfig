@@ -1,4 +1,4 @@
-package test
+package me.fzzyhmstrs.fzzy_config_test.test
 
 import me.fzzyhmstrs.fzzy_config.updates.UpdateApplier
 

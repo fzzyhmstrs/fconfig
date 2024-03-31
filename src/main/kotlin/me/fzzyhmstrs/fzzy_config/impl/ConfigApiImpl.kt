@@ -40,15 +40,15 @@ object ConfigApiImpl {
         }
     }
 
-    internal fun <T: Config> registerBoth(config: T): T{
+    private fun <T: Config> registerBoth(config: T): T{
         SyncedConfigRegistry.registerConfig(config)
         return registerClient(config)
     }
-    internal fun <T: Config> registerSynced(config: T): T{
+    private fun <T: Config> registerSynced(config: T): T{
         SyncedConfigRegistry.registerConfig(config)
         return config
     }
-    internal fun <T: Config> registerClient(config: T): T{
+    private fun <T: Config> registerClient(config: T): T{
         if(isClient)
             ConfigApiImplClient.registerConfig(config)
         return config
@@ -72,7 +72,7 @@ object ConfigApiImpl {
     }
 
     internal fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T{
-        //wrap entire method in a try-catch. don't need to have config oopsies causing a hard crash, just fall back
+        //wrap entire method in a try-catch. don't need to have config problems causing a hard crash, just fall back
         try {
             //create our directory, or bail if we can't for some reason
             val (dir,dirCreated) = makeDir(folder, subfolder)
@@ -213,7 +213,7 @@ object ConfigApiImpl {
                 orderById.containsKey(it.name)
                 && if (ignoreNonSync) true else !isNonSync(it)
             }.sortedBy { orderById[it.name] }) {
-                //has to be a public mutable property. private and protected and vals another way to have serialization ignore
+                //has to be a public mutable property. private and protected and val another way to have serialization ignore
                 if (it is KMutableProperty<*> && it.visibility == KVisibility.PUBLIC) {
                     //get the actual [thing] from the property
                     val propVal = it.get(config)
@@ -360,6 +360,7 @@ object ConfigApiImpl {
         return Pair(deserializeFromToml(config, toml, errorBuilder, ignoreNonSync), version)
     }
 
+
     private fun <T: Config> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): ValidationResult<T> {
         val inboundErrorSize = errorBuilder.size
         if (toml !is TomlTable) {
@@ -373,6 +374,7 @@ object ConfigApiImpl {
                 } else if (v != null){
                     val basicValidation = UpdateManager.INSTANCE.basicValidationStrategy(v,prop.returnType)
                     if (basicValidation != null){
+                        @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(it, errorBuilder, str, ignoreNonSync)
                         if (prop is KMutableProperty<*> && prop.visibility == KVisibility.PUBLIC){
                             prop.setter.call(config, thing.get())
@@ -423,25 +425,25 @@ object ConfigApiImpl {
         return Pair(dir,true)
     }
 
-    internal fun encodeToTomlElement(a: Any, clazz: KType): TomlElement?{
+    private fun encodeToTomlElement(a: Any, clazz: KType): TomlElement?{
         return try {
-            val strat = Toml.serializersModule.serializer(clazz)
-            Toml. encodeToTomlElement(strat, a)
+            val strategy = Toml.serializersModule.serializer(clazz)
+            Toml. encodeToTomlElement(strategy, a)
         } catch (e: Exception){
             null
         }
     }
 
-    internal fun decodeFromTomlElement(element: TomlElement, clazz: KType): Any?{
+    private fun decodeFromTomlElement(element: TomlElement, clazz: KType): Any?{
         return try {
-            val strat = Toml.serializersModule.serializer(clazz) as? KSerializer<*> ?: return null
-            Toml.decodeFromTomlElement(strat, element)
+            val strategy = Toml.serializersModule.serializer(clazz) as? KSerializer<*> ?: return null
+            Toml.decodeFromTomlElement(strategy, element)
         } catch (e: Exception){
             null
         }
     }
 
-    internal fun isNonSync(property: KProperty<*>): Boolean{
+    private fun isNonSync(property: KProperty<*>): Boolean{
         return isNonSync(property.annotations)
     }
     internal fun isNonSync(annotations: List<Annotation>): Boolean{
@@ -450,7 +452,7 @@ object ConfigApiImpl {
     internal fun tomlAnnotations(property: KAnnotatedElement): List<Annotation> {
         return property.annotations.map { mapJvmAnnotations(it) }.filter { it is TomlComment || it is TomlInline || it is TomlBlockArray || it is TomlMultilineString || it is TomlLiteralString || it is TomlInteger }
     }
-    internal fun mapJvmAnnotations(input: Annotation): Annotation{
+    private fun mapJvmAnnotations(input: Annotation): Annotation{
         return when(input) {
             is Comment -> TomlComment(input.value)
             is Inline -> TomlInline()
@@ -461,25 +463,12 @@ object ConfigApiImpl {
             else -> input
         }
     }
-    internal fun <T: Any> tomlHeaderAnnotations(field: KClass<T>): List<TomlHeaderComment>{
+    private fun <T: Any> tomlHeaderAnnotations(field: KClass<T>): List<TomlHeaderComment>{
         return field.annotations.mapNotNull { it as? TomlHeaderComment }
     }
-    internal fun getVersion(clazz: KClass<*>): Int{
+    private fun getVersion(clazz: KClass<*>): Int {
         val version = clazz.findAnnotation<Version>()
         return version?.version ?: 0
-    }
-
-    internal fun hasNeededPermLevel(playerPermLevel: Int, defaultPerm: Int, annotations: List<Annotation>): Boolean {
-        if (ConfigApiImpl.isNonSync(annotations)) return true
-        for (annotation in annotations){
-            if (annotation is WithPerms)
-                return playerPermLevel >= annotation.opLevel
-        }
-        for (annotation in annotations){
-            if (annotation is ClientModifiable)
-                return true
-        }
-        return playerPermLevel >= defaultPerm
     }
 
     internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null){

@@ -19,6 +19,7 @@ group = mavenGroup
 println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
 
 repositories {
+    mavenCentral()
 }
 
 sourceSets{
@@ -65,20 +66,22 @@ dependencies {
 
     val tomlktVersion: String by project
     implementation("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
-    include("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
+    include("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     testmodImplementation(sourceSets.main.get().output)
 }
 
-/*loom{
+loom{
     runs {
-        testModClient{
-
+        create("testmodClient"){
+            client()
+            name = "Testmod Client"
+            source(sourceSets["testmod"])
         }
     }
-}*/
+}
 
 tasks {
     val javaVersion = JavaVersion.VERSION_17
@@ -97,8 +100,12 @@ tasks {
         //targetCompatibility = javaVersion.toString()
     }
     jar {
-        from("LICENSE") { rename { "${it}_${base.archivesName}" } }
+        from("LICENSE") { rename { "${it}_${base.archivesName.get()}" } }
     }
+    /*remapJar{
+        val tomlktVersion: String by project
+        nestedJars.from(dependencies.)
+    }*/
     processResources {
         inputs.property("version", project.version)
         filesMatching("fabric.mod.json") { expand(mutableMapOf("version" to project.version)) }

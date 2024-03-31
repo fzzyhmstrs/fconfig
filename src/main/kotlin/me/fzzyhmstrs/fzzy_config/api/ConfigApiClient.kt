@@ -14,7 +14,7 @@ import net.fabricmc.api.Environment
 object ConfigApiClient {
 
     /**
-     * Sets a [PopupWidget] to the current screen, if the current screen is a [PopupWidgetScreen]
+     * Sets a [PopupWidget] to the current screen, if the current screen is a [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen]
      *
      * If a popup is already displayed, [PopupWidget.onClose] will be called on it before the new value is input.
      * @param popup [PopupWidget] or null. If null, the widget will be cleared, otherwise the current widget will be set to the passed one.
