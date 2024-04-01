@@ -7,6 +7,12 @@ class RelPos(private val parent: Pos, private var p: Int = 0): Pos {
     override fun set(new: Int) {
         p = new
     }
+    override fun inc(amount: Int) {
+        p += amount
+    }
+    override fun dec(amount: Int) {
+        p -= amount
+    }
     override fun toString(): String {
         return "[$parent + $p]"
     }

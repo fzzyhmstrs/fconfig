@@ -30,7 +30,7 @@ interface Translatable {
      * @since 0.2.0
      */
     fun translation(): MutableText{
-        return FcText.translatableWithFallback(translationKey(),this::class.java.simpleName)
+        return FcText.translatableWithFallback(translationKey(),this::class.java.simpleName.split(FcText.regex).joinToString(" "))
     }
     /**
      * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered.

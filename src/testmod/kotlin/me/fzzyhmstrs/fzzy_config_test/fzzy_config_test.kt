@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config_test
 import com.mojang.brigadier.CommandDispatcher
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -10,6 +11,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import me.fzzyhmstrs.fzzy_config_test.test.TestPopupScreen
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.minecraft.client.gui.Selectable
 import kotlin.random.Random
 
 object FC: ModInitializer {
@@ -25,7 +27,10 @@ object FCC: ClientModInitializer {
 
     var openDamnScreen = ""
 
+    val testEnum = ValidatedEnum(Selectable.SelectionType.FOCUSED)
+
     override fun onInitializeClient() {
+        testEnum.setEntryKey("fc.test.enum.name")
         ClientCommandRegistrationCallback.EVENT.register{ dispatcher, _ ->
             registerClientCommands(dispatcher)
         }

@@ -3,11 +3,11 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiClient
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.screen.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum.WidgetType
@@ -114,7 +114,7 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
     }
 
     @Environment(EnvType.CLIENT)
-    private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: Entry<T,*>): PressableWidget(0,0,90,20, FcText.empty()) {
+    private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedEnum<T>): PressableWidget(0,0,90,20, FcText.empty()) {
 
         val constants = entry.supplyEntry()::class.java.enumConstants.filter { choicePredicate.validateEntry(it,
             EntryValidator.ValidationType.STRONG).isValid() }
@@ -146,8 +146,9 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
                 builder.addElement(const.name,button,prevParent,PopupWidget.Builder.PositionRelativePos.BELOW)
                 prevParent = const.name
             }
-            builder.positionX(PopupWidget.Builder.boundedByScreen { w -> this.x + this.width/2 - w/2 })
-            builder.positionY(PopupWidget.Builder.boundedByScreen { this.y - 20 })
+            builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
+            builder.positionY(PopupWidget.Builder.popupContext { this.y - 20 })
+            builder.additionalNarration("fc.validated_field.enum.current".translate(entry.get().transLit(entry.get().name)))
             ConfigApiClient.setPopup(builder.build())
         }
     }

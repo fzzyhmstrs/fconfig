@@ -20,7 +20,13 @@ import java.util.function.Function
 internal class ConfigScreen(title: Text, private val manager: UpdateApplier, private val entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen,ClickableWidget>>) : PopupWidgetScreen(title) {
 
     internal var parent: Screen? = null
-    private var onClose: Consumer<ConfigScreen> = Consumer {_ -> if(this.parent == null) manager.apply(); this.client?.setScreen(parent)}
+    private var onClose: Consumer<ConfigScreen> = Consumer {_ ->
+        if(this.parent == null) {
+            manager.apply()
+            this.client?.narratorManager?.clear()
+        }
+        this.client?.setScreen(parent)
+    }
     private var onOpen: Consumer<ConfigScreen> = Consumer { _ -> }
 
     internal val layout = ThreePartsLayoutWidget(this)

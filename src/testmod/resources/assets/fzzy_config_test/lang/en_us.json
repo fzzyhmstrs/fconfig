@@ -1,3 +1,4 @@
 {
-
+  "fc.test.enum.name": "Selectable Type",
+  "fc.test.enum.name.desc": "Whether an element is currently focused or hovered over."
 }

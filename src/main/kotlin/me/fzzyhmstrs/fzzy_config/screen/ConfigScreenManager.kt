@@ -41,7 +41,6 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
 
     private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
-    private val regex = Regex("(?=\\p{Lu})")
     private var manager: UpdateManagerImpl = UpdateManagerImpl()
 
     init{
@@ -127,21 +126,22 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         this.screens = builders
     }
 
+    @Suppress("DEPRECATION")
     private fun walkConfig(config: Config, functionMap: ArrayListMultimap<String, Function<ConfigListWidget, ConfigEntry>>, nameMap: MutableMap<String, Text>, playerPermLevel: Int){
         val defaultPermLevel = config.defaultPermLevel()
         //putting the config buttons themselves, in the base scope. ex: "my_mod"
         functionMap.put(scope, screenOpenEntryBuilder(config.translation(), config.description(), config.getId().toTranslationKey()))
-        nameMap[config.getId().toTranslationKey()] = config.transLit(config::class.java.simpleName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+        nameMap[config.getId().toTranslationKey()] = config.transLit(config::class.java.simpleName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {old, new, thing, prop, annotations ->
             if(thing is Walkable) {
                 val fieldName = new.substringAfterLast('.')
-                val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+                val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                 nameMap[new] = name
                 functionMap.put(old, screenOpenEntryBuilder(name, thing.descLit(getComments(annotations)), new))
             } else if (thing is Updatable && thing is Entry<*,*>) {
                 val fieldName = new.substringAfterLast('.')
-                val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+                val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                 nameMap[new] = name
                 thing.setUpdateManager(manager)
                 if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations))
@@ -155,7 +155,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
                 val basicValidation = manager.basicValidationStrategy(thing,prop.returnType)?.instanceEntry()
                 if (basicValidation != null) {
                     val fieldName = new.substringAfterLast('.')
-                    val name = thing.transLit(fieldName.split(regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+                    val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                     nameMap[new] = name
                     basicValidation.setEntryKey(new)
                     basicValidation.pushState()

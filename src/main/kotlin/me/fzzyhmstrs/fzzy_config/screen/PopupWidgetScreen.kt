@@ -6,6 +6,7 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.*
@@ -18,12 +19,13 @@ import java.util.*
  * A screen that p
  */
 @Environment(EnvType.CLIENT)
-open class PopupWidgetScreen(title: Text) : Screen(title) {
+open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
 
-    private val popupWidgets: LinkedList<PopupWidget> = LinkedList()
+    override val popupWidgets: LinkedList<PopupWidget> = LinkedList()
     private val fillColor = Color(45,45,45,90).rgb
+    private var lastSelected: Element? = null
 
-    private fun activeWidget(): PopupWidget?{
+    override fun activeWidget(): PopupWidget?{
         return popupWidgets.peek()
     }
 
@@ -39,8 +41,11 @@ open class PopupWidgetScreen(title: Text) : Screen(title) {
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        super.render(context, mouseX, mouseY, delta)
-        for ((index,popup) in popupWidgets.descendingIterator().withIndex()){
+        if (popupWidgets.isEmpty())
+            super.render(context, mouseX, mouseY, delta)
+        else
+            super.render(context, 0, 0, delta)
+        for ((index,popup) in popupWidgets.descendingIterator().withIndex()) {
             context.fill(0,0,width,height,fillColor)
             this.applyBlur(delta)
             if(index == popupWidgets.lastIndex)
@@ -51,34 +56,8 @@ open class PopupWidgetScreen(title: Text) : Screen(title) {
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val popupWidget = activeWidget() ?: return super.mouseClicked(mouseX, mouseY, button)
-        if (popupWidget.isMouseOver(mouseX, mouseY)){
-            return popupWidget.mouseClicked(mouseX, mouseY, button)
-        } else {
-            if(popupWidget.closesOnMissedClick())
-                setPopup(null)
-        }
-        return false
-    }
-
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val popupWidget = activeWidget() ?: return super.mouseReleased(mouseX, mouseY, button)
-        if (popupWidget.isMouseOver(mouseX, mouseY) || popupWidget.isDragging) {
-            return popupWidget.mouseReleased(mouseX, mouseY, button)
-        }
-        return false
-    }
-
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        val popupWidget = activeWidget() ?: return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-        if (popupWidget.isMouseOver(mouseX, mouseY))
-            return popupWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-    }
-
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val popupWidget = activeWidget() ?: return super.keyPressed(keyCode, scanCode, modifiers)
+        val popupWidget = activeWidget() ?: return super<Screen>.keyPressed(keyCode, scanCode, modifiers)
         if (keyCode == GLFW.GLFW_KEY_ESCAPE){
             setPopup(null)
             return true
@@ -86,23 +65,20 @@ open class PopupWidgetScreen(title: Text) : Screen(title) {
         return popupWidget.keyPressed(keyCode, scanCode, modifiers)
     }
 
-    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return activeWidget()?.keyReleased(keyCode, scanCode, modifiers) ?: super.keyReleased(keyCode, scanCode, modifiers)
-    }
-
-    override fun charTyped(chr: Char, modifiers: Int): Boolean {
-        return activeWidget()?.charTyped(chr, modifiers) ?: super.charTyped(chr, modifiers)
-    }
-
     override fun addScreenNarrations(messageBuilder: NarrationMessageBuilder) {
         activeWidget()?.appendNarrations(messageBuilder) ?: super.addScreenNarrations(messageBuilder)
     }
 
-    fun setPopup(widget: PopupWidget?){
+    override fun setPopup(widget: PopupWidget?) {
         if(widget == null){
             popupWidgets.pop().onClose()
             popupWidgets.peek()?.blur()
+            if (popupWidgets.isEmpty())
+                focused = lastSelected
         } else {
+            if (popupWidgets.isEmpty())
+                this.lastSelected = focused
+            this.blur()
             popupWidgets.push(widget)
             widget.position(width,height)
         }

@@ -18,6 +18,7 @@
 	"fc.validated_field.color.hl.usage.keyboard": "Press left or right arrow to change color hue. Press up or down arrow to change color brightness",
 	"fc.validated_field.color.hl.usage.mouse": "Click the map to assign a hue and light value",
 	"fc.validated_field.color.int.desc": "Hexadecimal color representation.",
+	"fc.validated_field.enum.current": "Current Setting: %s",
 	"fc.validated_field.expression": "Edit Expression",
 
 	"fc.validated_field.update.error": "Encountered error while updating field [%1$s] from [%2$s] to [%3$s]: %4$s",

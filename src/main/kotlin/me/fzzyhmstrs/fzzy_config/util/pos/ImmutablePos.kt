@@ -6,6 +6,10 @@ class ImmutablePos(private val p: Int = 0): Pos {
     }
     override fun set(new: Int) {
     }
+    override fun inc(amount: Int) {
+    }
+    override fun dec(amount: Int) {
+    }
     override fun toString(): String {
         return "[$p]"
     }

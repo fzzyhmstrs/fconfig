@@ -11,6 +11,8 @@ import java.util.*
 
 object FcText {
 
+    internal val regex = Regex("(?=\\p{Lu})")
+
     fun translatable(key: String, vararg args: Any): MutableText {
         return Text.translatable(key, *args)
     }
@@ -63,7 +65,7 @@ object FcText {
     }
 
     fun String.translate(vararg args: Any): MutableText{
-        return translatable(this, args)
+        return translatable(this, *args)
     }
 
     fun Any?.translation(fallback: String): MutableText {
