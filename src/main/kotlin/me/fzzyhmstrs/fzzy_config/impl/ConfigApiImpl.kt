@@ -478,7 +478,7 @@ object ConfigApiImpl {
             FC.LOGGER.info("Updates made by: ${player.name.string}")
         FC.LOGGER.info("-------------------------")
         for (str in history)
-            FC.LOGGER.info("    $str")
+            FC.LOGGER.info("  $str")
         FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
     }
 
