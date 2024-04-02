@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.api
 
 /**
- * Defines the type of registries the config is registered to.
+ * Defines the registries the config is registered to.
  *
  * Default is [BOTH]
  * @author fzzyhmstrs
