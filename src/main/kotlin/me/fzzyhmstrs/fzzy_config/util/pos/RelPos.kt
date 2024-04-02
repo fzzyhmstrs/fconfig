@@ -6,7 +6,7 @@ package me.fzzyhmstrs.fzzy_config.util.pos
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class RelPos(private val parent: Pos, private var p: Int = 0): Pos {
+class RelPos @JvmOverloads constructor(private val parent: Pos, private var p: Int = 0): Pos {
     override fun get(): Int {
         return parent.get() + p
     }
