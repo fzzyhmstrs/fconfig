@@ -53,7 +53,7 @@ class UpdateManagerImpl: UpdateManager, BasicValidationProvider {
         val list: MutableList<String> = mutableListOf()
         for ((scope, updateLog) in changeHistory){
             for ((time, updates) in updateLog.entries()){
-                list.add("Updated scope [$scope] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: [${updates.string}]")
+                list.add("Updated scope [$scope] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: ${updates.string}")
             }
         }
         return list
