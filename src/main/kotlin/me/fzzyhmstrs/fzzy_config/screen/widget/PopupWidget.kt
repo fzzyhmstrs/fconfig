@@ -30,6 +30,14 @@ import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * A widget comprised of a collection of child elements that "Pops up" onto screens that implement [me.fzzyhmstrs.fzzy_config.screen.PopupParentElement]
+ *
+ * Multiple popups can stack onto PopupParentElements, and are removed in reverse oder they were added (First In Last Out)
+ * @see Builder
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 @Environment(EnvType.CLIENT)
 open class PopupWidget
     private constructor(
@@ -197,12 +205,24 @@ open class PopupWidget
         }
     }
 
+    /**
+     * Builds a [PopupWidget] from provided Elements and layout
+     * 
+     * All popups will come with a title widget Top Center of the layout. The next added element will key off this, or to manually layout off of it, use "title" as the element parent
+     * @param title [Text] - the header title shown at the top of the popup
+     * @param spacingW Int, optional - Defines the default horizontal padding between elements. Defaults to 4
+     * @param spacingH Int, optional - Defines the default vertical padding between elements. Defaults to using the value from spacingW
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     @Suppress("DEPRECATION","UNUSED")
     @Environment(EnvType.CLIENT)
-    class Builder(private val title: Text, spacingW: Int = 4, spacingH: Int = 4) {
+    class Builder @JvmOverloads constructor(private val title: Text, spacingW: Int = 4, spacingH: Int = spacingW) {
 
         private var width: Int = MinecraftClient.getInstance().textRenderer.getWidth(title) + 16
         private var height: Int = 21
+        private var manualWith: Int = -1
+        private var manualHeight: Int = -1
         private var positionX: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var positionY: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var onClose = Runnable { }
@@ -255,7 +275,309 @@ open class PopupWidget
             return PositionedElement(el, newX, newY, alignment)
         }
 
+        private var lastEl = "title"
+
+        /**
+         * Adds an element with custom vertical and horizontal padding, keyed off a manually defined parent element.
+         * 
+         * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
+         * @param E - Any subclass of [Widget]
+         * @param id String - the id of this element, used when an element refers to this one as a parent
+         * @param element E - the widget
+         * @param parent String - the id of the parent to key layout of this new element off of.
+         * @param spacingW Int - the custom horizontal padding
+         * @param spacingH Int - the custom vertical padding
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun <E> addElementSpacedBoth(id: String, element: E, parent: String, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingW = spacingW, spacingH = spacingH), element, parent, positions)
+            elements[id] = posEl
+            lastEl = id
+            return this
+        }
+        /**
+         * Adds an element with custom horizontal padding, keyed off a manually defined parent element.
+         * 
+         * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
+         * @param E - Any subclass of [Widget]
+         * @param id String - the id of this element, used when an element refers to this one as a parent
+         * @param element E - the widget
+         * @param parent String - the id of the parent to key layout of this new element off of.
+         * @param spacingW Int - the custom horizontal padding
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun <E> addElementSpacedW(id: String, element: E, parent: String, spacingW: Int, vararg positions: Position): Builder where E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingW = spacingW), element, parent, positions)
+            elements[id] = posEl
+            lastEl = id
+            return this
+        }
+        /**
+         * Adds an element with custom vertical padding, keyed off a manually defined parent element.
+         * 
+         * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
+         * @param E - Any subclass of [Widget]
+         * @param id String - the id of this element, used when an element refers to this one as a parent
+         * @param element E - the widget
+         * @param parent String - the id of the parent to key layout of this new element off of.
+         * @param spacingH Int - the custom vertical padding
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun <E> addElementSpacedH(id: String, element: E, parent: String, spacingH: Int, vararg positions: Position): Builder where E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingH = spacingH), element, parent, positions)
+            elements[id] = posEl
+            lastEl = id
+            return this
+        }
+        /**
+         * Adds an element with custom vertical and horizontal padding, automatically keyed off the last added element (or "title" if this is the first added element)
+         * 
+         * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
+         * @param E - Any subclass of [Widget]
+         * @param id String - the id of this element, used when an element refers to this one as a parent
+         * @param element E - the widget
+         * @param spacingW Int - the custom horizontal padding
+         * @param spacingH Int - the custom vertical padding
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun <E> addElementSpacedBoth(id: String, element: E, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingW = spacingW, spacingH = spacingH), element, lastEl, positions)
+            elements[id] = posEl
+            lastEl = id
+            return this
+        }
+        /**
+         * Adds an element with custom horizontal padding, automatically keyed off the last added element (or "title" if this is the first added element)
+         * 
+         * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
+         * @param E - Any subclass of [Widget]
+         * @param id String - the id of this element, used when an element refers to this one as a parent
+         * @param element E - the widget
+         * @param parent String - the id of the parent to key layout of this new element off of.
+         * @param spacingW Int - the custom horizontal padding
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun <E> addElementSpacedW(id: String, element: E, spacingW: Int, vararg positions: Position): Builder where E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingW = spacingW), element, lastEl, positions)
+            elements[id] = posEl
+            lastEl = id
+            return this
+        }
+        /**
+         * Adds an element with custom vertical padding, automatically keyed off the last added element (or "title" if this is the first added element)
+         * 
+         * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
+         * @param E - Any subclass of [Widget]
+         * @param id String - the id of this element, used when an element refers to this one as a parent
+         * @param element E - the widget
+         * @param parent String - the id of the parent to key layout of this new element off of.
+         * @param spacingH Int - the custom vertical padding
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun <E> addElementSpacedH(id: String, element: E, spacingH: Int, vararg positions: Position): Builder where E: Widget {
+            val posEl = createPositionedElement(set.copy(spacingH = spacingH), element, lastEl, positions)
+            elements[id] = posEl
+            lastEl = id
+            return this
+        }
+        /**
+         * Adds an element, keyed off a manually defined parent element. Uses the default padding.
+         * 
+         * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
+         * @param E - Any subclass of [Widget]
+         * @param id String - the id of this element, used when an element refers to this one as a parent
+         * @param element E - the widget
+         * @param parent String - the id of the parent to key layout of this new element off of.
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun <E> addElement(id: String, element: E, parent: String, vararg positions: Position): Builder where E: Widget {
+            val posEl = createPositionedElement(set, element, parent, positions)
+            elements[id] = posEl
+            lastEl = id
+            return this
+        }
+        /**
+         * Adds an element, automatically keyed off the last added element (or "title" if this is the first added element). Uses the default padding.
+         * 
+         * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
+         * @param E - Any subclass of [Widget]
+         * @param id String - the id of this element, used when an element refers to this one as a parent
+         * @param element E - the widget
+         * @param parent String - the id of the parent to key layout of this new element off of.
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun <E> addElement(id: String, element: E, vararg positions: Position): Builder where E: Widget {
+            return addElement(id, element, lastEl, *positions)
+        }
+
+        /**
+         * Adds a horizontal divider below the last element, or defined parent
+         * 
+         * The divider automatically uses the layout BELOW, ALIGN_JUSTIFY
+         * @param parent String?, optional - default value is null. If parent isn't null, the divider will be keyed off the defined parent
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmOverloads
+        fun addDivider(parent: String? = null): Builder{
+            val trueParent = parent ?: lastEl
+            addElement("divider_for_$trueParent", DividerWidget(10), trueParent, Position.BELOW, Position.ALIGN_JUSTIFY)
+            return this
+        }
+        /**
+         * Defines a manual width for the widget. Will override any automatic sizing computations for width
+         * @param width Int - the manual width of the Popup
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun width(width: Int): Builder{
+            this.manualWidth = width
+            return this
+        }
+        /**
+         * Defines a manual height for the widget. Will override any automatic sizing computations for height
+         * @param height Int - the manual height of the Popup
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun height(height: Int): Builder{
+            this.manualHeight = height
+            return this
+        }
+        /**
+         * Defines the X positioner function for this widget, X being the left edge of the widget, border included.
+         * 
+         * The default position function centers the widget horizontally on the screen
+         * @param positionX [BiFunction]<Int, Int, Int> - The X position BiFunction: (Screen Width, Popup Width) -> X position, globally on the screen
+         * @return Builder - this builder for further use
+         * @see at
+         * @see popupContext
+         * @see screenContext
+         * @see center
+         * @see centerOffset
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun positionX(positionX: BiFunction<Int,Int,Int>): Builder{
+            this.positionX = positionX
+            return this
+        }
+        /**
+         * Defines the Y positioner function for this widget, Y being the top edge of the widget, border included.
+         * 
+         * The default position function centers the widget vertically on the screen
+         * @param positionX [BiFunction]<Int, Int, Int> - The Y position BiFunction: (Screen Height, Popup Height) -> Y position, globally on the screen
+         * @return Builder - this builder for further use
+         * @see at
+         * @see popupContext
+         * @see screenContext
+         * @see center
+         * @see centerOffset
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun positionY(positionY: BiFunction<Int,Int,Int>): Builder{
+            this.positionY = positionY
+            return this
+        }
+        /**
+         * Defines an action to perform when this widget is closed
+         * @param onClose [Runnable] - the action to be performed
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun onClose(onClose: Runnable): Builder{
+            this.onClose = onClose
+            return this
+        }
+        /**
+         * The widget won't close if a click misses its bounding box. Normal behavior closes the popup on a missed click.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun noCloseOnClick(): Builder{
+            this.closeOnOutOfBounds = false
+            return this
+        }
+        /**
+         * Defines a custom background texture for the popup. Should be a Nine Slice texture
+         *
+         * NOTE: The border padding on a Popup is 8, inclusive of visual border and any "blank space" between the border and edges of elements.
+         * @param id Identifier - the sprite identifier of the custom background
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun background(id: Identifier): Builder{
+            this.background = id
+            return this
+        }
+        /**
+         * Appends a custom narration message to the end of the Popup title.
+         *
+         * This narration will be in the TITLE narration part, so it will narrate directly after the main title, and before any other narration such as USAGE, HINT, etc. There is a pause in narration between the title and each appended message
+         * @param message [Text] - the massage to be appended
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun additionalNarration(message: Text): Builder{
+            additionalTitleNarration.add(message)
+            return this
+        }
+
         private fun attemptRecomputeDims(){
+            if (manualHeight > 0 && manualWidth > 0){
+                updateWidth(manualWidth)
+                updateHeight(manualHeight)
+                return
+            }
             var maxW = 0
             var maxH = 0
             for ((name,posEl) in elements){
@@ -265,102 +587,23 @@ open class PopupWidget
                 println(maxW)
                 println(maxH)
             }
-            updateWidth(maxW)
-            updateHeight(maxH)
+            if (manualWidth <= 0)
+                updateWidth(maxW)
+            else
+                updateWidth(manualWidth)
+            if (manualHeight <= 0)
+                updateHeight(maxH)
+            else
+                updateHeight(manualHeight)
         }
 
-        private var lastEl = "title"
-
-        fun <E> addElementSpacedBoth(id: String, element: E, parent: String, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Widget {
-            val posEl = createPositionedElement(set.copy(spacingW = spacingW, spacingH = spacingH), element, parent, positions)
-            elements[id] = posEl
-            lastEl = id
-            return this
-        }
-        fun <E> addElementSpacedW(id: String, element: E, parent: String, spacingW: Int, vararg positions: Position): Builder where E: Widget {
-            val posEl = createPositionedElement(set.copy(spacingW = spacingW), element, parent, positions)
-            elements[id] = posEl
-            lastEl = id
-            return this
-        }
-        fun <E> addElementSpacedH(id: String, element: E, parent: String, spacingH: Int, vararg positions: Position): Builder where E: Widget {
-            val posEl = createPositionedElement(set.copy(spacingH = spacingH), element, parent, positions)
-            elements[id] = posEl
-            lastEl = id
-            return this
-        }
-        fun <E> addElementSpacedBoth(id: String, element: E, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Widget {
-            val posEl = createPositionedElement(set.copy(spacingW = spacingW, spacingH = spacingH), element, lastEl, positions)
-            elements[id] = posEl
-            lastEl = id
-            return this
-        }
-        fun <E> addElementSpacedW(id: String, element: E, spacingW: Int, vararg positions: Position): Builder where E: Widget {
-            val posEl = createPositionedElement(set.copy(spacingW = spacingW), element, lastEl, positions)
-            elements[id] = posEl
-            lastEl = id
-            return this
-        }
-        fun <E> addElementSpacedH(id: String, element: E, spacingH: Int, vararg positions: Position): Builder where E: Widget {
-            val posEl = createPositionedElement(set.copy(spacingH = spacingH), element, lastEl, positions)
-            elements[id] = posEl
-            lastEl = id
-            return this
-        }
-        fun <E> addElement(id: String, element: E, parent: String, vararg positions: Position): Builder where E: Widget {
-            val posEl = createPositionedElement(set, element, parent, positions)
-            elements[id] = posEl
-            lastEl = id
-            return this
-        }
-        fun <E> addElement(id: String, element: E, vararg positions: Position): Builder where E: Widget {
-            return addElement(id, element, lastEl, *positions)
-        }
-
-        @JvmOverloads
-        fun addDivider(parent: String? = null): Builder{
-            val trueParent = parent ?: lastEl
-            addElement("divider_for_$trueParent", DividerWidget(10), trueParent, Position.BELOW, Position.ALIGN_JUSTIFY)
-            return this
-        }
-
-        fun width(width: Int): Builder{
-            this.width = width
-            return this
-        }
-        fun height(height: Int): Builder{
-            this.height = height
-            return this
-        }
-
-        fun positionX(positionX: BiFunction<Int,Int,Int>): Builder{
-            this.positionX = positionX
-            return this
-        }
-        fun positionY(positionY: BiFunction<Int,Int,Int>): Builder{
-            this.positionY = positionY
-            return this
-        }
-
-        fun onClose(onClose: Runnable): Builder{
-            this.onClose = onClose
-            return this
-        }
-
-        fun noCloseOnClick(): Builder{
-            this.closeOnOutOfBounds = false
-            return this
-        }
-
-        fun background(id: Identifier): Builder{
-            this.background = id
-            return this
-        }
-
-        fun additionalNarration(message: Text){
-            additionalTitleNarration.add(message)
-        }
-
+        /**
+         * Builds this builder
+         * @return [PopupWidget] - the built widget
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun build(): PopupWidget {
             attemptRecomputeDims()
             attemptRecomputeDims() // we'll do two passes to try to cover weird cases where first pass doesn't cover everything
@@ -452,50 +695,202 @@ open class PopupWidget
                     posEl.update()
                 }
             }
-
-
             return PopupWidget(narratedTitle, width, height, closeOnOutOfBounds, background, positionX, positionY, positioner, onClose, children, selectables, drawables)
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /**
+         * Default position BiFunctions that can be used with [positionX] and [positionY]
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         @Environment(EnvType.CLIENT)
-        companion object {
-
+        companion object Positioners {
+            /**
+             * Positions a Popup dimention at a specific location
+             *
+             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off screen")
+             * @param a Supplier<Int> - the position to apply
+             * @return Bifunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
             fun at(a: Supplier<Int>): BiFunction<Int,Int,Int>{
                 return BiFunction { sd, d -> max(min(sd - d, a.get()),0) }
             }
+            /**
+             * Positions a Popup dimention based on Popup dimension context
+             *
+             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off screen")
+             * @param F Function<Int,Int> - function to provide the dimension. Supplies the corresponding widget size in the relevant dimension (PositionX -> widget width, etc)
+             * @return Bifunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
             fun popupContext(f: Function<Int, Int>): BiFunction<Int,Int,Int>{
                 return BiFunction { sd, d -> max(min(sd - d, f.apply(d)),0) }
             }
+            /**
+             * Positions a Popup dimention based on screen dimension context
+             *
+             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off screen")
+             * @param F Function<Int,Int> - function to provide the dimension. Supplies the corresponding screen size in the relevant dimension (PositionX -> screen width, etc)
+             * @return Bifunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
             fun screenContext(f: Function<Int, Int>): BiFunction<Int,Int,Int>{
                 return BiFunction { sd, d -> max(min(sd - d, f.apply(sd)),0) }
             }
+            /**
+             * Positions a Popup in the center of the screen
+             *
+             * This is the default behavior of the Builder, so typically won't be needed separately.
+             * @return Bifunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
             fun center(): BiFunction<Int,Int,Int> {
                 return BiFunction { sd, d -> sd/2 - d/2 }
             }
+            /**
+             * Positions a Popup in the center of the screen, offset by the provided amount
+             *
+             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off screen")
+             * @param o Supplier<Int> - the position offset to apply
+             * @return Bifunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
+            fun centerOffset(o: Supplier<Int>): BiFunction<Int,Int,Int> {
+                return BiFunction { sd, d -> max(min(sd - d,(sd/2 - d/2 + o.get())),0) }
+            }
         }
 
+        /**
+         * A layout position to apply to a popup element
+         * 
+         * Typical implementation requires at least two positions, a relative position and an alignment
+         * Positions are broken down into 3 sub-categories: 
+         * - [PositionRelativePos] - How to generally position an element relative to its parent
+         * - [PositionRelativeAlignment] - How to align an element in relation to the dimension features of its parent (top, bottom, left, and right edges etc.)
+         * - [PositionGlobalAlignment] - How to align an element in relation to the global dimensions of the Popup as a whole
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         @Environment(EnvType.CLIENT)
         sealed interface Position {
             fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos,Pos>
 
+            /**
+             * Collection of all implemented [Position]. Preferred practice is to use this collection rather than referring directly to the underlying Enums
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
             @Suppress("DEPRECATION","UNUSED")
             companion object Impl {
+                /**
+                 * Positions an element below its parent. Does not define horizontal alignment or positioning.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val BELOW = PositionRelativePos.BELOW
+                /**
+                 * Positions an element to the left of its parent. Does not define vertical alignment or positioning.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val LEFT = PositionRelativePos.LEFT
+                /**
+                 * Positions an element to the right of its parent. Does not define vertical alignment or positioning.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val RIGHT = PositionRelativePos.RIGHT
+                /**
+                 * Aligns an elements top edge horizontally with the top edge of its parent. Does not define any other position or alignment.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val HORIZONTAL_TO_TOP_EDGE = PositionRelativeAlignment.HORIZONTAL_TO_TOP_EDGE
+                /**
+                 * Aligns an elements bottom edge horizontally with the bottom edge of its parent. Does not define any other position or alignment.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val HORIZONTAL_TO_BOTTOM_EDGE = PositionRelativeAlignment.HORIZONTAL_TO_BOTTOM_EDGE
+                /**
+                 * Aligns an elements left edge vertically with the left edge of its parent. Does not define any other position or alignment.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val VERTICAL_TO_LEFT_EDGE = PositionRelativeAlignment.VERTICAL_TO_LEFT_EDGE
+                /**
+                 * Aligns an elements right edge vertically with the right edge of its parent. Does not define any other position or alignment.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val VERTICAL_TO_RIGHT_EDGE = PositionRelativeAlignment.VERTICAL_TO_RIGHT_EDGE
+                /**
+                 * Centers an element vertically relative to the vertical dimensions of its parent (top and bottom edges). Does not define any other position or alignment.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val CENTERED_VERTICALLY = PositionRelativeAlignment.CENTERED_VERTICALLY
+                /**
+                 * Centers an element horizontally relative to the horizontal dimensions of its parent (left and right edge). Does not define any other position or alignment.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val CENTERED_HORIZONTALLY = PositionRelativeAlignment.CENTERED_HORIZONTALLY
+                /**
+                 * Aligns an element to the left side of the Popup widget. Does not define any other position or alignment.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val ALIGN_LEFT = PositionGlobalAlignment.ALIGN_LEFT
+                /**
+                 * Aligns an element to the right side of the Popup widget. Does not define any other position or alignment.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val ALIGN_RIGHT = PositionGlobalAlignment.ALIGN_RIGHT
+                /**
+                 * Centers an element relative to the width of the Popup widget. Does not define any other position or alignment.
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val ALIGN_CENTER = PositionGlobalAlignment.ALIGN_CENTER
+                /**
+                 * Centers an element relative to the width of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+                 * 
+                 * Justification of this element won't take any overlapping elemnts into consideration, it will justify to the global left and right edges of the Popup regardless.
+                 *
+                 * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val ALIGN_JUSTIFY = PositionGlobalAlignment.ALIGN_JUSTIFY
+                /**
+                 * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+                 * 
+                 * Justification of this element WILL take elements to the right of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
+                 *
+                 * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val ALIGN_LEFT_AND_JUSTIFY = PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY
+                /**
+                 * Aligns an element to the right side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+                 * 
+                 * Justification of this element WILL take elements to the left of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
+                 *
+                 * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
+                 * @author fzzyhmstrs
+                 * @since 0.2.0
+                 */
                 val ALIGN_RIGHT_AND_JUSTIFY = PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY
             }
         }
