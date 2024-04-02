@@ -1,5 +1,10 @@
 package me.fzzyhmstrs.fzzy_config.util.pos
 
+/**
+ * An absolute [Pos]. Mutation of this pos will directly change it's position with no other offsets or other side effects.
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 class AbsPos(private var p: Int = 0): Pos {
     override fun get(): Int {
         return p
