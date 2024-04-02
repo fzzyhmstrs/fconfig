@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_config.util.pos
 
 /**
  * An immutable [Pos]. Typically used as a position "anchor" in other positions
+ * @param p Int - this Pos's position
  * @author fzzyhmstrs
  * @since 0.2.0
  */
