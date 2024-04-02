@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_config.util.pos
 
 /**
  * An absolute [Pos]. Mutation of this pos will directly change it's position with no other offsets or other side effects.
+ * @param p Int - this Pos's position
  * @author fzzyhmstrs
  * @since 0.2.0
  */
