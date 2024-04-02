@@ -83,8 +83,8 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
         TODO("Not yet implemented")
     }
 
-    override fun convert(input: Double): Float {
-        return input.toFloat()
+    override fun convert(input: Double): ValidationResult<Float> {
+        return ValidationResult.predicated(input.toFloat(),input == input.toFloat().toDouble(),"[$input] out of Bounds for float value (${-Float.MIN_VALUE} to ${Float.MAX_VALUE} )")
     }
 
     override fun toString(): String {

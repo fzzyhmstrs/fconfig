@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation
 
-import me.fzzyhmstrs.fzzy_config.api.Translatable
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
@@ -146,7 +146,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         return get()
     }
 
-    override fun applyEntry(input: T) {
+    override fun accept(input: T) {
         setAndUpdate(input)
     }
 

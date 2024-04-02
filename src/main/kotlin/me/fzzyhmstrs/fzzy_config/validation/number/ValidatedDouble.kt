@@ -77,8 +77,8 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
         return ValidatedDouble(copyStoredValue(), maxValue, minValue, widgetType)
     }
 
-    override fun convert(input: Double): Double {
-        return input
+    override fun convert(input: Double): ValidationResult<Double> {
+        return ValidationResult.success(input)
     }
 
     override fun toString(): String {

@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.api.EnumTranslatable
+import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.Expression
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validatedColor

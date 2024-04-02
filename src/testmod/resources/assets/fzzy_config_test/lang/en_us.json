@@ -1,4 +1,10 @@
 {
   "fc.test.enum.name": "Selectable Type",
-  "fc.test.enum.name.desc": "Whether an element is currently focused or hovered over."
+  "fc.test.enum.name.desc": "Whether an element is currently focused or hovered over.",
+  "fc.test.int.name": "Cool Test Int",
+  "fc.test.int.name.desc": "A number between 0 and 16, that defines how cool the number is.",
+  "fc.test.enum2.name": "Cycling Selectable",
+  "fc.test.enum2.name.desc": "Whether an element is currently focused or hovered over.",
+  "fc.test.int2.name": "Textbox Cool Int",
+  "fc.test.int2.name.desc": "A number between 0 and 16, that defines how cool the number is."
 }

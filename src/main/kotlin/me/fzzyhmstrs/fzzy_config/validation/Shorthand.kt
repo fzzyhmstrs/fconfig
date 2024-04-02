@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation
 
-import me.fzzyhmstrs.fzzy_config.api.Translatable
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet

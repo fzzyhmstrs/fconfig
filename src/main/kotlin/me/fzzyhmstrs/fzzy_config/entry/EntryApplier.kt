@@ -1,5 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.entry
 
+import java.util.function.Consumer
+
 /**
  * Applies input values into a complex [Entry]
  *
@@ -9,7 +11,9 @@ package me.fzzyhmstrs.fzzy_config.entry
  * @since 0.2.0
  */
 @FunctionalInterface
-fun interface EntryApplier<T> {
-    fun applyEntry(input: T)
+fun interface EntryApplier<T>: Consumer<T> {
+    fun applyEntry(input: T){
+        accept(input)
+    }
 
 }

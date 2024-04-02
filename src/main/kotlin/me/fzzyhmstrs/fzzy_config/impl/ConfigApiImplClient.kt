@@ -13,18 +13,11 @@ object ConfigApiImplClient {
         ClientConfigRegistry.registerConfig(config)
     }
 
-    internal fun openScreen(scope: String){
+    internal fun openScreen(scope: String) {
         ClientConfigRegistry.openScreen(scope)
     }
 
-    internal fun handleForwardedUpdate(update: String, player: UUID, scope: String){
+    internal fun handleForwardedUpdate(update: String, player: UUID, scope: String) {
         ClientConfigRegistry.handleForwardedUpdate(update, player, scope)
     }
-
-    internal fun setPopup(popup: PopupWidget?){
-        (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.setPopup(popup)
-    }
-
-
-
 }

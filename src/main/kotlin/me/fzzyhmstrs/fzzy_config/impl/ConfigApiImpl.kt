@@ -475,7 +475,7 @@ object ConfigApiImpl {
         FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
         FC.LOGGER.info("Completed updates for configs: [$id]")
         if (player != null)
-            FC.LOGGER.info("Updates made by: ${player.name}")
+            FC.LOGGER.info("Updates made by: ${player.name.string}")
         FC.LOGGER.info("-------------------------")
         for (str in history)
             FC.LOGGER.info("    $str")

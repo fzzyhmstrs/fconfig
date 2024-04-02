@@ -1,7 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
-import me.fzzyhmstrs.fzzy_config.api.Translatable
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting

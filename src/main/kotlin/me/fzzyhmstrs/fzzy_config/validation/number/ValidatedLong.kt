@@ -100,8 +100,8 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
         return ValidatedLong(defaultValue, maxValue, minValue, widgetType)
     }
 
-    override fun convert(input: Double): Long {
-        return input.toLong()
+    override fun convert(input: Double): ValidationResult<Long> {
+        return ValidationResult.success(input.toLong())
     }
 
     override fun toString(): String {

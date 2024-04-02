@@ -8,10 +8,30 @@ import java.util.*
 @JvmDefaultWithCompatibility
 interface PopupParentElement: ParentElement {
     val popupWidgets: LinkedList<PopupWidget>
+    var justClosedWidget: Boolean
+    var lastSelected: Element?
 
     fun activeWidget(): PopupWidget?
 
-    fun setPopup(widget: PopupWidget?)
+    fun blurElements()
+
+    fun initPopup(widget: PopupWidget)
+
+    fun setPopup(widget: PopupWidget?) {
+        if(widget == null){
+            justClosedWidget = true
+            popupWidgets.pop().onClose()
+            popupWidgets.peek()?.blur()
+            if (popupWidgets.isEmpty())
+                focused = lastSelected
+        } else {
+            if (popupWidgets.isEmpty())
+                this.lastSelected = focused
+            this.blurElements()
+            popupWidgets.push(widget)
+            initPopup(widget)
+        }
+    }
 
     override fun hoveredElement(mouseX: Double, mouseY: Double): Optional<Element> {
         return if (popupWidgets.isEmpty())
@@ -22,16 +42,19 @@ interface PopupParentElement: ParentElement {
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         val popupWidget = activeWidget() ?: return super.mouseClicked(mouseX, mouseY, button)
-        if (popupWidget.isMouseOver(mouseX, mouseY)){
-            return popupWidget.mouseClicked(mouseX, mouseY, button)
-        } else {
-            if(popupWidget.closesOnMissedClick())
+        if (popupWidget.mouseClicked(mouseX, mouseY, button) || popupWidget.isMouseOver(mouseX, mouseY)){
+            return true
+        } else if(popupWidget.closesOnMissedClick()) {
                 setPopup(null)
         }
         return false
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (justClosedWidget){
+            justClosedWidget = false
+            return false
+        }
         val popupWidget = activeWidget() ?: return super.mouseReleased(mouseX, mouseY, button)
         if (popupWidget.isMouseOver(mouseX, mouseY) || popupWidget.isDragging) {
             return popupWidget.mouseReleased(mouseX, mouseY, button)
@@ -41,16 +64,12 @@ interface PopupParentElement: ParentElement {
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         val popupWidget = activeWidget() ?: return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-        if (popupWidget.isMouseOver(mouseX, mouseY))
-            return popupWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+        return popupWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
         val popupWidget = activeWidget() ?: return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
-        if (popupWidget.isMouseOver(mouseX, mouseY))
-            return popupWidget.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
-        return false
+        return popupWidget.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
     }
 
     override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {

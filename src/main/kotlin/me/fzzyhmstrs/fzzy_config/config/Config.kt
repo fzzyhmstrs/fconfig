@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.api.Translatable
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import net.minecraft.util.Identifier

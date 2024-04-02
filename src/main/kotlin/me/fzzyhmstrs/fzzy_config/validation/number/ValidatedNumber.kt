@@ -8,6 +8,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.SLIDER
@@ -37,7 +38,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
             return ValidationResult.error(minValue, "Validated number [$input] below the valid range [$minValue] to [$maxValue]")
-        else if(input < minValue)
+        else if(input > maxValue)
             return ValidationResult.error(maxValue, "Validated number [$input] above the valid range [$minValue] to [$maxValue]")
         return ValidationResult.success(input)
     }
@@ -45,20 +46,20 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
             return ValidationResult.error(input, "Validated number [$input] below the valid range [$minValue] to [$maxValue]")
-        else if(input < minValue)
+        else if(input > maxValue)
             return ValidationResult.error(input, "Validated number [$input] above the valid range [$minValue] to [$maxValue]")
         return ValidationResult.success(input)
     }
 
-    protected abstract fun convert(input: Double): T
+    protected abstract fun convert(input: Double): ValidationResult<T>
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType){
             SLIDER -> {
-                ConfirmButtonSliderWidget(this,this.minValue, this.maxValue, choicePredicate, {d -> convert(d) }, { setAndUpdate(it) })
+                ConfirmButtonSliderWidget(this,this.minValue, this.maxValue, choicePredicate, {d -> convert(d).get() }, { setAndUpdate(it) })
             }
             TEXTBOX -> {
-                ConfirmButtonTextFieldWidget(this,choicePredicate,{d -> this.validateEntry(convert(d),EntryValidator.ValidationType.STRONG)}, { setAndUpdate(it) })
+                ConfirmButtonTextFieldWidget(this,choicePredicate,{d -> val result = convert(d); this.validateEntry(result.get(), EntryValidator.ValidationType.STRONG).also(result.isValid(), result.getError())}, { setAndUpdate(it) })
             }
         }
     }
@@ -92,7 +93,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     @Environment(EnvType.CLIENT)
     protected open class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double,T>, private val valueApplier: Consumer<T>):
-        ClickableWidget(0, 0, 90, 20, wrappedValue.get().toString().lit()) {
+        ClickableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
         companion object{
             private val TEXTURE = Identifier("widget/slider")
             private val HIGHLIGHTED_TEXTURE = Identifier("widget/slider_highlighted")
@@ -101,10 +102,9 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         }
 
-        private var confirmHovered = false
         private var confirmActive = false
         private var value: T = wrappedValue.get()
-        private val increment = max((maxValue.toDouble() - minValue.toDouble())/ 70.0, 1.0)
+        private val increment = max((maxValue.toDouble() - minValue.toDouble())/ 102.0, 1.0)
         private var isValid = validator.validateEntry(wrappedValue.get(),EntryValidator.ValidationType.STRONG).isValid()
 
         private fun isChanged(): Boolean{
@@ -118,17 +118,6 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
                 TEXTURE
         }
 
-        private fun getConfirmTexture(): Identifier {
-            return if(confirmActive) {
-                if (confirmHovered || this.isFocused)
-                    CONFIRM_HIGHLIGHTED_TEXTURE
-                else
-                    CONFIRM_TEXTURE
-            } else {
-                CONFIRM_INACTIVE_TEXTURE
-            }
-        }
-
         private fun getHandleTexture(): Identifier {
             return if (hovered || this.isFocused)
                 HANDLE_HIGHLIGHTED_TEXTURE
@@ -138,23 +127,21 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             this.confirmActive = isChanged() && isValid
-            confirmHovered = mouseX >= (x + 70) && mouseY >= y && mouseX < x + width && mouseY < y + height
             val minecraftClient = MinecraftClient.getInstance()
             context.setShaderColor(1.0f, 1.0f, 1.0f, alpha)
             RenderSystem.enableBlend()
             RenderSystem.defaultBlendFunc()
             RenderSystem.enableDepthTest()
-            context.drawGuiTexture(getTexture(), x, y, getWidth() - 20, getHeight())
+            context.drawGuiTexture(getTexture(), x, y, getWidth(), getHeight())
             val progress = MathHelper.getLerpProgress(value.toDouble(),minValue.toDouble(),maxValue.toDouble())
-            context.drawGuiTexture(getHandleTexture(), x + (progress * (width - 28).toDouble()).toInt(), y, 8, getHeight())
-            context.drawGuiTexture(getConfirmTexture(), x + getWidth() - 20, y, 20, getHeight())
+            context.drawGuiTexture(getHandleTexture(), x + (progress * (width - 8).toDouble()).toInt(), y, 8, getHeight())
             context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             this.drawScrollableText(context, minecraftClient.textRenderer, 2, 0xFFFFFF or (MathHelper.ceil(alpha * 255.0f) shl 24))
         }
 
         override fun drawScrollableText(context: DrawContext?, textRenderer: TextRenderer?, xMargin: Int, color: Int) {
             val i = x + xMargin
-            val j = x + getWidth() - xMargin - 20
+            val j = x + getWidth() - xMargin
             drawScrollableText(context, textRenderer, message, i, y, j, y + getHeight(), color)
         }
 
@@ -174,17 +161,16 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            if (KeyCodes.isToggle(keyCode)) {
-                if(this.confirmActive) {
-                    valueApplier.accept(value)
-                    this.confirmActive = isChanged() && isValid
-                }
-            }
             val bl = keyCode == GLFW.GLFW_KEY_LEFT
             if (bl || keyCode == GLFW.GLFW_KEY_RIGHT) {
                 val f = if (bl) -increment else increment
                 val ff = MathHelper.clamp(value.toDouble() + f, minValue.toDouble(), maxValue.toDouble())
                 this.setValue(ff)
+                this.isValid = validator.validateEntry(this.value,EntryValidator.ValidationType.STRONG).isValid()
+                if(isChanged() && isValid){
+                    valueApplier.accept(value)
+                    this.confirmActive = isChanged() && isValid
+                }
                 return true
             }
 
@@ -197,17 +183,10 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         private fun setValue(value: Double) {
             this.value = converter.apply(value)
-            this.message = value.toString().lit()
-            this.isValid = validator.validateEntry(this.value,EntryValidator.ValidationType.STRONG).isValid()
+            this.message = this.value.toString().lit()
         }
 
         override fun onClick(mouseX: Double, mouseY: Double) {
-            if(mouseX >= (x + 70).toDouble() && mouseY >= y.toDouble() && mouseX < (x + width).toDouble() && mouseY < (y + height).toDouble())
-                if(confirmActive){
-                    valueApplier.accept(value)
-                    this.confirmActive = isChanged() && isValid
-                    return
-                }
             setValueFromMouse(mouseX)
         }
 
@@ -219,94 +198,21 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         override fun playDownSound(soundManager: SoundManager?) {}
 
         override fun onRelease(mouseX: Double, mouseY: Double) {
+            this.isValid = validator.validateEntry(this.value,EntryValidator.ValidationType.STRONG).isValid()
+            if(isChanged() && isValid){
+                valueApplier.accept(value)
+                this.confirmActive = isChanged() && isValid
+            }
             super.playDownSound(MinecraftClient.getInstance().soundManager)
         }
     }
 
     @Environment(EnvType.CLIENT)
-    protected class ConfirmButtonTextFieldWidget<T: Number>(wrappedValue: Supplier<T>, choiceValidator: ChoiceValidator<T>, validationProvider: Function<Double, ValidationResult<T>>, private val valueApplier: Consumer<T>):
-        ClickableWidget(0,0, 90, 20, FcText.empty())
-    {
-        private val textFieldWidget = ValidationBackedNumberFieldWidget(70,20, wrappedValue, choiceValidator, validationProvider)
-        private var confirmActive = false
-        private var confirmHovered = false
-
-
-        private fun isChanged(): Boolean {
-            return textFieldWidget.isChanged()
-        }
-
-        override fun getNarrationMessage(): MutableText {
-            return textFieldWidget.text.lit()
-        }
-
-        private fun getConfirmTexture(): Identifier {
-            return if(confirmActive) {
-                if (confirmHovered || this.isFocused)
-                    CONFIRM_HIGHLIGHTED_TEXTURE
-                else
-                    CONFIRM_TEXTURE
-            } else {
-                CONFIRM_INACTIVE_TEXTURE
-            }
-        }
-
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            confirmActive = isChanged()
-            confirmHovered = mouseX >= (x + 70) && mouseY >= y && mouseX < x + width && mouseY < y + height
-            textFieldWidget.renderWidget(context, mouseX, mouseY, delta)
-            RenderSystem.enableBlend()
-            RenderSystem.defaultBlendFunc()
-            RenderSystem.enableDepthTest()
-            context.drawGuiTexture(getConfirmTexture(), x + getWidth() - 20, y, 20, getHeight())
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.TITLE, this.narrationMessage)
-            if (active) {
-                if (this.isFocused) {
-                    builder.put(NarrationPart.USAGE, "fc.validated_field.number.textbox.usage".translate())
-                } else {
-                    builder.put(NarrationPart.USAGE, "fc.validated_field.number.textbox.usage.unfocused".translate())
-                }
-            }
-        }
-
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            if (KeyCodes.isToggle(keyCode)) {
-                if (confirmActive) {
-                    valueApplier.accept(textFieldWidget.getValue())
-                    confirmActive = isChanged()
-                    return true
-                }
-            }
-            return textFieldWidget.keyPressed(keyCode, scanCode, modifiers)
-        }
-
-        override fun charTyped(chr: Char, modifiers: Int): Boolean {
-            return textFieldWidget.charTyped(chr, modifiers)
-        }
-
-        override fun onClick(mouseX: Double, mouseY: Double) {
-            if(mouseX >= (x + 70) && mouseY >= y && mouseX < x + width && mouseY < y + height) {
-                if (isChanged()) {
-                    valueApplier.accept(textFieldWidget.getValue())
-                    confirmActive = isChanged()
-                    return
-                }
-            }
-            textFieldWidget.onClick(mouseX, mouseY)
-        }
-
-        override fun setX(x: Int) {
-            super.setX(x)
-            textFieldWidget.x = x
-        }
-
-        override fun setY(y: Int) {
-            super.setY(y)
-            textFieldWidget.y = y
-        }
-
-    }
+    protected class ConfirmButtonTextFieldWidget<T: Number>(
+        wrappedValue: Supplier<T>,
+        choiceValidator: ChoiceValidator<T>,
+        validationProvider: Function<Double, ValidationResult<T>>,
+        valueApplier: Consumer<T>)
+        :
+        ValidationBackedNumberFieldWidget<T>(110, 20, wrappedValue,choiceValidator,validationProvider,valueApplier)
 }

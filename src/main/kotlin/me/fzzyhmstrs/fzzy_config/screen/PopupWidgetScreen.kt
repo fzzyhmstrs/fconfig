@@ -22,11 +22,20 @@ import java.util.*
 open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
 
     override val popupWidgets: LinkedList<PopupWidget> = LinkedList()
+    override var justClosedWidget: Boolean = false
     private val fillColor = Color(45,45,45,90).rgb
-    private var lastSelected: Element? = null
+    override var lastSelected: Element? = null
 
     override fun activeWidget(): PopupWidget?{
         return popupWidgets.peek()
+    }
+
+    override fun blurElements() {
+        this.blur()
+    }
+
+    override fun initPopup(widget: PopupWidget) {
+        widget.position(width,height)
     }
 
     protected open fun initPopup() {
@@ -58,30 +67,16 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         val popupWidget = activeWidget() ?: return super<Screen>.keyPressed(keyCode, scanCode, modifiers)
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE){
+        if (popupWidget.keyPressed(keyCode, scanCode, modifiers))
+            return true
+        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             setPopup(null)
             return true
         }
-        return popupWidget.keyPressed(keyCode, scanCode, modifiers)
+        return false
     }
 
     override fun addScreenNarrations(messageBuilder: NarrationMessageBuilder) {
         activeWidget()?.appendNarrations(messageBuilder) ?: super.addScreenNarrations(messageBuilder)
     }
-
-    override fun setPopup(widget: PopupWidget?) {
-        if(widget == null){
-            popupWidgets.pop().onClose()
-            popupWidgets.peek()?.blur()
-            if (popupWidgets.isEmpty())
-                focused = lastSelected
-        } else {
-            if (popupWidgets.isEmpty())
-                this.lastSelected = focused
-            this.blur()
-            popupWidgets.push(widget)
-            widget.position(width,height)
-        }
-    }
-
 }

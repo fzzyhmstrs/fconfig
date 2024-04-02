@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.fabricmc.api.EnvType
@@ -35,7 +36,7 @@ open class PopupWidget
         private var message: Text,
         private val width: Int,
         private val height: Int,
-        private val closeOnClickOutOfBounds: Boolean,
+        private val closeOnOutOfBounds: Boolean,
         private val background: Identifier,
         private val positionX: BiFunction<Int,Int,Int>,
         private val positionY: BiFunction<Int,Int,Int>,
@@ -61,7 +62,7 @@ open class PopupWidget
     }
 
     fun closesOnMissedClick(): Boolean{
-        return closeOnClickOutOfBounds
+        return closeOnOutOfBounds
     }
 
     open fun blur() {
@@ -182,6 +183,20 @@ open class PopupWidget
         }
     }
 
+    companion object Api{
+        /**
+         * Sets a [PopupWidget] to the current screen, if the current screen is a [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen]
+         *
+         * If a popup is already displayed, [PopupWidget.onClose] will be called on it before the new value is input.
+         * @param popup [PopupWidget] or null. If null, the widget will be cleared, otherwise the current widget will be set to the passed one.
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun setPopup(popup: PopupWidget?) {
+            (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.setPopup(popup)
+        }
+    }
+
     @Suppress("DEPRECATION","UNUSED")
     @Environment(EnvType.CLIENT)
     class Builder(private val title: Text, spacingW: Int = 4, spacingH: Int = 4) {
@@ -191,7 +206,7 @@ open class PopupWidget
         private var positionX: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var positionY: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var onClose = Runnable { }
-        private var clickOutOfBounds = true
+        private var closeOnOutOfBounds = true
         private var background = "widget/popup/background".fcId()
         private var additionalTitleNarration: MutableList<Text> = mutableListOf()
 
@@ -333,7 +348,7 @@ open class PopupWidget
         }
 
         fun noCloseOnClick(): Builder{
-            this.clickOutOfBounds = false
+            this.closeOnOutOfBounds = false
             return this
         }
 
@@ -439,7 +454,7 @@ open class PopupWidget
             }
 
 
-            return PopupWidget(narratedTitle, width, height, clickOutOfBounds, background, positionX, positionY, positioner, onClose, children, selectables, drawables)
+            return PopupWidget(narratedTitle, width, height, closeOnOutOfBounds, background, positionX, positionY, positioner, onClose, children, selectables, drawables)
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

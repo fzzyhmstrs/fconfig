@@ -1,13 +1,22 @@
 package me.fzzyhmstrs.fzzy_config_test.test
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.*
+import me.fzzyhmstrs.fzzy_config.test.TestConfigApi
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
+import me.fzzyhmstrs.fzzy_config_test.FCC.manager
+import me.fzzyhmstrs.fzzy_config_test.FCC.testBoolean
 import me.fzzyhmstrs.fzzy_config_test.FCC.testEnum
+import me.fzzyhmstrs.fzzy_config_test.FCC.testEnum2
+import me.fzzyhmstrs.fzzy_config_test.FCC.testInt
+import me.fzzyhmstrs.fzzy_config_test.FCC.testInt2
+import me.fzzyhmstrs.fzzy_config_test.FCC.testString
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.Selectable.SelectionType
 import net.minecraft.client.gui.tooltip.Tooltip
@@ -19,19 +28,35 @@ import java.util.function.Supplier
 class TestPopupScreen: PopupWidgetScreen(FcText.empty()) {
 
     val testEnumWidget = testEnum.widgetEntry(ChoiceValidator.any())
+    val testEnum2Widget = testEnum2.widgetEntry(ChoiceValidator.any())
+    val testIntWidget = testInt.widgetEntry(ChoiceValidator.any())
+    val testInt2Widget = testInt2.widgetEntry(ChoiceValidator.any())
+    val testStringWidget = testString.widgetEntry(ChoiceValidator.any())
+    val testBooleanWidget = testBoolean.widgetEntry(ChoiceValidator.any())
 
     override fun close() {
         super.close()
+        TestConfigApi.printChangeHistory(manager.flush(),"Test Screen Closing", client?.player)
         this.client?.narratorManager?.clear()
     }
 
     override fun init() {
         super.init()
-        addDrawableChild(ButtonWidget.builder("Test Popup".lit()) { openTestPopupWidget() }.dimensions(20,20,90,20).build())
-        addDrawableChild(ButtonWidget.builder("Done".lit()) { close() }.dimensions(20,50,90,20).build())
+        addDrawableChild(ButtonWidget.builder("Test Popup".lit()) { openTestPopupWidget() }.dimensions(20,20,110,20).build())
+        addDrawableChild(ButtonWidget.builder("Done".lit()) { close() }.dimensions(20,50,110,20).build())
         testEnumWidget.setPosition(20, 80)
         testEnumWidget.tooltip = Tooltip.of(testEnum.description())
         addDrawableChild(testEnumWidget)
+        testEnum2Widget.setPosition(140, 80)
+        addDrawableChild(testEnum2Widget)
+        testIntWidget.setPosition(20,110)
+        addDrawableChild(testIntWidget)
+        testInt2Widget.setPosition(140,110)
+        addDrawableChild(testInt2Widget)
+        testStringWidget.setPosition(20,140)
+        addDrawableChild(testStringWidget)
+        testBooleanWidget.setPosition(20,170)
+        addDrawableChild(testBooleanWidget)
     }
 
     private fun openTestPopupWidget(){

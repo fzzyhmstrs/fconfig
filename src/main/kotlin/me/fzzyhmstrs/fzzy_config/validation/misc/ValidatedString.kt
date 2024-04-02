@@ -1,16 +1,38 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryApplier
 import me.fzzyhmstrs.fzzy_config.entry.EntryChecker
 import me.fzzyhmstrs.fzzy_config.entry.EntryCorrector
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_ERROR
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_OK
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_ONGOING
+import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedTextFieldWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString.Builder
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraft.text.MutableText
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
+import java.util.function.Consumer
+import java.util.function.Function
+import java.util.function.Supplier
 
 /**
  * A validated string value
@@ -30,7 +52,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
      * A validated string value validated with Regex
      *
      * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
-     * @param defaultValue String, the efault string for this setting
+     * @param defaultValue String, the default string for this setting
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.regexString]
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -88,15 +110,15 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
     }
 
     override fun correctEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
-        return ValidationResult.success(input)
+        return checker.correctEntry(input, type)
     }
 
     override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
-        return ValidationResult.success(input)
+        return checker.validateEntry(input, type)
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
-        TODO("Not yet implemented")
+        return ValidationBackedTextFieldWidget(110,20,this, choicePredicate,this,this)
     }
 
     override fun instanceEntry(): ValidatedString {
@@ -136,6 +158,8 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
             }
         }
     }
+
+
 
 
 }

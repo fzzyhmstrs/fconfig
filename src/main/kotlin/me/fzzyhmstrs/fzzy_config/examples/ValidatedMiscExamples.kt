@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
-import me.fzzyhmstrs.fzzy_config.api.EnumTranslatable
+import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.evalSafe
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult

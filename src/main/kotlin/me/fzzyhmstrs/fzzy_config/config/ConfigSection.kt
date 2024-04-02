@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.api.Translatable
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
@@ -20,7 +20,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, EntryKeyed, Translatable {
+open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, EntryKeyed,
+    Translatable {
 
     private var sectionKey = "fc.config.generic.section"
 

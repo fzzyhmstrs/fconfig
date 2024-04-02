@@ -1,6 +1,6 @@
-package me.fzzyhmstrs.fzzy_config.api
+package me.fzzyhmstrs.fzzy_config.util
 
-import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.text.MutableText
 
 /**

@@ -1,6 +1,5 @@
-package me.fzzyhmstrs.fzzy_config.api
+package me.fzzyhmstrs.fzzy_config.util
 
-import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 
@@ -30,7 +29,7 @@ interface Translatable {
      * @since 0.2.0
      */
     fun translation(): MutableText{
-        return FcText.translatableWithFallback(translationKey(),this::class.java.simpleName.split(FcText.regex).joinToString(" "))
+        return FcText.translatableWithFallback(translationKey(),this::class.java.simpleName.split(FcText.regex).joinToString(" ").trimStart())
     }
     /**
      * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered.

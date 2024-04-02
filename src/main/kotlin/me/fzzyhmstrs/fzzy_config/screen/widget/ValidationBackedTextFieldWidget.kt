@@ -1,14 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryApplier
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.fcId
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_ERROR
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_OK
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_ONGOING
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
-import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -19,28 +14,25 @@ import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import java.util.function.Consumer
-import java.util.function.Function
 import java.util.function.Supplier
 
 @Suppress("LeakingThis")
 @Environment(EnvType.CLIENT)
-open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int, private val wrappedValue: Supplier<T>,private val choiceValidator: ChoiceValidator<T>, private val validationProvider: Function<Double, ValidationResult<T>>, private val listener: Consumer<T> = Consumer { _ ->}):
+open class ValidationBackedTextFieldWidget(width: Int, height: Int, private val wrappedValue: Supplier<String>, private val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, private val applier: EntryApplier<String>):
     TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty())
 {
 
     private var storedValue = wrappedValue.get()
     private var lastChangedTime: Long = 0L
     private var isValid = true
-    private var confirmActive = false
     private var prefix: Text? = null
 
-    fun prefixed(prefix: Text): ValidationBackedNumberFieldWidget<T> {
+    fun prefixed(prefix: Text): ValidationBackedTextFieldWidget {
         this.prefix = prefix
         return this
     }
 
-    fun getValue(): T {
+    fun getValue(): String {
         return storedValue
     }
 
@@ -51,39 +43,29 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if(isChanged()){
             if (lastChangedTime != 0L && !ongoingChanges())
-                listener.accept(storedValue)
+                applier.accept(storedValue)
         }
         super.renderWidget(context, mouseX, mouseY, delta)
         if(isValid){
             if (ongoingChanges())
-                context.drawGuiTexture(ENTRY_ONGOING,x + width - 20, y, 20, 20)
+                context.drawGuiTexture(TextureIds.ENTRY_ONGOING,x + width - 20, y, 20, 20)
             else
-                context.drawGuiTexture(ENTRY_OK,x + width - 20, y, 20, 20)
+                context.drawGuiTexture(TextureIds.ENTRY_OK,x + width - 20, y, 20, 20)
         } else {
-            context.drawGuiTexture(ENTRY_ERROR,x + width - 20, y, 20, 20)
+            context.drawGuiTexture(TextureIds.ENTRY_ERROR,x + width - 20, y, 20, 20)
         }
 
-    }
-
-    override fun getInnerWidth(): Int {
-        return super.getInnerWidth() - 11
     }
 
     private fun isValidTest(s: String): Boolean {
-        val test = s.toDoubleOrNull()
-        if (test == null) {
-            this.tooltip = Tooltip.of("fc.validated_field.number.textbox.invalid".translate())
-            setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
-            return false
-        }
-        val result = validationProvider.apply(test)
+        val result = validator.validateEntry(s, EntryValidator.ValidationType.STRONG)
         return if(result.isError()) {
             this.tooltip = Tooltip.of(result.getError().lit())
             setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
             false
         } else {
             this.tooltip = null
-            val result2 = choiceValidator.validateEntry(result.get(),EntryValidator.ValidationType.STRONG)
+            val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
             if (result2.isError()){
                 this.tooltip = Tooltip.of(result.getError().lit())
                 setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
@@ -91,11 +73,14 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
             } else {
                 this.storedValue = result.get()
                 lastChangedTime = System.currentTimeMillis()
-                confirmActive = isChanged()
                 setEditableColor(0xFFFFFF)
                 true
             }
         }
+    }
+
+    override fun getInnerWidth(): Int {
+        return super.getInnerWidth() - 11
     }
 
     private fun isChanged(): Boolean {
@@ -103,7 +88,8 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
     }
 
     init {
-        text = wrappedValue.get().toString()
+        setMaxLength(1000)
+        text = wrappedValue.get()
         setChangedListener { s -> isValid = isValidTest(s) }
     }
 

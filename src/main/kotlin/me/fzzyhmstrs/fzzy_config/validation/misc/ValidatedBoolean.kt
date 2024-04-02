@@ -73,7 +73,7 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
                 setAndUpdate(!get()); b.message =
                 if (get()) "fc.validated_field.boolean.true".translate() else "fc.validated_field.boolean.false".translate()
             }
-            .dimensions(0,0,90,20)
+            .dimensions(0,0,110,20)
             .build()
     }
 

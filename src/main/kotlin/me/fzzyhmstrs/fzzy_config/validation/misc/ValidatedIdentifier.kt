@@ -1,26 +1,43 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.api.Translatable
+import com.google.common.collect.Lists
+import com.mojang.brigadier.suggestion.Suggestion
+import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier.Companion.ofList
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier.Companion.ofRegistry
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier.Companion.ofTag
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraft.client.input.KeyCodes
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
+import net.minecraft.text.Text
+import net.minecraft.util.Colors
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
-import java.util.function.BiPredicate
-import java.util.function.Predicate
-import java.util.function.Supplier
-import java.util.function.UnaryOperator
+import org.lwjgl.glfw.GLFW
+import java.util.concurrent.CompletableFuture
+import java.util.function.*
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * A validated Identifier field.
@@ -126,7 +143,14 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {
-        TODO("Not yet implemented")
+        return OnClickTextFieldWidget({ this.get().toString() }, {
+            val popup = PopupWidget.Builder(this.translation())
+                .addElement("text_field",PopupIdentifierTextFieldWidget(110,20,choicePredicate,this))
+                .positionX { _, _ -> it.x - 8 }
+                .positionY { _, w -> it.y - (w - 28) }
+                .build()
+            PopupWidget.setPopup(popup)
+        })
     }
 
     ////////////////////////
@@ -392,5 +416,313 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
         fun<T> List<T>.supply(): Supplier<List<T>>{
             return Supplier { this }
         }
+    }
+
+    @Environment(EnvType.CLIENT)
+    class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: Consumer<OnClickTextFieldWidget>)
+        :
+        TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, 110, 20, FcText.empty())
+    {
+        init {
+            setMaxLength(1000)
+            this.text = textSupplier.get()
+        }
+
+        override fun renderWidget(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+            super.renderWidget(context, mouseX, mouseY, delta)
+            this.text = textSupplier.get()
+        }
+
+        override fun onClick(mouseX: Double, mouseY: Double) {
+            onClick.accept(this)
+        }
+
+        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+            return if (!this.isFocused) {
+                false
+            } else if(KeyCodes.isToggle(keyCode)) {
+                onClick.accept(this)
+                return true
+            } else super.keyPressed(keyCode, scanCode, modifiers)
+        }
+
+    }
+
+    @Environment(EnvType.CLIENT)
+    class PopupIdentifierTextFieldWidget(
+        width: Int,
+        height: Int,
+        private val choiceValidator: ChoiceValidator<Identifier>,
+        private val validatedIdentifier: ValidatedIdentifier
+    ): TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty()){
+
+
+        private var storedValue = validatedIdentifier.get()
+        private var lastChangedTime: Long = 0L
+        private var isValid = true
+        private var pendingSuggestions: CompletableFuture<Suggestions>? = null
+        private var window: SuggestionWindow? = null
+        private var closeWindow = false
+
+
+        private fun isValidTest(s: String): Boolean {
+            pendingSuggestions = validatedIdentifier.allowableIds.getSuggestions(s,this.cursor, choiceValidator)
+            val id = Identifier.tryParse(s)
+            if (id == null){
+                setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+                return false
+            }
+            return if (validatedIdentifier.validateEntry(id, EntryValidator.ValidationType.STRONG).isValid()) {
+                val result = choiceValidator.validateEntry(id,EntryValidator.ValidationType.STRONG)
+                if (result.isValid()) {
+                    storedValue = result.get()
+                    lastChangedTime = System.currentTimeMillis()
+                    setEditableColor(0xFFFFFF)
+                    true
+                } else {
+                    setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+                    false
+                }
+            } else {
+                setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+                false
+            }
+        }
+
+        override fun getInnerWidth(): Int {
+            return super.getInnerWidth() - 11
+        }
+
+        private fun isChanged(): Boolean {
+            return storedValue != validatedIdentifier.get()
+        }
+
+        private fun ongoingChanges(): Boolean{
+            return System.currentTimeMillis() - lastChangedTime <= 350L
+        }
+
+        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            if(isChanged()){
+                if (lastChangedTime != 0L && !ongoingChanges())
+                    validatedIdentifier.accept(storedValue)
+            }
+            super.renderWidget(context, mouseX, mouseY, delta)
+            if(isValid){
+                if (ongoingChanges())
+                    context.drawGuiTexture(TextureIds.ENTRY_ONGOING,x + width - 20, y, 20, 20)
+                else
+                    context.drawGuiTexture(TextureIds.ENTRY_OK,x + width - 20, y, 20, 20)
+            } else {
+                context.drawGuiTexture(TextureIds.ENTRY_ERROR,x + width - 20, y, 20, 20)
+            }
+            window?.render(context, mouseX, mouseY, delta)
+        }
+
+        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+            val bl = window?.mouseClicked(mouseX.toInt(), mouseY.toInt(), button) ?: super.mouseClicked(mouseX, mouseY, button)
+            if (closeWindow)
+                window = null
+            return bl
+        }
+
+        override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+            return window?.mouseScrolled(mouseX.toInt(),mouseY.toInt(),verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+        }
+
+        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+            val bl = window?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)
+            if (closeWindow)
+                this.window = null
+            return bl
+        }
+
+        init {
+            setMaxLength(1000)
+            text = validatedIdentifier.get().toString()
+            setChangedListener { s -> isValid = isValidTest(s) }
+        }
+
+        private fun addSuggestionWindow(suggestions: Suggestions){
+            var w = 0
+            for (suggestion in suggestions.list) {
+                w = max(w, MinecraftClient.getInstance().textRenderer.getWidth(suggestion.text))
+            }
+            val sWidth = MinecraftClient.getInstance().currentScreen?.width ?: Int.MAX_VALUE
+            val sHeight = MinecraftClient.getInstance().currentScreen?.height ?: Int.MAX_VALUE
+            val x = max(min(this.x,sWidth - w),0)
+            var h = min(suggestions.list.size * 12, 120)
+            val up = this.y
+            val down = sHeight - (this.y + 20)
+            val upBl: Boolean
+            val y = if(up >= down) {
+                upBl = true
+                while (this.y - h < 0){
+                    h -= 12
+                }
+                this.y - h
+            } else {
+                upBl = false
+                while (this.y + 20 + h > sHeight){
+                    h -= 12
+                }
+                this.y + 20
+            }
+            this.window = SuggestionWindow(sortSuggestions(suggestions), x, y, w, h, upBl,
+                {s ->
+                    try {
+                        validatedIdentifier.applyEntry(Identifier(s))
+                    } catch (e: Exception){
+                        //
+                    }
+                },
+                {
+                    closeWindow = true
+                })
+        }
+
+        private fun sortSuggestions(suggestions: Suggestions): List<Suggestion> {
+            val string: String = this.text.substring(0, this.cursor)
+            val string2 = string.lowercase()
+            val list = Lists.newArrayList<Suggestion>()
+            val list2 = Lists.newArrayList<Suggestion>()
+            for (suggestion in suggestions.list) {
+                if (suggestion.text.startsWith(string2) || suggestion.text.startsWith("minecraft:$string2")) {
+                    list.add(suggestion)
+                    continue
+                }
+                list2.add(suggestion)
+            }
+            list.addAll(list2)
+            return list
+        }
+
+        private class SuggestionWindow(
+            private val suggestions: List<Suggestion>,
+            private val x: Int,
+            private val y: Int,
+            private val w: Int,
+            private val h: Int,
+            private val up: Boolean,
+            private val applier: Consumer<String>,
+            private val closer: Consumer<SuggestionWindow>
+        ){
+            private var selection = -1
+            private var lastNarrationIndex = 0
+            private val suggestionSize = h / 12
+            private var index = 0
+
+            fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+                context.fill(x,y-1,x+w,y+h+1,-805306368)
+                if (index > 0){
+                    if (up){
+                        for (k in 0..w step 2) {
+                            context.fill(x + k, y - 1, x + k + 1, y, -1)
+                        }
+                    } else {
+                        for (k in 0..w step 2){
+                            context.fill(x + k, y + h, x + k + 1, y + h + 1, -1)
+                        }
+                    }
+                } else if (suggestions.size > suggestionSize + index){
+                    if (up){
+                        for (k in 0..w step 2){
+                            context.fill(x + k, y + h, x + k + 1, y + h + 1, -1)
+                        }
+                    } else {
+                        for (k in 0..w step 2) {
+                            context.fill(x + k, y - 1, x + k + 1, y, -1)
+                        }
+                    }
+                }
+                var textY = if(up) y + h - 10 else y + 2
+                for (l in index until index + suggestionSize){
+                    if (mouseX > x && mouseX < x + w && mouseY > textY - 2 && mouseY > textY + 10)
+                        selection = l
+                    context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, suggestions[l].text,x + 1,textY, if(selection == l) Colors.YELLOW else -5592406)
+                    textY += if(up) -12 else 12
+                }
+            }
+
+            fun mouseClicked(mouseX: Int, mouseY: Int, button: Int): Boolean {
+                if (button != 0) return false
+                if (mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) return false
+                var testY = if(up) y + h - 12 else y
+                for (l in index until index + suggestionSize){
+                    if (mouseX > x && mouseX < x + w && mouseY > testY && mouseY > testY + 12){
+                        val chosen = suggestions[l].text
+                        applier.accept(chosen)
+                        return true
+                    }
+                    testY += if(up) -12 else 12
+                }
+                return false
+            }
+
+            fun mouseScrolled(mouseX: Int, mouseY: Int, amount: Double): Boolean {
+                if (mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) return false
+                val d = if (up){
+                    if (amount < 0.0){
+                        -1
+                    } else {
+                        1
+                    }
+                } else {
+                    if (amount < 0.0){
+                        1
+                    } else {
+                        -1
+                    }
+                }
+                index = MathHelper.clamp(index + d, 0, max(suggestions.size - suggestionSize,0))
+                return true
+            }
+
+            fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean{
+                if (keyCode == GLFW.GLFW_KEY_UP){
+                    val d = if (up)
+                        1
+                    else
+                        -1
+                    this.selection = MathHelper.clamp(selection + d, 0, suggestions.lastIndex)
+                    if (selection < index)
+                        index = selection
+                    if (selection > index + suggestionSize - 1)
+                        index += 1
+                    return true
+                } else if (keyCode == GLFW.GLFW_KEY_DOWN) {
+                    val d = if (up)
+                        -1
+                    else
+                        1
+                    this.selection = MathHelper.clamp(selection + d, 0, suggestions.lastIndex)
+                    if (selection < index)
+                        index = selection
+                    if (selection > index + suggestionSize - 1)
+                        index += 1
+                    return true
+                } else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER){
+                    return if (selection != -1){
+                        applier.accept(suggestions[selection].text)
+                        true
+                    } else {
+                        false
+                    }
+                } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+                    closer.accept(this)
+                    return true
+                }
+                return false
+            }
+
+            private fun getNarration(): Text? {
+                this.lastNarrationIndex = this.selection
+                val suggestion = suggestions[this.selection]
+                val message = suggestion.tooltip
+                return if (message != null) {
+                    Text.translatable("narration.suggestion.tooltip", this.selection + 1, suggestions.size, suggestion.text, Text.of(message))
+                } else Text.translatable("narration.suggestion", this.selection + 1, suggestions.size, suggestion.text)
+            }
+        }
+
     }
 }

@@ -1,6 +1,13 @@
 package me.fzzyhmstrs.fzzy_config_test
 import com.mojang.brigadier.CommandDispatcher
+import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
+import me.fzzyhmstrs.fzzy_config.updates.UpdateManagerImpl
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -12,6 +19,7 @@ import org.slf4j.LoggerFactory
 import me.fzzyhmstrs.fzzy_config_test.test.TestPopupScreen
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.gui.Selectable
+import javax.swing.RowFilter.Entry
 import kotlin.random.Random
 
 object FC: ModInitializer {
@@ -28,9 +36,42 @@ object FCC: ClientModInitializer {
     var openDamnScreen = ""
 
     val testEnum = ValidatedEnum(Selectable.SelectionType.FOCUSED)
+    val testEnum2 = ValidatedEnum(Selectable.SelectionType.FOCUSED,ValidatedEnum.WidgetType.CYCLING)
+    val testInt = ValidatedInt(8,16,0)
+    val testInt2 = ValidatedInt(8,Int.MAX_VALUE,0,ValidatedNumber.WidgetType.TEXTBOX)
+    val testString = ValidatedString.Builder("chickenfrog")
+        .both { s,_ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
+        .withCorrector()
+        .both { s,_ ->
+            if(s.contains("chicken")){
+                ValidationResult.success(s)
+            } else {
+                if(s.contains("chicken", true)){
+                    val s2 = s.replace(Regex("(?i)chicken"),"chicken")
+                    ValidationResult.error(s2,"'chicken' needs to be lowercase in the string")
+                } else {
+                    ValidationResult.error(s,"String must contain the lowercase word 'chicken'")
+                }
+            }
+        }
+        .build()
+    val testBoolean = ValidatedBoolean()
+
+    val manager = UpdateManagerImpl()
 
     override fun onInitializeClient() {
         testEnum.setEntryKey("fc.test.enum.name")
+        testEnum.setUpdateManager(manager)
+        testEnum2.setEntryKey("fc.test.enum2.name")
+        testEnum2.setUpdateManager(manager)
+        testInt.setEntryKey("fc.test.int.name")
+        testInt.setUpdateManager(manager)
+        testInt2.setEntryKey("fc.test.int2.name")
+        testInt2.setUpdateManager(manager)
+        testString.setEntryKey("fc.test.string.name")
+        testString.setUpdateManager(manager)
+        testBoolean.setEntryKey("fc.test.boolean.name")
+        testBoolean.setUpdateManager(manager)
         ClientCommandRegistrationCallback.EVENT.register{ dispatcher, _ ->
             registerClientCommands(dispatcher)
         }

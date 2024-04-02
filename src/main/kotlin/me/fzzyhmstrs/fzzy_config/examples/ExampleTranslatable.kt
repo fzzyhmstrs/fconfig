@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
-import me.fzzyhmstrs.fzzy_config.api.Translatable
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 
 class ExampleTranslatable: Translatable {
     override fun translationKey(): String {

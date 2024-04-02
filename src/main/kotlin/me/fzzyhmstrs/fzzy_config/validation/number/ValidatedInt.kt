@@ -102,8 +102,8 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
         return ValidatedInt(defaultValue, maxValue, minValue, widgetType)
     }
 
-    override fun convert(input: Double): Int {
-        return input.toInt()
+    override fun convert(input: Double): ValidationResult<Int> {
+        return ValidationResult.predicated(input.toInt(),input.toLong() == input.toInt().toLong(),"[$input] out of Bounds for int value (${Int.MIN_VALUE} to ${Int.MAX_VALUE} )")
     }
 
     override fun toString(): String {
