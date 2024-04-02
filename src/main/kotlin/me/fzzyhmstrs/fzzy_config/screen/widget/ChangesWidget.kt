@@ -45,4 +45,9 @@ class ChangesWidget(title: Text, private val message: Function<Int,MutableText>,
     override fun onPress() {
         pressAction.accept(this)
     }
+
+    private fun openChangesPopup(){
+        val popup = PopupWidget.Builder("fc.button.changes.message".translate())
+            .addElement()
+    }
 }
