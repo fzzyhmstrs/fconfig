@@ -124,12 +124,11 @@ object SyncedConfigRegistry {
                 }
             }
             for ((id,configString) in serializedConfigs) {
-                if (syncedConfigs.containsKey(id)) {
-                    val config = syncedConfigs[id] ?: continue
-                    val errors = mutableListOf<String>()
-                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
-                    result.writeError(errors)
-                }
+                val config = syncedConfigs[id] ?: continue
+                val errors = mutableListOf<String>()
+                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
+                result.writeError(errors)
+                config.save()
             }
             for (player in context.player().server.playerManager.playerList) {
                 if (player == context.player()) continue // don't push back to the player that just sent the update
