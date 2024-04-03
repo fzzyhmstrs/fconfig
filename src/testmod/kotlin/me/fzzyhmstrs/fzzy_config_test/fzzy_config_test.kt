@@ -82,6 +82,7 @@ object FCC: ClientModInitializer {
             }
         }
         TestConfig.init()
+        TestConfig.toString()
     }
 
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>){
