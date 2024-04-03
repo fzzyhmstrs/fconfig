@@ -85,6 +85,10 @@ open class Config(val name: String, val folder: String, val subfolder: String = 
      */
     open fun update(deserializedVersion: Int){}
 
+    override fun toString(): String {
+        return ConfigApi.serializeConfig(this,mutableListOf())
+    }
+    
     override fun translationKey(): String {
         return getId().toTranslationKey()
     }
