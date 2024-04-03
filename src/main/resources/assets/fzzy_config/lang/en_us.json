@@ -61,5 +61,7 @@
 "fc.button.navigate": "Navigate to %s",
 "fc.button.changes": "Changes...",
 "fc.button.changes.message": "Manage changes",
-"fc.button.changes.desc": "Change management menu for applying and reverting changes."
+"fc.button.changes.desc": "Change management menu for applying and reverting changes.",
+"fc.button.delete": "Delete Entry",
+"fc.button.add": "Add New Entry"
 }
