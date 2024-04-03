@@ -21,6 +21,8 @@
 "fc.validated_field.enum.current": "Current Setting: %s",
 "fc.validated_field.expression": "Edit Expression",
 "fc.validated_field.list": "Edit List",
+"fc.validated_field.set": "Edit Set",
+"fc.validated_field.map": "Edit Map",
 
 "fc.validated_field.update.error": "Update error for [%1$s], [%2$s] to [%3$s]: %4$s",
 "fc.validated_field.revert.error": "Revert error for [%1$s]: %2$s",
