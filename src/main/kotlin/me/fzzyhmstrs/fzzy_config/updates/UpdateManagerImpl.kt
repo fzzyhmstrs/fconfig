@@ -52,20 +52,19 @@ class UpdateManagerImpl: UpdateManager, BasicValidationProvider {
     private fun buildChangeHistoryLog(): List<String> {
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")
         val list: MutableList<String> = mutableListOf()
-        for ((scope, updateLog) in changeHistory){
+        for ((updatable, updateLog) in changeHistory){
             for ((time, updates) in updateLog.entries()){
-                list.add("Updated scope [$scope] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: ${updates.string}")
+                list.add("Updated scope [${updatable.getEntryKey()}] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: ${updates.string}")
             }
         }
         return list
     }
 
     fun changeHistory(): List<String> {
-        val formatter = DateTimeFormatter.ofPattern("HH:mm")
         val list: MutableList<String> = mutableListOf()
-        for (updateLog in changeHistory.values){
+        for ({updatable, updateLog} in changeHistory){
             for ((time, updates) in updateLog.entries()){
-                list.add("${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}, ${updates.string}")
+                list.add("[${updatable.transLit(updatable.getUpdateKey())}]: ${updates.string}")
             }
         }
         return list
@@ -73,7 +72,7 @@ class UpdateManagerImpl: UpdateManager, BasicValidationProvider {
 
     override fun update(updatable: Updatable, updateMessage: Text) {
         updateMap.computeIfAbsent(updatable.getEntryKey()) { updatable }
-        addUpdateMessage(updatable.getEntryKey(),updateMessage)
+        addUpdateMessage(updatable,updateMessage)
     }
 
     override fun hasUpdate(scope: String): Boolean{
@@ -97,7 +96,7 @@ class UpdateManagerImpl: UpdateManager, BasicValidationProvider {
         }
     }
 
-    override fun addUpdateMessage(key: String,text: Text) {
+    override fun addUpdateMessage(key: Updatable,text: Text) {
         changeHistory.computeIfAbsent(key){ArrayListMultimap.create()}.put(System.currentTimeMillis(),text)
     }
 
