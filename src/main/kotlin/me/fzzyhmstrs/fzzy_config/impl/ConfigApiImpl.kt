@@ -498,6 +498,6 @@ object ConfigApiImpl {
     }
 
     fun interface WalkAction{
-        fun act(oldPrefix: String, newPrefix: String, element: Any?, elementProp: KProperty<*>, annotations: List<Annotation>)
+        fun act(oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>)
     }
 }
