@@ -482,6 +482,23 @@ open class PopupWidget
             return this
         }
         /**
+         * Adds a "Done" button below the previously added element, or below the defined parent
+         *
+         * The button automatically uses the layout BELOW, ALIGN_JUSTIFY
+         * @param pressAction [ButtonWidget.PressAction] - defines the buttons action when clicked
+         * @param parent String, optional. defines the parent element for this button. by default (null), will be the previously added element.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmOverloads
+        fun addDoneButton(pressAction: ButtonWidget.PressAction, parent: String? = null): Builder{
+            val trueParent = parent ?: lastEl
+            addElement("done_for_$trueParent", ButtonWidget.builder(ScreenTexts.DONE, pressAction).size(50,20).build(), trueParent, Position.BELOW, Position.ALIGN_JUSTIFY)
+            return this
+        }
+        /**
          * Defines a manual width for the widget. Will override any automatic sizing computations for width
          * @param width Int - the manual width of the Popup
          * @return Builder - this builder for further use
