@@ -81,6 +81,7 @@ object FCC: ClientModInitializer {
                 openDamnScreen = ""
             }
         }
+        TestConfig.init()
     }
 
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>){
