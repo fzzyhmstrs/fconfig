@@ -376,8 +376,10 @@ object ConfigApiImpl {
                     if (basicValidation != null){
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(it, errorBuilder, str, ignoreNonSync)
-                        if (prop is KMutableProperty<*> && prop.visibility == KVisibility.PUBLIC){
+                        try {
                             prop.setter.call(config, thing.get())
+                        catch(e: Exception){
+                            errorBuilder.add("Error deserializing basic validation [$str]: ${e.localizedMessage}")
                         }
                     }
                 }
