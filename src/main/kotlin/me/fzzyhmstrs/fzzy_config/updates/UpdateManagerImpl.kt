@@ -79,6 +79,10 @@ class UpdateManagerImpl: UpdateManager, BasicValidationProvider {
         return updateMap[scope]?.popState() ?: false
     }
 
+    override fun getUpdate(scope: String): Updatable?{
+        return updateMap[scope]
+    }
+
     override fun changes(): Int {
         return updateMap.filter { it.value.peekState() }.size
     }
