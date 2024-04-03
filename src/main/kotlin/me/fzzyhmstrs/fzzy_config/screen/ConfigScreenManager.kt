@@ -293,12 +293,26 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
 
     @Internal
     override fun apply() {
-        val updates = this.configs.filter { !it.second }.associate { it.first.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.first, manager, mutableListOf()) }
-        SyncedConfigRegistry.updateServer(updates, manager.flush(), getPlayerPermissionLevel())
+        //push updates from basic validation to the configs
+        for (config in configs){
+            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {old, new, thing, prop, annotations ->
+                if (!(thing is Updatable && thing is Entry<*,*>)){
+                    val update = manager.getUpdate(new)
+                    if (update != null && update is EntrySupplier<*>){
+                        try {
+                            prop.setter.call(config, update.supplyEntry())
+                        } catch
+                    }
+                }
+            }
+        }
+        //save config updates locally
         for (config in configs){
             config.first.save()
         }
-
+        //send updates to the server for distribution and saving there
+        val updates = this.configs.filter { !it.second }.associate { it.first.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.first, manager, mutableListOf()) }
+        SyncedConfigRegistry.updateServer(updates, manager.flush(), getPlayerPermissionLevel())
     }
     @Internal
     override fun revert() {
