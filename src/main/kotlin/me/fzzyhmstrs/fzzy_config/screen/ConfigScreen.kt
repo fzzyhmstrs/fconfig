@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.screen
 
+import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.fcId
-import me.fzzyhmstrs.fzzy_config.screen.widget.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateApplier
@@ -17,7 +17,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 
 @Environment(EnvType.CLIENT)
-internal class ConfigScreen(title: Text, private val manager: UpdateApplier, private val entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen,ClickableWidget>>) : PopupWidgetScreen(title) {
+internal class ConfigScreen(title: Text, private val scope: String, private val manager: UpdateApplier, private val entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen,ClickableWidget>>) : PopupWidgetScreen(title) {
 
     internal var parent: Screen? = null
     private var onClose: Consumer<ConfigScreen> = Consumer {_ ->
@@ -66,15 +66,15 @@ internal class ConfigScreen(title: Text, private val manager: UpdateApplier, pri
     private fun initFooter(){
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //forward alert button
-        directionalLayoutWidget.add(TextlessConfigActionWidget("widget/action/alert".fcId(),"widget/action/alert_inactive".fcId(),"widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(),{ manager.hasForwards() } ) { manager.forwardedWidget() })
+        directionalLayoutWidget.add(TextlessConfigActionWidget("widget/action/alert".fcId(),"widget/action/alert_inactive".fcId(),"widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(),{ manager.hasForwards() } ) { manager.forwardsWidget() })
         //change history button
-        directionalLayoutWidget.add(TextlessConfigActionWidget("widget/action/changelog".fcId(),"widget/action/changelog_inactive".fcId(),"widget/action/changelog_highlighted".fcId(), "fc.button.changelog.active".translate(), "fc.button.changelog.inactive".translate(),{ manager.changes() > 0 } ) { manager.changesWidget() })
+            //directionalLayoutWidget.add(TextlessConfigActionWidget("widget/action/changelog".fcId(),"widget/action/changelog_inactive".fcId(),"widget/action/changelog_highlighted".fcId(), "fc.button.changelog.active".translate(), "fc.button.changelog.inactive".translate(),{ manager.changes() > 0 } ) { manager.changesWidget() })
         //revert changes button
-        directionalLayoutWidget.add(ChangesWidget("fc.button.revert".translate(), { i -> "fc.button.revert.message".translate(i) }, { manager.changes() }, { _ -> manager.revert()}))
-        //apply button
-        directionalLayoutWidget.add(ChangesWidget("fc.button.apply".translate(), { i -> "fc.button.apply.message".translate(i) }, { manager.changes() }, { _ -> manager.apply() }))
+            //directionalLayoutWidget.add(ChangesWidget("fc.button.revert".translate(), { i -> "fc.button.revert.message".translate(i) }, { manager.changes() }, { _ -> manager.revert()}))
+        //apply changes button
+            //directionalLayoutWidget.add(ChangesWidget("fc.button.apply".translate(), { i -> "fc.button.apply.message".translate(i) }, { manager.changes() }, { _ -> manager.apply() }))
         //done button
-        directionalLayoutWidget.add(ButtonWidget.builder(ScreenTexts.DONE) { _ -> close() }.build())
+        directionalLayoutWidget.add(ButtonWidget.builder(ScreenTexts.DONE) { _ -> close() }.size(70,20).build())
     }
 
     override fun initTabNavigation() {

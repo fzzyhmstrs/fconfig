@@ -41,7 +41,7 @@ sourceSets{
     }
 }
 
-val testmodImplementation by configurations.getting{
+val testmodImplementation by configurations.getting {
     extendsFrom(configurations.implementation.get())
 }
 

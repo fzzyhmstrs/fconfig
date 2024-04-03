@@ -23,7 +23,6 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
 
     override val popupWidgets: LinkedList<PopupWidget> = LinkedList()
     override var justClosedWidget: Boolean = false
-    private val fillColor = Color(45,45,45,90).rgb
     override var lastSelected: Element? = null
 
     override fun activeWidget(): PopupWidget?{
@@ -55,8 +54,6 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         else
             super.render(context, 0, 0, delta)
         for ((index,popup) in popupWidgets.descendingIterator().withIndex()) {
-            context.fill(0,0,width,height,fillColor)
-            this.applyBlur(delta)
             if(index == popupWidgets.lastIndex)
                 popup.render(context, mouseX, mouseY, delta)
             else

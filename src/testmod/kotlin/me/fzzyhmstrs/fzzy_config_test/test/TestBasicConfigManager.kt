@@ -16,19 +16,28 @@ class TestBasicConfigManager: UpdateApplier {
         println("Reverting updated values :>")
     }
 
+    override fun restore(scope: String) {
+        changes = 0
+        println("Restoring updated values :>")
+    }
+
+    override fun hasChanges(): Boolean {
+        return changes > 0
+    }
+
     override fun changes(): Int {
         return changes
     }
 
-    override fun changesWidget() {
-        println("you wanted to open the changes popup!")
+    override fun changeHistory(): List<String> {
+        return listOf("Change 1", "Change 2")
     }
 
     override fun hasForwards(): Boolean {
         return false
     }
 
-    override fun forwardedWidget() {
+    override fun forwardsWidget() {
         println("you wanted to open the forwards popup!")
     }
 }

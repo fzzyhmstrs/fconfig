@@ -141,7 +141,7 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
             buttonWidth = max(150, buttonWidth + 4)
             var prevParent = "title"
             for (const in constants){
-                val button = EnumOptionWidget(const, buttonWidth, {c -> (c as Enum<*>) != entry.supplyEntry()}, { entry.applyEntry(it); PopupWidget.setPopup(null) })
+                val button = EnumOptionWidget(const, buttonWidth, {c -> (c as Enum<*>) != entry.supplyEntry()}, { entry.applyEntry(it); PopupWidget.pop() })
                 builder.addElement(const.name,button,prevParent,PopupWidget.Builder.PositionRelativePos.BELOW)
                 prevParent = const.name
             }

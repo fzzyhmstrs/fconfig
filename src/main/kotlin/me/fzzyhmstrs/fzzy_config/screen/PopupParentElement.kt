@@ -5,6 +5,13 @@ import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
 import java.util.*
 
+/**
+ * A parent element that supports displaying "Popups" made via [PopupWidget].
+ *
+ * If a PopupParentElement has one or more active popups, it will prioritize those over passing inputs to any "normal" children.
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 @JvmDefaultWithCompatibility
 interface PopupParentElement: ParentElement {
     val popupWidgets: LinkedList<PopupWidget>

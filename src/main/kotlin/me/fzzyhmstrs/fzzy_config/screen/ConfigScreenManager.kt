@@ -39,13 +39,18 @@ import kotlin.math.min
 @Environment(EnvType.CLIENT)
 class ConfigScreenManager(private val scope: String, private val configs: List<Pair<Config,Boolean>>): UpdateApplier {
 
+    private val configMap: Map<String,Set<Config>>
     private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
     private var manager: UpdateManagerImpl = UpdateManagerImpl()
 
     init{
-        prepareScreens()
+        val map: MutableMap<String,Set<Config>> = mutableMapOf()
+        map[scope] = configs.map { it.first }.toSet()
+        configs.forEach { map[it.first.getId().toTranslationKey()] = setOf(it.first) }
+        configMap = map
 
+        prepareScreens()
     }
 
     internal fun receiveForwardedUpdate(update: String, player: UUID, scope: String) {
@@ -216,7 +221,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
             listWidget
         }
         return ConfigScreenBuilder {
-            val screen = ConfigScreen(name,this, configListFunction, functionList)
+            val screen = ConfigScreen(name, scope,this, configListFunction, functionList)
             screen.parent = MinecraftClient.getInstance().currentScreen
             screen
         }
@@ -244,6 +249,8 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         }
         return i
     }
+
+    //////////////////////////////////////
 
     private fun <T> updatableEntryBuilder(name: Text, desc: Text, entry: T): Function<ConfigListWidget, ConfigEntry> where T: Updatable, T: Entry<*,*> {
         return Function { parent ->
@@ -278,6 +285,8 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         return Function { parent -> ConfigEntry(name, desc, parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) } ) }
     }
 
+    /////////////////////////////
+
     private fun <T> popupEntryForwardingWidget(entry: T) where T: Updatable, T: Entry<*,*> {
         TODO()
     }
@@ -296,22 +305,33 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         manager.revertAll()
     }
     @Internal
+    override fun restore(scope: String) {
+        val set = configMap[scope] ?: return
+        set.forEach { manager.restoreAll(it) }
+    }
+    @Internal
+    override fun hasChanges(): Boolean {
+        return manager.changes() > 0
+    }
+    @Internal
     override fun changes(): Int {
         return manager.changes()
     }
+
     @Internal
-    override fun changesWidget() {
-        TODO("Not yet implemented")
+    override fun changeHistory(): List<String> {
+        return manager.changeHistory()
     }
     @Internal
     override fun hasForwards(): Boolean {
         return forwardedUpdates.isNotEmpty()
     }
     @Internal
-    override fun forwardedWidget() {
+    override fun forwardsWidget() {
         TODO("Not yet implemented")
     }
 
+    ///////////////////////////////////////
 
     internal fun interface ConfigScreenBuilder {
         fun build(): ConfigScreen

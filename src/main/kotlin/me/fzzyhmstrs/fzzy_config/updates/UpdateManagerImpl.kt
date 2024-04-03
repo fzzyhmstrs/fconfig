@@ -5,6 +5,7 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.BasicValidationProvider
 import net.minecraft.text.Text
 import java.time.Instant
@@ -49,11 +50,22 @@ class UpdateManagerImpl: UpdateManager, BasicValidationProvider {
     }
 
     private fun buildChangeHistoryLog(): List<String> {
-        val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+        val formatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")
         val list: MutableList<String> = mutableListOf()
         for ((scope, updateLog) in changeHistory){
             for ((time, updates) in updateLog.entries()){
                 list.add("Updated scope [$scope] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: ${updates.string}")
+            }
+        }
+        return list
+    }
+
+    fun changeHistory(): List<String> {
+        val formatter = DateTimeFormatter.ofPattern("HH:mm")
+        val list: MutableList<String> = mutableListOf()
+        for (updateLog in changeHistory.values){
+            for ((time, updates) in updateLog.entries()){
+                list.add("${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}, ${updates.string}")
             }
         }
         return list
@@ -78,9 +90,10 @@ class UpdateManagerImpl: UpdateManager, BasicValidationProvider {
         }
     }
 
-    override fun restoreAll() {
-        for (update in updateMap.values){
-            update.restore()
+    override fun restoreAll(config: Config) {
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(), true) {_,_,v,_,_ ->
+            if (v is Updatable)
+                v.restore()
         }
     }
 
@@ -89,28 +102,10 @@ class UpdateManagerImpl: UpdateManager, BasicValidationProvider {
     }
 
     fun applyKeys(config: Config) {
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {_, str, v, _, _ -> if (v is EntryKeyed) v.setEntryKey(str)}
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {_,str,v,_,_ -> if (v is EntryKeyed) v.setEntryKey(str)}
     }
 
     fun pushStates(config: Config) {
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {_, _, v, _, _ -> if (v is Updatable) v.pushState()}
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {_,_,v,_,_ -> if (v is Updatable) v.pushState()}
     }
-
-    fun<T: Config> getSyncUpdates(config: T, ignoreNonSync: Boolean = false): Map<String, EntrySerializer<*>> {
-        val map: MutableMap<String, EntrySerializer<*>> = mutableMapOf()
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(), ignoreNonSync) {_, str, v, _, _ -> if (v is Updatable && v is EntrySerializer<*>) { if (v.popState()) map[str] = v }}
-        return map
-    }
-
-
-    /*internal fun<T: Config> getSyncUpdates(config: T, ignoreNonSync: Boolean = false): Map<String, EntrySerializer<*>> {
-        val map: MutableMap<String, EntrySerializer<*>> = mutableMapOf()
-        for ((updateScope, update) in getScopedUpdates(config.getId().toTranslationKey())){
-            if (update.popState()){
-                if (update is EntrySerializer<*>)
-                   map[updateScope] = update
-            }
-        }
-        return map
-    }*/
 }

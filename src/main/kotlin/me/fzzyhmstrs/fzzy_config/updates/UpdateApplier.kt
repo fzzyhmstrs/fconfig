@@ -7,8 +7,10 @@ import org.jetbrains.annotations.VisibleForTesting
 interface UpdateApplier {
     fun apply()
     fun revert()
+    fun restore(scope: String)
+    fun hasChanges(): Boolean
     fun changes(): Int
-    fun changesWidget()
+    fun changeHistory(): List<String>
     fun hasForwards(): Boolean
-    fun forwardedWidget()
+    fun forwardsWidget()
 }

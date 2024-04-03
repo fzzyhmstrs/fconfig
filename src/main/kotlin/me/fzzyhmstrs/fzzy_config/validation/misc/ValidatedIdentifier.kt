@@ -596,6 +596,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             return list
         }
 
+        @Environment(EnvType.CLIENT)
         private class SuggestionWindow(
             private val suggestions: List<Suggestion>,
             private val x: Int,
@@ -678,43 +679,48 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             }
 
             fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean{
-                if (keyCode == GLFW.GLFW_KEY_UP){
-                    val d = if (up)
-                        1
-                    else
-                        -1
-                    this.selection = MathHelper.clamp(selection + d, 0, suggestions.lastIndex)
-                    if (selection < index)
-                        index = selection
-                    if (selection > index + suggestionSize - 1)
-                        index += 1
-                    return true
-                } else if (keyCode == GLFW.GLFW_KEY_DOWN) {
-                    val d = if (up)
-                        -1
-                    else
-                        1
-                    this.selection = MathHelper.clamp(selection + d, 0, suggestions.lastIndex)
-                    if (selection < index)
-                        index = selection
-                    if (selection > index + suggestionSize - 1)
-                        index += 1
-                    return true
-                } else if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER){
-                    return if (selection != -1){
-                        applier.accept(suggestions[selection].text)
-                        true
-                    } else {
-                        false
+                when (keyCode) {
+                    GLFW.GLFW_KEY_UP -> {
+                        val d = if (up)
+                            1
+                        else
+                            -1
+                        this.selection = MathHelper.clamp(selection + d, 0, suggestions.lastIndex)
+                        if (selection < index)
+                            index = selection
+                        if (selection > index + suggestionSize - 1)
+                            index += 1
+                        return true
                     }
-                } else if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-                    closer.accept(this)
-                    return true
+                    GLFW.GLFW_KEY_DOWN -> {
+                        val d = if (up)
+                            -1
+                        else
+                            1
+                        this.selection = MathHelper.clamp(selection + d, 0, suggestions.lastIndex)
+                        if (selection < index)
+                            index = selection
+                        if (selection > index + suggestionSize - 1)
+                            index += 1
+                        return true
+                    }
+                    GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> {
+                        return if (selection != -1){
+                            applier.accept(suggestions[selection].text)
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    GLFW.GLFW_KEY_ESCAPE -> {
+                        closer.accept(this)
+                        return true
+                    }
+                    else -> return false
                 }
-                return false
             }
 
-            private fun getNarration(): Text? {
+            fun getNarration(): Text? {
                 this.lastNarrationIndex = this.selection
                 val suggestion = suggestions[this.selection]
                 val message = suggestion.tooltip

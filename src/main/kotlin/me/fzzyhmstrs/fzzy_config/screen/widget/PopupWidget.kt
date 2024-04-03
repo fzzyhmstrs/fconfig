@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.fabricmc.api.EnvType
@@ -23,6 +24,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
+import java.awt.Color
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
 import java.util.function.Function
@@ -33,7 +35,7 @@ import kotlin.math.min
 /**
  * A widget comprised of a collection of child elements that "Pops up" onto screens that implement [me.fzzyhmstrs.fzzy_config.screen.PopupParentElement]
  *
- * Multiple popups can stack onto PopupParentElements, and are removed in reverse oder they were added (First In Last Out)
+ * Multiple popups can stack onto PopupParentElements. They display last-added in front, first added in back, and are removed in reverse order they were added (First In Last Out)
  * @see Builder
  * @author fzzyhmstrs
  * @since 0.2.0
@@ -44,6 +46,7 @@ open class PopupWidget
         private var message: Text,
         private val width: Int,
         private val height: Int,
+        private val blurBackground: Boolean,
         private val closeOnOutOfBounds: Boolean,
         private val background: Identifier,
         private val positionX: BiFunction<Int,Int,Int>,
@@ -64,6 +67,7 @@ open class PopupWidget
     private var focused: Element? = null
     private var focusedSelectable: Selectable? = null
     private var dragging = false
+    private val fillColor = Color(45,45,45,90).rgb
 
     open fun onClose(){
         this.onClose.run()
@@ -78,6 +82,11 @@ open class PopupWidget
         guiNavigationPath?.setFocused(false)
     }
 
+    protected open fun applyBlur(delta: Float) {
+        MinecraftClient.getInstance().gameRenderer.renderBlur(delta)
+        MinecraftClient.getInstance().framebuffer.beginWrite(false)
+    }
+
     fun position(screenWidth: Int, screenHeight: Int){
         this.x = positionX.apply(screenWidth,width) //screenWidth/2 - width/2
         this.y = positionY.apply(screenHeight,height) //screenHeight/2 - height/2
@@ -89,6 +98,10 @@ open class PopupWidget
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        if (blurBackground) {
+            context.fill(0,0,width,height,fillColor)
+            applyBlur(delta)
+        }
         RenderSystem.enableBlend()
         context.drawGuiTexture(background, x, y, width, height)
         for (drawable in drawables) {
@@ -191,11 +204,9 @@ open class PopupWidget
         }
     }
 
-    companion object Api{
+    companion object Api {
         /**
          * Sets a [PopupWidget] to the current screen, if the current screen is a [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen]
-         *
-         * If a popup is already displayed, [PopupWidget.onClose] will be called on it before the new value is input.
          * @param popup [PopupWidget] or null. If null, the widget will be cleared, otherwise the current widget will be set to the passed one.
          * @author fzzyhmstrs
          * @since 0.2.0
@@ -203,11 +214,22 @@ open class PopupWidget
         fun setPopup(popup: PopupWidget?) {
             (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.setPopup(popup)
         }
+
+        /**
+         * Removes the top widget from the current [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen] widget stack, if any
+         *
+         * The closed widget will have its [PopupWidget.onClose] method called
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun pop() {
+            setPopup(null)
+        }
     }
 
     /**
      * Builds a [PopupWidget] from provided Elements and layout
-     * 
+     *
      * All popups will come with a title widget Top Center of the layout. The next added element will key off this, or to manually layout off of it, use "title" as the element parent
      * @param title [Text] - the header title shown at the top of the popup
      * @param spacingW Int, optional - Defines the default horizontal padding between elements. Defaults to 4
@@ -221,11 +243,12 @@ open class PopupWidget
 
         private var width: Int = MinecraftClient.getInstance().textRenderer.getWidth(title) + 16
         private var height: Int = 21
-        private var manualWith: Int = -1
+        private var manualWidth: Int = -1
         private var manualHeight: Int = -1
         private var positionX: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var positionY: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var onClose = Runnable { }
+        private var blurBackground = true
         private var closeOnOutOfBounds = true
         private var background = "widget/popup/background".fcId()
         private var additionalTitleNarration: MutableList<Text> = mutableListOf()
@@ -279,7 +302,7 @@ open class PopupWidget
 
         /**
          * Adds an element with custom vertical and horizontal padding, keyed off a manually defined parent element.
-         * 
+         *
          * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
@@ -301,7 +324,7 @@ open class PopupWidget
         }
         /**
          * Adds an element with custom horizontal padding, keyed off a manually defined parent element.
-         * 
+         *
          * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
@@ -322,7 +345,7 @@ open class PopupWidget
         }
         /**
          * Adds an element with custom vertical padding, keyed off a manually defined parent element.
-         * 
+         *
          * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
@@ -343,7 +366,7 @@ open class PopupWidget
         }
         /**
          * Adds an element with custom vertical and horizontal padding, automatically keyed off the last added element (or "title" if this is the first added element)
-         * 
+         *
          * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
@@ -364,7 +387,7 @@ open class PopupWidget
         }
         /**
          * Adds an element with custom horizontal padding, automatically keyed off the last added element (or "title" if this is the first added element)
-         * 
+         *
          * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
@@ -385,7 +408,7 @@ open class PopupWidget
         }
         /**
          * Adds an element with custom vertical padding, automatically keyed off the last added element (or "title" if this is the first added element)
-         * 
+         *
          * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
@@ -406,7 +429,7 @@ open class PopupWidget
         }
         /**
          * Adds an element, keyed off a manually defined parent element. Uses the default padding.
-         * 
+         *
          * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
@@ -426,7 +449,7 @@ open class PopupWidget
         }
         /**
          * Adds an element, automatically keyed off the last added element (or "title" if this is the first added element). Uses the default padding.
-         * 
+         *
          * NOTE: "element" here refers to a piece of a PopupWidget layout. "Elements" do NOT necessarily have to be minecraft [Element]
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
@@ -444,7 +467,7 @@ open class PopupWidget
 
         /**
          * Adds a horizontal divider below the last element, or defined parent
-         * 
+         *
          * The divider automatically uses the layout BELOW, ALIGN_JUSTIFY
          * @param parent String?, optional - default value is null. If parent isn't null, the divider will be keyed off the defined parent
          * @return Builder - this builder for further use
@@ -484,7 +507,7 @@ open class PopupWidget
         }
         /**
          * Defines the X positioner function for this widget, X being the left edge of the widget, border included.
-         * 
+         *
          * The default position function centers the widget horizontally on the screen
          * @param positionX [BiFunction]<Int, Int, Int> - The X position BiFunction: (Screen Width, Popup Width) -> X position, globally on the screen
          * @return Builder - this builder for further use
@@ -503,7 +526,7 @@ open class PopupWidget
         }
         /**
          * Defines the Y positioner function for this widget, Y being the top edge of the widget, border included.
-         * 
+         *
          * The default position function centers the widget vertically on the screen
          * @param positionX [BiFunction]<Int, Int, Int> - The Y position BiFunction: (Screen Height, Popup Height) -> Y position, globally on the screen
          * @return Builder - this builder for further use
@@ -530,6 +553,17 @@ open class PopupWidget
          */
         fun onClose(onClose: Runnable): Builder{
             this.onClose = onClose
+            return this
+        }
+        /**
+         * The widget won't apply a layer of blur behind it when rendering.
+         * @return Builder - this builder for further use
+         * @sample
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun noBlur(): Builder{
+            this.blurBackground = false
             return this
         }
         /**
@@ -695,7 +729,7 @@ open class PopupWidget
                     posEl.update()
                 }
             }
-            return PopupWidget(narratedTitle, width, height, closeOnOutOfBounds, background, positionX, positionY, positioner, onClose, children, selectables, drawables)
+            return PopupWidget(narratedTitle, width, height, blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, onClose, children, selectables, drawables)
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -708,11 +742,23 @@ open class PopupWidget
         @Environment(EnvType.CLIENT)
         companion object Positioners {
             /**
-             * Positions a Popup dimention at a specific location
+             * Positions a Popup dimention at an absolute location
              *
-             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off screen")
+             * The position will not change on resize or other events, so use wisely.
+             * @param a Int - the position to apply
+             * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
+            fun abs(a: Int): BiFunction<Int,Int,Int>{
+                return BiFunction { _,_ -> a }
+            }
+            /**
+             * Positions a Popup dimension at a specific location
+             *
+             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off-screen")
              * @param a Supplier<Int> - the position to apply
-             * @return Bifunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
              * @author fzzyhmstrs
              * @since 0.2.0
              */
@@ -720,11 +766,11 @@ open class PopupWidget
                 return BiFunction { sd, d -> max(min(sd - d, a.get()),0) }
             }
             /**
-             * Positions a Popup dimention based on Popup dimension context
+             * Positions a Popup dimension based on Popup dimension context
              *
-             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off screen")
-             * @param F Function<Int,Int> - function to provide the dimension. Supplies the corresponding widget size in the relevant dimension (PositionX -> widget width, etc)
-             * @return Bifunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off-screen")
+             * @param f Function<Int,Int> - function to provide the dimension. Supplies the corresponding widget size in the relevant dimension (PositionX -> widget width, etc)
+             * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
              * @author fzzyhmstrs
              * @since 0.2.0
              */
@@ -732,11 +778,11 @@ open class PopupWidget
                 return BiFunction { sd, d -> max(min(sd - d, f.apply(d)),0) }
             }
             /**
-             * Positions a Popup dimention based on screen dimension context
+             * Positions a Popup dimension based on screen dimension context
              *
-             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off screen")
-             * @param F Function<Int,Int> - function to provide the dimension. Supplies the corresponding screen size in the relevant dimension (PositionX -> screen width, etc)
-             * @return Bifunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off-screen")
+             * @param f Function<Int,Int> - function to provide the dimension. Supplies the corresponding screen size in the relevant dimension (PositionX -> screen width, etc)
+             * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
              * @author fzzyhmstrs
              * @since 0.2.0
              */
@@ -747,7 +793,7 @@ open class PopupWidget
              * Positions a Popup in the center of the screen
              *
              * This is the default behavior of the Builder, so typically won't be needed separately.
-             * @return Bifunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
              * @author fzzyhmstrs
              * @since 0.2.0
              */
@@ -757,9 +803,9 @@ open class PopupWidget
             /**
              * Positions a Popup in the center of the screen, offset by the provided amount
              *
-             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off screen")
+             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off-screen")
              * @param o Supplier<Int> - the position offset to apply
-             * @return Bifunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
              * @author fzzyhmstrs
              * @since 0.2.0
              */
@@ -770,9 +816,9 @@ open class PopupWidget
 
         /**
          * A layout position to apply to a popup element
-         * 
+         *
          * Typical implementation requires at least two positions, a relative position and an alignment
-         * Positions are broken down into 3 sub-categories: 
+         * Positions are broken down into 3 sub-categories:
          * - [PositionRelativePos] - How to generally position an element relative to its parent
          * - [PositionRelativeAlignment] - How to align an element in relation to the dimension features of its parent (top, bottom, left, and right edges etc.)
          * - [PositionGlobalAlignment] - How to align an element in relation to the global dimensions of the Popup as a whole
@@ -864,7 +910,7 @@ open class PopupWidget
                 val ALIGN_CENTER = PositionGlobalAlignment.ALIGN_CENTER
                 /**
                  * Centers an element relative to the width of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
-                 * 
+                 *
                  * Justification of this element won't take any overlapping elemnts into consideration, it will justify to the global left and right edges of the Popup regardless.
                  *
                  * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
@@ -874,7 +920,7 @@ open class PopupWidget
                 val ALIGN_JUSTIFY = PositionGlobalAlignment.ALIGN_JUSTIFY
                 /**
                  * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
-                 * 
+                 *
                  * Justification of this element WILL take elements to the right of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
                  *
                  * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
@@ -884,7 +930,7 @@ open class PopupWidget
                 val ALIGN_LEFT_AND_JUSTIFY = PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY
                 /**
                  * Aligns an element to the right side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
-                 * 
+                 *
                  * Justification of this element WILL take elements to the left of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
                  *
                  * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
