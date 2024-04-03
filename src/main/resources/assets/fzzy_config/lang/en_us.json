@@ -20,6 +20,7 @@
 "fc.validated_field.color.int.desc": "Hexadecimal color representation.",
 "fc.validated_field.enum.current": "Current Setting: %s",
 "fc.validated_field.expression": "Edit Expression",
+"fc.validated_field.list": "Edit List",
 
 "fc.validated_field.update.error": "Encountered error while updating field [%1$s] from [%2$s] to [%3$s]: %4$s",
 "fc.validated_field.revert.error": "Encountered error while reverting field [%1$s]: %2$s",
