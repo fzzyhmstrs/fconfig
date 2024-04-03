@@ -9,6 +9,7 @@ interface UpdateManager {
     }
     fun update(updatable: Updatable, updateMessage: Text)
     fun hasUpdate(scope: String): Boolean
+    fun getUpdate(scope: String): Updatable?
     fun changes(): Int
     fun revertAll()
     fun restoreAll(config: Config)
