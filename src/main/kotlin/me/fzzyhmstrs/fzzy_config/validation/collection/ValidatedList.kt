@@ -117,10 +117,25 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         return ValidatedList(copyStoredValue(), entryHandler)
     }
 
+    @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
-        TODO("Not yet implemented")
+        return ButtonWidget.builder("fc.validated_field.list".translate()) { b -> openListEditPopup(b) }.size(110,20).build()
     }
 
+    @Environment(EnvType.CLIENT)
+    private fun openListEditPopup(b: ButtonWidget){
+        val list = storedValue.map { entryHandler.instanceEntry().also { e -> e.applyEntry(it) } }
+        val listWidget = ListListWidget(list, { entryHandler.instanceEntry() })
+        val popup = PopupWidget.Builder(this.translation())
+            .addElement("list", listWidget, Position.BELOW, Position.ALIGN_LEFT)
+            .addDoneButton({ PopupWidget.pop() })
+            .positionX()
+            .positionY()
+            .onClose({ this.validateAndSet(listWidget.getList()) })
+            .build()
+        PopupWidget.setPopup(popup)
+    }
+    
     // List Interface
     //////////////////////////////////
     override val size: Int
@@ -405,7 +420,130 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         fun ofString(vararg s: String): ValidatedList<String> {
             return ValidatedList(listOf(*s), ValidatedString())
         }
+    }
 
+    @Environment(EnvType.CLIENT)
+    class ListListWidget<T>(entryList: List<Entry<T,*>>, private val entrySupplier: Supplier<Entry<T,*>>) : ElementListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), 158, 160, 0, 20) {
 
+        fun getList(): List<T>{
+            val list: MutableList<T> = mutableListOf()
+            for (e in entries){
+                if (e !is ExistingEntry) continue
+                list.add(e.get())
+            }
+            return list.toList()
+        }
+        
+        override fun drawHeaderAndFooterSeparators(context: DrawContext?) {
+        }
+    
+        override fun drawMenuListBackground(context: DrawContext?) {
+        }
+    
+        override fun getRowWidth(): Int {
+            return 134 //16 padding, 20 slider width and padding
+        }
+    
+        override fun method_57718(): Int {
+            return this.x + this.width / 2 + this.rowWidth / 2 + 6
+        }
+    
+        init{
+            for (e in entryList){
+                this.addEntry(ExistingEntry(e))
+            }
+        }
+    
+
+        inner class ExistingEntry<T>(private val entry: Entry<T,*>): ElementListWidget.Entry<ExistingEntry<T>>() {
+
+            private val entryWidget = entry.entryWidget(ChoiceValidator.any())
+            private val deleteWidget = TextlessConfigActionWidget(
+                "widget/action/delete".fcId(), 
+                "widget/action/delete_inactive".fcId(), 
+                "widget/action/delete_highlighted".fcId(),
+                "fc.button.delete".translate(),
+                "fc.button.delete".translate(),
+                { true },
+                { this@ListListWidget.removeEntry(this) })
+
+            fun get(): T{
+                return entry.get()
+            }
+            
+            override fun children(): MutableList<out Element> {
+                return mutableListOf(entryWidget, deleteWidget)
+            }
+        
+            override fun selectableChildren(): MutableList<out Selectable> {
+                return mutableListOf(entryWidget, deleteWidget)
+            }
+            
+            override fun render(
+                context: DrawContext,
+                index: Int,
+                y: Int,
+                x: Int,
+                entryWidth: Int,
+                entryHeight: Int,
+                mouseX: Int,
+                mouseY: Int,
+                hovered: Boolean,
+                tickDelta: Float
+            ) {
+                if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null){
+                    MinecraftClient.getInstance().currentScreen?.setTooltip(widget.tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
+                }
+                entryWidget.setPosition(x,y)
+                entryWidget.render(context, mouseX, mouseY, tickDelta)
+                deleteWidget.setPosition(x+114,y)
+                deleteWidget.render(context, mouseX, mouseY, tickDelta)
+            }
+        }
+
+        inner class NewEntry<T>(private val entrySupplier: Supplier<Entry<T,*>>): ElementListWidget.Entry<ExistingEntry<T>>() {
+
+            private val addWidget = TextlessConfigActionWidget(
+                "widget/action/add".fcId(), 
+                "widget/action/add_inactive".fcId(), 
+                "widget/action/add_highlighted".fcId(),
+                "fc.button.add".translate(),
+                "fc.button.add".translate(),
+                { true },
+                { this@ListListWidget.addEntry(TODO(),ExistingEntry<T>(entrySupplier.get())) })
+
+            fun get(): T{
+                return entry.get()
+            }
+            
+            override fun children(): MutableList<out Element> {
+                return mutableListOf(entryWidget, deleteWidget)
+            }
+        
+            override fun selectableChildren(): MutableList<out Selectable> {
+                return mutableListOf(entryWidget, deleteWidget)
+            }
+            
+            override fun render(
+                context: DrawContext,
+                index: Int,
+                y: Int,
+                x: Int,
+                entryWidth: Int,
+                entryHeight: Int,
+                mouseX: Int,
+                mouseY: Int,
+                hovered: Boolean,
+                tickDelta: Float
+            ) {
+                if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null){
+                    MinecraftClient.getInstance().currentScreen?.setTooltip(widget.tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
+                }
+                entryWidget.setPosition(x,y)
+                entryWidget.render(context, mouseX, mouseY, tickDelta)
+                deleteWidget.setPosition(x+114,y)
+                deleteWidget.render(context, mouseX, mouseY, tickDelta)
+            }
+        }
     }
 }
