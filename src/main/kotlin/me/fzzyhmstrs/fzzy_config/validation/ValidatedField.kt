@@ -68,14 +68,14 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
             try {
                 pushedValue?.let {
                     storedValue = it
-                    updateManager?.addUpdateMessage(getEntryKey(), FcText.translatable("fc.validated_field.revert",translation(), storedValue.toString(), pushedValue.toString()))
+                    updateManager?.addUpdateMessage(getEntryKey(), FcText.translatable("fc.validated_field.revert", storedValue.toString(), pushedValue.toString()))
                 }
 
             } catch (e: Exception){
-                updateManager?.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
+                updateManager?.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error", e.localizedMessage))
             }
         } else {
-            updateManager?.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
+            updateManager?.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error", "Unexpected null PushedState."))
         }
     }
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
@@ -176,7 +176,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
         storedValue = tVal1.get()
         val message = if (tVal1.isError()){
-            FcText.translatable("fc.validated_field.update.error",translation(),oldVal.toString(),storedValue.toString(),tVal1.getError())
+            FcText.translatable("fc.validated_field.update.error",oldVal.toString(),storedValue.toString(),tVal1.getError())
         } else {
             updateMessage(oldVal, storedValue)
         }
@@ -184,7 +184,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     }
 
     open fun updateMessage(old: T, new: T): Text {
-        return FcText.translatable("fc.validated_field.update",translation(), old.toString(), new.toString())
+        return FcText.translatable("fc.validated_field.update",old.toString(),new.toString())
     }
 
     /**
