@@ -293,7 +293,7 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
         val client = MinecraftClient.getInstance()
         val confirmText = "fc.button.restore.confirm".translate()
         val confirmTextWidth = max(50,client.textRenderer.getWidth(confirmText) + 8)
-        val cancelText = "fc.button.restore.cancel".translate()
+        val cancelText = "fc.button.cancel".translate()
         val cancelTextWidth = max(50,client.textRenderer.getWidth(cancelText) + 8)
         val buttonWidth = max(confirmTextWidth,cancelTextWidth)
 
@@ -310,8 +310,19 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
     }
     
     private fun <T> openEntryForwardingPopup(entry: T) where T: Updatable, T: Entry<*,*> {
+        val forwardText = "fc.button.forward.confirm".translate()
+        val forwardTextWidth = max(50,client.textRenderer.getWidth(confirmText) + 8)
+        val cancelText = "fc.button.cancel".translate()
+        val cancelTextWidth = max(50,client.textRenderer.getWidth(cancelText) + 8)
+        val buttonWidth = max(confirmTextWidth,cancelTextWidth)
         val popup = PopupWidget.Builder("fc.button.forward".translate())
-            .addElement()
+            .addDivider()
+            .addElement("desc",MultilineTextWidget("fc.button.forward.active".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
+            .addElement("player_finder", TextFieldWidget(todo()), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("forward_button", ActiveButtonWidget(todo()), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth,20).build(),"confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
+            .width(buttonWidth + 4 + buttonWidth + 16)
+            .build()
     }
 
     ///////////////////////////////////////
