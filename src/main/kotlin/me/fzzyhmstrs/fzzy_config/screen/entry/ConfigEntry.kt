@@ -17,7 +17,7 @@ internal open class ConfigEntry(
     protected val description: Text, 
     protected val parent: ConfigListWidget, 
     protected val widget: ClickableWidget,
-    protected val rightClickAction: Consumer<ConfigEntry>)
+    protected val rightClickAction: Consumer<ConfigEntry>?)
     : 
     ElementListWidget.Entry<ConfigEntry>() 
 {
@@ -55,6 +55,14 @@ internal open class ConfigEntry(
             Colors.WHITE
         )
 
+    }
+
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if(button == 1 && rightClickAction != null){
+            rightClickAction.accept(this)
+            return true
+        }
+        return super.mouseClicked(mouseX, mouseY, button)
     }
 
     override fun children(): MutableList<out Element> {
