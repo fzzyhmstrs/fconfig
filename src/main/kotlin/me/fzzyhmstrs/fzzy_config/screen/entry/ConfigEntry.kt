@@ -12,7 +12,15 @@ import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
-internal open class ConfigEntry(val name: Text, protected val description: Text, protected val parent: ConfigListWidget, protected val widget: ClickableWidget): ElementListWidget.Entry<ConfigEntry>() {
+internal open class ConfigEntry(
+    val name: Text, 
+    protected val description: Text, 
+    protected val parent: ConfigListWidget, 
+    protected val widget: ClickableWidget,
+    protected val rightClickAction: Consumer<ConfigEntry>)
+    : 
+    ElementListWidget.Entry<ConfigEntry>() 
+{
 
     init {
         if(description.string != "") {
@@ -37,9 +45,7 @@ internal open class ConfigEntry(val name: Text, protected val description: Text,
         }
         //75 = 10 + 20 + 20 + 20 + 5 = padding to scroll + revert width + default width + forward width + pad to widget
         //positions i at the left-hand side of the main widget
-        val i = parent.scrollbarPositionX - 75
-        val j = y - 2
-        widget.setPosition(i - widget.width, j)
+        widget.setPosition(parent.scrollbarPositionX - widget.width - 10, y)
         widget.render(context, mouseX, mouseY, tickDelta)
         context.drawTextWithShadow(
             parent.getClient().textRenderer,
