@@ -106,7 +106,7 @@ class ValidatedExpression @JvmOverloads constructor(
 
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
-        TODO("Not yet implemented")
+        return ExpressionButtonWidget(this, choicePredicate)
     }
 
     override fun toString(): String {
@@ -114,10 +114,10 @@ class ValidatedExpression @JvmOverloads constructor(
     }
 
     @Environment(EnvType.CLIENT)
-    class ExpressionPopupWidget(private val entry: ValidatedExpression): PressableWidget(0,0,90,20,entry.supplyEntry().lit()){
+    class ExpressionButtonWidget(private val entry: ValidatedExpression, private val choiceValidator: ChoiceValidator<String>): PressableWidget(0,0,110,20, entry.supplyEntry().lit()){
 
         override fun getNarrationMessage(): MutableText {
-            return "fc.validated_field.expression".translate()
+            return "fc.validated_field.expression".translate().append(", ".lit()).append(this.message)
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
@@ -125,7 +125,59 @@ class ValidatedExpression @JvmOverloads constructor(
         }
 
         override fun onPress() {
-            TODO("Not yet implemented")
+            openExpressionEditPopup()
+        }
+
+        private fun openExpressionEditPopup(){
+            val editBox = ValidationBackedTextFieldWidget(176,20,entry,choiceValidator,entry,entry)
+            fun add(s: String, moveCursor: Int){
+                
+            }
+            val popup = PopupWidget.Builder("fc.validated_field.expression".translate())
+                .addElement("ln",ButtonWidget.builder("ln".lit()){ add("ln()",3) }.size(41,20).build(),Position.BELOW,Position.ALIGN_LEFT)
+                .addElement("log",ButtonWidget.builder("log".lit()){ add("log(,)",4) }.size(41,20).build(),"ln",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("log10",ButtonWidget.builder("log10".lit()){ add("log10()",6) }.size(41,20).build(),"log",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("log2",ButtonWidget.builder("log2".lit()){ add("log2()",5) }.size(41,20).build(),"log10",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("sqrt",ButtonWidget.builder("sqrt".lit()){ add("sqrt()",5) }.size(32,20).build(),"ln",Position.BELOW,Position.ALIGN_LEFT)
+                .addElement("abs",ButtonWidget.builder("abs".lit()){ add("abs()",4) }.size(32,20).build(),"sqrt",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("sin",ButtonWidget.builder("sin".lit()){ add("sin()",4) }.size(32,20).build(),"abs",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("cos",ButtonWidget.builder("cos".lit()){ add("cos()",4) }.size(32,20).build(),"sin",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("pow",ButtonWidget.builder("^".lit()){ add("^",1) }.size(32,20).build(),"cos",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("paren",ButtonWidget.builder("(_)".lit()){ add("()",1) }.size(32,20).build(),"sqrt",Position.BELOW,Position.ALIGN_LEFT)
+                .addElement("incr",ButtonWidget.builder("incr".lit()){ add("incr(,)",5) }.size(32,20).build(),"paren",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("ciel",ButtonWidget.builder("ciel".lit()){ add("ciel()",5) }.size(32,20).build(),"incr",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("flr",ButtonWidget.builder("flr".lit()){ add("floor()",6) }.size(32,20).build(),"ciel",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("rnd",ButtonWidget.builder("rnd".lit()){ add("round()",6) }.size(32,20).build(),"flr",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("plus",ButtonWidget.builder("+".lit()){ add("+",1) }.size(32,20).build(),"paren",Position.BELOW,Position.ALIGN_LEFT)
+                .addElement("minus",ButtonWidget.builder("-".lit()){ add("-",1) }.size(32,20).build(),"plus",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("times",ButtonWidget.builder("*".lit()){ add("*",1) }.size(32,20).build(),"minus",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("div",ButtonWidget.builder("/".lit()){ add("/",1) }.size(32,20).build(),"times",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                .addElement("mod",ButtonWidget.builder("%".lit()){ add("%",1) }.size(32,20).build(),"div",Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+            
+            val charButtonSize = entry.validVars.size
+            if(charButtonSize > 0){
+                if (charButtonSize == 1){
+                    val chr = entry.validVars.toList()[0]
+                    popup.addElement("var",ButtonWidget.builder(chr.toString().lit()){ add(chr.toString(),1) }.size(176,20).build(),"plus",Position.BELOW,Position.ALIGN_LEFT)
+                } else {
+                    val list = entry.validVars.toList()
+                    val chr = list[0]
+                    val buttonWidth = (176 - ((charButtonSize - 1) * 4)) / charButtonSize
+                    popup.addElement("var", ButtonWidget.builder(chr.toString().lit()){ add(chr.toString(),1) }.size(buttonWidth,20).build(),"plus",Position.BELOW,Position.ALIGN_LEFT)
+                    for(i in 1 until charButtonSize){
+                        val chri = list[i]
+                        popup.addElement("var$i",ButtonWidget.builder(chri.toString().lit()){ add(chri.toString(),1) }.size(buttonWidth,20).build(),Position.RIGHT,Position.HORIZONTAL_TO_TOP_EDGE)
+                    }
+                }
+            }
+            if(charButtonSize > 0){
+                popup.addElement("edit_box",editBox,"var",Position.BELOW,Position.ALIGN_LEFT)
+            } else {
+                popup.addElement("edit_box",editBox,"plus",Position.BELOW,Position.ALIGN_LEFT)
+            }
+            popup.addDoneButton()
+            popup.noCloseOnClick()
+            PopupWidget.setPopup(popup.build())
         }
 
     }
