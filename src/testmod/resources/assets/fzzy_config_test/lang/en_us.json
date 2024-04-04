@@ -6,5 +6,16 @@
   "fc.test.enum2.name": "Cycling Selectable",
   "fc.test.enum2.name.desc": "Whether an element is currently focused or hovered over.",
   "fc.test.int2.name": "Textbox Cool Int",
-  "fc.test.int2.name.desc": "A number between 0 and 16, that defines how cool the number is."
+  "fc.test.int2.name.desc": "A number between 0 and 16, that defines how cool the number is.",
+
+  "test_config.fzzy_config.ALPHA" : "Alpha",
+  "test_config.fzzy_config.ALPHA.desc" : "The first option",
+  "test_config.fzzy_config.BETA" : "Beta",
+  "test_config.fzzy_config.BETA.desc" : "The second choice",
+  "test_config.fzzy_config.GAMMA" : "Gamma",
+  "test_config.fzzy_config.GAMMA.desc" : "The third choice",
+  "test_config.fzzy_config.DELTA" : "Delta",
+  "test_config.fzzy_config.DELTA.desc" : "The fourth choice",
+  "test_config.fzzy_config.EPSILON" : "Epsilon",
+  "test_config.fzzy_config.EPSILON.desc" : "The fifth choice"
 }

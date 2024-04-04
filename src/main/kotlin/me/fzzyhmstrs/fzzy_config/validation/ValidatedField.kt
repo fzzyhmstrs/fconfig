@@ -1,11 +1,11 @@
 package me.fzzyhmstrs.fzzy_config.validation
 
-import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
@@ -60,7 +60,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun restore(){
         reset()
-        updateManager?.addUpdateMessage(getEntryKey(), FcText.translatable("fc.validated_field.default",translation(), defaultValue.toString()))
+        updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.default",translation(), defaultValue.toString()))
     }
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun revert() {
@@ -68,14 +68,14 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
             try {
                 pushedValue?.let {
                     storedValue = it
-                    updateManager?.addUpdateMessage(getEntryKey(), FcText.translatable("fc.validated_field.revert",translation(), storedValue.toString(), pushedValue.toString()))
+                    updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert",translation(), storedValue.toString(), pushedValue.toString()))
                 }
 
             } catch (e: Exception){
-                updateManager?.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
+                updateManager?.addUpdateMessage(this,FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
             }
         } else {
-            updateManager?.addUpdateMessage(getEntryKey(),FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
+            updateManager?.addUpdateMessage(this,FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
         }
     }
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")

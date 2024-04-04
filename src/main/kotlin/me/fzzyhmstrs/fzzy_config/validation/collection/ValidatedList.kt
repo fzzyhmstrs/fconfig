@@ -1,9 +1,14 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.validated
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
@@ -11,10 +16,20 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.Selectable
+import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
+import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.ElementListWidget
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
+import me.fzzyhmstrs.fzzy_config.entry.Entry as Entry1
 
 /**
  * a validated list
@@ -25,7 +40,7 @@ import net.peanuuutz.tomlkt.asTomlArray
  * @param entryHandler [Entry] used to handle individual list entries
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedList
  * @see me.fzzyhmstrs.fzzy_config.validation.ValidatedField.toList
- * @see me.fzzyhmstrs.fzzy_config.validation.misc.Shorthand.validated
+ * @see me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -59,6 +74,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         }
     }
 
+    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     override fun serialize(input: List<T>): ValidationResult<TomlElement> {
         val toml = TomlArrayBuilder()
         val errors: MutableList<String> = mutableListOf()
@@ -122,20 +138,27 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         return ButtonWidget.builder("fc.validated_field.list".translate()) { b -> openListEditPopup(b) }.size(110,20).build()
     }
 
+    @Suppress("UNCHECKED_CAST")
     @Environment(EnvType.CLIENT)
     private fun openListEditPopup(b: ButtonWidget){
-        val list = storedValue.map { entryHandler.instanceEntry().also { e -> e.applyEntry(it) } }
-        val listWidget = ListListWidget(list, { entryHandler.instanceEntry() })
-        val popup = PopupWidget.Builder(this.translation())
-            .addElement("list", listWidget, Position.BELOW, Position.ALIGN_LEFT)
-            .addDoneButton({ PopupWidget.pop() })
-            .positionX()
-            .positionY()
-            .onClose({ this.validateAndSet(listWidget.getList()) })
-            .build()
-        PopupWidget.setPopup(popup)
+        try {
+            val list = storedValue.map {
+                (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.applyEntry(it) }
+            }
+            val listWidget = ListListWidget(list, entryHandler)
+            val popup = PopupWidget.Builder(this.translation())
+                .addElement("list", listWidget, Position.BELOW, Position.ALIGN_LEFT)
+                .addDoneButton()
+                .onClose { this.validateAndSet(listWidget.getList()) }
+                .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
+                .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+                .build()
+            PopupWidget.setPopup(popup)
+        } catch (e: Exception){
+            FC.LOGGER.error("Unexpected exception caught while opening list popup")
+        }
     }
-    
+
     // List Interface
     //////////////////////////////////
     override val size: Int
@@ -186,7 +209,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         /**
          * attempts to create a ValidatedList from the provided list and Entry
          *
-         * This is utilized by [me.fzzyhmstrs.fzzy_config.updates.UpdateManagerImpl] to create ValidatedLists reflectively
+         * This is utilized by [me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager] to create ValidatedLists reflectively
          * @param T List type
          * @param list input List<T>
          * @param entry Entry of *any* type. Will attempt to cast it to a properly-typed Entry, or fail soft to null
@@ -194,6 +217,8 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
          * @author fzzyhmstrs
          * @since 0.2.0
          */
+        @JvmStatic
+        @Suppress("UNCHECKED_CAST")
         fun <T> tryMake(list: List<T>, entry: Entry<*,*>): ValidatedList<T>?{
             return try{
                 ValidatedList(list, entry as Entry<T,*>)
@@ -423,62 +448,72 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
     }
 
     @Environment(EnvType.CLIENT)
-    class ListListWidget<T>(entryList: List<Entry<T,*>>, private val entrySupplier: Supplier<Entry<T,*>>) : ElementListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), 158, 160, 0, 20) {
+    private class ListListWidget<T>(entryList: List<Entry1<T,*>>, entrySupplier: Entry1<T, *>)
+        :
+        ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0, 20) {
 
         fun getList(): List<T>{
             val list: MutableList<T> = mutableListOf()
-            for (e in entries){
-                if (e !is ExistingEntry) continue
+            for (e in this.children()){
+                if (e !is ExistingEntry<T>) continue
                 list.add(e.get())
             }
             return list.toList()
         }
-        
+
         override fun drawHeaderAndFooterSeparators(context: DrawContext?) {
         }
-    
+
         override fun drawMenuListBackground(context: DrawContext?) {
         }
-    
+
         override fun getRowWidth(): Int {
             return 134 //16 padding, 20 slider width and padding
         }
-    
+
         override fun method_57718(): Int {
             return this.x + this.width / 2 + this.rowWidth / 2 + 6
         }
-    
+
+        private fun makeVisible(entry: ListEntry<T>){
+            this.ensureVisible(entry)
+        }
+
         init{
             for (e in entryList){
-                this.addEntry(ExistingEntry(e))
+                this.addEntry(ExistingEntry(e,this))
             }
+            this.addEntry(NewEntry(entrySupplier,this))
         }
-    
 
-        inner class ExistingEntry<T>(private val entry: Entry<T,*>): ElementListWidget.Entry<ExistingEntry<T>>() {
+        private class ExistingEntry<T>(private val entry: Entry1<T,*>, private val parent: ListListWidget<T>): ListEntry<T>() {
 
-            private val entryWidget = entry.entryWidget(ChoiceValidator.any())
+            private val entryWidget = entry.widgetEntry(ChoiceValidator.any())
             private val deleteWidget = TextlessConfigActionWidget(
-                "widget/action/delete".fcId(), 
-                "widget/action/delete_inactive".fcId(), 
+                "widget/action/delete".fcId(),
+                "widget/action/delete_inactive".fcId(),
                 "widget/action/delete_highlighted".fcId(),
                 "fc.button.delete".translate(),
                 "fc.button.delete".translate(),
                 { true },
-                { this@ListListWidget.removeEntry(this) })
+                { parent.children().let { list ->
+                    list.indexOf(this).takeIf { i -> i >=0 && i<list.size }?.let {
+                        i -> list.removeAt(i)
+                    }
+                } })
 
             fun get(): T{
                 return entry.get()
             }
-            
+
             override fun children(): MutableList<out Element> {
                 return mutableListOf(entryWidget, deleteWidget)
             }
-        
+
             override fun selectableChildren(): MutableList<out Selectable> {
                 return mutableListOf(entryWidget, deleteWidget)
             }
-            
+
             override fun render(
                 context: DrawContext,
                 index: Int,
@@ -491,8 +526,8 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
                 hovered: Boolean,
                 tickDelta: Float
             ) {
-                if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null){
-                    MinecraftClient.getInstance().currentScreen?.setTooltip(widget.tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
+                if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && entryWidget.tooltip != null){
+                    MinecraftClient.getInstance().currentScreen?.setTooltip(entryWidget.tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
                 }
                 entryWidget.setPosition(x,y)
                 entryWidget.render(context, mouseX, mouseY, tickDelta)
@@ -501,29 +536,30 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
             }
         }
 
-        inner class NewEntry<T>(private val entrySupplier: Supplier<Entry<T,*>>): ElementListWidget.Entry<ExistingEntry<T>>() {
+        @Suppress("UNCHECKED_CAST")
+        private class NewEntry<T>(private val entrySupplier: Entry1<T,*>, private val parent: ListListWidget<T>): ListEntry<T>() {
 
             private val addWidget = TextlessConfigActionWidget(
-                "widget/action/add".fcId(), 
-                "widget/action/add_inactive".fcId(), 
+                "widget/action/add".fcId(),
+                "widget/action/add_inactive".fcId(),
                 "widget/action/add_highlighted".fcId(),
                 "fc.button.add".translate(),
                 "fc.button.add".translate(),
                 { true },
-                { this@ListListWidget.addEntry(TODO(),ExistingEntry<T>(entrySupplier.get())) })
+                {
+                    parent.children().let { it.add(it.lastIndex-1,ExistingEntry(entrySupplier.instanceEntry() as Entry1<T,*>,parent)) }
+                    parent.makeVisible(this)
+                })
 
-            fun get(): T{
-                return entry.get()
-            }
-            
+
             override fun children(): MutableList<out Element> {
-                return mutableListOf(entryWidget, deleteWidget)
+                return mutableListOf(addWidget)
             }
-        
+
             override fun selectableChildren(): MutableList<out Selectable> {
-                return mutableListOf(entryWidget, deleteWidget)
+                return mutableListOf(addWidget)
             }
-            
+
             override fun render(
                 context: DrawContext,
                 index: Int,
@@ -536,14 +572,11 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
                 hovered: Boolean,
                 tickDelta: Float
             ) {
-                if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null){
-                    MinecraftClient.getInstance().currentScreen?.setTooltip(widget.tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
-                }
-                entryWidget.setPosition(x,y)
-                entryWidget.render(context, mouseX, mouseY, tickDelta)
-                deleteWidget.setPosition(x+114,y)
-                deleteWidget.render(context, mouseX, mouseY, tickDelta)
+                addWidget.setPosition(x+114,y)
+                addWidget.render(context, mouseX, mouseY, tickDelta)
             }
         }
+
+        private abstract class ListEntry<T>: Entry<ListEntry<T>>()
     }
 }

@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.screen
 
-import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -12,7 +11,6 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.*
 import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
-import java.awt.Color
 import java.util.*
 
 /**

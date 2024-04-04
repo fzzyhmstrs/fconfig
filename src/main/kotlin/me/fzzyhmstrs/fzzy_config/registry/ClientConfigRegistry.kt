@@ -4,6 +4,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.updates.UpdateManager.Base.applyKeys
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import java.util.*
@@ -64,7 +65,7 @@ object ClientConfigRegistry {
     @Environment(EnvType.CLIENT)
     internal fun registerConfig(config: Config){
         validScopes.add(config.getId().namespace)
-        UpdateManager.INSTANCE.applyKeys(config)
+        UpdateManager.applyKeys(config)
         clientConfigs[config.getId().toTranslationKey()] = config
     }
 }

@@ -1,7 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_ERROR
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_OK
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_ONGOING

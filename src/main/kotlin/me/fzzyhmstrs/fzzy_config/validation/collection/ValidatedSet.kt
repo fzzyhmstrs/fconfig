@@ -145,7 +145,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
         /**
          * attempts to create a ValidatedSet from the provided set and Entry
          *
-         * This is utilized by [me.fzzyhmstrs.fzzy_config.updates.UpdateManagerImpl] to create ValidatedSets reflectively
+         * This is utilized by [me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager] to create ValidatedSets reflectively
          * @param T Set type
          * @param set input Set<T>
          * @param entry Entry of *any* type. Will attempt to cast it to a properly-typed Entry, or fail soft to null

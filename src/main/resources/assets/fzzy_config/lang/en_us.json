@@ -51,7 +51,7 @@
 "fc.button.restore": "Restore Defaults",
 "fc.button.restore.desc": "Restores all configs default settings",
 "fc.button.restore.confirm": "Confirm",
-"fc.button.restore.confirm.desc": "Warning! This will restore all setting in this config to default, continue?",
+"fc.button.restore.confirm.desc": "Warning! Restoring all settings in this config to default, continue?",
 "fc.button.restore.cancel": "Cancel",
 "fc.button.changelog": "Change History",
 "fc.button.changelog.desc": "Lists all changes just made to configs",

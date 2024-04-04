@@ -1,13 +1,13 @@
 package me.fzzyhmstrs.fzzy_config_test
 import com.mojang.brigadier.CommandDispatcher
-import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
-import me.fzzyhmstrs.fzzy_config.updates.UpdateManagerImpl
+import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
+import me.fzzyhmstrs.fzzy_config_test.test.TestConfig
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory
 import me.fzzyhmstrs.fzzy_config_test.test.TestPopupScreen
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.gui.Selectable
-import javax.swing.RowFilter.Entry
 import kotlin.random.Random
 
 object FC: ModInitializer {
@@ -57,7 +56,7 @@ object FCC: ClientModInitializer {
         .build()
     val testBoolean = ValidatedBoolean()
 
-    val manager = UpdateManagerImpl()
+    val manager = BaseUpdateManager()
 
     override fun onInitializeClient() {
         testEnum.setEntryKey("fc.test.enum.name")
@@ -82,7 +81,7 @@ object FCC: ClientModInitializer {
             }
         }
         TestConfig.init()
-        TestConfig.toString()
+        println(TestConfig.toString())
     }
 
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>){

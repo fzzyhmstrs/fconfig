@@ -3,8 +3,6 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.fcId
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.Widget
 import java.util.function.Consumer

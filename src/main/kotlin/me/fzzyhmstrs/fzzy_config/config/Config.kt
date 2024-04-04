@@ -1,9 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.Walkable
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.util.Identifier
 
 /**
@@ -88,7 +88,7 @@ open class Config(val name: String, val folder: String, val subfolder: String = 
     override fun toString(): String {
         return ConfigApi.serializeConfig(this,mutableListOf())
     }
-    
+
     override fun translationKey(): String {
         return getId().toTranslationKey()
     }

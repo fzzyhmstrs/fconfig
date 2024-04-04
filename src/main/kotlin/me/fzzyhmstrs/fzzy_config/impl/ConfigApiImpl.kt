@@ -372,13 +372,13 @@ object ConfigApiImpl {
                 if(v is EntryDeserializer<*>) {
                     v.deserializeEntry(it, errorBuilder, str, ignoreNonSync)
                 } else if (v != null){
-                    val basicValidation = UpdateManager.INSTANCE.basicValidationStrategy(v,prop.returnType)
+                    val basicValidation = UpdateManager.basicValidationStrategy(v,prop.returnType)
                     if (basicValidation != null){
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(it, errorBuilder, str, ignoreNonSync)
                         try {
                             prop.setter.call(config, thing.get())
-                        catch(e: Exception){
+                        } catch(e: Exception){
                             errorBuilder.add("Error deserializing basic validation [$str]: ${e.localizedMessage}")
                         }
                     }
@@ -492,7 +492,7 @@ object ConfigApiImpl {
         ) {
             val newPrefix = prefix + "." + property.name
             val propVal = property.get(config)
-            walkAction.act(prefix, newPrefix, propVal, property, property.annotations)
+            walkAction.act(prefix, newPrefix, propVal, property as KMutableProperty<*>, property.annotations)
             if (propVal is Walkable){
                 walk(propVal, newPrefix, ignoreNonSync, walkAction)
             }

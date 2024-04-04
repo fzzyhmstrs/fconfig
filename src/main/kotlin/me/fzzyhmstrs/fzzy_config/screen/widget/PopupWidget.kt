@@ -17,9 +17,12 @@ import net.minecraft.client.gui.navigation.NavigationDirection
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.gui.widget.AbstractTextWidget
+import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.gui.widget.Widget
+import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -493,9 +496,9 @@ open class PopupWidget
          * @since 0.2.0
          */
         @JvmOverloads
-        fun addDoneButton(pressAction: ButtonWidget.PressAction, parent: String? = null): Builder{
+        fun addDoneButton(pressAction: ButtonWidget.PressAction = ButtonWidget.PressAction{ pop() }, parent: String? = null, spacingH: Int = 4): Builder{
             val trueParent = parent ?: lastEl
-            addElement("done_for_$trueParent", ButtonWidget.builder(ScreenTexts.DONE, pressAction).size(50,20).build(), trueParent, Position.BELOW, Position.ALIGN_JUSTIFY)
+            addElementSpacedH("done_for_$trueParent", ButtonWidget.builder(ScreenTexts.DONE, pressAction).size(50,20).build(), trueParent, spacingH, Position.BELOW, Position.ALIGN_JUSTIFY)
             return this
         }
         /**
@@ -672,7 +675,7 @@ open class PopupWidget
                     drawables.add(posEl.element)
                 if(posEl.element is Selectable)
                     selectables.add(posEl.element)
-                if(posEl.element is TextWidget && name != "title")
+                if(posEl.element is AbstractTextWidget && name != "title")
                     narratedTitle.append(". ".lit()).append(posEl.element.message)
             }
             for (posEl in elements.values){

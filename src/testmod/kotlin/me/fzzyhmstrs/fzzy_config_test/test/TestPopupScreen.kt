@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_config_test.test
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
+import me.fzzyhmstrs.fzzy_config.screen.widget.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.*
 import me.fzzyhmstrs.fzzy_config.test.TestConfigApi
@@ -27,12 +28,15 @@ import java.util.function.Supplier
 
 class TestPopupScreen: PopupWidgetScreen(FcText.empty()) {
 
+    val testBasicConfigManager = TestBasicConfigManager()
+
     val testEnumWidget = testEnum.widgetEntry(ChoiceValidator.any())
     val testEnum2Widget = testEnum2.widgetEntry(ChoiceValidator.any())
     val testIntWidget = testInt.widgetEntry(ChoiceValidator.any())
     val testInt2Widget = testInt2.widgetEntry(ChoiceValidator.any())
     val testStringWidget = testString.widgetEntry(ChoiceValidator.any())
     val testBooleanWidget = testBoolean.widgetEntry(ChoiceValidator.any())
+    val testChangesWidget = ChangesWidget("test.scope.changes",{this.width}, testBasicConfigManager)
 
     override fun close() {
         super.close()
@@ -57,6 +61,9 @@ class TestPopupScreen: PopupWidgetScreen(FcText.empty()) {
         addDrawableChild(testStringWidget)
         testBooleanWidget.setPosition(20,170)
         addDrawableChild(testBooleanWidget)
+        testChangesWidget.setPosition(20,200)
+        addDrawableChild(testChangesWidget)
+
     }
 
     private fun openTestPopupWidget(){
