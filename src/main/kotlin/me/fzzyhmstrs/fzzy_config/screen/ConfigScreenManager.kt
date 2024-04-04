@@ -277,6 +277,12 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
 
     /////////////////////////////
 
+    private fun <T> popupRightClickWidget(entry: T, withForwarding: Boolean) where T: Updatable, T: Entry<*,*> {
+        val popup = PopupWidget.Builder("fc.config.right_click".translate(),2,2)
+            .addDivider()
+            .addElement("revert", )
+    }
+    
     private fun <T> popupEntryForwardingWidget(entry: T) where T: Updatable, T: Entry<*,*> {
         TODO()
     }
