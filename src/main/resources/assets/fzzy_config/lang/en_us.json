@@ -57,6 +57,7 @@
 "fc.button.restore.cancel": "Cancel",
 "fc.button.changelog": "Change History",
 "fc.button.changelog.desc": "Lists all changes just made to configs",
+"fc.button.forward": "Forward Setting",
 "fc.button.forward.active": "Forward this entry to another player",
 "fc.button.forward.inactive": "No-one to forward settings to",
 "fc.button.alert.active": "Forwarded settings",
