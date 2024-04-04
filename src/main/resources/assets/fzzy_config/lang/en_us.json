@@ -43,6 +43,7 @@
 "fc.config.generic.section.desc" : "This Config Section doesn't implement it's translation key. The screen doesn't know what to call it!",
 "fc.config.generic.field" : "Setting",
 "fc.config.generic.field.desc" : "This Setting doesn't implement it's translation key. The screen doesn't know what to call it!",
+"fc.config.right_click": "Actions",
 
 "fc.button.apply": "Apply Changes",
 "fc.button.apply.desc": "Applies all changes and saves configs",
