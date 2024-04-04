@@ -75,7 +75,7 @@ class ChangesWidget(private val scope: String, private val widthSupplier: Suppli
         val client = MinecraftClient.getInstance()
         val confirmText = "fc.button.restore.confirm".translate()
         val confirmTextWidth = max(50,client.textRenderer.getWidth(confirmText) + 8)
-        val cancelText = "fc.button.restore.cancel".translate()
+        val cancelText = "fc.button.cancel".translate()
         val cancelTextWidth = max(50,client.textRenderer.getWidth(cancelText) + 8)
         val buttonWidth = max(confirmTextWidth,cancelTextWidth)
 
