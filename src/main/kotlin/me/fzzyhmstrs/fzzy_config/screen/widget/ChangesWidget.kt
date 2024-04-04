@@ -81,7 +81,7 @@ class ChangesWidget(private val scope: String, private val widthSupplier: Suppli
 
         val popup = PopupWidget.Builder("fc.button.restore".translate())
             .addDivider()
-            .addElement("confirm_text", MultilineTextWidget("fc.button.restore.confirm.desc".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
+            .addElement("confirm_text", MultilineTextWidget("fc.button.restore.confirm.desc".translate(), client.textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
             .addElement("confirm_button", ButtonWidget.builder(confirmText) { manager.restore(scope); PopupWidget.pop() }.size(buttonWidth,20).build(), Position.BELOW, Position.ALIGN_LEFT)
             .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth,20).build(),"confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
