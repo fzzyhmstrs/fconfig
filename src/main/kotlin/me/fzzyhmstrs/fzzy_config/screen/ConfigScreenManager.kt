@@ -277,14 +277,41 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
 
     /////////////////////////////
 
-    private fun <T> popupRightClickWidget(entry: T, withForwarding: Boolean) where T: Updatable, T: Entry<*,*> {
+    private fun <T> openRightClickPopup(x: Supplier<Int>, y: Supplier<Int>, entry: T, withForwarding: Boolean) where T: Updatable, T: Entry<*,*> {
         val popup = PopupWidget.Builder("fc.config.right_click".translate(),2,2)
             .addDivider()
-            .addElement("revert", )
+            .addElement("revert", , Position.BELOW, POSITION.ALIGN_RIGHT)
+            .addElement("restore", , Position.BELOW, POSITION.ALIGN_RIGHT)
+            .positionX(PopupWidget.Builder.at(x))
+            .positionY(PopupWidget.Builder.at(y))
+            .background("widget/popup/background_right_click".fcId())
+        if(withForwarding)
+            popup.addElement("forward", , Position.BELOW, POSITION.ALIGN_RIGHT)
+        PopupWidget.setPopup(popup.build())
+    }
+    private fun <T> openRestoreConfirmPopup(b: ActiveButtonWidget, entry: T) where T: Updatable, T: Entry<*,*> {
+        val client = MinecraftClient.getInstance()
+        val confirmText = "fc.button.restore.confirm".translate()
+        val confirmTextWidth = max(50,client.textRenderer.getWidth(confirmText) + 8)
+        val cancelText = "fc.button.restore.cancel".translate()
+        val cancelTextWidth = max(50,client.textRenderer.getWidth(cancelText) + 8)
+        val buttonWidth = max(confirmTextWidth,cancelTextWidth)
+
+        val popup = PopupWidget.Builder("fc.button.restore".translate())
+            .addDivider()
+            .addElement("confirm_text", MultilineTextWidget("fc.config.restore.confirm.desc".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
+            .addElement("confirm_button", ButtonWidget.builder(confirmText) { entry.restore(); PopupWidget.pop() }.size(buttonWidth,20).build(), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth,20).build(),"confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
+            .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
+            .positionY(PopupWidget.Builder.popupContext { h -> b.y - h + 28 })
+            .width(buttonWidth + 4 + buttonWidth + 16)
+            .build()
+        PopupWidget.setPopup(popup)
     }
     
-    private fun <T> popupEntryForwardingWidget(entry: T) where T: Updatable, T: Entry<*,*> {
-        TODO()
+    private fun <T> openEntryForwardingPopup(entry: T) where T: Updatable, T: Entry<*,*> {
+        val popup = PopupWidget.Builder("fc.button.forward".translate())
+            .addElement()
     }
 
     ///////////////////////////////////////
