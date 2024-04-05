@@ -13,6 +13,7 @@ import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
 import java.util.function.Supplier
 
@@ -61,14 +62,14 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, private val 
         val result = validator.validateEntry(s, EntryValidator.ValidationType.STRONG)
         return if(result.isError()) {
             this.tooltip = Tooltip.of(result.getError().lit())
-            setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+            setEditableColor(0xFF5555)
             false
         } else {
             this.tooltip = null
             val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
             if (result2.isError()){
                 this.tooltip = Tooltip.of(result.getError().lit())
-                setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+                setEditableColor(0xFF5555)
                 false
             } else {
                 this.storedValue = result.get()

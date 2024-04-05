@@ -11,6 +11,23 @@ import net.minecraft.client.gui.widget.ElementListWidget
 internal class ConfigListWidget(minecraftClient: MinecraftClient, parent: ConfigScreen) :
     ElementListWidget<ConfigEntry>(minecraftClient, parent.width, parent.layout.contentHeight, parent.layout.headerHeight, 24)
 {
+
+    private val entryMap: Map<String,ConfigEntry> by lazy {
+        this.children().toList().associateBy { it.name.string }
+    }
+
+    fun updateSearchedEntries(searchInput: String): Int {
+        if (searchInput == "") {
+            this.replaceEntries(entryMap.values.toList())
+            scrollAmount = 0.0
+            return entryMap.size
+        }
+        val list = entryMap.filterKeys { it.contains(searchInput) }.values.toList()
+        this.replaceEntries(list)
+        scrollAmount = 0.0
+        return list.size
+    }
+
     override fun getRowWidth(): Int {
         return 340
     }

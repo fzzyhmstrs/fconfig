@@ -19,6 +19,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.entity.player.PlayerEntity
+import java.util.UUID
 
 /**
  * The registry for [Config] instances.
@@ -29,10 +30,8 @@ object SyncedConfigRegistry {
 
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
 
-    fun forwardSetting(update: String, player: PlayerEntity, scope: String) {
-        val errors: MutableList<String> = mutableListOf()
-        val uuid = player.uuid
-        ClientPlayNetworking.send(SettingForwardCustomPayload(update,uuid,scope))
+    fun forwardSetting(update: String, player: UUID, scope: String) {
+        ClientPlayNetworking.send(SettingForwardCustomPayload(update,player,scope))
     }
 
     fun updateServer(serializedConfigs: Map<String,String>, changeHistory: List<String>, playerPerm: Int){

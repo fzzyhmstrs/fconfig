@@ -7,6 +7,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.annotations.WithPerms
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
@@ -15,24 +16,29 @@ import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenManager.ConfigScreenBuilder
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigForwardableEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigUpdatableEntry
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.NoPermsButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.ScreenOpenButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.MultilineTextWidget
+import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraft.client.render.VertexFormats.POSITION
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlComment
-import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.Function
+import java.util.function.Supplier
+import kotlin.math.max
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
@@ -263,30 +269,34 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
                 entry.widgetEntry(),
                 TextlessConfigActionWidget("widget/action/revert".fcId(), "widget/action/revert_inactive".fcId(),"widget/action/revert_highlighted".fcId(), FcText.translatable("fc.button.revert.active"),FcText.translatable("fc.button.revert.inactive"),{ entry.peekState() } ) { entry.revert() },
                 TextlessConfigActionWidget("widget/action/restore".fcId(), "widget/action/restore_inactive".fcId(),"widget/action/restore_highlighted".fcId(), FcText.translatable("fc.button.restore.active"),FcText.translatable("fc.button.restore.inactive"),{ !entry.isDefault() } ) { entry.restore() },
-                TextlessConfigActionWidget("widget/action/forward".fcId(),"widget/action/forward_inactive".fcId(),"widget/action/forward_highlighted".fcId(), FcText.translatable("fc.button.forward.active"),FcText.translatable("fc.button.forward.inactive"),{ MinecraftClient.getInstance()?.networkHandler?.playerList?.let { it.size > 1 } ?: false } ) { popupEntryForwardingWidget(entry) })
+                TextlessConfigActionWidget("widget/action/forward".fcId(),"widget/action/forward_inactive".fcId(),"widget/action/forward_highlighted".fcId(), FcText.translatable("fc.button.forward.active"),FcText.translatable("fc.button.forward.inactive"),{ MinecraftClient.getInstance()?.networkHandler?.playerList?.let { it.size > 1 } ?: false } ) { openEntryForwardingPopup(entry) })
         }
     }
 
     private fun noPermsEntryBuilder(name: Text, desc: Text): Function<ConfigListWidget, ConfigEntry> {
-        return Function { parent -> ConfigEntry(name, desc, parent,NoPermsButtonWidget()) }
+        return Function { parent -> ConfigEntry(name, desc, parent,NoPermsButtonWidget()) {} }
     }
 
     private fun screenOpenEntryBuilder(name: Text, desc: Text, scope: String): Function<ConfigListWidget,ConfigEntry> {
-        return Function { parent -> ConfigEntry(name, desc, parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) } ) }
+        return Function { parent -> ConfigEntry(name, desc, parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) }) {} }
     }
 
     /////////////////////////////
 
     private fun <T> openRightClickPopup(x: Supplier<Int>, y: Supplier<Int>, entry: T, withForwarding: Boolean) where T: Updatable, T: Entry<*,*> {
+        val client = MinecraftClient.getInstance()
+        val revertText = "fc.button.revert".translate()
+        val restoreText = "fc.button.restore".translate()
         val popup = PopupWidget.Builder("fc.config.right_click".translate(),2,2)
             .addDivider()
-            .addElement("revert", , Position.BELOW, POSITION.ALIGN_RIGHT)
-            .addElement("restore", , Position.BELOW, POSITION.ALIGN_RIGHT)
+            .addElement("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText), 14, { entry.peekState() }, { entry.revert(); PopupWidget.pop() },false), Position.BELOW, Position.ALIGN_RIGHT)
+            .addElement("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText), 14, { entry.isDefault() }, { b -> openRestoreConfirmPopup(b, entry) },false), Position.BELOW, Position.ALIGN_RIGHT)
             .positionX(PopupWidget.Builder.at(x))
             .positionY(PopupWidget.Builder.at(y))
             .background("widget/popup/background_right_click".fcId())
+            .noBlur()
         if(withForwarding)
-            popup.addElement("forward", , Position.BELOW, POSITION.ALIGN_RIGHT)
+            popup.addElement("forward", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText), 14, { true }, { openEntryForwardingPopup(entry) },false), Position.BELOW, Position.ALIGN_RIGHT)
         PopupWidget.setPopup(popup.build())
     }
     private fun <T> openRestoreConfirmPopup(b: ActiveButtonWidget, entry: T) where T: Updatable, T: Entry<*,*> {
@@ -308,21 +318,27 @@ class ConfigScreenManager(private val scope: String, private val configs: List<P
             .build()
         PopupWidget.setPopup(popup)
     }
-    
+
     private fun <T> openEntryForwardingPopup(entry: T) where T: Updatable, T: Entry<*,*> {
+        val client = MinecraftClient.getInstance()
+        val playerEntries = client.player?.networkHandler?.playerList?.associateBy { it.profile.name } ?: return
+        val validator = EntryValidator.Builder<String>().both({s -> playerEntries.containsKey(s)}).buildValidator()
+        var player = ""
         val forwardText = "fc.button.forward.confirm".translate()
-        val forwardTextWidth = max(50,client.textRenderer.getWidth(confirmText) + 8)
+        val forwardTextWidth = max(50,client.textRenderer.getWidth(forwardText) + 8)
         val cancelText = "fc.button.cancel".translate()
         val cancelTextWidth = max(50,client.textRenderer.getWidth(cancelText) + 8)
-        val buttonWidth = max(confirmTextWidth,cancelTextWidth)
+        val buttonWidth = max(forwardTextWidth,cancelTextWidth)
         val popup = PopupWidget.Builder("fc.button.forward".translate())
             .addDivider()
-            .addElement("desc",MultilineTextWidget("fc.button.forward.active".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
-            .addElement("player_finder", TextFieldWidget(todo()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("forward_button", ActiveButtonWidget(todo()), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("desc",
+                MultilineTextWidget("fc.button.forward.active".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
+            .addElement("player_finder", ValidationBackedTextFieldWidget(110,20, {player}, ChoiceValidator.any(), validator, {s -> player = s}), Position.BELOW, Position.ALIGN_LEFT)
+            //.addElement("forward_button", ActiveButtonWidget(forwardText,buttonWidth,20,{players.contains(player)},{}), Position.BELOW, Position.ALIGN_LEFT)
             .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth,20).build(),"confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
             .width(buttonWidth + 4 + buttonWidth + 16)
             .build()
+        PopupWidget.setPopup(popup)
     }
 
     ///////////////////////////////////////

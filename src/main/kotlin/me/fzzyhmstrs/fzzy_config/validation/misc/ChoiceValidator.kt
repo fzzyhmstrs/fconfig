@@ -43,5 +43,9 @@ class ChoiceValidator<T>(private val  predicate: ValuesPredicate<T>): EntryValid
         fun <T> any(): ChoiceValidator<T> {
             return ChoiceValidator(ValuesPredicate(null,null))
         }
+
+        fun <T> allowed(allowed: List<T>): ChoiceValidator<T>{
+            return ChoiceValidator(ValuesPredicate(null,allowed))
+        }
     }
 }

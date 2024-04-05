@@ -11,15 +11,16 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
+import java.util.function.Consumer
 
 internal open class ConfigEntry(
-    val name: Text, 
-    protected val description: Text, 
-    protected val parent: ConfigListWidget, 
+    val name: Text,
+    protected val description: Text,
+    protected val parent: ConfigListWidget,
     protected val widget: ClickableWidget,
     protected val rightClickAction: Consumer<ConfigEntry>?)
-    : 
-    ElementListWidget.Entry<ConfigEntry>() 
+    :
+    ElementListWidget.Entry<ConfigEntry>()
 {
 
     init {
