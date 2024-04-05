@@ -115,6 +115,14 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
         return ValidatedSet(copyStoredValue(), entryHandler)
     }
 
+    override fun isValidEntry(input: Any?): Boolean {
+        return false
+    }
+
+    override fun canCopyEntry(): Boolean{
+        return false
+    }
+
     override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): ClickableWidget {
         TODO("Not yet implemented")
     }

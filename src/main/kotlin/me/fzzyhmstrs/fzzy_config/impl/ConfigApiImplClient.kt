@@ -7,8 +7,8 @@ import java.util.*
 
 object ConfigApiImplClient {
 
-    internal fun registerConfig(config: Config){
-        ClientConfigRegistry.registerConfig(config)
+    internal fun registerConfig(config: Config, baseConfig: Config){
+        ClientConfigRegistry.registerConfig(config, baseConfig)
     }
 
     internal fun openScreen(scope: String) {

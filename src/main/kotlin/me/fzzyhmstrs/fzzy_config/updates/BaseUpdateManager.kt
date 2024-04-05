@@ -4,13 +4,13 @@ import com.google.common.collect.ArrayListMultimap
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.validation.BasicValidationProvider
 import net.minecraft.text.Text
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.SortedMap
 
 open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
 
@@ -38,8 +38,8 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     //   scopes are built into translation-key-like strings
     //   ex. 'mymod.items.dropRates.oceanChests'
 
-    private val updateMap: MutableMap<String, Updatable> = mutableMapOf()
-    private val changeHistory: MutableMap<Updatable, ArrayListMultimap<Long, Text>> = mutableMapOf()
+    protected val updateMap: MutableMap<String, Updatable> = mutableMapOf()
+    private val changeHistory: MutableMap<Updatable, SortedMap<Long, Text>> = mutableMapOf()
 
     override fun update(updatable: Updatable, updateMessage: Text) {
         updateMap.computeIfAbsent(updatable.getEntryKey()) { updatable }
@@ -54,8 +54,13 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
         return updateMap[scope]
     }
 
-    override fun addUpdateMessage(key: Updatable,text: Text) {
-        changeHistory.computeIfAbsent(key){ArrayListMultimap.create()}.put(System.currentTimeMillis(),text)
+    override fun addUpdateMessage(key: Updatable, text: Text) {
+        val updateLog = changeHistory.computeIfAbsent(key){ sortedMapOf() }
+        var baseTime = System.currentTimeMillis()
+        while(updateLog.containsKey(baseTime)){
+            baseTime++
+        }
+        updateLog[baseTime] = text
     }
 
     override fun hasChangeHistory(): Boolean {
@@ -63,10 +68,11 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     }
 
     override fun changeHistory(): List<String> {
+        val formatter = DateTimeFormatter.ofPattern("HH:mm")
         val list: MutableList<String> = mutableListOf()
-        for ((updatable, updateLog) in changeHistory){
-            for ((time, updates) in updateLog.entries()){
-                list.add("[${updatable.transLit(updatable.getEntryKey())}]: ${updates.string}")
+        for ((_, updateLog) in changeHistory){
+            for ((time, updates) in updateLog){
+                list.add("[${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: ${updates.string}")
             }
         }
         return list
@@ -110,7 +116,7 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")
         val list: MutableList<String> = mutableListOf()
         for ((updatable, updateLog) in changeHistory){
-            for ((time, updates) in updateLog.entries()){
+            for ((time, updates) in updateLog){
                 list.add("Updated scope [${updatable.getEntryKey()}] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: ${updates.string}")
             }
         }
@@ -118,10 +124,10 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     }
 
     fun applyKeys(config: Config) {
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {_,str,v,_,_ -> if (v is EntryKeyed) v.setEntryKey(str)}
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) { _,_,str,v,_,_ -> if (v is EntryKeyed) v.setEntryKey(str)}
     }
 
     fun pushStates(config: Config) {
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) {_,_,v,_,_ -> if (v is Updatable) v.pushState()}
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) { _,_,_,v,_,_ -> if (v is Updatable) v.pushState()}
     }
 }

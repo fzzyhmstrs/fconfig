@@ -20,5 +20,6 @@ package me.fzzyhmstrs.fzzy_config.entry
  */
 interface Entry<T, E: Entry<T,E>>: EntryHandler<T>, EntryWidget<T>, EntryApplier<T>, EntrySupplier<T> {
     fun instanceEntry(): E
-
+    fun canCopyEntry(): Boolean
+    fun isValidEntry(input: Any?): Boolean
 }

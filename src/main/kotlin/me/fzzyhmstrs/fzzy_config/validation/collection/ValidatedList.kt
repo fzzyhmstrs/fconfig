@@ -133,6 +133,14 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         return ValidatedList(copyStoredValue(), entryHandler)
     }
 
+    override fun isValidEntry(input: Any?): Boolean {
+        return false
+    }
+
+    override fun canCopyEntry(): Boolean{
+        return false
+    }
+
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
         return ButtonWidget.builder("fc.validated_field.list".translate()) { b -> openListEditPopup(b) }.size(110,20).build()

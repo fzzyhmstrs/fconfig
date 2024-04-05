@@ -34,14 +34,15 @@ object ConfigApi {
      * Loading with the Fabric [ModInitializer][net.fabricmc.api.ModInitializer] is a convenient and typical way to achieve this.
      * @param T the config type, any subclass of [Config]
      * @param config the config to register
+     * @param configClass A supplier of config class instances.
      * @param registerType enum of [RegisterType] that defines which registries to register to. defaults to [RegisterType.BOTH]
      * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Config> registerConfig(config: T, registerType: RegisterType = RegisterType.BOTH): T{
-        return ConfigApiImpl.registerConfig(config, registerType)
+    fun <T: Config> registerConfig(config: T,configClass: () -> T, registerType: RegisterType = RegisterType.BOTH): T{
+        return ConfigApiImpl.registerConfig(config, configClass, registerType)
     }
 
     /**

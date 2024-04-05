@@ -61,6 +61,15 @@ class ValidatedChoice<T: Any>(defaultValue: T, private val choices: List<T>, pri
         return ValidatedChoice(copyStoredValue(),this.choices,this.handler)
     }
 
+    override fun isValidEntry(input: Any?): Boolean {
+        if (input == null) return false
+        return try {
+            input::class.java == defaultValue::class.java && validateEntry(input as T, EntryValidator.ValidationType.STRONG).isValid()
+        } catch (e: Exception){
+            false
+        }
+    }
+
     /**
      * Determines which type of selector widget will be used for the Enum option, default is POPUP
      * @author fzzyhmstrs

@@ -32,25 +32,25 @@ object ConfigApiImpl {
         FabricLoader.getInstance().environmentType == EnvType.CLIENT
     }
 
-    internal fun <T: Config> registerConfig(config: T, registerType: RegisterType): T{
+    internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T{
         return when(registerType){
-            RegisterType.BOTH -> registerBoth(config)
+            RegisterType.BOTH -> registerBoth(config,configClass)
             RegisterType.SYNC -> registerSynced(config)
-            RegisterType.CLIENT -> registerClient(config)
+            RegisterType.CLIENT -> registerClient(config,configClass)
         }
     }
 
-    private fun <T: Config> registerBoth(config: T): T{
+    private fun <T: Config> registerBoth(config: T,configClass: () -> T): T{
         SyncedConfigRegistry.registerConfig(config)
-        return registerClient(config)
+        return registerClient(config,configClass)
     }
     private fun <T: Config> registerSynced(config: T): T{
         SyncedConfigRegistry.registerConfig(config)
         return config
     }
-    private fun <T: Config> registerClient(config: T): T{
+    private fun <T: Config> registerClient(config: T,configClass: () -> T): T{
         if(isClient)
-            ConfigApiImplClient.registerConfig(config)
+            ConfigApiImplClient.registerConfig(config, configClass())
         return config
     }
 
@@ -62,13 +62,13 @@ object ConfigApiImpl {
         }
     }
     private fun <T: Config> registerAndLoadBoth(configClass: () -> T): T{
-        return registerBoth(readOrCreateAndValidate(configClass))
+        return registerBoth(readOrCreateAndValidate(configClass),configClass)
     }
     private fun <T: Config> registerAndLoadSynced(configClass: () -> T): T{
         return registerSynced(readOrCreateAndValidate(configClass))
     }
     private fun <T: Config> registerAndLoadClient(configClass: () -> T): T{
-        return registerClient(readOrCreateAndValidate(configClass))
+        return registerClient(readOrCreateAndValidate(configClass),configClass)
     }
 
     internal fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T{
@@ -196,13 +196,15 @@ object ConfigApiImpl {
             ConfigApiImplClient.openScreen(scope)
     }
 
-    internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): TomlElement{
+    internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): TomlElement {
         //used to build a TOML table piece by piece
         val toml = TomlTableBuilder()
-        val version = getVersion(config::class)
-        val headerAnnotations = tomlHeaderAnnotations(config::class).toMutableList()
-        headerAnnotations.add(TomlHeaderComment("Don't change this! Version used to track needed updates."))
-        toml.element("version", TomlLiteral(version),headerAnnotations.map { TomlComment(it.text) })
+        if (config is Config){
+            val version = getVersion(config::class)
+            val headerAnnotations = tomlHeaderAnnotations(config::class).toMutableList()
+            headerAnnotations.add(TomlHeaderComment("Don't change this! Version used to track needed updates."))
+            toml.element("version", TomlLiteral(version),headerAnnotations.map { TomlComment(it.text) })
+        }
         try {
             //java fields are ordered in declared order, apparently not so for Kotlin properties. use these first to get ordering. skip Transient
             val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
@@ -261,7 +263,7 @@ object ConfigApiImpl {
     private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = false): TomlElement where M: UpdateManager, M:BasicValidationProvider{
         val toml = TomlTableBuilder()
         try {
-            walk(config,config.getId().toTranslationKey(),false) { _,str,v,prop,_ ->
+            walk(config,config.getId().toTranslationKey(),false) { _,_,str,v,prop,_ ->
                 if(manager.hasUpdate(str)){
                     if(v is EntrySerializer<*>){
                         toml.element(str, v.serializeEntry(null, errorBuilder, ignoreNonSync))
@@ -368,7 +370,7 @@ object ConfigApiImpl {
             return ValidationResult.error(config,"Improper TOML format passed to deserializeDirtyFromToml")
         }
         try {
-            walk(config, config.getId().toTranslationKey(), ignoreNonSync) {_, str, v, prop, _ -> toml[str]?.let{
+            walk(config, config.getId().toTranslationKey(), ignoreNonSync) { _,_, str, v, prop, _ -> toml[str]?.let{
                 if(v is EntryDeserializer<*>) {
                     v.deserializeEntry(it, errorBuilder, str, ignoreNonSync)
                 } else if (v != null){
@@ -484,22 +486,43 @@ object ConfigApiImpl {
         FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
     }
 
-    fun<W: Walkable> walk(config: W, prefix: String, ignoreNonSync: Boolean,  walkAction: WalkAction){
-        for (property in config.javaClass.kotlin.memberProperties.filter {
+    internal fun<W: Walkable> walk(walkable: W, prefix: String, ignoreNonSync: Boolean, walkAction: WalkAction){
+        for (property in walkable.javaClass.kotlin.memberProperties.filter {
             !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
             && it is KMutableProperty<*>
             && (if (ignoreNonSync) true else !isNonSync(it) ) }
         ) {
             val newPrefix = prefix + "." + property.name
-            val propVal = property.get(config)
-            walkAction.act(prefix, newPrefix, propVal, property as KMutableProperty<*>, property.annotations)
+            val propVal = property.get(walkable)
+            walkAction.act(walkable,prefix, newPrefix, propVal, property as KMutableProperty<*>, property.annotations)
             if (propVal is Walkable){
                 walk(propVal, newPrefix, ignoreNonSync, walkAction)
             }
         }
     }
 
-    fun interface WalkAction{
-        fun act(oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>)
+    internal fun<W: Walkable> walkTo(walkable: W, target: String, delimiter: Char, ignoreNonSync: Boolean, walkAction: WalkAction){
+        val props = walkable.javaClass.kotlin.memberProperties.filter {
+            !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
+                    && it is KMutableProperty<*>
+                    && (if (ignoreNonSync) true else !isNonSync(it) ) }.associateBy{ it.name }
+        for ((string, property) in props) {
+            if(target == string){
+                val propVal = property.get(walkable)
+                walkAction.act(walkable,"","",propVal,property as KMutableProperty<*>, property.annotations)
+                return
+            } else if(target.startsWith(string)){
+                val propVal = property.get(walkable)
+                if (propVal is Walkable){
+                    walkTo(propVal,target.substringAfter(delimiter),delimiter,ignoreNonSync,walkAction)
+                } else {
+                    break
+                }
+            }
+        }
+    }
+
+    internal fun interface WalkAction{
+        fun act(walkable: Walkable, oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>)
     }
 }

@@ -5,20 +5,21 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
-import java.util.function.Consumer
+import org.lwjgl.glfw.GLFW
 
 internal open class ConfigEntry(
     val name: Text,
     protected val description: Text,
     protected val parent: ConfigListWidget,
     protected val widget: ClickableWidget,
-    protected val rightClickAction: Consumer<ConfigEntry>?)
+    protected val rightClickAction: RightClickAction?)
     :
     ElementListWidget.Entry<ConfigEntry>()
 {
@@ -58,9 +59,17 @@ internal open class ConfigEntry(
 
     }
 
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (Screen.hasShiftDown() && keyCode == GLFW.GLFW_KEY_F10 && rightClickAction != null){
+            rightClickAction.rightClick(this.widget.x,this.widget.y,this)
+            return true
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers)
+    }
+
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         if(button == 1 && rightClickAction != null){
-            rightClickAction.accept(this)
+            rightClickAction.rightClick(mouseX.toInt(),mouseY.toInt(),this)
             return true
         }
         return super.mouseClicked(mouseX, mouseY, button)
@@ -78,6 +87,11 @@ internal open class ConfigEntry(
         if(description.string != "") {
             widget.tooltip = Tooltip.of(description)
         }
-        super.setFocused(focused)
+        widget.isFocused = focused
+    }
+
+    @FunctionalInterface
+    fun interface RightClickAction{
+        fun rightClick(mouseX: Int, mouseY: Int, configEntry: ConfigEntry)
     }
 }

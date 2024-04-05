@@ -13,8 +13,6 @@ import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
-import net.minecraft.util.Colors
-import net.minecraft.util.Formatting
 import java.util.function.Supplier
 
 @Suppress("LeakingThis")
@@ -23,6 +21,7 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, private val 
     TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty())
 {
 
+    private var cachedWrappedValue: String = wrappedValue.get()
     private var storedValue = wrappedValue.get()
     private var lastChangedTime: Long = 0L
     private var isValid = true
@@ -42,6 +41,12 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, private val 
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        val testValue = wrappedValue.get()
+        if (cachedWrappedValue != testValue){
+            this.storedValue = testValue
+            this.cachedWrappedValue = testValue
+            this.text = this.storedValue
+        }
         if(isChanged()){
             if (lastChangedTime != 0L && !ongoingChanges())
                 applier.accept(storedValue)

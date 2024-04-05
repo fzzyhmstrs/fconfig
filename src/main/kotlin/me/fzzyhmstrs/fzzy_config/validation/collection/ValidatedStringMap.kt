@@ -123,6 +123,14 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
         return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
     }
 
+    override fun isValidEntry(input: Any?): Boolean {
+        return false
+    }
+
+    override fun canCopyEntry(): Boolean {
+        return false
+    }
+
     companion object{
         fun<V> tryMake(map: Map<String,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedStringMap<V>?{
             return try {

@@ -20,7 +20,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 
 @Environment(EnvType.CLIENT)
-internal class ConfigScreen(title: Text, private val scope: String, private val manager: UpdateManager, private val entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen,ClickableWidget>>) : PopupWidgetScreen(title) {
+internal class ConfigScreen(title: Text, private val scope: String, private val manager: UpdateManager, entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen,ClickableWidget>>) : PopupWidgetScreen(title) {
 
     internal var parent: Screen? = null
     private var onClose: Consumer<ConfigScreen> = Consumer {_ ->
@@ -52,19 +52,24 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         initHeader()
         initFooter()
         initBody()
+        initTabNavigation()
         onOpen.accept(this)
     }
     private fun initHeader(){
         val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
-        for (scopeButton in parentScopesButtons){
+        for (scopeButton in parentScopesButtons) {
             directionalLayoutWidget.add(scopeButton.apply(this))
-            directionalLayoutWidget.add(TextWidget(" > ".lit(),this.textRenderer))
+            directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(" > ".lit()),20," > ".lit(),this.textRenderer))
         }
-        directionalLayoutWidget.add(TextWidget(this.title,this.textRenderer))
+        directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(this.title),20,this.title,this.textRenderer))
 
     }
     private fun initBody(){
         this.addDrawableChild(configList)
+        layout.forEachChild { drawableElement: ClickableWidget? ->
+            addDrawableChild(drawableElement)
+        }
+        configList.scrollAmount = 0.0
     }
     private fun initFooter(){
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
@@ -79,6 +84,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         textField.setMaxLength(50)
         textField.text = ""
         textField.setChangedListener { s -> setColor(configList.updateSearchedEntries(s)) }
+        directionalLayoutWidget.add(textField)
         //forward alert button
         directionalLayoutWidget.add(TextlessConfigActionWidget("widget/action/alert".fcId(),"widget/action/alert_inactive".fcId(),"widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(),{ manager.hasForwards() } ) { manager.forwardsHandler() })
         //changes button

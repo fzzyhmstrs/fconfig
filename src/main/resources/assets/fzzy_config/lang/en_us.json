@@ -24,6 +24,7 @@
 "fc.validated_field.set": "Edit Set",
 "fc.validated_field.map": "Edit Map",
 
+"fc.validated_field.default": "Restore [%1$s] to default of [%2$s]",
 "fc.validated_field.update.error": "Update error for [%1$s], [%2$s] to [%3$s]: %4$s",
 "fc.validated_field.revert.error": "Revert error for [%1$s]: %2$s",
 "fc.validated_field.update": "[%1$s], [%2$s] to [%3$s]",

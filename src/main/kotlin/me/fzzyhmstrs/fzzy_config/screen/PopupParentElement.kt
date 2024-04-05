@@ -13,10 +13,16 @@ import java.util.*
  * @since 0.2.0
  */
 @JvmDefaultWithCompatibility
-interface PopupParentElement: ParentElement {
+interface PopupParentElement: ParentElement, LastSelectable {
     val popupWidgets: LinkedList<PopupWidget>
     var justClosedWidget: Boolean
-    var lastSelected: Element?
+
+    override fun pushLast(){
+        this.lastSelected = focused
+    }
+    override fun popLast(){
+        focused = lastSelected
+    }
 
     fun activeWidget(): PopupWidget?
 
@@ -29,11 +35,15 @@ interface PopupParentElement: ParentElement {
             justClosedWidget = true
             popupWidgets.pop().onClose()
             popupWidgets.peek()?.blur()
-            if (popupWidgets.isEmpty())
-                focused = lastSelected
+            if (popupWidgets.isEmpty()) {
+                (lastSelected as? LastSelectable)?.popLast()
+                popLast()
+            }
         } else {
-            if (popupWidgets.isEmpty())
-                this.lastSelected = focused
+            if (popupWidgets.isEmpty()) {
+                pushLast()
+                (lastSelected as? LastSelectable)?.pushLast()
+            }
             this.blurElements()
             popupWidgets.push(widget)
             initPopup(widget)

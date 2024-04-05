@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -98,6 +99,10 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
 
     override fun instanceEntry(): ValidatedLong {
         return ValidatedLong(defaultValue, maxValue, minValue, widgetType)
+    }
+
+    override fun isValidEntry(input: Any?): Boolean {
+        return input is Long && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
 
     override fun convert(input: Double): ValidationResult<Long> {

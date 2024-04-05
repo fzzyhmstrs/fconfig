@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config_test
 import com.mojang.brigadier.CommandDispatcher
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
@@ -75,8 +76,11 @@ object FCC: ClientModInitializer {
             registerClientCommands(dispatcher)
         }
         ClientTickEvents.START_CLIENT_TICK.register{client ->
-            if (openDamnScreen != "") {
+            if (openDamnScreen == "please") {
                 client.setScreen(TestPopupScreen())
+                openDamnScreen = ""
+            } else if (openDamnScreen == "the_big_one"){
+                ConfigApi.openScreen("fzzy_config")
                 openDamnScreen = ""
             }
         }
@@ -91,6 +95,15 @@ object FCC: ClientModInitializer {
                     openDamnScreen = "please"
                     1
                 }
+
+        )
+        dispatcher.register(
+            ClientCommandManager.literal("test_screen_2")
+                .executes{ context ->
+                    openDamnScreen = "the_big_one"
+                    1
+                }
+
         )
     }
 }

@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -75,6 +76,10 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
 
     override fun instanceEntry(): ValidatedByte {
         return ValidatedByte(copyStoredValue(), maxValue, minValue, widgetType)
+    }
+
+    override fun isValidEntry(input: Any?): Boolean {
+        return input is Byte && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
 
     override fun convert(input: Double): ValidationResult<Byte> {

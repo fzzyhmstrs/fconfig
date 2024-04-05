@@ -88,6 +88,15 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
         return ValidatedEnum(this.defaultValue,this.widgetType)
     }
 
+    override fun isValidEntry(input: Any?): Boolean {
+        if (input == null) return false
+        return try {
+            input::class.java == defaultValue::class.java && validateEntry(input as T, EntryValidator.ValidationType.STRONG).isValid()
+        } catch (e: Exception){
+            false
+        }
+    }
+
     override fun toString(): String {
         return "Validated Enum[value=$storedValue, validation=$valuesMap]"
     }

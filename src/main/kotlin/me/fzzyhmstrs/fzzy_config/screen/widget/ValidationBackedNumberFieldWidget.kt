@@ -28,7 +28,8 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
     TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty())
 {
 
-    private var storedValue = wrappedValue.get()
+    private var cachedWrappedValue: T = wrappedValue.get()
+    private var storedValue: T = wrappedValue.get()
     private var lastChangedTime: Long = 0L
     private var isValid = true
     private var confirmActive = false
@@ -48,9 +49,17 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        val testValue = wrappedValue.get()
+        if (cachedWrappedValue != testValue){
+            this.storedValue = testValue
+            this.cachedWrappedValue = testValue
+            this.text = this.storedValue.toString()
+        }
         if(isChanged()){
-            if (lastChangedTime != 0L && !ongoingChanges())
+            if (lastChangedTime != 0L && !ongoingChanges()) {
+                cachedWrappedValue = storedValue
                 listener.accept(storedValue)
+            }
         }
         super.renderWidget(context, mouseX, mouseY, delta)
         if(isValid){

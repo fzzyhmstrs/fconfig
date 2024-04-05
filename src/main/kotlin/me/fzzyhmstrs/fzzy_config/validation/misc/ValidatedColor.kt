@@ -39,7 +39,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.1.2
  */
-class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
+class ValidatedColor: ValidatedField<ColorHolder> {
 
     @JvmOverloads constructor(r: Int, g: Int, b: Int, a: Int = Int.MIN_VALUE): super(ColorHolder(r, g, b, if(a > Int.MIN_VALUE) a else 255, a > Int.MIN_VALUE)) {
         if(r<0 || r>255) throw IllegalArgumentException("Red portion of validated color not provided a default value between 0 and 255")
@@ -104,6 +104,10 @@ class ValidatedColor: ValidatedField<ValidatedColor.ColorHolder> {
 
     override fun instanceEntry(): ValidatedColor {
         return storedValue.instance()
+    }
+
+    override fun isValidEntry(input: Any?): Boolean {
+        return input is ColorHolder && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): ClickableWidget {

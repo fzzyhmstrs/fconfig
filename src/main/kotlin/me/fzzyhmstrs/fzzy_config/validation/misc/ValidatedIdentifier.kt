@@ -20,7 +20,6 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.ChatInputSuggestor
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.input.KeyCodes
@@ -28,14 +27,10 @@ import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
-import net.minecraft.text.Text
-import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
-import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
 import java.util.function.*
 import kotlin.math.max
@@ -142,6 +137,10 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
 
     override fun instanceEntry(): ValidatedIdentifier {
         return ValidatedIdentifier(copyStoredValue(), allowableIds, validator)
+    }
+
+    override fun isValidEntry(input: Any?): Boolean {
+        return input is Identifier && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {

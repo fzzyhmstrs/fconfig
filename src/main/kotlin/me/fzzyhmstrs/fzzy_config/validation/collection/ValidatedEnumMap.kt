@@ -123,6 +123,14 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
         return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
     }
 
+    override fun isValidEntry(input: Any?): Boolean {
+        return false
+    }
+
+    override fun canCopyEntry(): Boolean{
+        return false
+    }
+
     companion object{
         fun<K:Enum<*>,V> tryMake(map: Map<K,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedEnumMap<K,V>?{
             return try {

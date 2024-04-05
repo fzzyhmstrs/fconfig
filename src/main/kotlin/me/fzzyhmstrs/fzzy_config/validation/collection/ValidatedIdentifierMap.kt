@@ -124,6 +124,14 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
         return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
     }
 
+    override fun isValidEntry(input: Any?): Boolean {
+        return false
+    }
+
+    override fun canCopyEntry(): Boolean{
+        return false
+    }
+
     companion object{
         fun<V> tryMake(map: Map<Identifier,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedIdentifierMap<V>?{
             return try {

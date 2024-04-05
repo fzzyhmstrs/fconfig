@@ -9,11 +9,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import java.util.function.Consumer
 
-class ScreenOpenButtonWidget(private val buttonTitle: Text, private val pressAction: Consumer<ScreenOpenButtonWidget>) : PressableWidget(0,0,90,20, FcText.empty()) {
-
-    init{
-        this.active = false
-    }
+class ScreenOpenButtonWidget(private val buttonTitle: Text, private val pressAction: Consumer<ScreenOpenButtonWidget>) : PressableWidget(0,0,110,20, FcText.empty()) {
 
     override fun getNarrationMessage(): MutableText {
         return this.message.copy()

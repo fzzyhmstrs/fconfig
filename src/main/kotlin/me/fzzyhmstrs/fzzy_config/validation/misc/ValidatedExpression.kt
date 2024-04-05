@@ -100,6 +100,10 @@ class ValidatedExpression @JvmOverloads constructor(
         return validator.validateEntry(input, type)
     }
 
+    override fun isValidEntry(input: Any?): Boolean {
+        return input is String && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
+    }
+
     override fun copyStoredValue(): String {
         return String(storedValue.toCharArray())
     }

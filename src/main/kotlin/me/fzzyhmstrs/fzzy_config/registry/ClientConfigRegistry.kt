@@ -2,9 +2,9 @@ package me.fzzyhmstrs.fzzy_config.registry
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
-import me.fzzyhmstrs.fzzy_config.updates.UpdateManager.Base.applyKeys
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import java.util.*
@@ -17,23 +17,27 @@ import java.util.*
 @Environment(EnvType.CLIENT)
 object ClientConfigRegistry {
 
-    private val clientConfigs : MutableMap<String, Config> = mutableMapOf()
+    private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
     private val configScreenManagers: MutableMap<String, ConfigScreenManager> = mutableMapOf()
     private var validScopes: MutableSet<String> = mutableSetOf() //configs are sorted into Managers by namespace
 
     @Environment(EnvType.CLIENT)
     internal fun openScreen(scope: String){
+        println("A")
         val namespaceScope = getValidScope(scope)
         if (namespaceScope == null){
             FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
             return
         }
+        println("B")
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { Pair(it.value, SyncedConfigRegistry.hasConfig(it.key)) })
+                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
         }
+        println("C")
         manager.openScreen(scope)
+        println("D")
     }
 
     @Environment(EnvType.CLIENT)
@@ -63,9 +67,11 @@ object ClientConfigRegistry {
     }
 
     @Environment(EnvType.CLIENT)
-    internal fun registerConfig(config: Config){
+    internal fun registerConfig(config: Config, baseConfig: Config){
         validScopes.add(config.getId().namespace)
         UpdateManager.applyKeys(config)
-        clientConfigs[config.getId().toTranslationKey()] = config
+        clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config,baseConfig)
     }
+
+    private class ConfigPair(val active: Config, val base: Config)
 }

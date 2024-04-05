@@ -17,11 +17,7 @@ import net.minecraft.client.gui.navigation.NavigationDirection
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.widget.AbstractTextWidget
-import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.TextWidget
-import net.minecraft.client.gui.widget.Widget
+import net.minecraft.client.gui.widget.*
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -106,6 +102,7 @@ open class PopupWidget
             applyBlur(delta)
         }
         RenderSystem.enableBlend()
+        RenderSystem.disableDepthTest()
         context.drawGuiTexture(background, x, y, width, height)
         for (drawable in drawables) {
             RenderSystem.disableDepthTest()

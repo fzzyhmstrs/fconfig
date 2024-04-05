@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -79,8 +80,8 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
         return ValidatedFloat(defaultValue, maxValue, minValue, widgetType)
     }
 
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Float>): ClickableWidget {
-        TODO("Not yet implemented")
+    override fun isValidEntry(input: Any?): Boolean {
+        return input is Float && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
 
     override fun convert(input: Double): ValidationResult<Float> {

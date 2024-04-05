@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.validation
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
@@ -10,6 +11,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 
@@ -67,10 +69,9 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         if(pushedValue != null){
             try {
                 pushedValue?.let {
-                    storedValue = it
                     updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert",translation(), storedValue.toString(), pushedValue.toString()))
+                    storedValue = it
                 }
-
             } catch (e: Exception){
                 updateManager?.addUpdateMessage(this,FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
             }
@@ -142,6 +143,10 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
 
     abstract fun serialize(input: T): ValidationResult<TomlElement>
 
+    override fun canCopyEntry(): Boolean{
+        return true
+    }
+
     override fun supplyEntry(): T {
         return get()
     }
@@ -183,6 +188,14 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         update(message)
     }
 
+    open fun trySet(input: Any?){
+        try {
+            validateAndSet(input as T)
+        } catch (e: Exception){
+            //
+        }
+    }
+
     open fun updateMessage(old: T, new: T): Text {
         return FcText.translatable("fc.validated_field.update",translation(),old.toString(),new.toString())
     }
@@ -205,6 +218,10 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
 
     override fun descriptionKey(): String {
         return getEntryKey() + ".desc"
+    }
+
+    override fun translation(): MutableText {
+        return FcText.translatableWithFallback(translationKey(),this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
     }
 
     /**

@@ -36,7 +36,6 @@ class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<
 
 
 
-
     inner class Entry(private val logEntry: String, private val narratedEntry: String): AlwaysSelectedEntryListWidget.Entry<Entry>() {
         override fun render(
             context: DrawContext,

@@ -101,6 +101,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         private var confirmActive = false
+        private var cachedWrappedValue: T = wrappedValue.get()
         private var value: T = wrappedValue.get()
         private val increment = max((maxValue.toDouble() - minValue.toDouble())/ 102.0, 1.0)
         private var isValid = validator.validateEntry(wrappedValue.get(),EntryValidator.ValidationType.STRONG).isValid()
@@ -124,6 +125,12 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            val testValue = wrappedValue.get()
+            if (cachedWrappedValue != testValue){
+                this.value = testValue
+                cachedWrappedValue = testValue
+                this.message = this.value.toString().lit()
+            }
             this.confirmActive = isChanged() && isValid
             val minecraftClient = MinecraftClient.getInstance()
             context.setShaderColor(1.0f, 1.0f, 1.0f, alpha)
@@ -166,6 +173,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
                 this.setValue(ff)
                 this.isValid = validator.validateEntry(this.value,EntryValidator.ValidationType.STRONG).isValid()
                 if(isChanged() && isValid){
+                    cachedWrappedValue = value
                     valueApplier.accept(value)
                     this.confirmActive = isChanged() && isValid
                 }
@@ -198,6 +206,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         override fun onRelease(mouseX: Double, mouseY: Double) {
             this.isValid = validator.validateEntry(this.value,EntryValidator.ValidationType.STRONG).isValid()
             if(isChanged() && isValid){
+                cachedWrappedValue = value
                 valueApplier.accept(value)
                 this.confirmActive = isChanged() && isValid
             }

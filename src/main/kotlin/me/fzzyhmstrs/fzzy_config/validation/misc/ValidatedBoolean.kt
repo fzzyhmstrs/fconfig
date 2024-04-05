@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -65,16 +66,19 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
         return ValidatedBoolean(copyStoredValue())
     }
 
+    override fun isValidEntry(input: Any?): Boolean {
+        return input is Boolean
+    }
+
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<Boolean>): ClickableWidget {
-        return ButtonWidget.builder(
-                if(get()) "fc.validated_field.boolean.true".translate() else "fc.validated_field.boolean.false".translate()
-            ) { b ->
-                setAndUpdate(!get()); b.message =
-                if (get()) "fc.validated_field.boolean.true".translate() else "fc.validated_field.boolean.false".translate()
-            }
-            .dimensions(0,0,110,20)
-            .build()
+        return ActiveButtonWidget(
+            {if(get()) "fc.validated_field.boolean.true".translate() else "fc.validated_field.boolean.false".translate()},
+            110,
+            20,
+            { true },
+            { setAndUpdate(!get()) }
+        )
     }
 
     override fun toString(): String {
