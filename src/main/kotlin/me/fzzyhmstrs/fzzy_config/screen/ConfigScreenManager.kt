@@ -158,6 +158,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         var index = 0
         val prefix = config.getId().toTranslationKey()
         ConfigApiImpl.walk(config,prefix,true) { _,old,new,thing,_,annotations ->
+            println(new)
             if(thing is Walkable) {
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
@@ -310,8 +311,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val restoreText = "fc.button.restore".translate()
         val popup = PopupWidget.Builder("fc.config.right_click".translate(),2,2)
             .addDivider()
-            .positionX(PopupWidget.Builder.abs(x))
-            .positionY(PopupWidget.Builder.abs(y))
+            .positionX(PopupWidget.Builder.at{ x })
+            .positionY(PopupWidget.Builder.at{ y })
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
         if(entry.canCopyEntry()) {

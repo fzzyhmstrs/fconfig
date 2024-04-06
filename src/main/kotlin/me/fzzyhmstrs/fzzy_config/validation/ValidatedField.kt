@@ -177,6 +177,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     }
 
     open fun setAndUpdate(input: T) {
+        if (input == storedValue) return
         val oldVal = storedValue
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
         storedValue = tVal1.get()

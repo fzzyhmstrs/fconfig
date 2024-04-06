@@ -48,4 +48,12 @@ class TestConfigImpl: Config("test_config", "fzzy_config", "test") {
 
     var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
+    var list1 = listOf(1,3,5,7)
+    var list2 = listOf(1,3,5,7).validated()
+
+    var set1 = setOf(0.2,0.4,0.6)
+    var set2 = setOf(0.2,0.4,0.6).validated()
+
+    var map1 = mapOf(1 to "a", 2 to "c")
+
 }

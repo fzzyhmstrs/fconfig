@@ -224,7 +224,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             RenderSystem.enableDepthTest()
             context.drawGuiTexture(CENTER, x + 4, y + 4, 60, 52)
             val cX = 4 + MathHelper.clampedMap(mutableColor.h,0f,1f,0f,60f).toInt() - 2
-            val cY = 4 + MathHelper.clampedMap(1f - mutableColor.l,0f,1f,0f,52f).toInt() - 2
+            val cY = 4 + MathHelper.clampedMap(mutableColor.l,0f,1f,0f,52f).toInt() - 2
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()
             context.drawGuiTexture(CROSSHAIR, cX, cY, 5, 5)
@@ -240,7 +240,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
 
         private fun updateHL(mouseX: Double,mouseY: Double){
             val hue = MathHelper.clamp((mouseX - (this.x + 4).toDouble())/60.0,0.0,1.0).toFloat()
-            val light = MathHelper.clamp(1.0 - ((mouseY - (this.y + 4).toDouble())/52.0),0.0,1.0).toFloat()
+            val light = MathHelper.clamp((mouseY - (this.y + 4).toDouble())/52.0,0.0,1.0).toFloat()
             mutableColor.updateHSL(hue,mutableColor.s,light)
         }
 

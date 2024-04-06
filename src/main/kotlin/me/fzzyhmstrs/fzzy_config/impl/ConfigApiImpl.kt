@@ -487,10 +487,18 @@ object ConfigApiImpl {
     }
 
     internal fun<W: Walkable> walk(walkable: W, prefix: String, ignoreNonSync: Boolean, walkAction: WalkAction){
-        for (property in walkable.javaClass.kotlin.memberProperties.filter {
-            !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-            && it is KMutableProperty<*>
-            && (if (ignoreNonSync) true else !isNonSync(it) ) }
+        val orderById = walkable::class.java.declaredFields.filter {
+            !isTransient(it.modifiers)
+        }.withIndex().associate {
+            it.value.name to it.index
+        }
+        for (property in walkable.javaClass.kotlin.memberProperties
+            .filter {
+                it is KMutableProperty<*>
+                && (if (ignoreNonSync) true else !isNonSync(it) )
+            }.sortedBy {
+                orderById[it.name]
+            }
         ) {
             val newPrefix = prefix + "." + property.name
             val propVal = property.get(walkable)
@@ -502,6 +510,7 @@ object ConfigApiImpl {
     }
 
     internal fun<W: Walkable> drill(walkable: W, target: String, delimiter: Char, ignoreNonSync: Boolean, walkAction: WalkAction){
+        //generate an index map, so I can order the properties based on name
         val props = walkable.javaClass.kotlin.memberProperties.filter {
             !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
             && it is KMutableProperty<*>

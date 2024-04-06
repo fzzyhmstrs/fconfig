@@ -1,19 +1,26 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
+import java.util.function.BiFunction
 
 /**
  * A Validated Map<Identifier,V>
@@ -47,7 +54,34 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<Identifier, V>>): ClickableWidget {
-        TODO("Not yet implemented")
+        return ButtonWidget.builder("fc.validated_field.map".translate()) { b -> openMapEditPopup(b) }.size(110,20).build()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Environment(EnvType.CLIENT)
+    private fun openMapEditPopup(b: ButtonWidget) {
+        try {
+            val map = storedValue.map {
+                Pair(
+                    (keyHandler.instanceEntry() as Entry<Identifier, *>).also { entry -> entry.applyEntry(it.key) },
+                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.applyEntry(it.value) }
+                )
+            }.associate { it }
+            val choiceValidator: BiFunction<MapListWidget<Identifier, V>, MapListWidget.MapEntry<Identifier, V>?, ChoiceValidator<Identifier>> = BiFunction{ ll, le ->
+                MapListWidget.ExcludeSelfChoiceValidator(le) { self -> ll.getRawMap(self) }
+            }
+            val mapWidget = MapListWidget(map, keyHandler,valueHandler,choiceValidator)
+            val popup = PopupWidget.Builder(this.translation())
+                .addElement("map", mapWidget, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT)
+                .addDoneButton()
+                .onClose { this.setAndUpdate(mapWidget.getMap()) }
+                .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
+                .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+                .build()
+            PopupWidget.setPopup(popup)
+        } catch (e: Exception){
+            FC.LOGGER.error("Unexpected exception caught while opening list popup")
+        }
     }
 
     override fun serialize(input: Map<Identifier, V>): ValidationResult<TomlElement> {

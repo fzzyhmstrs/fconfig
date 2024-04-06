@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.fabricmc.api.EnvType
@@ -29,6 +30,7 @@ import net.minecraft.client.gui.widget.ElementListWidget
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
+import java.util.function.BiFunction
 import me.fzzyhmstrs.fzzy_config.entry.Entry as Entry1
 
 /**
@@ -51,6 +53,16 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
             if (entryHandler.validateEntry(thing,EntryValidator.ValidationType.WEAK).isError())
                 throw IllegalStateException("Default List entry [$thing] not valid per entryHandler provided")
         }
+    }
+
+    /**
+     * Converts this ValidatedList into [ValidatedChoice] wrapping this list as the valid choice options
+     * @return [ValidatedChoice] with options based on this list's contents
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun toChoices(): ValidatedChoice<T> {
+        return ValidatedChoice(defaultValue,entryHandler)
     }
 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {
@@ -134,11 +146,16 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
     }
 
     override fun isValidEntry(input: Any?): Boolean {
-        return false
+        if (input !is List<*>) return false
+        return try {
+            validateEntry(input as List<T>, EntryValidator.ValidationType.STRONG).isValid()
+        } catch (e: Exception){
+            false
+        }
     }
 
     override fun canCopyEntry(): Boolean{
-        return false
+        return true
     }
 
     @Environment(EnvType.CLIENT)
@@ -153,11 +170,11 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
             val list = storedValue.map {
                 (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.applyEntry(it) }
             }
-            val listWidget = ListListWidget(list, entryHandler)
+            val listWidget = ListListWidget(list, entryHandler) { _, _ -> ChoiceValidator.any() }
             val popup = PopupWidget.Builder(this.translation())
                 .addElement("list", listWidget, Position.BELOW, Position.ALIGN_LEFT)
                 .addDoneButton()
-                .onClose { this.validateAndSet(listWidget.getList()) }
+                .onClose { this.setAndUpdate(listWidget.getList()) }
                 .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
                 .build()
@@ -455,136 +472,5 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         }
     }
 
-    @Environment(EnvType.CLIENT)
-    private class ListListWidget<T>(entryList: List<Entry1<T,*>>, entrySupplier: Entry1<T, *>)
-        :
-        ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0, 20) {
 
-        fun getList(): List<T>{
-            val list: MutableList<T> = mutableListOf()
-            for (e in this.children()){
-                if (e !is ExistingEntry<T>) continue
-                list.add(e.get())
-            }
-            return list.toList()
-        }
-
-        override fun drawHeaderAndFooterSeparators(context: DrawContext?) {
-        }
-
-        override fun drawMenuListBackground(context: DrawContext?) {
-        }
-
-        override fun getRowWidth(): Int {
-            return 134 //16 padding, 20 slider width and padding
-        }
-
-        override fun method_57718(): Int {
-            return this.x + this.width / 2 + this.rowWidth / 2 + 6
-        }
-
-        private fun makeVisible(entry: ListEntry<T>){
-            this.ensureVisible(entry)
-        }
-
-        init{
-            for (e in entryList){
-                this.addEntry(ExistingEntry(e,this))
-            }
-            this.addEntry(NewEntry(entrySupplier,this))
-        }
-
-        private class ExistingEntry<T>(private val entry: Entry1<T,*>, private val parent: ListListWidget<T>): ListEntry<T>() {
-
-            private val entryWidget = entry.widgetEntry(ChoiceValidator.any())
-            private val deleteWidget = TextlessConfigActionWidget(
-                "widget/action/delete".fcId(),
-                "widget/action/delete_inactive".fcId(),
-                "widget/action/delete_highlighted".fcId(),
-                "fc.button.delete".translate(),
-                "fc.button.delete".translate(),
-                { true },
-                { parent.children().let { list ->
-                    list.indexOf(this).takeIf { i -> i >=0 && i<list.size }?.let {
-                        i -> list.removeAt(i)
-                    }
-                } })
-
-            fun get(): T{
-                return entry.get()
-            }
-
-            override fun children(): MutableList<out Element> {
-                return mutableListOf(entryWidget, deleteWidget)
-            }
-
-            override fun selectableChildren(): MutableList<out Selectable> {
-                return mutableListOf(entryWidget, deleteWidget)
-            }
-
-            override fun render(
-                context: DrawContext,
-                index: Int,
-                y: Int,
-                x: Int,
-                entryWidth: Int,
-                entryHeight: Int,
-                mouseX: Int,
-                mouseY: Int,
-                hovered: Boolean,
-                tickDelta: Float
-            ) {
-                if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && entryWidget.tooltip != null){
-                    MinecraftClient.getInstance().currentScreen?.setTooltip(entryWidget.tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
-                }
-                entryWidget.setPosition(x,y)
-                entryWidget.render(context, mouseX, mouseY, tickDelta)
-                deleteWidget.setPosition(x+114,y)
-                deleteWidget.render(context, mouseX, mouseY, tickDelta)
-            }
-        }
-
-        @Suppress("UNCHECKED_CAST")
-        private class NewEntry<T>(private val entrySupplier: Entry1<T,*>, private val parent: ListListWidget<T>): ListEntry<T>() {
-
-            private val addWidget = TextlessConfigActionWidget(
-                "widget/action/add".fcId(),
-                "widget/action/add_inactive".fcId(),
-                "widget/action/add_highlighted".fcId(),
-                "fc.button.add".translate(),
-                "fc.button.add".translate(),
-                { true },
-                {
-                    parent.children().let { it.add(it.lastIndex-1,ExistingEntry(entrySupplier.instanceEntry() as Entry1<T,*>,parent)) }
-                    parent.makeVisible(this)
-                })
-
-
-            override fun children(): MutableList<out Element> {
-                return mutableListOf(addWidget)
-            }
-
-            override fun selectableChildren(): MutableList<out Selectable> {
-                return mutableListOf(addWidget)
-            }
-
-            override fun render(
-                context: DrawContext,
-                index: Int,
-                y: Int,
-                x: Int,
-                entryWidth: Int,
-                entryHeight: Int,
-                mouseX: Int,
-                mouseY: Int,
-                hovered: Boolean,
-                tickDelta: Float
-            ) {
-                addWidget.setPosition(x+114,y)
-                addWidget.render(context, mouseX, mouseY, tickDelta)
-            }
-        }
-
-        private abstract class ListEntry<T>: Entry<ListEntry<T>>()
-    }
 }

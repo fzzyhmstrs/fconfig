@@ -5,6 +5,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.description
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -190,11 +191,12 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
     @Environment(EnvType.CLIENT)
     private class CyclingOptionsWidget<T: Enum<*>>(choicePredicate: ChoiceValidator<T>, private val entry: Entry<T,*>): PressableWidget(0,0,110,20, entry.supplyEntry().let { it.transLit(it.name) }) {
 
-        private val constants = entry.supplyEntry()::class.java.enumConstants.filter { choicePredicate.validateEntry(it,
-            EntryValidator.ValidationType.STRONG).isValid() }
+        private val constants = entry.supplyEntry()::class.java.enumConstants.filter {
+            choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
+        }
 
         init {
-            entry.supplyEntry().descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
+            entry.descLit("").takeIf { it.string != "" }?.let { tooltip = Tooltip.of(it) }
         }
 
         override fun getNarrationMessage(): MutableText {

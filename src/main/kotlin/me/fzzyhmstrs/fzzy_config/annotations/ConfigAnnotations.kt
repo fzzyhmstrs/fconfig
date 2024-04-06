@@ -54,6 +54,9 @@ annotation class NonSync()
 @Target(AnnotationTarget.CLASS)
 annotation class Version(val version: Int)
 
+@Target(AnnotationTarget.CLASS)
+annotation class ConvertFrom(val name: String, val folder: String = "", val subfolder: String = "")
+
 /**
  * Adds a [Comment] to the [Version] key of a config file.
  *

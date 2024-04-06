@@ -13,7 +13,7 @@ import java.util.function.Predicate
  * @author fzzyhmstrs
  * since 0.2.0
  */
-class ChoiceValidator<T>(private val  predicate: ValuesPredicate<T>): EntryValidator<T> {
+open class ChoiceValidator<T>(private val  predicate: ValuesPredicate<T>): EntryValidator<T> {
 
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         return ValidationResult.predicated(input, predicate.test(input), "Value not allowed")

@@ -1,19 +1,31 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.predicated
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.success
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
+import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
+import java.util.function.BiFunction
+import java.util.function.Function
+import java.util.function.Supplier
 
 /**
  * a validated list
@@ -34,6 +46,16 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
             if (entryHandler.validateEntry(thing,EntryValidator.ValidationType.WEAK).isError())
                 throw IllegalStateException("Default Set entry [$thing] not valid per entryHandler provided")
         }
+    }
+
+    /**
+     * Converts this ValidatedSet into [ValidatedChoice] wrapping this set as the valid choice options
+     * @return [ValidatedChoice] with options based on this set's contents
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun toChoices(): ValidatedChoice<T> {
+        return ValidatedChoice(defaultValue.toList(),entryHandler)
     }
 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Set<T>> {
@@ -124,10 +146,34 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): ClickableWidget {
-        TODO("Not yet implemented")
+        return ButtonWidget.builder("fc.validated_field.set".translate()) { b -> openListEditPopup(b) }.size(110,20).build()
     }
 
-    // List Interface
+    @Suppress("UNCHECKED_CAST")
+    @Environment(EnvType.CLIENT)
+    private fun openListEditPopup(b: ButtonWidget) {
+        try {
+            val list = storedValue.map {
+                (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.applyEntry(it) }
+            }
+            val choiceValidator: BiFunction<ListListWidget<T>, ListListWidget.ListEntry<T>?, ChoiceValidator<T>> = BiFunction{ ll, le ->
+                ListListWidget.ExcludeSelfChoiceValidator(le) { self -> ll.getRawList(self) }
+            }
+            val listWidget = ListListWidget(list, entryHandler,choiceValidator)
+            val popup = PopupWidget.Builder(this.translation())
+                .addElement("list", listWidget, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT)
+                .addDoneButton()
+                .onClose { this.setAndUpdate(listWidget.getList().toSet()) }
+                .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
+                .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+                .build()
+            PopupWidget.setPopup(popup)
+        } catch (e: Exception){
+            FC.LOGGER.error("Unexpected exception caught while opening list popup")
+        }
+    }
+
+    // Set Interface
     //////////////////////////////////
     override val size: Int
         get() = storedValue.size
