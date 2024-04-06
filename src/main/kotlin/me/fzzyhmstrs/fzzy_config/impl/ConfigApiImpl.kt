@@ -501,20 +501,23 @@ object ConfigApiImpl {
         }
     }
 
-    internal fun<W: Walkable> walkTo(walkable: W, target: String, delimiter: Char, ignoreNonSync: Boolean, walkAction: WalkAction){
+    internal fun<W: Walkable> drill(walkable: W, target: String, delimiter: Char, ignoreNonSync: Boolean, walkAction: WalkAction){
         val props = walkable.javaClass.kotlin.memberProperties.filter {
             !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-                    && it is KMutableProperty<*>
-                    && (if (ignoreNonSync) true else !isNonSync(it) ) }.associateBy{ it.name }
+            && it is KMutableProperty<*>
+            && (if (ignoreNonSync) true else !isNonSync(it) ) }.associateBy{ it.name }
+
+        val propTry = props[target]
+        if (propTry != null){
+            val propVal = propTry.get(walkable)
+            walkAction.act(walkable,"","",propVal,propTry as KMutableProperty<*>, propTry.annotations)
+            return
+        }
         for ((string, property) in props) {
-            if(target == string){
-                val propVal = property.get(walkable)
-                walkAction.act(walkable,"","",propVal,property as KMutableProperty<*>, property.annotations)
-                return
-            } else if(target.startsWith(string)){
+            if(target.startsWith(string)){
                 val propVal = property.get(walkable)
                 if (propVal is Walkable){
-                    walkTo(propVal,target.substringAfter(delimiter),delimiter,ignoreNonSync,walkAction)
+                    drill(propVal,target.substringAfter(delimiter),delimiter,ignoreNonSync,walkAction)
                 } else {
                     break
                 }

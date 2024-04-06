@@ -22,4 +22,5 @@ interface Entry<T, E: Entry<T,E>>: EntryHandler<T>, EntryWidget<T>, EntryApplier
     fun instanceEntry(): E
     fun canCopyEntry(): Boolean
     fun isValidEntry(input: Any?): Boolean
+    fun trySet(input: Any?)
 }

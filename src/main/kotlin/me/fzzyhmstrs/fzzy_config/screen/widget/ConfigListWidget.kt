@@ -16,16 +16,6 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, parent: Config
     ElementListWidget<ConfigEntry>(minecraftClient, parent.width, parent.layout.contentHeight, parent.layout.headerHeight, 24), LastSelectable
 {
 
-    override var lastSelected: Element? = null
-
-    override fun pushLast() {
-        lastSelected = focused
-    }
-
-    override fun popLast() {
-        (lastSelected as? ConfigEntry)?.let { focused = it }
-    }
-
     private val wholeList: List<ConfigEntry> by lazy{
         this.children().toList()
     }
@@ -39,6 +29,15 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, parent: Config
         array
     }
 
+    override var lastSelected: Element? = null
+
+    override fun pushLast() {
+        lastSelected = focused
+    }
+
+    override fun popLast() {
+        (lastSelected as? ConfigEntry)?.let { focused = it }
+    }
     fun updateSearchedEntries(searchInput: String): Int {
         if (searchInput == "") {
             this.replaceEntries(wholeList.toList())

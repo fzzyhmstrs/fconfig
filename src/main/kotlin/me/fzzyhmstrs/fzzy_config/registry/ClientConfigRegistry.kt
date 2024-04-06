@@ -23,21 +23,17 @@ object ClientConfigRegistry {
 
     @Environment(EnvType.CLIENT)
     internal fun openScreen(scope: String){
-        println("A")
         val namespaceScope = getValidScope(scope)
         if (namespaceScope == null){
             FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
             return
         }
-        println("B")
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
                 clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
         }
-        println("C")
         manager.openScreen(scope)
-        println("D")
     }
 
     @Environment(EnvType.CLIENT)

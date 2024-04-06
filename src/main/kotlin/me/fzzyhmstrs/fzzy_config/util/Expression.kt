@@ -1,6 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.StringReader
+import com.mojang.brigadier.exceptions.CommandExceptionType
+import com.mojang.brigadier.exceptions.CommandSyntaxException
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.NamedExpression
@@ -150,7 +153,6 @@ fun interface Expression {
          * @since 0.2.0
          */
         @JvmStatic
-        @JvmOverloads
         fun validated(str: String, vars: Set<Char> = setOf()): ValidatedExpression{
             parse(str)
             return ValidatedExpression(str, vars)
@@ -259,10 +261,28 @@ fun interface Expression {
                     incr }
         )
 
-        private fun parseExpression(reader: StringReader, context: String,order: Int, vararg inputs: Expression): Expression {
+        private fun parseExpression(reader: StringReader, context: String, order: Int, vararg inputs: Expression): Expression {
             if (reader.string.isEmpty()) throw IllegalStateException("Empty Expression found in math equation [$context]")
             reader.skipWhitespace()
             if (StringReader.isAllowedNumber(reader.peek())){
+                if (reader.peek() == '-') {
+                    if(reader.canRead(1) && (reader.peek(1).isWhitespace() || !StringReader.isAllowedNumber(reader.peek(1)))) {
+                        if (3 > order) return inputs[0]
+                        reader.read()
+                        val expression1 = inputs[0]
+                        val expression2 = parseExpression(reader, context, 3)
+                        return minus(expression1, expression2)
+                    } else if (reader.canRead(1)) {
+                        val number1 = reader.readDouble()
+                        return if (reader.canRead())
+                            parseExpression(reader,context,order, constant(number1))
+                        else
+                            constant(number1)
+                    } else {
+                        throw SimpleCommandExceptionType {"trailing '-' found in expression [$context]"}.createWithContext(reader)
+                    }
+
+                }
                 val number1 = reader.readDouble()
                 return if (reader.canRead())
                     parseExpression(reader,context,order, constant(number1))
@@ -324,10 +344,10 @@ fun interface Expression {
                     val chunk = reader.readStringUntil('(').trimEnd()
                     expressions[chunk]?.get(reader, context, chunk)
                         ?: mathHelper(reader, context, chunk)
-                        ?: throw IllegalStateException("Unknown expression '$chunk' in equation [$context]")
+                        ?: throw SimpleCommandExceptionType { "Unknown expression '$chunk' in equation [$context]" }.createWithContext(reader)
                 }
             }
-            throw IllegalStateException("Unknown expression '${reader.remaining}' in equation [$context]")
+            throw SimpleCommandExceptionType {"Unknown expression '${reader.remaining}' in equation [$context]"}.createWithContext(reader)
         }
 
         private fun parseParentheses(reader: StringReader, context: String, read: Boolean = true): Expression {

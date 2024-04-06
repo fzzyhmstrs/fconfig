@@ -48,8 +48,10 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, private val 
             this.text = this.storedValue
         }
         if(isChanged()){
-            if (lastChangedTime != 0L && !ongoingChanges())
+            if (lastChangedTime != 0L && !ongoingChanges()) {
                 applier.accept(storedValue)
+                cachedWrappedValue = storedValue
+            }
         }
         super.renderWidget(context, mouseX, mouseY, delta)
         if(isValid){

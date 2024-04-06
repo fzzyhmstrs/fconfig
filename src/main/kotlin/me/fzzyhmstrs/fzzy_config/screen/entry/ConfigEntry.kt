@@ -60,7 +60,7 @@ internal open class ConfigEntry(
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (Screen.hasShiftDown() && keyCode == GLFW.GLFW_KEY_F10 && rightClickAction != null){
+        if (((Screen.hasShiftDown() && keyCode == GLFW.GLFW_KEY_F10) || keyCode == GLFW.GLFW_KEY_MENU) && rightClickAction != null){
             rightClickAction.rightClick(this.widget.x,this.widget.y,this)
             return true
         }

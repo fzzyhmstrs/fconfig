@@ -5,6 +5,7 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
@@ -44,5 +45,7 @@ class TestConfigImpl: Config("test_config", "fzzy_config", "test") {
             }
             .build()
     }
+
+    var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
 }

@@ -119,8 +119,6 @@ open class PopupWidget
     }
 
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        println(deltaX)
-        println(deltaY)
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
     }
 
@@ -159,6 +157,11 @@ open class PopupWidget
     open fun switchFocus(path: GuiNavigationPath) {
         blur()
         path.setFocused(true)
+    }
+
+    private fun trySetFocused(focused: Element){
+        if (!children().contains(focused)) return
+        setFocused(focused)
     }
 
     override fun setFocused(focused: Element?) {
@@ -224,6 +227,18 @@ open class PopupWidget
          */
         fun pop() {
             setPopup(null)
+        }
+
+        /**
+         * Provides an element for the current popup widget to focus on.
+         *
+         * Must be an existing child of the [PopupWidget] for focusing to succeed
+         * @param element [Element] the element to focus on
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun focusElement(element: Element){
+            (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.popupWidgets?.peek()?.trySetFocused(element)
         }
     }
 
@@ -632,11 +647,8 @@ open class PopupWidget
             var maxW = 0
             var maxH = 0
             for ((name,posEl) in elements){
-                println("[$name, ${posEl.x}, ${posEl.elWidth()}]")
                 maxW = (posEl.getRight() + 8 - ((posEl.getLeft() - 8).takeIf { it < 0 } ?: 0)).takeIf { it > maxW } ?: maxW //6 = outer edge padding
                 maxH = (posEl.getBottom() + 8).takeIf { it > maxH } ?: maxH //6 = outer edge padding
-                println(maxW)
-                println(maxH)
             }
             if (manualWidth <= 0)
                 updateWidth(maxW)

@@ -133,7 +133,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         return (if(input != null) serialize(input) else serialize(storedValue)).report(errorBuilder).get()
     }
 
-    fun trySerialize(input: Any?, errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement?{
+    fun trySerialize(input: Any?, errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement? {
         return try {
             serializeEntry(input as T?,errorBuilder, ignoreNonSync)
         } catch (e: Exception){
@@ -143,7 +143,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
 
     abstract fun serialize(input: T): ValidationResult<TomlElement>
 
-    override fun canCopyEntry(): Boolean{
+    override fun canCopyEntry(): Boolean {
         return true
     }
 
@@ -155,8 +155,8 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         setAndUpdate(input)
     }
 
-    protected open fun reset(){
-        storedValue = defaultValue
+    protected open fun reset() {
+        setAndUpdate(defaultValue)
     }
 
     /**
@@ -188,9 +188,9 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         update(message)
     }
 
-    open fun trySet(input: Any?){
+    override fun trySet(input: Any?) {
         try {
-            validateAndSet(input as T)
+            setAndUpdate(input as T)
         } catch (e: Exception){
             //
         }
@@ -208,7 +208,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
      * @author fzzyhmstrs
      * @since 0.1.0
      */
-    override fun get(): T{
+    override fun get(): T {
         return storedValue
     }
 

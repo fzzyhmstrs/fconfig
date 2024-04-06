@@ -8,6 +8,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
+import net.minecraft.client.MinecraftClient
 import org.jetbrains.annotations.ApiStatus
 
 internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private val forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, private val perms: Int): BaseUpdateManager() {
@@ -68,8 +69,18 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         for (config in configs){
             config.active.save()
         }
-        //send updates to the server for distribution and saving there
-        val updates = this.configs.filter { !it.clientOnly }.associate { it.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.active, this, mutableListOf()) }
-        SyncedConfigRegistry.updateServer(updates, flush(), perms)
+        var count = 0
+        for (config in configs){
+            if (!config.clientOnly)
+                count++
+        }
+        val log = flush()
+        if (count > 0) {
+            //send updates to the server for distribution and saving there
+            val updates = this.configs.filter { !it.clientOnly }.associate { it.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.active, this, mutableListOf()) }
+            SyncedConfigRegistry.updateServer(updates, log, perms)
+        } else {
+            ConfigApiImpl.printChangeHistory(log,configs.map { it.active }.toString(),MinecraftClient.getInstance().player)
+        }
     }
 }
