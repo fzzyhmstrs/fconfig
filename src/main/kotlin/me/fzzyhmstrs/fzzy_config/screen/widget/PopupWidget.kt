@@ -214,7 +214,7 @@ open class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun setPopup(popup: PopupWidget?) {
+        fun push(popup: PopupWidget?) {
             (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.setPopup(popup)
         }
 
@@ -226,7 +226,7 @@ open class PopupWidget
          * @since 0.2.0
          */
         fun pop() {
-            setPopup(null)
+            push(null)
         }
 
         /**

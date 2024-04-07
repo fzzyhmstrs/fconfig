@@ -12,6 +12,7 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import net.minecraft.util.Identifier
+import java.awt.Color
 
 class TestConfigImpl: Config("test_config", "fzzy_config", "test") {
 
@@ -52,6 +53,8 @@ class TestConfigImpl: Config("test_config", "fzzy_config", "test") {
 
     var list1 = listOf(1,3,5,7)
     var list2 = listOf(1,3,5,7).validated()
+
+    var color1 = Color(255,128,0).validated(true)
 
     var set1 = setOf(0.2,0.4,0.6)
     var set2 = setOf(0.2,0.4,0.6).validated()

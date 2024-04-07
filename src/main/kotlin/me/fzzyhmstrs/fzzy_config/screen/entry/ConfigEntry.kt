@@ -34,6 +34,10 @@ internal open class ConfigEntry(
 
     private val truncatedName = ConfigApiImplClient.ellipses(name,if(widget is Decorated) 124 else 146)
 
+    fun positionWidget(y: Int){
+        widget.setPosition(parent.scrollbarPositionX - widget.width - 10, y)
+    }
+
     override fun render(
         context: DrawContext,
         index: Int,
@@ -53,11 +57,8 @@ internal open class ConfigEntry(
         //positions i at the left-hand side of the main widget
         widget.setPosition(parent.scrollbarPositionX - widget.width - 10, y)
         widget.render(context, mouseX, mouseY, tickDelta)
-        if (widget is Decorated) {
-            RenderSystem.enableBlend()
-            RenderSystem.enableDepthTest()
-            context.drawGuiTexture(widget.decorationId(), widget.x - 24, widget.y + 2, 16, 16)
-        }
+        if (widget is Decorated)
+            widget.renderDecoration(context,widget.x - 22, widget.y + 2, tickDelta)
         context.drawTextWithShadow(
             parent.getClient().textRenderer,
             truncatedName,

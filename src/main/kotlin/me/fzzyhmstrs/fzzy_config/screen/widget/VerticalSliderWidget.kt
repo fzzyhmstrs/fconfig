@@ -17,8 +17,9 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
+import java.util.function.Supplier
 
-class VerticalSliderWidget(private var value: Double,x: Int, y: Int, width: Int, height: Int, message: Text, private val valueApplier: Consumer<Double>)
+class VerticalSliderWidget(private val wrappedValue: Supplier<Double>,x: Int, y: Int, width: Int, height: Int, message: Text, private val valueApplier: Consumer<Double>)
     :
     ClickableWidget(x, y, width, height, message)
 {
@@ -29,7 +30,9 @@ class VerticalSliderWidget(private var value: Double,x: Int, y: Int, width: Int,
         private val HANDLE_HIGHLIGHTED = "widget/vertical_slider_handle_highlighted".fcId()
     }
 
+    private var mouseHasBeenClicked = false
     private var sliderFocused = false
+    private var value: Double = wrappedValue.get()
 
     private fun getTexture(): Identifier{
         return if(isFocused && !sliderFocused) {
@@ -46,6 +49,9 @@ class VerticalSliderWidget(private var value: Double,x: Int, y: Int, width: Int,
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        if (wrappedValue.get() != value){
+            value = wrappedValue.get()
+        }
         context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
         RenderSystem.enableBlend()
         RenderSystem.defaultBlendFunc()
@@ -83,11 +89,12 @@ class VerticalSliderWidget(private var value: Double,x: Int, y: Int, width: Int,
     }
 
     override fun onClick(mouseX: Double, mouseY: Double) {
+        mouseHasBeenClicked = true
         setValueFromMouse(mouseY)
     }
 
     override fun onDrag(mouseX: Double, mouseY: Double, deltaX: Double, deltaY: Double) {
-        setValueFromMouse(mouseX)
+        setValueFromMouse(mouseY)
         super.onDrag(mouseX, mouseY, deltaX, deltaY)
     }
 
@@ -95,7 +102,8 @@ class VerticalSliderWidget(private var value: Double,x: Int, y: Int, width: Int,
     }
 
     override fun onRelease(mouseX: Double, mouseY: Double) {
-        super.playDownSound(MinecraftClient.getInstance().soundManager)
+        if (mouseHasBeenClicked)
+            super.playDownSound(MinecraftClient.getInstance().soundManager)
     }
 
     private fun setValueFromMouse(mouseY: Double) {

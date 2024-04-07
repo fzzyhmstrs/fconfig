@@ -65,9 +65,10 @@ class SuggestionWindow(
         if (mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) return false
         var testY = if(up) y + h - 12 else y
         for (l in index until index + suggestionSize){
-            if (mouseX > x && mouseX < x + w && mouseY > testY && mouseY < testY + 12){
+            if (mouseX > x && mouseX < x + w && mouseY > testY && mouseY < testY + 12) {
                 val chosen = suggestions[l].text
                 applier.accept(chosen)
+                closer.accept(this)
                 return true
             }
             testY += if(up) -12 else 12
@@ -129,6 +130,7 @@ class SuggestionWindow(
             GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> {
                 return if (selection != -1){
                     applier.accept(suggestions[selection].text)
+                    closer.accept(this)
                     true
                 } else {
                     false

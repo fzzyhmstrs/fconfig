@@ -6,7 +6,7 @@ import net.minecraft.util.Identifier
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-class DecoratedActiveButtonWidget(
+open class DecoratedActiveButtonWidget(
     titleSupplier: Supplier<Text>,
     width: Int,
     height: Int,

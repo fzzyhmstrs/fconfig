@@ -200,7 +200,7 @@ class ValidatedExpression @JvmOverloads constructor(
             }
             popup.addDoneButton()
             popup.noCloseOnClick()
-            PopupWidget.setPopup(popup.build())
+            PopupWidget.push(popup.build())
         }
 
     }

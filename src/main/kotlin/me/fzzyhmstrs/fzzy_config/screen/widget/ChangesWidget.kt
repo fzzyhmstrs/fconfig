@@ -68,7 +68,7 @@ class ChangesWidget(private val scope: String, private val widthSupplier: Suppli
             .positionX(PopupWidget.Builder.at { this.x - 8 })
             .positionY(PopupWidget.Builder.popupContext { h -> this.y - h + 28 })
             .build()
-        PopupWidget.setPopup(popup)
+        PopupWidget.push(popup)
     }
 
     private fun openRestoreConfirmPopup(b: ActiveButtonWidget) {
@@ -88,7 +88,7 @@ class ChangesWidget(private val scope: String, private val widthSupplier: Suppli
             .positionY(PopupWidget.Builder.popupContext { h -> b.y - h + 28 })
             .width(buttonWidth + 4 + buttonWidth + 16)
             .build()
-        PopupWidget.setPopup(popup)
+        PopupWidget.push(popup)
     }
 
     private fun openChangelogPopup() {
@@ -98,7 +98,7 @@ class ChangesWidget(private val scope: String, private val widthSupplier: Suppli
             .addElement("done_button", ButtonWidget.builder(ScreenTexts.DONE) { PopupWidget.pop() }.size(50,20).build(), Position.BELOW, Position.ALIGN_JUSTIFY)
             .positionX(PopupWidget.Builder.at { 0 })
             .build()
-        PopupWidget.setPopup(popup)
+        PopupWidget.push(popup)
         //
     }
 }

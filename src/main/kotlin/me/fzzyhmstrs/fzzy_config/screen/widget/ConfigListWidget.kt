@@ -55,6 +55,14 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, parent: Config
         return 260
     }
 
+    override fun position(width: Int, height: Int, y: Int) {
+        super.position(width, height, y)
+        for (i in 0 until this.entryCount) {
+            val entryY = getRowTop(i)
+            this.getEntry(i).positionWidget(entryY)
+        }
+    }
+
     public override fun getScrollbarPositionX(): Int {
         return super.getScrollbarPositionX()
     }

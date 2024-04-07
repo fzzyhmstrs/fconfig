@@ -146,7 +146,7 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
             builder.positionY(PopupWidget.Builder.popupContext { this.y - 20 })
             builder.additionalNarration("fc.validated_field.enum.current".translate(entry.get().transLit(entry.get().name)))
-            PopupWidget.setPopup(builder.build())
+            PopupWidget.push(builder.build())
         }
     }
 

@@ -83,7 +83,7 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
                 .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
                 .build()
-            PopupWidget.setPopup(popup)
+            PopupWidget.push(popup)
         } catch (e: Exception){
             FC.LOGGER.error("Unexpected exception caught while opening list popup")
         }

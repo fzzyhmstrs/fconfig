@@ -4,6 +4,10 @@ import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
@@ -17,16 +21,21 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
+import java.util.function.Consumer
 import java.util.function.Predicate
+import java.util.function.Supplier
 
 /**
  * A validated color value
@@ -117,7 +126,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): ClickableWidget {
-        TODO("Not yet implemented")
+        return ColorButtonWidget({get().argb()},{this.toHexString().lit()},{openColorEditPopup()})
     }
 
     override fun toString(): String {
@@ -129,6 +138,30 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     }
 
     /////////////////////////
+
+    @Environment(EnvType.CLIENT)
+    fun openColorEditPopup(){
+        val textRenderer = MinecraftClient.getInstance().textRenderer
+        val mutableColor = this.get().mutable(validatedString())
+        val popup = PopupWidget.Builder(translation())
+            .addElement("r_name",TextWidget(12,20,"fc.validated_field.color.r".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("g_name",TextWidget(12,20,"fc.validated_field.color.g".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("b_name",TextWidget(12,20,"fc.validated_field.color.b".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("a_name",TextWidget(12,20,"fc.validated_field.color.a".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("r_box",ValidationBackedNumberFieldWidget(45,20,{ mutableColor.r }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ r -> mutableColor.updateRGB(r,mutableColor.g,mutableColor.b)}),"r_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("g_box",ValidationBackedNumberFieldWidget(45,20,{ mutableColor.g }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ g -> mutableColor.updateRGB(mutableColor.r,g,mutableColor.b)}),"g_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("b_box",ValidationBackedNumberFieldWidget(45,20,{ mutableColor.b }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ b -> mutableColor.updateRGB(mutableColor.r,mutableColor.g,b)}),"b_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("a_box",if(get().transparent()) ValidationBackedNumberFieldWidget(45,20,{ mutableColor.a }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer,45,20,"255".lit()).also { it.setEditable(false) },"a_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("hl_map",HLMapWidget(mutableColor),"r_box",Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("s_slider",VerticalSliderWidget({mutableColor.s.toDouble()},0,0,20,68,FcText.empty(),{d -> mutableColor.updateHSL(mutableColor.h,d.toFloat(),mutableColor.l)}),"hl_map", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("hex_box",ValidationBackedTextFieldWidget(84, 20,{mutableColor.hex.get()}, ChoiceValidator.any(),mutableColor.hex,{s -> mutableColor.updateHex(s) }),"hl_map", Position.BELOW, Position.VERTICAL_TO_LEFT_EDGE)
+            .addDoneButton ({ this.setAndUpdate(mutableColor.createHolder()); PopupWidget.pop()})
+            .onClose { this.setAndUpdate(mutableColor.createHolder()) }
+            .noCloseOnClick()
+            .build()
+        PopupWidget.push(popup)
+    }
+
 
     private fun validatedString(): ValidatedString {
         return validatedString(toHexString(), this.get().opaque())
@@ -198,17 +231,29 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     }
 
     @Environment(EnvType.CLIENT)
-    class HLMapWidget(private val mutableColor: MutableColor): ClickableWidget(0,0,68,60,"fc.validated_field.color.hl".translate()) {
+    class ColorButtonWidget(private val colorSupplier: Supplier<Int>,titleSupplier: Supplier<Text>, pressAction: Consumer<ActiveButtonWidget>): DecoratedActiveButtonWidget(titleSupplier,110,20,"widget/decoration/frame".fcId(),{true},pressAction){
+        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
+            super.renderDecoration(context, x, y, delta)
+            RenderSystem.enableBlend()
+            context.fill(x+2,y+2,x+14,y+14,colorSupplier.get())
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    class HLMapWidget(private val mutableColor: MutableColor): ClickableWidget(0,0,60,68,"fc.validated_field.color.hl".translate()) {
 
         companion object{
             private val BORDER = "widget/validation/color/hsl_border".fcId()
             private val BORDER_HIGHLIGHTED = "widget/validation/color/hsl_border_highlighted".fcId()
             private val CENTER = "widget/validation/color/hsl_center".fcId()
+            private val CENTER_DESAT = "widget/validation/color/hsl_center_desat".fcId()
             private val CROSSHAIR = "widget/validation/color/hsl_crosshair".fcId()
 
-            private const val horizontalInc = 1f/60f
-            private const val verticalInc = 1f/52f
+            private const val horizontalInc = 1f/52f
+            private const val verticalInc = 1f/60f
         }
+
+        private var mouseHasBeenClicked = false
 
         override fun getNarrationMessage(): MutableText {
             return message.copy()
@@ -219,18 +264,31 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()
             context.drawGuiTexture(if (isSelected) BORDER_HIGHLIGHTED else BORDER, x, y, getWidth(), getHeight())
-            context.setShaderColor(1.0f, 1.0f, 1.0f, mutableColor.a/255f)
-            RenderSystem.enableBlend()
-            RenderSystem.enableDepthTest()
-            context.drawGuiTexture(CENTER, x + 4, y + 4, 60, 52)
-            val cX = 4 + MathHelper.clampedMap(mutableColor.h,0f,1f,0f,60f).toInt() - 2
-            val cY = 4 + MathHelper.clampedMap(mutableColor.l,0f,1f,0f,52f).toInt() - 2
+            if (mutableColor.s == 1f) {
+                context.setShaderColor(1.0f, 1.0f, 1.0f, mutableColor.a / 255f)
+                RenderSystem.enableBlend()
+                RenderSystem.enableDepthTest()
+                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60)
+            } else {
+                context.setShaderColor(1.0f, 1.0f, 1.0f, mutableColor.a / 255f)
+                RenderSystem.enableBlend()
+                RenderSystem.enableDepthTest()
+                context.drawGuiTexture(CENTER_DESAT, x+4, y+4, 52, 60)
+                context.setShaderColor(1.0f, 1.0f, 1.0f, (mutableColor.a / 255f)*(mutableColor.s / 1f))
+                RenderSystem.enableBlend()
+                RenderSystem.enableDepthTest()
+                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60)
+            }
+            val cX = x + 4 + MathHelper.clampedMap(mutableColor.l,0f,1f,0f,52f).toInt() - 2
+            val cY = y + 4 + MathHelper.clampedMap(mutableColor.h,0f,1f,0f,60f).toInt() - 2
+            context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()
             context.drawGuiTexture(CROSSHAIR, cX, cY, 5, 5)
         }
 
         override fun onClick(mouseX: Double, mouseY: Double) {
+            mouseHasBeenClicked = true
             updateHL(mouseX, mouseY)
         }
 
@@ -239,27 +297,27 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         }
 
         private fun updateHL(mouseX: Double,mouseY: Double){
-            val hue = MathHelper.clamp((mouseX - (this.x + 4).toDouble())/60.0,0.0,1.0).toFloat()
-            val light = MathHelper.clamp((mouseY - (this.y + 4).toDouble())/52.0,0.0,1.0).toFloat()
+            val light = MathHelper.clamp((mouseX - (this.x + 4).toDouble())/52.0,0.0,1.0).toFloat()
+            val hue = MathHelper.clamp((mouseY - (this.y + 4).toDouble())/60.0,0.0,1.0).toFloat()
             mutableColor.updateHSL(hue,mutableColor.s,light)
         }
 
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
             return when(keyCode){
                 GLFW.GLFW_KEY_LEFT -> {
-                    incrementH(-horizontalInc)
+                    incrementL(-horizontalInc)
                     true
                 }
                 GLFW.GLFW_KEY_RIGHT -> {
-                    incrementH(horizontalInc)
+                    incrementL(horizontalInc)
                     true
                 }
                 GLFW.GLFW_KEY_UP -> {
-                    incrementL(verticalInc)
+                    incrementH(-verticalInc)
                     true
                 }
                 GLFW.GLFW_KEY_DOWN -> {
-                    incrementL(-verticalInc)
+                    incrementH(verticalInc)
                     true
                 }
                 else -> super.keyPressed(keyCode, scanCode, modifiers)
@@ -276,7 +334,8 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         }
 
         override fun onRelease(mouseX: Double, mouseY: Double) {
-            MinecraftClient.getInstance().soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+            if (mouseHasBeenClicked)
+                MinecraftClient.getInstance().soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
         }
 
         override fun playDownSound(soundManager: SoundManager) {
@@ -307,15 +366,21 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             return !alphaMode
         }
 
+        fun argb(): Int{
+            return ((a and 0xFF) shl 24) or
+                    ((r and 0xFF) shl 16) or
+                    ((g and 0xFF) shl 8) or
+                    ((b and 0xFF) shl 0)
+        }
         fun toInt(): Int {
-            return ColorHelper.Argb.getArgb(a,r,g,b)
+            return argb()
         }
         fun fromInt(i: Int): ColorHolder{
             val components = Color(i,alphaMode)
             return this.copy(r = components.red, g = components.green, b = components.green, a = components.alpha)
         }
-        fun mutable(): MutableColor{
-            val mutable = MutableColor(alphaMode)
+        fun mutable(hex: ValidatedString): MutableColor{
+            val mutable = MutableColor(hex,alphaMode)
             mutable.updateRGB(r, g, b)
             mutable.updateA(a)
             return mutable
@@ -335,7 +400,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
                 toml.element("r", TomlLiteral(r), TomlComment("Red component, 0 to 255"))
                 toml.element("g", TomlLiteral(g), TomlComment("Green component, 0 to 255"))
                 toml.element("b", TomlLiteral(b), TomlComment("Blue component, 0 to 255"))
-                if (alphaMode) toml.element("a", TomlLiteral(r), TomlComment("Alpha component, 0 to 255"))
+                if (alphaMode) toml.element("a", TomlLiteral(a), TomlComment("Alpha component, 0 to 255"))
             } catch (e: Exception){
                 errorBuilder.add("Critical exception while serializing color: ${e.localizedMessage}")
             }
@@ -355,7 +420,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
                 val tomlB = table["b"]?.asTomlLiteral()?.toInt() ?: return ValidationResult.error(this,"Error deserializing 'b' component of color [$fieldName], using previous value.")
                 val tomlA = if(!alphaMode) 255 else table["a"]?.asTomlLiteral()?.toInt() ?: 255
 
-                ValidationResult.success(ColorHolder(tomlR, tomlB, tomlG, tomlA, this.alphaMode))
+                ValidationResult.success(ColorHolder(tomlR, tomlG, tomlB, tomlA, this.alphaMode))
             } catch (e: Exception){
                 ValidationResult.error(this, "Critical error encountered deserializing color [$fieldName], using previous value.")
             }
@@ -406,7 +471,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         }
     }
 
-    class MutableColor(val alphaMode: Boolean) {
+    class MutableColor(val hex: ValidatedString, val alphaMode: Boolean) {
         var r: Int = 0
         var g: Int = 0
         var b: Int = 0
@@ -414,7 +479,14 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         var h: Float = 0f
         var s: Float = 0f
         var l: Float = 0f
+        private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
 
+        private fun argb(): Int{
+            return ((a and 0xFF) shl 24) or
+                    ((r and 0xFF) shl 16) or
+                    ((g and 0xFF) shl 8) or
+                    ((b and 0xFF) shl 0)
+        }
         fun updateHSL(h: Float, s: Float, l: Float) {
             this.h = h
             this.s = s
@@ -426,6 +498,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             this.r = rr
             this.g = gg
             this.b = bb
+            hex.validateAndSet(String.format("%08X", argb()))
         }
         fun updateRGB(r: Int, g: Int, b: Int) {
             this.r = r
@@ -435,12 +508,38 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             this.h = hsl[0]
             this.s = hsl[1]
             this.l = hsl[2]
+            hex.validateAndSet(String.format("%08X", argb()))
         }
         fun updateA(a: Int){
             this.a = a
+            hex.validateAndSet(String.format("%08X", argb()))
+        }
+        fun updateHex(new: String){
+            hex.validateAndSet(new)
+            val argb = try {
+                Integer.parseUnsignedInt(new, 16)
+            } catch (e: Exception){
+                argb()
+            }
+            val aa = argb shr 24 and 0xFF
+            val rr = argb shr 16 and 0xFF
+            val gg = argb shr 8 and 0xFF
+            val bb = argb and 0xFF
+            updateA(aa)
+            this.r = rr
+            this.g = gg
+            this.b = bb
+            val hsl = Color.RGBtoHSB(r,g,b,null)
+            this.h = hsl[0]
+            this.s = hsl[1]
+            this.l = hsl[2]
         }
 
-        fun createHolder(): ColorHolder{
+        fun validate(input: Int): ValidationResult<Int>{
+            return ValidationResult.predicated(input,validator.test(input),"Out of bounds [0-255]")
+        }
+
+        fun createHolder(): ColorHolder {
             return ColorHolder(r, g, b, a, alphaMode)
         }
 

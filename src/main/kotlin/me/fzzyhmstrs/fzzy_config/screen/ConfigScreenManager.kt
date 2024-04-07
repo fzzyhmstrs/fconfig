@@ -322,7 +322,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         popup.addElement("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 14, { !entry.isDefault() }, { b -> openRestoreConfirmPopup(b, entry) },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
         if(withForwarding)
             popup.addElement("forward", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText), 14, { true }, { openEntryForwardingPopup(entry) },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        PopupWidget.setPopup(popup.build())
+        PopupWidget.push(popup.build())
     }
     private fun <T> openRestoreConfirmPopup(b: ActiveButtonWidget, entry: T) where T: Updatable, T: Entry<*,*> {
         val client = MinecraftClient.getInstance()
@@ -341,7 +341,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             .positionY(PopupWidget.Builder.popupContext { h -> b.y - h + 28 })
             .width(buttonWidth + 4 + buttonWidth + 16)
             .build()
-        PopupWidget.setPopup(popup)
+        PopupWidget.push(popup)
     }
 
     private fun <T> openEntryForwardingPopup(entry: T) where T: Updatable, T: Entry<*,*> {
@@ -363,7 +363,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth,20).build(),"confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
             .width(buttonWidth + 4 + buttonWidth + 16)
             .build()
-        PopupWidget.setPopup(popup)
+        PopupWidget.push(popup)
     }
 
     ///////////////////////////////////////

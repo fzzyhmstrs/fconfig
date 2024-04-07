@@ -31,6 +31,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
+import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
 import java.util.function.*
 import kotlin.math.max
@@ -149,10 +150,11 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             val popup = PopupWidget.Builder(this.translation())
                 .addElement("text_field", textField, PopupWidget.Builder.Position.BELOW)
                 .addDoneButton({ textField.pushChanges(); PopupWidget.pop() })
-                .positionX { _, w -> it.x + it.width/2 - w/2 }
-                .positionY { _, h -> it.y + 28 - h }
+                .positionX { _, _ -> it.x.also { xx -> println(xx) } - 8 }
+                .positionY { _, h -> it.y + 28 + 24 - h }
                 .build()
-            PopupWidget.setPopup(popup)
+            PopupWidget.push(popup)
+            PopupWidget.focusElement(textField)
         })
     }
 
@@ -468,7 +470,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
         private var shownText = ""
         private var window: SuggestionWindow? = null
         private var closeWindow = false
-
+        private var needsUpdating = false
 
         private fun isValidTest(s: String): Boolean {
             if (s != lastSuggestionText) {
@@ -517,7 +519,8 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
 
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             val testValue = validatedIdentifier.get()
-            if (cachedWrappedValue != testValue) {
+            if (cachedWrappedValue != testValue || needsUpdating) {
+                needsUpdating = false
                 this.storedValue = testValue
                 this.cachedWrappedValue = testValue
                 this.text = this.storedValue.toString()
@@ -566,6 +569,10 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
                 window = null
                 closeWindow = false
             }
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER){
+                pushChanges()
+                PopupWidget.pop()
+            }
             return if(bl) true else super.keyPressed(keyCode, scanCode, modifiers)
         }
 
@@ -603,8 +610,8 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             this.window = SuggestionWindow(sortSuggestions(suggestions), x, y, w, h, upBl,
                 { s ->
                     try {
-                        println(s)
                         validatedIdentifier.applyEntry(Identifier(s))
+                        needsUpdating = true
                     } catch (e: Exception) {
                         //
                     }
