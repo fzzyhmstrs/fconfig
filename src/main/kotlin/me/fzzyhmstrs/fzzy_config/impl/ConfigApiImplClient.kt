@@ -2,10 +2,26 @@ package me.fzzyhmstrs.fzzy_config.impl
 
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import net.minecraft.client.MinecraftClient
+import net.minecraft.text.Text
 import java.util.*
 
 object ConfigApiImplClient {
+
+    internal val ellipses = FcText.literal("...")
+
+    private val ellipsesWidth by lazy{
+        MinecraftClient.getInstance().textRenderer.getWidth(ellipses)
+    }
+
+    fun ellipses(input: Text, maxWidth: Int): Text{
+        return if (MinecraftClient.getInstance().textRenderer.getWidth(input) <= maxWidth)
+            input
+        else
+            MinecraftClient.getInstance().textRenderer.trimToWidth(input.string,maxWidth - ellipsesWidth).trimEnd().lit().append(ellipses)
+    }
 
     internal fun registerConfig(config: Config, baseConfig: Config){
         ClientConfigRegistry.registerConfig(config, baseConfig)

@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.validation
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
@@ -95,7 +94,9 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         return updated
     }
 
-    abstract fun copyStoredValue(): T
+    open fun copyStoredValue(): T{
+        return storedValue
+    }
 
     @Deprecated("use deserialize to avoid accidentally overwriting validation and error reporting")
     override fun deserializeEntry(
@@ -142,6 +143,14 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     }
 
     abstract fun serialize(input: T): ValidationResult<TomlElement>
+
+    override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
+        return validateEntry(input, type)
+    }
+
+    override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
+        return ValidationResult.success(input)
+    }
 
     override fun canCopyEntry(): Boolean {
         return true

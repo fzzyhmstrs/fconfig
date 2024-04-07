@@ -83,10 +83,6 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      */
     constructor(): this(0, Int.MAX_VALUE, Int.MIN_VALUE, WidgetType.TEXTBOX)
 
-    override fun copyStoredValue(): Int {
-        return storedValue
-    }
-
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Int> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toInt())

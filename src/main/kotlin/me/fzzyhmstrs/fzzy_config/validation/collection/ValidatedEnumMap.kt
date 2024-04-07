@@ -4,8 +4,10 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
@@ -15,7 +17,6 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -58,12 +59,12 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
-        return ButtonWidget.builder("fc.validated_field.map".translate()) { b -> openMapEditPopup(b) }.size(110,20).build()
+        return DecoratedActiveButtonWidget(TextureIds.MAP_LANG,110,20,TextureIds.DECO_COLLECTION,{true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")
     @Environment(EnvType.CLIENT)
-    private fun openMapEditPopup(b: ButtonWidget) {
+    private fun openMapEditPopup(b: ActiveButtonWidget) {
         try {
             val map = storedValue.map {
                 Pair(
@@ -158,11 +159,12 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
     }
 
     override fun isValidEntry(input: Any?): Boolean {
-        return false
-    }
-
-    override fun canCopyEntry(): Boolean{
-        return false
+        if (input !is Map<*,*>) return false
+        return try {
+            validateEntry(input as Map<K, V>, EntryValidator.ValidationType.STRONG).isValid()
+        } catch (e: Exception){
+            false
+        }
     }
 
     companion object{

@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.screen
 
-import com.google.common.collect.ArrayListMultimap
 import me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.annotations.WithPerms
@@ -19,10 +18,8 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
-import me.fzzyhmstrs.fzzy_config.util.FcText.description
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.FcText.translation
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
@@ -120,7 +117,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val functionMap: MutableMap<String, SortedMap<Int, Function<ConfigListWidget, ConfigEntry>>> = mutableMapOf()
         val nameMap: MutableMap<String,Text> = mutableMapOf()
         val config = configs[0]
-        walkConfig(config.active, config.base, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
+        walkConfig(config, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
         //walkBasicValues(config.base, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
         val scopes = functionMap.keys.toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
@@ -137,7 +134,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val nameMap: MutableMap<String,Text> = mutableMapOf()
         for ((i,config) in configs.withIndex()) {
             functionMap.computeIfAbsent(scope) { sortedMapOf()}[i] = screenOpenEntryBuilder(config.active.translation(), config.active.description(), config.active.getId().toTranslationKey())
-            walkConfig(config.active, config.base, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
+            walkConfig(config, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
             //walkBasicValues(config.base, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
         }
         val scopes = functionMap.keys.toList()
@@ -150,7 +147,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
         this.screens = builders
     }
 
-    private fun walkConfig(config: Config, baseConfig: Config, functionMap: MutableMap<String, SortedMap<Int, Function<ConfigListWidget, ConfigEntry>>>, nameMap: MutableMap<String, Text>, playerPermLevel: Int){
+    private fun walkConfig(set: ConfigSet, functionMap: MutableMap<String, SortedMap<Int, Function<ConfigListWidget, ConfigEntry>>>, nameMap: MutableMap<String, Text>, playerPermLevel: Int){
+        val config: Config = set.active
+        val baseConfig: Config = set.base
         val defaultPermLevel = config.defaultPermLevel()
         //putting the config buttons themselves, in the base scope. ex: "my_mod"
         nameMap[config.getId().toTranslationKey()] = config.transLit(config::class.java.simpleName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
@@ -172,7 +171,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations)) {
                     thing.setUpdateManager(manager)
                     manager.setUpdatableEntry(thing)
-                    if (ConfigApiImpl.isNonSync(annotations))
+                    if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
                         functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), thing)
                     else
                         functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = updatableEntryBuilder(name, thing.descLit(getComments(annotations)), thing)
@@ -194,7 +193,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations)) {
                         basicValidation2.setUpdateManager(manager)
                         manager.setUpdatableEntry(basicValidation2)
-                        if (ConfigApiImpl.isNonSync(annotations))
+                        if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
                             functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), basicValidation2)
                         else
                             functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = updatableEntryBuilder(name, thing.descLit(getComments(annotations)), basicValidation2)
@@ -251,7 +250,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
         return ConfigScreenBuilder {
             val screen = ConfigScreen(name, scope,manager, configListFunction, functionList)
-            screen.parent = MinecraftClient.getInstance().currentScreen
+            screen.setParent(MinecraftClient.getInstance().currentScreen)
             screen
         }
     }

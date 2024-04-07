@@ -47,7 +47,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
     }
 
     @ApiStatus.Internal
-    override fun apply() {
+    override fun apply(final: Boolean) {
         if (updateMap.isEmpty()) return
         //push updates from basic validation to the configs
         for ((config,base,bool) in configs) {
@@ -82,5 +82,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         } else {
             ConfigApiImpl.printChangeHistory(log,configs.map { it.active }.toString(),MinecraftClient.getInstance().player)
         }
+        if (!final)
+            pushUpdatableStates()
     }
 }

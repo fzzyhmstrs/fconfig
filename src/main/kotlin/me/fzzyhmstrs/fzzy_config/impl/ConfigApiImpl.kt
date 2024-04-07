@@ -1,5 +1,8 @@
 package me.fzzyhmstrs.fzzy_config.impl
 
+import blue.endless.jankson.Jankson
+import com.google.gson.JsonParser
+import com.mojang.serialization.JsonOps
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
@@ -12,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.BasicValidationProvider
 import net.fabricmc.api.EnvType
@@ -90,7 +94,7 @@ object ConfigApiImpl {
                 val (readConfigResult, readVersion) = deserializeConfig(classInstance, str, fErrorsIn)
                 val readConfig = readConfigResult.get()
                 val needsUpdating = classVersion > readVersion
-                if (readConfigResult.isError()){
+                if (readConfigResult.isError()) {
                     readConfigResult.writeWarning(fErrorsIn)
                     val fErrorsOut = mutableListOf<String>()
                     if (needsUpdating){
@@ -105,8 +109,7 @@ object ConfigApiImpl {
                         fErrorsOutResult.writeError(fErrorsOut)
                     }
                     f.writeText(correctedConfig)
-                }
-                if (needsUpdating){
+                } else if (needsUpdating) {
                     readConfig.update(readVersion)
                     val fErrorsOut = mutableListOf<String>()
                     val updatedConfig = serializeConfig(readConfig,fErrorsOut)
@@ -125,6 +128,32 @@ object ConfigApiImpl {
                 return configClass()
             } else {
                 val classInstance = configClass()
+                val oldFilePair = getCompat(configClass::class)
+                if (oldFilePair.first != null) {
+                    val oldFile = oldFilePair.first
+                    if (oldFilePair.second){
+                        val str = f.readLines().joinToString("\n")
+                        val errorBuilder = mutableListOf<String>()
+                        val (convertedConfigResult, _) = deserializeConfig(classInstance, str, errorBuilder)
+                        if (convertedConfigResult.isError()){
+                            convertedConfigResult.writeWarning(errorBuilder)
+                        }
+                    } else {
+                        try {
+                            val builder = Jankson.builder().build()
+                            val jsonObject = builder.load(oldFile)
+                            val jsonString = jsonObject.toJson(false, false)
+                            val tomlElement = JsonOps.INSTANCE.convertTo(TomlOps.INSTANCE, JsonParser.parseString(jsonString))
+                            val errorBuilder = mutableListOf<String>()
+                            deserializeFromToml(classInstance, tomlElement, errorBuilder)
+                            if (errorBuilder.isNotEmpty())
+                                ValidationResult.error("","Error(s) encountered while deserializing old config file into new format").writeWarning(errorBuilder)
+                        } catch (e: Exception){
+                            FC.LOGGER.error("Error encountered while converting old config file")
+                            e.printStackTrace()
+                        }
+                    }
+                }
                 val fErrorsOut = mutableListOf<String>()
                 val serializedConfig = serializeConfig(classInstance,fErrorsOut)
                 if (fErrorsOut.isNotEmpty()){
@@ -423,7 +452,7 @@ object ConfigApiImpl {
             }
         }
         if (!dir.exists() && !dir.mkdirs()) {
-            FC.LOGGER.error("Could not create directory.")
+            FC.LOGGER.error("Could not create directory ./$folder/$subfolder")
             return Pair(dir,false)
         }
         return Pair(dir,true)
@@ -473,6 +502,16 @@ object ConfigApiImpl {
     private fun getVersion(clazz: KClass<*>): Int {
         val version = clazz.findAnnotation<Version>()
         return version?.version ?: 0
+    }
+    private fun getCompat(clazz: KClass<*>): Pair<File?, Boolean> {
+        val version = clazz.findAnnotation<ConvertFrom>() ?: return Pair(null,false)
+        val dir = makeDir(version.folder, version.subfolder)
+        if (!dir.second) return Pair(null,false)
+        if (!validFileTypes(version.fileName)) return Pair(null,false)
+        return Pair(File(dir.first,version.fileName),version.fileName.endsWith(".toml"))
+    }
+    private fun validFileTypes(fileName: String): Boolean{
+        return fileName.endsWith(".json") || fileName.endsWith(".json5") || fileName.endsWith(".toml")
     }
 
     internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null){

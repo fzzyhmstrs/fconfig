@@ -10,7 +10,7 @@ class TestBasicConfigManager: UpdateManager {
     private var changes: Int = 2
     private val changeHistory: MutableList<String> = mutableListOf("Change 1", "Change 2")
 
-    override fun apply() {
+    override fun apply(final: Boolean) {
         changes++
         changeHistory.add("Change $changes")
     }

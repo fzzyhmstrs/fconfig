@@ -12,39 +12,35 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.*
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
-import java.util.function.Consumer
 import java.util.function.Function
 
 @Environment(EnvType.CLIENT)
 internal class ConfigScreen(title: Text, private val scope: String, private val manager: UpdateManager, entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen,ClickableWidget>>) : PopupWidgetScreen(title) {
 
-    internal var parent: Screen? = null
-    private var onClose: Consumer<ConfigScreen> = Consumer {_ ->
-        if(this.parent == null) {
-            manager.apply()
-            this.client?.narratorManager?.clear()
-        }
-        this.client?.setScreen(parent)
-    }
-    private var onOpen: Consumer<ConfigScreen> = Consumer { _ -> }
+    private var parent: Screen? = null
 
     internal val layout = ThreePartsLayoutWidget(this)
+    private val doneButton = ButtonWidget.builder(ScreenTexts.DONE) { _ -> close() }.size(70,20).build()
     private val configList: ConfigListWidget = entriesWidget.apply(this)
 
-    fun setOnClose(onClose: Consumer<ConfigScreen>){
-        this.onClose = onClose
-    }
-
-    fun setOnOpen(onOpen: Consumer<ConfigScreen>){
-        this.onOpen = onOpen
+    fun setParent(screen: Screen?){
+        this.parent = screen
+        if (screen !is ConfigScreen) return
+        doneButton.message = "fc.config.back".translate()
+        doneButton.tooltip = Tooltip.of("fc.config.back.desc".translate(screen.title))
     }
 
     override fun close() {
-        onClose.accept(this)
+        if(this.parent == null || this.parent !is ConfigScreen) {
+            manager.apply(true)
+            this.client?.narratorManager?.clear()
+        }
+        this.client?.setScreen(parent)
     }
 
     override fun init() {
@@ -53,7 +49,6 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         initFooter()
         initBody()
         initTabNavigation()
-        onOpen.accept(this)
     }
     private fun initHeader(){
         val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
@@ -90,7 +85,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         //changes button
         directionalLayoutWidget.add(ChangesWidget(scope, { this.width }, manager))
         //done button
-        directionalLayoutWidget.add(ButtonWidget.builder(ScreenTexts.DONE) { _ -> close() }.size(70,20).build())
+        directionalLayoutWidget.add(doneButton)
     }
 
     override fun initTabNavigation() {

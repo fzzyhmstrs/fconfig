@@ -24,7 +24,7 @@ class SuggestionWindow(
     private val closer: Consumer<SuggestionWindow>
 ){
     private var selection = -1
-    private var lastNarrationIndex = 0
+    private var lastNarrationIndex = -1
     private val suggestionSize = h / 12
     private var index = 0
 
@@ -53,7 +53,7 @@ class SuggestionWindow(
         }
         var textY = if(up) y + h - 10 else y + 2
         for (l in index until index + suggestionSize){
-            if (mouseX > x && mouseX < x + w && mouseY > textY - 2 && mouseY > textY + 10)
+            if (mouseX > x && mouseX < x + w && mouseY > textY - 2 && mouseY < textY + 10)
                 select(l)
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, suggestions[l].text,x + 1,textY, if(selection == l) Colors.YELLOW else -5592406)
             textY += if(up) -12 else 12
@@ -65,7 +65,7 @@ class SuggestionWindow(
         if (mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h) return false
         var testY = if(up) y + h - 12 else y
         for (l in index until index + suggestionSize){
-            if (mouseX > x && mouseX < x + w && mouseY > testY && mouseY > testY + 12){
+            if (mouseX > x && mouseX < x + w && mouseY > testY && mouseY < testY + 12){
                 val chosen = suggestions[l].text
                 applier.accept(chosen)
                 return true
@@ -101,6 +101,9 @@ class SuggestionWindow(
                     1
                 else
                     -1
+                if (selection == -1){
+                    selection = if (up) -1 else suggestions.lastIndex + 1
+                }
                 select(MathHelper.clamp(selection + d, 0, suggestions.lastIndex))
                 if (selection < index)
                     index = selection
@@ -113,6 +116,9 @@ class SuggestionWindow(
                     -1
                 else
                     1
+                if (selection == -1){
+                    selection = if (up) suggestions.lastIndex + 1 else -1
+                }
                 select(MathHelper.clamp(selection + d, 0, suggestions.lastIndex))
                 if (selection < index)
                     index = selection

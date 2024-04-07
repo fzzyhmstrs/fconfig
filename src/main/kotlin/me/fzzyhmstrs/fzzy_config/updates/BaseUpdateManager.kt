@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.updates
 
-import com.google.common.collect.ArrayListMultimap
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -10,7 +9,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.SortedMap
+import java.util.*
 
 open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
 
@@ -102,7 +101,7 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
         }
     }
 
-    override fun apply() {
+    override fun apply(final: Boolean) {
     }
 
     override fun flush(): List<String> {

@@ -2,8 +2,6 @@ package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
@@ -59,10 +57,6 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
      * @since 0.2.0
      */
     constructor(): this(0f, Float.MAX_VALUE, -Float.MAX_VALUE, WidgetType.TEXTBOX)
-
-    override fun copyStoredValue(): Float {
-        return storedValue
-    }
 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Float> {
         return try{

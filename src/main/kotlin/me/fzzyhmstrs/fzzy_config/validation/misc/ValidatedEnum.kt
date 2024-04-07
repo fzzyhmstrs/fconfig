@@ -5,7 +5,6 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
-import me.fzzyhmstrs.fzzy_config.util.FcText.description
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -43,9 +42,6 @@ import kotlin.math.max
 class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
 
     private val valuesMap: Map<String, T> = defaultValue::class.java.enumConstants.associateBy { it.name }
-    override fun copyStoredValue(): T {
-        return storedValue
-    }
 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
@@ -59,14 +55,6 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
 
     override fun serialize(input: T): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input.name))
-    }
-
-    override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
-        return ValidationResult.success(input)
-    }
-
-    override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
-        return ValidationResult.success(input)
     }
 
     @Environment(EnvType.CLIENT)

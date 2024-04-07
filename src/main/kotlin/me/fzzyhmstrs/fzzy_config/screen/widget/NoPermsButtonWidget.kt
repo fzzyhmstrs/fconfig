@@ -1,5 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.entry.Decorated
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -7,8 +9,9 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.MutableText
+import net.minecraft.util.Identifier
 
-class NoPermsButtonWidget : PressableWidget(0,0,90,20, FcText.empty()) {
+class NoPermsButtonWidget : PressableWidget(0,0,90,20, FcText.empty()), Decorated {
 
     init{
         this.active = false
@@ -32,5 +35,9 @@ class NoPermsButtonWidget : PressableWidget(0,0,90,20, FcText.empty()) {
     }
 
     override fun onPress() {
+    }
+
+    override fun decorationId(): Identifier {
+        return "widget/decoration/open_screen".fcId()
     }
 }

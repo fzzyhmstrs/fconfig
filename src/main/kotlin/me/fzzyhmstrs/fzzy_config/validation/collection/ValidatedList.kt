@@ -3,11 +3,9 @@ package me.fzzyhmstrs.fzzy_config.validation.collection
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
@@ -19,19 +17,10 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
-import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.ElementListWidget
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
-import java.util.function.BiFunction
-import me.fzzyhmstrs.fzzy_config.entry.Entry as Entry1
 
 /**
  * a validated list
@@ -117,11 +106,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
             list.add(result.get())
             if (result.isError()) errors.add(result.getError())
         }
-        return if (errors.isNotEmpty()){
-            ValidationResult.error(list,"Errors corrected in list: $errors")
-        } else {
-            ValidationResult.success(list)
-        }
+        return ValidationResult.predicated(list,errors.isEmpty(),"Errors corrected in list: $errors")
     }
 
     override fun validateEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
@@ -130,11 +115,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
             val result = entryHandler.validateEntry(entry, type)
             if (result.isError()) errors.add(result.getError())
         }
-        return if (errors.isNotEmpty()){
-            ValidationResult.error(input,"Errors corrected in list: $errors")
-        } else {
-            ValidationResult.success(input)
-        }
+        return ValidationResult.predicated(input,errors.isEmpty(),"Errors found in list: $errors")
     }
 
     override fun copyStoredValue(): List<T> {
@@ -154,18 +135,14 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         }
     }
 
-    override fun canCopyEntry(): Boolean{
-        return true
-    }
-
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
-        return ButtonWidget.builder("fc.validated_field.list".translate()) { b -> openListEditPopup(b) }.size(110,20).build()
+        return DecoratedActiveButtonWidget("fc.validated_field.list".translate(),110,20, TextureIds.DECO_COLLECTION,{true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")
     @Environment(EnvType.CLIENT)
-    private fun openListEditPopup(b: ButtonWidget){
+    private fun openListEditPopup(b: ActiveButtonWidget){
         try {
             val list = storedValue.map {
                 (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.applyEntry(it) }

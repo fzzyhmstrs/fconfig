@@ -4,12 +4,13 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.predicated
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.success
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -18,14 +19,11 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
 import java.util.function.BiFunction
-import java.util.function.Function
-import java.util.function.Supplier
 
 /**
  * a validated list
@@ -69,13 +67,9 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
                     set.add(result.get())
                 }
             }
-            if (errors.isNotEmpty()) {
-                ValidationResult.error(set, "Error(s) encountered while deserializing list, some entries were skipped: $errors")
-            } else {
-                ValidationResult.success(set)
-            }
+            ValidationResult.predicated(set, errors.isEmpty(),"Error(s) encountered while deserializing set, some entries were skipped: $errors")
         } catch (e: Exception){
-            ValidationResult.error(defaultValue,"Critical error enountered while deserializing list [$fieldName], using defaults.")
+            ValidationResult.error(defaultValue,"Critical error encountered while deserializing set [$fieldName], using defaults.")
         }
     }
 
@@ -96,7 +90,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
                 toml.element(tomlEntry, annotations)
             }
         } catch (e: Exception){
-            return ValidationResult.error(toml.build(),"Critical error encountered while serializing list: ${e.localizedMessage}")
+            return ValidationResult.error(toml.build(),"Critical error encountered while serializing set: ${e.localizedMessage}")
         }
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
@@ -109,11 +103,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
             set.add(result.get())
             if (result.isError()) errors.add(result.getError())
         }
-        return if (errors.isNotEmpty()){
-            ValidationResult.error(set,"Errors corrected in list: $errors")
-        } else {
-            ValidationResult.success(set)
-        }
+        return ValidationResult.predicated(set,errors.isEmpty(),"Errors corrected in set: $errors")
     }
 
     override fun validateEntry(input: Set<T>, type: EntryValidator.ValidationType): ValidationResult<Set<T>> {
@@ -122,11 +112,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
             val result = entryHandler.validateEntry(entry, type)
             if (result.isError()) errors.add(result.getError())
         }
-        return if (errors.isNotEmpty()){
-            ValidationResult.error(input,"Errors corrected in list: $errors")
-        } else {
-            ValidationResult.success(input)
-        }
+        return ValidationResult.predicated(input,errors.isEmpty(),"Errors found in set: $errors")
     }
 
     override fun copyStoredValue(): Set<T> {
@@ -138,20 +124,21 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
     }
 
     override fun isValidEntry(input: Any?): Boolean {
-        return false
-    }
-
-    override fun canCopyEntry(): Boolean{
-        return false
+        if (input !is Set<*>) return false
+        return try {
+            validateEntry(input as Set<T>, EntryValidator.ValidationType.STRONG).isValid()
+        } catch (e: Exception){
+            false
+        }
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): ClickableWidget {
-        return ButtonWidget.builder("fc.validated_field.set".translate()) { b -> openListEditPopup(b) }.size(110,20).build()
+        return DecoratedActiveButtonWidget("fc.validated_field.set".translate(),110,20, TextureIds.DECO_COLLECTION,{true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")
     @Environment(EnvType.CLIENT)
-    private fun openListEditPopup(b: ButtonWidget) {
+    private fun openListEditPopup(b: ActiveButtonWidget) {
         try {
             val list = storedValue.map {
                 (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.applyEntry(it) }

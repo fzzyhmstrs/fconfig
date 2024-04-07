@@ -58,10 +58,6 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
      */
     constructor(): this(0, Short.MAX_VALUE, Short.MIN_VALUE, WidgetType.TEXTBOX)
 
-    override fun copyStoredValue(): Short {
-        return storedValue
-    }
-
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Short> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toShort())

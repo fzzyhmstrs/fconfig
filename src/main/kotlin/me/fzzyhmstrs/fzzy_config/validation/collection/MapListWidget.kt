@@ -1,10 +1,8 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.entry.Entry as Entry1
-import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
-import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
@@ -17,6 +15,7 @@ import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.widget.ElementListWidget
 import java.util.function.BiFunction
 import java.util.function.Function
+import me.fzzyhmstrs.fzzy_config.entry.Entry as Entry1
 
 @Environment(EnvType.CLIENT)
 internal class MapListWidget<K,V>(
@@ -79,11 +78,11 @@ internal class MapListWidget<K,V>(
         private val keyWidget = key.widgetEntry(keyValidator.apply(parent,this))
         private val valueWidget = value.widgetEntry(ChoiceValidator.any())
         private val deleteWidget = TextlessConfigActionWidget(
-            "widget/action/delete".fcId(),
-            "widget/action/delete_inactive".fcId(),
-            "widget/action/delete_highlighted".fcId(),
-            "fc.button.delete".translate(),
-            "fc.button.delete".translate(),
+            TextureIds.DELETE,
+            TextureIds.DELETE_INACTIVE,
+            TextureIds.DELETE_HIGHLIGHTED,
+            TextureIds.DELETE_LANG,
+            TextureIds.DELETE_LANG,
             { true },
             { parent.children().let { list ->
                 list.indexOf(this).takeIf { i -> i >=0 && i<list.size }?.let {
@@ -131,11 +130,11 @@ internal class MapListWidget<K,V>(
     private class NewEntry<K,V>(private val keySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<K, *>,private val valueSupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<V, *>, private val parent: MapListWidget<K,V>, private val validator: BiFunction<MapListWidget<K,V>,MapEntry<K,V>?,ChoiceValidator<K>>): MapEntry<K,V>() {
 
         private val addWidget = TextlessConfigActionWidget(
-            "widget/action/add".fcId(),
-            "widget/action/add_inactive".fcId(),
-            "widget/action/add_highlighted".fcId(),
-            "fc.button.add".translate(),
-            "fc.button.add".translate(),
+            TextureIds.ADD,
+            TextureIds.ADD_INACTIVE,
+            TextureIds.ADD_HIGHLIGHTED,
+            TextureIds.ADD_LANG,
+            TextureIds.ADD_LANG,
             { true },
             {
                 parent.children().let { it.add(it.lastIndex,ExistingEntry(keySupplier.instanceEntry() as Entry1<K,*>,valueSupplier.instanceEntry() as Entry1<V,*>,parent,validator)) }

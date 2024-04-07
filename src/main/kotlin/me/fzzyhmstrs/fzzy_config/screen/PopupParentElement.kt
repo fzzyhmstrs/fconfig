@@ -59,7 +59,7 @@ interface PopupParentElement: ParentElement, LastSelectable {
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         val popupWidget = activeWidget() ?: return super.mouseClicked(mouseX, mouseY, button)
-        if (popupWidget.mouseClicked(mouseX, mouseY, button) || popupWidget.isMouseOver(mouseX, mouseY)){
+        if (popupWidget.mouseClicked(mouseX, mouseY, button) || popupWidget.isMouseOver(mouseX, mouseY)) {
             return true
         } else if(popupWidget.closesOnMissedClick()) {
                 setPopup(null)

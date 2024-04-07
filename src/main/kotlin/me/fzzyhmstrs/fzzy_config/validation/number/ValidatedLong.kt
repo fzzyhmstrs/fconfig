@@ -81,10 +81,6 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
      */
     constructor(): this(0L, Long.MAX_VALUE, Long.MIN_VALUE, WidgetType.TEXTBOX)
 
-    override fun copyStoredValue(): Long {
-        return storedValue
-    }
-
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Long> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toLong())

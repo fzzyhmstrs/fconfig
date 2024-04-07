@@ -46,6 +46,8 @@
 "fc.config.generic.field.desc" : "This Setting doesn't implement it's translation key. The screen doesn't know what to call it!",
 "fc.config.right_click": "Actions",
 "fc.config.restore.confirm.desc": "Pressing Confirm will reset this setting to its default. Continue?",
+"fc.config.back": "Back",
+"fc.config.back.desc" : "Return to %s",
 
 "fc.button.apply": "Apply Changes",
 "fc.button.apply.desc": "Applies all changes and saves configs",

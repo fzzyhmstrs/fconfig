@@ -68,6 +68,10 @@ dependencies {
     implementation("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
     include("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
 
+    val janksonVersion: String by project
+    implementation("blue.endless:jankson:$janksonVersion")
+    include("blue.endless:jankson:$janksonVersion")
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     testmodImplementation(sourceSets.main.get().output)

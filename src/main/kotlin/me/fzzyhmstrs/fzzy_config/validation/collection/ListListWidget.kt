@@ -2,9 +2,8 @@ package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
-import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
@@ -72,11 +71,11 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
 
         private val entryWidget = entry.widgetEntry(validator.apply(parent,this))
         private val deleteWidget = TextlessConfigActionWidget(
-            "widget/action/delete".fcId(),
-            "widget/action/delete_inactive".fcId(),
-            "widget/action/delete_highlighted".fcId(),
-            "fc.button.delete".translate(),
-            "fc.button.delete".translate(),
+            TextureIds.DELETE,
+            TextureIds.DELETE_INACTIVE,
+            TextureIds.DELETE_HIGHLIGHTED,
+            TextureIds.DELETE_LANG,
+            TextureIds.DELETE_LANG,
             { true },
             { parent.children().let { list ->
                 list.indexOf(this).takeIf { i -> i >=0 && i<list.size }?.let {
@@ -122,11 +121,11 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     private class NewEntry<T>(private val entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, private val parent: ListListWidget<T>, private val validator: BiFunction<ListListWidget<T>,ListEntry<T>?,ChoiceValidator<T>>): ListEntry<T>() {
 
         private val addWidget = TextlessConfigActionWidget(
-            "widget/action/add".fcId(),
-            "widget/action/add_inactive".fcId(),
-            "widget/action/add_highlighted".fcId(),
-            "fc.button.add".translate(),
-            "fc.button.add".translate(),
+            TextureIds.ADD,
+            TextureIds.ADD_INACTIVE,
+            TextureIds.ADD_HIGHLIGHTED,
+            TextureIds.ADD_LANG,
+            TextureIds.ADD_LANG,
             { true },
             {
                 parent.children().let { it.add(it.lastIndex,ExistingEntry(entrySupplier.instanceEntry() as me.fzzyhmstrs.fzzy_config.entry.Entry<T,*>,parent,validator)) }

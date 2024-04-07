@@ -92,7 +92,7 @@ object FcText {
             this.description().takeIf { it.string != this.descriptionKey() } ?: literal(literalFallback).formatted(Formatting.ITALIC)
         else if(literalFallback != "")
             literal(literalFallback).formatted(Formatting.ITALIC)
-        else 
+        else
             empty()
     }
 }

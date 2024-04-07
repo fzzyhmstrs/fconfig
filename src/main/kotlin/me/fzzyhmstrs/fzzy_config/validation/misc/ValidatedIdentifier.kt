@@ -145,10 +145,12 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {
         return OnClickTextFieldWidget({ this.get().toString() }, {
+            val textField = PopupIdentifierTextFieldWidget(170,20,choicePredicate,this)
             val popup = PopupWidget.Builder(this.translation())
-                .addElement("text_field",PopupIdentifierTextFieldWidget(110,20,choicePredicate,this))
-                .positionX { _, _ -> it.x - 8 }
-                .positionY { _, w -> it.y - (w - 28) }
+                .addElement("text_field", textField, PopupWidget.Builder.Position.BELOW)
+                .addDoneButton({ textField.pushChanges(); PopupWidget.pop() })
+                .positionX { _, w -> it.x + it.width/2 - w/2 }
+                .positionY { _, h -> it.y + 28 - h }
                 .build()
             PopupWidget.setPopup(popup)
         })
@@ -457,17 +459,22 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
         private val validatedIdentifier: ValidatedIdentifier
     ): TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty()){
 
-
+        private var cachedWrappedValue = validatedIdentifier.get()
         private var storedValue = validatedIdentifier.get()
         private var lastChangedTime: Long = 0L
         private var isValid = true
         private var pendingSuggestions: CompletableFuture<Suggestions>? = null
+        private var lastSuggestionText = ""
+        private var shownText = ""
         private var window: SuggestionWindow? = null
         private var closeWindow = false
 
 
         private fun isValidTest(s: String): Boolean {
-            pendingSuggestions = validatedIdentifier.allowableIds.getSuggestions(s,this.cursor, choiceValidator)
+            if (s != lastSuggestionText) {
+                pendingSuggestions = validatedIdentifier.allowableIds.getSuggestions(s, this.cursor, choiceValidator)
+                lastSuggestionText = s
+            }
             val id = Identifier.tryParse(s)
             if (id == null){
                 setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
@@ -502,7 +509,19 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             return System.currentTimeMillis() - lastChangedTime <= 350L
         }
 
+        fun pushChanges(){
+            if(isChanged()){
+                validatedIdentifier.accept(storedValue)
+            }
+        }
+
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            val testValue = validatedIdentifier.get()
+            if (cachedWrappedValue != testValue) {
+                this.storedValue = testValue
+                this.cachedWrappedValue = testValue
+                this.text = this.storedValue.toString()
+            }
             if(isChanged()){
                 if (lastChangedTime != 0L && !ongoingChanges())
                     validatedIdentifier.accept(storedValue)
@@ -516,14 +535,24 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             } else {
                 context.drawGuiTexture(TextureIds.ENTRY_ERROR,x + width - 20, y, 20, 20)
             }
+            if (pendingSuggestions?.isDone == true){
+                val suggestions = pendingSuggestions?.get()
+                if (suggestions != null && !suggestions.isEmpty && shownText != lastSuggestionText){
+                    shownText = lastSuggestionText
+                    addSuggestionWindow(suggestions)
+                }
+            }
             window?.render(context, mouseX, mouseY, delta)
         }
 
         override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
             val bl = window?.mouseClicked(mouseX.toInt(), mouseY.toInt(), button) ?: super.mouseClicked(mouseX, mouseY, button)
-            if (closeWindow)
+            if (closeWindow) {
+                pendingSuggestions = null
                 window = null
-            return bl
+                closeWindow = false
+            }
+            return if(bl) true else super.mouseClicked(mouseX, mouseY, button)
         }
 
         override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -532,9 +561,12 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
 
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
             val bl = window?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)
-            if (closeWindow)
-                this.window = null
-            return bl
+            if (closeWindow) {
+                pendingSuggestions = null
+                window = null
+                closeWindow = false
+            }
+            return if(bl) true else super.keyPressed(keyCode, scanCode, modifiers)
         }
 
         init {
@@ -571,6 +603,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             this.window = SuggestionWindow(sortSuggestions(suggestions), x, y, w, h, upBl,
                 { s ->
                     try {
+                        println(s)
                         validatedIdentifier.applyEntry(Identifier(s))
                     } catch (e: Exception) {
                         //

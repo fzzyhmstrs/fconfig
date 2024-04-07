@@ -19,10 +19,6 @@ open class ChoiceValidator<T>(private val  predicate: ValuesPredicate<T>): Entry
         return ValidationResult.predicated(input, predicate.test(input), "Value not allowed")
     }
 
-    fun toStringValidator(): ChoiceValidator<String>{
-        return ChoiceValidator(predicate.toStringPredicate())
-    }
-
     class ValuesPredicate<T>(private val disallowedValues: List<T>?, private val allowableValues: List<T>?): Predicate<T>{
         override fun test(t: T): Boolean {
             return if(disallowedValues != null){
@@ -33,19 +29,11 @@ open class ChoiceValidator<T>(private val  predicate: ValuesPredicate<T>): Entry
                 }
             } else allowableValues?.contains(t) ?: true
         }
-
-        fun toStringPredicate(): ValuesPredicate<String>{
-            return ValuesPredicate(disallowedValues?.mapNotNull { it?.toString() }, allowableValues?.mapNotNull { it?.toString() })
-        }
     }
 
     companion object {
         fun <T> any(): ChoiceValidator<T> {
             return ChoiceValidator(ValuesPredicate(null,null))
-        }
-
-        fun <T> allowed(allowed: List<T>): ChoiceValidator<T>{
-            return ChoiceValidator(ValuesPredicate(null,allowed))
         }
     }
 }

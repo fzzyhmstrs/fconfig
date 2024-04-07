@@ -13,7 +13,6 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.navigation.GuiNavigationType
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -21,8 +20,6 @@ import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.MutableText
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
-import java.lang.StringBuilder
-import kotlin.math.min
 
 /**
  * A validated math expression

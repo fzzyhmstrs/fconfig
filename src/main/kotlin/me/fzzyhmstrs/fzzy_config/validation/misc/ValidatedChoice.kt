@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
@@ -60,10 +59,6 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
 
     override fun serialize(input: T): ValidationResult<TomlElement> {
         return ValidationResult.success(handler.serializeEntry(input, mutableListOf(), true))
-    }
-
-    override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
-        return validateEntry(input, type)
     }
 
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {

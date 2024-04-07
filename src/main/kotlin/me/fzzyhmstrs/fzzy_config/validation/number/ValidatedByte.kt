@@ -58,10 +58,6 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      */
     constructor(): this(0, Byte.MAX_VALUE, Byte.MIN_VALUE, WidgetType.TEXTBOX)
 
-    override fun copyStoredValue(): Byte {
-        return storedValue
-    }
-
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Byte> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toByte())

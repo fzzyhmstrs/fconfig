@@ -1,13 +1,11 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -38,10 +36,6 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
      */
     constructor(): this(true)
 
-    override fun copyStoredValue(): Boolean {
-        return storedValue
-    }
-
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Boolean> {
         return try {
             ValidationResult.success(toml.asTomlLiteral().toBoolean())
@@ -52,14 +46,6 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
 
     override fun serialize(input: Boolean): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
-    }
-
-    override fun correctEntry(input: Boolean, type: EntryValidator.ValidationType): ValidationResult<Boolean> {
-        return ValidationResult.success(input)
-    }
-
-    override fun validateEntry(input: Boolean, type: EntryValidator.ValidationType): ValidationResult<Boolean> {
-        return ValidationResult.success(input)
     }
 
     override fun instanceEntry(): ValidatedBoolean {

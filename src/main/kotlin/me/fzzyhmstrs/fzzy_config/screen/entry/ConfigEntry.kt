@@ -1,5 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
+import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -30,6 +32,8 @@ internal open class ConfigEntry(
         }
     }
 
+    private val truncatedName = ConfigApiImplClient.ellipses(name,if(widget is Decorated) 124 else 146)
+
     override fun render(
         context: DrawContext,
         index: Int,
@@ -49,9 +53,14 @@ internal open class ConfigEntry(
         //positions i at the left-hand side of the main widget
         widget.setPosition(parent.scrollbarPositionX - widget.width - 10, y)
         widget.render(context, mouseX, mouseY, tickDelta)
+        if (widget is Decorated) {
+            RenderSystem.enableBlend()
+            RenderSystem.enableDepthTest()
+            context.drawGuiTexture(widget.decorationId(), widget.x - 24, widget.y + 2, 16, 16)
+        }
         context.drawTextWithShadow(
             parent.getClient().textRenderer,
-            this.name,
+            truncatedName,
             x,
             y + entryHeight / 2 - parent.getClient().textRenderer.fontHeight / 2,
             Colors.WHITE

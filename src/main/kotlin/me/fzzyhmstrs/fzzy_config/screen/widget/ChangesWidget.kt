@@ -57,7 +57,7 @@ class ChangesWidget(private val scope: String, private val widthSupplier: Suppli
         val changelogText = "fc.button.changelog".translate()
         val popup = PopupWidget.Builder("fc.button.changes.message".translate())
             // Apply Changes
-            .addElement("apply", ActiveButtonWidget(applyText,client.textRenderer.getWidth(applyText) + 8, 20, { manager.hasChanges() }, { manager.apply() }), Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addElement("apply", ActiveButtonWidget(applyText,client.textRenderer.getWidth(applyText) + 8, 20, { manager.hasChanges() }, { manager.apply(false) }), Position.BELOW, Position.ALIGN_JUSTIFY)
             // Revert Changes
             .addElementSpacedH("revert", ActiveButtonWidget(revertText,client.textRenderer.getWidth(revertText) + 8, 20, { manager.hasChanges() }, { manager.revert() }),2, Position.BELOW, Position.ALIGN_JUSTIFY)
             // Restore Defaults > confirm popup

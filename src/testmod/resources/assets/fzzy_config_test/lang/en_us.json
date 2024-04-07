@@ -8,14 +8,16 @@
   "fc.test.int2.name": "Textbox Cool Int",
   "fc.test.int2.name.desc": "A number between 0 and 16, that defines how cool the number is.",
 
-  "test_config.fzzy_config.ALPHA" : "Alpha",
-  "test_config.fzzy_config.ALPHA.desc" : "The first option",
-  "test_config.fzzy_config.BETA" : "Beta",
-  "test_config.fzzy_config.BETA.desc" : "The second choice",
-  "test_config.fzzy_config.GAMMA" : "Gamma",
-  "test_config.fzzy_config.GAMMA.desc" : "The third choice",
-  "test_config.fzzy_config.DELTA" : "Delta",
-  "test_config.fzzy_config.DELTA.desc" : "The fourth choice",
-  "test_config.fzzy_config.EPSILON" : "Epsilon",
-  "test_config.fzzy_config.EPSILON.desc" : "The fifth choice"
+  "fzzy_config.test_config.enum1" : "Very Cool Long Enum Name For Testing",
+  "fzzy_config.test_config.ALPHA" : "Alpha",
+  "fzzy_config.test_config.ALPHA.desc" : "The first option",
+  "fzzy_config.test_config.BETA" : "Beta",
+  "fzzy_config.test_config.BETA.desc" : "The second choice",
+  "fzzy_config.test_config.GAMMA" : "Gamma",
+  "fzzy_config.test_config.GAMMA.desc" : "The third choice",
+  "fzzy_config.test_config.DELTA" : "Delta",
+  "fzzy_config.test_config.DELTA.desc" : "The fourth choice",
+  "fzzy_config.test_config.EPSILON" : "Epsilon",
+  "fzzy_config.test_config.EPSILON.desc" : "The fifth choice",
+  "fzzy_config.test_config.list1" : "Very Wow Long List Name For Testing"
 }

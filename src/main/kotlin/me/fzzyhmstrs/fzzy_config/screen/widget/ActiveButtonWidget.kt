@@ -1,7 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
-import net.fabricmc.fabric.api.resource.ResourceReloadListenerKeys.TEXTURES
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -12,7 +11,7 @@ import net.minecraft.util.math.MathHelper
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-class ActiveButtonWidget(
+open class ActiveButtonWidget(
     private val titleSupplier: Supplier<Text>,
     width: Int,
     height: Int,

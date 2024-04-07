@@ -1,8 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.StringReader
-import com.mojang.brigadier.exceptions.CommandExceptionType
-import com.mojang.brigadier.exceptions.CommandSyntaxException
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult

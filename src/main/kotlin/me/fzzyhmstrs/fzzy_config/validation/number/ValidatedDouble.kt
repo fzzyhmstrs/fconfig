@@ -58,10 +58,6 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
      */
     constructor(): this(0.0, Double.MAX_VALUE, -Double.MAX_VALUE, WidgetType.TEXTBOX)
 
-    override fun copyStoredValue(): Double {
-        return storedValue
-    }
-
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Double> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toDouble())
