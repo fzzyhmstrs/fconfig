@@ -48,7 +48,10 @@
 "fc.config.restore.confirm.desc": "Pressing Confirm will reset this setting to its default. Continue?",
 "fc.config.back": "Back",
 "fc.config.back.desc" : "Return to %s",
+"fc.config.forwarded": "Forwarded Settings",
 
+"fc.button.accept": "Accept",
+"fc.button.deny": "Deny",
 "fc.button.apply": "Apply Changes",
 "fc.button.apply.desc": "Applies all changes and saves configs",
 "fc.button.revert": "Revert Changes",

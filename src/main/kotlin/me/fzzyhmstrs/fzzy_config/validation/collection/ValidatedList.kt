@@ -137,7 +137,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
 
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.list".translate(),110,20, TextureIds.DECO_COLLECTION,{true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
+        return DecoratedActiveButtonWidget("fc.validated_field.list".translate(),110,20, TextureIds.DECO_LIST,{true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")

@@ -55,7 +55,7 @@ class ValidatedMap<K,V>(defaultValue: Map<K,V>, private val keyHandler: Entry<K,
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.map".translate(),110,20, TextureIds.DECO_COLLECTION,{true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
+        return DecoratedActiveButtonWidget("fc.validated_field.map".translate(),110,20, TextureIds.DECO_MAP,{true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")

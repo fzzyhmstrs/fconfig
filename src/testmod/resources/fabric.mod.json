@@ -30,5 +30,10 @@
     "fabric-language-kotlin": ">=1.7.4+kotlin.1.6.21",
     "minecraft": ">=1.20.1",
     "java": ">=17"
-  }
+  },
+"custom": {
+  "fzzy_config": [
+    "fzzy_config_test"
+  ]
+}
 }

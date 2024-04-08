@@ -5,8 +5,10 @@ import me.fzzyhmstrs.fzzy_config.api.RegisterType
 
 object TestConfig {
 
-    fun init(){}
-    
+    fun init(){
+        println("I registered my config")
+    }
+
     var testConfig = ConfigApi.registerAndLoadConfig({ TestConfigImpl() }, RegisterType.CLIENT)
 
 }

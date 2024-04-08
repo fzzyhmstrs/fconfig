@@ -30,8 +30,8 @@ object SyncedConfigRegistry {
 
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
 
-    fun forwardSetting(update: String, player: UUID, scope: String) {
-        ClientPlayNetworking.send(SettingForwardCustomPayload(update,player,scope))
+    fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
+        ClientPlayNetworking.send(SettingForwardCustomPayload(update,player,scope,summary))
     }
 
     fun updateServer(serializedConfigs: Map<String,String>, changeHistory: List<String>, playerPerm: Int){
@@ -67,7 +67,8 @@ object SyncedConfigRegistry {
             val update = payload.update
             val sendingUuid = payload.player
             val scope = payload.scope
-            ConfigApiImplClient.handleForwardedUpdate(update, sendingUuid, scope)
+            val summary = payload.summary
+            ConfigApiImplClient.handleForwardedUpdate(update, sendingUuid, scope, summary)
         }
     }
 
@@ -143,8 +144,9 @@ object SyncedConfigRegistry {
             val receivingPlayer = context.player().server.playerManager.getPlayer(uuid) ?: return@registerGlobalReceiver
             val scope = payload.scope
             val update = payload.update
+            val summary = payload.summary
             val sendingPlayer = context.player()
-            ServerPlayNetworking.send(receivingPlayer,SettingForwardCustomPayload(update,sendingPlayer.uuid,scope))
+            ServerPlayNetworking.send(receivingPlayer,SettingForwardCustomPayload(update,sendingPlayer.uuid,scope,summary))
         }
     }
 

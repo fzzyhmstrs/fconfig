@@ -1,3 +1,6 @@
+import org.gradle.jvm.tasks.Jar
+import java.net.URI
+
 plugins {
     id("fabric-loom")
     val kotlinVersion: String by System.getProperties()
@@ -20,6 +23,12 @@ println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
 
 repositories {
     mavenCentral()
+    maven {
+        url = URI("https://maven.terraformersmc.com/releases/")
+        content {
+            includeGroup ("com.terraformersmc")
+        }
+    }
 }
 
 sourceSets{
@@ -72,12 +81,20 @@ dependencies {
     implementation("blue.endless:jankson:$janksonVersion")
     include("blue.endless:jankson:$janksonVersion")
 
+    val modmenuVersion: String by project
+    modCompileOnly("com.terraformersmc:modmenu:$modmenuVersion") {
+        isTransitive = false
+    }
+    modLocalRuntime("com.terraformersmc:modmenu:$modmenuVersion") {
+        isTransitive = false
+    }
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     testmodImplementation(sourceSets.main.get().output)
 }
 
-loom{
+loom {
     runs {
         create("testmodClient"){
             client()
@@ -106,10 +123,6 @@ tasks {
     jar {
         from("LICENSE") { rename { "${it}_${base.archivesName.get()}" } }
     }
-    /*remapJar{
-        val tomlktVersion: String by project
-        nestedJars.from(dependencies.)
-    }*/
     processResources {
         inputs.property("version", project.version)
         filesMatching("fabric.mod.json") { expand(mutableMapOf("version" to project.version)) }
@@ -120,6 +133,12 @@ tasks {
         targetCompatibility = javaVersion
         withSourcesJar()
     }
+}
+
+tasks.register("testmodJar", Jar::class) {
+    from(sourceSets["testmod"].output)
+    destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
+    archiveClassifier = "testmod"
 }
 
 modrinth {

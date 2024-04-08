@@ -26,6 +26,7 @@ interface UpdateManager {
     fun forwardsCount(): Int
     fun forwardsHandler()
     fun revert()
+    fun revertLast()
     fun apply(final: Boolean)
     fun flush(): List<String>
 }

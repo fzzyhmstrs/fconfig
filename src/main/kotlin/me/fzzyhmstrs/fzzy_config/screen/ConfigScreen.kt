@@ -17,6 +17,7 @@ import net.minecraft.client.gui.widget.*
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
+import org.lwjgl.glfw.GLFW
 import java.util.function.Function
 
 @Environment(EnvType.CLIENT)
@@ -25,10 +26,11 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     private var parent: Screen? = null
 
     internal val layout = ThreePartsLayoutWidget(this)
+    private val searchField = TextFieldWidget(MinecraftClient.getInstance().textRenderer,110,20,FcText.empty())
     private val doneButton = ButtonWidget.builder(ScreenTexts.DONE) { _ -> close() }.size(70,20).build()
     private val configList: ConfigListWidget = entriesWidget.apply(this)
 
-    fun setParent(screen: Screen?){
+    fun setParent(screen: Screen?) {
         this.parent = screen
         if (screen !is ConfigScreen) return
         doneButton.message = "fc.config.back".translate()
@@ -50,7 +52,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         initBody()
         initTabNavigation()
     }
-    private fun initHeader(){
+    private fun initHeader() {
         val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
         for (scopeButton in parentScopesButtons) {
             directionalLayoutWidget.add(scopeButton.apply(this))
@@ -59,27 +61,26 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(this.title),20,this.title,this.textRenderer))
 
     }
-    private fun initBody(){
+    private fun initBody() {
         this.addDrawableChild(configList)
         layout.forEachChild { drawableElement: ClickableWidget? ->
             addDrawableChild(drawableElement)
         }
         configList.scrollAmount = 0.0
     }
-    private fun initFooter(){
+    private fun initFooter() {
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //search bar
-        val textField = TextFieldWidget(MinecraftClient.getInstance().textRenderer,110,20,FcText.empty())
         fun setColor(entries: Int){
             if(entries > 0)
-                textField.setEditableColor(Colors.WHITE)
+                searchField.setEditableColor(Colors.WHITE)
             else
-                textField.setEditableColor(0xFF5555)
+                searchField.setEditableColor(0xFF5555)
         }
-        textField.setMaxLength(50)
-        textField.text = ""
-        textField.setChangedListener { s -> setColor(configList.updateSearchedEntries(s)) }
-        directionalLayoutWidget.add(textField)
+        searchField.setMaxLength(50)
+        searchField.text = ""
+        searchField.setChangedListener { s -> setColor(configList.updateSearchedEntries(s)) }
+        directionalLayoutWidget.add(searchField)
         //forward alert button
         directionalLayoutWidget.add(TextlessConfigActionWidget("widget/action/alert".fcId(),"widget/action/alert_inactive".fcId(),"widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(),{ manager.hasForwards() } ) { manager.forwardsHandler() })
         //changes button
@@ -91,5 +92,25 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     override fun initTabNavigation() {
         layout.refreshPositions()
         configList.position(width, layout)
+    }
+
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (keyCode == GLFW.GLFW_KEY_F && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
+            this.focused = searchField
+            return true
+        } else if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
+            configList.page(true)
+            return true
+        } else if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
+            configList.page(false)
+            return true
+        } else if (isCopy(keyCode)) {
+            configList.copy()
+        } else if (isPaste(keyCode)) {
+            configList.paste()
+        } else if (keyCode == GLFW.GLFW_KEY_Z && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
+            manager.revertLast()
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers)
     }
 }

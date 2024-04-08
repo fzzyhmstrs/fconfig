@@ -10,6 +10,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.collections.LinkedHashMap
 
 open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
 
@@ -37,7 +38,7 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     //   scopes are built into translation-key-like strings
     //   ex. 'mymod.items.dropRates.oceanChests'
 
-    protected val updateMap: MutableMap<String, Updatable> = mutableMapOf()
+    protected val updateMap: LinkedHashMap<String, Updatable> = java.util.LinkedHashMap()
     private val changeHistory: MutableMap<Updatable, SortedMap<Long, Text>> = mutableMapOf()
 
     override fun update(updatable: Updatable, updateMessage: Text) {
@@ -98,6 +99,15 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     override fun revert() {
         for (update in updateMap.values) {
             update.revert()
+        }
+    }
+
+    override fun revertLast() {
+        for ((_,update) in updateMap.entries.reversed()){
+            if (update.peekState()){
+                update.revert()
+                return
+            }
         }
     }
 

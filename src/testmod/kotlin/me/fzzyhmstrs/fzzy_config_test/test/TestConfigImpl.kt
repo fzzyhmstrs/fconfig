@@ -4,6 +4,7 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
@@ -14,7 +15,7 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import net.minecraft.util.Identifier
 import java.awt.Color
 
-class TestConfigImpl: Config("test_config", "fzzy_config", "test") {
+class TestConfigImpl: Config("test_config", "fzzy_config_test", "test") {
 
     var bl1 = true
     var bl2 = ValidatedBoolean()
@@ -61,7 +62,7 @@ class TestConfigImpl: Config("test_config", "fzzy_config", "test") {
 
     var map1 = mapOf(1 to "a", 2 to "c")
 
-
     var id1 = ValidatedIdentifier.ofList(Identifier("stick"), listOf(Identifier("stick"),Identifier("blaze_rod"),Identifier("coal"),Identifier("charcoal")))
 
+    var choice1 = ValidatedList.ofInt(1,2,5,10).toChoices()
 }

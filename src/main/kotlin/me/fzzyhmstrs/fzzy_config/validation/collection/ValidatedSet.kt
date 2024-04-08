@@ -133,7 +133,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
     }
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.set".translate(),110,20, TextureIds.DECO_COLLECTION,{true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
+        return DecoratedActiveButtonWidget("fc.validated_field.set".translate(),110,20, TextureIds.DECO_LIST,{true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")

@@ -1,6 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.screen
 
+import com.google.common.collect.Lists
+import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.brigadier.suggestion.Suggestion
+import com.mojang.brigadier.suggestion.Suggestions
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -11,6 +14,7 @@ import net.minecraft.util.math.MathHelper
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import kotlin.math.max
+import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
 class SuggestionWindow(
@@ -29,35 +33,49 @@ class SuggestionWindow(
     private var index = 0
 
     fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        context.matrices.push()
+        context.matrices.translate(0f,0f,5f)
+        RenderSystem.disableDepthTest()
         context.fill(x,y-1,x+w,y+h+1,-805306368)
         if (index > 0){
             if (up){
                 for (k in 0..w step 2) {
+                    RenderSystem.enableBlend()
+                    RenderSystem.disableDepthTest()
                     context.fill(x + k, y - 1, x + k + 1, y, -1)
                 }
             } else {
                 for (k in 0..w step 2){
+                    RenderSystem.enableBlend()
+                    RenderSystem.disableDepthTest()
                     context.fill(x + k, y + h, x + k + 1, y + h + 1, -1)
                 }
             }
         } else if (suggestions.size > suggestionSize + index){
             if (up){
                 for (k in 0..w step 2){
+                    RenderSystem.enableBlend()
+                    RenderSystem.disableDepthTest()
                     context.fill(x + k, y + h, x + k + 1, y + h + 1, -1)
                 }
             } else {
                 for (k in 0..w step 2) {
+                    RenderSystem.enableBlend()
+                    RenderSystem.disableDepthTest()
                     context.fill(x + k, y - 1, x + k + 1, y, -1)
                 }
             }
         }
         var textY = if(up) y + h - 10 else y + 2
         for (l in index until index + suggestionSize){
+            RenderSystem.enableBlend()
+            RenderSystem.disableDepthTest()
             if (mouseX > x && mouseX < x + w && mouseY > textY - 2 && mouseY < textY + 10)
                 select(l)
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, suggestions[l].text,x + 1,textY, if(selection == l) Colors.YELLOW else -5592406)
             textY += if(up) -12 else 12
         }
+        context.matrices.pop()
     }
 
     fun mouseClicked(mouseX: Int, mouseY: Int, button: Int): Boolean {
@@ -158,5 +176,52 @@ class SuggestionWindow(
         return if (message != null) {
             Text.translatable("narration.suggestion.tooltip", this.selection + 1, suggestions.size, suggestion.text, Text.of(message))
         } else Text.translatable("narration.suggestion", this.selection + 1, suggestions.size, suggestion.text)
+    }
+
+    companion object{
+        fun createSuggestionWindow(windowX: Int, windowY: Int,suggestions: Suggestions,text: String, cursor: Int, applier: Consumer<String>, closer: Consumer<SuggestionWindow>): SuggestionWindow{
+            var w = 0
+            for (suggestion in suggestions.list) {
+                w = max(w, MinecraftClient.getInstance().textRenderer.getWidth(suggestion.text))
+            }
+            val sWidth = MinecraftClient.getInstance().currentScreen?.width ?: Int.MAX_VALUE
+            val sHeight = MinecraftClient.getInstance().currentScreen?.height ?: Int.MAX_VALUE
+            val x = max(min(windowX,sWidth - w),0)
+            var h = min(suggestions.list.size * 12, 120)
+            val up = windowY
+            val down = sHeight - (windowY + 20)
+            val upBl: Boolean
+            val y = if(up >= down) {
+                upBl = true
+                while (windowY - h < 0){
+                    h -= 12
+                }
+                windowY - h
+            } else {
+                upBl = false
+                while (windowY + 20 + h > sHeight){
+                    h -= 12
+                }
+                windowY + 20
+            }
+            return SuggestionWindow(sortSuggestions(suggestions,text, cursor), x, y, w, h, upBl,
+                applier,
+                closer)
+        }
+        fun sortSuggestions(suggestions: Suggestions, text: String, cursor: Int): List<Suggestion> {
+            val string: String = text.substring(0, cursor)
+            val string2 = string.lowercase()
+            val list = Lists.newArrayList<Suggestion>()
+            val list2 = Lists.newArrayList<Suggestion>()
+            for (suggestion in suggestions.list) {
+                if (suggestion.text.startsWith(string2) || suggestion.text.startsWith("minecraft:$string2")) {
+                    list.add(suggestion)
+                    continue
+                }
+                list2.add(suggestion)
+            }
+            list.addAll(list2)
+            return list
+        }
     }
 }

@@ -13,6 +13,7 @@ import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.widget.ElementListWidget
+import net.minecraft.util.Colors
 import java.util.function.BiFunction
 import java.util.function.Function
 import me.fzzyhmstrs.fzzy_config.entry.Entry as Entry1
@@ -24,7 +25,7 @@ internal class MapListWidget<K,V>(
     valueSupplier: Entry1<V, *>,
     entryValidator: BiFunction<MapListWidget<K,V>,MapEntry<K,V>?,ChoiceValidator<K>>)
     :
-    ElementListWidget<MapListWidget.MapEntry<K,V>>(MinecraftClient.getInstance(), 272, 160, 0, 20) {
+    ElementListWidget<MapListWidget.MapEntry<K,V>>(MinecraftClient.getInstance(), 272, 160, 0, 22) {
 
     fun getRawMap(skip: MapEntry<K,V>? = null): Map<K,V>{
         val map: MutableMap<K,V> = mutableMapOf()
@@ -55,10 +56,10 @@ internal class MapListWidget<K,V>(
     }
 
     override fun getRowWidth(): Int {
-        return 248 //16 padding, 20 slider width and padding
+        return 258 //16 padding, 20 slider width and padding
     }
 
-    override fun method_57718(): Int {
+    override fun getScrollbarX(): Int {
         return this.x + this.width / 2 + this.rowWidth / 2 + 6
     }
 
@@ -119,9 +120,10 @@ internal class MapListWidget<K,V>(
             }
             keyWidget.setPosition(x,y)
             keyWidget.render(context, mouseX, mouseY, tickDelta)
-            valueWidget.setPosition(x+114,y)
+            context.drawTextWithShadow(parent.client.textRenderer,TextureIds.MAP_ARROW,x + 115,y + 5, Colors.WHITE)
+            valueWidget.setPosition(x+124,y)
             valueWidget.render(context, mouseX, mouseY, tickDelta)
-            deleteWidget.setPosition(x+228,y)
+            deleteWidget.setPosition(x+238,y)
             deleteWidget.render(context, mouseX, mouseY, tickDelta)
         }
     }
@@ -162,7 +164,7 @@ internal class MapListWidget<K,V>(
             hovered: Boolean,
             tickDelta: Float
         ) {
-            addWidget.setPosition(x+228,y)
+            addWidget.setPosition(x+238,y)
             addWidget.render(context, mouseX, mouseY, tickDelta)
         }
     }

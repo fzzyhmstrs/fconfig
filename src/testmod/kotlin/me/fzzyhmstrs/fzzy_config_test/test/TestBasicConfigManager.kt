@@ -24,6 +24,9 @@ class TestBasicConfigManager: UpdateManager {
         changes = 0
     }
 
+    override fun revertLast() {
+    }
+
     override fun restore(scope: String) {
         changes = 2
         changeHistory.add("Restoring default change count")

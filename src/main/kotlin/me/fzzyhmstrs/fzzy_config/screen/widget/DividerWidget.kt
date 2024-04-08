@@ -1,12 +1,15 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.Widget
 import java.util.function.Consumer
 
+@Environment(EnvType.CLIENT)
 class DividerWidget(width: Int): Widget, Drawable, Scalable {
     private var xx = 0
     private var yy = 0

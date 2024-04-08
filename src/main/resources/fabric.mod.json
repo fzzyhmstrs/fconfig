@@ -27,6 +27,12 @@
         "adapter": "kotlin",
         "value": "me.fzzyhmstrs.fzzy_config.FCC"
       }
+    ],
+    "modmenu": [
+      {
+        "adapter": "kotlin",
+        "value": "me.fzzyhmstrs.fzzy_config.impl.ConfigModMenuCompat"
+      }
     ]
   },
   "depends": {
@@ -35,5 +41,17 @@
     "fabric-language-kotlin": ">=1.7.4+kotlin.1.6.21",
     "minecraft": ">=1.19.3",
     "java": ">=17"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/jEGF5fb"
+      },
+      "badges": [ "library" ],
+      "update_checker": false
+    },
+    "modmenu": {
+      "configFactory": "me.fzzyhmstrs.fzzy_config.impl.ConfigCatalogueCompat"
+    }
   }
 }

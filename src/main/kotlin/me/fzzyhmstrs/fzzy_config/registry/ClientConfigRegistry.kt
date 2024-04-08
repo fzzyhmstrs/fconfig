@@ -7,6 +7,9 @@ import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.fabricmc.loader.api.FabricLoader
+import net.fabricmc.loader.api.metadata.CustomValue
+import net.minecraft.client.gui.screen.Screen
 import java.util.*
 
 /**
@@ -22,7 +25,22 @@ object ClientConfigRegistry {
     private var validScopes: MutableSet<String> = mutableSetOf() //configs are sorted into Managers by namespace
 
     @Environment(EnvType.CLIENT)
-    internal fun openScreen(scope: String){
+    internal fun getScreenScopes(): Set<String>{
+        val set = mutableSetOf(*validScopes.toTypedArray())
+        for(container in FabricLoader.getInstance().allMods) {
+            val customValue = container.metadata.getCustomValue("fzzy_config") ?: continue
+            if (customValue.type != CustomValue.CvType.ARRAY) continue
+            val arrayValue = customValue.asArray
+            for (thing in arrayValue){
+                if (thing.type != CustomValue.CvType.STRING) continue
+                set.add(thing.asString)
+            }
+        }
+        return set.toSet()
+    }
+
+    @Environment(EnvType.CLIENT)
+    internal fun openScreen(scope: String) {
         val namespaceScope = getValidScope(scope)
         if (namespaceScope == null){
             FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
@@ -37,7 +55,22 @@ object ClientConfigRegistry {
     }
 
     @Environment(EnvType.CLIENT)
-    internal fun handleForwardedUpdate(update: String, player: UUID, scope: String){
+    internal fun provideScreen(scope: String): Screen? {
+        val namespaceScope = getValidScope(scope)
+        if (namespaceScope == null){
+            FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
+            return null
+        }
+        val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
+            ConfigScreenManager(
+                namespaceScope,
+                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
+        }
+        return manager.provideScreen(scope)
+    }
+
+    @Environment(EnvType.CLIENT)
+    internal fun handleForwardedUpdate(update: String, player: UUID, scope: String, summary: String){
         val namespaceScope = getValidScope(scope)
         if (namespaceScope == null){
             FC.LOGGER.error("Failed to handle a forwarded setting. Invalid scope provided: [$scope]")
@@ -48,7 +81,7 @@ object ClientConfigRegistry {
             FC.LOGGER.error("Failed to handle a forwarded setting. Unknown scope provided: [$scope]")
             return
         }
-        manager.receiveForwardedUpdate(update, player, scope)
+        manager.receiveForwardedUpdate(update, player, scope, summary)
     }
 
     @Environment(EnvType.CLIENT)

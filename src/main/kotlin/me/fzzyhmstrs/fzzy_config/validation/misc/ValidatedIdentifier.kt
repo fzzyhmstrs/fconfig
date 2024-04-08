@@ -583,59 +583,15 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
         }
 
         private fun addSuggestionWindow(suggestions: Suggestions){
-            var w = 0
-            for (suggestion in suggestions.list) {
-                w = max(w, MinecraftClient.getInstance().textRenderer.getWidth(suggestion.text))
-            }
-            val sWidth = MinecraftClient.getInstance().currentScreen?.width ?: Int.MAX_VALUE
-            val sHeight = MinecraftClient.getInstance().currentScreen?.height ?: Int.MAX_VALUE
-            val x = max(min(this.x,sWidth - w),0)
-            var h = min(suggestions.list.size * 12, 120)
-            val up = this.y
-            val down = sHeight - (this.y + 20)
-            val upBl: Boolean
-            val y = if(up >= down) {
-                upBl = true
-                while (this.y - h < 0){
-                    h -= 12
+            val applier: Consumer<String> = Consumer { s ->
+                try {
+                    validatedIdentifier.applyEntry(Identifier(s))
+                } catch (e: Exception) {
+                    //
                 }
-                this.y - h
-            } else {
-                upBl = false
-                while (this.y + 20 + h > sHeight){
-                    h -= 12
-                }
-                this.y + 20
             }
-            this.window = SuggestionWindow(sortSuggestions(suggestions), x, y, w, h, upBl,
-                { s ->
-                    try {
-                        validatedIdentifier.applyEntry(Identifier(s))
-                        needsUpdating = true
-                    } catch (e: Exception) {
-                        //
-                    }
-                },
-                {
-                    closeWindow = true
-                })
+            val closer: Consumer<SuggestionWindow> = Consumer { closeWindow = true }
+            this.window = SuggestionWindow.createSuggestionWindow(this.x,this.y,suggestions,this.text,this.cursor,applier,closer)
         }
-
-        private fun sortSuggestions(suggestions: Suggestions): List<Suggestion> {
-            val string: String = this.text.substring(0, this.cursor)
-            val string2 = string.lowercase()
-            val list = Lists.newArrayList<Suggestion>()
-            val list2 = Lists.newArrayList<Suggestion>()
-            for (suggestion in suggestions.list) {
-                if (suggestion.text.startsWith(string2) || suggestion.text.startsWith("minecraft:$string2")) {
-                    list.add(suggestion)
-                    continue
-                }
-                list2.add(suggestion)
-            }
-            list.addAll(list2)
-            return list
-        }
-
     }
 }

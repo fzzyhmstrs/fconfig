@@ -3,18 +3,23 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.search.SuffixArray
+import org.lwjgl.glfw.GLFW
 import java.util.*
 
-
+@Environment(EnvType.CLIENT)
 internal class ConfigListWidget(minecraftClient: MinecraftClient, parent: ConfigScreen) :
     ElementListWidget<ConfigEntry>(minecraftClient, parent.width, parent.layout.contentHeight, parent.layout.headerHeight, 24), LastSelectable
 {
+
+    private var visibleElements = 5
 
     private val wholeList: List<ConfigEntry> by lazy{
         this.children().toList()
@@ -57,14 +62,20 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, parent: Config
 
     override fun position(width: Int, height: Int, y: Int) {
         super.position(width, height, y)
+        var count = 0
         for (i in 0 until this.entryCount) {
             val entryY = getRowTop(i)
+            val entryYBottom = getRowBottom(i)
+            if (entryY >= this.y && entryYBottom <= this.bottom){
+                count++
+            }
             this.getEntry(i).positionWidget(entryY)
         }
+        visibleElements = count
     }
 
-    public override fun getScrollbarPositionX(): Int {
-        return super.getScrollbarPositionX()
+    public override fun getScrollbarX(): Int {
+        return super.getScrollbarX()
     }
 
     override fun isSelectButton(button: Int): Boolean {
@@ -75,8 +86,24 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, parent: Config
         return this.client
     }
 
+    fun page(up: Boolean){
+        if (up){
+            scrollAmount -= (visibleElements * itemHeight)
+        } else {
+            scrollAmount += (visibleElements * itemHeight)
+        }
+    }
+
     fun add(entry: ConfigEntry){
         this.addEntry(entry)
+    }
+
+    fun copy() {
+        focused?.copyAction?.run() ?: hoveredEntry?.copyAction?.run()
+    }
+
+    fun paste() {
+        focused?.pasteAction?.run() ?: hoveredEntry?.pasteAction?.run()
     }
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {

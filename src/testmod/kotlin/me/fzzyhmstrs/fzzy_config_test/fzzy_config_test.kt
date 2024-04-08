@@ -80,7 +80,7 @@ object FCC: ClientModInitializer {
                 client.setScreen(TestPopupScreen())
                 openDamnScreen = ""
             } else if (openDamnScreen == "the_big_one"){
-                ConfigApi.openScreen("fzzy_config")
+                ConfigApi.openScreen("fzzy_config_test")
                 openDamnScreen = ""
             }
         }

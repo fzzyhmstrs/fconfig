@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.validation.BasicValidationProvider
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.registry.Registries
 import net.peanuuutz.tomlkt.*
 import java.io.File
 import java.lang.reflect.Modifier
@@ -36,7 +37,7 @@ object ConfigApiImpl {
         FabricLoader.getInstance().environmentType == EnvType.CLIENT
     }
 
-    internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T{
+    internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T {
         return when(registerType){
             RegisterType.BOTH -> registerBoth(config,configClass)
             RegisterType.SYNC -> registerSynced(config)
@@ -166,7 +167,7 @@ object ConfigApiImpl {
                 f.writeText(serializedConfig)
                 return classInstance
             }
-        } catch (e: Exception){
+        } catch (e: Exception) {
             FC.LOGGER.error("Critical error encountered while reading or creating [$name]. Using default config.")
             e.printStackTrace()
             return configClass()
@@ -511,7 +512,7 @@ object ConfigApiImpl {
         return Pair(File(dir.first,version.fileName),version.fileName.endsWith(".toml"))
     }
     private fun validFileTypes(fileName: String): Boolean{
-        return fileName.endsWith(".json") || fileName.endsWith(".json5") || fileName.endsWith(".toml")
+        return fileName.endsWith(".json") || fileName.endsWith(".json5") || fileName.endsWith(".jsonc") || fileName.endsWith(".toml")
     }
 
     internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null){

@@ -17,26 +17,20 @@ import java.util.function.Supplier
 
 @Suppress("LeakingThis")
 @Environment(EnvType.CLIENT)
-open class ValidationBackedTextFieldWidget(width: Int, height: Int, private val wrappedValue: Supplier<String>, private val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, private val applier: EntryApplier<String>):
+open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected val wrappedValue: Supplier<String>, protected val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, protected val applier: EntryApplier<String>):
     TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty())
 {
 
-    private var cachedWrappedValue: String = wrappedValue.get()
-    private var storedValue = wrappedValue.get()
-    private var lastChangedTime: Long = 0L
-    private var isValid = true
-    private var prefix: Text? = null
-
-    fun prefixed(prefix: Text): ValidationBackedTextFieldWidget {
-        this.prefix = prefix
-        return this
-    }
+    protected var cachedWrappedValue: String = wrappedValue.get()
+    protected var storedValue = wrappedValue.get()
+    protected var lastChangedTime: Long = 0L
+    protected var isValid = true
 
     fun getValue(): String {
         return storedValue
     }
 
-    private fun ongoingChanges(): Boolean{
+    protected fun ongoingChanges(): Boolean{
         return System.currentTimeMillis() - lastChangedTime <= 350L
     }
 
@@ -65,7 +59,7 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, private val 
 
     }
 
-    private fun isValidTest(s: String): Boolean {
+    protected open fun isValidTest(s: String): Boolean {
         val result = validator.validateEntry(s, EntryValidator.ValidationType.STRONG)
         return if(result.isError()) {
             this.tooltip = Tooltip.of(result.getError().lit())
@@ -91,7 +85,7 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, private val 
         return super.getInnerWidth() - 11
     }
 
-    private fun isChanged(): Boolean {
+    protected fun isChanged(): Boolean {
         return storedValue != wrappedValue.get()
     }
 
@@ -102,6 +96,6 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, private val 
     }
 
     override fun getNarrationMessage(): MutableText {
-        return prefix?.copy()?.append(text.lit()) ?: text.lit()
+        return text.lit()
     }
 }

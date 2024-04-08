@@ -3,6 +3,8 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -16,11 +18,14 @@ import net.minecraft.text.Text
 import net.minecraft.util.Colors
 import org.lwjgl.glfw.GLFW
 
+@Environment(EnvType.CLIENT)
 internal open class ConfigEntry(
     val name: Text,
     protected val description: Text,
     protected val parent: ConfigListWidget,
     protected val widget: ClickableWidget,
+    val copyAction: Runnable?,
+    val pasteAction: Runnable?,
     protected val rightClickAction: RightClickAction?)
     :
     ElementListWidget.Entry<ConfigEntry>()
@@ -35,7 +40,7 @@ internal open class ConfigEntry(
     private val truncatedName = ConfigApiImplClient.ellipses(name,if(widget is Decorated) 124 else 146)
 
     fun positionWidget(y: Int){
-        widget.setPosition(parent.scrollbarPositionX - widget.width - 10, y)
+        widget.setPosition(parent.scrollbarX - widget.width - 10, y)
     }
 
     override fun render(
@@ -55,7 +60,7 @@ internal open class ConfigEntry(
         }
         //75 = 10 + 20 + 20 + 20 + 5 = padding to scroll + revert width + default width + forward width + pad to widget
         //positions i at the left-hand side of the main widget
-        widget.setPosition(parent.scrollbarPositionX - widget.width - 10, y)
+        widget.setPosition(parent.scrollbarX - widget.width - 10, y)
         widget.render(context, mouseX, mouseY, tickDelta)
         if (widget is Decorated)
             widget.renderDecoration(context,widget.x - 22, widget.y + 2, tickDelta)

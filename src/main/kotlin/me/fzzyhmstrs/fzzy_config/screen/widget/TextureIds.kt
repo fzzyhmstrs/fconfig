@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 
 object TextureIds {
@@ -19,7 +20,9 @@ object TextureIds {
     val ADD_HIGHLIGHTED = "widget/action/add_highlighted".fcId()
     val ADD_LANG = "fc.button.add".translate()
 
-    val DECO_COLLECTION = "widget/decoration/collection".fcId()
+    val DECO_MAP = "widget/decoration/map".fcId()
+    val DECO_LIST = "widget/decoration/list".fcId()
 
     val MAP_LANG = "fc.validated_field.map".translate()
+    val MAP_ARROW = ">".lit()
 }

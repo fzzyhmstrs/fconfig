@@ -31,8 +31,8 @@ object ConfigApiImplClient {
         ClientConfigRegistry.openScreen(scope)
     }
 
-    internal fun handleForwardedUpdate(update: String, player: UUID, scope: String) {
-        ClientConfigRegistry.handleForwardedUpdate(update, player, scope)
+    internal fun handleForwardedUpdate(update: String, player: UUID, scope: String, summary: String) {
+        ClientConfigRegistry.handleForwardedUpdate(update, player, scope, summary)
     }
 
     internal fun getPlayerPermissionLevel(): Int{

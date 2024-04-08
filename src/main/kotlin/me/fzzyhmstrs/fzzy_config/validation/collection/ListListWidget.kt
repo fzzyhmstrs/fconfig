@@ -20,7 +20,7 @@ import java.util.function.Function
 @Environment(EnvType.CLIENT)
 internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>>, entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, entryValidator: BiFunction<ListListWidget<T>,ListEntry<T>?,ChoiceValidator<T>>)
     :
-    ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0, 20) {
+    ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0, 22) {
 
     fun getRawList(skip: ListEntry<T>? = null): List<T>{
         val list: MutableList<T> = mutableListOf()
@@ -52,7 +52,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         return 134 //16 padding, 20 slider width and padding
     }
 
-    override fun method_57718(): Int {
+    override fun getScrollbarX(): Int {
         return this.x + this.width / 2 + this.rowWidth / 2 + 6
     }
 

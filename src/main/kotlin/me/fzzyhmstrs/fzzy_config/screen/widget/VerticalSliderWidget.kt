@@ -3,6 +3,8 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.navigation.GuiNavigationType
@@ -19,6 +21,7 @@ import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
 
+@Environment(EnvType.CLIENT)
 class VerticalSliderWidget(private val wrappedValue: Supplier<Double>,x: Int, y: Int, width: Int, height: Int, message: Text, private val valueApplier: Consumer<Double>)
     :
     ClickableWidget(x, y, width, height, message)
