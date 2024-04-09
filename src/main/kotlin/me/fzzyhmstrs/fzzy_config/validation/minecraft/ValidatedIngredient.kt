@@ -163,6 +163,13 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         return DecoratedActiveButtonWidget("fc.validated_field.ingredient.edit".translate(),110,20,"widget/decoration/ingredient".fcId(),{ true },{ openIngredientPopup(it) })
     }
 
+    /**
+     * @suppress
+     */
+     override fun toString(): String{
+         return "Validated Ingredient[value=$storedValue, validation={$itemValidator, $listValidator, $tagValidator}]"
+     }
+
     @Environment(EnvType.CLIENT)
     private fun openIngredientPopup(b: ClickableWidget){
         val textRenderer = MinecraftClient.getInstance().textRenderer
