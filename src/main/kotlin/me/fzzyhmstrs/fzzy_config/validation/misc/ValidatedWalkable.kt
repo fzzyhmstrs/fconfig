@@ -39,7 +39,7 @@ import kotlin.reflect.full.createInstance
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedWalkable<T: Walkable>(defaultValue: T): ValidatedField<T>(defaultValue) {
+class ValidatedWalkable<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
@@ -84,11 +84,16 @@ class ValidatedWalkable<T: Walkable>(defaultValue: T): ValidatedField<T>(default
      * @since 0.2.0
      */
     override fun copyStoredValue(): T {
-        val new = storedValue::class.createInstance()
-        val toml = serialize(this.get()).get()
-        val result = ConfigApiImpl.deserializeFromToml(new, toml, mutableListOf())
-        return if (result.isError()) storedValue else result.get()
+        return try {
+            storedValue::class.createInstance()
+            val toml = serialize(this.get()).get()
+            val result = ConfigApiImpl.deserializeFromToml(new, toml, mutableListOf())
+            if (result.isError()) storedValue else result.get()
+        } catch(e: Exception) {
+            storedValue //object doesn't have an empty constructor. no prob. 
+        }
     }
+    
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input == null) return false
