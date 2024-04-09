@@ -525,7 +525,7 @@ object ConfigApiImpl {
         FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
     }
 
-    internal fun<W: Walkable> walk(walkable: W, prefix: String, ignoreNonSync: Boolean, walkAction: WalkAction){
+    internal fun<W: Any> walk(walkable: W, prefix: String, ignoreNonSync: Boolean, walkAction: WalkAction){
         val orderById = walkable::class.java.declaredFields.filter {
             !isTransient(it.modifiers)
         }.withIndex().associate {
@@ -548,7 +548,7 @@ object ConfigApiImpl {
         }
     }
 
-    internal fun<W: Walkable> drill(walkable: W, target: String, delimiter: Char, ignoreNonSync: Boolean, walkAction: WalkAction){
+    internal fun<W: Any> drill(walkable: W, target: String, delimiter: Char, ignoreNonSync: Boolean, walkAction: WalkAction){
         //generate an index map, so I can order the properties based on name
         val props = walkable.javaClass.kotlin.memberProperties.filter {
             !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
