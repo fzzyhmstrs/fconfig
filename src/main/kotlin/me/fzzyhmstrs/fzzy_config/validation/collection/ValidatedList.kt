@@ -30,7 +30,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @param T any non-null type
  * @param defaultValue default list of values
  * @param entryHandler [Entry] used to handle individual list entries
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedList
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.lists
  * @see me.fzzyhmstrs.fzzy_config.validation.ValidatedField.toList
  * @see me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
  * @author fzzyhmstrs
@@ -119,10 +119,22 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         return ValidationResult.predicated(input,errors.isEmpty(),"Errors found in list: $errors")
     }
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return List&lt;T&gt; - copy of the currently stored list
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun copyStoredValue(): List<T> {
         return storedValue.toList()
     }
 
+    /**
+     * creates a deep copy of this ValidatedList
+     * return ValidatedList wrapping a deep copy of the currently stored list and passes the entry handler
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedList<T> {
         return ValidatedList(copyStoredValue(), entryHandler)
     }
