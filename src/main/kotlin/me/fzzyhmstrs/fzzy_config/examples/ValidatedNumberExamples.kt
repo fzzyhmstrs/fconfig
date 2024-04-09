@@ -25,6 +25,20 @@ internal object ValidatedNumberExamples {
 
         //validation-only Int (unless your default happens to be 0)
         val emptyInt = ValidatedInt()
+
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
     }
 
     fun bytes() {
@@ -42,6 +56,20 @@ internal object ValidatedNumberExamples {
 
         //validation-only Byte (unless your default happens to be 0)
         val emptyByte = ValidatedByte()
+
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
     }
 
 
@@ -61,6 +89,20 @@ internal object ValidatedNumberExamples {
 
         //validation-only Short (unless your default happens to be 0)
         val emptyShort = ValidatedShort()
+
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
     }
 
     fun longs() {
@@ -84,6 +126,20 @@ internal object ValidatedNumberExamples {
 
         //Validation-only Long (unless your default happens to be 0L)
         val emptyLong = ValidatedLong()
+
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
     }
 
     fun doubles() {
@@ -101,6 +157,20 @@ internal object ValidatedNumberExamples {
 
         //Example validation-only Double (unless your default happens to be 0.0)
         val emptyDouble = ValidatedDouble()
+
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
     }
 
     fun floats() {
@@ -118,5 +188,19 @@ internal object ValidatedNumberExamples {
 
         //Example validation-only Float (unless your default happens to be 0f)
         val emptyFloat = ValidatedFloat()
+
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
     }
 }
