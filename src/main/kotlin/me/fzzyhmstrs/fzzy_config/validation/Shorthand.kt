@@ -15,7 +15,8 @@ import java.awt.Color
 import java.util.function.BiPredicate
 
 /**
- * Shorthand extension functions for simple field types
+ * Shorthand extension functions for validating various types.
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthands
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -28,8 +29,6 @@ object Shorthand {
      * Enum constant used will be the default
      * @param E the enum type. instanceof [Enum] and [Translatable] ([EnumTranslatable][me.fzzyhmstrs.fzzy_config.api.EnumTranslatable] is recommended)
      * @return ValidatedEnum wrapping the extended Enum constant
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.TestEnum]
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandEnum]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -48,7 +47,6 @@ object Shorthand {
      *
      * Boolean used will be the default
      * @return ValidatedBoolean wrapping the boolean passed
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandBool]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -63,7 +61,6 @@ object Shorthand {
      * color values in the Color will be the defaults
      * @param transparent Boolean if this ValidatedColor accepts transparency values or not. Default false
      * @return [ValidatedColor] wrapping the Color values passed. Note that the get() of the ValidatedColor does *not* return [Color]
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandColor]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -77,7 +74,6 @@ object Shorthand {
      *
      * The number used will be the default color value
      * @return [ValidatedColor] wrapping the int-based color default
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandColorInt]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -92,7 +88,6 @@ object Shorthand {
      * list used will be the default list
      * @param handler [Entry] for handling the list values.
      * @return [ValidatedList] wrapping the list and provided handler
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandList]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -107,7 +102,6 @@ object Shorthand {
      * List used will be the default
      * @param tagKey [TagKey] used for validating inputs.
      * @return [ValidatedList] wrapping the list and tag validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandTagIdList]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -122,7 +116,6 @@ object Shorthand {
      * @param T the registry type
      * @param registry [Registry] used to validate entries
      * @return [ValidatedList] wrapping the list and registry validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandRegistryIdList]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -138,7 +131,6 @@ object Shorthand {
      * @param registry [Registry] used to validate entries
      * @param predicate [BiPredicate]<Identifier,[RegistryEntry]>
      * @return [ValidatedList] wrapping the list and predicated registry validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandPredicatedRegistryIdList]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -152,7 +144,6 @@ object Shorthand {
      * List used will be the default
      * @param list [List] providing valid inputs to the list
      * @return [ValidatedList] wrapping the list and list validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandListIdList]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -168,7 +159,6 @@ object Shorthand {
      * set used will be the default set
      * @param handler [Entry] for handling the set values.
      * @return [ValidatedSet] wrapping the set and provided handler
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandSet]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -183,7 +173,6 @@ object Shorthand {
      * Set used will be the default
      * @param tagKey [TagKey] used for validating inputs.
      * @return [ValidatedSet] wrapping the set and tag validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandTagIdSet]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -198,7 +187,6 @@ object Shorthand {
      * @param T the registry type
      * @param registry [Registry] used to validate entries
      * @return [ValidatedSet] wrapping the set and registry validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandRegistryIdSet]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -214,7 +202,6 @@ object Shorthand {
      * @param registry [Registry] used to validate entries
      * @param predicate [BiPredicate]<Identifier,[RegistryEntry]>
      * @return [ValidatedSet] wrapping the set and predicated registry validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandPredicatedRegistryIdSet]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -228,7 +215,6 @@ object Shorthand {
      * Set used will be the default
      * @param list [List] providing valid inputs to the set
      * @return [ValidatedSet] wrapping the set and list validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandListIdSet]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -255,7 +241,6 @@ object Shorthand {
      *
      * list used will be the default list. Automatically provides a default handler based on the type of Number provided
      * @return [ValidatedList] wrapping the list
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandNumberList]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -270,7 +255,6 @@ object Shorthand {
      *
      * set used will be the default set. Automatically provides a default handler based on the type of Number provided
      * @return [ValidatedSet] wrapping the set
-     * [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandNumberSet]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -285,7 +269,6 @@ object Shorthand {
      *
      * Does not have a default value, so should only be for list or map validation
      * @return [ValidatedIdentifier] using the tag for validation.
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandTagIds]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -294,12 +277,24 @@ object Shorthand {
     fun TagKey<*>.validatedIds(): ValidatedIdentifier {
         return ValidatedIdentifier.ofTag(this)
     }
+
+    /**
+     * Shorthand Validated TagKey, allowing any tag in the receiver tag's registry
+     * @return [ValidatedTagKey] wrapping the receiver as the default value
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmStatic
+    @Deprecated("Use only for validation of a list or map.")
+    fun <T> TagKey<T>.validated(): ValidatedTagKey<T> {
+        return ValidatedTagKey(this)
+    }
+    
     /**
      * Shorthand Validated Identifier using the [Registry] for validation
      *
      * Does not have a default value, so should only be for list or map validation
      * @return [ValidatedIdentifier] using the registry for validation.
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandRegistryIds]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -315,7 +310,6 @@ object Shorthand {
      * @param T the registry type
      * @param predicate [BiPredicate]<Identifier,[RegistryEntry]> to filter the registry id list
      * @return [ValidatedIdentifier] using the predicated registry for validation.
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandPredicatedRegistryIds]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -329,7 +323,6 @@ object Shorthand {
      *
      * Does not have a default value, so should only be for list or map validation
      * @return [ValidatedIdentifier] using the list for validation.
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandListIds
      * @author fzzyhmstrs
      * @since 0.2.0
      */
