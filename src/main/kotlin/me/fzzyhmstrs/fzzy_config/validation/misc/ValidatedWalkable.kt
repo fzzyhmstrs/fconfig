@@ -53,7 +53,7 @@ class ValidatedWalkable<T: Walkable>(defaultValue: T): ValidatedField<T>(default
 
     /**
      * creates a deep copy of this ValidatedWalkable
-     * return ValidatedWalkable wrapping a deep copy of the currently stored object
+     * @return ValidatedWalkable wrapping a deep copy of the currently stored object
      * @author fzzyhmstrs
      * @since 0.2.0
      */
