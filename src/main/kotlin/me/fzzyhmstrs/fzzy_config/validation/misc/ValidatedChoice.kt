@@ -106,6 +106,12 @@ class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val 
         }
     }
 
+    /**
+     * creates a deep copy of this ValidatedChoice (as deep as possible)
+     * return ValidatedChoice wrapping a copy of the currently stored choice, allowable choices, and handler
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedChoice<T> {
         return ValidatedChoice(copyStoredValue(),this.choices,this.handler)
     }
