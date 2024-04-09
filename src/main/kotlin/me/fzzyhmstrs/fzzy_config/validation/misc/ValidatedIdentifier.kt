@@ -180,6 +180,9 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
         return storedValue.withSuffixedPath(suffix)
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         return storedValue.toString()
     }
