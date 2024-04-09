@@ -77,6 +77,12 @@ class ValidatedWalkable<T: Walkable>(defaultValue: T): ValidatedField<T>(default
         update(message)
     }
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return T - deep copy of the currently stored object
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun copyStoredValue(): T {
         val new = storedValue::class.createInstance()
         val toml = serialize(this.get()).get()
