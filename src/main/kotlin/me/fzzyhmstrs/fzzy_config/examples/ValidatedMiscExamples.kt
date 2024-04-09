@@ -17,33 +17,107 @@ import java.awt.Color
 
 object ValidatedMiscExamples{
 
-    //example validated boolean. It's pretty straightforward, and in general it's recommended to use the shorthand
-    val validatedBool = ValidatedBoolean(true)
+    fun booleans() {
+        //example validated boolean. It's pretty straightforward, and in general it's recommended to use the shorthand
+        val validatedBool = ValidatedBoolean(true)
 
-    //fully defined validated choice, defining a set of valid ints (which happen to be the enchantment weights from the old Enchantment.Rarity enum.
-    val validatedChoice = ValidatedChoice(1, listOf(1,2,5,10),ValidatedInt(1,10,1),ValidatedChoice.WidgetType.CYCLING)
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
+    }
 
-    //validated choice that uses "default" as its default choice automatically, and is defaulting to using the popup widget
-    val validatedChoiceDefault = ValidatedChoice(listOf("default","rare", "abundant"),ValidatedString())
+    fun choices() {
+        //fully defined validated choice, defining a set of valid ints (which happen to be the enchantment weights from the old Enchantment.Rarity enum.
+        val validatedChoice = ValidatedChoice(1, listOf(1,2,5,10),ValidatedInt(1,10,1),ValidatedChoice.WidgetType.CYCLING)
+    
+        //validated choice that uses "default" as its default choice automatically, and is defaulting to using the popup widget
+        val validatedChoiceDefault = ValidatedChoice(listOf("default","rare", "abundant"),ValidatedString())
+    
+        //validated choices built from a validated list instance.
+        val validatedChoiceList = ValidatedList.ofString("default","rare", "abundant").toChoices()
 
-    //validated choices built from a validated list instance.
-    val validatedChoiceList = ValidatedList.ofString("default","rare", "abundant").toChoices()
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
+    }
 
-    //example validated color. defined with standard integer RGBA color components [0-225]
-    //this example has transparency enabled. To allow only opaque colors, use the RGB overload or input Int.MIN_VALUE
-    val validatedColor = ValidatedColor(255, 128, 0, 255)
+    fun colors() {
+        //example validated color. defined with standard integer RGBA color components [0-225]
+        //this example has transparency enabled. To allow only opaque colors, use the RGB overload or input Int.MIN_VALUE
+        val validatedColor = ValidatedColor(255, 128, 0, 255)
+    
+        //this validated color allows opaque colors only
+        val validatedColorOpaque = ValidatedColor(0, 128, 255)
+    
+        //this validated color allows opaque colors only
+        val validatedColorSimple = ValidatedColor()
+    
+        //Validated color built from a java Color. This color will not allow transparency
+        val validatedColorColor = ValidatedColor(Color(1f,0.5f,0f),false)
+    
+        //validated color built from a hex string, with transparency enabled.
+        val validatedColorString = "D6FF00AA".validatedColor(true)
 
-    //this validated color allows opaque colors only
-    val validatedColorOpaque = ValidatedColor(0, 128, 255)
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
+    }
 
-    //this validated color allows opaque colors only
-    val validatedColorSimple = ValidatedColor()
+    fun colorClasses(){
+        //generate a color holder from a ValidatedColor wrapper
+        val validatedColor: ValidatedColor = ValidatedColor(255, 128, 0, 255)
 
-    //Validated color built from a java Color. This color will not allow transparency
-    val validatedColorColor = ValidatedColor(Color(1f,0.5f,0f),false)
+        // the wrapped ColorHolder
+        val holder: ColorHolder = validatedColor.get()
 
-    //validated color built from a hex string, with transparency enabled.
-    val validatedColorString = "D6FF00AA".validatedColor(true)
+        //we can get color values from it
+        val r: Int = holder.r //255
+        val g: Int = holder.g //128
+        val argb: Int = holder.argb() 
+
+        //color holders are immutable, we can mutate them via a MutableColor though
+        val mutable: MutableColor = holder.mutable()
+
+        //update the RGB to something new
+        mutable.updateRGB(128,0,128)
+
+        //the colors HSL is automatically updated too
+        val h = mutable.h
+        val l = mutable.l
+
+        // once we are done, we can update our ValidatedColor
+        validatedColor.validateAndSet(mutable.createHolder())
+    }
 
     //example enum class used in the validated enum below
     //Note the implementation of EnumTranslatable, not required, but strongly recommended
@@ -59,62 +133,109 @@ object ValidatedMiscExamples{
     // example validated Enum. COOL is the default value. This enum is going to use a Cycling style of widget for the GUI, much like vanilla. This is optional.
     val validatedEnum = ValidatedEnum(TestEnum.COOL, ValidatedEnum.WidgetType.CYCLING)
 
-    // example validated Expression; automatically parses and caches the Math Expression input in string form.
-    // The user can input any equation they like as long as it uses x, y, both, or neither expected variables passed in the set
-    val validatedExpression = ValidatedExpression("2.5 * x ^ 2 - 45 * y", setOf('x', 'y'))
-
-    fun evalExpression() {
+    fun expressions() {
+    
+        // example validated Expression; automatically parses and caches the Math Expression input in string form.
+        // The user can input any equation they like as long as it uses x, y, both, or neither expected variables passed in the set
+        val validatedExpression = ValidatedExpression("2.5 * x ^ 2 - 45 * y", setOf('x', 'y'))
+    
         fun evalExpressionExample() {
             val vars = mapOf('x' to 2.0, 'y' to 10.0) //prepared variable map with the current values of the expected vars
-            val result = validatedExpression.eval(vars) //straight eval() call. This can throw exceptions, so use with caution
-            val resultSafe = validatedExpression.evalSafe(vars, 25.0) //when possible, use evalSafe with a fallback
+            val result = validatedExpression.eval(vars) // (= -440.0) straight eval() call. This can throw exceptions, so use with caution
+            val resultSafe = validatedExpression.evalSafe(vars, -250.0) //when possible, use evalSafe with a fallback
         }
+
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
     }
 
-    //Example validated identifier. Note that this "raw" usage of the constructor is not recommended in most cases.
-    //For instance, in this case, an implementation of ofRegistry(Registry, BiPredicate) would be advisable
-    val validatedIdentifier = ValidatedIdentifier(Identifier("oak_planks"), AllowableIdentifiers({ id -> id.toString().contains("planks") }, { Registries.BLOCK.ids.filter { it.toString().contains("planks") } }))
+    fun identifiers() {
+        //Example validated identifier. Note that this "raw" usage of the constructor is not recommended in most cases.
+        //For instance, in this case, an implementation of ofRegistry(Registry, BiPredicate) would be advisable
+        val validatedIdentifier = ValidatedIdentifier(Identifier("oak_planks"), AllowableIdentifiers({ id -> id.toString().contains("planks") }, { Registries.BLOCK.ids.filter { it.toString().contains("planks") } }))
+    
+        //Unbounded validated Identifier. Any valid Identifier will be allowed
+        val unboundedIdentifier = ValidatedIdentifier(Identifier("nether_star"))
+    
+        //Unbounded validated Identifier directly from string. Any valid Identifier will be allowed
+        val stringIdentifier = ValidatedIdentifier("nether_star")
+    
+        //Unbounded validated Identifier directly from string nbamespace and path. Any valid Identifier will be allowed
+        val stringStringIdentifier = ValidatedIdentifier("minecraft","nether_star")
+    
+        //Unbounded validated Identifier with a dummy default. used only for validation of other things
+        val emptyIdentifier = ValidatedIdentifier()
 
-    //Unbounded validated Identifier. Any valid Identifier will be allowed
-    val unboundedIdentifier = ValidatedIdentifier(Identifier("nether_star"))
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
+    }
 
-    //Unbounded validated Identifier directly from string. Any valid Identifier will be allowed
-    val stringIdentifier = ValidatedIdentifier("nether_star")
-
-    //Unbounded validated Identifier directly from string nbamespace and path. Any valid Identifier will be allowed
-    val stringStringIdentifier = ValidatedIdentifier("minecraft","nether_star")
-
-    //Unbounded validated Identifier with a dummy default. used only for validation of other things
-    val emptyIdentifier = ValidatedIdentifier()
-
-    //example validated string. This is built using the Builder, which is typically recommended except in special circumstances
-    //this string requires that lowercase chicken be included in the string
-    val validatedString = ValidatedString.Builder("chickenfrog")
-        .both { s,_ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
-        .withCorrector()
-        .both { s,_ ->
-            if(s.contains("chicken")){
-                ValidationResult.success(s)
-            } else {
-                if(s.contains("chicken", true)){
-                    val s2 = s.replace(Regex("(?i)chicken"),"chicken")
-                    ValidationResult.error(s2,"'chicken' needs to be lowercase in the string")
+    fun strings() {
+        //example validated string. This is built using the Builder, which is typically recommended except in special circumstances
+        //this string requires that lowercase chicken be included in the string
+        val validatedString = ValidatedString.Builder("chickenfrog")
+            .both { s,_ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
+            .withCorrector()
+            .both { s,_ ->
+                if(s.contains("chicken")){
+                    ValidationResult.success(s)
                 } else {
-                    ValidationResult.error(s,"String must contain the lowercase word 'chicken'")
+                    if(s.contains("chicken", true)){
+                        val s2 = s.replace(Regex("(?i)chicken"),"chicken")
+                        ValidationResult.error(s2,"'chicken' needs to be lowercase in the string")
+                    } else {
+                        ValidationResult.error(s,"String must contain the lowercase word 'chicken'")
+                    }
                 }
             }
+            .build()
+    
+        //string validated with regex. provides entry correction in the form of stripping invalid characters from the input string, leaving only the valid regex matching sections
+        //the regex provided in this example matches to Uppercase characters. AbCdE would fail validation, and would correct to ACE.
+        val regexString = ValidatedString("ABCDE", "\\p{Lu}")
+    
+        //Unbounded validated string. Any valid string will be allowed
+        val unboundedString = ValidatedString("hamsters")
+    
+        //Empty validated string. Any valid string will be allowed, and the default value is ""
+        val emptyString = ValidatedString()
+    
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
         }
-        .build()
-
-    //string validated with regex. provides entry correction in the form of stripping invalid characters from the input string, leaving only the valid regex matching sections
-    //the regex provided in this example matches to Uppercase characters. AbCdE would fail validation, and would correct to ACE.
-    val regexString = ValidatedString("ABCDE", "\\p{Lu}")
-
-    //Unbounded validated string. Any valid string will be allowed
-    val unboundedString = ValidatedString("hamsters")
-
-    //Empty validated string. Any valid string will be allowed, and the default value is ""
-    val emptyString = ValidatedString()
+        """
+    }
 
     fun walkables() {
         //example POJO for use in validation. It follows the same rules as sections and configs (public non-final properties, validated or not)
@@ -127,5 +248,19 @@ object ValidatedMiscExamples{
 
         // wraps a plain object (that implements Walkable) into validation and serialization
         var validatedExampleWalkable = ValidatedWalkable(ExampleWalkable())
+
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
     }
 }
