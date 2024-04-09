@@ -104,6 +104,12 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
         return ValidationBackedTextFieldWidget(110,20,this, choicePredicate,this,this)
     }
 
+    /**
+     * creates a deep copy of this ValidatedString
+     * return ValidatedString wrapping a deep copy of the currently stored string and this validations checker.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedString {
         return ValidatedString(String(defaultValue.toCharArray()), this.checker)
     }
