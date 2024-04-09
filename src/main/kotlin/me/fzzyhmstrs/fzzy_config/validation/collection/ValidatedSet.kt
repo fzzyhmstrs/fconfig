@@ -33,8 +33,7 @@ import java.util.function.BiFunction
  * @param T any non-null type
  * @param defaultValue default set of values
  * @param entryHandler [Entry] used to handle individual set entries
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.KeyEnum
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedSet
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.sets
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -116,10 +115,22 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
         return ValidationResult.predicated(input,errors.isEmpty(),"Errors found in set: $errors")
     }
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return Set&lt;T&gt; - copy of the currently stored set
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun copyStoredValue(): Set<T> {
         return storedValue.toSet()
     }
 
+    /**
+     * creates a deep copy of this ValidatedSet
+     * return ValidatedSet wrapping a deep copy of the currently stored set and passes the entry handlers
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedSet<T> {
         return ValidatedSet(copyStoredValue(), entryHandler)
     }
