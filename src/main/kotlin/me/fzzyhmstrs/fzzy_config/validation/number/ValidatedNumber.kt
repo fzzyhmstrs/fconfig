@@ -2,7 +2,6 @@ package me.fzzyhmstrs.fzzy_config.validation.number
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -25,6 +24,8 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Function
@@ -33,6 +34,7 @@ import kotlin.math.max
 
 sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, protected val maxValue: T, protected val widgetType: WidgetType): ValidatedField<T>(defaultValue) where T: Number, T:Comparable<T> {
 
+    @Internal
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
             return ValidationResult.error(minValue, "Validated number [$input] below the valid range [$minValue] to [$maxValue]")
@@ -40,7 +42,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             return ValidationResult.error(maxValue, "Validated number [$input] above the valid range [$minValue] to [$maxValue]")
         return ValidationResult.success(input)
     }
-
+    @Internal
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
             return ValidationResult.error(input, "Validated number [$input] below the valid range [$minValue] to [$maxValue]")
@@ -51,6 +53,8 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     protected abstract fun convert(input: Double): ValidationResult<T>
 
+    @ApiStatus.Internal
+    @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType){
             SLIDER -> {
@@ -83,14 +87,8 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         TEXTBOX
     }
 
-    companion object{
-        private val CONFIRM_TEXTURE = "widget/action/confirm".fcId()
-        private val CONFIRM_INACTIVE_TEXTURE = "widget/action/confirm_inactive".fcId()
-        private val CONFIRM_HIGHLIGHTED_TEXTURE = "widget/action/confirm_highlighted".fcId()
-    }
-
     @Environment(EnvType.CLIENT)
-    protected open class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double,T>, private val valueApplier: Consumer<T>):
+    protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double,T>, private val valueApplier: Consumer<T>):
         ClickableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
         companion object{
             private val TEXTURE = Identifier("widget/slider")
@@ -126,7 +124,8 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             val testValue = wrappedValue.get()
-            if (cachedWrappedValue != testValue){
+            if (cachedWrappedValue != testValue) {
+                println("I got changed!")
                 this.value = testValue
                 cachedWrappedValue = testValue
                 this.message = this.value.toString().lit()

@@ -12,6 +12,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.WidgetType
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -24,14 +25,44 @@ import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 import java.util.function.Predicate
 import kotlin.math.max
 
 //@sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.lang
-class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private val handler: EntryHandler<T>, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
+/**
+ * A validated set of choices of any type
+ *
+ * Similar to a [ValidatedEnum], but constructed from a pre-defined list of choices
+ * @param T the choice type
+ * @param defaultValue the default choice
+ * @param choices [List]<T> defining the appropriate choices
+ * @param handler [EntryHandler] to provide validation tasks for individual choice elements
+ * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedChoice
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedChoiceList
+ * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList.toChoices
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
+class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val choices: List<T>, private val handler: EntryHandler<T>, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
 
-    constructor(choices: List<T>,handler: EntryHandler<T>): this(choices[0],choices, handler)
+    /**
+     * A validated set of choices of any typem using the first choice as the default
+     *
+     * Similar to a [ValidatedEnum], but constructed from a pre-defined list of choices
+     * @param T the choice type
+     * @param choices [List]<T> defining the appropriate choices
+     * @param handler [EntryHandler] to provide validation tasks for individual choice elements
+     * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedChoiceDefault
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    @JvmOverloads
+    constructor(choices: List<T>, handler: EntryHandler<T>, widgetType: WidgetType = WidgetType.POPUP): this(choices[0], choices, handler, widgetType)
 
     init{
         if (!choices.contains(defaultValue))
@@ -42,7 +73,7 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
     override fun copyStoredValue(): T {
         return storedValue
     }
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
             val errors = mutableListOf<String>()
@@ -56,15 +87,15 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
             ValidationResult.error(storedValue,"Critical error deserializing choices [$fieldName]: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun serialize(input: T): ValidationResult<TomlElement> {
         return ValidationResult.success(handler.serializeEntry(input, mutableListOf(), true))
     }
-
+    @Internal
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         return handler.validateEntry(input,type).also(choices.contains(input),"[$input] not a valid choice: [$choices]")
     }
-
+    @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType){
@@ -80,7 +111,7 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
     override fun instanceEntry(): ValidatedChoice<T> {
         return ValidatedChoice(copyStoredValue(),this.choices,this.handler)
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input == null) return false
         return try {
@@ -91,7 +122,7 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
     }
 
     /**
-     * Determines which type of selector widget will be used for the Enum option, default is POPUP
+     * Determines which type of selector widget will be used for the Choice selector, default is POPUP
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -103,7 +134,7 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
          */
         POPUP,
         /**
-         * A traditional MC cycling button widget, iterating through the enum options in order
+         * A traditional MC cycling button widget, iterating through the choices in order
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -118,7 +149,7 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
         }
 
         override fun getMessage(): Text {
-            return entry.supplyEntry().let { it.transLit(it.toString()) }
+            return entry.get().let { it.transLit(it.toString()) }
         }
 
         override fun getNarrationMessage(): MutableText {
@@ -143,8 +174,8 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
                 val button = ChoiceOptionWidget(
                     const,
                     buttonWidth,
-                    { c: T -> c != entry.supplyEntry() },
-                    { entry.applyEntry(it); PopupWidget.pop() })
+                    { c: T -> c != entry.get() },
+                    { entry.accept(it); PopupWidget.pop() })
                 builder.addElement("choice$index",button, prevParent, PopupWidget.Builder.PositionRelativePos.BELOW)
                 prevParent = "choice$index"
             }
@@ -181,7 +212,7 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
     }
 
     @Environment(EnvType.CLIENT)
-    private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0,0,110,20, entry.supplyEntry().let { it.transLit(it.toString()) }) {
+    private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0,0,110,20, entry.get().let { it.transLit(it.toString()) }) {
 
         private val choices = entry.choices.filter {
             choicePredicate.validateEntry(it,EntryValidator.ValidationType.STRONG).isValid()
@@ -193,7 +224,7 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
 
         private fun constructTooltip() {
             val text1 = entry.descLit("").takeIf { it.string != "" }?.copy()
-            val text2 = entry.supplyEntry().descLit("").takeIf { it.string != "" }
+            val text2 = entry.get().descLit("").takeIf { it.string != "" }
             val totalText = if(text1 != null){
                 if (text2 != null){
                     text1.append("; ".lit()).append(text2)
@@ -208,7 +239,7 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
         }
 
         override fun getNarrationMessage(): MutableText {
-            return entry.supplyEntry().let { it.transLit(it.toString()) }
+            return entry.get().let { it.transLit(it.toString()) }
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
@@ -216,11 +247,11 @@ class ValidatedChoice<T>(defaultValue: T, private val choices: List<T>, private 
         }
 
         override fun onPress() {
-            val newIndex = (choices.indexOf(entry.supplyEntry()) + 1).takeIf { it < choices.size } ?: 0
+            val newIndex = (choices.indexOf(entry.get()) + 1).takeIf { it < choices.size } ?: 0
             val newConst = choices[newIndex]
             message = newConst.let { it.transLit(it.toString()) }
             constructTooltip()
-            entry.applyEntry(newConst)
+            entry.accept(newConst)
         }
 
     }

@@ -21,7 +21,6 @@ import me.fzzyhmstrs.fzzy_config.validation.BasicValidationProvider
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.registry.Registries
 import net.peanuuutz.tomlkt.*
 import java.io.File
 import java.lang.reflect.Modifier
@@ -124,7 +123,7 @@ object ConfigApiImpl {
                     f.writeText(updatedConfig)
                 }
                 return readConfig
-            } else if (!f.createNewFile()){
+            } else if (!f.createNewFile()) {
                 FC.LOGGER.error("Couldn't create new file for config [$name]. Using default config.")
                 return configClass()
             } else {

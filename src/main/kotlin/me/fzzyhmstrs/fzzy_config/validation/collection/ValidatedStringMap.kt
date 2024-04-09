@@ -21,12 +21,12 @@ import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
 
 /**
- * A Validated Map<String,V>
- *
- * NOTE: The provided map does not need to be an EnumMap, but it can be
+ * A Validated Map with String keys
+
  * @param V any non-null type with a valid [Entry] for handling
  * @param defaultValue the default map
  * @param keyHandler the key handler, an [Entry]<String>, typically a [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString]
@@ -56,6 +56,7 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
         return ValidatedStringMap(storedValue, keyHandler, valueHandler)
     }
 
+    @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<String, V>>): ClickableWidget {
         return DecoratedActiveButtonWidget("fc.validated_field.map".translate(),110,20, TextureIds.DECO_MAP,{true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
     }
@@ -66,8 +67,8 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
         try {
             val map = storedValue.map {
                 Pair(
-                    (keyHandler.instanceEntry() as Entry<String, *>).also { entry -> entry.applyEntry(it.key) },
-                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.applyEntry(it.value) }
+                    (keyHandler.instanceEntry() as Entry<String, *>).also { entry -> entry.accept(it.key) },
+                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.accept(it.value) }
                 )
             }.associate { it }
             val choiceValidator: BiFunction<MapListWidget<String, V>, MapListWidget.MapEntry<String, V>?, ChoiceValidator<String>> = BiFunction{ ll, le ->
@@ -86,7 +87,7 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
             FC.LOGGER.error("Unexpected exception caught while opening list popup")
         }
     }
-
+    @Internal
     override fun serialize(input: Map<String, V>): ValidationResult<TomlElement> {
         val table = TomlTableBuilder()
         val errors: MutableList<String> = mutableListOf()
@@ -110,7 +111,7 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
     }
 
     //((?![a-z0-9_-]).) in case I need it...
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Map<String, V>> {
         return try {
             val table = toml.asTomlTable()
@@ -131,7 +132,7 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
             ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun validateEntry(input: Map<String, V>, type: EntryValidator.ValidationType): ValidationResult<Map<String, V>> {
         val keyErrors: MutableList<String> = mutableListOf()
         val valueErrors: MutableList<String> = mutableListOf()
@@ -141,7 +142,7 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
         }
         return ValidationResult.predicated(input,keyErrors.isEmpty() && valueErrors.isEmpty(), "Map validation had errors: key=${keyErrors}, value=$valueErrors")
     }
-
+    @Internal
     override fun correctEntry(
         input: Map<String, V>,
         type: EntryValidator.ValidationType
@@ -158,7 +159,7 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
         }
         return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input !is Map<*,*>) return false
         return try {
@@ -169,7 +170,7 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
     }
 
     companion object{
-        fun<V> tryMake(map: Map<String,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedStringMap<V>?{
+        internal fun<V> tryMake(map: Map<String,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedStringMap<V>?{
             return try {
                 ValidatedStringMap(map,keyHandler as Entry<String,*>, valueHandler as Entry<V,*>)
             } catch (e: Exception){

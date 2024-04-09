@@ -2,7 +2,6 @@ package me.fzzyhmstrs.fzzy_config.screen
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.entry.EntrySupplier
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
@@ -26,6 +25,7 @@ import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.util.Colors
 import net.peanuuutz.tomlkt.Toml
 import org.jetbrains.annotations.ApiStatus
+import java.util.function.Supplier
 
 @Environment(EnvType.CLIENT)
 internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private val forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, private val perms: Int): BaseUpdateManager() {
@@ -99,9 +99,9 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) { walkable,_,new,thing,prop,_ ->
                 if (!(thing is Updatable && thing is Entry<*, *>)){
                     val update = getUpdate(new)
-                    if (update != null && update is EntrySupplier<*>){
+                    if (update != null && update is Supplier<*>){
                         try {
-                            prop.setter.call(walkable, update.supplyEntry())
+                            prop.setter.call(walkable, update.get())
                         } catch (e: Exception){
                             FC.LOGGER.error("Error pushing update to simple property [$new]")
                             e.printStackTrace()

@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
-import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
 import net.fabricmc.api.EnvType

@@ -13,6 +13,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
  * Validated Field Collection - serialization is indistinguishable from their wrapped values, but deserialized into a validated wrapper
@@ -20,13 +21,13 @@ import net.peanuuutz.tomlkt.TomlElement
  * Validated Fields CANNOT be serialized and deserialized by GSON or other "automagic" serializers properly. The Toml Element does not provide enough context, because the validation is hidden within code only, not serialized. These fields are not building new classes from scratch, they are updating and validating a pre-existing default class framework.
  *
  * Helper methods are provided to more easily sync configs directly via [PacketByteBuf]s, rather than serializing and then deserializing the entire JSON
- *
+ * @param T Type of the wrapped value
  * @param storedValue T. The wrapped value that this field validates, serializes, and syncs between server and client.
+ * @param defaultValue T. The default value of the wrapped value
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.lang
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-
 @Suppress("DeprecatedCallableAddReplaceWith")
 abstract class ValidatedField<T>(protected var storedValue: T, protected val defaultValue: T = storedValue):
     Entry<T,ValidatedField<T>>,
@@ -38,38 +39,66 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     private var updateKey = ""
     private var updateManager: UpdateManager? = null
 
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun getUpdateManager(): UpdateManager? {
         return updateManager
     }
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun setUpdateManager(manager: UpdateManager) {
         this.updateManager = manager
     }
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun getEntryKey(): String {
         return updateKey
     }
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun setEntryKey(key: String) {
         updateKey = key
     }
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun isDefault(): Boolean {
-        return defaultValue == storedValue
+        return defaultValue == get()
     }
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun restore(){
         reset()
         updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.default",translation(), defaultValue.toString()))
     }
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun revert() {
         if(pushedValue != null){
             try {
                 pushedValue?.let {
-                    updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert",translation(), storedValue.toString(), pushedValue.toString()))
-                    storedValue = it
+                    updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert",translation(), get().toString(), pushedValue.toString()))
+                    set(it)
                 }
             } catch (e: Exception){
                 updateManager?.addUpdateMessage(this,FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
@@ -78,26 +107,42 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
             updateManager?.addUpdateMessage(this,FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
         }
     }
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun pushState(){
         pushedValue = copyStoredValue()
     }
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun peekState(): Boolean {
-        return pushedValue != storedValue
+        return pushedValue != get()
     }
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun popState(): Boolean{
         if (pushedValue == null) return false
-        val updated = pushedValue != storedValue
+        val updated = pushedValue != get()
         pushedValue = null
         return updated
     }
 
     open fun copyStoredValue(): T{
-        return storedValue
+        return get()
     }
 
+    /**
+     * @suppress
+     */
+    @Internal
     @Deprecated("use deserialize to avoid accidentally overwriting validation and error reporting")
     override fun deserializeEntry(
         toml: TomlElement,
@@ -107,35 +152,34 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     ): ValidationResult<T> {
         val tVal = deserialize(toml, fieldName) //1
         if (tVal.isError()){ //2
-            return ValidationResult.error(storedValue,"Error deserializing config entry [$fieldName], using default value [${tVal.get()}]  >>> Possible reasons: ${tVal.getError()}")
+            return ValidationResult.error(get(),"Error deserializing config entry [$fieldName], using default value [${tVal.get()}]  >>> Possible reasons: ${tVal.getError()}")
         }
         //3
         val tVal2 = correctEntry(tVal.get(), EntryValidator.ValidationType.WEAK)
-        storedValue = tVal2.get() //4
+        set(tVal2.get()) //4
         if (tVal2.isError()){ //5
-            return ValidationResult.error(storedValue,"Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]  >>> Possible reasons: ${tVal2.getError()}")
+            return ValidationResult.error(get(),"Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]  >>> Possible reasons: ${tVal2.getError()}")
         }
-        return ValidationResult.success(storedValue)
+        return ValidationResult.success(get())
     }
 
     abstract fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T>
 
     /**
-     * Serializes the wrapped value of this validated field, and ONLY the wrapped value. Validation is maintained internally. If this field stores an Int, serialization is equivalent to a JSON Primitive storing an integer value.
-     *
-     * @return A JSON Element with the serialized wrapped value contained within.
+     * @suppress
      */
-
+    @Internal
     @Deprecated(
         "use serialize for consistency and to enable usage in list- and map-based Fields",
         ReplaceWith("serializeEntry(input: T)")
     )
     override fun serializeEntry(input: T?, errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
-        return (if(input != null) serialize(input) else serialize(storedValue)).report(errorBuilder).get()
+        return (if(input != null) serialize(input) else serialize(get())).report(errorBuilder).get()
     }
 
     fun trySerialize(input: Any?, errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement? {
         return try {
+            @Suppress("DEPRECATION", "UNCHECKED_CAST")
             serializeEntry(input as T?,errorBuilder, ignoreNonSync)
         } catch (e: Exception){
             null
@@ -152,16 +196,9 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         return ValidationResult.success(input)
     }
 
+    @Internal
     override fun canCopyEntry(): Boolean {
         return true
-    }
-
-    override fun supplyEntry(): T {
-        return get()
-    }
-
-    override fun accept(input: T) {
-        setAndUpdate(input)
     }
 
     protected open fun reset() {
@@ -178,43 +215,45 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
      */
     open fun validateAndSet(input: T): ValidationResult<T> {
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.WEAK)
-        storedValue = tVal1.get()
+        set(tVal1.get())
         if (tVal1.isError()){
             return ValidationResult.error(tVal1.get(),"Error validating and setting input [$input]. Corrected to [${tVal1.get()}] >>>> Possible reasons: [${tVal1.getError()}]")
         }
-        return ValidationResult.success(storedValue)
+        return ValidationResult.success(get())
     }
 
+    @Internal
     open fun setAndUpdate(input: T) {
-        if (input == storedValue) return
-        val oldVal = storedValue
+        if (input == get()) return
+        val oldVal = get()
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
-        storedValue = tVal1.get()
+        set(tVal1.get())
         val message = if (tVal1.isError()){
-            FcText.translatable("fc.validated_field.update.error",translation(),oldVal.toString(),storedValue.toString(),tVal1.getError())
+            FcText.translatable("fc.validated_field.update.error",translation(),oldVal.toString(),get().toString(),tVal1.getError())
         } else {
-            updateMessage(oldVal, storedValue)
+            updateMessage(oldVal, get())
         }
         update(message)
     }
 
     override fun trySet(input: Any?) {
         try {
+            @Suppress("UNCHECKED_CAST")
             setAndUpdate(input as T)
         } catch (e: Exception){
             //
         }
     }
 
-    open fun updateMessage(old: T, new: T): Text {
+    protected open fun updateMessage(old: T, new: T): Text {
         return FcText.translatable("fc.validated_field.update",translation(),old.toString(),new.toString())
     }
 
     /**
-     * Get the wrapped value with this method
+     * supplies the wrapped value
      *
      * This method is implemented from [java.util.function.Supplier].
-     * @return The wrapped value inside this Field
+     * @return This field wrapped value
      * @author fzzyhmstrs
      * @since 0.1.0
      */
@@ -222,11 +261,31 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         return storedValue
     }
 
+    @Internal
+    protected open fun set(input: T) {
+        storedValue = input
+    }
+
+    /**
+     * updates the wrapped value. NOTE: this method will push updates to an UpdateManager, if any. For in-game updating consider [validateAndSet]
+     *
+     * This method is implemented from [java.util.function.Consumer].
+     * @param input new value to wrap
+     * @see validateAndSet
+     * @author fzzyhmstrs
+     * @since 0.1.0
+     */
+    override fun accept(input: T) {
+        setAndUpdate(input)
+    }
+
     override fun translationKey(): String {
+        @Suppress("DEPRECATION")
         return getEntryKey()
     }
 
     override fun descriptionKey(): String {
+        @Suppress("DEPRECATION")
         return getEntryKey() + ".desc"
     }
 

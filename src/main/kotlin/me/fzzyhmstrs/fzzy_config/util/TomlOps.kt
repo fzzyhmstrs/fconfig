@@ -6,6 +6,12 @@ import com.mojang.serialization.DynamicOps
 import net.peanuuutz.tomlkt.*
 import java.util.stream.Stream
 
+/**
+ * Dynamic Ops for dealing with TomlElements in Codecs and other related things
+ * @see INSTANCE
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 class TomlOps: DynamicOps<TomlElement> {
 
     companion object{

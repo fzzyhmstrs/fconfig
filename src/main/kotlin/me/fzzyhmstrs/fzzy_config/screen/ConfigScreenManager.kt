@@ -184,7 +184,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
         var index = 0
         val prefix = config.getId().toTranslationKey()
         ConfigApiImpl.walk(config,prefix,true) { _,old,new,thing,_,annotations ->
-            println(new)
             if(thing is Walkable) {
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })

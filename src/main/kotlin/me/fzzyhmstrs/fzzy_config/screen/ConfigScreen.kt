@@ -95,10 +95,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (keyCode == GLFW.GLFW_KEY_F && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
-            this.focused = searchField
-            return true
-        } else if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
+        if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
             configList.page(true)
             return true
         } else if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
@@ -106,10 +103,19 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
             return true
         } else if (isCopy(keyCode)) {
             configList.copy()
+            return true
         } else if (isPaste(keyCode)) {
             configList.paste()
+            return true
         } else if (keyCode == GLFW.GLFW_KEY_Z && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
             manager.revertLast()
+            return true
+        } else if (keyCode == GLFW.GLFW_KEY_F && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
+            this.focused = searchField
+            return true
+        } else if (keyCode == GLFW.GLFW_KEY_S && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
+            manager.apply(false)
+            return true
         }
         return super.keyPressed(keyCode, scanCode, modifiers)
     }

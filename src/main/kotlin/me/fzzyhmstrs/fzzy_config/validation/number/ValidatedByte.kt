@@ -6,16 +6,15 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 import net.peanuuutz.tomlkt.toByte
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
- * A validated byte number
+ * A validated byte number. This field is a wrapper of bytes that is both a [java.util.function.Supplier] and [java.util.function.Consumer] of type Byte
  * @param defaultValue Byte. the default value of this wrapper
  * @param maxValue Byte. the maximum allowed value, inclusive
  * @param minValue Byte. the minimum allowed value, inclusive
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedByte
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxByte
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.bytes
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -26,7 +25,6 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      * @param minValue Byte. the minimum allowed value, inclusive
      * @param maxValue Byte. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxByte
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -40,7 +38,6 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Byte. the default value of this wrapper
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedByte
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -52,12 +49,12 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      * The validation will be limited to ensuring the value de/serializes as a byte, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyByte
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     constructor(): this(0, Byte.MAX_VALUE, Byte.MIN_VALUE, WidgetType.TEXTBOX)
 
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Byte> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toByte())
@@ -65,7 +62,7 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
             ValidationResult.error(defaultValue,"Problem deserializing ValidatedByte [$fieldName]: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun serialize(input: Byte): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
@@ -74,6 +71,7 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
         return ValidatedByte(copyStoredValue(), maxValue, minValue, widgetType)
     }
 
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Byte && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }

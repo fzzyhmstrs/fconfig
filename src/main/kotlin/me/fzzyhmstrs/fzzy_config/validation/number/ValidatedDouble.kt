@@ -6,16 +6,15 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 import net.peanuuutz.tomlkt.toDouble
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
- * A validated double number
+ * A validated double number. This field is a wrapper of doubles that is both a [java.util.function.Supplier] and [java.util.function.Consumer] of type Double
  * @param defaultValue Double. the default value of this wrapper
  * @param maxValue Double. the maximum allowed value, inclusive
  * @param minValue Double. the minimum allowed value, inclusive
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedDouble
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxDouble
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.doubles
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -26,7 +25,6 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
      * @param minValue Double. the minimum allowed value, inclusive
      * @param maxValue Double. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxDouble
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -40,7 +38,6 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Double. the default value of this wrapper
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedDouble
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -52,12 +49,12 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
      * The validation will be limited to ensuring the value de/serializes as a double, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyDouble
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     constructor(): this(0.0, Double.MAX_VALUE, -Double.MAX_VALUE, WidgetType.TEXTBOX)
 
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Double> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toDouble())
@@ -65,7 +62,7 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
             ValidationResult.error(defaultValue,"Problem deserializing ValidatedDouble [$fieldName]: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun serialize(input: Double): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
@@ -73,7 +70,7 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
     override fun instanceEntry(): ValidatedDouble {
         return ValidatedDouble(copyStoredValue(), maxValue, minValue, widgetType)
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Double && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }

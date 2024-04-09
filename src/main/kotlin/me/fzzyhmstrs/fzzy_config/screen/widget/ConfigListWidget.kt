@@ -6,18 +6,20 @@ import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.search.SuffixArray
-import org.lwjgl.glfw.GLFW
 import java.util.*
 
 @Environment(EnvType.CLIENT)
-internal class ConfigListWidget(minecraftClient: MinecraftClient, parent: ConfigScreen) :
-    ElementListWidget<ConfigEntry>(minecraftClient, parent.width, parent.layout.contentHeight, parent.layout.headerHeight, 24), LastSelectable
+internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, contentHeight: Int, headerHeight: Int, private val drawBackground: Boolean) :
+    ElementListWidget<ConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable
 {
+
+    constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient,parent.width,parent.layout.contentHeight,parent.layout.headerHeight, drawBackground)
 
     private var visibleElements = 5
 
@@ -35,6 +37,16 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, parent: Config
     }
 
     override var lastSelected: Element? = null
+
+    override fun drawHeaderAndFooterSeparators(context: DrawContext) {
+        if (drawBackground)
+            super.drawHeaderAndFooterSeparators(context)
+    }
+
+    override fun drawMenuListBackground(context: DrawContext) {
+        if (drawBackground)
+            super.drawMenuListBackground(context)
+    }
 
     override fun pushLast() {
         lastSelected = focused

@@ -1,7 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.brigadier.suggestion.Suggestions
-import me.fzzyhmstrs.fzzy_config.entry.EntryApplier
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -20,7 +19,7 @@ class SuggestionBackedTextFieldWidget(
     wrappedValue: Supplier<String>,
     choiceValidator: ChoiceValidator<String>,
     validator: EntryValidator<String>,
-    applier: EntryApplier<String>,
+    applier: Consumer<String>,
     private val suggestionProvider: SuggestionProvider)
     :
     ValidationBackedTextFieldWidget(width, height, wrappedValue, choiceValidator, validator, applier)
@@ -74,7 +73,7 @@ class SuggestionBackedTextFieldWidget(
     private fun addSuggestionWindow(suggestions: Suggestions){
         val applier: Consumer<String> = Consumer { s ->
             try {
-                applier.applyEntry(s)
+                applier.accept(s)
             } catch (e: Exception) {
                 //
             }
@@ -97,6 +96,10 @@ class SuggestionBackedTextFieldWidget(
         return window?.mouseScrolled(mouseX.toInt(),mouseY.toInt(),verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
+    override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
+        return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(),mouseY.toInt()) == true
+    }
+
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         val bl = window?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)
         if (closeWindow) {
@@ -111,7 +114,7 @@ class SuggestionBackedTextFieldWidget(
         return if(bl) true else super.keyPressed(keyCode, scanCode, modifiers)
     }
 
-    private fun pushChanges(){
+    fun pushChanges(){
         if(isChanged()){
             applier.accept(storedValue)
         }

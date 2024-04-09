@@ -7,6 +7,7 @@ plugins {
     kotlin("jvm").version(kotlinVersion)
     kotlin("plugin.serialization") version "1.9.22"
     id("com.modrinth.minotaur") version "2.+"
+    id("org.jetbrains.dokka") version "1.9.20"
 }
 
 base {
@@ -23,6 +24,7 @@ println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven {
         url = URI("https://maven.terraformersmc.com/releases/")
         content {
@@ -92,6 +94,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     testmodImplementation(sourceSets.main.get().output)
+
+    dokkaPlugin("me.fzzyhmstrs:internal-skip-plugin:1.0-SNAPSHOT")
 }
 
 loom {

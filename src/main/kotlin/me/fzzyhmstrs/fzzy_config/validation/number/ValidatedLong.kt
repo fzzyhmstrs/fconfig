@@ -6,16 +6,15 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 import net.peanuuutz.tomlkt.toLong
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
- * A validated long number
+ * A validated long number. This field is a wrapper of longs that is both a [java.util.function.Supplier] and [java.util.function.Consumer] of type Long
  * @param defaultValue Long. the default value of this wrapper
  * @param maxValue Long. the maximum allowed value, inclusive
  * @param minValue Long. the minimum allowed value, inclusive
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedLong
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxLong
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.longs
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -26,7 +25,6 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
      * @param defaultValue Long. the default value of this wrapper
      * @param defaultValue Long. the default value of this wrapper
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.rangedDefaultedLong
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -37,7 +35,6 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
      * A validated long number with a default selected from the min of the allowable range.
      * @param range LongRange. the allowable range of this Validated Long
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.rangedLong
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -49,7 +46,6 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
      * @param minValue Long. the minimum allowed value, inclusive
      * @param maxValue Long. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxLong
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -63,7 +59,6 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Long. the default value of this wrapper
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedLong
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -75,12 +70,12 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
      * The validation will be limited to ensuring the value de/serializes as a long, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyLong
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     constructor(): this(0L, Long.MAX_VALUE, Long.MIN_VALUE, WidgetType.TEXTBOX)
 
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Long> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toLong())
@@ -88,7 +83,7 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
             ValidationResult.error(defaultValue,"Problem deserializing ValidatedLong [$fieldName]: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun serialize(input: Long): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
@@ -96,7 +91,7 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
     override fun instanceEntry(): ValidatedLong {
         return ValidatedLong(defaultValue, maxValue, minValue, widgetType)
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Long && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }

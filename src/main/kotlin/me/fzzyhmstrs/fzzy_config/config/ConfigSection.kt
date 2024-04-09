@@ -20,8 +20,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, EntryKeyed,
-    Translatable {
+open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, EntryKeyed, Translatable {
 
     private var sectionKey = "fc.config.generic.section"
 
@@ -31,7 +30,7 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
         errorBuilder: MutableList<String>,
         ignoreNonSync: Boolean
     ): TomlElement {
-        return ConfigApi.serializeToToml(this, errorBuilder, ignoreNonSync)
+        return ConfigApi.serializeToToml(input ?: this, errorBuilder, ignoreNonSync)
     }
 
     @Internal

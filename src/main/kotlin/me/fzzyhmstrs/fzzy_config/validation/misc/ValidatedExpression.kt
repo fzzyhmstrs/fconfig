@@ -18,8 +18,11 @@ import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
  * A validated math expression
@@ -35,6 +38,7 @@ import net.peanuuutz.tomlkt.TomlLiteral
  * @author fzzyhmstrs
  * @since 0.2.0
  */
+@Suppress("DEPRECATION")
 class ValidatedExpression @JvmOverloads constructor(
     defaultValue: String,
     private val validVars: Set<Char> = setOf(),
@@ -54,7 +58,7 @@ class ValidatedExpression @JvmOverloads constructor(
     /**
      * A validated math expression with default equation of "0"
      *
-     * This constructor is primarily intended for validation usage in other ValidatedFields (such as lists or maps)
+     * This constructor is primarily intended for validation in other ValidatedFields (such as lists or maps)
      *
      * This [ValidatedField] is itself an expression, so you can call eval() or evalSafe() on it directly.
      * @author fzzyhmstrs
@@ -69,7 +73,7 @@ class ValidatedExpression @JvmOverloads constructor(
     override fun eval(vars: Map<Char,Double>): Double {
         if (parsedString != storedValue) {
             val tryExpression = try {
-                Expression.parse(storedValue, storedValue)
+                Expression.parse(storedValue)
             } catch(e: Exception) {
                 parsedExpression
             }
@@ -77,7 +81,7 @@ class ValidatedExpression @JvmOverloads constructor(
         }
         return parsedExpression.eval(vars)
     }
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<String> {
         return try {
             val string = toml.toString()
@@ -86,21 +90,21 @@ class ValidatedExpression @JvmOverloads constructor(
             ValidationResult.error(storedValue,"Critical error deserializing math expression [$fieldName]: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun serialize(input: String): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
-
+    @Internal
     override fun correctEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
         val result = validateEntry(input, type)
         return if(result.isError()) {
             ValidationResult.error(storedValue, "Invalid identifier [$input] found, reset to [$storedValue]: ${result.getError()}")} else result
     }
-
+    @Internal
     override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
         return validator.validateEntry(input, type)
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is String && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
     }
@@ -112,7 +116,7 @@ class ValidatedExpression @JvmOverloads constructor(
     override fun instanceEntry(): ValidatedExpression {
         return ValidatedExpression(copyStoredValue(), validVars, validator)
     }
-
+    @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
         return ExpressionButtonWidget(this, choicePredicate)
@@ -123,7 +127,11 @@ class ValidatedExpression @JvmOverloads constructor(
     }
 
     @Environment(EnvType.CLIENT)
-    class ExpressionButtonWidget(private val entry: ValidatedExpression, private val choiceValidator: ChoiceValidator<String>): PressableWidget(0,0,110,20, entry.supplyEntry().lit()){
+    private class ExpressionButtonWidget(private val entry: ValidatedExpression, private val choiceValidator: ChoiceValidator<String>): PressableWidget(0,0,110,20, entry.get().lit()){
+
+        override fun getMessage(): Text {
+            return entry.get().lit()
+        }
 
         override fun getNarrationMessage(): MutableText {
             return "fc.validated_field.expression".translate().append(", ".lit()).append(this.message)

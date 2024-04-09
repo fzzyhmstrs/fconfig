@@ -6,16 +6,15 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 import net.peanuuutz.tomlkt.toShort
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
- * A validated short number
+ * A validated short number. This field is a wrapper of shorts that is both a [java.util.function.Supplier] and [java.util.function.Consumer] of type Short
  * @param defaultValue Short. the default value of this wrapper
  * @param maxValue Short. the maximum allowed value, inclusive
  * @param minValue Short. the minimum allowed value, inclusive
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedShort
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxShort
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.shorts
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -26,7 +25,6 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
      * @param minValue Short. the minimum allowed value, inclusive
      * @param maxValue Short. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxShort
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -40,7 +38,6 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Short. the default value of this wrapper
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedShort
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -52,12 +49,12 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
      * The validation will be limited to ensuring the value de/serializes as a short, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyShort
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     constructor(): this(0, Short.MAX_VALUE, Short.MIN_VALUE, WidgetType.TEXTBOX)
 
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Short> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toShort())
@@ -65,7 +62,7 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
             ValidationResult.error(defaultValue,"Problem deserializing ValidatedShort [$fieldName]: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun serialize(input: Short): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
@@ -74,6 +71,7 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
         return ValidatedShort(defaultValue, maxValue, minValue, widgetType)
     }
 
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Short && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
     }

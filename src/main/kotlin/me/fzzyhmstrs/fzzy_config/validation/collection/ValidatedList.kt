@@ -21,6 +21,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
  * a validated list
@@ -53,7 +54,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
     fun toChoices(): ValidatedChoice<T> {
         return ValidatedChoice(defaultValue,entryHandler)
     }
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {
         return try{
             val array = toml.asTomlArray()
@@ -74,7 +75,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
             ValidationResult.error(defaultValue,"Critical error enountered while deserializing list [$fieldName], using defaults.")
         }
     }
-
+    @Internal
     @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     override fun serialize(input: List<T>): ValidationResult<TomlElement> {
         val toml = TomlArrayBuilder()
@@ -97,7 +98,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         }
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
-
+    @Internal
     override fun correctEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val list: MutableList<T> = mutableListOf()
         val errors: MutableList<String> = mutableListOf()
@@ -108,7 +109,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         }
         return ValidationResult.predicated(list,errors.isEmpty(),"Errors corrected in list: $errors")
     }
-
+    @Internal
     override fun validateEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val errors: MutableList<String> = mutableListOf()
         for (entry in input){
@@ -125,7 +126,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
     override fun instanceEntry(): ValidatedList<T> {
         return ValidatedList(copyStoredValue(), entryHandler)
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input !is List<*>) return false
         return try {
@@ -134,7 +135,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
             false
         }
     }
-
+    @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
         return DecoratedActiveButtonWidget("fc.validated_field.list".translate(),110,20, TextureIds.DECO_LIST,{true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
@@ -145,7 +146,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
     private fun openListEditPopup(b: ActiveButtonWidget){
         try {
             val list = storedValue.map {
-                (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.applyEntry(it) }
+                (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.accept(it) }
             }
             val listWidget = ListListWidget(list, entryHandler) { _, _ -> ChoiceValidator.any() }
             val popup = PopupWidget.Builder(this.translation())
@@ -221,7 +222,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> tryMake(list: List<T>, entry: Entry<*,*>): ValidatedList<T>?{
+        internal fun <T> tryMake(list: List<T>, entry: Entry<*,*>): ValidatedList<T>?{
             return try{
                 ValidatedList(list, entry as Entry<T,*>)
             } catch (e: Exception){

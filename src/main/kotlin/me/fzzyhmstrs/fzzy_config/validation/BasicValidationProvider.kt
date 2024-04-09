@@ -1,8 +1,10 @@
 package me.fzzyhmstrs.fzzy_config.validation
 
 import me.fzzyhmstrs.fzzy_config.validation.collection.*
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.*
+import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import java.awt.Color
 import kotlin.reflect.KType
@@ -48,7 +50,6 @@ interface BasicValidationProvider {
                 } else {
                     return null
                 }
-                return null
             } catch (e: Exception){
                 return null
             }
@@ -70,6 +71,7 @@ interface BasicValidationProvider {
                         java.awt.Color::class.java -> ValidatedColor(input as Color)
                         Identifier::class.java -> ValidatedIdentifier(input as Identifier)
                         java.lang.String::class.java -> ValidatedString(input as String)
+                        TagKey::class.java -> ValidatedTagKey(input as TagKey<*>)
                         else -> complexStrategy(input, inputType)
                     }
             else

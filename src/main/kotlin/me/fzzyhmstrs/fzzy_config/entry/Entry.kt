@@ -1,5 +1,8 @@
 package me.fzzyhmstrs.fzzy_config.entry
 
+import java.util.function.Consumer
+import java.util.function.Supplier
+
 /**
  * A base Entry for configs.
  *
@@ -18,7 +21,7 @@ package me.fzzyhmstrs.fzzy_config.entry
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-interface Entry<T, E: Entry<T,E>>: EntryHandler<T>, EntryWidget<T>, EntryApplier<T>, EntrySupplier<T> {
+interface Entry<T, E: Entry<T,E>>: EntryHandler<T>, EntryWidget<T>, Consumer<T>, Supplier<T> {
     fun instanceEntry(): E
     fun canCopyEntry(): Boolean
     fun isValidEntry(input: Any?): Boolean

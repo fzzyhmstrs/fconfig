@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
@@ -28,9 +29,9 @@ import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
-import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
+import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
 import java.util.function.Consumer
@@ -46,14 +47,15 @@ import java.util.function.Supplier
  * @param b the default blue component, 0 to 255
  * @param a the default alpha(transparency) component, 0 to 255 or Int.MIN_VALUE to set the color as opaque. Defaults to Int.MIN_VALUE
  * @see [validatedColor]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColor]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorOpaque]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorString]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColor
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorOpaque
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorString
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @throws IllegalStateException if the input RGBA values aren't in bounds (not in the range 0..255)
  * @author fzzyhmstrs
  * @since 0.1.2
  */
+
 class ValidatedColor: ValidatedField<ColorHolder> {
 
     @JvmOverloads constructor(r: Int, g: Int, b: Int, a: Int = Int.MIN_VALUE): super(ColorHolder(r, g, b, if(a > Int.MIN_VALUE) a else 255, a > Int.MIN_VALUE)) {
@@ -66,6 +68,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     /**
      * A validated color value with or without transparency enabled and with default color 0xFFFFFFFF (opaque white)
      * @param transparent Boolean, whether this color supports transparency
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorSimple
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -76,6 +79,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
      * A validated color value built from a jwt [Color] with or without transparency enabled
      * @param color [Color] defining the RGBA of this validated color
      * @param transparent Boolean, whether this color supports transparency
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorColor
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -84,31 +88,34 @@ class ValidatedColor: ValidatedField<ColorHolder> {
 
     private constructor(r: Int, g: Int, b: Int, a: Int, alphaMode: Boolean): super(ColorHolder(r, g, b, a, alphaMode))
 
+    @Suppress("MemberVisibilityCanBePrivate")
     fun toHexString(): String {
-        return if(get().opaque()) String.format("%06X", get().toInt()) else String.format("%08X", get().toInt())
+        return get().toHexString()
     }
+    @Suppress("unused")
     fun setFromHexString(s: String) {
         val colorInt = try {
             Integer.parseUnsignedInt(s, 16)
         } catch (e: Exception){
+            FC.LOGGER.warn("Validated Color can't accept input [$s], maintaining current color [${toHexString()}]")
             get().toInt()
         }
         validateAndSet(get().fromInt(colorInt))
     }
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<ColorHolder> {
         return storedValue.deserializeEntry(toml, mutableListOf(), fieldName, true)
     }
-
+    @Internal
     override fun serialize(input: ColorHolder): ValidationResult<TomlElement> {
         val errors: MutableList<String> = mutableListOf()
         return ValidationResult.predicated(storedValue.serializeEntry(input, errors, true), errors.isEmpty(), errors.toString())
     }
-
+    @Internal
     override fun correctEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
         return storedValue.correctEntry(input, type)
     }
-
+    @Internal
     override fun validateEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
         return storedValue.validateEntry(input, type)
     }
@@ -120,11 +127,12 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     override fun instanceEntry(): ValidatedColor {
         return storedValue.instance()
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is ColorHolder && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
     }
-
+    @Internal
+    @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): ClickableWidget {
         return ColorButtonWidget({get().argb()},{this.toHexString().lit()},{openColorEditPopup()})
     }
@@ -140,7 +148,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     /////////////////////////
 
     @Environment(EnvType.CLIENT)
-    fun openColorEditPopup(){
+    private fun openColorEditPopup(){
         val textRenderer = MinecraftClient.getInstance().textRenderer
         val mutableColor = this.get().mutable(validatedString())
         val popup = PopupWidget.Builder(translation())
@@ -168,6 +176,14 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     }
 
     companion object {
+        /**
+         * Builds a ValidatedColor from the provided hex color string
+         * @param transparent default true, whether this color will accept transparency
+         * @throws IllegalStateException if the hex string isn't valid
+         * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorString
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         @JvmStatic
         fun String.validatedColor(transparent: Boolean = true): ValidatedColor {
             val str = this.replace("#","").replace("0x","")
@@ -231,7 +247,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     }
 
     @Environment(EnvType.CLIENT)
-    class ColorButtonWidget(private val colorSupplier: Supplier<Int>,titleSupplier: Supplier<Text>, pressAction: Consumer<ActiveButtonWidget>): DecoratedActiveButtonWidget(titleSupplier,110,20,"widget/decoration/frame".fcId(),{true},pressAction){
+    private class ColorButtonWidget(private val colorSupplier: Supplier<Int>,titleSupplier: Supplier<Text>, pressAction: Consumer<ActiveButtonWidget>): DecoratedActiveButtonWidget(titleSupplier,110,20,"widget/decoration/frame".fcId(),{true},pressAction){
         override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
             super.renderDecoration(context, x, y, delta)
             RenderSystem.enableBlend()
@@ -240,7 +256,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     }
 
     @Environment(EnvType.CLIENT)
-    class HLMapWidget(private val mutableColor: MutableColor): ClickableWidget(0,0,60,68,"fc.validated_field.color.hl".translate()) {
+    private class HLMapWidget(private val mutableColor: MutableColor): ClickableWidget(0,0,60,68,"fc.validated_field.color.hl".translate()) {
 
         companion object{
             private val BORDER = "widget/validation/color/hsl_border".fcId()
@@ -354,42 +370,107 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         }
     }
 
-    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, private val alphaMode: Boolean):
-        EntryHandler<ColorHolder> {
+    /**
+     * An immutable holder of an ARGB color values
+     * @param r int value of r component (0..255)
+     * @param g int value of g component (0..255)
+     * @param b int value of b component (0..255)
+     * @param a int value of a component (0..255)
+     * @param alphaMode whether this color holder supports transparency
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, private val alphaMode: Boolean): EntryHandler<ColorHolder> {
 
         private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
 
+        /**
+         * If this color holder supports transparency
+         * @return Boolean - true if transparency is supported
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun transparent(): Boolean{
             return alphaMode
         }
+        /**
+         * If this color holder does NOT support transparency
+         * @return Boolean - false if transparency is supported
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun opaque(): Boolean{
             return !alphaMode
         }
 
+        /**
+         * converts this color holder to a hex string (without prefix)
+         * @return String - 6 or 8 character hex string representing this color. Alpha digits will only appear if transparency is supported
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun toHexString(): String{
+            return if(opaque()) String.format("%06X", toInt()) else String.format("%08X", toInt())
+        }
+
+        /**
+         * returns ARGB color int representing this color
+         * @return Int - ARGB formatted integer storing this color
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun argb(): Int{
             return ((a and 0xFF) shl 24) or
                     ((r and 0xFF) shl 16) or
                     ((g and 0xFF) shl 8) or
                     ((b and 0xFF) shl 0)
         }
+        /**
+         * returns ARGB color int representing this color
+         * @return Int - ARGB formatted integer storing this color
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun toInt(): Int {
             return argb()
         }
+        /**
+         * converts this color holder into a new one representing the color integer passed. AlphaMode is maintained
+         * @param i Int - the ARGB int representing the new color holder
+         * @return ColorHolder - the new color holder
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun fromInt(i: Int): ColorHolder{
             val components = Color(i,alphaMode)
             return this.copy(r = components.red, g = components.green, b = components.green, a = components.alpha)
         }
-        fun mutable(hex: ValidatedString): MutableColor{
+
+        /**
+         * Generates a [MutableColor] from this color holder
+         * @param hex - [ValidatedString], Optional - the validation for managing hex string representations of the MutableColor. Strongly recommended to use the defaulted overload
+         * @return [MutableColor] representing this color holder
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmOverloads
+        fun mutable(hex: ValidatedString = validatedString(toHexString(),opaque())): MutableColor{
             val mutable = MutableColor(hex,alphaMode)
             mutable.updateRGB(r, g, b)
             mutable.updateA(a)
             return mutable
         }
 
+        /**
+         * Creates a deep copy of this color holder
+         * @return ColorHolder - copy of this holder
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun instance(): ValidatedColor{
             return ValidatedColor(r,g,b,a,alphaMode)
         }
-
+        @Internal
         override fun serializeEntry(
             input: ColorHolder?,
             errorBuilder: MutableList<String>,
@@ -406,7 +487,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             }
             return toml.build()
         }
-
+        @Internal
         override fun deserializeEntry(
             toml: TomlElement,
             errorBuilder: MutableList<String>,
@@ -425,7 +506,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
                 ValidationResult.error(this, "Critical error encountered deserializing color [$fieldName], using previous value.")
             }
         }
-
+        @Internal
         override fun validateEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
             val errors: MutableList<String> = mutableListOf()
             if (!validator.test(input.r)) errors.add("Red component out of bounds: ${input.r} outside 0-255")
@@ -442,7 +523,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
                 ValidationResult.success(input)
             }
         }
-
+        @Internal
         override fun correctEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
             val errors: MutableList<String> = mutableListOf()
             if (!validator.test(input.r)) errors.add("Red component out of bounds: ${input.r} outside 0-255")
@@ -471,7 +552,11 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         }
     }
 
-    class MutableColor(val hex: ValidatedString, val alphaMode: Boolean) {
+    /**
+     * A mutable color that automatically updates it's RGB and HSL values based on new inputs.
+     * @param hex a ValidatedString
+     */
+    class MutableColor internal constructor(val hex: ValidatedString, private val alphaMode: Boolean) {
         var r: Int = 0
         var g: Int = 0
         var b: Int = 0
@@ -481,12 +566,37 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         var l: Float = 0f
         private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
 
-        private fun argb(): Int{
+        /**
+         * ARGB color int representation of this color
+         * @return Int - ARGB formatted integer storing this color
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @Suppress("MemberVisibilityCanBePrivate")
+        fun argb(): Int{
             return ((a and 0xFF) shl 24) or
                     ((r and 0xFF) shl 16) or
                     ((g and 0xFF) shl 8) or
                     ((b and 0xFF) shl 0)
         }
+        /**
+         * Hex string representation of this color
+         * @param prefix String, optional - prefix to prepend to the hex string ("#" or "0x" for example)
+         * @return String - hex value of this color in string form, with optional prefix
+         */
+        @JvmOverloads
+        fun hexString(prefix: String = ""): String{
+            return "$prefix${hex.get()}"
+        }
+
+        /**
+         * updates this Mutable Color with new HSL values. RGB values automatically updated to match
+         * @param h Float - hue component, 0f..1f
+         * @param s Float - saturation component, 0f..1f
+         * @param l Float - light component, 0f..1f
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun updateHSL(h: Float, s: Float, l: Float) {
             this.h = h
             this.s = s
@@ -500,6 +610,14 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             this.b = bb
             hex.validateAndSet(String.format("%08X", argb()))
         }
+        /**
+         * updates this Mutable Color with new RGB values. HSL values automatically updated to match
+         * @param r Float - red component, 0..255
+         * @param g Float - green component, 0..255
+         * @param b Float - blue component, 0..255
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun updateRGB(r: Int, g: Int, b: Int) {
             this.r = r
             this.g = g
@@ -510,10 +628,25 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             this.l = hsl[2]
             hex.validateAndSet(String.format("%08X", argb()))
         }
+        /**
+         * updates this Mutable Color with new Alpha value
+         * @param h Float - hue component, 0f..1f
+         * @param s Float - saturation component, 0f..1f
+         * @param l Float - light component, 0f..1f
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun updateA(a: Int){
             this.a = a
             hex.validateAndSet(String.format("%08X", argb()))
         }
+
+        /**
+         * Updates this color from a new hex-string color representation. Automatically strips common prefixes, and automatically updates HSL and RGB values
+         * @param new String - new color represented by hex string
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun updateHex(new: String){
             hex.validateAndSet(new)
             val argb = try {
@@ -534,11 +667,17 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             this.s = hsl[1]
             this.l = hsl[2]
         }
-
-        fun validate(input: Int): ValidationResult<Int>{
+        @Internal
+        fun validate(input: Int): ValidationResult<Int> {
             return ValidationResult.predicated(input,validator.test(input),"Out of bounds [0-255]")
         }
 
+        /**
+         * Creates a color holder from this color
+         * @return [ColorHolder] representing this color
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun createHolder(): ColorHolder {
             return ColorHolder(r, g, b, a, alphaMode)
         }

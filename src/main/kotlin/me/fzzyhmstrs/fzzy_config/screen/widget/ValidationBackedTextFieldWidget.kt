@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.entry.EntryApplier
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -12,12 +11,12 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.MutableText
-import net.minecraft.text.Text
+import java.util.function.Consumer
 import java.util.function.Supplier
 
 @Suppress("LeakingThis")
 @Environment(EnvType.CLIENT)
-open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected val wrappedValue: Supplier<String>, protected val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, protected val applier: EntryApplier<String>):
+open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected val wrappedValue: Supplier<String>, protected val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, protected val applier: Consumer<String>):
     TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty())
 {
 

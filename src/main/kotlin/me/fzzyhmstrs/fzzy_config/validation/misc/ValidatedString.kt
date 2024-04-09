@@ -8,15 +8,22 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString.Builder
+import net.fabricmc.api.EnvType
+import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
+import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
  * A validated string value
  *
- * Ensure you don't actually want another string-like Validation before use, such as [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier] or [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum]
+ * Ensure you don't actually want another string-like Validation, such as
+ * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier]
+ * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum]
+ * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice]
  * @param defaultValue String default for the setting
  * @param checker [EntryChecker] defining validation and correction for the string inputs.
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedString
@@ -32,7 +39,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
      *
      * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
      * @param defaultValue String, the default string for this setting
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.regexString]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.regexString
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -56,7 +63,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
      *
      * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
      * @param defaultValue String, the efault string for this setting
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.unboundedString]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.unboundedString
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -66,7 +73,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
      * An unbounded validated string value with empty default value
      *
      * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.emptyString]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.emptyString
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -75,7 +82,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
     override fun copyStoredValue(): String {
         return String(storedValue.toCharArray())
     }
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<String> {
         return try {
             ValidationResult.success(toml.asTomlLiteral().toString())
@@ -83,19 +90,20 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
             ValidationResult.error(storedValue,"Critical error deserializing string [$fieldName]: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun serialize(input: String): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
-
+    @Internal
     override fun correctEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
         return checker.correctEntry(input, type)
     }
-
+    @Internal
     override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
         return checker.validateEntry(input, type)
     }
-
+    @Internal
+    @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
         return ValidationBackedTextFieldWidget(110,20,this, choicePredicate,this,this)
     }
@@ -103,7 +111,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
     override fun instanceEntry(): ValidatedString {
         return ValidatedString(String(defaultValue.toCharArray()), this.checker)
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is String && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
     }
@@ -112,7 +120,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
         return "Validated String[value=$storedValue, validation=$checker]"
     }
 
-    /*
+    /**
      * A validated string builder, integrated with an EntryChecker builder
      * @param defaultValue the default String value
      * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedString]

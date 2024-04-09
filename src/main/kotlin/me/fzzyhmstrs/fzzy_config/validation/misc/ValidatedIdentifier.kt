@@ -1,10 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import com.google.common.collect.Lists
-import com.mojang.brigadier.suggestion.Suggestion
 import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindow
+import me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
@@ -22,32 +21,28 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.client.input.KeyCodes
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
+import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
+import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
 import java.util.function.*
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * A validated Identifier field.
- *
- * NOTE: The base handler of this validated field is actually string. As such, usage in, for example, a [ValidatedList][me.fzzyhmstrs.fzzy_config.validation.list.ValidatedList] will yield a List<String>
  *
  * There are various shortcut methods available for building ValidatedIdentifiers more easily than with the primary constructor. Check out options in the See Also section
  * @param defaultValue String, the string value of the default identifier
  * @param allowableIds [AllowableIdentifiers] instance. Defines the predicate for valid ids, and the supplier of valid id lists
  * @param validator [EntryValidator]<String> handles validation of individual entries. Defaults to validation based on the predicate provided in allowableIds
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedIdentifier
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap
  * @see ofTag
  * @see ofRegistry
@@ -57,7 +52,7 @@ import kotlin.math.min
  * @since 0.1.2
  */
 @Suppress("unused")
-class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, private val allowableIds: AllowableIdentifiers, private val validator: EntryValidator<Identifier> = default(allowableIds))
+class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, val allowableIds: AllowableIdentifiers, private val validator: EntryValidator<Identifier> = default(allowableIds))
     :
     ValidatedField<Identifier>(defaultValue),
     Updatable,
@@ -111,7 +106,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
     override fun copyStoredValue(): Identifier {
         return Identifier(storedValue.toString())
     }
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Identifier> {
         return try {
             val string = toml.toString()
@@ -121,17 +116,17 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             ValidationResult.error(storedValue,"Critical error deserializing identifier [$fieldName]: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun serialize(input: Identifier): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input.toString()))
     }
-
+    @Internal
     override fun correctEntry(input: Identifier, type: EntryValidator.ValidationType): ValidationResult<Identifier> {
         val result = validator.validateEntry(input, type)
         return if(result.isError()) {
             ValidationResult.error(storedValue, "Invalid identifier [$input] found, corrected to [$storedValue]: ${result.getError()}")} else result
     }
-
+    @Internal
     override fun validateEntry(input: Identifier, type: EntryValidator.ValidationType): ValidationResult<Identifier> {
         return validator.validateEntry(input, type)
     }
@@ -139,18 +134,19 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
     override fun instanceEntry(): ValidatedIdentifier {
         return ValidatedIdentifier(copyStoredValue(), allowableIds, validator)
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Identifier && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
     }
-
+    @Internal
+    @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {
         return OnClickTextFieldWidget({ this.get().toString() }, {
             val textField = PopupIdentifierTextFieldWidget(170,20,choicePredicate,this)
             val popup = PopupWidget.Builder(this.translation())
                 .addElement("text_field", textField, PopupWidget.Builder.Position.BELOW)
                 .addDoneButton({ textField.pushChanges(); PopupWidget.pop() })
-                .positionX { _, _ -> it.x.also { xx -> println(xx) } - 8 }
+                .positionX { _, _ -> it.x - 8 }
                 .positionY { _, h -> it.y + 28 + 24 - h }
                 .build()
             PopupWidget.push(popup)
@@ -194,10 +190,12 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
     }
 
     override fun translationKey(): String {
+        @Suppress("DEPRECATION")
         return getEntryKey()
     }
 
     override fun descriptionKey(): String {
+        @Suppress("DEPRECATION")
         return getEntryKey() + ".desc"
     }
 
@@ -233,16 +231,15 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
         return storedValue.toTranslationKey(prefix, suffix)
     }
 
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    companion object{
 
+    companion object {
         @JvmStatic
         val DEFAULT_WEAK: EntryValidator<Identifier> = EntryValidator { i, _ -> ValidationResult.success(i) }
 
         /**
          * builds a String EntryValidator with default behavior
          *
-         * Use if your identifier list may not be available at load-time (during modInitializtion, typically), but will be available during updating (in-game). Lists from a Tag or Registry are easy examples, as the registry may not be fully populated yet, and the tag may not be loaded.
+         * Use if your identifier list may not be available at load-time (during modInitialization, typically), but will be available during updating (in-game). Lists from a Tag or Registry are easy examples, as the registry may not be fully populated yet, and the tag may not be loaded.
          * @param allowableIds an [AllowableIdentifiers] instance.
          * @author fzzyhmstrs
          * @since 0.2.0
@@ -258,7 +255,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
         /**
          * builds a String EntryValidator with always-strong behavior
          *
-         * Use if your identifier list is available both at loading (during modInitializtion, typically), and during updating (in-game).
+         * Use if your identifier list is available both at loading (during modInitialization, typically), and during updating (in-game).
          * @param allowableIds an [AllowableIdentifiers] instance.
          * @author fzzyhmstrs
          * @since 0.2.0
@@ -376,6 +373,143 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             )
         }
         /**
+         * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
+         *
+         * Uses "minecraft:air" as the default value
+         * @param defaultValue the default value of the ValidatedIdentifier
+         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the provided registry
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        @Suppress("UNCHECKED_CAST")
+        @Deprecated("Only use for validation in a list or map")
+        fun <T> ofRegistryKey(defaultValue: Identifier,key: RegistryKey<Registry<T>>): ValidatedIdentifier{
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            return ofRegistry(defaultValue,registry)
+        }
+        /**
+         * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
+         * @param defaultValue the default value of the ValidatedIdentifier
+         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
+         * @param predicate [Predicate]<RegistryEntry> tests an allowable subset of the registry
+         * @return [ValidatedIdentifier] wrapping the provided registry
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        @Suppress("UNCHECKED_CAST")
+        @Deprecated("Only use for validation in a list or map")
+        fun <T> ofRegistryKey(defaultValue: Identifier,key: RegistryKey<Registry<T>>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier{
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            return ofRegistry(defaultValue,registry,predicate)
+        }
+        /**
+         * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
+         *
+         * Uses "minecraft:air" as the default value
+         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the provided registry
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        @Suppress("UNCHECKED_CAST")
+        @Deprecated("Only use for validation in a list or map")
+        fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>): ValidatedIdentifier{
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            @Suppress("DEPRECATION")
+            return ofRegistry(registry)
+        }
+        /**
+         * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
+         *
+         * Uses "minecraft:air" as the default value
+         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
+         * @param predicate [BiPredicate]<RegistryEntry> tests an allowable subset of the registry
+         * @return [ValidatedIdentifier] wrapping the provided registry
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        @Suppress("UNCHECKED_CAST")
+        @Deprecated("Only use for validation in a list or map")
+        fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifier{
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            @Suppress("DEPRECATION")
+            return ofRegistry(registry,predicate)
+        }
+
+        /**
+         * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey
+         *
+         * Uses "c:dummy" as the default TagKey id
+         * @param T the TagKey type
+         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
+         */
+        fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>): ValidatedIdentifier{
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.toList() }
+            val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
+            return ValidatedIdentifier(Identifier("c:dummy"),ids)
+        }
+        /**
+         * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey, and predicated by the provided predicate
+         *
+         * Uses "c:dummy" as the default TagKey id
+         * @param T the TagKey type
+         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
+         * @param predicate [Predicate]<Identifier> tests an allowable subset of the TagKeys
+         * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
+         */
+        fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier{
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.filter(predicate).toList() }
+            val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
+            return ValidatedIdentifier(Identifier("c:dummy"),ids)
+        }
+        /**
+         * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey, and predicated by the provided predicate
+         * @param T the TagKey type
+         * @param default [TagKey] the default TagKey value to get an identifier from
+         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
+         * @param predicate [Predicate]<Identifier> tests an allowable subset of the TagKeys
+         * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
+         */
+        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier{
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.filter(predicate).toList() }
+            val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
+            return ValidatedIdentifier(default.id,ids)
+        }
+        /**
+         * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey
+         * @param T the TagKey type
+         * @param default [TagKey] the default TagKey value to get an identifier from
+         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
+         */
+        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>): ValidatedIdentifier{
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.toList() }
+            val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
+            return ValidatedIdentifier(default.id,ids)
+        }
+        /**
          * Builds a ValidatedIdentifier based on an allowable list of values
          *
          * This list should be available and complete at validation time
@@ -417,44 +551,14 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        @Deprecated("Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
+        @Suppress("MemberVisibilityCanBePrivate")
         fun<T> List<T>.supply(): Supplier<List<T>>{
             return Supplier { this }
         }
     }
 
     @Environment(EnvType.CLIENT)
-    class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: Consumer<OnClickTextFieldWidget>)
-        :
-        TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, 110, 20, FcText.empty())
-    {
-        init {
-            setMaxLength(1000)
-            this.text = textSupplier.get()
-        }
-
-        override fun renderWidget(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-            super.renderWidget(context, mouseX, mouseY, delta)
-            this.text = textSupplier.get()
-        }
-
-        override fun onClick(mouseX: Double, mouseY: Double) {
-            onClick.accept(this)
-        }
-
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            return if (!this.isFocused) {
-                false
-            } else if(KeyCodes.isToggle(keyCode)) {
-                onClick.accept(this)
-                return true
-            } else super.keyPressed(keyCode, scanCode, modifiers)
-        }
-
-    }
-
-    @Environment(EnvType.CLIENT)
-    class PopupIdentifierTextFieldWidget(
+    private class PopupIdentifierTextFieldWidget(
         width: Int,
         height: Int,
         private val choiceValidator: ChoiceValidator<Identifier>,
@@ -512,7 +616,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
         }
 
         fun pushChanges(){
-            if(isChanged()){
+            if(isChanged() && !needsUpdating){
                 validatedIdentifier.accept(storedValue)
             }
         }
@@ -562,6 +666,10 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             return window?.mouseScrolled(mouseX.toInt(),mouseY.toInt(),verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
         }
 
+        override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
+            return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(),mouseY.toInt()) == true
+        }
+
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
             val bl = window?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)
             if (closeWindow) {
@@ -582,10 +690,11 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, pr
             setChangedListener { s -> isValid = isValidTest(s) }
         }
 
-        private fun addSuggestionWindow(suggestions: Suggestions){
+        private fun addSuggestionWindow(suggestions: Suggestions) {
             val applier: Consumer<String> = Consumer { s ->
                 try {
-                    validatedIdentifier.applyEntry(Identifier(s))
+                    validatedIdentifier.accept(Identifier(s))
+                    needsUpdating = true
                 } catch (e: Exception) {
                     //
                 }

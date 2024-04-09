@@ -6,17 +6,15 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 import net.peanuuutz.tomlkt.toInt
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
- * A validated integer number
+ * A validated integer number. This field is a wrapper of integers that is both a [java.util.function.Supplier] and [java.util.function.Consumer] of type Int
  * @param defaultValue Int. the default value of this wrapper
  * @param maxValue Int. the maximum allowed value, inclusive
  * @param minValue Int. the minimum allowed value, inclusive
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedInt
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxInt
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
- * @sample me.fzzyhmstrs.fzzy_config.examples.java.ValidatedNumberJava.validatedInt
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.ints
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -28,7 +26,6 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * @param defaultValue Int. the default value of this wrapper
      * @param range [IntRange]. the allowable range of this Validated Int
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.rangedDefaultedInt
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -39,7 +36,6 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * A validated int number with a default selected from the min of the allowable range.
      * @param range [IntRange]. the allowable range of this Validated Int
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.rangedInt
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -51,7 +47,6 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * @param minValue Int. the minimum allowed value, inclusive
      * @param maxValue Int. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxInt
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -65,7 +60,6 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Int. the default value of this wrapper
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedInt
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -77,12 +71,12 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * The validation will be limited to ensuring the value de/serializes as an int, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyInt
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     constructor(): this(0, Int.MAX_VALUE, Int.MIN_VALUE, WidgetType.TEXTBOX)
 
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Int> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toInt())
@@ -90,7 +84,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
             ValidationResult.error(defaultValue,"Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun serialize(input: Int): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
@@ -98,7 +92,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
     override fun instanceEntry(): ValidatedInt {
         return ValidatedInt(defaultValue, maxValue, minValue, widgetType)
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Int && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }

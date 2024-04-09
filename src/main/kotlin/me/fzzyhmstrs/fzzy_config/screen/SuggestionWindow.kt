@@ -38,7 +38,7 @@ class SuggestionWindow(
         RenderSystem.disableDepthTest()
         context.fill(x,y-1,x+w,y+h+1,-805306368)
         if (index > 0){
-            if (up){
+            if (!up){
                 for (k in 0..w step 2) {
                     RenderSystem.enableBlend()
                     RenderSystem.disableDepthTest()
@@ -51,8 +51,9 @@ class SuggestionWindow(
                     context.fill(x + k, y + h, x + k + 1, y + h + 1, -1)
                 }
             }
-        } else if (suggestions.size > suggestionSize + index){
-            if (up){
+        }
+        if (suggestions.size > suggestionSize + index){
+            if (!up){
                 for (k in 0..w step 2){
                     RenderSystem.enableBlend()
                     RenderSystem.disableDepthTest()
@@ -111,6 +112,10 @@ class SuggestionWindow(
         }
         index = MathHelper.clamp(index + d, 0, max(suggestions.size - suggestionSize,0))
         return true
+    }
+
+    fun isMouseOver(mouseX: Int, mouseY: Int): Boolean{
+        return !(mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h)
     }
 
     fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {

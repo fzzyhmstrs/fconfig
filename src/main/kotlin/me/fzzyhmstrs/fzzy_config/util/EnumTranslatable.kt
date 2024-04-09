@@ -8,11 +8,11 @@ import net.minecraft.text.MutableText
  *
  * If a non-Enum extends this, the game will crash
  *
- * The [translationKey] will be in the form `"<prefix>.CONSTANT"`. Example: `TestEnum.TEST`
+ * The default [translationKey] will be in the form `"<prefix>.CONSTANT"`. Example: `TestEnum.TEST`
  *
- * The [descriptionKey] will be in the form `"<prefix>.CONSTANT.desc"`. Example: `TestEnum.TEST.desc`
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.TestEnum]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.lang]
+ * The default [descriptionKey] will be in the form `"<prefix>.CONSTANT.desc"`. Example: `TestEnum.TEST.desc`
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.TestEnum
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.lang
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -32,7 +32,7 @@ interface EnumTranslatable: Translatable {
         return this::class.java.simpleName
     }
     /**
-     * Override of [translationKey][me.fzzyhmstrs.fzzy_config.api.Translatable.translationKey] that utilized the [prefix] and enum constant name
+     * Override of [translationKey][me.fzzyhmstrs.fzzy_config.util.Translatable.translationKey] that utilized the [prefix] and enum constant name
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -40,7 +40,7 @@ interface EnumTranslatable: Translatable {
         return "${prefix()}.${(this as Enum<*>).name}"
     }
     /**
-     * Override of [descriptionKey][me.fzzyhmstrs.fzzy_config.api.Translatable.descriptionKey] that utilized the [prefix] and enum constant name
+     * Override of [descriptionKey][me.fzzyhmstrs.fzzy_config.util.Translatable.descriptionKey] that utilized the [prefix] and enum constant name
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -49,7 +49,7 @@ interface EnumTranslatable: Translatable {
     }
 
     /**
-     * Override of [translation][me.fzzyhmstrs.fzzy_config.api.Translatable.translation] that falls back to the enum constant name. Example `"TEST"`
+     * Override of [translation][me.fzzyhmstrs.fzzy_config.util.Translatable.translation] that falls back to the enum constant name. Example `"TEST"`
      * @author fzzyhmstrs
      * @since 0.2.0
      */

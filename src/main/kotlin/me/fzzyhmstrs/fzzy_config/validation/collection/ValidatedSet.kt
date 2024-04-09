@@ -23,10 +23,11 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
 
 /**
- * a validated list
+ * a validated set
  *
  * This [ValidatedField] implements [Set], so you can directly use it as if it were an immutable list
  * @param T any non-null type
@@ -55,7 +56,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
     fun toChoices(): ValidatedChoice<T> {
         return ValidatedChoice(defaultValue.toList(),entryHandler)
     }
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Set<T>> {
         return try{
             val array = toml.asTomlArray()
@@ -72,7 +73,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
             ValidationResult.error(defaultValue,"Critical error encountered while deserializing set [$fieldName], using defaults.")
         }
     }
-
+    @Internal
     override fun serialize(input: Set<T>): ValidationResult<TomlElement> {
         val toml = TomlArrayBuilder()
         val errors: MutableList<String> = mutableListOf()
@@ -94,7 +95,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
         }
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
-
+    @Internal
     override fun correctEntry(input: Set<T>, type: EntryValidator.ValidationType): ValidationResult<Set<T>> {
         val set: MutableSet<T> = mutableSetOf()
         val errors: MutableList<String> = mutableListOf()
@@ -105,7 +106,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
         }
         return ValidationResult.predicated(set,errors.isEmpty(),"Errors corrected in set: $errors")
     }
-
+    @Internal
     override fun validateEntry(input: Set<T>, type: EntryValidator.ValidationType): ValidationResult<Set<T>> {
         val errors: MutableList<String> = mutableListOf()
         for (entry in input){
@@ -122,7 +123,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
     override fun instanceEntry(): ValidatedSet<T> {
         return ValidatedSet(copyStoredValue(), entryHandler)
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input !is Set<*>) return false
         return try {
@@ -132,6 +133,8 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
         }
     }
 
+    @Internal
+    @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): ClickableWidget {
         return DecoratedActiveButtonWidget("fc.validated_field.set".translate(),110,20, TextureIds.DECO_LIST,{true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
     }
@@ -141,7 +144,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
     private fun openListEditPopup(b: ActiveButtonWidget) {
         try {
             val list = storedValue.map {
-                (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.applyEntry(it) }
+                (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.accept(it) }
             }
             val choiceValidator: BiFunction<ListListWidget<T>, ListListWidget.ListEntry<T>?, ChoiceValidator<T>> = BiFunction{ ll, le ->
                 ListListWidget.ExcludeSelfChoiceValidator(le) { self -> ll.getRawList(self) }
@@ -194,7 +197,7 @@ class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun <T> tryMake(set: Set<T>, entry: Entry<*,*>): ValidatedSet<T>?{
+        internal fun <T> tryMake(set: Set<T>, entry: Entry<*,*>): ValidatedSet<T>?{
             return try{
                 ValidatedSet(set, entry as Entry<T,*>)
             } catch (e: Exception){

@@ -97,10 +97,13 @@ open class PopupWidget
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        context.matrices.push()
+        context.matrices.translate(x.toFloat(),y.toFloat(),0f)
         if (blurBackground) {
             context.fill(0,0,width,height,fillColor)
             applyBlur(delta)
         }
+        context.matrices.pop()
         RenderSystem.enableBlend()
         RenderSystem.disableDepthTest()
         context.drawGuiTexture(background, x, y, width, height)
@@ -108,6 +111,7 @@ open class PopupWidget
             RenderSystem.disableDepthTest()
             drawable.render(context, mouseX, mouseY, delta)
         }
+
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

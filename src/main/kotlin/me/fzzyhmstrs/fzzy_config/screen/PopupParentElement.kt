@@ -35,6 +35,8 @@ interface PopupParentElement: ParentElement, LastSelectable {
 
     fun setPopup(widget: PopupWidget?) {
         if(widget == null){
+            if (popupWidgets.isEmpty())
+                return
             justClosedWidget = true
             popupWidgets.pop().onClose()
             popupWidgets.peek()?.blur()

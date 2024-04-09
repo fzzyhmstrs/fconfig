@@ -22,10 +22,11 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
 
 /**
- * A Validated Map<Enum,V>
+ * A Validated Map with Enum keys
  *
  * NOTE: The provided map does not need to be an EnumMap, but it can be
  * @param K key type, any Enum
@@ -58,6 +59,8 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
         return ValidatedEnumMap(storedValue, keyHandler, valueHandler)
     }
 
+    @Internal
+    @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
         return DecoratedActiveButtonWidget(TextureIds.MAP_LANG,110,20,TextureIds.DECO_MAP,{true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
     }
@@ -68,8 +71,8 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
         try {
             val map = storedValue.map {
                 Pair(
-                    (keyHandler.instanceEntry() as Entry<K, *>).also { entry -> entry.applyEntry(it.key) },
-                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.applyEntry(it.value) }
+                    (keyHandler.instanceEntry() as Entry<K, *>).also { entry -> entry.accept(it.key) },
+                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.accept(it.value) }
                 )
             }.associate { it }
             val choiceValidator: BiFunction<MapListWidget<K, V>, MapListWidget.MapEntry<K, V>?, ChoiceValidator<K>> = BiFunction{ ll, le ->
@@ -88,7 +91,7 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
             FC.LOGGER.error("Unexpected exception caught while opening list popup")
         }
     }
-
+    @Internal
     override fun serialize(input: Map<K, V>): ValidationResult<TomlElement> {
         val table = TomlTableBuilder()
         val errors: MutableList<String> = mutableListOf()
@@ -112,7 +115,7 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
     }
 
     //((?![a-z0-9_-]).) in case I need it...
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Map<K, V>> {
         return try {
             val table = toml.asTomlTable()
@@ -133,7 +136,7 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
             ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun validateEntry(input: Map<K, V>, type: EntryValidator.ValidationType): ValidationResult<Map<K, V>> {
         val keyErrors: MutableList<String> = mutableListOf()
         val valueErrors: MutableList<String> = mutableListOf()
@@ -143,7 +146,7 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
         }
         return ValidationResult.predicated(input,keyErrors.isEmpty() && valueErrors.isEmpty(), "Map validation had errors: key=${keyErrors}, value=$valueErrors")
     }
-
+    @Internal
     override fun correctEntry(input: Map<K, V>, type: EntryValidator.ValidationType): ValidationResult<Map<K, V>> {
         val map: MutableMap<K,V> = mutableMapOf()
         val keyErrors: MutableList<String> = mutableListOf()
@@ -157,7 +160,7 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
         }
         return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input !is Map<*,*>) return false
         return try {
@@ -168,7 +171,7 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
     }
 
     companion object{
-        fun<K:Enum<*>,V> tryMake(map: Map<K,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedEnumMap<K,V>?{
+        internal fun<K:Enum<*>,V> tryMake(map: Map<K,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedEnumMap<K,V>?{
             return try {
                 ValidatedEnumMap(map,keyHandler as Entry<K,*>, valueHandler as Entry<V,*>)
             } catch (e: Exception){

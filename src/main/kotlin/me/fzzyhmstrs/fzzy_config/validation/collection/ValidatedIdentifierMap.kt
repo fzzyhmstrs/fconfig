@@ -21,10 +21,11 @@ import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
 
 /**
- * A Validated Map<Identifier,V>
+ * A Validated Map with Identifier Keys
  * @param V any non-null type with a valid [Entry] for handling
  * @param defaultValue the default map
  * @param keyHandler [ValidatedIdentifier] key handler
@@ -54,6 +55,8 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
         return ValidatedIdentifierMap(storedValue, keyHandler, valueHandler)
     }
 
+    @Internal
+    @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<Identifier, V>>): ClickableWidget {
         return DecoratedActiveButtonWidget(TextureIds.MAP_LANG,110,20, TextureIds.DECO_MAP,{true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
     }
@@ -64,8 +67,8 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
         try {
             val map = storedValue.map {
                 Pair(
-                    (keyHandler.instanceEntry() as Entry<Identifier, *>).also { entry -> entry.applyEntry(it.key) },
-                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.applyEntry(it.value) }
+                    (keyHandler.instanceEntry() as Entry<Identifier, *>).also { entry -> entry.accept(it.key) },
+                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.accept(it.value) }
                 )
             }.associate { it }
             val choiceValidator: BiFunction<MapListWidget<Identifier, V>, MapListWidget.MapEntry<Identifier, V>?, ChoiceValidator<Identifier>> = BiFunction{ ll, le ->
@@ -84,7 +87,7 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
             FC.LOGGER.error("Unexpected exception caught while opening list popup")
         }
     }
-
+    @Internal
     override fun serialize(input: Map<Identifier, V>): ValidationResult<TomlElement> {
         val table = TomlTableBuilder()
         val errors: MutableList<String> = mutableListOf()
@@ -108,7 +111,7 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
     }
 
     //((?![a-z0-9_-]).) in case I need it...
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Map<Identifier, V>> {
         return try {
             val table = toml.asTomlTable()
@@ -134,7 +137,7 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
             ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun validateEntry(input: Map<Identifier, V>, type: EntryValidator.ValidationType): ValidationResult<Map<Identifier, V>> {
         val keyErrors: MutableList<String> = mutableListOf()
         val valueErrors: MutableList<String> = mutableListOf()
@@ -144,7 +147,7 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
         }
         return ValidationResult.predicated(input,keyErrors.isEmpty() && valueErrors.isEmpty(), "Map validation had errors: key=${keyErrors}, value=$valueErrors")
     }
-
+    @Internal
     override fun correctEntry(input: Map<Identifier, V>, type: EntryValidator.ValidationType): ValidationResult<Map<Identifier, V>> {
         val map: MutableMap<Identifier,V> = mutableMapOf()
         val keyErrors: MutableList<String> = mutableListOf()
@@ -158,7 +161,7 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
         }
         return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input !is Map<*,*>) return false
         return try {
@@ -169,7 +172,7 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
     }
 
     companion object{
-        fun<V> tryMake(map: Map<Identifier,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedIdentifierMap<V>?{
+        internal fun<V> tryMake(map: Map<Identifier,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedIdentifierMap<V>?{
             return try {
                 ValidatedIdentifierMap(map,keyHandler as ValidatedIdentifier, valueHandler as Entry<V,*>)
             } catch (e: Exception){

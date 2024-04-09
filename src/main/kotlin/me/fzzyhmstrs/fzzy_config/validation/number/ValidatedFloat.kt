@@ -6,16 +6,15 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 import net.peanuuutz.tomlkt.toFloat
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
- * A validated float number
+ * A validated float number. This field is a wrapper of floats that is both a [java.util.function.Supplier] and [java.util.function.Consumer] of type Float
  * @param defaultValue Float. the default value of this wrapper
  * @param maxValue Float. the maximum allowed value, inclusive
  * @param minValue Float. the minimum allowed value, inclusive
  * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.validatedFloat
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.textBoxFloat
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.floats
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -26,7 +25,6 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
      * @param minValue Float. the minimum allowed value, inclusive
      * @param maxValue Float. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.minMaxFloat
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -40,7 +38,6 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
      * @param defaultValue Float. the default value of this wrapper
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.unboundedFloat
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -52,12 +49,11 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
      * The validation will be limited to ensuring the value de/serializes as a float, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.emptyFloat
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     constructor(): this(0f, Float.MAX_VALUE, -Float.MAX_VALUE, WidgetType.TEXTBOX)
-
+    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Float> {
         return try{
             ValidationResult.success(toml.asTomlLiteral().toFloat())
@@ -65,7 +61,7 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
             ValidationResult.error(defaultValue,"Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
         }
     }
-
+    @Internal
     override fun serialize(input: Float): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
@@ -73,7 +69,7 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
     override fun instanceEntry(): ValidatedFloat {
         return ValidatedFloat(defaultValue, maxValue, minValue, widgetType)
     }
-
+    @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Float && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }

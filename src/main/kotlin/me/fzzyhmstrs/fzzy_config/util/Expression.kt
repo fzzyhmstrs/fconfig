@@ -13,7 +13,7 @@ import kotlin.math.pow
 import kotlin.reflect.typeOf
 
 /**
- * An evaluatable math expression
+ * A math expression for evaluating in-game. Supports a wide array of basic math functions, as well as some [MathHelper] functions
  *
  * Typical usage involves evaluating named doubles in a math equation with matching variable names.
  *
@@ -41,7 +41,7 @@ import kotlin.reflect.typeOf
  * - {incr(exp,incr)} - round incrementally: incr(0.913,0.1) will return 0.90
  * - {mathHelper methods} - Expression will reflectively evaluate any valid [MathHelper] method that takes doubles and returns doubles
  * @see validated for use in configs
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ExampleMath]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleMath.maths
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -157,7 +157,7 @@ fun interface Expression {
         }
 
         /**
-         * Evaluates an expression with a fallback. Will fail to fallback instead of throwing
+         * Evaluates an expression with a fallback. Will fail to fallback instead of throwing. This call is recommended over the 'raw' eval call
          * @param vars Map<Char, Double> - map of the input variables. The Char used must match the variable characters used in the string expression and visa-versa
          * @param fallback Double - fallback value in case eval() throws
          * @return Double - The result of the expression evaluation or the fallback if evaluation fails
