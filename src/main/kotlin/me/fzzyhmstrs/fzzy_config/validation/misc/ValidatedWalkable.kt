@@ -51,6 +51,12 @@ class ValidatedWalkable<T: Walkable>(defaultValue: T): ValidatedField<T>(default
         return ValidationResult.predicated(ConfigApiImpl.serializeToToml(input,errors),errors.isEmpty(),"Errors encountered while serializing Object: $errors")
     }
 
+    /**
+     * creates a deep copy of this ValidatedWalkable
+     * return ValidatedWalkable wrapping a deep copy of the currently stored object
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedField<T> {
         return ValidatedWalkable(copyStoredValue())
     }
