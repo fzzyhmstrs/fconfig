@@ -126,6 +126,12 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
         return validator.validateEntry(input, type)
     }
 
+    /**
+     * creates a deep copy of this ValidatedIdentifier
+     * @return ValidatedIdentifier wrapping a deep copy of the currently stored identifier, as well as this validations validator
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedIdentifier {
         return ValidatedIdentifier(copyStoredValue(), allowableIds, validator)
     }
