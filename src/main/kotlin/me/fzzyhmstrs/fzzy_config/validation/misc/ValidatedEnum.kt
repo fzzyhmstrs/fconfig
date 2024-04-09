@@ -88,6 +88,9 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
         }
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         return "Validated Enum[value=$storedValue, validation=$valuesMap]"
     }
