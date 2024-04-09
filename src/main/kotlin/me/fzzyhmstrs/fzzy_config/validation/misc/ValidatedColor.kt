@@ -135,10 +135,22 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         return storedValue.validateEntry(input, type)
     }
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return ColorHolder - deep copy of the currently stored color
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun copyStoredValue(): ColorHolder {
         return storedValue.copy()
     }
 
+    /**
+     * creates a deep copy of this ValidatedColor
+     * return ValidatedColor wrapping a deep copy of the currently stored holder and alphaMode
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedColor {
         return storedValue.instance()
     }
