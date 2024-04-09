@@ -47,10 +47,22 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
         }
     }
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return Map&lt;Identifier,V&gt; - deep copy of the currently stored map
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun copyStoredValue(): Map<Identifier, V> {
         return storedValue.toMap()
     }
 
+    /**
+     * creates a deep copy of this ValidatedIdentifierMap
+     * return ValidatedIdentifierMap wrapping a deep copy of the currently stored map, as well as passing keyHandler and valueHandler
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedIdentifierMap<V> {
         return ValidatedIdentifierMap(storedValue, keyHandler, valueHandler)
     }
@@ -170,6 +182,13 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
             false
         }
     }
+
+    /**
+     * @suppress
+     */
+     override fun toString(): String {
+         return "Validated Identifier Map[value=$storedValue, keyHandler=$keyHandler, valueHandler=$valueHandler]"
+     }
 
     companion object{
         internal fun<V> tryMake(map: Map<Identifier,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedIdentifierMap<V>?{
