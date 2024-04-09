@@ -30,12 +30,11 @@ import kotlin.jvm.optionals.getOrNull
 /**
  * A validated TagKey
  *
- * By default, validation will allow any TagKey currently known by the default tags registry.
+ * By default, validation will allow any TagKey currently known by the registry of the provided default Tag.
  * @param T the TagKey type
  * @param defaultValue [TagKey] - the default tag
- * @param predicate [Predicate]<[Identifier]>, Optional - use to restrict the allowable tag selection
- * @sample me.fzzyhmstrs.fzzy_config.examples.MinecraftExamples.validatedTag
- * @sample me.fzzyhmstrs.fzzy_config.examples.MinecraftExamples.validatedTagPredicated
+ * @param predicate [Predicate]&lt;[Identifier]&gt;, Optional - use to restrict the allowable tag selection
+ * @sample me.fzzyhmstrs.fzzy_config.examples.MinecraftExamples.tags
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -75,10 +74,22 @@ class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>,
         }
     }
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return TagKey&lt;T&gt; - deep copy of the currently stored tagkey
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun copyStoredValue(): TagKey<T> {
         return TagKey.of(storedValue.registry,storedValue.id)
     }
 
+    /**
+     * creates a deep copy of this ValidatedTagKey
+     * return ValidatedTagKey wrapping a deep copy of the currently stored tag and predicate
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedField<TagKey<T>> {
         return ValidatedTagKey(copyStoredValue(), predicate)
     }
@@ -89,6 +100,13 @@ class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>,
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<TagKey<T>>): ClickableWidget {
         return DecorationWrappedWidget(OnClickTextFieldWidget({ validator.get().toString() },{ popupTagPopup(it,choicePredicate) }),"widget/decoration/tag".fcId())
+    }
+
+    /**
+     * @suppress
+     */
+    override fun toString(): String {
+        return "Validated TagKey[value=$storedValue, validation=${if(predicate==null) "any tag in ${storedValue.registry}" else "tags from ${storedValue.registry} restricted with a predicate"}]"
     }
 
     @Internal
