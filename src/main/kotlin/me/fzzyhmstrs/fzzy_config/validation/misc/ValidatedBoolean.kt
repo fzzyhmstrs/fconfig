@@ -51,6 +51,12 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
         return ValidationResult.success(TomlLiteral(input))
     }
 
+    /**
+     * creates a deep copy of this ValidatedBoolean
+     * return ValidatedBoolean wrapping the current boolean value
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedBoolean {
         return ValidatedBoolean(copyStoredValue())
     }
