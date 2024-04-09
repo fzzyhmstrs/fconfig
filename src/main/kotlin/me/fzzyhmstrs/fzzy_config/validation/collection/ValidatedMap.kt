@@ -47,10 +47,22 @@ class ValidatedMap<K,V>(defaultValue: Map<K,V>, private val keyHandler: Entry<K,
         }
     }
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return Map&lt;K,V&gt; - deep copy of the currently stored map
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun copyStoredValue(): Map<K, V> {
         return storedValue.toMap()
     }
 
+    /**
+     * creates a deep copy of this ValidatedMap
+     * return ValidatedMap wrapping a deep copy of the currently stored map, as well as passing keyHandler and valueHandler
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedMap<K,V> {
         return ValidatedMap(copyStoredValue(), keyHandler, valueHandler)
     }
@@ -179,6 +191,13 @@ class ValidatedMap<K,V>(defaultValue: Map<K,V>, private val keyHandler: Entry<K,
             false
         }
     }
+
+    /**
+     * @suppress
+     */
+     override fun toString(): String {
+         return "Validated Map[value=$storedValue, keyHandler=$keyHandler, valueHandler=$valueHandler]"
+     }
 
     companion object{
         internal fun<K,V> tryMake(map: Map<K,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedMap<K,V>?{
