@@ -47,18 +47,15 @@ import java.util.function.Supplier
  * @param b the default blue component, 0 to 255
  * @param a the default alpha(transparency) component, 0 to 255 or Int.MIN_VALUE to set the color as opaque. Defaults to Int.MIN_VALUE
  * @see [validatedColor]
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColor
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorOpaque
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorString
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.colors
  * @throws IllegalStateException if the input RGBA values aren't in bounds (not in the range 0..255)
  * @author fzzyhmstrs
  * @since 0.1.2
  */
-
 class ValidatedColor: ValidatedField<ColorHolder> {
 
-    @JvmOverloads constructor(r: Int, g: Int, b: Int, a: Int = Int.MIN_VALUE): super(ColorHolder(r, g, b, if(a > Int.MIN_VALUE) a else 255, a > Int.MIN_VALUE)) {
+    @JvmOverloads 
+    constructor(r: Int, g: Int, b: Int, a: Int = Int.MIN_VALUE): super(ColorHolder(r, g, b, if(a > Int.MIN_VALUE) a else 255, a > Int.MIN_VALUE)) {
         if(r<0 || r>255) throw IllegalArgumentException("Red portion of validated color not provided a default value between 0 and 255")
         if(g<0 || g>255) throw IllegalArgumentException("Green portion of validated color not provided a default value between 0 and 255")
         if(b<0 || b>255) throw IllegalArgumentException("Blue portion of validated color not provided a default value between 0 and 255")
@@ -68,7 +65,6 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     /**
      * A validated color value with or without transparency enabled and with default color 0xFFFFFFFF (opaque white)
      * @param transparent Boolean, whether this color supports transparency
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorSimple
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -79,7 +75,6 @@ class ValidatedColor: ValidatedField<ColorHolder> {
      * A validated color value built from a jwt [Color] with or without transparency enabled
      * @param color [Color] defining the RGBA of this validated color
      * @param transparent Boolean, whether this color supports transparency
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorColor
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -102,6 +97,26 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         }
         validateAndSet(get().fromInt(colorInt))
     }
+    /**
+     * returns ARGB color int representing this color
+     * @return Int - ARGB formatted integer storing this color
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun toInt(): Int {
+        return get().argb()
+    }
+    /**
+     * Updates this color with a new holder representing the color passed in integer form
+     * @param i Int - the ARGB int representing the new color holder
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun fromInt(i: Int) {
+        validateAndSet(get().fromInt(i))
+    }
+
+    
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<ColorHolder> {
         return storedValue.deserializeEntry(toml, mutableListOf(), fieldName, true)
@@ -137,6 +152,9 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         return ColorButtonWidget({get().argb()},{this.toHexString().lit()},{openColorEditPopup()})
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         val validation = if(get().opaque())
             "RGB 0..255, no Transparency"
@@ -246,137 +264,14 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         }
     }
 
-    @Environment(EnvType.CLIENT)
-    private class ColorButtonWidget(private val colorSupplier: Supplier<Int>,titleSupplier: Supplier<Text>, pressAction: Consumer<ActiveButtonWidget>): DecoratedActiveButtonWidget(titleSupplier,110,20,"widget/decoration/frame".fcId(),{true},pressAction){
-        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
-            super.renderDecoration(context, x, y, delta)
-            RenderSystem.enableBlend()
-            context.fill(x+2,y+2,x+14,y+14,colorSupplier.get())
-        }
-    }
-
-    @Environment(EnvType.CLIENT)
-    private class HLMapWidget(private val mutableColor: MutableColor): ClickableWidget(0,0,60,68,"fc.validated_field.color.hl".translate()) {
-
-        companion object{
-            private val BORDER = "widget/validation/color/hsl_border".fcId()
-            private val BORDER_HIGHLIGHTED = "widget/validation/color/hsl_border_highlighted".fcId()
-            private val CENTER = "widget/validation/color/hsl_center".fcId()
-            private val CENTER_DESAT = "widget/validation/color/hsl_center_desat".fcId()
-            private val CROSSHAIR = "widget/validation/color/hsl_crosshair".fcId()
-
-            private const val horizontalInc = 1f/52f
-            private const val verticalInc = 1f/60f
-        }
-
-        private var mouseHasBeenClicked = false
-
-        override fun getNarrationMessage(): MutableText {
-            return message.copy()
-        }
-
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
-            RenderSystem.enableBlend()
-            RenderSystem.enableDepthTest()
-            context.drawGuiTexture(if (isSelected) BORDER_HIGHLIGHTED else BORDER, x, y, getWidth(), getHeight())
-            if (mutableColor.s == 1f) {
-                context.setShaderColor(1.0f, 1.0f, 1.0f, mutableColor.a / 255f)
-                RenderSystem.enableBlend()
-                RenderSystem.enableDepthTest()
-                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60)
-            } else {
-                context.setShaderColor(1.0f, 1.0f, 1.0f, mutableColor.a / 255f)
-                RenderSystem.enableBlend()
-                RenderSystem.enableDepthTest()
-                context.drawGuiTexture(CENTER_DESAT, x+4, y+4, 52, 60)
-                context.setShaderColor(1.0f, 1.0f, 1.0f, (mutableColor.a / 255f)*(mutableColor.s / 1f))
-                RenderSystem.enableBlend()
-                RenderSystem.enableDepthTest()
-                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60)
-            }
-            val cX = x + 4 + MathHelper.clampedMap(mutableColor.l,0f,1f,0f,52f).toInt() - 2
-            val cY = y + 4 + MathHelper.clampedMap(mutableColor.h,0f,1f,0f,60f).toInt() - 2
-            context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
-            RenderSystem.enableBlend()
-            RenderSystem.enableDepthTest()
-            context.drawGuiTexture(CROSSHAIR, cX, cY, 5, 5)
-        }
-
-        override fun onClick(mouseX: Double, mouseY: Double) {
-            mouseHasBeenClicked = true
-            updateHL(mouseX, mouseY)
-        }
-
-        override fun onDrag(mouseX: Double, mouseY: Double, deltaX: Double, deltaY: Double) {
-            updateHL(mouseX, mouseY)
-        }
-
-        private fun updateHL(mouseX: Double,mouseY: Double){
-            val light = MathHelper.clamp((mouseX - (this.x + 4).toDouble())/52.0,0.0,1.0).toFloat()
-            val hue = MathHelper.clamp((mouseY - (this.y + 4).toDouble())/60.0,0.0,1.0).toFloat()
-            mutableColor.updateHSL(hue,mutableColor.s,light)
-        }
-
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            return when(keyCode){
-                GLFW.GLFW_KEY_LEFT -> {
-                    incrementL(-horizontalInc)
-                    true
-                }
-                GLFW.GLFW_KEY_RIGHT -> {
-                    incrementL(horizontalInc)
-                    true
-                }
-                GLFW.GLFW_KEY_UP -> {
-                    incrementH(-verticalInc)
-                    true
-                }
-                GLFW.GLFW_KEY_DOWN -> {
-                    incrementH(verticalInc)
-                    true
-                }
-                else -> super.keyPressed(keyCode, scanCode, modifiers)
-            }
-        }
-
-        private fun incrementH(amount: Float){
-            val hue = MathHelper.clamp(mutableColor.h+amount,0f,1f)
-            mutableColor.updateHSL(hue,mutableColor.s,mutableColor.l)
-        }
-        private fun incrementL(amount: Float){
-            val light = MathHelper.clamp(mutableColor.l+amount,0f,1f)
-            mutableColor.updateHSL(mutableColor.h,mutableColor.s,light)
-        }
-
-        override fun onRelease(mouseX: Double, mouseY: Double) {
-            if (mouseHasBeenClicked)
-                MinecraftClient.getInstance().soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
-        }
-
-        override fun playDownSound(soundManager: SoundManager) {
-            //soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.TITLE, this.narrationMessage)
-            if (active) {
-                if (this.isFocused) {
-                    builder.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.keyboard".translate())
-                } else {
-                    builder.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.mouse".translate())
-                }
-            }
-        }
-    }
-
     /**
-     * An immutable holder of an ARGB color values
+     * An immutable holder of an ARGB color value. The return type of [ValidatedColor], which can be used directly in code or shortcutted with helper functions in ValdiatedColor to get Int or Hex String values instead.
      * @param r int value of r component (0..255)
      * @param g int value of g component (0..255)
      * @param b int value of b component (0..255)
      * @param a int value of a component (0..255)
      * @param alphaMode whether this color holder supports transparency
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.colorClasses
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -553,8 +448,12 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     }
 
     /**
-     * A mutable color that automatically updates it's RGB and HSL values based on new inputs.
-     * @param hex a ValidatedString
+     * A mutable color that automatically updates it's RGB and HSL values based on new inputs. Generally this should be created from a ColorHolder, not instantiated directly
+     * @param hex ValidatedString - defines the correction used on the hex string internally.
+     * @param alphaMode - whether this classes parent supports transparency or not, passes this on to any new holders it creates
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.colorClasses
+     * @author fzzyhmstrs
+     * @since 0.2.0
      */
     class MutableColor internal constructor(val hex: ValidatedString, private val alphaMode: Boolean) {
         var r: Int = 0
@@ -608,7 +507,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             this.r = rr
             this.g = gg
             this.b = bb
-            hex.validateAndSet(String.format("%08X", argb()))
+            hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
         }
         /**
          * updates this Mutable Color with new RGB values. HSL values automatically updated to match
@@ -626,7 +525,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             this.h = hsl[0]
             this.s = hsl[1]
             this.l = hsl[2]
-            hex.validateAndSet(String.format("%08X", argb()))
+            hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
         }
         /**
          * updates this Mutable Color with new Alpha value
@@ -638,7 +537,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
          */
         fun updateA(a: Int){
             this.a = a
-            hex.validateAndSet(String.format("%08X", argb()))
+            hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
         }
 
         /**
@@ -681,6 +580,131 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         fun createHolder(): ColorHolder {
             return ColorHolder(r, g, b, a, alphaMode)
         }
+    }
 
+    //////////////////////////////////////////
+    
+    @Environment(EnvType.CLIENT)
+    private class ColorButtonWidget(private val colorSupplier: Supplier<Int>,titleSupplier: Supplier<Text>, pressAction: Consumer<ActiveButtonWidget>): DecoratedActiveButtonWidget(titleSupplier,110,20,"widget/decoration/frame".fcId(),{true},pressAction){
+        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
+            super.renderDecoration(context, x, y, delta)
+            RenderSystem.enableBlend()
+            context.fill(x+2,y+2,x+14,y+14,colorSupplier.get())
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    private class HLMapWidget(private val mutableColor: MutableColor): ClickableWidget(0,0,60,68,"fc.validated_field.color.hl".translate()) {
+
+        companion object{
+            private val BORDER = "widget/validation/color/hsl_border".fcId()
+            private val BORDER_HIGHLIGHTED = "widget/validation/color/hsl_border_highlighted".fcId()
+            private val CENTER = "widget/validation/color/hsl_center".fcId()
+            private val CENTER_DESAT = "widget/validation/color/hsl_center_desat".fcId()
+            private val CROSSHAIR = "widget/validation/color/hsl_crosshair".fcId()
+
+            private const val horizontalInc = 1f/52f
+            private const val verticalInc = 1f/60f
+        }
+
+        private var mouseHasBeenClicked = false
+
+        override fun getNarrationMessage(): MutableText {
+            return message.copy()
+        }
+
+        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
+            RenderSystem.enableBlend()
+            RenderSystem.enableDepthTest()
+            context.drawGuiTexture(if (isSelected) BORDER_HIGHLIGHTED else BORDER, x, y, getWidth(), getHeight())
+            if (mutableColor.s == 1f) {
+                context.setShaderColor(1.0f, 1.0f, 1.0f, mutableColor.a / 255f)
+                RenderSystem.enableBlend()
+                RenderSystem.enableDepthTest()
+                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60)
+            } else {
+                context.setShaderColor(1.0f, 1.0f, 1.0f, mutableColor.a / 255f)
+                RenderSystem.enableBlend()
+                RenderSystem.enableDepthTest()
+                context.drawGuiTexture(CENTER_DESAT, x+4, y+4, 52, 60)
+                context.setShaderColor(1.0f, 1.0f, 1.0f, (mutableColor.a / 255f)*(mutableColor.s / 1f))
+                RenderSystem.enableBlend()
+                RenderSystem.enableDepthTest()
+                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60)
+            }
+            val cX = x + 4 + MathHelper.clampedMap(mutableColor.l,0f,1f,0f,52f).toInt() - 2
+            val cY = y + 4 + MathHelper.clampedMap(mutableColor.h,0f,1f,0f,60f).toInt() - 2
+            context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
+            RenderSystem.enableBlend()
+            RenderSystem.enableDepthTest()
+            context.drawGuiTexture(CROSSHAIR, cX, cY, 5, 5)
+        }
+
+        override fun onClick(mouseX: Double, mouseY: Double) {
+            mouseHasBeenClicked = true
+            updateHL(mouseX, mouseY)
+        }
+
+        override fun onDrag(mouseX: Double, mouseY: Double, deltaX: Double, deltaY: Double) {
+            updateHL(mouseX, mouseY)
+        }
+
+        private fun updateHL(mouseX: Double,mouseY: Double){
+            val light = MathHelper.clamp((mouseX - (this.x + 4).toDouble())/52.0,0.0,1.0).toFloat()
+            val hue = MathHelper.clamp((mouseY - (this.y + 4).toDouble())/60.0,0.0,1.0).toFloat()
+            mutableColor.updateHSL(hue,mutableColor.s,light)
+        }
+
+        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+            return when(keyCode){
+                GLFW.GLFW_KEY_LEFT -> {
+                    incrementL(-horizontalInc)
+                    true
+                }
+                GLFW.GLFW_KEY_RIGHT -> {
+                    incrementL(horizontalInc)
+                    true
+                }
+                GLFW.GLFW_KEY_UP -> {
+                    incrementH(-verticalInc)
+                    true
+                }
+                GLFW.GLFW_KEY_DOWN -> {
+                    incrementH(verticalInc)
+                    true
+                }
+                else -> super.keyPressed(keyCode, scanCode, modifiers)
+            }
+        }
+
+        private fun incrementH(amount: Float){
+            val hue = MathHelper.clamp(mutableColor.h+amount,0f,1f)
+            mutableColor.updateHSL(hue,mutableColor.s,mutableColor.l)
+        }
+        private fun incrementL(amount: Float){
+            val light = MathHelper.clamp(mutableColor.l+amount,0f,1f)
+            mutableColor.updateHSL(mutableColor.h,mutableColor.s,light)
+        }
+
+        override fun onRelease(mouseX: Double, mouseY: Double) {
+            if (mouseHasBeenClicked)
+                MinecraftClient.getInstance().soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+        }
+
+        override fun playDownSound(soundManager: SoundManager) {
+            //soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+        }
+
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
+            builder.put(NarrationPart.TITLE, this.narrationMessage)
+            if (active) {
+                if (this.isFocused) {
+                    builder.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.keyboard".translate())
+                } else {
+                    builder.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.mouse".translate())
+                }
+            }
+        }
     }
 }
