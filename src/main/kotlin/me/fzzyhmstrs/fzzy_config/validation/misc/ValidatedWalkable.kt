@@ -41,17 +41,10 @@ import kotlin.reflect.full.createInstance
  */
 class ValidatedWalkable<T: Walkable>(defaultValue: T): ValidatedField<T>(defaultValue) {
 
-    /**
-     * @suppress
-     */
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return ConfigApiImpl.deserializeFromToml(storedValue,toml, mutableListOf())
     }
-
-    /**
-     * @suppress
-     */
     @Internal
     override fun serialize(input: T): ValidationResult<TomlElement> {
         val errors = mutableListOf<String>()
@@ -95,6 +88,13 @@ class ValidatedWalkable<T: Walkable>(defaultValue: T): ValidatedField<T>(default
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return DecoratedActiveButtonWidget("fc.validated_field.object".translate(),110,20,"widget/decoration/object".fcId(),{ true }, { openObjectPopup() })
     }
+
+    /**
+     * @suppress
+     */
+     override fun toString(): String{
+         return "Validated Walkable[value=${ConfigApiImpl.serializeConfig(get(), mutableListOf(),true).lines().joinToString(" ", transform = {s -> s.trim()})}, validation=per contained member validation]"
+     }
 
     @Environment(EnvType.CLIENT)
     private fun openObjectPopup() {
