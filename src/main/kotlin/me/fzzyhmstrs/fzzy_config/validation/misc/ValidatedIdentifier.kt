@@ -98,6 +98,12 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
      */
     constructor(): this(Identifier("c:/c"), AllowableIdentifiers.ANY)
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return Identifier - deep copy of the currently stored value
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun copyStoredValue(): Identifier {
         return Identifier(storedValue.toString())
     }
