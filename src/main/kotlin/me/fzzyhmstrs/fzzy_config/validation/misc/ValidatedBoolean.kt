@@ -70,6 +70,9 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
         )
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         return "Validated Boolean[value=$storedValue, validation=true or false]"
     }
