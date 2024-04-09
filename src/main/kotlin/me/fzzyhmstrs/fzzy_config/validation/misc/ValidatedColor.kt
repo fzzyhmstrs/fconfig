@@ -369,8 +369,8 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         }
 
         /**
-         * Creates a deep copy of this color holder
-         * @return ColorHolder - copy of this holder
+         * Creates a deep copy of this color holder and wraps it
+         * @return ValidatedColor - wrapping a copy of this holder
          * @author fzzyhmstrs
          * @since 0.2.0
          */
