@@ -120,6 +120,9 @@ class ValidatedExpression @JvmOverloads constructor(
         return ExpressionButtonWidget(this, choicePredicate)
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         return "Validated Expression[value=$parsedExpression, vars=$validVars, validation=$validator]"
     }
