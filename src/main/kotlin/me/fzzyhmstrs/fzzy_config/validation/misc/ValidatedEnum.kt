@@ -75,6 +75,12 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
         return FcText.translatable(descriptionKey(),valuesMap.keys.toString())
     }
 
+    /**
+     * creates a deep copy of this ValidatedEnum
+     * return ValidatedEnum wrapping a copy of the currently stored object and widget type
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedEnum<T> {
         return ValidatedEnum(this.defaultValue,this.widgetType)
     }
