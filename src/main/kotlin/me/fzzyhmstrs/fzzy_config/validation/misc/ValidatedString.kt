@@ -26,8 +26,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice]
  * @param defaultValue String default for the setting
  * @param checker [EntryChecker] defining validation and correction for the string inputs.
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedString
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.strings
  * @see Builder
  * @author fzzyhmstrs
  * @since 0.2.0
@@ -39,7 +38,6 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
      *
      * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
      * @param defaultValue String, the default string for this setting
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.regexString
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -63,7 +61,6 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
      *
      * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
      * @param defaultValue String, the efault string for this setting
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.unboundedString
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -73,7 +70,6 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
      * An unbounded validated string value with empty default value
      *
      * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.emptyString
      * @author fzzyhmstrs
      * @since 0.2.0
      */
