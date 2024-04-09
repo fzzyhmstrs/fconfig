@@ -75,6 +75,12 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
      */
     constructor(): this("", EntryChecker.any())
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return String - deep copy of the currently stored value
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun copyStoredValue(): String {
         return String(storedValue.toCharArray())
     }
@@ -111,7 +117,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedString {
-        return ValidatedString(String(defaultValue.toCharArray()), this.checker)
+        return ValidatedString(copyStoredValue(), this.checker)
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
