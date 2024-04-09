@@ -42,69 +42,71 @@ internal object ValidatedShorthands {
         "my.config.ODDS.desc": "Odd numbers and nothing else!"
     }"""
 
-    //shorthand validated Enum. the constant is the default value
-    val shorthandEnum = TestEnum.MORE.validated()
-
-    //Shorthand validated Color. The color values in the Color will be the default color components
-    val shorthandColor = Color(255,255,128,255).validated()
-
-    //Shorthand validated Color from a base color int. The color values in the Color will be the default color components.
-    //In this example, the color does not accept transparency
-    val shorthandColorInt = 0xFF5500.validatedColor(false)
-
-    //Shorthand math Expression. This is directly in the Expression class itself, not in the Shorthand object
-    val shorthandMath = Expression.validated("x * 0.5", setOf('x'))
-
-    /////////////////////////////////
-
-    //example shorthand validated list. Shown is an identifier list. Note that identifier lists are actually string lists
-    val shorthandList = listOf(Identifier("stick")).validated(ValidatedIdentifier.ofRegistry(Identifier("stick"),Registries.ITEM))
-
-    //example Number-based shorthand list
-    val shorthandNumberList = listOf(1,2,5,10).validated()
-
-    //example shorthand identifier list with automatic tag validation
-    val shorthandTagIdList = listOf(Identifier("white_bed")).validatedTag(ItemTags.BEDS)
-
-    //example shorthand identifier list with automatic registry validation
-    val shorthandRegistryIdList = listOf(Identifier("nether_star")).validatedRegistry(Registries.ITEM)
-
-    //example shorthand identifier list with automatic predicated registry validation
-    val shorthandPredicatedRegistryIdList = listOf(Identifier("stone_sword")).validatedRegistry(Registries.ITEM, BiPredicate { id, e -> e.value() is SwordItem })
-
-    //example shorthand identifier list with automatic list validation. The list should be complete and available at validation time
-    val shorthandListIdList = listOf(Identifier("arrow")).validatedList(listOf(Identifier("arrow"),Identifier("firework_rocket")))
-
-    //example shorthand validated Identifier using a tag for validation
-    val shorthandTagIds = BlockTags.AXE_MINEABLE.validatedIds()
-
-    //example shorthand validated Identifier using a registry for validation
-    val shorthandRegistryIds = Registries.ATTRIBUTE.validatedIds()
-
-    //example shorthand validated Identifier using a registry for validation
-    val shorthandPredicatedRegistryIds = Registries.ATTRIBUTE.validatedIds(BiPredicate { id, e -> id.namespace == FC.MOD_ID })
-
-    //example shorthand validated Identifier using a list for validation. The list should be complete and available at validation time
-    val shorthandListIds = listOf(Identifier("arrow"),Identifier("firework_rocket")).validatedIds()
-
-    //////////////////////////////////////
-
-    //example shorthand validated list. Shown is an identifier list. Note that identifier lists are actually string lists
-    val shorthandSet = setOf(Identifier("stick")).validated(ValidatedIdentifier.ofRegistry(Identifier("stick"),Registries.ITEM))
-
-    //example Number-based shorthand list
-    val shorthandNumberSet = setOf(1,2,5,10).validated()
-
-    //example shorthand identifier list with automatic tag validation
-    val shorthandTagIdSet = setOf(Identifier("white_bed")).validatedTag(ItemTags.BEDS)
-
-    //example shorthand identifier list with automatic registry validation
-    val shorthandRegistryIdSet = setOf(Identifier("nether_star")).validatedRegistry(Registries.ITEM)
-
-    //example shorthand identifier list with automatic predicated registry validation
-    val shorthandPredicatedRegistryIdSet = setOf(Identifier("stone_sword")).validatedRegistry(Registries.ITEM, BiPredicate { id, e -> e.value() is SwordItem })
-
-    //example shorthand identifier list with automatic list validation. The list should be complete and available at validation time
-    val shorthandListIdSet = setOf(Identifier("arrow")).validatedList(listOf(Identifier("arrow"),Identifier("firework_rocket")))
+    fun shorthands() {
+        //shorthand validated Enum. the constant is the default value
+        val shorthandEnum = TestEnum.MORE.validated()
+    
+        //Shorthand validated Color. The color values in the Color will be the default color components
+        val shorthandColor = Color(255,255,128,255).validated()
+    
+        //Shorthand validated Color from a base color int. The color values in the Color will be the default color components.
+        //In this example, the color does not accept transparency
+        val shorthandColorInt = 0xFF5500.validatedColor(false)
+    
+        //Shorthand math Expression. This is directly in the Expression class itself, not in the Shorthand object
+        val shorthandMath = Expression.validated("x * 0.5", setOf('x'))
+    
+        /////////////////////////////////
+    
+        //example shorthand validated list. Shown is an identifier list. Note that identifier lists are actually string lists
+        val shorthandList = listOf(Identifier("stick")).validated(ValidatedIdentifier.ofRegistry(Identifier("stick"),Registries.ITEM))
+    
+        //example Number-based shorthand list
+        val shorthandNumberList = listOf(1,2,5,10).validated()
+    
+        //example shorthand identifier list with automatic tag validation
+        val shorthandTagIdList = listOf(Identifier("white_bed")).validatedTag(ItemTags.BEDS)
+    
+        //example shorthand identifier list with automatic registry validation
+        val shorthandRegistryIdList = listOf(Identifier("nether_star")).validatedRegistry(Registries.ITEM)
+    
+        //example shorthand identifier list with automatic predicated registry validation
+        val shorthandPredicatedRegistryIdList = listOf(Identifier("stone_sword")).validatedRegistry(Registries.ITEM, BiPredicate { id, e -> e.value() is SwordItem })
+    
+        //example shorthand identifier list with automatic list validation. The list should be complete and available at validation time
+        val shorthandListIdList = listOf(Identifier("arrow")).validatedList(listOf(Identifier("arrow"),Identifier("firework_rocket")))
+    
+        //example shorthand validated Identifier using a tag for validation
+        val shorthandTagIds = BlockTags.AXE_MINEABLE.validatedIds()
+    
+        //example shorthand validated Identifier using a registry for validation
+        val shorthandRegistryIds = Registries.ATTRIBUTE.validatedIds()
+    
+        //example shorthand validated Identifier using a registry for validation
+        val shorthandPredicatedRegistryIds = Registries.ATTRIBUTE.validatedIds(BiPredicate { id, e -> id.namespace == FC.MOD_ID })
+    
+        //example shorthand validated Identifier using a list for validation. The list should be complete and available at validation time
+        val shorthandListIds = listOf(Identifier("arrow"),Identifier("firework_rocket")).validatedIds()
+    
+        //////////////////////////////////////
+    
+        //example shorthand validated list. Shown is an identifier list. Note that identifier lists are actually string lists
+        val shorthandSet = setOf(Identifier("stick")).validated(ValidatedIdentifier.ofRegistry(Identifier("stick"),Registries.ITEM))
+    
+        //example Number-based shorthand list
+        val shorthandNumberSet = setOf(1,2,5,10).validated()
+    
+        //example shorthand identifier list with automatic tag validation
+        val shorthandTagIdSet = setOf(Identifier("white_bed")).validatedTag(ItemTags.BEDS)
+    
+        //example shorthand identifier list with automatic registry validation
+        val shorthandRegistryIdSet = setOf(Identifier("nether_star")).validatedRegistry(Registries.ITEM)
+    
+        //example shorthand identifier list with automatic predicated registry validation
+        val shorthandPredicatedRegistryIdSet = setOf(Identifier("stone_sword")).validatedRegistry(Registries.ITEM, BiPredicate { id, e -> e.value() is SwordItem })
+    
+        //example shorthand identifier list with automatic list validation. The list should be complete and available at validation time
+        val shorthandListIdSet = setOf(Identifier("arrow")).validatedList(listOf(Identifier("arrow"),Identifier("firework_rocket")))
+    }
 
 }
