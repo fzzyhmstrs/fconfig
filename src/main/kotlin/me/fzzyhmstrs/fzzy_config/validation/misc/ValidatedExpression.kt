@@ -107,10 +107,22 @@ class ValidatedExpression @JvmOverloads constructor(
         return input is String && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
     }
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return String - deep copy of the string representation of the currently stored expression
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun copyStoredValue(): String {
         return String(storedValue.toCharArray())
     }
 
+    /**
+     * creates a deep copy of this ValidatedExpression
+     * return ValidatedExpression wrapping a deep copy of the currently stored expression, valid variable, and validation
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedExpression {
         return ValidatedExpression(copyStoredValue(), validVars, validator)
     }
