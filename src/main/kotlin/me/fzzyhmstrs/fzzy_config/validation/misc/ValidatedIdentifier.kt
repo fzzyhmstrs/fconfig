@@ -42,8 +42,7 @@ import java.util.function.*
  * @param defaultValue String, the string value of the default identifier
  * @param allowableIds [AllowableIdentifiers] instance. Defines the predicate for valid ids, and the supplier of valid id lists
  * @param validator [EntryValidator]<String> handles validation of individual entries. Defaults to validation based on the predicate provided in allowableIds
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedIdentifier
- * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.identifiers
  * @see ofTag
  * @see ofRegistry
  * @see ofList
@@ -64,7 +63,6 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
      *
      * Validation will be limited to ensuring inputs are valid identifiers
      * @param defaultValue [Identifier] the default identifier for this validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.unboundedIdentifier]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -75,7 +73,6 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
      *
      * Validation will be limited to ensuring inputs are valid identifiers
      * @param defaultValue [String] the default identifier (in string form) for this validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.stringIdentifier]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -87,7 +84,6 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
      * Validation will be limited to ensuring inputs are valid identifiers
      * @param defaultNamespace [String] the default namespace for this validation
      * @param defaultPath [String] the default path for this validation
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.stringStringIdentifier]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -97,7 +93,6 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
      * An unbounded validated identifier with a dummy default value
      *
      * Validation will be limited to ensuring inputs are valid identifiers
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.emptyIdentifier]
      * @author fzzyhmstrs
      * @since 0.2.0
      */
