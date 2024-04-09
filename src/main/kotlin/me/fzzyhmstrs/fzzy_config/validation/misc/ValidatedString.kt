@@ -106,7 +106,7 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
 
     /**
      * creates a deep copy of this ValidatedString
-     * return ValidatedString wrapping a deep copy of the currently stored string and this validations checker.
+     * @return ValidatedString wrapping a deep copy of the currently stored string and this validations checker.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
