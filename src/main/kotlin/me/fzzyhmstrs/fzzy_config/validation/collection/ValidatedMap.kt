@@ -31,8 +31,7 @@ import java.util.function.BiFunction
  * @param keyHandler [Entry] for handling keys
  * @param valueHandler [Entry] for handling values
  * @see [Builder] Using the builder is recommended for more clear construction
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedMap
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.maps
  * @author fzzyhmstrs
  * @since 0.2.0
  */
