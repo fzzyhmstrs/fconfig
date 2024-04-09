@@ -41,8 +41,7 @@ import kotlin.math.max
  * @param choices [List]<T> defining the appropriate choices
  * @param handler [EntryHandler] to provide validation tasks for individual choice elements
  * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedChoice
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedChoiceList
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.choices
  * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList.toChoices
  * @author fzzyhmstrs
  * @since 0.2.0
@@ -57,7 +56,6 @@ class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val 
      * @param choices [List]<T> defining the appropriate choices
      * @param handler [EntryHandler] to provide validation tasks for individual choice elements
      * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedChoiceDefault
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -120,6 +118,13 @@ class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val 
             false
         }
     }
+
+    /**
+     * @suppress
+     */
+     override fun toString() {
+         return "Validated Choice[value=$storedValue, choices=$choices]"
+     }
 
     /**
      * Determines which type of selector widget will be used for the Choice selector, default is POPUP
