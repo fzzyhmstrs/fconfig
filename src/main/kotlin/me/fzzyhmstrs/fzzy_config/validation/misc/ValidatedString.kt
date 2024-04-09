@@ -112,6 +112,9 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
         return input is String && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         return "Validated String[value=$storedValue, validation=$checker]"
     }
