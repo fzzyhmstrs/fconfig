@@ -51,46 +51,6 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
         }
     }
 
-    override fun copyStoredValue(): Map<K, V> {
-        return storedValue.toMap()
-    }
-
-    override fun instanceEntry(): ValidatedEnumMap<K,V> {
-        return ValidatedEnumMap(storedValue, keyHandler, valueHandler)
-    }
-
-    @Internal
-    @Environment(EnvType.CLIENT)
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
-        return DecoratedActiveButtonWidget(TextureIds.MAP_LANG,110,20,TextureIds.DECO_MAP,{true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    @Environment(EnvType.CLIENT)
-    private fun openMapEditPopup(b: ActiveButtonWidget) {
-        try {
-            val map = storedValue.map {
-                Pair(
-                    (keyHandler.instanceEntry() as Entry<K, *>).also { entry -> entry.accept(it.key) },
-                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.accept(it.value) }
-                )
-            }.associate { it }
-            val choiceValidator: BiFunction<MapListWidget<K, V>, MapListWidget.MapEntry<K, V>?, ChoiceValidator<K>> = BiFunction{ ll, le ->
-                MapListWidget.ExcludeSelfChoiceValidator(le) { self -> ll.getRawMap(self) }
-            }
-            val mapWidget = MapListWidget(map, keyHandler,valueHandler,choiceValidator)
-            val popup = PopupWidget.Builder(this.translation())
-                .addElement("map", mapWidget, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT)
-                .addDoneButton()
-                .onClose { this.setAndUpdate(mapWidget.getMap()) }
-                .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
-                .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
-                .build()
-            PopupWidget.push(popup)
-        } catch (e: Exception){
-            FC.LOGGER.error("Unexpected exception caught while opening list popup")
-        }
-    }
     @Internal
     override fun serialize(input: Map<K, V>): ValidationResult<TomlElement> {
         val table = TomlTableBuilder()
@@ -160,6 +120,60 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
         }
         return ValidationResult.predicated(map.toMap(),keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
     }
+
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return Map&lt;K,V&gt; - copy of the currently stored map
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    override fun copyStoredValue(): Map<K, V> {
+        return storedValue.toMap()
+    }
+
+    /**
+     * creates a deep copy of this ValidatedEnumMap
+     * return ValidatedEnumMap wrapping a deep copy of the currently stored map and handlers
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    override fun instanceEntry(): ValidatedEnumMap<K,V> {
+        return ValidatedEnumMap(storedValue, keyHandler, valueHandler)
+    }
+
+    @Internal
+    @Environment(EnvType.CLIENT)
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
+        return DecoratedActiveButtonWidget(TextureIds.MAP_LANG,110,20,TextureIds.DECO_MAP,{true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    @Environment(EnvType.CLIENT)
+    private fun openMapEditPopup(b: ActiveButtonWidget) {
+        try {
+            val map = storedValue.map {
+                Pair(
+                    (keyHandler.instanceEntry() as Entry<K, *>).also { entry -> entry.accept(it.key) },
+                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.accept(it.value) }
+                )
+            }.associate { it }
+            val choiceValidator: BiFunction<MapListWidget<K, V>, MapListWidget.MapEntry<K, V>?, ChoiceValidator<K>> = BiFunction{ ll, le ->
+                MapListWidget.ExcludeSelfChoiceValidator(le) { self -> ll.getRawMap(self) }
+            }
+            val mapWidget = MapListWidget(map, keyHandler,valueHandler,choiceValidator)
+            val popup = PopupWidget.Builder(this.translation())
+                .addElement("map", mapWidget, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT)
+                .addDoneButton()
+                .onClose { this.setAndUpdate(mapWidget.getMap()) }
+                .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
+                .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+                .build()
+            PopupWidget.push(popup)
+        } catch (e: Exception){
+            FC.LOGGER.error("Unexpected exception caught while opening list popup")
+        }
+    }
+    
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input !is Map<*,*>) return false
@@ -169,6 +183,13 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
             false
         }
     }
+
+    /**
+     * @suppress
+     */
+     override fun toString(): String {
+         return "Validated Enum Map[value=$storedValue, keyHandler=$keyHandler, valueHandler=$valueHandler]"
+     }
 
     companion object{
         internal fun<K:Enum<*>,V> tryMake(map: Map<K,V>, keyHandler: Entry<*,*>, valueHandler: Entry<*,*>): ValidatedEnumMap<K,V>?{
