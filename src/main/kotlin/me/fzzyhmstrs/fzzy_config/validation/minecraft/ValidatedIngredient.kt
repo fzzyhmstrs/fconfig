@@ -40,10 +40,11 @@ import java.util.function.Supplier
  * A validated provider of [Ingredient]
  *
  * This does not store an ingredient, it stores an [IngredientProvider], which lazily generates the ingredient only when requested.
+ * @sample me.fzzyhmstrs.fzzy_config.examples.MinecraftExamples.ingredients
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedIngredient private constructor(defaultValue: IngredientProvider, predicate: Predicate<Identifier>? = null): ValidatedField<ValidatedIngredient.IngredientProvider>(defaultValue) {
+class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<ValidatedIngredient.IngredientProvider>(defaultValue) {
 
     /**
      * A validated provider of [Ingredient]
@@ -53,12 +54,11 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      * Initializes this validation with a single-item IngredientProvider
      * @param item [Identifier] defining the item
      * @param predicate [Predicate]<Identifier>, optional - restricts the set of allowable items (default is any item in the Items registry)
-     * @sample me.fzzyhmstrs.fzzy_config.examples.MinecraftExamples.validatedIngredientItem
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmOverloads
-    constructor(item: Identifier, predicate: Predicate<Identifier>? = null): this(ItemProvider(item), predicate)
+    constructor(item: Identifier, itemPredicate: Predicate<Identifier>? = null, tagPredicate: Predicate<Identifier>? = null): this(ItemProvider(item), itemPredicate, tagPredicate)
 
     /**
      * A validated provider of [Ingredient]
@@ -68,12 +68,11 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      * Initializes this validation with a multi-item IngredientProvider
      * @param set [Set]<[Identifier]> defining the items
      * @param predicate [Predicate]<Identifier>, optional - restricts the set of allowable items (default is any item in the Items registry)
-     * @sample me.fzzyhmstrs.fzzy_config.examples.MinecraftExamples.validatedIngredientList
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmOverloads
-    constructor(set: Set<Identifier>, predicate: Predicate<Identifier>? = null): this(ListProvider(set), predicate)
+    constructor(set: Set<Identifier>, itemPredicate: Predicate<Identifier>? = null, tagPredicate: Predicate<Identifier>? = null): this(ListProvider(set), itemPredicate, tagPredicate)
 
     /**
      * A validated provider of [Ingredient]
@@ -83,18 +82,17 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      * Initializes this validation with a multi-item IngredientProvider
      * @param tag [TagKey]<Item> defining the tag to pull items from
      * @param predicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag from the Items registry)
-     * @sample me.fzzyhmstrs.fzzy_config.examples.MinecraftExamples.validatedIngredientTag
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmOverloads
-    constructor(tag: TagKey<Item>, predicate: Predicate<Identifier>? = null): this(TagProvider(tag.id), predicate)
+    constructor(tag: TagKey<Item>, itemPredicate: Predicate<Identifier>? = null, tagPredicate: Predicate<Identifier>? = null): this(TagProvider(tag.id), itemPredicate, tagPredicate)
 
 
-    private val tagValidator = if(predicate == null) ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM) else ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM,predicate)
+    private val tagValidator = if(tagPredicate == null) ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM) else ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM,tagPredicate)
     @Suppress("DEPRECATION")
-    private val itemValidator = if(predicate == null) ValidatedIdentifier.ofRegistry(Registries.ITEM) else ValidatedIdentifier.ofRegistry(Registries.ITEM) { id, _ -> predicate.test(id) }
-    private val listValidator = ValidatedSet(setOf(),itemValidator)
+    private val itemValidator = if(itemPredicate == null) ValidatedIdentifier.ofRegistry(Registries.ITEM) else ValidatedIdentifier.ofRegistry(Registries.ITEM) { id, _ -> itemPredicate.test(id) }
+    private val listValidator = ValidatedSet(setOf(), itemValidator)
 
     /**
      * Supplies the [Ingredient] from this ValidatedIngredients Provider
@@ -136,8 +134,24 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         return ValidationResult.success(IngredientProvider.serialize(input))
     }
 
+    /**
+     * Creates a deep copy of the stored value and returns it
+     * @return IngredientProvider - deep copy of the currently stored provider
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    override fun copyStoredValue(): IngredientProvider{
+        return storedValue.copy()
+    }
+    
+    /**
+     * creates a deep copy of this ValidatedIngredient
+     * return ValidatedIngredient wrapping a deep copy of the currently stored ingredient provider as well as predicates, if any
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedField<IngredientProvider> {
-        return ValidatedIngredient(defaultValue)
+        return ValidatedIngredient(copyStoredValue(), itemPredicate, tagPredicate)
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
@@ -380,6 +394,9 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         override fun serialize(): TomlElement {
             return TomlLiteral(id.toString())
         }
+        override fun copy(): IngredientProvider {
+            return ItemProvider(Identifier(id.toString()))
+        }
         override fun toString(): String {
             return "Item Ingredient {$id}"
         }
@@ -411,6 +428,9 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
             }
             return toml.build()
         }
+        override fun copy(): IngredientProvider{
+            return ListProvider(ids.toSet())
+        }
         override fun toString(): String {
             return "List Ingredient $ids"
         }
@@ -435,6 +455,9 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         }
         override fun serialize(): TomlElement {
             return TomlLiteral("#${tag}")
+        }
+        override fun copy(): IngredientProvider{
+            return TagProvider(Identifier(tag.toString()))
         }
         override fun toString(): String {
             return "Tag Ingredient {$tag}"
@@ -475,5 +498,6 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         fun provide(): Ingredient
         fun deserialize(toml: TomlElement): IngredientProvider
         fun serialize(): TomlElement
+        fun copy(): IngredientProvider
     }
 }
