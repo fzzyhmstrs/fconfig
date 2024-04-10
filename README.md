@@ -26,6 +26,6 @@ Fzzy Config is a powerful configuration engine for Minecraft Mods that meets you
 * Versioned Updates supported with one simple method implementation
 * Scrape previous configs to easily update from another config library
 
-## Flexibility
+### Flexibility
 * Implement a config with as little or much effort as you want
 * Plain java object, or Minecraft GameOptions-like carefully crafted settings
