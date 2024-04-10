@@ -17,13 +17,16 @@ import java.awt.Color
 
 class TestConfigImpl: Config("test_config", "fzzy_config_test2") {
 
+    @WithPerms(5)
     var bl1 = true
     var bl2 = ValidatedBoolean()
 
     var int1 = 6
     var int2 = ValidatedInt(6,10,1)
 
+    @WithPerms(5)
     var enum1 = TestEnum.ALPHA
+    @WithPerms(5)
     var enum2 = TestEnum.BETA.validated()
 
     var section1 = TestSectionImpl()
@@ -64,11 +67,13 @@ class TestConfigImpl: Config("test_config", "fzzy_config_test2") {
 
     var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
+    @WithPerms(5)
     var list1 = listOf(1,3,5,7)
     var list2 = listOf(1,3,5,7).validated()
 
     var color1 = Color(255,128,0).validated(true)
 
+    @WithPerms(5)
     var set1 = setOf(0.2,0.4,0.6)
     var set2 = setOf(0.2,0.4,0.6).validated()
 
