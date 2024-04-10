@@ -285,12 +285,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private fun hasNeededPermLevel(playerPermLevel: Int, defaultPerm: Int, annotations: List<Annotation>): Boolean {
         if (ConfigApiImpl.isNonSync(annotations)) return true
         for (annotation in annotations){
-            if (annotation is WithPerms)
-                return playerPermLevel >= annotation.opLevel
-        }
-        for (annotation in annotations){
             if (annotation is ClientModifiable)
                 return true
+        }
+        for (annotation in annotations){
+            if (annotation is WithPerms)
+                return playerPermLevel >= annotation.opLevel
         }
         return playerPermLevel >= defaultPerm
     }
