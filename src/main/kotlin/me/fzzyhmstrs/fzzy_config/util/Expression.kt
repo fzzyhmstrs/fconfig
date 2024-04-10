@@ -46,6 +46,7 @@ import kotlin.reflect.typeOf
  * @since 0.2.0
  */
 @FunctionalInterface
+@JvmDefaultWithCompatibility
 fun interface Expression {
 
     /**
@@ -59,9 +60,30 @@ fun interface Expression {
     @Deprecated("Where possible use safeEval() to avoid throwing exceptions on evaluation failure")
     fun eval(vars: Map<Char,Double>): Double
 
+    /**
+     * Evaluates an expression with a fallback. Will fail to fallback instead of throwing. This call is recommended over the 'raw' eval call
+     * @param vars Map<Char, Double> - map of the input variables. The Char used must match the variable characters used in the string expression and visa-versa
+     * @param fallback Double - fallback value in case eval() throws
+     * @return Double - The result of the expression evaluation or the fallback if evaluation fails
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun evalSafe(vars: Map<Char,Double>, fallback: Double): Double {
+        return try{
+            this.eval(vars)
+        } catch(e: Exception) {
+            fallback
+        }
+    }
+
     @Suppress("SameParameterValue")
     companion object Impl {
 
+        /**
+         * Codec for expressions, storing the expression in string form
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         val CODEC = Codec.STRING.comapFlatMap(
             {s -> try{ DataResult.success(parse(s, s)) } catch(e:Exception) { DataResult.error { "Error while deserializing math equation: ${e.localizedMessage}" }}},
             {e -> e.toString()}
@@ -145,7 +167,7 @@ fun interface Expression {
          * @param str String. the default math expression to be used in the [ValidatedExpression]
          * @param vars Set<Char> defining the relevant and allowable variable names
          * @return ValidatedExpression wrapping the passed string as it's default expression
-         * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.shorthandMath]
+         * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.maths
          * @throws IllegalStateException if the passed string is not parsable
          * @author fzzyhmstrs
          * @since 0.2.0
@@ -154,22 +176,6 @@ fun interface Expression {
         fun validated(str: String, vars: Set<Char> = setOf()): ValidatedExpression{
             parse(str)
             return ValidatedExpression(str, vars)
-        }
-
-        /**
-         * Evaluates an expression with a fallback. Will fail to fallback instead of throwing. This call is recommended over the 'raw' eval call
-         * @param vars Map<Char, Double> - map of the input variables. The Char used must match the variable characters used in the string expression and visa-versa
-         * @param fallback Double - fallback value in case eval() throws
-         * @return Double - The result of the expression evaluation or the fallback if evaluation fails
-         * @author fzzyhmstrs
-         * @since 0.2.0
-         */
-        fun Expression.evalSafe(vars: Map<Char,Double>, fallback: Double): Double{
-            return try{
-                this.eval(vars)
-            } catch(e: Exception) {
-                fallback
-            }
         }
 
         private val expressions: Map<String, NamedExpression> = mapOf(
