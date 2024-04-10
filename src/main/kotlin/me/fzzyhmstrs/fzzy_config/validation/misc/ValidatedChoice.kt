@@ -128,7 +128,7 @@ class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val 
     /**
      * @suppress
      */
-     override fun toString() {
+     override fun toString(): String {
          return "Validated Choice[value=$storedValue, choices=$choices]"
      }
 

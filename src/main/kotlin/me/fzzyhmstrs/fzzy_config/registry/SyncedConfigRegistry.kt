@@ -48,9 +48,10 @@ object SyncedConfigRegistry {
                 val errors = mutableListOf<String>()
                 val result = ConfigApi.deserializeConfig(config, configString, errors, false) //Don't ignore NonSync on a synchronization action
                 result.first.writeError(errors)
+                result.first.get().save() //save config to the client
             }
         }
-        //receives the dirty config update from the server after a client pushes changes to it.
+        //receives a config update from the server after another client pushes changes to it.
         ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.type){ payload, _ ->
             val serializedConfigs = payload.updates
             for ((id, configString) in serializedConfigs) {
@@ -59,10 +60,11 @@ object SyncedConfigRegistry {
                     val errors = mutableListOf<String>()
                     val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
                     result.writeError(errors)
+                    result.get().save()
                 }
             }
         }
-
+        //receives an update forwarded from another player and passes it to the client registry for handling.
         ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type){ payload, _ ->
             val update = payload.update
             val sendingUuid = payload.player
@@ -84,6 +86,7 @@ object SyncedConfigRegistry {
         PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
         PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
 
+        //handles synchronization of configs to clients on CONFIGURE stage of login
         ServerConfigurationConnectionEvents.CONFIGURE.register { handler, _ ->
             for ((id, config) in syncedConfigs) {
                 val syncErrors = mutableListOf<String>()
@@ -95,7 +98,7 @@ object SyncedConfigRegistry {
                 ServerConfigurationNetworking.send(handler, payload)
             }
         }
-
+        //syncs configs to clients after datapack reload
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, _ ->
             val players = server.playerManager.playerList
             for (player in players) {
@@ -110,7 +113,8 @@ object SyncedConfigRegistry {
                 }
             }
         }
-
+        //receives an update from a permissible client, throwing a cheat warning to the logs and to online moderators if permissions don't match (and discarding the update)
+        //deserializes the updates to server configs, then propagates the updates to other online clients
         ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
             val permLevel = payload.playerPerm
             val serializedConfigs = payload.updates
@@ -128,7 +132,7 @@ object SyncedConfigRegistry {
                 val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
                 result.writeError(errors)
-                config.save()
+                result.get().save()
             }
             for (player in context.player().server.playerManager.playerList) {
                 if (player == context.player()) continue // don't push back to the player that just sent the update
@@ -138,7 +142,7 @@ object SyncedConfigRegistry {
             val changes = payload.changeHistory
             ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
         }
-
+        //receives a forwarded client update and passes it along to the recipient
         ServerPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type){ payload, context ->
             val uuid = payload.player
             val receivingPlayer = context.player().server.playerManager.getPlayer(uuid) ?: return@registerGlobalReceiver

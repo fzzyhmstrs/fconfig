@@ -39,7 +39,7 @@ object ConfigApiImpl {
     internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T {
         return when(registerType){
             RegisterType.BOTH -> registerBoth(config,configClass)
-            RegisterType.SYNC -> registerSynced(config)
+            RegisterType.SERVER -> registerSynced(config)
             RegisterType.CLIENT -> registerClient(config,configClass)
         }
     }
@@ -61,7 +61,7 @@ object ConfigApiImpl {
     internal fun <T: Config> registerAndLoadConfig(configClass: () -> T, registerType: RegisterType): T{
         return when(registerType){
             RegisterType.BOTH -> registerAndLoadBoth(configClass)
-            RegisterType.SYNC -> registerAndLoadSynced(configClass)
+            RegisterType.SERVER -> registerAndLoadSynced(configClass)
             RegisterType.CLIENT -> registerAndLoadClient(configClass)
         }
     }
@@ -574,6 +574,6 @@ object ConfigApiImpl {
     }
 
     internal fun interface WalkAction{
-        fun act(walkable: Walkable, oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>)
+        fun act(walkable: Any, oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>)
     }
 }

@@ -14,11 +14,10 @@ import java.util.function.Supplier
 /**
  * Defines a set of allowable identifiers for use in validation. Also supplies [Suggestions] to generate suggestion popups in-game.
  *
- * NOTE: Expectation is that the predicate and supplier are based on matching sets of information; someone in theory could use the suppliers information to predicate an input, and the predicate could be used on a Theoretical "parent" dataset of identifiers to derive the same contents as the supplier. Behavior may be undefined if this isn't the case.
+ * NOTE: Expectation is that the predicate and supplier are based on matching sets of information; someone in theory could use the suppliers information to predicate an input, and the predicate could be used on a theoretical "parent" dataset of identifiers to derive the same contents as the supplier. Behavior may be undefined if this isn't the case.
  * @param predicate Predicate&lt;Identifier&gt; - tests a candidate Identifier to see if it is allowable
- * @param supplier Supplier&lt;List&lt;Identifier&gt;&gt; - supplies all allowable identifiers in the form of a list. As typical with suppliers, should provide a new list on each call
+ * @param supplier Supplier&lt;List&lt;Identifier&gt;&gt; - supplies all allowable identifiers in the form of a list. As typical with suppliers, it is not required but beneficial that the supplier provide a new list on each call
  * @see me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
- * @sample
  * @author fzzyhmstrs
  * @since 0.2.0
  */

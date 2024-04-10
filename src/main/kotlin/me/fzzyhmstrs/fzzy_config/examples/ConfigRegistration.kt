@@ -12,7 +12,7 @@ internal object ConfigRegistration {
     var myClientOnlyConfig = ConfigApi.registerAndLoadConfig( { MyConfig() }, RegisterType.CLIENT )
 
     //adding the registerType, you can register a config as sync-only. Their won't be any client-side GUI functionality, so the config will only be editable from the file itself, but it will auto-sync with clients.
-    var mySyncedOnlyConfig = ConfigApi.registerAndLoadConfig( { MyConfig() }, RegisterType.SYNC )
+    var mySyncedOnlyConfig = ConfigApi.registerAndLoadConfig( { MyConfig() }, RegisterType.SERVER )
 
     //Init function would be called in ModInitializer or some other entrypoint. Not strictly necessary if loading on-reference is ok.
     fun init(){}

@@ -23,20 +23,31 @@ object ClientConfigRegistry {
     private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
     private val configScreenManagers: MutableMap<String, ConfigScreenManager> = mutableMapOf()
     private var validScopes: MutableSet<String> = mutableSetOf() //configs are sorted into Managers by namespace
-
+    private var validSubScopes: MutableSet<String> = mutableSetOf()
+    private var hasScrapedMetadata = false
     @Environment(EnvType.CLIENT)
     internal fun getScreenScopes(): Set<String>{
-        val set = mutableSetOf(*validScopes.toTypedArray())
-        for(container in FabricLoader.getInstance().allMods) {
-            val customValue = container.metadata.getCustomValue("fzzy_config") ?: continue
-            if (customValue.type != CustomValue.CvType.ARRAY) continue
-            val arrayValue = customValue.asArray
-            for (thing in arrayValue){
-                if (thing.type != CustomValue.CvType.STRING) continue
-                set.add(thing.asString)
+        if (!hasScrapedMetadata) {
+            val set = mutableSetOf(*validScopes.toTypedArray())
+            for (container in FabricLoader.getInstance().allMods) {
+                val customValue = container.metadata.getCustomValue("fzzy_config") ?: continue
+                if (customValue.type != CustomValue.CvType.ARRAY) continue
+                val arrayValue = customValue.asArray
+                for (thing in arrayValue) {
+                    if (thing.type != CustomValue.CvType.STRING) continue
+                    set.add(thing.asString)
+                }
             }
+            hasScrapedMetadata = true
+            return set.toSet()
+        } else {
+            return validScopes
         }
-        return set.toSet()
+    }
+
+    @Environment(EnvType.CLIENT)
+    internal fun getSubScreenScopes(): Set<String>{
+        return validSubScopes
     }
 
     @Environment(EnvType.CLIENT)
@@ -98,6 +109,7 @@ object ClientConfigRegistry {
     @Environment(EnvType.CLIENT)
     internal fun registerConfig(config: Config, baseConfig: Config){
         validScopes.add(config.getId().namespace)
+        validSubScopes.add(config.getId().path)
         UpdateManager.applyKeys(config)
         clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config,baseConfig)
     }

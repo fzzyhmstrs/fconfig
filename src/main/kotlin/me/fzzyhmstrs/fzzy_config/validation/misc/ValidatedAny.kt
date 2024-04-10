@@ -35,11 +35,11 @@ import kotlin.reflect.full.createInstance
  * This Validation is useful for "blocks" of config, such as Entity Stats or Tool Materials, that you want to break out
  * @param T [Walkable] object to be managed
  * @param defaultValue Instance of T to wrap
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.walkables
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.anys
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedWalkable<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
+class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
@@ -52,13 +52,13 @@ class ValidatedWalkable<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     /**
-     * creates a deep copy of this ValidatedWalkable
-     * @return ValidatedWalkable wrapping a deep copy of the currently stored object
+     * creates a deep copy of this ValidatedAny
+     * @return ValidatedAny wrapping a deep copy of the currently stored object
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedField<T> {
-        return ValidatedWalkable(copyStoredValue())
+        return ValidatedAny(copyStoredValue())
     }
 
     @Internal
@@ -85,15 +85,15 @@ class ValidatedWalkable<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
      */
     override fun copyStoredValue(): T {
         return try {
-            storedValue::class.createInstance()
+            val new = storedValue::class.createInstance()
             val toml = serialize(this.get()).get()
             val result = ConfigApiImpl.deserializeFromToml(new, toml, mutableListOf())
             if (result.isError()) storedValue else result.get()
         } catch(e: Exception) {
-            storedValue //object doesn't have an empty constructor. no prob. 
+            storedValue //object doesn't have an empty constructor. no prob.
         }
     }
-    
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input == null) return false
@@ -129,7 +129,7 @@ class ValidatedWalkable<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                 entryList.add(ConfigEntry(name,thing.descLit(""),entryList,thing.widgetEntry(),null,null,null))
 
             } else if (thing is Walkable){
-                val validation = ValidatedWalkable(thing)
+                val validation = ValidatedAny(thing)
                 validation.setEntryKey(new)
                 validation.setUpdateManager(manager)
                 manager.setUpdatableEntry(validation)
@@ -164,7 +164,7 @@ class ValidatedWalkable<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     @Environment(EnvType.CLIENT)
-    private class ValidatedObjectUpdateManager<T: Walkable>(private val thing: T, private val key: String): BaseUpdateManager(){
+    private class ValidatedObjectUpdateManager<T: Any>(private val thing: T, private val key: String): BaseUpdateManager(){
 
         private val updatableEntries: MutableMap<String, Updatable> = mutableMapOf()
 

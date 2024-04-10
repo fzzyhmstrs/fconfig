@@ -5,7 +5,7 @@ import net.minecraft.text.Text
 
 /**
  * Classes that implement [Translatable] can be automatically utilized by many FzzyConfig systems for generating translatable text in-game
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ExampleTranslatable]
+ * @sample me.fzzyhmstrs.fzzy_config.examples.TranslatableExample.translatable
  * @author fzzyhmstrs
  * @since 0.2.0
  */

@@ -39,10 +39,10 @@ object ValidatedMiscExamples{
     fun choices() {
         //fully defined validated choice, defining a set of valid ints (which happen to be the enchantment weights from the old Enchantment.Rarity enum.
         val validatedChoice = ValidatedChoice(1, listOf(1,2,5,10),ValidatedInt(1,10,1),ValidatedChoice.WidgetType.CYCLING)
-    
+
         //validated choice that uses "default" as its default choice automatically, and is defaulting to using the popup widget
         val validatedChoiceDefault = ValidatedChoice(listOf("default","rare", "abundant"),ValidatedString())
-    
+
         //validated choices built from a validated list instance.
         val validatedChoiceList = ValidatedList.ofString("default","rare", "abundant").toChoices()
 
@@ -65,16 +65,16 @@ object ValidatedMiscExamples{
         //example validated color. defined with standard integer RGBA color components [0-225]
         //this example has transparency enabled. To allow only opaque colors, use the RGB overload or input Int.MIN_VALUE
         val validatedColor = ValidatedColor(255, 128, 0, 255)
-    
+
         //this validated color allows opaque colors only
         val validatedColorOpaque = ValidatedColor(0, 128, 255)
-    
+
         //this validated color allows opaque colors only
         val validatedColorSimple = ValidatedColor()
-    
+
         //Validated color built from a java Color. This color will not allow transparency
         val validatedColorColor = ValidatedColor(Color(1f,0.5f,0f),false)
-    
+
         //validated color built from a hex string, with transparency enabled.
         val validatedColorString = "D6FF00AA".validatedColor(true)
 
@@ -98,15 +98,15 @@ object ValidatedMiscExamples{
         val validatedColor: ValidatedColor = ValidatedColor(255, 128, 0, 255)
 
         // the wrapped ColorHolder
-        val holder: ColorHolder = validatedColor.get()
+        val holder: ValidatedColor.ColorHolder = validatedColor.get()
 
         //we can get color values from it
         val r: Int = holder.r //255
         val g: Int = holder.g //128
-        val argb: Int = holder.argb() 
+        val argb: Int = holder.argb()
 
         //color holders are immutable, we can mutate them via a MutableColor though
-        val mutable: MutableColor = holder.mutable()
+        val mutable: ValidatedColor.MutableColor = holder.mutable()
 
         //update the RGB to something new
         mutable.updateRGB(128,0,128)
@@ -134,11 +134,11 @@ object ValidatedMiscExamples{
     val validatedEnum = ValidatedEnum(TestEnum.COOL, ValidatedEnum.WidgetType.CYCLING)
 
     fun expressions() {
-    
+
         // example validated Expression; automatically parses and caches the Math Expression input in string form.
         // The user can input any equation they like as long as it uses x, y, both, or neither expected variables passed in the set
         val validatedExpression = ValidatedExpression("2.5 * x ^ 2 - 45 * y", setOf('x', 'y'))
-    
+
         fun evalExpressionExample() {
             val vars = mapOf('x' to 2.0, 'y' to 10.0) //prepared variable map with the current values of the expected vars
             val result = validatedExpression.eval(vars) // (= -440.0) straight eval() call. This can throw exceptions, so use with caution
@@ -164,16 +164,16 @@ object ValidatedMiscExamples{
         //Example validated identifier. Note that this "raw" usage of the constructor is not recommended in most cases.
         //For instance, in this case, an implementation of ofRegistry(Registry, BiPredicate) would be advisable
         val validatedIdentifier = ValidatedIdentifier(Identifier("oak_planks"), AllowableIdentifiers({ id -> id.toString().contains("planks") }, { Registries.BLOCK.ids.filter { it.toString().contains("planks") } }))
-    
+
         //Unbounded validated Identifier. Any valid Identifier will be allowed
         val unboundedIdentifier = ValidatedIdentifier(Identifier("nether_star"))
-    
+
         //Unbounded validated Identifier directly from string. Any valid Identifier will be allowed
         val stringIdentifier = ValidatedIdentifier("nether_star")
-    
+
         //Unbounded validated Identifier directly from string nbamespace and path. Any valid Identifier will be allowed
         val stringStringIdentifier = ValidatedIdentifier("minecraft","nether_star")
-    
+
         //Unbounded validated Identifier with a dummy default. used only for validation of other things
         val emptyIdentifier = ValidatedIdentifier()
 
@@ -211,17 +211,17 @@ object ValidatedMiscExamples{
                 }
             }
             .build()
-    
+
         //string validated with regex. provides entry correction in the form of stripping invalid characters from the input string, leaving only the valid regex matching sections
         //the regex provided in this example matches to Uppercase characters. AbCdE would fail validation, and would correct to ACE.
         val regexString = ValidatedString("ABCDE", "\\p{Lu}")
-    
+
         //Unbounded validated string. Any valid string will be allowed
         val unboundedString = ValidatedString("hamsters")
-    
+
         //Empty validated string. Any valid string will be allowed, and the default value is ""
         val emptyString = ValidatedString()
-    
+
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows
         //1. the namespace of the config id: (my_mod)
@@ -237,17 +237,16 @@ object ValidatedMiscExamples{
         """
     }
 
-    fun walkables() {
+    fun anys() {
         //example POJO for use in validation. It follows the same rules as sections and configs (public non-final properties, validated or not)
-        class ExampleWalkable : Walkable {
+        class ExampleAny {
             var exampleInt = 4
             var exampleDouble = 0.4
-            var exampleTag =
-                ValidatedTagKey(ItemTags.AXES) { id -> listOf(ItemTags.AXES.id, ItemTags.SWORDS.id).contains(id) }
+            var exampleTag = ValidatedTagKey(ItemTags.AXES) { id -> listOf(ItemTags.AXES.id, ItemTags.SWORDS.id).contains(id) }
         }
 
         // wraps a plain object (that implements Walkable) into validation and serialization
-        var validatedExampleWalkable = ValidatedWalkable(ExampleWalkable())
+        var validatedExampleAny = ValidatedAny(ExampleAny())
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows

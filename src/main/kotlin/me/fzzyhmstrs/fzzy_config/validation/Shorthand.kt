@@ -4,6 +4,7 @@ import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.registry.Registry
@@ -286,10 +287,10 @@ object Shorthand {
      */
     @JvmStatic
     @Deprecated("Use only for validation of a list or map.")
-    fun <T> TagKey<T>.validated(): ValidatedTagKey<T> {
+    fun <T: Any> TagKey<T>.validated(): ValidatedTagKey<T> {
         return ValidatedTagKey(this)
     }
-    
+
     /**
      * Shorthand Validated Identifier using the [Registry] for validation
      *

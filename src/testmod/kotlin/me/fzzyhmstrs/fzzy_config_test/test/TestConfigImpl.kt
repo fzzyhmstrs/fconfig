@@ -2,7 +2,6 @@ package me.fzzyhmstrs.fzzy_config_test.test
 
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
@@ -54,9 +53,9 @@ class TestConfigImpl: Config("test_config", "fzzy_config_test", "test") {
 
         var tag1 = ValidatedTagKey(ItemTags.PICKAXES)
 
-        var object1 = ValidatedWalkable(TestWalkable())
+        var object1 = ValidatedAny(TestAny())
 
-        class TestWalkable: Walkable{
+        class TestAny {
             var testInt = 1
             var testValidated = ValidatedFloat(3f,6f,1f)
             var testValidated2 = listOf(1,3,5,7).validated()

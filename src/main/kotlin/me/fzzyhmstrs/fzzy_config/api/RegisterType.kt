@@ -23,7 +23,7 @@ enum class RegisterType {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    SYNC,
+    SERVER,
     /**
      * Config is registered to only the ClientConfigRegistry.
      *
