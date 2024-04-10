@@ -1,6 +1,7 @@
 # FzzyConfig
 
 Fzzy Config is a powerful configuration engine for Minecraft Mods that meets you where you want to be. Quick and dirty or detailed and featureful, Fzzy Config will work with you. It provides a wide array of features not common in other config libraries:
+* All the basics - Everything you expect out of a config lib, you can find here. Automagical file serialization from plain objects, simple registration and minimal API usage. But Fzzy Config goes above and beyond the basics.
 * Automatic GUI generation - Generates a GUI for your configs automatically based on the layout and content of your config files. Screens are fully navigable and narratable out of the box.
 * Server-Client sync - Configs are automatically synchronized between server and client, and server Operators can push updates to the server configs from their GUI.
   * Setting Forwarding - Players can forward client-sided settings to other players who want the same setup.
