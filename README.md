@@ -1,70 +1,12 @@
 # FzzyConfig
 
-### The base API for mods created by fzzyhmstrs (that's me!) Fzzy Core provides a framework for several important features of building content mods!
-see the [wiki](https://github.com/fzzyhmstrs/fc/wiki) for more detailed information.
-
-### Including FC in your project
-Fzzy Config is stored on Modrinth, so you can easily grab it from there with the following maven and dependencies notation:
-
-**Current Latest Versions:**
-
-_Currently under development_
-
-### Upgrade Plan
-- Remove the README system. Instead, we are going to build a GUI system.
-- For GUI system and syncing, want:
-  - `markDirty()` use to define which elements to sync, instead of whole-config sync?
-  - `@NoSync` annotation for Full Client options that the servers shouldn't overwrite
-  - `@Restrict` annotation for marking the OperatorLevel the option is, should it be available to all, lvl 2 op, lvl 4 op
-  - `@Description` replace the README system with a description system used in the GUI
-  - Investigate serializing to/from TOML instead of JSON
-
-### ValidatedField Validation
-- validator class? interface? that does... what
-  - Validate
-  - Accept inputs for Range, Validation checking, etc.
-    - for example. ValidatedInt, have Min, Max, callback {val -> ValidationResult<val>}
-  - widgetBuild method, provides a functional widget that it can validate against
-    - for example, ValidatedBool -> ToggleButtonWidget
-  - Have an input chain of Widget action -> `validateAndSet()`
-    - Don't want: constant resetting of values while player is typing etc. 
-    - Use PopupWindow for widgets that need time
-      - Make Entries
-      - Player can check over them, maybe a `validate` only method here for helping
-      - Submit from the Popup
-      - `validateAndSet()`
-      - Ex: `ValidatedEnum` would create a Popup with buttons for the valid selections.
-    - Utilize CommandSuggestions...? 
-      - Config of disabledEnchants = suggest applicable enchants for disabling
-- Need:
-  - validateAndSet()
-  - validateAndCorrectInputs()
-  - validate()
-  - EntryValidator
-  - createWidget()
-  - markDirty()
-- For:
-  - Call-Response of
-    - Client closes/accepts/applies their config screen
-    - Packet of dirty ValidatedFields sent to Server for config updating
-    - Server records fields changed
-    - Replicates updates to all clients
-    - Live updating of ConfigScreen??
-      - Need a check for change of currently-being-edited field
-
-### Screen Construction
-Basic component needs of the GUI side of things
-- Generic Config Screen Layer that can be utilized at any layer
-  - Needs to know its scope
-  - Needs to be able to instance its ListWidget
-  - Needs to be able to instance its Scope buttons at the top
-- Generic Entry
-- Changes button
-- Apply Button
-- Done Button
-- Change Log Button (TextlessButton)
-- PopupWidget implementation as ParentElement
-  - PopupWidgets for List-type fields (List, Map)
-  - PopupWidget for Color
-  - PopupWidget for forwarding a setting
-- ClickableWidgets for all fields
+Fzzy Config is a powerful configuration engine for Minecraft Mods that meets you where you want to be. Quick and dirty or detailed and featureful, Fzzy Config will work with you. It provides a wide array of features not common in other config libraries:
+* Automatic GUI generation - Generates a GUI for your configs automatically based on the layout and content of your config files. Screens are fully navigable and narratable out of the box.
+* Server-Client sync - Configs are automatically synchronized between server and client, and server Operators can push updates to the server configs from their GUI.
+  * Setting Forwarding - Players can forward client-sided settings to other players who want the same setup.
+* Validation and Correction - Everything in Fzzy Config is backed by a suite of custom validation, correction, and de/serialization tools.
+  * Restrict user inputs - Control what values a player can choose from
+  * Automatic suggestions - For settings like tags and identifiers, suggestions are automatically generated from the permissible options, just like command completions.
+* Versioned Updates - Implement methods to automatically correct or update inputs from outdated file versions.
+* ModMenu and Catalogue - Automatic integration with ModMenu and Catalogue is provided.
+* Scrape previous configs - Updating from another config lib? Tell Fzzy Config about the old config file and it will do it's best to scrape it and update the new config file with the old info.
