@@ -153,14 +153,12 @@ object ConfigApiImpl {
                             e.printStackTrace()
                         }
                     }
+                    oldFile.delete()
                 }
                 val fErrorsOut = mutableListOf<String>()
-                val serializedConfig = serializeConfig(classInstance,fErrorsOut)
+                val serializedConfig = serializeConfig(classInstance, fErrorsOut)
                 if (fErrorsOut.isNotEmpty()){
-                    val fErrorsOutResult = ValidationResult.error(
-                        true,
-                        "Critical error(s) encountered while re-serializing corrected Config Class! Output may not be complete."
-                    )
+                    val fErrorsOutResult = ValidationResult.error(true,"Critical error(s) encountered while re-serializing corrected Config Class! Output may not be complete.")
                     fErrorsOutResult.writeError(fErrorsOut)
                 }
                 f.writeText(serializedConfig)
