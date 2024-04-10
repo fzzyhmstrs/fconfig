@@ -11,8 +11,6 @@ import net.minecraft.text.MutableText
  * The default [translationKey] will be in the form `"<prefix>.CONSTANT"`. Example: `TestEnum.TEST`
  *
  * The default [descriptionKey] will be in the form `"<prefix>.CONSTANT.desc"`. Example: `TestEnum.TEST.desc`
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.TestEnum
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedShorthands.lang
  * @author fzzyhmstrs
  * @since 0.2.0
  */
