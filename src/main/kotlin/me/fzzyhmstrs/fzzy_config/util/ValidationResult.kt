@@ -8,7 +8,8 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.success
  *
  * Used to provide contextual error information "upstream" of where the error was encountered, which allows for better logging where upstream elements can collate error messages passed back to them into an organized and sensible error log.
  *
- * This class has a private constructor to force the use of the pre-defined static instantiation methods [success] and [error]
+ * This class has a private constructor to force the use of the pre-defined static instantiation methods
+ * @param T result type, can be nullable
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -16,7 +17,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
     /**
      * Boolean check to determine if this result is valid (no errors)
      *
-     * @return Boolean, true is NOT an error, false an error.
+     * @return Boolean, true is NOT an error, false if there is an error.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -38,7 +39,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
     /**
      * Supplies the error message stored within
      *
-     * @return String, the error message stored, or "" if no error is within
+     * @return String, the error message stored, or an empty string if no error
      * @author fzzyhmstrs
      * @since 0.1.0
      */
@@ -94,7 +95,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
     companion object{
         /**
-         * Create a successful validation result if validation was successful.
+         * Creates a successful validation result.
          *
          * No error message needed as no errors were found.
          * @param T Type of result
@@ -103,14 +104,14 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.1.0
          */
-        fun <T>success(storedVal: T): ValidationResult<T> {
+        fun <T> success(storedVal: T): ValidationResult<T> {
             return ValidationResult(storedVal)
         }
 
         /**
          * Create a validation result with this if there was a problem during validation.
          *
-         * In this case, typically, [storedVal] will be the default value associated with this validation. A valid instance of T must always be passed back. Add a descriptive error message to [error]
+         * In this case, typically, [storedVal] will be the default value associated with this validation. A valid instance of T must always be passed back. Add a descriptive error message to [error]. If there is no default, you will want to make your result type nullable and pass back null
          * @param T Type of result
          * @param storedVal default or fallback instance of type T
          * @param error string with error message
@@ -118,12 +119,12 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.1.0
          */
-        fun <T>error(storedVal: T, error: String): ValidationResult<T> {
+        fun <T> error(storedVal: T, error: String): ValidationResult<T> {
             return ValidationResult(storedVal,error)
         }
 
         /**
-         * Convenience shortcut for creating a matching success or error depending on a boolean state.
+         * Convenience shortcut for creating a success or error depending on a boolean state.
          *
          * Used if the value returned will be the same regardless of validation, eg. in the case of [EntryValidator][me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator] usage, where no changes are being made to the result
          * @param T Type of result
@@ -139,9 +140,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         /**
-         * Wraps the new value provided in a ValidationResult with whatever error may be there.
+         * Creates a new ValidationResult of type T wrapping the new value with the error(if any) from the receiver ValdiationResult (of any type, does not need to match T)
          *
-         * Useful if the Validation is performed on an incompatible type, but the error is desired.
+         * Useful if the Validation is performed on an incompatible type, and the error needs to be passed along with type T.
          * @param T type of result
          * @param newVal the new value to wrap in the existing result
          * @return ValidationResult with the state and error of the previous result with the newly supplied Type and Value
@@ -174,9 +175,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         /**
-         * reports error to a provided string list
+         * reports error, if any, to a provided string list
          * @param errorBuilder MutableList<String> for appending errors.
-         * @return ValidationResult. returns itself
+         * @return ValidationResult returns itself
          * @author fzzyhmstrs
          * @since 0.2.0
          */
