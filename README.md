@@ -8,7 +8,7 @@ Fzzy Config is a powerful configuration engine for Minecraft Mods that meets you
   * Setting Forwarding - Players can forward client-sided settings to other players who want the same setup.
 * Validation and Correction - Everything in Fzzy Config is backed by a suite of custom validation, correction, and de/serialization tools.
   * Beyond primitive types - Every pre-packaged or custom-built config type has validation and correction as a core concept. Enums, Numbers, Identifiers, Tags, Maps, Lists, etc. 
-  * Restrict user inputs - Control what values a player can choose from.
-  * Automatic suggestions - For settings like tags and identifiers, suggestions are automatically generated from the permissible options, just like command completions.
+  * Restrict user inputs - Tightly control what values a player can choose from.
+  * Automatic suggestions - For settings like tags and identifiers, suggestions are automatically generated from permissible options, just like command completions.
 * Versioned Updates - Implement methods to automatically correct or update inputs from outdated file versions.
 * Scrape previous configs - Updating from another config lib? Tell Fzzy Config about the old config file and it will do it's best to scrape it and update the new config file with the old info.
