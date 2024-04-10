@@ -42,6 +42,11 @@ internal object ValidatedShorthands {
         "my.config.ODDS.desc": "Odd numbers and nothing else!"
     }"""
 
+    fun maths() {
+        //Shorthand math Expression. This is directly in the Expression class itself, not in the Shorthand object
+        val shorthandMath = Expression.validated("x * 0.5", setOf('x'))
+    }
+    
     fun shorthands() {
         //shorthand validated Enum. the constant is the default value
         val shorthandEnum = TestEnum.MORE.validated()
