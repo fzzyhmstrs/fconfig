@@ -23,10 +23,6 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
     override var justClosedWidget: Boolean = false
     override var lastSelected: Element? = null
 
-    override fun activeWidget(): PopupWidget?{
-        return popupWidgets.peek()
-    }
-
     override fun blurElements() {
         this.blur()
     }
