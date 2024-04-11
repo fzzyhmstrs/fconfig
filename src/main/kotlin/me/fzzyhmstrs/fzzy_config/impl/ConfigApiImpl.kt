@@ -671,5 +671,8 @@ object ConfigApiImpl {
         fun getInt(key: String): Int {
             return contextFlags[key] as? Int ?: false
         }
+        fun getAsConfig(): Config?{
+            return config as? Config
+        }
     }
 }
