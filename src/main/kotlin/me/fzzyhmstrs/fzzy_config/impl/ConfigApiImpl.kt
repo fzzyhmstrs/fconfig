@@ -48,6 +48,15 @@ object ConfigApiImpl {
     internal val RESTART_KEY = "restart"
     internal val VERSION_KEY = "version"
 
+    internal fun openScreen(scope: String){
+        if (isClient)
+            ConfigApiImplClient.openScreen(scope)
+    }
+    internal fun openRestartScreen() {
+        if (isClient)
+            ConfigApiImplClient.openRestartScreen(scope)
+    }
+
     internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T {
         return when(registerType){
             RegisterType.BOTH -> registerBoth(config,configClass)
@@ -229,11 +238,6 @@ object ConfigApiImpl {
 
     internal fun <T : Config> save(configClass: T) {
         save(configClass.name,configClass.folder,configClass.subfolder, configClass)
-    }
-
-    internal fun openScreen(scope: String){
-        if (isClient)
-            ConfigApiImplClient.openScreen(scope)
     }
 
     internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): TomlElement {
