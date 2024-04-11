@@ -55,6 +55,7 @@
 "fc.config.back": "Back",
 "fc.config.back.desc" : "Return to %s",
 "fc.config.forwarded": "Forwarded Settings",
+"fc.config.restart": "You have received a configuration update that may require a client restart. Please contact a Server Operator for more information."
 
 "fc.button.accept": "Accept",
 "fc.button.deny": "Deny",
