@@ -47,20 +47,29 @@ object SyncedConfigRegistry {
                 val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
                 val result = ConfigApi.deserializeConfig(config, configString, errors, 2) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
-                result.first.writeError(errors)
-                result.first.get().save() //save config to the client
+                val restart = result.get().getBoolean(ConfigApiImpl.RESTART_KEY)
+                result.writeError(errors)
+                result.get().config.save() //save config to the client
+                if (restart) {
+                    println("A RESTART IS NEEDED AAAAHHHHH")
+                }
             }
         }
         //receives a config update from the server after another client pushes changes to it.
-        ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.type){ payload, _ ->
+        ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.type){ payload, context ->
             val serializedConfigs = payload.updates
             for ((id, configString) in serializedConfigs) {
                 if (syncedConfigs.containsKey(id)) {
                     val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                     val errors = mutableListOf<String>()
                     val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
+                    val restart = result.get().getBoolean(ConfigApiImpl.RESTART_KEY)
                     result.writeError(errors)
-                    result.get().save()
+                    result.get().config.save()
+                    if (restart) {
+                        println("A RESTART IS NEEDED AAAAHHHHH")
+                        context.player.sendMessage("fc.config.restart".translate())
+                    }
                 }
             }
         }
@@ -132,7 +141,7 @@ object SyncedConfigRegistry {
                 val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
                 result.writeError(errors)
-                result.get().save()
+                result.get().config.save()
             }
             for (player in context.player().server.playerManager.playerList) {
                 if (player == context.player()) continue // don't push back to the player that just sent the update
