@@ -68,7 +68,7 @@ object SyncedConfigRegistry {
                     result.get().config.save()
                     if (restart) {
                         println("A RESTART IS NEEDED AAAAHHHHH")
-                        context.player.sendMessage("fc.config.restart".translate())
+                        context.player.sendMessage("fc.config.restart.update".translate())
                     }
                 }
             }
