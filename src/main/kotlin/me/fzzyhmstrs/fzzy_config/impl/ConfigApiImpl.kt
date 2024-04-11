@@ -39,6 +39,14 @@ object ConfigApiImpl {
         FabricLoader.getInstance().environmentType == EnvType.CLIENT
     }
 
+    internal val CHECK_NON_SYNC: Byte = 0
+    internal val INGORE_NON_SYNC: Byte = 1
+    internal val CHECK_RESTART: Byte = 2
+    internal val IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
+
+    internal val RESTART_KEY = "restart"
+    internal val VERSION_KEY = "version"
+
     internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T {
         return when(registerType){
             RegisterType.BOTH -> registerBoth(config,configClass)
@@ -226,7 +234,7 @@ object ConfigApiImpl {
             ConfigApiImplClient.openScreen(scope)
     }
 
-    internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): TomlElement {
+    internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): TomlElement {
         //used to build a TOML table piece by piece
         val toml = TomlTableBuilder()
         if (config is Config){
@@ -286,11 +294,11 @@ object ConfigApiImpl {
         return toml.build()
     }
 
-    internal fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): String{
+    internal fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): String{
         return Toml.encodeToString(serializeToToml(config,errorBuilder,flags))
     }
 
-    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = 0): TomlElement where M: UpdateManager, M:BasicValidationProvider{
+    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): TomlElement where M: UpdateManager, M:BasicValidationProvider{
         val toml = TomlTableBuilder()
         try {
             walk(config,config.getId().toTranslationKey(),flags) { _,_,str,v,prop,annotations ->
@@ -314,23 +322,25 @@ object ConfigApiImpl {
         return toml.build()
     }
 
-    internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = 0): String where M: UpdateManager, M:BasicValidationProvider{
+    internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): String where M: UpdateManager, M:BasicValidationProvider{
         return Toml.encodeToString(serializeUpdateToToml(config,manager,errorBuilder,flags))
     }
 
-    internal fun serializeEntry(entry: Entry<*,*>, errorBuilder: MutableList<String>, flags: Byte = 1): String{
+    internal fun serializeEntry(entry: Entry<*,*>, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): String{
         val toml = TomlTableBuilder()
         toml.element("entry", entry.serializeEntry(null,errorBuilder, flags))
         return Toml.encodeToString(toml.build())
     }
 
-    internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<T> {
+    ///////////////////////////////////////////////
+    
+    internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
         val checkForRestart = requiresRestart(flags)
         var restartNeeded = false
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
-            return ValidationResult.error(config, "Improper TOML format passed to deserializeFromToml")
+            return ValidationResult.error(Pair(config,false), "Improper TOML format passed to deserializeFromToml")
         }
         try {
             val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
@@ -353,14 +363,23 @@ object ConfigApiImpl {
                         continue
                     }
                     if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
-
-                        val result = propVal.deserializeEntry(tomlElement, errorBuilder, name, flags)
+                        val result = if(checkForRestart && propVal is Supplier<*> && isRequiresRestart(it)) {
+                            val before = propVal.get()
+                            propVal.deserializeEntry(tomlElement, errorBuilder, name, flags).also { r -> if(r.get() != before) restartNeeded = true }
+                        } else {
+                            propVal.deserializeEntry(tomlElement, errorBuilder, name, flags)
+                        }
                         if (result.isError()) {
                             errorBuilder.add(result.getError())
                         }
                     } else {
                         try {
-                            it.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, it.returnType),it))
+                            if(checkForRestart && isRequiresRestart(it)) {
+                                val before = propVal
+                                it.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, it.returnType),it).also{ if(propVal != it) restartNeeded = true })
+                            } else {
+                                it.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, it.returnType),it))
+                            }
                         } catch (e: Exception) {
                             errorBuilder.add("Error deserializing raw field [$name]: ${e.localizedMessage}")
                         }
@@ -370,48 +389,53 @@ object ConfigApiImpl {
         } catch (e: Exception){
             errorBuilder.add("Critical error encountered while deserializing")
         }
-        return if (inboundErrorSize == errorBuilder.size) {
-            ValidationResult.success(config)
-        } else {
-            ValidationResult.error(config, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
-        }
+        ValidationResult.predicated(ConfigContext(config).withEntry(RESTART_KEY, restartNeeded), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
     }
 
-    internal fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = 1): Pair<ValidationResult<T>,Int> {
+    internal fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception){
             return  Pair(ValidationResult.error(config, "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing"),0)
         }
-        val version = if(toml.containsKey("version")){
+        val version = if(toml.containsKey("version")) {
             try {
                 toml["version"]?.asTomlLiteral()?.toInt() ?: 0
             }catch (e: Exception){
-                0
+                -1 //error state, pass back non-valid version number
             }
         } else {
-            0
+            -1 //error state, pass back non-valid version number
         }
-        return Pair(deserializeFromToml(config, toml, errorBuilder, flags), version)
+        return deserializeFromToml(config, toml, errorBuilder, flags).withFlag(VERSION_KEY ,version)
     }
 
 
-    private fun <T: Config> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = 0): ValidationResult<T> {
+    private fun <T: Any> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
+        val checkForRestart = requiresRestart(flags)
+        var restartNeeded = false
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
             return ValidationResult.error(config,"Improper TOML format passed to deserializeDirtyFromToml")
         }
         try {
-            walk(config, config.getId().toTranslationKey(), flags) { _,_,str,v,prop,annotations -> toml[str]?.let{
+            walk(config, config.getId().toTranslationKey(), flags) { _,_,str,v,prop,annotations -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
-                    v.deserializeEntry(it, errorBuilder, str, flags)
+                    if(checkForRestart && v is Supplier<*> && isRequiresRestart(prop)) {
+                        val before = v.get()
+                        v.deserializeEntry(it, errorBuilder, str, flags).also { r -> if(r.get() != before) restartNeeded = true }
+                    } else {
+                        v.deserializeEntry(it, errorBuilder, str, flags)
+                    }
                 } else if (v != null){
                     val basicValidation = UpdateManager.basicValidationStrategy(v,prop.returnType,annotations)
                     if (basicValidation != null){
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(it, errorBuilder, str, flags)
                         try {
+                            if(checkForRestart && isRequiresRestart(prop))
+                                if (v != thing.get()) restartNeeded = true
                             prop.setter.call(config, thing.get())
                         } catch(e: Exception) {
                             errorBuilder.add("Error deserializing basic validation [$str]: ${e.localizedMessage}")
@@ -423,10 +447,10 @@ object ConfigApiImpl {
         } catch(e: Exception){
             errorBuilder.add("Critical error encountered while deserializing update")
         }
-        return ValidationResult.predicated(config, errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
+        return ValidationResult.predicated(ConfigContext(config).withFlag(RESTART_KEY, restartNeeded), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
     }
 
-    internal fun <T: Config> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = 0): ValidationResult<T> {
+    internal fun <T: Any> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception){
@@ -435,7 +459,7 @@ object ConfigApiImpl {
         return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
     }
 
-    internal fun deserializeEntry(entry: Entry<*,*>, string: String, scope: String, errorBuilder: MutableList<String>, flags: Byte = 0): ValidationResult<*> {
+    internal fun deserializeEntry(entry: Entry<*,*>, string: String, scope: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<*> {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception){
@@ -444,6 +468,8 @@ object ConfigApiImpl {
         val element = toml["entry"] ?: return ValidationResult.error(null, "Toml $string doesn't contain needed 'entry' key")
         return entry.deserializeEntry(element, errorBuilder, scope, flags)
     }
+
+    ///////////////////////////////////////////////
 
     internal fun makeDir(folder: String, subfolder: String): Pair<File,Boolean>{
         val dir = if (subfolder != ""){
@@ -480,11 +506,16 @@ object ConfigApiImpl {
         }
     }
 
+    ///////////////////////////////////////
+
     private fun isNonSync(property: KProperty<*>): Boolean{
         return isNonSync(property.annotations)
     }
     internal fun isNonSync(annotations: List<Annotation>): Boolean{
         return annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
+    }
+    private fun isRequiresRestart(property: KProperty<*>): Boolean{
+        return property.annotations.firstOrNull { (it is RequiresRestart) }?.let { true } ?: false
     }
     internal fun tomlAnnotations(property: KAnnotatedElement): List<Annotation> {
         return property.annotations.map { mapJvmAnnotations(it) }.filter { it is TomlComment || it is TomlInline || it is TomlBlockArray || it is TomlMultilineString || it is TomlLiteralString || it is TomlInteger }
@@ -549,6 +580,8 @@ object ConfigApiImpl {
         }
     }
 
+    /////////////////////////////////
+
     internal fun ignoreNonSync(flags: Byte): Boolean {
         return flags and 1.toByte() == 1.toByte()
     }
@@ -556,6 +589,8 @@ object ConfigApiImpl {
     internal fun requiresRestart(flags: Byte): Boolean {
         return flags and 2.toByte() == 1.toByte()
     }
+
+    ////////////////////////////////
 
     internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null){
         FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
@@ -567,6 +602,8 @@ object ConfigApiImpl {
             FC.LOGGER.info("  $str")
         FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
     }
+
+    /////////////////////////////////
 
     internal fun<W: Any> walk(walkable: W, prefix: String, flags: Byte, walkAction: WalkAction){
         val orderById = walkable::class.java.declaredFields.filter {
@@ -618,5 +655,20 @@ object ConfigApiImpl {
 
     internal fun interface WalkAction{
         fun act(walkable: Any, oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>)
+    }
+
+    internal class ConfigContext<T: Any>(val config: T) {
+        private val contextFlags: MutableMap<String,Any> = mutableMapOf()
+
+        fun withFlag(key: String, value: Any): ConfigContext<T>{
+            contextFlags[key] = value
+            return this
+        } 
+        fun getBoolean(key: String): Boolean {
+            return contextFlags[key] as? Boolean ?: false
+        }
+        fun getInt(key: String): Int {
+            return contextFlags[key] as? Int ?: false
+        }
     }
 }
