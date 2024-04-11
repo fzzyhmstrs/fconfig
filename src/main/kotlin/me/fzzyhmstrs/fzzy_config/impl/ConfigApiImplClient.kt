@@ -30,6 +30,9 @@ object ConfigApiImplClient {
     internal fun openScreen(scope: String) {
         ClientConfigRegistry.openScreen(scope)
     }
+    internal fun openRestartScreen() {
+        MinecraftClient.getInstance().setScreen(RestartScreen())
+    }
 
     internal fun handleForwardedUpdate(update: String, player: UUID, scope: String, summary: String) {
         ClientConfigRegistry.handleForwardedUpdate(update, player, scope, summary)
