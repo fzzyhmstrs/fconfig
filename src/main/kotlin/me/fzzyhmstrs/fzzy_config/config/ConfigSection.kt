@@ -40,7 +40,7 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
         fieldName: String,
         flags: Byte
     ): ValidationResult<ConfigSection> {
-        return ConfigApi.deserializeFromToml(this, toml, errorBuilder, flags)
+        return ConfigApi.deserializeFromToml(this, toml, errorBuilder, flags).let { it.wrap(it.get().config) }
     }
 
     override fun translationKey(): String {
