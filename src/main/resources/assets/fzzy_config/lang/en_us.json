@@ -86,5 +86,7 @@
 "fc.button.delete": "Delete Entry",
 "fc.button.add": "Add New Entry",
 "fc.button.cancel": "Cancel",
-"fc.button.slider.usage.focused": "Press up or down arrows to change value"
+"fc.button.slider.usage.focused": "Press up or down arrows to change value",
+"fc.button.restart.confirm": "Quit Minecraft",
+"fc.button.restart.cancel": "Back to Title Screen",
 }
