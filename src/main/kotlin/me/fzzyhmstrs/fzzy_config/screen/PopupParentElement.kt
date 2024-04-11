@@ -10,14 +10,26 @@ import java.util.*
 /**
  * A parent element that supports displaying "Popups" made via [PopupWidget].
  *
- * If a PopupParentElement has one or more active popups, it will prioritize those over passing inputs to any "normal" children.
+ * If a PopupParentElement has one or more active popups, it will prioritize those over passing inputs to any "normal" children. If you have any input handling you need to implement, make sure to handle it and return before calling super, so avoid any active popups potentially doubling up on captured input handling.
+ * @see me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
  * @author fzzyhmstrs
  * @since 0.2.0
  */
 @Environment(EnvType.CLIENT)
 @JvmDefaultWithCompatibility
 interface PopupParentElement: ParentElement, LastSelectable {
+    /**
+     * A stack for holding popupwidgets while allowing for easy list iteration as needed. For rendering this stack should be traversed in reverse order, which LinkedList makes easy with `descendingIterator`
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     val popupWidgets: LinkedList<PopupWidget>
+    
+    /**
+     * Boolean prevents `mouseReleased` from triggering on the Popup or Widget underneath the active popup if it's closed on `mouseClicked`
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     var justClosedWidget: Boolean
 
     override fun pushLast(){
@@ -27,10 +39,22 @@ interface PopupParentElement: ParentElement, LastSelectable {
         focused = lastSelected
     }
 
-    fun activeWidget(): PopupWidget?
+    fun activeWidget(): PopupWidget? {
+        return popupWidgets.peek()
+    }
 
+    /**
+     * Called by this parent element when it pushes a PopupWidget to its stack. This method should "blur" the focus of the underlying children in this parent element; using `blur()` from Screen, for example.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun blurElements()
 
+    /**
+     * called when a Popup is pushed to this element, after blurring. 
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun initPopup(widget: PopupWidget)
 
     fun setPopup(widget: PopupWidget?) {
