@@ -55,7 +55,9 @@
 "fc.config.back": "Back",
 "fc.config.back.desc" : "Return to %s",
 "fc.config.forwarded": "Forwarded Settings",
-"fc.config.restart": "You have received a configuration update that may require a client restart. Please contact a Server Operator for more information."
+"fc.config.restart": "Restart Required",
+"fc.config.restart.update": "You have received a configuration update that may require a client restart. Please contact a Server Operator for more information.",
+"fc.config.restart.sync": "Settings received during synchronization require a client restart. Proceed?",
 
 "fc.button.accept": "Accept",
 "fc.button.deny": "Deny",
@@ -88,5 +90,5 @@
 "fc.button.cancel": "Cancel",
 "fc.button.slider.usage.focused": "Press up or down arrows to change value",
 "fc.button.restart.confirm": "Quit Minecraft",
-"fc.button.restart.cancel": "Back to Title Screen",
+"fc.button.restart.cancel": "Back to Title Screen"
 }
