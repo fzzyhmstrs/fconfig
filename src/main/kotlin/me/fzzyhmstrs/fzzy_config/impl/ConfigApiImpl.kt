@@ -10,6 +10,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
@@ -658,21 +659,4 @@ object ConfigApiImpl {
         fun act(walkable: Any, oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>)
     }
 
-    internal class ConfigContext<T: Any>(val config: T) {
-        private val contextFlags: MutableMap<String,Any> = mutableMapOf()
-
-        fun withFlag(key: String, value: Any): ConfigContext<T>{
-            contextFlags[key] = value
-            return this
-        } 
-        fun getBoolean(key: String): Boolean {
-            return contextFlags[key] as? Boolean ?: false
-        }
-        fun getInt(key: String): Int {
-            return contextFlags[key] as? Int ?: false
-        }
-        fun getAsConfig(): Config?{
-            return config as? Config
-        }
-    }
 }
