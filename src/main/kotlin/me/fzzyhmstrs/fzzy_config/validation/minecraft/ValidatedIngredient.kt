@@ -13,7 +13,6 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient.IngredientProvider
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -31,7 +30,6 @@ import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.*
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Predicate
 import java.util.function.Supplier
@@ -110,10 +108,10 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         toml: TomlElement,
         errorBuilder: MutableList<String>,
         fieldName: String,
-        ignoreNonSync: Boolean
+        flags: Byte
     ): ValidationResult<IngredientProvider> {
         @Suppress("DEPRECATION")
-        val result = super.deserializeEntry(toml, errorBuilder, fieldName, ignoreNonSync)
+        val result = super.deserializeEntry(toml, errorBuilder, fieldName, flags)
         when(storedValue.type()){
             ProviderType.STACK -> itemValidator.validateAndSet((storedValue as ItemProvider).id)
             ProviderType.LIST -> listValidator.validateAndSet((storedValue as ListProvider).ids)
@@ -143,7 +141,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     override fun copyStoredValue(): IngredientProvider{
         return storedValue.copy()
     }
-    
+
     /**
      * creates a deep copy of this ValidatedIngredient
      * return ValidatedIngredient wrapping a deep copy of the currently stored ingredient provider as well as predicates, if any

@@ -121,8 +121,8 @@ class ValidatedMap<K,V>(defaultValue: Map<K,V>, private val keyHandler: Entry<K,
                     }
                 else
                     listOf()
-                val keyEl = keyHandler.serializeEntry(key, errors, true)
-                val valueEl = valueHandler.serializeEntry(value, errors, true)
+                val keyEl = keyHandler.serializeEntry(key, errors, 1)
+                val valueEl = valueHandler.serializeEntry(value, errors, 1)
                 pairArray.element(keyEl, keyAnnotations)
                 pairArray.element(valueEl, valueAnnotations)
                 mapArray.element(pairArray.build())
@@ -144,12 +144,12 @@ class ValidatedMap<K,V>(defaultValue: Map<K,V>, private val keyHandler: Entry<K,
             for (pairEl in mapArray){
                 val pairArray = pairEl.asTomlArray()
                 val key = pairArray[0]
-                val keyResult = keyHandler.deserializeEntry(key,keyErrors,"{$fieldName, @key: $key}", true).report(keyErrors)
+                val keyResult = keyHandler.deserializeEntry(key,keyErrors,"{$fieldName, @key: $key}", 1).report(keyErrors)
                 if (keyResult.isError()){
                     continue
                 }
                 val value = pairArray[1]
-                val valueResult = valueHandler.deserializeEntry(value,valueErrors,"{$fieldName, @key: $key}", true).report(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(value,valueErrors,"{$fieldName, @key: $key}", 1).report(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
             ValidationResult.predicated(map,keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: key = $keyErrors, value = $valueErrors")

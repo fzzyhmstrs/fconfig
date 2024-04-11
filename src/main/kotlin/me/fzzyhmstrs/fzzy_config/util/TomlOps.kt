@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_config.util
 import com.mojang.datafixers.util.Pair
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.DynamicOps
+import me.fzzyhmstrs.fzzy_config.util.TomlOps.Companion.INSTANCE
 import net.peanuuutz.tomlkt.*
 import java.util.stream.Stream
 

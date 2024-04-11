@@ -1,22 +1,35 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
-import me.fzzyhmstrs.fzzy_config.utils.FcText.literal
-import me.fzzyhmstrs.fzzy_config.utils.FcText.translatable
-import me.fzzyhmstrs.fzzy_config.utils.FcText.translatableWithFallback
-import me.fzzyhmstrs.fzzy_config.utils.FcText.stringified
-import me.fzzyhmstrs.fzzy_config.utils.FcText.empty
-import me.fzzyhmstrs.fzzy_config.utils.FcText.appended
-import me.fzzyhmstrs.fzzy_config.utils.FcText.text
-import me.fzzyhmstrs.fzzy_config.utils.FcText.lit
+import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.description
+import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.FcText.translation
+import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.FcText.appended
+import me.fzzyhmstrs.fzzy_config.util.FcText.empty
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.literal
+import me.fzzyhmstrs.fzzy_config.util.FcText.stringified
+import me.fzzyhmstrs.fzzy_config.util.FcText.text
+import me.fzzyhmstrs.fzzy_config.util.FcText.translatable
+import me.fzzyhmstrs.fzzy_config.util.FcText.translatableWithFallback
+import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.tag.TagKey
+import net.minecraft.util.Identifier
+import java.util.*
 
 object ExampleTexts{
 
     fun texts() {
         //FcText has wrappers for the standard Text methods, historically used for porting
-        val standardText = FcText.literal("Normal text") 
+        val standardText = FcText.literal("Normal text")
         val translateText = FcText.translatable("my.translatable.text")
         val fallbackText = FcText.translatableWithFallback("my.translatable.text","My Fallback")
-        val stringifiedText = FcText.stringified("my.stringified.text", TagKey.of(Registries.ITEM,"arg_requiring_stringification"))
+        val stringifiedText = FcText.stringified("my.stringified.text", TagKey.of(RegistryKeys.ITEM,"arg_requiring_stringification".fcId()))
         val emptyText = FcText.empty()
         val appendedText = FcText.appended(standardText, fallbackText)
 
@@ -32,7 +45,7 @@ object ExampleTexts{
         val stringTranslate = "my.cool.string".translate() // can add args too
 
         // simple example class that implements Translatable
-        class TranslatableExample: Translatable{            
+        class TranslatableExample: Translatable {
             override fun translationKey(): String{
                 return "example.translatable.translation"
             }
@@ -40,7 +53,7 @@ object ExampleTexts{
                 return "example.translatable.translation.desc"
             }
         }
-        
+
         //provide translations and descriptions for anything, particularly hooking into Translatable
         val myTranslatableThing = TranslatableExample()
 
@@ -54,10 +67,10 @@ object ExampleTexts{
         //describes anything, first checking if the thing is Translatable and using that description if found, otherwise it provides the fallback string literally
         val anyDescLit = myTranslatableThing.descLit("Fallback Description")
 
-        
+
     }
 
-    
+
     //fields and sections have lang keys based on their "location" in the Config class graph.
     //Lange key composition is as follows
     //1. the namespace of the config id: (my_mod)

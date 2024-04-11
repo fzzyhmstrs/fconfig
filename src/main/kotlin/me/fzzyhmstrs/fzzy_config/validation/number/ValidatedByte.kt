@@ -91,4 +91,13 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
             "between $minValue and $maxValue"
         return "Validated Byte[value=$storedValue, validation=$validation]"
     }
+
+    /**
+     * Annotation-driven validation for Bytes
+     * @param min: Byte - minimum allowable value, default to Byte.MIN_VALUE
+     * @param max: Byte - maximum allowable value, default to Byte.MAX_VALUE
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    annotation class Restrict(val min: Byte = Byte.MIN_VALUE, val max: Byte = Byte.MAX_VALUE)
 }

@@ -8,16 +8,21 @@
   "fc.test.int2.name": "Textbox Cool Int",
   "fc.test.int2.name.desc": "A number between 0 and 16, that defines how cool the number is.",
 
-  "fzzy_config.test_config.enum1" : "Very Cool Long Enum Name For Testing",
-  "fzzy_config.test_config.ALPHA" : "Alpha",
-  "fzzy_config.test_config.ALPHA.desc" : "The first option",
-  "fzzy_config.test_config.BETA" : "Beta",
-  "fzzy_config.test_config.BETA.desc" : "The second choice",
-  "fzzy_config.test_config.GAMMA" : "Gamma",
-  "fzzy_config.test_config.GAMMA.desc" : "The third choice",
-  "fzzy_config.test_config.DELTA" : "Delta",
-  "fzzy_config.test_config.DELTA.desc" : "The fourth choice",
-  "fzzy_config.test_config.EPSILON" : "Epsilon",
-  "fzzy_config.test_config.EPSILON.desc" : "The fifth choice",
-  "fzzy_config.test_config.list1" : "Very Wow Long List Name For Testing"
+  "fzzy_config_test.test_config.enum1" : "Very Cool Long Enum Name For Testing",
+  "fzzy_config_test.test_config2.enum1" : "Very Cool Long Enum Name For Testing",
+  "fzzy_config_test.test_config2.enum1.desc" : "Very cool long description for showing off that very cool long descriptions work in game.",
+  "fzzy_config_test.test_config.ALPHA" : "Alpha",
+  "fzzy_config_test.test_config.ALPHA.desc" : "The first option",
+  "fzzy_config_test.test_config.BETA" : "Beta",
+  "fzzy_config_test.test_config.BETA.desc" : "The second choice",
+  "fzzy_config_test.test_config.GAMMA" : "Gamma",
+  "fzzy_config_test.test_config.GAMMA.desc" : "The third choice",
+  "fzzy_config_test.test_config.DELTA" : "Delta",
+  "fzzy_config_test.test_config.DELTA.desc" : "The fourth choice",
+  "fzzy_config_test.test_config.EPSILON" : "Epsilon",
+  "fzzy_config_test.test_config.EPSILON.desc" : "The fifth choice",
+  "fzzy_config_test.test_config.list1" : "Very Wow Long List Name For Testing",
+
+  "fzzy_config_test.test_config2.int1" : "Test integer",
+  "fzzy_config_test.test_config2.int1.desc" : "Integers have cool descriptions"
 }

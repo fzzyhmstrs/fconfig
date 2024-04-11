@@ -12,5 +12,5 @@ import net.peanuuutz.tomlkt.TomlElement
  */
 @FunctionalInterface
 fun interface EntrySerializer<T> {
-    fun serializeEntry(input: T?, errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement
+    fun serializeEntry(input: T?, errorBuilder: MutableList<String>, flags: Byte): TomlElement
 }

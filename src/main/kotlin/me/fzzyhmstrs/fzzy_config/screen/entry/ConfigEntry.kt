@@ -30,12 +30,6 @@ internal open class ConfigEntry(
     ElementListWidget.Entry<ConfigEntry>()
 {
 
-    init {
-        if(description.string != "") {
-            widget.tooltip = Tooltip.of(description)
-        }
-    }
-
     private val truncatedName = ConfigApiImplClient.ellipses(name,if(widget is Decorated) 124 else 146)
 
     fun positionWidget(y: Int){
@@ -54,9 +48,6 @@ internal open class ConfigEntry(
         hovered: Boolean,
         tickDelta: Float
     ) {
-        if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null){
-            MinecraftClient.getInstance().currentScreen?.setTooltip(widget.tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
-        }
         //75 = 10 + 20 + 20 + 20 + 5 = padding to scroll + revert width + default width + forward width + pad to widget
         //positions i at the left-hand side of the main widget
         widget.setPosition(parent.scrollbarX - widget.width - 10, y)
@@ -70,7 +61,11 @@ internal open class ConfigEntry(
             y + entryHeight / 2 - parent.getClient().textRenderer.fontHeight / 2,
             Colors.WHITE
         )
-
+        if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null){
+            //let widgets tooltip win
+        } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && description.string != ""){
+            MinecraftClient.getInstance().currentScreen?.setTooltip(Tooltip.of(description), HoveredTooltipPositioner.INSTANCE,this.isFocused)
+        }
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
@@ -81,12 +76,19 @@ internal open class ConfigEntry(
         return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
+    private var clickedWidget = false
+
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         if(button == 1 && rightClickAction != null){
             rightClickAction.rightClick(mouseX.toInt(),mouseY.toInt(),this)
+            clickedWidget = false
             return true
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.mouseClicked(mouseX, mouseY, button).also { clickedWidget = it }
+    }
+
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return if(clickedWidget) widget.mouseReleased(mouseX, mouseY, button) else super.mouseReleased(mouseX, mouseY, button)
     }
 
     override fun children(): MutableList<out Element> {

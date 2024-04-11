@@ -65,9 +65,9 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
     override fun setAndUpdate(input: T) {
         if (input == get()) return
         val oldVal = get()
-        val oldStr = ConfigApiImpl.serializeConfig(oldVal, mutableListOf(),true).lines().joinToString(" ", transform = {s -> s.trim()})
+        val oldStr = ConfigApiImpl.serializeConfig(oldVal, mutableListOf(),1).lines().joinToString(" ", transform = {s -> s.trim()})
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
-        val newStr = ConfigApiImpl.serializeConfig(tVal1.get(), mutableListOf(),true).lines().joinToString(" ", transform = {s -> s.trim()})
+        val newStr = ConfigApiImpl.serializeConfig(tVal1.get(), mutableListOf(),1).lines().joinToString(" ", transform = {s -> s.trim()})
         set(tVal1.get())
         val message = if (tVal1.isError()){
             FcText.translatable("fc.validated_field.update.error",translation(),oldStr,newStr,tVal1.getError())
@@ -110,7 +110,7 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
      * @suppress
      */
      override fun toString(): String{
-         return "Validated Walkable[value=${ConfigApiImpl.serializeConfig(get(), mutableListOf(),true).lines().joinToString(" ", transform = {s -> s.trim()})}, validation=per contained member validation]"
+         return "Validated Walkable[value=${ConfigApiImpl.serializeConfig(get(), mutableListOf(),1).lines().joinToString(" ", transform = {s -> s.trim()})}, validation=per contained member validation]"
      }
 
     @Environment(EnvType.CLIENT)
@@ -119,7 +119,7 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
         val newNewThing = defaultValue::class.createInstance()
         val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
         val entryList = ConfigListWidget(MinecraftClient.getInstance(),298,160,0,false)
-        ConfigApiImpl.walk(newThing,getEntryKey(),true){_,_,new,thing,_,_ ->
+        ConfigApiImpl.walk(newThing,getEntryKey(),1){_,_,new,thing,_,_ ->
             if (thing is Updatable && thing is Entry<*, *>) {
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
@@ -138,8 +138,8 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("${getEntryKey()}.")
-                ConfigApiImpl.drill(newNewThing,target,'.',true) { _,_,_,thing2,prop,_ ->
-                    basicValidation = manager.basicValidationStrategy(thing2,prop.returnType)?.instanceEntry()
+                ConfigApiImpl.drill(newNewThing,target,'.',1) { _,_,_,thing2,prop,annotations ->
+                    basicValidation = manager.basicValidationStrategy(thing2,prop.returnType,annotations)?.instanceEntry()
                 }
                 val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {
@@ -197,7 +197,7 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
             if (updateMap.isEmpty()) return
             //push updates from basic validation to the configs
 
-            ConfigApiImpl.walk(thing,key,true) { walkable,_,new,thing,prop,_ ->
+            ConfigApiImpl.walk(thing,key,1) { walkable,_,new,thing,prop,_ ->
                 if (!(thing is Updatable && thing is Entry<*, *>)){
                     val update = getUpdate(new)
                     if (update != null && update is Supplier<*>){

@@ -112,4 +112,13 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
             "between $minValue and $maxValue"
         return "Validated Int[value=$storedValue, validation=$validation]"
     }
+
+    /**
+     * Annotation-driven validation for Ints
+     * @param min: Int - minimum allowable value, default to Int.MIN_VALUE
+     * @param max: Int - maximum allowable value, default to Int.MAX_VALUE
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    annotation class Restrict(val min: Int = Int.MIN_VALUE, val max: Int = Int.MAX_VALUE)
 }

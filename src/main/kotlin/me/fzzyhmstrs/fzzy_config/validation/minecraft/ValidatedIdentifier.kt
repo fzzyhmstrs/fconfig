@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.validation.misc
+package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
 import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
@@ -12,9 +12,10 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier.Companion.ofList
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier.Companion.ofRegistry
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier.Companion.ofTag
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofList
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofRegistry
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofTag
+import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -288,7 +289,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        fun <T> ofTag(defaultValue: Identifier, tag: TagKey<T>): ValidatedIdentifier{
+        fun <T> ofTag(defaultValue: Identifier, tag: TagKey<T>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(tag.registry().value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { listOf() }))
@@ -308,7 +309,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofTag(tag: TagKey<T>): ValidatedIdentifier{
+        fun <T> ofTag(tag: TagKey<T>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(tag.registry().value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
@@ -395,7 +396,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(defaultValue: Identifier,key: RegistryKey<Registry<T>>): ValidatedIdentifier{
+        fun <T> ofRegistryKey(defaultValue: Identifier,key: RegistryKey<Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
@@ -413,7 +414,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(defaultValue: Identifier,key: RegistryKey<Registry<T>>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier{
+        fun <T> ofRegistryKey(defaultValue: Identifier,key: RegistryKey<Registry<T>>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
@@ -431,7 +432,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>): ValidatedIdentifier{
+        fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
@@ -451,7 +452,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifier{
+        fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
@@ -467,7 +468,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
          */
-        fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>): ValidatedIdentifier{
+        fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.toList() }
@@ -483,7 +484,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
          * @param predicate [Predicate]<Identifier> tests an allowable subset of the TagKeys
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
          */
-        fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier{
+        fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.filter(predicate).toList() }
@@ -498,7 +499,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
          * @param predicate [Predicate]<Identifier> tests an allowable subset of the TagKeys
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
          */
-        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier{
+        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.filter(predicate).toList() }
@@ -512,7 +513,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
          */
-        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>): ValidatedIdentifier{
+        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.toList() }
@@ -531,7 +532,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
          */
         @JvmStatic
         @Deprecated("Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
-        fun ofList(defaultValue: Identifier, list: List<Identifier>): ValidatedIdentifier{
+        fun ofList(defaultValue: Identifier, list: List<Identifier>): ValidatedIdentifier {
             val allowableIds = AllowableIdentifiers({ id -> list.contains(id) }, list.supply())
             val validator = strong(allowableIds)
             return ValidatedIdentifier(defaultValue, allowableIds, validator)
@@ -550,7 +551,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
          */
         @JvmStatic
         @Deprecated("Use only for validation of a list or map. Make sure your list is available at Validation time! (Typically at ModInitializer call or earlier)")
-        fun ofList(list: List<Identifier>): ValidatedIdentifier{
+        fun ofList(list: List<Identifier>): ValidatedIdentifier {
             val allowableIds = AllowableIdentifiers({ id -> list.contains(id) }, list.supply())
             val validator = strong(allowableIds)
             return ValidatedIdentifier(Identifier("minecraft:air"), allowableIds, validator)

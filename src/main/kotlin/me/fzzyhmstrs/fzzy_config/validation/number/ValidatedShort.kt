@@ -91,4 +91,13 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
             "between $minValue and $maxValue"
         return "Validated Short[value=$storedValue, validation=$validation]"
     }
+
+    /**
+     * Annotation-driven validation for Shorts
+     * @param min: Short - minimum allowable value, default to Short.MIN_VALUE
+     * @param max: Short - maximum allowable value, default to Short.MAX_VALUE
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    annotation class Restrict(val min: Short = Short.MIN_VALUE, val max: Short = Short.MAX_VALUE)
 }

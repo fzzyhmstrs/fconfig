@@ -111,4 +111,13 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
             "between $minValue and $maxValue"
         return "Validated Long[value=$storedValue, validation=$validation]"
     }
+
+    /**
+     * Annotation-driven validation for Longs
+     * @param min: Long - minimum allowable value, default to Long.MIN_VALUE
+     * @param max: Long - maximum allowable value, default to Long.MAX_VALUE
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    annotation class Restrict(val min: Long = Long.MIN_VALUE, val max: Long = Long.MAX_VALUE)
 }

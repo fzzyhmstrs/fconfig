@@ -148,7 +148,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         toml: TomlElement,
         errorBuilder: MutableList<String>,
         fieldName: String,
-        ignoreNonSync: Boolean
+        flags: Byte
     ): ValidationResult<T> {
         val tVal = deserialize(toml, fieldName) //1
         if (tVal.isError()){ //2
@@ -173,14 +173,14 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         "use serialize for consistency and to enable usage in list- and map-based Fields",
         ReplaceWith("serializeEntry(input: T)")
     )
-    override fun serializeEntry(input: T?, errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement {
+    override fun serializeEntry(input: T?, errorBuilder: MutableList<String>, flags: Byte): TomlElement {
         return (if(input != null) serialize(input) else serialize(get())).report(errorBuilder).get()
     }
 
-    fun trySerialize(input: Any?, errorBuilder: MutableList<String>, ignoreNonSync: Boolean): TomlElement? {
+    fun trySerialize(input: Any?, errorBuilder: MutableList<String>, flags: Byte): TomlElement? {
         return try {
             @Suppress("DEPRECATION", "UNCHECKED_CAST")
-            serializeEntry(input as T?,errorBuilder, ignoreNonSync)
+            serializeEntry(input as T?,errorBuilder, flags)
         } catch (e: Exception){
             null
         }
@@ -289,8 +289,8 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         return getEntryKey() + ".desc"
     }
 
-    override fun translation(): MutableText {
-        return FcText.translatableWithFallback(translationKey(),this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+    override fun translation(fallback: String?): MutableText {
+        return FcText.translatableWithFallback(translationKey(),fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
     }
 
     /**

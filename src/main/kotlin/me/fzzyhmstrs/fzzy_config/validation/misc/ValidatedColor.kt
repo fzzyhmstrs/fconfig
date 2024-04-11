@@ -54,7 +54,7 @@ import java.util.function.Supplier
  */
 class ValidatedColor: ValidatedField<ColorHolder> {
 
-    @JvmOverloads 
+    @JvmOverloads
     constructor(r: Int, g: Int, b: Int, a: Int = Int.MIN_VALUE): super(ColorHolder(r, g, b, if(a > Int.MIN_VALUE) a else 255, a > Int.MIN_VALUE)) {
         if(r<0 || r>255) throw IllegalArgumentException("Red portion of validated color not provided a default value between 0 and 255")
         if(g<0 || g>255) throw IllegalArgumentException("Green portion of validated color not provided a default value between 0 and 255")
@@ -116,15 +116,15 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         validateAndSet(get().fromInt(i))
     }
 
-    
+
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<ColorHolder> {
-        return storedValue.deserializeEntry(toml, mutableListOf(), fieldName, true)
+        return storedValue.deserializeEntry(toml, mutableListOf(), fieldName, 1)
     }
     @Internal
     override fun serialize(input: ColorHolder): ValidationResult<TomlElement> {
         val errors: MutableList<String> = mutableListOf()
-        return ValidationResult.predicated(storedValue.serializeEntry(input, errors, true), errors.isEmpty(), errors.toString())
+        return ValidationResult.predicated(storedValue.serializeEntry(input, errors, 1), errors.isEmpty(), errors.toString())
     }
     @Internal
     override fun correctEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
@@ -381,7 +381,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         override fun serializeEntry(
             input: ColorHolder?,
             errorBuilder: MutableList<String>,
-            ignoreNonSync: Boolean
+            flags: Byte
         ): TomlElement {
             val toml = TomlTableBuilder()
             try {
@@ -399,7 +399,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             toml: TomlElement,
             errorBuilder: MutableList<String>,
             fieldName: String,
-            ignoreNonSync: Boolean
+            flags: Byte
         ): ValidationResult<ColorHolder> {
             return try {
                 val table = toml.asTomlTable()
@@ -595,7 +595,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
     }
 
     //////////////////////////////////////////
-    
+
     @Environment(EnvType.CLIENT)
     private class ColorButtonWidget(private val colorSupplier: Supplier<Int>,titleSupplier: Supplier<Text>, pressAction: Consumer<ActiveButtonWidget>): DecoratedActiveButtonWidget(titleSupplier,110,20,"widget/decoration/frame".fcId(),{true},pressAction){
         override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {

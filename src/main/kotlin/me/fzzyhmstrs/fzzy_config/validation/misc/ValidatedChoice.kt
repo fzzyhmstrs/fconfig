@@ -25,7 +25,6 @@ import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -75,7 +74,7 @@ class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
             val errors = mutableListOf<String>()
-            val value =  handler.deserializeEntry(toml,errors,fieldName,true).report(errors)
+            val value =  handler.deserializeEntry(toml,errors,fieldName,1).report(errors)
             if (errors.isNotEmpty()) {
                 ValidationResult.error(value.get(), "Error(s) encountered while deserializing choice: $errors")
             } else {
@@ -87,7 +86,7 @@ class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val 
     }
     @Internal
     override fun serialize(input: T): ValidationResult<TomlElement> {
-        return ValidationResult.success(handler.serializeEntry(input, mutableListOf(), true))
+        return ValidationResult.success(handler.serializeEntry(input, mutableListOf(), 1))
     }
     @Internal
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {

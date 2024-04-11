@@ -89,4 +89,13 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
             "between $minValue and $maxValue"
         return "Validated Float[value=$storedValue, validation=$validation]"
     }
+
+    /**
+     * Annotation-driven validation for Floats
+     * @param min: Float - minimum allowable value, default to Float.MIN_VALUE
+     * @param max: Float - maximum allowable value, default to Float.MAX_VALUE
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    annotation class Restrict(val min: Float = -Float.MAX_VALUE, val max: Float = Float.MAX_VALUE)
 }

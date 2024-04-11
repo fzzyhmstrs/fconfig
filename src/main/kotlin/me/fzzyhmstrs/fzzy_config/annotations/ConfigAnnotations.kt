@@ -55,8 +55,18 @@ annotation class NonSync()
 annotation class Version(val version: Int)
 
 /**
+ * Properties marked with RequiresRestart will prompt the user that changes will require a restart of the server/client
+ *
+ * On sync, if a property doesn't match synced data <-> loaded data, a screen will pop up prompting
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
+@Target(AnnotationTarget.PROPERTY)
+annotation class RequiresRestart
+
+/**
  * Provides the path to an old config file used before updating to FzzyConfig. FzzyConfig will attempt to read the file and scrape as much data as possible from it into the new config class and format (TOML).
- * 
+ *
  * The old config file will be deleted after scraping
  *
  * Currently valid file types for old configs:
@@ -73,7 +83,7 @@ annotation class Version(val version: Int)
  * @since 0.2.0
  */
 @Target(AnnotationTarget.CLASS)
-annotation class ConvertFrom @JvmOverloads constructor(val fileName: String, val folder: String = "", val subfolder: String = "")
+annotation class ConvertFrom (val fileName: String, val folder: String = "", val subfolder: String = "")
 
 /**
  * Adds a [Comment] to the [Version] key of a config file.

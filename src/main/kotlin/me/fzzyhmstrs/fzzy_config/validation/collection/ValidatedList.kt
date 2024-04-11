@@ -61,7 +61,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
             val list: MutableList<T> = mutableListOf()
             val errors: MutableList<String> = mutableListOf()
             for ((index, el) in array.content.withIndex()){
-                val result = entryHandler.deserializeEntry(el, errors, "$fieldName[$index]", true).report(errors)
+                val result = entryHandler.deserializeEntry(el, errors, "$fieldName[$index]", 1).report(errors)
                 if (!result.isError()){
                     list.add(index,result.get())
                 }
@@ -82,7 +82,7 @@ class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,
         val errors: MutableList<String> = mutableListOf()
         try {
             for (entry in input) {
-                val tomlEntry = entryHandler.serializeEntry(entry, errors, true)
+                val tomlEntry = entryHandler.serializeEntry(entry, errors, 1)
                 val annotations = if (entry != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(entry!!::class)

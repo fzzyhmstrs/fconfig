@@ -28,9 +28,9 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
     override fun serializeEntry(
         input: ConfigSection?,
         errorBuilder: MutableList<String>,
-        ignoreNonSync: Boolean
+        flags: Byte
     ): TomlElement {
-        return ConfigApi.serializeToToml(input ?: this, errorBuilder, ignoreNonSync)
+        return ConfigApi.serializeToToml(input ?: this, errorBuilder, flags)
     }
 
     @Internal
@@ -38,9 +38,9 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
         toml: TomlElement,
         errorBuilder: MutableList<String>,
         fieldName: String,
-        ignoreNonSync: Boolean
+        flags: Byte
     ): ValidationResult<ConfigSection> {
-        return ConfigApi.deserializeFromToml(this, toml, errorBuilder, ignoreNonSync)
+        return ConfigApi.deserializeFromToml(this, toml, errorBuilder, flags)
     }
 
     override fun translationKey(): String {

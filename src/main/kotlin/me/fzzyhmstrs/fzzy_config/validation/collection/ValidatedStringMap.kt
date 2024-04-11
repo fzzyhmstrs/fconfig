@@ -100,7 +100,7 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
                     }
                 else
                     listOf()
-                val el = valueHandler.serializeEntry(value, errors, true)
+                val el = valueHandler.serializeEntry(value, errors, 1)
                 table.element(key, el, annotations)
             }
             return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
@@ -123,7 +123,7 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
                     keyErrors.add("Skipping key!: ${keyResult.getError()}")
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(el,valueErrors,"{$fieldName, @key: $key}", true).report(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(el,valueErrors,"{$fieldName, @key: $key}", 1).report(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
             ValidationResult.predicated(map,keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors")

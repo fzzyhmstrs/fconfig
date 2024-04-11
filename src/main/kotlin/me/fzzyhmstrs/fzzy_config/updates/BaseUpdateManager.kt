@@ -132,10 +132,10 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     }
 
     fun applyKeys(config: Config) {
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) { _,_,str,v,_,_ -> if (v is EntryKeyed) v.setEntryKey(str)}
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { _,_,str,v,_,_ -> if (v is EntryKeyed) v.setEntryKey(str)}
     }
 
     fun pushStates(config: Config) {
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) { _,_,_,v,_,_ -> if (v is Updatable) v.pushState()}
+        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { _,_,_,v,_,_ -> if (v is Updatable) v.pushState()}
     }
 }

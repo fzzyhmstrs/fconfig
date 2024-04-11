@@ -65,7 +65,7 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
                     }
                 else
                     listOf()
-                val el = valueHandler.serializeEntry(value, errors, true)
+                val el = valueHandler.serializeEntry(value, errors, 1)
                 table.element(key, el, annotations)
             }
             return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
@@ -83,12 +83,12 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
             val keyErrors: MutableList<String> = mutableListOf()
             val valueErrors: MutableList<String> = mutableListOf()
             for ((keyToml, el) in table.entries){
-                val keyResult = keyHandler.deserializeEntry(TomlLiteral(keyToml), keyErrors, "{$fieldName, @key: $keyToml}", true)
+                val keyResult = keyHandler.deserializeEntry(TomlLiteral(keyToml), keyErrors, "{$fieldName, @key: $keyToml}", 1)
                 if(keyResult.isError()){
                     keyErrors.add("Skipping key!: ${keyResult.getError()}")
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(el, valueErrors,"{$fieldName, @key: $keyToml}", true).report(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(el, valueErrors,"{$fieldName, @key: $keyToml}", 1).report(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
             ValidationResult.predicated(map,keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors")
@@ -173,7 +173,7 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
             FC.LOGGER.error("Unexpected exception caught while opening list popup")
         }
     }
-    
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input !is Map<*,*>) return false

@@ -23,7 +23,6 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -71,8 +70,8 @@ class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, priva
         }
     }
 
-    override fun description(): MutableText {
-        return FcText.translatable(descriptionKey(),valuesMap.keys.toString())
+    override fun description(fallback: String?): MutableText {
+        return FcText.translatable(descriptionKey(),fallback ?: valuesMap.keys.toString())
     }
 
     /**

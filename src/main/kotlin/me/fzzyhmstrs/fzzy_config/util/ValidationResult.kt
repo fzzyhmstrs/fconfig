@@ -1,7 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.success
 
 /**
  * A result of any type T that is wrapped with an optional error message

@@ -90,4 +90,13 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
             "between $minValue and $maxValue"
         return "Validated Double[value=$storedValue, validation=$validation]"
     }
+
+    /**
+     * Annotation-driven validation for Doubles
+     * @param min: Double - minimum allowable value, default to Double.MIN_VALUE
+     * @param max: Double - maximum allowable value, default to Double.MAX_VALUE
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    annotation class Restrict(val min: Double = -Double.MAX_VALUE, val max: Double = Double.MAX_VALUE)
 }

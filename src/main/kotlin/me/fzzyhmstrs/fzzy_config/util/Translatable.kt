@@ -28,15 +28,15 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun translation(): MutableText{
-        return FcText.translatableWithFallback(translationKey(),this::class.java.simpleName.split(FcText.regex).joinToString(" ").trimStart())
+    fun translation(fallback: String? = null): MutableText{
+        return FcText.translatableWithFallback(translationKey(), fallback ?: this::class.java.simpleName.split(FcText.regex).joinToString(" ").trimStart())
     }
     /**
      * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun description(): MutableText{
-        return FcText.translatableWithFallback(descriptionKey(),"")
+    fun description(fallback: String? = null): MutableText{
+        return FcText.translatableWithFallback(descriptionKey(),fallback ?: "")
     }
 }

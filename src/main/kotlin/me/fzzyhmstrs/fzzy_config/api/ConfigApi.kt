@@ -9,10 +9,7 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi.deserializeFromToml
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.peanuuutz.tomlkt.*
 import java.io.File
 
@@ -176,8 +173,8 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): TomlElement{
-        return ConfigApiImpl.serializeToToml(config, errorBuilder, ignoreNonSync)
+    fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): TomlElement{
+        return ConfigApiImpl.serializeToToml(config, errorBuilder, flags)
     }
 
     /**
@@ -194,8 +191,8 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): String{
-        return ConfigApiImpl.serializeConfig(config, errorBuilder, ignoreNonSync)
+    fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): String{
+        return ConfigApiImpl.serializeConfig(config, errorBuilder, flags)
     }
 
     /**
@@ -219,8 +216,8 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): ValidationResult<T> {
-        return ConfigApiImpl.deserializeFromToml(config, toml, errorBuilder, ignoreNonSync)
+    fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<T> {
+        return ConfigApiImpl.deserializeFromToml(config, toml, errorBuilder, flags)
     }
 
     /**
@@ -239,8 +236,8 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, ignoreNonSync: Boolean = true): Pair<ValidationResult<T>,Int> {
-        return ConfigApiImpl.deserializeConfig(config, string, errorBuilder, ignoreNonSync)
+    fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = 1): Pair<ValidationResult<T>,Int> {
+        return ConfigApiImpl.deserializeConfig(config, string, errorBuilder, flags)
     }
 
     /**

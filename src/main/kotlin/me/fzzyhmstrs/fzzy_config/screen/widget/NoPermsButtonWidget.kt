@@ -14,7 +14,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 
 @Environment(EnvType.CLIENT)
-class NoPermsButtonWidget : PressableWidget(0,0,90,20, FcText.empty()), Decorated {
+class NoPermsButtonWidget : PressableWidget(0,0,110,20, FcText.empty()), Decorated {
 
     init{
         this.active = false
@@ -41,6 +41,6 @@ class NoPermsButtonWidget : PressableWidget(0,0,90,20, FcText.empty()), Decorate
     }
 
     override fun decorationId(): Identifier {
-        return "widget/decoration/open_screen".fcId()
+        return "widget/decoration/locked".fcId()
     }
 }

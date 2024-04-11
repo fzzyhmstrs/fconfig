@@ -14,7 +14,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.util.Identifier
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.random.Random
 
 object FC: ModInitializer {
     const val MOD_ID = "fzzy_config"

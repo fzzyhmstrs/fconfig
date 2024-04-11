@@ -46,7 +46,7 @@ object SyncedConfigRegistry {
             if (syncedConfigs.containsKey(id)){
                 val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
-                val result = ConfigApi.deserializeConfig(config, configString, errors, false) //Don't ignore NonSync on a synchronization action
+                val result = ConfigApi.deserializeConfig(config, configString, errors, 2) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
                 result.first.writeError(errors)
                 result.first.get().save() //save config to the client
             }
@@ -90,7 +90,7 @@ object SyncedConfigRegistry {
         ServerConfigurationConnectionEvents.CONFIGURE.register { handler, _ ->
             for ((id, config) in syncedConfigs) {
                 val syncErrors = mutableListOf<String>()
-                val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, false)) //Don't ignore NonSync on a syncronization action
+                val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
                 if (syncErrors.isNotEmpty()){
                     val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C configuration stage sync.")
                     syncError.writeError(syncErrors)
@@ -104,7 +104,7 @@ object SyncedConfigRegistry {
             for (player in players) {
                 for ((id, config) in syncedConfigs) {
                     val syncErrors = mutableListOf<String>()
-                    val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, false)) //Don't ignore NonSync on a syncronization action
+                    val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
                     if (syncErrors.isNotEmpty()){
                         val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C datapack reload sync.")
                         syncError.writeError(syncErrors)

@@ -82,7 +82,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             return
         }
         val element = toml["entry"] ?: return
-        forwardedUpdate.entry.deserializeEntry(element, mutableListOf(),forwardedUpdate.scope,true)
+        forwardedUpdate.entry.deserializeEntry(element, mutableListOf(),forwardedUpdate.scope,1)
         forwardedUpdates.remove(forwardedUpdate)
         apply(false)
     }
@@ -96,7 +96,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         if (updateMap.isEmpty()) return
         //push updates from basic validation to the configs
         for ((config,base,bool) in configs) {
-            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true) { walkable,_,new,thing,prop,_ ->
+            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { walkable,_,new,thing,prop,_ ->
                 if (!(thing is Updatable && thing is Entry<*, *>)){
                     val update = getUpdate(new)
                     if (update != null && update is Supplier<*>){

@@ -1,10 +1,15 @@
 package me.fzzyhmstrs.fzzy_config_test.test
 
+import me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable
+import me.fzzyhmstrs.fzzy_config.annotations.Comment
+import me.fzzyhmstrs.fzzy_config.annotations.NonSync
+import me.fzzyhmstrs.fzzy_config.annotations.WithPerms
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
@@ -13,10 +18,12 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
+import net.peanuuutz.tomlkt.TomlComment
 import java.awt.Color
 
-class TestConfigImpl: Config("test_config", "fzzy_config_test2") {
+class TestConfigImpl2: Config("test_config2", "fzzy_config_test") {
 
+    @ClientModifiable
     @WithPerms(5)
     var bl1 = true
     var bl2 = ValidatedBoolean()
@@ -65,12 +72,15 @@ class TestConfigImpl: Config("test_config", "fzzy_config_test2") {
         }
     }
 
+    @TomlComment("Testing out a comment")
     var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
+    @NonSync
     @WithPerms(5)
     var list1 = listOf(1,3,5,7)
     var list2 = listOf(1,3,5,7).validated()
 
+    @Comment("Testing out a comment")
     var color1 = Color(255,128,0).validated(true)
 
     @WithPerms(5)

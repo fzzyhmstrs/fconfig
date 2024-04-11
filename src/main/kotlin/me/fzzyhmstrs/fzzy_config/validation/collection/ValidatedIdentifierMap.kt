@@ -12,8 +12,8 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap.Builder
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -112,7 +112,7 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
                     }
                 else
                     listOf()
-                val el = valueHandler.serializeEntry(value, errors, true)
+                val el = valueHandler.serializeEntry(value, errors, 1)
                 table.element(key.toString(), el, annotations)
             }
             return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
@@ -140,7 +140,7 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
                     keyErrors.add("Skipping key!: ${keyResult.getError()}")
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(el,valueErrors,"{$fieldName, @key: $key}", true).report(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(el,valueErrors,"{$fieldName, @key: $key}", 1).report(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
             ValidationResult.predicated(map,keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors")

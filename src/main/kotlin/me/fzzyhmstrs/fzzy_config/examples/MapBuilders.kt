@@ -4,8 +4,8 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedEnumMap
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt

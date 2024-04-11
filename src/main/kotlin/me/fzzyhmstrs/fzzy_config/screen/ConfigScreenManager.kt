@@ -12,7 +12,6 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
-import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenManager.ConfigScreenBuilder
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
@@ -21,12 +20,14 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
@@ -67,7 +68,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     internal fun receiveForwardedUpdate(update: String, player: UUID, scope: String, summary: String) {
         var entry: Entry<*,*>? = null
         for ((config,_,_) in configs){
-            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),true){ _,_, new, thing, _, _ ->
+            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1){ _,_, new, thing, _, _ ->
                 if (new == scope){
                     if(thing is Entry<*,*>) {
                         entry = thing
@@ -160,6 +161,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private fun prepareMultiConfigScreens(playerPermLevel: Int) {
         val functionMap: MutableMap<String, SortedMap<Int, Function<ConfigListWidget, ConfigEntry>>> = mutableMapOf()
         val nameMap: MutableMap<String,Text> = mutableMapOf()
+        nameMap[scope] = FabricLoader.getInstance().getModContainer(this.scope)?.get()?.metadata?.name?.lit() ?: "Config Root".lit()
         for ((i,config) in configs.withIndex()) {
             functionMap.computeIfAbsent(scope) { sortedMapOf()}[i] = screenOpenEntryBuilder(config.active.translation(), config.active.description(), config.active.getId().toTranslationKey())
             walkConfig(config, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
@@ -184,7 +186,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         var index = 0
         val prefix = config.getId().toTranslationKey()
-        ConfigApiImpl.walk(config,prefix,true) { _,old,new,thing,_,annotations ->
+        ConfigApiImpl.walk(config,prefix,1) { _,old,new,thing,_,annotations ->
             if(thing is ConfigSection) {
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
@@ -203,13 +205,13 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     else
                         functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = updatableEntryBuilder(name, thing.descLit(getComments(annotations)), thing)
                 } else
-                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = noPermsEntryBuilder(name, thing.descLit(getComments(annotations)))
+                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = noPermsEntryBuilder(name, FcText.empty())
                 index++
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("$prefix.")
-                ConfigApiImpl.drill(baseConfig,target,'.',true) { _,_,_,thing2,prop,_ ->
-                    basicValidation = manager.basicValidationStrategy(thing2,prop.returnType)?.instanceEntry()
+                ConfigApiImpl.drill(baseConfig,target,'.',1) { _,_,_,thing2,prop,annotations ->
+                    basicValidation = manager.basicValidationStrategy(thing2,prop.returnType, annotations)?.instanceEntry()
                 }
                 val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {
@@ -221,11 +223,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
                         basicValidation2.setUpdateManager(manager)
                         manager.setUpdatableEntry(basicValidation2)
                         if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
-                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), basicValidation2)
+                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = forwardableEntryBuilder(name, basicValidation2.descLit(getComments(annotations)), basicValidation2)
                         else
-                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = updatableEntryBuilder(name, thing.descLit(getComments(annotations)), basicValidation2)
+                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = updatableEntryBuilder(name, basicValidation2.descLit(getComments(annotations)), basicValidation2)
                     } else
-                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = noPermsEntryBuilder(name, thing.descLit(getComments(annotations)))
+                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = noPermsEntryBuilder(name, FcText.empty())
                 }
                 index++
             }
@@ -262,8 +264,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
             }
     }
 
-    private fun buildBuilder(name:Text, scope: String, scopes: List<String>, scopeButtonFunctions: Map<String, Function<ConfigScreen,ClickableWidget>>, entryBuilders: List<Function<ConfigListWidget,ConfigEntry>>): ConfigScreenBuilder{
-        val parentScopes = scopes.filter { scope.contains(it) && it != scope }.sortedBy { it.length }
+    private fun buildBuilder(name:Text, scope: String, scopes: List<String>, scopeButtonFunctions: Map<String, Function<ConfigScreen,ClickableWidget>>, entryBuilders: List<Function<ConfigListWidget,ConfigEntry>>): ConfigScreenBuilder {
+        val scopeSplit = scope.split(".")
+        val parentScopes = scopes.filter { scopeSplit.containsAll(it.split(".")) && it != scope }.sortedBy { it.length }
         val functionList: MutableList<Function<ConfigScreen, ClickableWidget>> = mutableListOf()
         for(fScope in parentScopes) {
             functionList.add(scopeButtonFunctions[fScope] ?: continue)
@@ -379,7 +382,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private fun <T> openEntryForwardingPopup(entry: T) where T: Updatable, T: Entry<*,*> {
         val client = MinecraftClient.getInstance()
         val playerEntries = client.player?.networkHandler?.playerList?.associateBy { it.profile.name } ?: return
-        println(playerEntries)
         val validator = EntryValidator.Builder<String>().both({s -> playerEntries.containsKey(s)}).buildValidator()
         var player = ""
         val forwardText = "fc.button.forward.confirm".translate()
@@ -400,9 +402,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     private fun<T> forwardUpdate(entry: T, playerListEntry: PlayerListEntry?)where T: Updatable, T: Entry<*,*>{
         if (playerListEntry == null) return
-        val update = ConfigApiImpl.serializeEntry(entry, mutableListOf(),true).also { println(it) }
-        val id = playerListEntry.profile.id.also { println(it) }
-        val key = entry.getEntryKey().also { println(it) }
+        val update = ConfigApiImpl.serializeEntry(entry, mutableListOf())
+        val id = playerListEntry.profile.id
+        val key = entry.getEntryKey()
         val summary = entry.get().toString()
         SyncedConfigRegistry.forwardSetting(update,id,key, summary)
     }

@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
+import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -130,13 +131,13 @@ object FcText {
     }
 
     /**
-     * Translates anything. If the thing is [Translatable], it will use the built in translation, otherwise it will translate the fallback key
+     * Translates anything. If the thing is [Translatable], it will use the built-in translation, otherwise it will translate the fallback key
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     fun Any?.translation(fallback: String): MutableText {
         return if(this is Translatable)
-            this.translation().takeIf { it.string != this.translationKey() } ?: translatable(fallback).formatted(Formatting.ITALIC)
+            this.translation().takeIf { I18n.hasTranslation(this.translationKey()) } ?: translatable(fallback).formatted(Formatting.ITALIC)
         else
             translatable(fallback).formatted(Formatting.ITALIC)
     }
@@ -147,7 +148,7 @@ object FcText {
      */
     fun Any?.transLit(literalFallback: String = ""): MutableText {
         return if(this is Translatable)
-            this.translation().takeIf { it.string != this.translationKey() } ?: literal(literalFallback).formatted(Formatting.ITALIC)
+            this.translation(literalFallback)
         else if (literalFallback != "")
             literal(literalFallback).formatted(Formatting.ITALIC)
         else
@@ -160,19 +161,19 @@ object FcText {
      */
     fun Any?.description(fallback: String): Text {
         return if(this is Translatable)
-            this.description().takeIf { it.string != this.descriptionKey() } ?: translatable(fallback).formatted(Formatting.ITALIC)
+            this.description().takeIf {I18n.hasTranslation(this.descriptionKey()) } ?: translatable(fallback).formatted(Formatting.ITALIC)
         else
             translatable(fallback).formatted(Formatting.ITALIC)
     }
     /**
-     * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built in description, otherwise it will use the fallback literally
+     * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built-in description, otherwise it will use the fallback literally
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     fun Any?.descLit(literalFallback: String = ""): Text {
-        return if(this is Translatable)
-            this.description().takeIf { it.string != this.descriptionKey() } ?: literal(literalFallback).formatted(Formatting.ITALIC)
-        else if(literalFallback != "")
+        return if(this is Translatable) {
+            this.description(literalFallback)
+        } else if(literalFallback != "")
             literal(literalFallback).formatted(Formatting.ITALIC)
         else
             empty()
