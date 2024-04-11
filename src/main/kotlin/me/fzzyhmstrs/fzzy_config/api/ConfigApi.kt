@@ -7,6 +7,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.TomlHeaderComment
 import me.fzzyhmstrs.fzzy_config.annotations.Version
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.deserializeFromToml
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -210,13 +211,13 @@ object ConfigApi {
      * @param toml the TomlElement to deserialize from. Needs to be a TomlTable
      * @param errorBuilder a mutableList of strings the original caller of deserialization can use to print a detailed error log
      * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to deserialize the entire config (ex: loading from file), use false for syncing (ex: initial sync server -> client)
-     * @return Returns a [ValidationResult] with the config included, and any error message if applicable
+     * @return Returns a [ValidationResult] of [ConfigContext] and applicable error, containing the config and any flag information
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<T> {
+    fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
         return ConfigApiImpl.deserializeFromToml(config, toml, errorBuilder, flags)
     }
 
@@ -230,13 +231,13 @@ object ConfigApi {
      * @param string the string to deserialize from. Needs to be valid Toml.
      * @param errorBuilder a mutableList of strings the original caller of deserialization can use to print a detailed error log
      * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to deserialize the entire config (ex: loading from file), use false for syncing (ex: initial sync server -> client)
-     * @return Returns a [Pair]: [ValidationResult] and [Int].The validation result includes the config and any applicable errors, the int deserializes the [Version] of the file
+     * @return Returns [ValidationResult] of [ConfigContext]. The validation result includes the config and any applicable errors, and any flag information
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = 1): Pair<ValidationResult<T>,Int> {
+    fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
         return ConfigApiImpl.deserializeConfig(config, string, errorBuilder, flags)
     }
 
