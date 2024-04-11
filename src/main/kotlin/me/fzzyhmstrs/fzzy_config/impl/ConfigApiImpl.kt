@@ -102,8 +102,9 @@ object ConfigApiImpl {
                 val str = f.readLines().joinToString("\n")
                 val classInstance = configClass()
                 val classVersion = getVersion(classInstance::class)
-                val (readConfigResult, readVersion) = deserializeConfig(classInstance, str, fErrorsIn)
-                val readConfig = readConfigResult.get()
+                val readConfigResult = deserializeConfig(classInstance, str, fErrorsIn)
+                val readVersion = readConfigResult.get().getInt(VERSION_KEY)
+                val readConfig = readConfigResult.get().config
                 val needsUpdating = classVersion > readVersion
                 if (readConfigResult.isError()) {
                     readConfigResult.writeWarning(fErrorsIn)
@@ -145,7 +146,7 @@ object ConfigApiImpl {
                     if (oldFilePair.second){
                         val str = oldFile.readLines().joinToString("\n")
                         val errorBuilder = mutableListOf<String>()
-                        val (convertedConfigResult, _) = deserializeConfig(classInstance, str, errorBuilder)
+                        val convertedConfigResult = deserializeConfig(classInstance, str, errorBuilder)
                         if (convertedConfigResult.isError()){
                             convertedConfigResult.writeWarning(errorBuilder)
                         }
