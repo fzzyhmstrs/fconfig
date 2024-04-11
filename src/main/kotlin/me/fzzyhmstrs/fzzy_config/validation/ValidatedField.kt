@@ -39,58 +39,37 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     private var updateKey = ""
     private var updateManager: UpdateManager? = null
 
-    /**
-     * @suppress
-     */
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun getUpdateManager(): UpdateManager? {
         return updateManager
     }
-    /**
-     * @suppress
-     */
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun setUpdateManager(manager: UpdateManager) {
         this.updateManager = manager
     }
-    /**
-     * @suppress
-     */
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun getEntryKey(): String {
         return updateKey
     }
-    /**
-     * @suppress
-     */
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun setEntryKey(key: String) {
         updateKey = key
     }
-    /**
-     * @suppress
-     */
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun isDefault(): Boolean {
         return defaultValue == get()
     }
-    /**
-     * @suppress
-     */
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun restore(){
         reset()
         updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.default",translation(), defaultValue.toString()))
     }
-    /**
-     * @suppress
-     */
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun revert() {
