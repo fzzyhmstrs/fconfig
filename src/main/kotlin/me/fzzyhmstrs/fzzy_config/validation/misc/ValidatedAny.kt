@@ -43,7 +43,7 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
-        return ConfigApiImpl.deserializeFromToml(storedValue,toml, mutableListOf())
+        return ConfigApiImpl.deserializeFromToml(storedValue,toml, mutableListOf()).let { it.wrap(it.get()) }
     }
     @Internal
     override fun serialize(input: T): ValidationResult<TomlElement> {
@@ -88,7 +88,7 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
             val new = storedValue::class.createInstance()
             val toml = serialize(this.get()).get()
             val result = ConfigApiImpl.deserializeFromToml(new, toml, mutableListOf())
-            if (result.isError()) storedValue else result.get()
+            if (result.isError()) storedValue else result.get().config
         } catch(e: Exception) {
             storedValue //object doesn't have an empty constructor. no prob.
         }
