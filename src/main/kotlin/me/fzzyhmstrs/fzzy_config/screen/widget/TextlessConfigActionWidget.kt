@@ -5,6 +5,7 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -36,8 +37,13 @@ class TextlessConfigActionWidget(
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = canPress.get()
-        //super.renderWidget(context, mouseX, mouseY, delta)
+        super.renderWidget(context, mouseX, mouseY, delta)
         context.drawGuiTexture(getTex(), x, y, getWidth(), getHeight())
+        if (this.active && activeNarration.string != ""){
+            tooltip = Tooltip.of(activeNarration)
+        } else if (inactiveNarration.string != ""){
+            tooltip = Tooltip.of(inactiveNarration)
+        }
     }
 
     override fun getNarrationMessage(): MutableText {

@@ -256,16 +256,16 @@ object ConfigApiImpl {
             //generate an index map, so I can order the properties based on name
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             //kotlin member properties filtered by [field map contains it && if NonSync matters, it isn't NonSync]. NonSync does not matter by default
-            for (it in config.javaClass.kotlin.memberProperties.filter {
+            for (prop in config.javaClass.kotlin.memberProperties.filter {
                 orderById.containsKey(it.name)
                 && if (ignoreNonSync(flags)) true else !isNonSync(it)
             }.sortedBy { orderById[it.name] }) {
                 //has to be a public mutable property. private and protected and val another way to have serialization ignore
-                if (it is KMutableProperty<*> && it.visibility == KVisibility.PUBLIC) {
+                if (prop is KMutableProperty<*> && prop.visibility == KVisibility.PUBLIC) {
                     //get the actual [thing] from the property
-                    val propVal = it.get(config)
+                    val propVal = prop.get(config)
                     //things name
-                    val name = it.name
+                    val name = prop.name
                     //serialize the element. EntrySerializer elements will have a set serialization method
                     val el = if (propVal is EntrySerializer<*>) { //is EntrySerializer
                         try {
@@ -276,11 +276,16 @@ object ConfigApiImpl {
                         }
                         //fallback is to use by-type TOML serialization
                     } else if (propVal != null) {
-                        try {
-                            encodeToTomlElement(propVal, it.returnType) ?: TomlNull
-                        } catch (e: Exception) {
-                            errorBuilder.add("Problem encountered with raw data during serialization of [$name]: ${e.localizedMessage}")
-                            TomlNull
+                        val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
+                        if (basicValidation != null) {
+                            basicValidation.trySerialize(propVal,errorBuilder,flags) ?: TomlNull
+                        } else {
+                            try {
+                                encodeToTomlElement(propVal, prop.returnType) ?: TomlNull
+                            } catch (e: Exception) {
+                                errorBuilder.add("Problem encountered with raw data during serialization of [$name]: ${e.localizedMessage}")
+                                TomlNull
+                            }
                         }
                         //TomlNull for properties with Null state (improper state, no config values should be nullable)
                     } else {
@@ -288,7 +293,7 @@ object ConfigApiImpl {
                         TomlNull
                     }
                     //scrape all the TomlAnnotations associated
-                    val tomlAnnotations = tomlAnnotations(it)
+                    val tomlAnnotations = tomlAnnotations(prop)
                     //add the element to the TomlTable, with annotations
                     toml.element(name, el, tomlAnnotations)
                 }
@@ -352,13 +357,13 @@ object ConfigApiImpl {
         try {
             val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
             val orderById = fields.withIndex().associate { it.value.name to it.index }
-            for (it in config.javaClass.kotlin.memberProperties.filter {
+            for (prop in config.javaClass.kotlin.memberProperties.filter {
                 orderById.containsKey(it.name)
                 && if (ignoreNonSync(flags)) true else !isNonSync(it)
             }.sortedBy { orderById[it.name] }) {
-                if (it is KMutableProperty<*> && it.visibility == KVisibility.PUBLIC) {
-                    val propVal = it.get(config)
-                    val name = it.name
+                if (prop is KMutableProperty<*> && prop.visibility == KVisibility.PUBLIC) {
+                    val propVal = prop.get(config)
+                    val name = prop.name
                     val tomlElement = if (toml.containsKey(name)) {
                         toml[name]
                     } else {
@@ -370,7 +375,7 @@ object ConfigApiImpl {
                         continue
                     }
                     if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
-                        val result = if(checkForRestart && propVal is Supplier<*> && isRequiresRestart(it)) {
+                        val result = if(checkForRestart && propVal is Supplier<*> && isRequiresRestart(prop)) {
                             val before = propVal.get()
                             propVal.deserializeEntry(tomlElement, errorBuilder, name, flags).also { r -> if(r.get() != before) restartNeeded = true }
                         } else {
@@ -380,14 +385,27 @@ object ConfigApiImpl {
                             errorBuilder.add(result.getError())
                         }
                     } else {
-                        try {
-                            if(checkForRestart && isRequiresRestart(it)) {
-                                it.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, it.returnType),it).also{ if (propVal != it) restartNeeded = true })
-                            } else {
-                                it.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, it.returnType),it))
+                        val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
+                        if (basicValidation != null){
+                            @Suppress("DEPRECATION")
+                            val thing = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, flags)
+                            try {
+                                if(checkForRestart && isRequiresRestart(prop))
+                                    if (propVal != thing.get()) restartNeeded = true
+                                prop.setter.call(config, thing.get())
+                            } catch(e: Exception) {
+                                errorBuilder.add("Error deserializing basic validation [$name]: ${e.localizedMessage}")
                             }
-                        } catch (e: Exception) {
-                            errorBuilder.add("Error deserializing raw field [$name]: ${e.localizedMessage}")
+                        } else {
+                            try {
+                                if(checkForRestart && isRequiresRestart(prop)) {
+                                    prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType),prop).also{ if (propVal != it) restartNeeded = true })
+                                } else {
+                                    prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType),prop))
+                                }
+                            } catch (e: Exception) {
+                                errorBuilder.add("Error deserializing raw field [$name]: ${e.localizedMessage}")
+                            }
                         }
                     }
                 }
@@ -434,7 +452,7 @@ object ConfigApiImpl {
                     } else {
                         v.deserializeEntry(it, errorBuilder, str, flags)
                     }
-                } else if (v != null){
+                } else if (v != null) {
                     val basicValidation = UpdateManager.basicValidationStrategy(v,prop.returnType,annotations)
                     if (basicValidation != null){
                         @Suppress("DEPRECATION")
@@ -625,17 +643,24 @@ object ConfigApiImpl {
             .filter {
                 it is KMutableProperty<*>
                 && (if (ignoreNonSync(flags)) true else !isNonSync(it) )
+                && it.visibility == KVisibility.PUBLIC
             }.sortedBy {
                 orderById[it.name]
             }
         ) {
-            val newPrefix = prefix + "." + property.name
-            val propVal = property.get(walkable)
-            walkAction.act(walkable,prefix, newPrefix, propVal, property as KMutableProperty<*>, property.annotations, walkCallback)
-            if (walkCallback.isCancelled())
-                break
-            if (propVal is Walkable){
-                walk(propVal, newPrefix, flags, walkAction)
+            try {
+                val newPrefix = prefix + "." + property.name
+                val propVal = property.get(walkable)
+                walkAction.act(walkable,prefix, newPrefix, propVal, property as KMutableProperty<*>, property.annotations, walkCallback)
+                if (walkCallback.isCancelled())
+                    break
+                if (propVal is Walkable){
+                    walk(propVal, newPrefix, flags, walkAction)
+                }
+            } catch (e: Exception){
+                FC.LOGGER.error("Critical exception caught while walking $prefix")
+                e.printStackTrace()
+                // continue without borking
             }
         }
     }
@@ -645,22 +670,35 @@ object ConfigApiImpl {
         val props = walkable.javaClass.kotlin.memberProperties.filter {
             !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
             && it is KMutableProperty<*>
-            && (if (ignoreNonSync(flags)) true else !isNonSync(it) ) }.associateBy{ it.name }
+            && (if (ignoreNonSync(flags)) true else !isNonSync(it) )
+            && it.visibility == KVisibility.PUBLIC
+        }.associateBy{ it.name }
 
         val callback = WalkCallback()
         val propTry = props[target]
         if (propTry != null){
-            val propVal = propTry.get(walkable)
-            walkAction.act(walkable,"","",propVal,propTry as KMutableProperty<*>, propTry.annotations, callback)
-            return
+            return try {
+                val propVal = propTry.get(walkable)
+                walkAction.act(walkable, "", "", propVal, propTry as KMutableProperty<*>, propTry.annotations, callback)
+            } catch (e: Exception){
+                FC.LOGGER.error("Critical exception caught while drill to $target")
+                e.printStackTrace()
+                // continue without borking
+            }
         }
         for ((string, property) in props) {
             if(target.startsWith(string)){
-                val propVal = property.get(walkable)
-                if (propVal is Walkable){
-                    drill(propVal,target.substringAfter(delimiter),delimiter,flags,walkAction)
-                } else {
-                    break
+                try {
+                    val propVal = property.get(walkable)
+                    if (propVal is Walkable) {
+                        drill(propVal, target.substringAfter(delimiter), delimiter, flags, walkAction)
+                    } else {
+                        break
+                    }
+                } catch (e: Exception){
+                    FC.LOGGER.error("Critical exception caught while drill to $target")
+                    e.printStackTrace()
+                    // continue without borking
                 }
             }
         }

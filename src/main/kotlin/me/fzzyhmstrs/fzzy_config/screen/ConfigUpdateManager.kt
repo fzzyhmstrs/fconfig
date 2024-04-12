@@ -98,13 +98,13 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         //push updates from basic validation to the configs
         var clientRestart = false
         var serverRestart = false
-        for ((config,base,bool) in configs) {
+        for ((config,base,isClient) in configs) {
             ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { walkable,_,new,thing,prop,annotations,_ ->
                 if (!(thing is Updatable && thing is Entry<*, *>)) {
                     val update = getUpdate(new)
                     if (update != null && update is Supplier<*>){
                         if (ConfigApiImpl.isRequiresRestart(annotations)) {
-                            if (ConfigApiImpl.isNonSync(annotations)){
+                            if (ConfigApiImpl.isNonSync(annotations) || isClient){
                                 clientRestart = true
                             } else {
                                 serverRestart = true
@@ -119,14 +119,14 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                     }
                 } else if (getUpdate(new) != null) {
                     if (ConfigApiImpl.isRequiresRestart(annotations)) {
-                        if (ConfigApiImpl.isNonSync(annotations)){
+                        if (ConfigApiImpl.isNonSync(annotations) || isClient){
                             clientRestart = true
                         } else {
                             serverRestart = true
                         }
                     } else if (thing is ValidatedAny<*>){
                         if (thing.restartRequired()){
-                            if (ConfigApiImpl.isNonSync(annotations)) {
+                            if (ConfigApiImpl.isNonSync(annotations) || isClient) {
                                 clientRestart = true
                             } else {
                                 serverRestart = true

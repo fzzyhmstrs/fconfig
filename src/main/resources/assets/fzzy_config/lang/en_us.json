@@ -54,6 +54,7 @@
 "fc.config.restore.confirm.desc": "Pressing Confirm will reset this setting to its default. Continue?",
 "fc.config.back": "Back",
 "fc.config.back.desc" : "Return to %s",
+"fc.config.done.desc" : "Save config and close screen",
 "fc.config.forwarded": "Forwarded Settings",
 "fc.config.restart": "Restart Required",
 "fc.config.restart.warning": "Changing this setting will require a restart!",
@@ -94,5 +95,18 @@
 "fc.button.add": "Add New Entry",
 "fc.button.cancel": "Cancel",
 "fc.button.slider.usage.focused": "Press up or down arrows to change value",
-"fc.button.restart.cancel": "Back to Title Screen"
+"fc.button.restart.cancel": "Back to Title Screen",
+"fc.button.info": "Screen Usage Information",
+"fc.button.info.fc": "§oThis config is powered by %s§r",
+"fc.button.info.fc.tip": "Open Curseforge page",
+"fc.button.info.undo": "§o[Ctrl + Z]§r - Undoes changes one-by-one new to old.",
+"fc.button.info.find": "§o[Ctrl + F]§r - Focuses the search bar.",
+"fc.button.info.copy": "§o[Ctrl + C]§r - Copies hovered or selected setting.",
+"fc.button.info.paste": "§o[Ctrl + V]§r - Pastes copy buffer into compatible setting.",
+"fc.button.info.save": "§o[Ctrl + S]§r - Saves changes and sends updates to the server.",
+"fc.button.info.page": "§o[Pg Up/Pg Dwn]§r - Scrolls up/down a 'page' of settings.",
+"fc.button.info.click": "§o[Right Click]§r - Opens a context menu, if applicable.",
+"fc.button.info.click_kb": "§o[Shift + F10]§r - Opens a context menu, if applicable.",
+"fc.button.info.click_kb2": "§o[Context Menu Key]§r - Opens a context menu, if applicable.",
+"fc.button.info.alert": "§o[!]§r - Settings marked with a ! require a restart if changed."
 }

@@ -1,12 +1,11 @@
 package me.fzzyhmstrs.fzzy_config.validation
 
+import me.fzzyhmstrs.fzzy_config.config.ConfigSection
+import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.collection.*
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
+import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
@@ -78,11 +77,12 @@ interface BasicValidationProvider {
             return annotations.firstOrNull { it is ValidatedFloat.Restrict } as? ValidatedFloat.Restrict
         }
 
-
         try {
             return if (input != null)
                 if (input is ValidatedField<*>)
                     return input
+                else if (input is Walkable && input !is ConfigSection)
+                    return ValidatedAny(input).also { println(it) }
                 else
                     when (inputType.jvmErasure.javaObjectType) {
                         java.lang.Integer::class.java -> getIntRestrict(annotations)?.let { ValidatedInt(input as Int, it.max, it.min) } ?: ValidatedInt(input as Int)

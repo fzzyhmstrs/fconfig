@@ -1,9 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.screen
 
 import me.fzzyhmstrs.fzzy_config.fcId
-import me.fzzyhmstrs.fzzy_config.screen.widget.ChangesWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -15,9 +15,13 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.*
 import net.minecraft.screen.ScreenTexts
+import net.minecraft.text.ClickEvent
+import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
+import net.minecraft.util.Formatting
 import org.lwjgl.glfw.GLFW
+import java.util.function.Consumer
 import java.util.function.Function
 
 @Environment(EnvType.CLIENT)
@@ -32,7 +36,10 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
 
     fun setParent(screen: Screen?) {
         this.parent = screen
-        if (screen !is ConfigScreen) return
+        if (screen !is ConfigScreen) {
+            doneButton.tooltip = Tooltip.of("fc.config.done.desc".translate())
+            return
+        }
         doneButton.message = "fc.config.back".translate()
         doneButton.tooltip = Tooltip.of("fc.config.back.desc".translate(screen.title))
     }
@@ -70,6 +77,8 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     }
     private fun initFooter() {
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
+        //info button
+        directionalLayoutWidget.add(TextlessConfigActionWidget("widget/action/info".fcId(),"widget/action/info_inactive".fcId(),"widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(),{ true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
         fun setColor(entries: Int){
             if(entries > 0)
@@ -118,5 +127,32 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
             return true
         }
         return super.keyPressed(keyCode, scanCode, modifiers)
+    }
+
+    private fun openInfoPopup(){
+        val textRenderer = MinecraftClient.getInstance().textRenderer
+        val popup = PopupWidget.Builder("fc.button.info".translate())
+            .addDivider()
+            .addElement("header",ClickableTextWidget(this,"fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
+                style.withFormatting(Formatting.AQUA, Formatting.UNDERLINE)
+                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL,"https://www.curseforge.com/minecraft/mc-mods/fzzy-config"))
+                    .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT,"fc.button.info.fc.tip".translate()))
+            }),textRenderer), Position.BELOW, Position.ALIGN_CENTER)
+            .addDivider()
+            .addElement("undo",TextWidget("fc.button.info.undo".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("find",TextWidget("fc.button.info.find".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("copy",TextWidget("fc.button.info.copy".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("paste",TextWidget("fc.button.info.paste".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("save",TextWidget("fc.button.info.save".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("page",TextWidget("fc.button.info.page".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addDivider()
+            .addElement("click",TextWidget("fc.button.info.click".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("click_kb",TextWidget("fc.button.info.click_kb".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("click_kb2",TextWidget("fc.button.info.click_kb2".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addDivider()
+            .addElement("alert",TextWidget("fc.button.info.alert".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addDoneButton()
+            .build()
+        PopupWidget.push(popup)
     }
 }

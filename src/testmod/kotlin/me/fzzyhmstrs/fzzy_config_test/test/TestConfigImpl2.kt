@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_config_test.test
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
+import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
@@ -62,7 +63,16 @@ class TestConfigImpl2: Config("test_config2", "fzzy_config_test") {
 
         var object1 = ValidatedAny(TestAny())
 
+        var object2 = TestAny2()
+
         class TestAny {
+            @RequiresRestart
+            var testInt = 1
+            var testValidated = ValidatedFloat(3f,6f,1f)
+            var testValidated2 = listOf(1,3,5,7).validated()
+        }
+
+        class TestAny2: Walkable {
             @RequiresRestart
             var testInt = 1
             var testValidated = ValidatedFloat(3f,6f,1f)

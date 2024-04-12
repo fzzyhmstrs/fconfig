@@ -33,9 +33,11 @@ import java.util.function.Supplier
 import kotlin.reflect.full.createInstance
 
 /**
- * Validation for an arbitrary POJO that implements [Walkable]. It will create a "mini-config" popup with the same style of list as the main config and section screens.
+ * Validation for an arbitrary non-null POJO. It will create a "mini-config" popup with the same style of list as the main config and section screens.
  *
- * This Validation is useful for "blocks" of config, such as Entity Stats or Tool Materials, that you want to break out
+ * This Validation is useful for "blocks" of config, such as Entity Stats or Tool Materials, that you want to break out.
+ *
+ * You can nest other POJO within this one, as long as it either implements [Walkable] or is another ValidatedAny
  * @param T [Walkable] object to be managed
  * @param defaultValue Instance of T to wrap
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.anys
