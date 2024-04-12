@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -24,7 +25,7 @@ import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.util.Colors
 import net.peanuuutz.tomlkt.Toml
-import org.jetbrains.annotations.ApiStatus
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Supplier
 
 @Environment(EnvType.CLIENT)
@@ -91,15 +92,24 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         forwardedUpdates.remove(forwardedUpdate)
     }
 
-    @ApiStatus.Internal
+    @Internal
     override fun apply(final: Boolean) {
         if (updateMap.isEmpty()) return
         //push updates from basic validation to the configs
+        var clientRestart = false
+        var serverRestart = false
         for ((config,base,bool) in configs) {
-            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { walkable,_,new,thing,prop,_ ->
-                if (!(thing is Updatable && thing is Entry<*, *>)){
+            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { walkable,_,new,thing,prop,annotations,_ ->
+                if (!(thing is Updatable && thing is Entry<*, *>)) {
                     val update = getUpdate(new)
                     if (update != null && update is Supplier<*>){
+                        if (ConfigApiImpl.isRequiresRestart(annotations)) {
+                            if (ConfigApiImpl.isNonSync(annotations)){
+                                clientRestart = true
+                            } else {
+                                serverRestart = true
+                            }
+                        }
                         try {
                             prop.setter.call(walkable, update.get())
                         } catch (e: Exception){
@@ -107,8 +117,30 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                             e.printStackTrace()
                         }
                     }
+                } else if (getUpdate(new) != null) {
+                    if (ConfigApiImpl.isRequiresRestart(annotations)) {
+                        if (ConfigApiImpl.isNonSync(annotations)){
+                            clientRestart = true
+                        } else {
+                            serverRestart = true
+                        }
+                    } else if (thing is ValidatedAny<*>){
+                        if (thing.restartRequired()){
+                            if (ConfigApiImpl.isNonSync(annotations)) {
+                                clientRestart = true
+                            } else {
+                                serverRestart = true
+                            }
+                        }
+                    }
                 }
             }
+        }
+        if (clientRestart){
+            MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.client".translate())
+        }
+        if (serverRestart){
+            MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.server".translate())
         }
         //save config updates locally
         for (config in configs){

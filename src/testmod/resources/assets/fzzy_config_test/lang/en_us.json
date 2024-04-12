@@ -24,5 +24,7 @@
   "fzzy_config_test.test_config.list1" : "Very Wow Long List Name For Testing",
 
   "fzzy_config_test.test_config2.int1" : "Test integer",
-  "fzzy_config_test.test_config2.int1.desc" : "Integers have cool descriptions"
+  "fzzy_config_test.test_config2.int1.desc" : "Integers have cool descriptions",
+
+  "fzzy_config_test.test_config2.section1.desc" : "This is a cool section description for a section with important setting that will require a restart."
 }

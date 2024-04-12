@@ -2,7 +2,8 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
-import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
+import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
+import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -16,14 +17,14 @@ import java.util.*
 
 @Environment(EnvType.CLIENT)
 internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, contentHeight: Int, headerHeight: Int, private val drawBackground: Boolean) :
-    ElementListWidget<ConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable
+    ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable
 {
 
     constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient,parent.width,parent.layout.contentHeight,parent.layout.headerHeight, drawBackground)
 
     private var visibleElements = 5
 
-    private val wholeList: List<ConfigEntry> by lazy{
+    private val wholeList: List<BaseConfigEntry> by lazy{
         this.children().toList()
     }
 
@@ -53,7 +54,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
     }
 
     override fun popLast() {
-        (lastSelected as? ConfigEntry)?.let { focused = it }
+        (lastSelected as? SettingConfigEntry)?.let { focused = it }
     }
     fun updateSearchedEntries(searchInput: String): Int {
         if (searchInput == "") {
@@ -106,16 +107,16 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         }
     }
 
-    fun add(entry: ConfigEntry){
+    fun add(entry: BaseConfigEntry){
         this.addEntry(entry)
     }
 
     fun copy() {
-        focused?.copyAction?.run() ?: hoveredEntry?.copyAction?.run()
+        (focused as? SettingConfigEntry) ?.copyAction?.run() ?: (hoveredEntry as? SettingConfigEntry)?.copyAction?.run()
     }
 
     fun paste() {
-        focused?.pasteAction?.run() ?: hoveredEntry?.pasteAction?.run()
+        (focused as? SettingConfigEntry)?.pasteAction?.run() ?: (hoveredEntry as? SettingConfigEntry)?.pasteAction?.run()
     }
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
@@ -123,7 +124,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         builder.put(NarrationPart.USAGE,"")
     }
 
-    override fun appendNarrations(builder: NarrationMessageBuilder, entry: ConfigEntry) {
+    override fun appendNarrations(builder: NarrationMessageBuilder, entry: BaseConfigEntry) {
         if(entry == focused){
             builder.put(NarrationPart.TITLE, entry.name)
         }

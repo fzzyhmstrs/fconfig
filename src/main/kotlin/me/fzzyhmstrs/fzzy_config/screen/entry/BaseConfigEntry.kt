@@ -1,7 +1,12 @@
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
+import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -13,24 +18,31 @@ import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
+import net.minecraft.text.MutableText
+import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
+import net.minecraft.util.Formatting
 import org.lwjgl.glfw.GLFW
 
 @Environment(EnvType.CLIENT)
-internal open class ConfigEntry(
+internal open class BaseConfigEntry(
     val name: Text,
     protected val description: Text,
+    protected var isRestartTriggering: Boolean,
     protected val parent: ConfigListWidget,
-    protected val widget: ClickableWidget,
-    val copyAction: Runnable?,
-    val pasteAction: Runnable?,
-    protected val rightClickAction: RightClickAction?)
+    protected val widget: ClickableWidget)
     :
-    ElementListWidget.Entry<ConfigEntry>()
+    ElementListWidget.Entry<BaseConfigEntry>()
 {
 
     private val truncatedName = ConfigApiImplClient.ellipses(name,if(widget is Decorated) 124 else 146)
+    private var tooltip: List<OrderedText>? = null
+
+    fun restartTriggering(bl: Boolean): BaseConfigEntry{
+        isRestartTriggering = bl
+        return this
+    }
 
     fun positionWidget(y: Int){
         widget.setPosition(parent.scrollbarX - widget.width - 10, y)
@@ -61,34 +73,33 @@ internal open class ConfigEntry(
             y + entryHeight / 2 - parent.getClient().textRenderer.fontHeight / 2,
             Colors.WHITE
         )
+        if (isRestartTriggering){
+            RenderSystem.enableBlend()
+            RenderSystem.enableDepthTest()
+            context.drawGuiTexture("widget/entry_error".fcId(), x - 24, y, 20, 20)
+        }
         if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null){
             //let widgets tooltip win
-        } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && description.string != ""){
-            MinecraftClient.getInstance().currentScreen?.setTooltip(Tooltip.of(description), HoveredTooltipPositioner.INSTANCE,this.isFocused)
+        } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && (description.string != "" || isRestartTriggering)){
+            MinecraftClient.getInstance().currentScreen?.setTooltip(createTooltip(), HoveredTooltipPositioner.INSTANCE,this.isFocused)
         }
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (((Screen.hasShiftDown() && keyCode == GLFW.GLFW_KEY_F10) || keyCode == GLFW.GLFW_KEY_MENU) && rightClickAction != null){
-            rightClickAction.rightClick(this.widget.x,this.widget.y,this)
-            return true
+    private fun createTooltip(): List<OrderedText>{
+        if (tooltip != null) return tooltip as List<OrderedText>
+        val list: MutableList<OrderedText> = mutableListOf()
+        if(isRestartTriggering) {
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText().formatted(Formatting.RED),170))
         }
-        return super.keyPressed(keyCode, scanCode, modifiers)
-    }
-
-    private var clickedWidget = false
-
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if(button == 1 && rightClickAction != null){
-            rightClickAction.rightClick(mouseX.toInt(),mouseY.toInt(),this)
-            clickedWidget = false
-            return true
+        if (description.string != ""){
+            list.add(FcText.empty().asOrderedText())
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description,170))
         }
-        return super.mouseClicked(mouseX, mouseY, button).also { clickedWidget = it }
+        tooltip = list
+        return list
     }
-
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return if(clickedWidget) widget.mouseReleased(mouseX, mouseY, button) else super.mouseReleased(mouseX, mouseY, button)
+    open fun restartText(): MutableText{
+        return "fc.config.restart.warning".translate()
     }
 
     override fun children(): MutableList<out Element> {
@@ -108,6 +119,6 @@ internal open class ConfigEntry(
 
     @FunctionalInterface
     fun interface RightClickAction{
-        fun rightClick(mouseX: Int, mouseY: Int, configEntry: ConfigEntry)
+        fun rightClick(mouseX: Int, mouseY: Int, configEntry: BaseConfigEntry)
     }
 }

@@ -11,6 +11,8 @@ import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_KEY
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.VERSION_KEY
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
@@ -18,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.BasicValidationProvider
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.fabricmc.api.EnvType
@@ -28,6 +31,7 @@ import net.peanuuutz.tomlkt.*
 import java.io.File
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
+import java.util.function.Supplier
 import kotlin.experimental.and
 import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
@@ -41,12 +45,9 @@ object ConfigApiImpl {
     }
 
     internal val CHECK_NON_SYNC: Byte = 0
-    internal val INGORE_NON_SYNC: Byte = 1
+    internal val IGNORE_NON_SYNC: Byte = 1
     internal val CHECK_RESTART: Byte = 2
     internal val IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
-
-    internal val RESTART_KEY = "restart"
-    internal val VERSION_KEY = "version"
 
     internal fun openScreen(scope: String){
         if (isClient)
@@ -54,7 +55,7 @@ object ConfigApiImpl {
     }
     internal fun openRestartScreen() {
         if (isClient)
-            ConfigApiImplClient.openRestartScreen(scope)
+            ConfigApiImplClient.openRestartScreen()
     }
 
     internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T {
@@ -307,7 +308,7 @@ object ConfigApiImpl {
     private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): TomlElement where M: UpdateManager, M:BasicValidationProvider{
         val toml = TomlTableBuilder()
         try {
-            walk(config,config.getId().toTranslationKey(),flags) { _,_,str,v,prop,annotations ->
+            walk(config,config.getId().toTranslationKey(),flags) { _,_,str,v,prop,annotations,_ ->
                 if(manager.hasUpdate(str)){
                     if(v is EntrySerializer<*>){
                         toml.element(str, v.serializeEntry(null, errorBuilder, flags))
@@ -339,14 +340,14 @@ object ConfigApiImpl {
     }
 
     ///////////////////////////////////////////////
-    
+
     internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
         val checkForRestart = requiresRestart(flags)
         var restartNeeded = false
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
-            return ValidationResult.error(Pair(config,false), "Improper TOML format passed to deserializeFromToml")
+            return ValidationResult.error(ConfigContext(config).withFlag(RESTART_KEY, false), "Improper TOML format passed to deserializeFromToml")
         }
         try {
             val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
@@ -381,8 +382,7 @@ object ConfigApiImpl {
                     } else {
                         try {
                             if(checkForRestart && isRequiresRestart(it)) {
-                                val before = propVal
-                                it.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, it.returnType),it).also{ if(propVal != it) restartNeeded = true })
+                                it.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, it.returnType),it).also{ if (propVal != it) restartNeeded = true })
                             } else {
                                 it.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, it.returnType),it))
                             }
@@ -395,14 +395,14 @@ object ConfigApiImpl {
         } catch (e: Exception){
             errorBuilder.add("Critical error encountered while deserializing")
         }
-        ValidationResult.predicated(ConfigContext(config).withEntry(RESTART_KEY, restartNeeded), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
+        return ValidationResult.predicated(ConfigContext(config).withFlag(RESTART_KEY, restartNeeded), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
     }
 
     internal fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception){
-            return  Pair(ValidationResult.error(config, "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing"),0)
+            return  ValidationResult.error(ConfigContext(config), "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
         }
         val version = if(toml.containsKey("version")) {
             try {
@@ -413,7 +413,7 @@ object ConfigApiImpl {
         } else {
             -1 //error state, pass back non-valid version number
         }
-        return deserializeFromToml(config, toml, errorBuilder, flags).withFlag(VERSION_KEY ,version)
+        return deserializeFromToml(config, toml, errorBuilder, flags).let { it.wrap(it.get().withFlag(VERSION_KEY ,version)) }
     }
 
 
@@ -423,10 +423,10 @@ object ConfigApiImpl {
         var restartNeeded = false
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
-            return ValidationResult.error(config,"Improper TOML format passed to deserializeDirtyFromToml")
+            return ValidationResult.error(ConfigContext(config),"Improper TOML format passed to deserializeDirtyFromToml")
         }
         try {
-            walk(config, config.getId().toTranslationKey(), flags) { _,_,str,v,prop,annotations -> toml[str]?.let {
+            walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _,_,str,v,prop,annotations,_ -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
                     if(checkForRestart && v is Supplier<*> && isRequiresRestart(prop)) {
                         val before = v.get()
@@ -460,7 +460,7 @@ object ConfigApiImpl {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception){
-            return ValidationResult.error(config, "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
+            return ValidationResult.error(ConfigContext(config), "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
         }
         return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
     }
@@ -520,8 +520,11 @@ object ConfigApiImpl {
     internal fun isNonSync(annotations: List<Annotation>): Boolean{
         return annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
     }
-    private fun isRequiresRestart(property: KProperty<*>): Boolean{
-        return property.annotations.firstOrNull { (it is RequiresRestart) }?.let { true } ?: false
+    private fun isRequiresRestart(property: KProperty<*>): Boolean {
+        return isRequiresRestart(property.annotations)
+    }
+    internal fun isRequiresRestart(annotations: List<Annotation>): Boolean {
+        return annotations.firstOrNull { (it is RequiresRestart) }?.let { true } ?: false
     }
     internal fun tomlAnnotations(property: KAnnotatedElement): List<Annotation> {
         return property.annotations.map { mapJvmAnnotations(it) }.filter { it is TomlComment || it is TomlInline || it is TomlBlockArray || it is TomlMultilineString || it is TomlLiteralString || it is TomlInteger }
@@ -617,6 +620,7 @@ object ConfigApiImpl {
         }.withIndex().associate {
             it.value.name to it.index
         }
+        val walkCallback = WalkCallback()
         for (property in walkable.javaClass.kotlin.memberProperties
             .filter {
                 it is KMutableProperty<*>
@@ -627,7 +631,9 @@ object ConfigApiImpl {
         ) {
             val newPrefix = prefix + "." + property.name
             val propVal = property.get(walkable)
-            walkAction.act(walkable,prefix, newPrefix, propVal, property as KMutableProperty<*>, property.annotations)
+            walkAction.act(walkable,prefix, newPrefix, propVal, property as KMutableProperty<*>, property.annotations, walkCallback)
+            if (walkCallback.isCancelled())
+                break
             if (propVal is Walkable){
                 walk(propVal, newPrefix, flags, walkAction)
             }
@@ -641,10 +647,11 @@ object ConfigApiImpl {
             && it is KMutableProperty<*>
             && (if (ignoreNonSync(flags)) true else !isNonSync(it) ) }.associateBy{ it.name }
 
+        val callback = WalkCallback()
         val propTry = props[target]
         if (propTry != null){
             val propVal = propTry.get(walkable)
-            walkAction.act(walkable,"","",propVal,propTry as KMutableProperty<*>, propTry.annotations)
+            walkAction.act(walkable,"","",propVal,propTry as KMutableProperty<*>, propTry.annotations, callback)
             return
         }
         for ((string, property) in props) {
@@ -660,7 +667,17 @@ object ConfigApiImpl {
     }
 
     internal fun interface WalkAction{
-        fun act(walkable: Any, oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>)
+        fun act(walkable: Any, oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>, walkCallback: WalkCallback)
+    }
+
+    internal class WalkCallback{
+        private var cancelled = false
+        fun isCancelled(): Boolean{
+            return cancelled
+        }
+        fun cancel(){
+            this.cancelled = true
+        }
     }
 
 }

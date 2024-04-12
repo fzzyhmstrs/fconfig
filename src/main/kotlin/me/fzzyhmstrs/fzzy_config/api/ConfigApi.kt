@@ -141,7 +141,7 @@ object ConfigApi {
      *
      * FzzyConfig automatically registered Config GUIs with ModMenu and Catalogue, so you do not strictly need to implement any custom screen opening functionality unless desired.
      * @param scope the scope of the config screen to be opened. This is the "translation key" of the config(s) you want to open. For example, `"my_mod:my_config" > "my_mod.my_config"` To open a selection screen of every config from a mod, pass the namespace: `"my_mod"`.
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ConfigGuiOpener]
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ConfigGuiOpener.exampleScreenOpening]
      * @author fzzyhmstrs
      * @since 0.2.0
      */

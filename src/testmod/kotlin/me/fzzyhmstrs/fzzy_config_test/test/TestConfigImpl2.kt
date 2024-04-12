@@ -1,9 +1,6 @@
 package me.fzzyhmstrs.fzzy_config_test.test
 
-import me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable
-import me.fzzyhmstrs.fzzy_config.annotations.Comment
-import me.fzzyhmstrs.fzzy_config.annotations.NonSync
-import me.fzzyhmstrs.fzzy_config.annotations.WithPerms
+import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -66,6 +63,7 @@ class TestConfigImpl2: Config("test_config2", "fzzy_config_test") {
         var object1 = ValidatedAny(TestAny())
 
         class TestAny {
+            @RequiresRestart
             var testInt = 1
             var testValidated = ValidatedFloat(3f,6f,1f)
             var testValidated2 = listOf(1,3,5,7).validated()

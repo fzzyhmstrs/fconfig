@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 
 /**
  * A result of any type T that is wrapped with an optional error message
@@ -183,6 +184,10 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         fun <T> ValidationResult<T>.report(errorBuilder: MutableList<String>): ValidationResult<T> {
             if (this.isError()) errorBuilder.add(this.error)
             return this
+        }
+
+        fun <T: Any> ValidationResult<ConfigContext<T>>.contextualize(): ValidationResult<T> {
+            return this.wrap(this.get().config)
         }
     }
 }

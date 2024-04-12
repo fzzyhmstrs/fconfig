@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config_test.test
 
+import me.fzzyhmstrs.fzzy_config.annotations.RequiresRestart
 import me.fzzyhmstrs.fzzy_config.annotations.Version
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
@@ -26,13 +27,16 @@ class TestConfigImpl: Config("test_config", "fzzy_config_test", "test") {
     var int1 = 6
     var int2 = ValidatedInt(6,10,1)
 
+    @RequiresRestart
     var enum1 = TestEnum.ALPHA
+    @RequiresRestart
     var enum2 = TestEnum.BETA.validated()
 
     var section1 = TestSectionImpl()
     class TestSectionImpl: ConfigSection(){
         @ValidatedFloat.Restrict(-500f, 500f)
         var float1 = 1f
+        @RequiresRestart
         var float2 = ValidatedFloat(3f,6f,1f,ValidatedNumber.WidgetType.TEXTBOX)
         var float3 = ValidatedFloat(3f,6f,1f)
         var string1 = "hello"
@@ -55,6 +59,7 @@ class TestConfigImpl: Config("test_config", "fzzy_config_test", "test") {
 
         var ingredient1 = ValidatedIngredient(Identifier("stick"))
 
+        @RequiresRestart
         var tag1 = ValidatedTagKey(ItemTags.PICKAXES)
 
         var object1 = ValidatedAny(TestAny())

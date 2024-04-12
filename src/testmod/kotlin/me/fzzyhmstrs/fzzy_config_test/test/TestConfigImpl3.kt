@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config_test.test
 
 import me.fzzyhmstrs.fzzy_config.annotations.ConvertFrom
+import me.fzzyhmstrs.fzzy_config.annotations.RequiresRestart
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -20,11 +21,13 @@ import java.awt.Color
 @ConvertFrom("test_config3.json","fzzy_config_test")
 class TestConfigImpl3: Config("test_config3", "fzzy_config_test") {
 
+    @RequiresRestart
     var bl1 = true
     var bl2 = ValidatedBoolean()
 
     @ValidatedInt.Restrict(0,20)
     var int1 = 6
+    @RequiresRestart
     var int2 = ValidatedInt(6,10,1)
 
     /*

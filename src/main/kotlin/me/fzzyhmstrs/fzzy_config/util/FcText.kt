@@ -1,6 +1,8 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
+import me.fzzyhmstrs.fzzy_config.util.FcText.description
+import me.fzzyhmstrs.fzzy_config.util.FcText.translation
 import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -148,7 +150,7 @@ object FcText {
      */
     fun Any?.transLit(literalFallback: String = ""): MutableText {
         return if(this is Translatable)
-            this.translation(literalFallback)
+            this.translation().takeIf { I18n.hasTranslation(this.translationKey()) } ?: literal(literalFallback).formatted(Formatting.ITALIC)
         else if (literalFallback != "")
             literal(literalFallback).formatted(Formatting.ITALIC)
         else
@@ -172,7 +174,7 @@ object FcText {
      */
     fun Any?.descLit(literalFallback: String = ""): Text {
         return if(this is Translatable) {
-            this.description(literalFallback)
+            this.description().takeIf {I18n.hasTranslation(this.descriptionKey()) } ?: literal(literalFallback).formatted(Formatting.ITALIC)
         } else if(literalFallback != "")
             literal(literalFallback).formatted(Formatting.ITALIC)
         else

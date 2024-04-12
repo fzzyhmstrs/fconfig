@@ -4,9 +4,12 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.Walkable
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.contextualize
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 
@@ -40,7 +43,7 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
         fieldName: String,
         flags: Byte
     ): ValidationResult<ConfigSection> {
-        return ConfigApi.deserializeFromToml(this, toml, errorBuilder, flags).let { it.wrap(it.get().config) }
+        return ConfigApi.deserializeFromToml(this, toml, errorBuilder, flags).contextualize()
     }
 
     override fun translationKey(): String {

@@ -3,6 +3,7 @@ package me.fzzyhmstrs.fzzy_config.registry
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_KEY
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.networking.ConfigSyncS2CCustomPayload
@@ -47,7 +48,7 @@ object SyncedConfigRegistry {
                 val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
                 val result = ConfigApi.deserializeConfig(config, configString, errors, 2) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
-                val restart = result.get().getBoolean(ConfigApiImpl.RESTART_KEY)
+                val restart = result.get().getBoolean(RESTART_KEY)
                 result.writeError(errors)
                 result.get().config.save() //save config to the client
                 if (restart) {
@@ -63,12 +64,12 @@ object SyncedConfigRegistry {
                     val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                     val errors = mutableListOf<String>()
                     val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
-                    val restart = result.get().getBoolean(ConfigApiImpl.RESTART_KEY)
+                    val restart = result.get().getBoolean(RESTART_KEY)
                     result.writeError(errors)
                     result.get().config.save()
                     if (restart) {
                         println("A RESTART IS NEEDED AAAAHHHHH")
-                        context.player.sendMessage("fc.config.restart.update".translate())
+                        context.player().sendMessage("fc.config.restart.update".translate())
                     }
                 }
             }
@@ -140,8 +141,12 @@ object SyncedConfigRegistry {
                 val config = syncedConfigs[id] ?: continue
                 val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
+                val restart = result.get().getBoolean(RESTART_KEY)
                 result.writeError(errors)
                 result.get().config.save()
+                if (restart) {
+                    FC.LOGGER.error("The server has received a config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
+                }
             }
             for (player in context.player().server.playerManager.playerList) {
                 if (player == context.player()) continue // don't push back to the player that just sent the update
