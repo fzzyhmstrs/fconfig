@@ -1,7 +1,9 @@
-package me.fzzyhmstrs.fzzy_config.screen.widget
+package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -20,7 +22,7 @@ import java.util.function.Supplier
 import kotlin.math.max
 
 @Environment(EnvType.CLIENT)
-class ChangesWidget(private val scope: String, private val widthSupplier: Supplier<Int>, private val manager: UpdateManager): PressableWidget(0,0,80,20,"fc.button.changes".translate()) {
+internal class ChangesWidget(private val scope: String, private val widthSupplier: Supplier<Int>, private val manager: UpdateManager): PressableWidget(0,0,80,20,"fc.button.changes".translate()) {
 
     companion object{
         private val changesTex: Identifier = "widget/changes".fcId()
@@ -87,7 +89,7 @@ class ChangesWidget(private val scope: String, private val widthSupplier: Suppli
             .addElement("confirm_text", MultilineTextWidget("fc.button.restore.confirm.desc".translate(), client.textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
             .addElement("confirm_button", ButtonWidget.builder(confirmText) { manager.restore(scope); PopupWidget.pop() }.size(buttonWidth,20).build(), Position.BELOW, Position.ALIGN_LEFT)
             .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth,20).build(),"confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
-            .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
+            .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width / 2 - w / 2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y - h + 28 })
             .width(buttonWidth + 4 + buttonWidth + 16)
             .build()

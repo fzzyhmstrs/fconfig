@@ -3,7 +3,7 @@ package me.fzzyhmstrs.fzzy_config.registry
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
-import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenManager
+import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -13,12 +13,12 @@ import net.minecraft.client.gui.screen.Screen
 import java.util.*
 
 /**
- * The registry for [Config] instances.
+ * Client registry for [Config] instances. Handles GUIs.
  *
  * This is not a "true" registry in the Minecraft since; as such there are not the typical helper methods like get(), getId(), etc. This registry's scope is much narrower, handling synchronization and updates of Configs.
  */
 @Environment(EnvType.CLIENT)
-object ClientConfigRegistry {
+internal object ClientConfigRegistry {
 
     private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
     private val configScreenManagers: MutableMap<String, ConfigScreenManager> = mutableMapOf()

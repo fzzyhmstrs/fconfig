@@ -9,6 +9,15 @@ import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.util.Identifier
 
+/**
+ * A widget that wraps another widget with a decoration
+ *
+ * Decorations are not rendered by this widget, something like a custom Screen or ParentElement that is checking for Decorated will typically render it
+ * @param child ClickableWidget - the widget wrapped by this one
+ * @param decoration Identifier - id of the decoration to render
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 class DecorationWrappedWidget(private val child: ClickableWidget, private val decoration: Identifier): ClickableWidget(child.x,child.y,child.width, child.height, FcText.empty()), Decorated {
 
     override fun decorationId(): Identifier {

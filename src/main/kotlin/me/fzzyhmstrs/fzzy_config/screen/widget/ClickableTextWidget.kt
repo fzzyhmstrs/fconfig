@@ -12,7 +12,15 @@ import net.minecraft.util.Language
 import net.minecraft.util.math.MathHelper
 import kotlin.math.roundToInt
 
-class ClickableTextWidget(private val parent: Screen,message: Text, textRenderer: TextRenderer): AbstractTextWidget(0,0,textRenderer.getWidth(message.asOrderedText()), textRenderer.fontHeight, message, textRenderer) {
+/**
+ * A [AbstractTextWidget] that can process click and hover actions on rendered text
+ * @param parent Screen - this widgets parent screen
+ * @param message Text - the text to render with this widget
+ * @param textRenderer [TextRenderer] - textrenderer instance
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
+class ClickableTextWidget(private val parent: Screen, message: Text, textRenderer: TextRenderer): AbstractTextWidget(0,0,textRenderer.getWidth(message.asOrderedText()), textRenderer.fontHeight, message, textRenderer) {
 
     private var horizontalAlignment = 0.5f
 

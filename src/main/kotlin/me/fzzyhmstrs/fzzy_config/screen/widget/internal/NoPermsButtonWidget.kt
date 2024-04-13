@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.screen.widget
+package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.entry.Decorated
@@ -14,7 +14,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 
 @Environment(EnvType.CLIENT)
-class NoPermsButtonWidget : PressableWidget(0,0,110,20, FcText.empty()), Decorated {
+internal class NoPermsButtonWidget : PressableWidget(0,0,110,20, FcText.empty()), Decorated {
 
     init{
         this.active = false

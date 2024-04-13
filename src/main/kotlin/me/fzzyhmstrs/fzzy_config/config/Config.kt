@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.fcId
-import me.fzzyhmstrs.fzzy_config.impl.Walkable
+import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.util.Identifier
 
@@ -25,11 +25,10 @@ import net.minecraft.util.Identifier
  * @param name the name of the config, this will be the file name and the path of the default config ID used in registration. NOTE: Do not add a file type to this name. That is done automatically where needed
  * @param folder the folder inside the config folder the config will be saved in. Can be "", which will put the file in the base config folder. If not "", this will be used as the namespace of the default ID, otherwise "fzzy_config" will be used. In this case, it's recommended to override [getId] with the ID you want for the config. Common groups of namespace will be the first "layer" of the Config GUI (all like namespace in one group), so it's recommended to use a common namespace (modid, generally)
  * @param subfolder optional. puts the config into a subfolder inside the folder specified in [folder]. Does not affect ID or GUI layout
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.lang
  * @see ConfigApi
  * @see ConfigSection
+ * @see getId
  * @see me.fzzyhmstrs.fzzy_config.validation.ValidatedField
- * @see me.fzzyhmstrs.fzzy_config.entry.Entry
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -55,7 +54,13 @@ open class Config(val name: String, val folder: String, val subfolder: String = 
     }
 
     /**
-     * The default permission level of entries in this config.
+     * The default permission level of entries in this config. Users will need to have at least this permission level to modify entries for synced configs except for entries that are [me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable] or [me.fzzyhmstrs.fzzy_config.annotations.NonSync]
+     *
+     * Override specific setting permission levels with [me.fzzyhmstrs.fzzy_config.annotations.WithPerms]
+     *
+     * 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
+     * @author fzzyhmstrs
+     * @since 0.2.0
      */
     open fun defaultPermLevel(): Int {
         return 2
@@ -85,14 +90,21 @@ open class Config(val name: String, val folder: String, val subfolder: String = 
      */
     open fun update(deserializedVersion: Int){}
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         return ConfigApi.serializeConfig(this,mutableListOf())
     }
-
+    /**
+     * @suppress
+     */
     override fun translationKey(): String {
         return getId().toTranslationKey()
     }
-
+    /**
+     * @suppress
+     */
     override fun descriptionKey(): String {
         return getId().toTranslationKey("",".desc")
     }

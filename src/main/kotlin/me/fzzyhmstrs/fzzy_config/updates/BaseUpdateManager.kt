@@ -3,14 +3,15 @@ package me.fzzyhmstrs.fzzy_config.updates
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.validation.BasicValidationProvider
 import net.minecraft.text.Text
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+@Internal
 open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
 
 

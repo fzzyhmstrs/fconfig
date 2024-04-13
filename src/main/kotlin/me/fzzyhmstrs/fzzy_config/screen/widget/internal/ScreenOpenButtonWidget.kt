@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.screen.widget
+package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.entry.Decorated
@@ -15,7 +15,7 @@ import net.minecraft.util.Identifier
 import java.util.function.Consumer
 
 @Environment(EnvType.CLIENT)
-class ScreenOpenButtonWidget(private val buttonTitle: Text, private val pressAction: Consumer<ScreenOpenButtonWidget>) : PressableWidget(0,0,110,20, FcText.empty()), Decorated {
+internal class ScreenOpenButtonWidget(private val buttonTitle: Text, private val pressAction: Consumer<ScreenOpenButtonWidget>) : PressableWidget(0,0,110,20, FcText.empty()), Decorated {
 
     override fun getNarrationMessage(): MutableText {
         return this.message.copy()

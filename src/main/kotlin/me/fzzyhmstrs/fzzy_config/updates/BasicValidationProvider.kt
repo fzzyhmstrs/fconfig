@@ -1,7 +1,8 @@
-package me.fzzyhmstrs.fzzy_config.validation
+package me.fzzyhmstrs.fzzy_config.updates
 
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.impl.Walkable
+import me.fzzyhmstrs.fzzy_config.util.Walkable
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.*
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
@@ -15,7 +16,7 @@ import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
 
 @JvmDefaultWithCompatibility
-interface BasicValidationProvider {
+internal interface BasicValidationProvider {
 
     fun basicValidationStrategy(input: Any?, inputType: KType, annotations: List<Annotation>): ValidatedField<*>? {
 

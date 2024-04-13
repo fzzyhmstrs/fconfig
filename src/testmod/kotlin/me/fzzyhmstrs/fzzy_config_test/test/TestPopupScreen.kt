@@ -1,17 +1,11 @@
 package me.fzzyhmstrs.fzzy_config_test.test
 
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
-import me.fzzyhmstrs.fzzy_config.screen.widget.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.*
-import me.fzzyhmstrs.fzzy_config.test.TestConfigApi
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
-import me.fzzyhmstrs.fzzy_config_test.FCC.manager
 import me.fzzyhmstrs.fzzy_config_test.FCC.testBoolean
 import me.fzzyhmstrs.fzzy_config_test.FCC.testEnum
 import me.fzzyhmstrs.fzzy_config_test.FCC.testEnum2
@@ -19,11 +13,9 @@ import me.fzzyhmstrs.fzzy_config_test.FCC.testInt
 import me.fzzyhmstrs.fzzy_config_test.FCC.testInt2
 import me.fzzyhmstrs.fzzy_config_test.FCC.testString
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.Selectable.SelectionType
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.TextWidget
-import net.minecraft.util.DyeColor
 import java.util.function.Supplier
 
 class TestPopupScreen: PopupWidgetScreen(FcText.empty()) {
@@ -36,11 +28,10 @@ class TestPopupScreen: PopupWidgetScreen(FcText.empty()) {
     val testInt2Widget = testInt2.widgetEntry(ChoiceValidator.any())
     val testStringWidget = testString.widgetEntry(ChoiceValidator.any())
     val testBooleanWidget = testBoolean.widgetEntry(ChoiceValidator.any())
-    val testChangesWidget = ChangesWidget("test.scope.changes",{this.width}, testBasicConfigManager)
 
     override fun close() {
         super.close()
-        TestConfigApi.printChangeHistory(manager.flush(),"Test Screen Closing", client?.player)
+        //TestConfigApi.printChangeHistory(manager.flush(),"Test Screen Closing", client?.player)
         this.client?.narratorManager?.clear()
     }
 
@@ -61,8 +52,6 @@ class TestPopupScreen: PopupWidgetScreen(FcText.empty()) {
         addDrawableChild(testStringWidget)
         testBooleanWidget.setPosition(20,170)
         addDrawableChild(testBooleanWidget)
-        testChangesWidget.setPosition(20,200)
-        addDrawableChild(testChangesWidget)
 
     }
 

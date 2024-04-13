@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.screen
+package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import com.google.common.collect.Lists
 import com.mojang.blaze3d.systems.RenderSystem
@@ -17,7 +17,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
-class SuggestionWindow(
+internal class SuggestionWindow(
     private val suggestions: List<Suggestion>,
     private val x: Int,
     private val y: Int,
@@ -184,7 +184,7 @@ class SuggestionWindow(
     }
 
     companion object{
-        fun createSuggestionWindow(windowX: Int, windowY: Int,suggestions: Suggestions,text: String, cursor: Int, applier: Consumer<String>, closer: Consumer<SuggestionWindow>): SuggestionWindow{
+        fun createSuggestionWindow(windowX: Int, windowY: Int,suggestions: Suggestions,text: String, cursor: Int, applier: Consumer<String>, closer: Consumer<SuggestionWindow>): SuggestionWindow {
             var w = 0
             for (suggestion in suggestions.list) {
                 w = max(w, MinecraftClient.getInstance().textRenderer.getWidth(suggestion.text))
@@ -209,7 +209,8 @@ class SuggestionWindow(
                 }
                 windowY + 20
             }
-            return SuggestionWindow(sortSuggestions(suggestions,text, cursor), x, y, w, h, upBl,
+            return SuggestionWindow(
+                sortSuggestions(suggestions,text, cursor), x, y, w, h, upBl,
                 applier,
                 closer)
         }

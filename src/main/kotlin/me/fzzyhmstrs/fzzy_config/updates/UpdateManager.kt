@@ -1,7 +1,9 @@
 package me.fzzyhmstrs.fzzy_config.updates
 
 import net.minecraft.text.Text
+import org.jetbrains.annotations.ApiStatus.Internal
 
+@Internal
 @JvmDefaultWithCompatibility
 interface UpdateManager {
     companion object Base: BaseUpdateManager()

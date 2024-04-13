@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.screen.widget
+package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import net.fabricmc.api.EnvType
@@ -11,7 +11,7 @@ import net.minecraft.util.Colors
 import java.util.function.Supplier
 
 @Environment(EnvType.CLIENT)
-class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<Int>) : AlwaysSelectedEntryListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), sWidth.get() - 16, 180, 0, 11) {
+internal class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<Int>) : AlwaysSelectedEntryListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), sWidth.get() - 16, 180, 0, 11) {
 
     override fun drawHeaderAndFooterSeparators(context: DrawContext?) {
     }

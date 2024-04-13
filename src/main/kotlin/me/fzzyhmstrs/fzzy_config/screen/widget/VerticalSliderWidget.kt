@@ -21,6 +21,18 @@ import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
 
+/**
+ * A vertically oriented SliderWidget, works as one would expect a sldier widget to work, but doesn't render the slider value that needs to be done separately via the [valueApplier]
+ * @param wrappedValue [Supplier]&lt;Double&gt; - supplier of value to display
+ * @param x Int - x position of the widget
+ * @param y Int - y position of the widget
+ * @param width Int - width of the widget
+ * @param height Int - height of the widget
+ * @param message Text - narration message for the widget; this isn't rendered
+ * @param valueApplier [Consumer]&lt;Double&gt; - accepts new user inputs
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 @Environment(EnvType.CLIENT)
 class VerticalSliderWidget(private val wrappedValue: Supplier<Double>,x: Int, y: Int, width: Int, height: Int, message: Text, private val valueApplier: Consumer<Double>)
     :

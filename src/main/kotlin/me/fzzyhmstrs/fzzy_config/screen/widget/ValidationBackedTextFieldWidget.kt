@@ -14,6 +14,17 @@ import net.minecraft.text.MutableText
 import java.util.function.Consumer
 import java.util.function.Supplier
 
+/**
+ * A [TextFieldWidget] backed by string validation that can consume and apply strings from/to an outside source
+ * @param width Int - width of the widget
+ * @param height Int - height of the widget
+ * @param wrappedValue [Supplier]&lt;String&gt; - supplies strings to the text field for display
+ * @param choiceValidator [ChoiceValidator]&lt;String&gt; - additional choice validation, if any. Generally this can be [ChoiceValidator.any]
+ * @param validator [EntryValidator]&lt;String&gt; - String validation provider see [EntryValidator.Builder] for more details on validation construction
+ * @param applier [Consumer]&lt;String&gt; - accepts newly valid user inputs.
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 @Suppress("LeakingThis")
 @Environment(EnvType.CLIENT)
 open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected val wrappedValue: Supplier<String>, protected val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, protected val applier: Consumer<String>):

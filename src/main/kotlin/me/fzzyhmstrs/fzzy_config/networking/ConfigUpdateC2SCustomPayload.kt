@@ -5,7 +5,7 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
 
-class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, val changeHistory: List<String>, val playerPerm: Int): CustomPayload {
+internal class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, val changeHistory: List<String>, val playerPerm: Int): CustomPayload {
 
     constructor(buf: PacketByteBuf): this(readMap(buf),readList(buf), buf.readByte().toInt())
 

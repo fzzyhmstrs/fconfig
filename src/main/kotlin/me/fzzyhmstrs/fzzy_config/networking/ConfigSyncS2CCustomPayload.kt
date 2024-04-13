@@ -5,7 +5,7 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
 
-class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: String): CustomPayload {
+internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: String): CustomPayload {
 
     constructor(buf: PacketByteBuf): this(buf.readString(),buf.readString())
 

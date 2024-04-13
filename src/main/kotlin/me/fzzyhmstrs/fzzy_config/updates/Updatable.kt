@@ -2,7 +2,9 @@ package me.fzzyhmstrs.fzzy_config.updates
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import net.minecraft.text.Text
+import org.jetbrains.annotations.ApiStatus.Internal
 
+@Internal
 interface Updatable: EntryKeyed {
     fun getUpdateManager(): UpdateManager?
     fun setUpdateManager(manager: UpdateManager)

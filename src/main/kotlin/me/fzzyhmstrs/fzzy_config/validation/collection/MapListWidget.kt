@@ -1,7 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -78,7 +78,7 @@ internal class MapListWidget<K,V>(
 
         private val keyWidget = key.widgetEntry(keyValidator.apply(parent,this))
         private val valueWidget = value.widgetEntry(ChoiceValidator.any())
-        private val deleteWidget = TextlessConfigActionWidget(
+        private val deleteWidget = TextlessActionWidget(
             TextureIds.DELETE,
             TextureIds.DELETE_INACTIVE,
             TextureIds.DELETE_HIGHLIGHTED,
@@ -131,7 +131,7 @@ internal class MapListWidget<K,V>(
     @Suppress("UNCHECKED_CAST")
     private class NewEntry<K,V>(private val keySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<K, *>,private val valueSupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<V, *>, private val parent: MapListWidget<K,V>, private val validator: BiFunction<MapListWidget<K,V>,MapEntry<K,V>?,ChoiceValidator<K>>): MapEntry<K,V>() {
 
-        private val addWidget = TextlessConfigActionWidget(
+        private val addWidget = TextlessActionWidget(
             TextureIds.ADD,
             TextureIds.ADD_INACTIVE,
             TextureIds.ADD_HIGHLIGHTED,

@@ -1,9 +1,9 @@
-package me.fzzyhmstrs.fzzy_config.screen.widget
+package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
-import me.fzzyhmstrs.fzzy_config.screen.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
+import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -54,8 +54,9 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
     }
 
     override fun popLast() {
-        (lastSelected as? SettingConfigEntry)?.let { focused = it }
+        (lastSelected as? BaseConfigEntry)?.let { focused = it }
     }
+
     fun updateSearchedEntries(searchInput: String): Int {
         if (searchInput == "") {
             this.replaceEntries(wholeList.toList())

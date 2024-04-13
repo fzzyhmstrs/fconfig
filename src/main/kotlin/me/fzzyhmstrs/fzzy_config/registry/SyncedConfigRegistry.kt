@@ -23,11 +23,13 @@ import net.minecraft.entity.player.PlayerEntity
 import java.util.*
 
 /**
- * The registry for [Config] instances.
+ * Synchronization registry for [Config] instances. Handles syncing configs, sending updates to and from clients, and forwarding settings between users
  *
- * This is not a "true" registry in the Minecraft since; as such there are not the typical helper methods like get(), getId(), etc. This registry's scope is much narrower, handling synchronization and updates of Configs.
+ * This is not a "true" registry in the Minecraft sense; as such there are not the typical helper methods like get(), getId(), etc. This registry's scope is much narrower, handling synchronization and updates of Configs.
+ * @author fzzyhmstrs
+ * @since 0.1.0
  */
-object SyncedConfigRegistry {
+internal object SyncedConfigRegistry {
 
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
 

@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindow
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -12,6 +12,10 @@ import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
 import java.util.function.Supplier
 
+/**
+ * A [ValidationBackedTextFieldWidget] that provides suggestions for string completion to the user
+ * @param
+ */
 @Environment(EnvType.CLIENT)
 class SuggestionBackedTextFieldWidget(
     width: Int,

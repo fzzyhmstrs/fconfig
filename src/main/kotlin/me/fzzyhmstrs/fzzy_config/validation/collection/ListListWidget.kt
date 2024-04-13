@@ -1,8 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
-import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -70,7 +69,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     private class ExistingEntry<T>(private val entry: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, private val parent: ListListWidget<T>, validator: BiFunction<ListListWidget<T>,ListEntry<T>?,ChoiceValidator<T>>): ListEntry<T>() {
 
         private val entryWidget = entry.widgetEntry(validator.apply(parent,this))
-        private val deleteWidget = TextlessConfigActionWidget(
+        private val deleteWidget = TextlessActionWidget(
             TextureIds.DELETE,
             TextureIds.DELETE_INACTIVE,
             TextureIds.DELETE_HIGHLIGHTED,
@@ -120,7 +119,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     @Suppress("UNCHECKED_CAST")
     private class NewEntry<T>(private val entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, private val parent: ListListWidget<T>, private val validator: BiFunction<ListListWidget<T>,ListEntry<T>?,ChoiceValidator<T>>): ListEntry<T>() {
 
-        private val addWidget = TextlessConfigActionWidget(
+        private val addWidget = TextlessActionWidget(
             TextureIds.ADD,
             TextureIds.ADD_INACTIVE,
             TextureIds.ADD_HIGHLIGHTED,

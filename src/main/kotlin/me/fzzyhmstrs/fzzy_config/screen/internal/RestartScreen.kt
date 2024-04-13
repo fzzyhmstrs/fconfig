@@ -1,14 +1,12 @@
-package me.fzzyhmstrs.fzzy_config.screen
+package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
-import me.fzzyhmstrs.fzzy_config.screen.widget.DividerWidget
+import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.GameMenuScreen
-import net.minecraft.client.gui.screen.MessageScreen
 import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
 import net.minecraft.client.gui.widget.*

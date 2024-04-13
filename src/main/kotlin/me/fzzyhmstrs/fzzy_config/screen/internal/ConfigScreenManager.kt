@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.screen
+package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable
@@ -14,13 +14,16 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.isRequiresRestart
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
-import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenManager.ConfigScreenBuilder
+import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager.ConfigScreenBuilder
 import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SectionConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NoPermsButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ScreenOpenButtonWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
@@ -367,10 +370,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
             .positionY(PopupWidget.Builder.at{ y })
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
-        if(entry.canCopyEntry()) {
-            popup.addElement("copy", ActiveButtonWidget(copyText, client.textRenderer.getWidth(copyText) + 8, 14, { true }, { pushToBuffer(entry.get()); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-            popup.addElement("paste", ActiveButtonWidget(pasteText, client.textRenderer.getWidth(pasteText) + 8, 14, { entry.isValidEntry(copyBuffer) }, { entry.trySet(copyBuffer); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        }
+        popup.addElement("copy", ActiveButtonWidget(copyText, client.textRenderer.getWidth(copyText) + 8, 14, { true }, { pushToBuffer(entry.get()); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("paste", ActiveButtonWidget(pasteText, client.textRenderer.getWidth(pasteText) + 8, 14, { entry.isValidEntry(copyBuffer) }, { entry.trySet(copyBuffer); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
         popup.addElement("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 14, { entry.peekState() }, { entry.revert(); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
         popup.addElement("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 14, { !entry.isDefault() }, { b -> openRestoreConfirmPopup(b, entry) },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
         if(withForwarding)

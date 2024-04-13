@@ -1,9 +1,11 @@
-package me.fzzyhmstrs.fzzy_config.screen
+package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
-import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -21,7 +23,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
 import org.lwjgl.glfw.GLFW
-import java.util.function.Consumer
 import java.util.function.Function
 
 @Environment(EnvType.CLIENT)
@@ -78,7 +79,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     private fun initFooter() {
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //info button
-        directionalLayoutWidget.add(TextlessConfigActionWidget("widget/action/info".fcId(),"widget/action/info_inactive".fcId(),"widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(),{ true } ) { openInfoPopup() }) { p -> p.alignLeft() }
+        directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(),"widget/action/info_inactive".fcId(),"widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(),{ true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
         fun setColor(entries: Int){
             if(entries > 0)
@@ -91,7 +92,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         searchField.setChangedListener { s -> setColor(configList.updateSearchedEntries(s)) }
         directionalLayoutWidget.add(searchField)
         //forward alert button
-        directionalLayoutWidget.add(TextlessConfigActionWidget("widget/action/alert".fcId(),"widget/action/alert_inactive".fcId(),"widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(),{ manager.hasForwards() } ) { manager.forwardsHandler() })
+        directionalLayoutWidget.add(TextlessActionWidget("widget/action/alert".fcId(),"widget/action/alert_inactive".fcId(),"widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(),{ manager.hasForwards() } ) { manager.forwardsHandler() })
         //changes button
         directionalLayoutWidget.add(ChangesWidget(scope, { this.width }, manager))
         //done button

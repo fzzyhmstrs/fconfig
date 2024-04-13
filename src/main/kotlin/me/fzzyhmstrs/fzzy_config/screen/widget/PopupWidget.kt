@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.fabricmc.api.EnvType
@@ -34,13 +35,13 @@ import kotlin.math.min
 /**
  * A widget comprised of a collection of child elements that "Pops up" onto screens that implement [me.fzzyhmstrs.fzzy_config.screen.PopupParentElement]
  *
- * Multiple popups can stack onto PopupParentElements. They display last-added in front, first added in back, and are removed in reverse order they were added (First In Last Out)
+ * Multiple popups can stack onto PopupParentElements. They display last-added in front, first added in back, and are removed in reverse of the order they were added (First In Last Out)
  * @see Builder
  * @author fzzyhmstrs
  * @since 0.2.0
  */
 @Environment(EnvType.CLIENT)
-open class PopupWidget
+class PopupWidget
     private constructor(
         private var message: Text,
         private val width: Int,
@@ -68,7 +69,7 @@ open class PopupWidget
     private var dragging = false
     private val fillColor = Color(45,45,45,90).rgb
 
-    open fun onClose(){
+    fun onClose(){
         this.onClose.run()
     }
 
@@ -76,12 +77,12 @@ open class PopupWidget
         return closeOnOutOfBounds
     }
 
-    open fun blur() {
+     fun blur() {
         val guiNavigationPath = this.focusedPath
         guiNavigationPath?.setFocused(false)
     }
 
-    protected open fun applyBlur(delta: Float) {
+    fun applyBlur(delta: Float) {
         MinecraftClient.getInstance().gameRenderer.renderBlur(delta)
         MinecraftClient.getInstance().framebuffer.beginWrite(false)
     }
@@ -158,7 +159,7 @@ open class PopupWidget
     private fun getArrowNavigation(direction: NavigationDirection): Arrow {
         return Arrow(direction)
     }
-    open fun switchFocus(path: GuiNavigationPath) {
+    private fun switchFocus(path: GuiNavigationPath) {
         blur()
         path.setFocused(true)
     }
@@ -211,6 +212,11 @@ open class PopupWidget
         }
     }
 
+    /**
+     * API for PopupWidgets. Add, remove, and interact with popups here.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     companion object Api {
         /**
          * Sets a [PopupWidget] to the current screen, if the current screen is a [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen]
@@ -392,7 +398,7 @@ open class PopupWidget
          * @param element E - the widget
          * @param spacingW Int - the custom horizontal padding
          * @param spacingH Int - the custom vertical padding
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @sample
          * @author fzzyhmstrs
@@ -411,9 +417,8 @@ open class PopupWidget
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
          * @param element E - the widget
-         * @param parent String - the id of the parent to key layout of this new element off of.
          * @param spacingW Int - the custom horizontal padding
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @sample
          * @author fzzyhmstrs
@@ -434,7 +439,7 @@ open class PopupWidget
          * @param element E - the widget
          * @param parent String - the id of the parent to key layout of this new element off of.
          * @param spacingH Int - the custom vertical padding
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @sample
          * @author fzzyhmstrs
@@ -454,7 +459,7 @@ open class PopupWidget
          * @param id String - the id of this element, used when an element refers to this one as a parent
          * @param element E - the widget
          * @param parent String - the id of the parent to key layout of this new element off of.
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @sample
          * @author fzzyhmstrs
@@ -473,8 +478,7 @@ open class PopupWidget
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
          * @param element E - the widget
-         * @param parent String - the id of the parent to key layout of this new element off of.
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @sample
          * @author fzzyhmstrs
@@ -564,7 +568,7 @@ open class PopupWidget
          * Defines the Y positioner function for this widget, Y being the top edge of the widget, border included.
          *
          * The default position function centers the widget vertically on the screen
-         * @param positionX [BiFunction]<Int, Int, Int> - The Y position BiFunction: (Screen Height, Popup Height) -> Y position, globally on the screen
+         * @param positionY [BiFunction]<Int, Int, Int> - The Y position BiFunction: (Screen Height, Popup Height) -> Y position, globally on the screen
          * @return Builder - this builder for further use
          * @see at
          * @see popupContext

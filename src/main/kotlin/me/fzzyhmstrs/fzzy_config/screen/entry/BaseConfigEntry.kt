@@ -3,9 +3,8 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
-import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -13,7 +12,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -23,7 +21,6 @@ import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
-import org.lwjgl.glfw.GLFW
 
 @Environment(EnvType.CLIENT)
 internal open class BaseConfigEntry(

@@ -13,12 +13,23 @@ import net.minecraft.util.math.MathHelper
 import java.util.function.Consumer
 import java.util.function.Supplier
 
+/**
+ * A Button Widget that can supply its message and active state, and render a custom background
+ * @param titleSupplier [Supplier]&lt;[Text]&gt; - supplies the message/label for this button
+ * @param width Int - width of the widget
+ * @param height Int - height of the widget
+ * @param activeSupplier [Supplier]&lt;Boolean&gt; - Supplies whether this button is active or not
+ * @param pressAction [Consumer]&lt;ActiveButtonWidget&gt; - action to take when the button is pressed
+ * @param background [Identifier], optional - a custom background identifier. needs to be a nine-patch sprite
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 @Environment(EnvType.CLIENT)
 open class ActiveButtonWidget(
     private val titleSupplier: Supplier<Text>,
     width: Int,
     height: Int,
-    private val activeProvider: Supplier<Boolean>,
+    private val activeSupplier: Supplier<Boolean>,
     private val pressAction: Consumer<ActiveButtonWidget>,
     private val background: Identifier? = null)
     :
@@ -36,7 +47,7 @@ open class ActiveButtonWidget(
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        this.active = activeProvider.get()
+        this.active = activeSupplier.get()
         if (background != null) {
             if (this.isSelected && active){
                 context.setShaderColor(1.0f, 1.0f, 1.0f, alpha)

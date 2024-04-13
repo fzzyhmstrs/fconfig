@@ -9,7 +9,7 @@ package me.fzzyhmstrs.fzzy_config.api
  */
 enum class RegisterType {
     /**
-     * Config is registered to both the SyncedConfigRegistry and the ClientConfigRegistry.
+     * Default registration type. Config is registered to both the SyncedConfigRegistry and the ClientConfigRegistry.
      *
      * Will auto-synchronize between clients and server, and will have a config GUI.
      * @author fzzyhmstrs
@@ -17,7 +17,7 @@ enum class RegisterType {
      */
     BOTH,
     /**
-     * Config is registered to only the SyncedConfigRegistry.
+     * No-GUI server-synced config. Config is registered to only the SyncedConfigRegistry.
      *
      * Will auto-synchronize between clients and server, but will NOT have any client sided GUI support.
      * @author fzzyhmstrs
@@ -25,7 +25,7 @@ enum class RegisterType {
      */
     SERVER,
     /**
-     * Config is registered to only the ClientConfigRegistry.
+     * Client config. Config is registered to only the ClientConfigRegistry.
      *
      * will have a config GUI, but will not auto-synchronize. Some syncing actions will still work, namely setting forwarding.
      * @author fzzyhmstrs

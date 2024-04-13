@@ -18,7 +18,6 @@ import java.io.File
  * API for management of config files.
  *
  * Configs can de/serialized from File, string, or raw TomlElement. File read is performed with validation and correction.
- *
  * @author fzzyhmstrs
  * @since 0.1.0
  */

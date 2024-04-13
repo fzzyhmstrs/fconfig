@@ -16,8 +16,8 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 object FC: ModInitializer {
-    const val MOD_ID = "fzzy_config"
-    val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
+    internal const val MOD_ID = "fzzy_config"
+    internal val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
 
     override fun onInitialize() {
         SyncedConfigRegistry.registerAll()
@@ -63,6 +63,6 @@ object FCC: ClientModInitializer {
     }
 }
 
-fun String.fcId(): Identifier {
+internal fun String.fcId(): Identifier {
     return Identifier(FC.MOD_ID,this)
 }

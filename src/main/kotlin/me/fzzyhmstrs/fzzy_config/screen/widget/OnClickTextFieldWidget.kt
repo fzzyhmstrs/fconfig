@@ -10,6 +10,13 @@ import net.minecraft.client.input.KeyCodes
 import java.util.function.Consumer
 import java.util.function.Supplier
 
+/**
+ * A button widget that masquerades as a text field widget. The text within is not editable.
+ * @param textSupplier [Supplier]&lt;String&gt; - supplier of the message the "text field" displays
+ * @param onClick [Consumer]&lt;OnClickTextFieldWidget&gt; - action to take when the button is pressed
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 @Environment(EnvType.CLIENT)
 class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: Consumer<OnClickTextFieldWidget>)
     :

@@ -1,4 +1,4 @@
-package me.fzzyhmstrs.fzzy_config.screen
+package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
@@ -8,7 +8,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessConfigActionWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -70,7 +70,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
 
     override fun forwardsHandler() {
         val popup = PopupWidget.Builder("fc.config.forwarded".translate())
-            .addElement("list",ForwardedEntryListWidget(forwardedUpdates, this), Position.BELOW, Position.ALIGN_CENTER)
+            .addElement("list", ForwardedEntryListWidget(forwardedUpdates, this), Position.BELOW, Position.ALIGN_CENTER)
             .addDoneButton()
             .build()
         PopupWidget.push(popup)
@@ -188,7 +188,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             val name = forwardedUpdate.entry.transLit(forwardedUpdate.scope)
             val tooltip = Tooltip.of(forwardedUpdate.summary.lit())
 
-            val acceptForwardWidget = TextlessConfigActionWidget(
+            val acceptForwardWidget = TextlessActionWidget(
                 "widget/action/accept".fcId(),
                 "widget/action/accept_inactive".fcId(),
                 "widget/action/accept_highlighted".fcId(),
@@ -197,7 +197,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                 { true },
                 { manager.acceptForward(forwardedUpdate); parent.removeEntry(this) }
             )
-            val denyForwardWidget = TextlessConfigActionWidget(
+            val denyForwardWidget = TextlessActionWidget(
                 "widget/action/delete".fcId(),
                 "widget/action/delete_inactive".fcId(),
                 "widget/action/delete_highlighted".fcId(),

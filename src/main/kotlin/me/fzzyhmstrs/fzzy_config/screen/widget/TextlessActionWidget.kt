@@ -13,15 +13,27 @@ import net.minecraft.util.Identifier
 import java.util.function.Consumer
 import java.util.function.Supplier
 
+/**
+ * A button widget that is 20x20 pixels and displays a sprite instead of a textual message
+ * @param activeIcon Identifier - sprite id for active-but-not-hovered state
+ * @param inactiveIcon Identifier - sprite id for inactive/disabled state, controlled via [activeSupplier]
+ * @param highlightedIcon Identifier - sprite id for the active-and-hovered state
+ * @param activeNarration Text - the tooltip and narration for active states
+ * @param inactiveNarration Text - narration and tooltip to display if the button is inactive
+ * @param activeSupplier [Supplier]&lt;Boolean&gt; - supplies whether this widget should be active
+ * @param pressAction [Consumer]&lt;TextlessActionWidget&gt; - action to take on press
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 @Environment(EnvType.CLIENT)
-class TextlessConfigActionWidget(
+class TextlessActionWidget(
     private val activeIcon: Identifier,
     private val inactiveIcon: Identifier,
     private val highlightedIcon: Identifier,
     private val activeNarration: Text,
     private val inactiveNarration: Text,
-    private val canPress: Supplier<Boolean>,
-    private val pressAction: Consumer<TextlessConfigActionWidget>)
+    private val activeSupplier: Supplier<Boolean>,
+    private val pressAction: Consumer<TextlessActionWidget>)
     :
     PressableWidget(0,0, 20, 20, FcText.empty())
 {
@@ -36,7 +48,7 @@ class TextlessConfigActionWidget(
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        this.active = canPress.get()
+        this.active = activeSupplier.get()
         super.renderWidget(context, mouseX, mouseY, delta)
         context.drawGuiTexture(getTex(), x, y, getWidth(), getHeight())
         if (this.active && activeNarration.string != ""){

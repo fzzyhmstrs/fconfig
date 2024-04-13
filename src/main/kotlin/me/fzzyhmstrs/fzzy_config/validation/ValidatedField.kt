@@ -175,11 +175,6 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         return ValidationResult.success(input)
     }
 
-    @Internal
-    override fun canCopyEntry(): Boolean {
-        return true
-    }
-
     protected open fun reset() {
         setAndUpdate(defaultValue)
     }

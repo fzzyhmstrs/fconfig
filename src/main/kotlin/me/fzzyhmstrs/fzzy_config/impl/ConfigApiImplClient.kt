@@ -2,14 +2,14 @@ package me.fzzyhmstrs.fzzy_config.impl
 
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
-import me.fzzyhmstrs.fzzy_config.screen.RestartScreen
+import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import net.minecraft.client.MinecraftClient
 import net.minecraft.text.Text
 import java.util.*
 
-object ConfigApiImplClient {
+internal object ConfigApiImplClient {
 
     private val ellipses = FcText.literal("...")
 

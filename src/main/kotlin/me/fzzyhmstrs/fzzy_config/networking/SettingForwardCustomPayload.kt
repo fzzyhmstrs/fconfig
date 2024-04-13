@@ -6,7 +6,7 @@ import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
 import java.util.*
 
-class SettingForwardCustomPayload(val update: String, val player: UUID, val scope: String, val summary: String): CustomPayload {
+internal class SettingForwardCustomPayload(val update: String, val player: UUID, val scope: String, val summary: String): CustomPayload {
 
     constructor(buf: PacketByteBuf): this(buf.readString(), buf.readUuid(), buf.readString(), buf.readString())
 

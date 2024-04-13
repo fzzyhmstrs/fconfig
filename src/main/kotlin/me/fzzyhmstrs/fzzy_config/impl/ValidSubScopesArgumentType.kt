@@ -12,7 +12,7 @@ import net.minecraft.command.CommandSource
 import java.util.concurrent.CompletableFuture
 
 @Environment(EnvType.CLIENT)
-class ValidSubScopesArgumentType: ArgumentType<String> {
+internal class ValidSubScopesArgumentType: ArgumentType<String> {
     override fun parse(reader: StringReader): String {
         return reader.readUnquotedString()
     }

@@ -21,7 +21,8 @@ import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
-import me.fzzyhmstrs.fzzy_config.validation.BasicValidationProvider
+import me.fzzyhmstrs.fzzy_config.updates.BasicValidationProvider
+import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
@@ -38,7 +39,7 @@ import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.javaField
 
-object ConfigApiImpl {
+internal object ConfigApiImpl {
 
     private val isClient by lazy {
         FabricLoader.getInstance().environmentType == EnvType.CLIENT
@@ -310,7 +311,7 @@ object ConfigApiImpl {
         return Toml.encodeToString(serializeToToml(config,errorBuilder,flags))
     }
 
-    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): TomlElement where M: UpdateManager, M:BasicValidationProvider{
+    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): TomlElement where M: UpdateManager, M: BasicValidationProvider {
         val toml = TomlTableBuilder()
         try {
             walk(config,config.getId().toTranslationKey(),flags) { _,_,str,v,prop,annotations,_ ->
@@ -334,7 +335,7 @@ object ConfigApiImpl {
         return toml.build()
     }
 
-    internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): String where M: UpdateManager, M:BasicValidationProvider{
+    internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): String where M: UpdateManager, M: BasicValidationProvider {
         return Toml.encodeToString(serializeUpdateToToml(config,manager,errorBuilder,flags))
     }
 

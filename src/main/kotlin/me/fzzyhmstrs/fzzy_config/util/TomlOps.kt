@@ -15,7 +15,7 @@ import java.util.stream.Stream
  */
 class TomlOps: DynamicOps<TomlElement> {
 
-    companion object{
+    companion object {
         @JvmStatic
         val INSTANCE = TomlOps()
     }

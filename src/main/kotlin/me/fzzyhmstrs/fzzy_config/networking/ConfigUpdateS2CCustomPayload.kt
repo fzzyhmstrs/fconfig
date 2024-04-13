@@ -5,7 +5,7 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
 
-class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>): CustomPayload {
+internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>): CustomPayload {
 
     constructor(buf: PacketByteBuf): this(readMap(buf))
 

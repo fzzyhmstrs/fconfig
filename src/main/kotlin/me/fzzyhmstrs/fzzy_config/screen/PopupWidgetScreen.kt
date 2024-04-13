@@ -10,11 +10,24 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.*
 import net.minecraft.text.Text
+import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.util.*
 
 /**
- * A screen that p
+ * A base screen that supports popup widgets. See [PopupParentElement] for documentation on underlying implementations.
+ *
+ * To add and remove popups from this screen, call [PopupWidget.push] and [PopupWidget.pop]
+ *
+ * For most intents and purposes, treat this screen like a standard [Screen], with a couple caveats:
+ * - Make sure to call super on [resize], [render], and [keyPressed] otherwise popup functionality will break
+ * - call super.render AFTER any custom rendering, or popups may appear improperly below custom elements
+ * - call super.keyPressed BEFORE custom keypresses, otherwise clicks may improperly propagate through popups to elements underneath them
+ * @param title Text, the screen title
+ * @see PopupParentElement
+ * @see PopupWidget.Api
+ * @author fzzyhmstrs
+ * @since 0.2.0
  */
 @Environment(EnvType.CLIENT)
 open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
@@ -23,10 +36,12 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
     override var justClosedWidget: Boolean = false
     override var lastSelected: Element? = null
 
+    @Internal
     override fun blurElements() {
         this.blur()
     }
 
+    @Internal
     override fun initPopup(widget: PopupWidget) {
         widget.position(width,height)
     }
