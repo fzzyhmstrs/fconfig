@@ -36,7 +36,7 @@ object ConfigApi {
      * @param config the config to register
      * @param configClass A supplier of config class instances.
      * @param registerType enum of [RegisterType] that defines which registries to register to. defaults to [RegisterType.BOTH]
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration.registration
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -57,7 +57,7 @@ object ConfigApi {
      * @param configClass supplier of config class instances
      * @param registerType enum of [RegisterType] that defines which registries to register to. defaults to [RegisterType.BOTH]
      * @return loaded, validated, and registered instance of T
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration.registration
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -124,7 +124,7 @@ object ConfigApi {
      * Performs a config save. Use after a config is updated in some way in-game. Does not perform any validation or reading/deleting of old or redundant files. This is used automatically by FzzyConfig when a client updates client-sided settings, receives an update from the server, or receives and accepts a forwarded setting; and also on the server when the server receives an update from a valid client.
      * @param T subclass of [Config]
      * @param configClass instance of T to be saved
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.MyConfig.saveMe]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.MyConfig.saveMe
      * @author fzzyhmstrs
      * @since 0.2.0
      */

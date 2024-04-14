@@ -184,13 +184,13 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
      * Not strictly necessary, but may make construction cleaner.
      * @param V value type. any non-null type
      * @author fzzyhmstrs
-     * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.stringTest
+     * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.stringMap
      * @since 0.2.0
      */
     @Suppress("unused")
     class Builder<V: Any> {
         /**
-         * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map keys
+         * Defines the Entry used to handle validation, serialization, etc. for map keys
          * @param handler an [Entry] used as a handler for keys.
          * @author fzzyhmstrs
          * @since 0.2.0
@@ -201,7 +201,7 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
 
         class BuilderWithKey<V: Any> internal constructor(private val keyHandler: Entry<String,*>) {
             /**
-             * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
+             * Defines the Entry used to handle validation, serialization, etc. for map values
              * @param handler an [Entry] used as a handler for values.
              * @author fzzyhmstrs
              * @since 0.2.0

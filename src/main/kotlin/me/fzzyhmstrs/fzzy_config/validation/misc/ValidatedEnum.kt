@@ -33,9 +33,6 @@ import kotlin.math.max
  * @param T the enum type. Any [Enum]
  * @param defaultValue Enum Constant used as the default for this setting
  * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.TestEnum
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedEnum
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
  * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedEnumMap
  * @author fzzyhmstrs
  * @since 0.2.0

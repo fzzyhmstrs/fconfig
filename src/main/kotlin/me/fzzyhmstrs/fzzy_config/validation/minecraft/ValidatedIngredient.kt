@@ -51,7 +51,8 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      *
      * Initializes this validation with a single-item IngredientProvider
      * @param item [Identifier] defining the item
-     * @param predicate [Predicate]<Identifier>, optional - restricts the set of allowable items (default is any item in the Items registry)
+     * @param itemPredicate [Predicate]<Identifier>, optional - restricts the set of allowable items (default is any item in the Items registry)
+     * @param tagPredicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag in the Items registry)
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -65,7 +66,8 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      *
      * Initializes this validation with a multi-item IngredientProvider
      * @param set [Set]<[Identifier]> defining the items
-     * @param predicate [Predicate]<Identifier>, optional - restricts the set of allowable items (default is any item in the Items registry)
+     * @param itemPredicate [Predicate]<Identifier>, optional - restricts the set of allowable items (default is any item in the Items registry)
+     * @param tagPredicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag in the Items registry)
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -79,7 +81,8 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      *
      * Initializes this validation with a multi-item IngredientProvider
      * @param tag [TagKey]<Item> defining the tag to pull items from
-     * @param predicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag from the Items registry)
+     * @param itemPredicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag from the Items registry)
+     * @param tagPredicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag in the Items registry)
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -95,7 +98,6 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     /**
      * Supplies the [Ingredient] from this ValidatedIngredients Provider
      * @return [Ingredient] generated from the current [IngredientProvider]
-     * @sample me.fzzyhmstrs.fzzy_config.examples.MinecraftExamples.validatedIngredientIngredient
      * @author fzzyhmstrs
      * @since 0.2.0
      */

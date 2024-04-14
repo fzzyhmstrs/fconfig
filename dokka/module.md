@@ -1,0 +1,2 @@
+# Module Fzzy Config
+Fzzy Config is a powerful configuration engine for Minecraft Mods that meets you where you want to be. Quick and dirty or detailed and featureful, Fzzy Config will work with you. It provides a wide array of features above and beyond what you can find in other libraries.

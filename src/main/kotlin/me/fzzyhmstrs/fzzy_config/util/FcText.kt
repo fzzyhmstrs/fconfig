@@ -13,7 +13,7 @@ import java.util.*
 
 /**
  * Various text utilities and wrappers for making kotlin minecraft modding more text-expressive
- * @sample me.fzzyhmstrs.fzzy_config.examples.texts
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTexts.texts
  * @see me.fzzyhmstrs.fzzy_config.util.Translatable
  * @author fzzyhmstrs
  * @since 0.2.0

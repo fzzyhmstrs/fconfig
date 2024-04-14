@@ -24,7 +24,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @param T Type of the wrapped value
  * @param storedValue T. The wrapped value that this field validates, serializes, and syncs between server and client.
  * @param defaultValue T. The default value of the wrapped value
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.lang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTexts.lang
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -271,7 +271,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
      * wraps the provided values into a [ValidatedList] with this field as validation
      * @param elements the inputs for the list generation. Same type as this field
      * @return [ValidatedList] wrapping the provided values and this field as validation
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.listFromFieldVararg
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.lists
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -282,7 +282,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
      * wraps the provided collection into a [ValidatedList] with this field as validation
      * @param collection the collection to wrap. Same type as this field
      * @return [ValidatedList] wrapping the collection and this field as validation
-     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.listFromFieldCollection
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.lists
      * @author fzzyhmstrs
      * @since 0.2.0
      */

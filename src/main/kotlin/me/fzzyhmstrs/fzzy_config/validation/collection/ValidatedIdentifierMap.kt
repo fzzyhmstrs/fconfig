@@ -205,13 +205,13 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
      * Not strictly necessary, but may make construction cleaner.
      * @param V value type. any non-null type
      * @author fzzyhmstrs
-     * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.idTest
+     * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.idMap
      * @since 0.2.0
      */
     @Suppress("unused")
     class Builder<V: Any> {
         /**
-         * Defines the [ValidatedIdentifier] used on map keys
+         * Defines the [ValidatedIdentifier] used to handle validation, serialization, etc. for map keys
          * @param handler a [ValidatedIdentifier] used as a handler for keys.
          * @author fzzyhmstrs
          * @since 0.2.0
@@ -222,7 +222,7 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
 
         class BuilderWithKey<V: Any> internal constructor(private val keyHandler: ValidatedIdentifier) {
             /**
-             * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
+             * used to handle validation, serialization, etc. for map values
              * @param handler an [Entry] used as a handler for values.
              * @author fzzyhmstrs
              * @since 0.2.0

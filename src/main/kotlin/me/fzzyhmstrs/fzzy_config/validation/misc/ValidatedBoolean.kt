@@ -19,9 +19,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
  *
  * Since there is basically nothing to validate on a boolean, this primarily serves to parse and correct issues with de/serialization.
  * @param defaultValue the default boolean state
- * @see [me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated]
- * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedBool]
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @see me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.booleans
  * @author fzzyhmstrs
  * since 0.1.0
  */
@@ -32,7 +31,6 @@ class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultVa
      *
      * Since there is basically nothing to validate on a boolean, this primarily serves to parse and correct issues with de/serialization.
      * @see [me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated]
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedBool]
      * @author fzzyhmstrs
      * since 0.2.0
      */

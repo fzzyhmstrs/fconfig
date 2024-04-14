@@ -12,9 +12,11 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.util.Identifier
+import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@Internal
 object FC: ModInitializer {
     internal const val MOD_ID = "fzzy_config"
     internal val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
@@ -24,6 +26,7 @@ object FC: ModInitializer {
     }
 }
 
+@Internal
 object FCC: ClientModInitializer {
 
     private var scopeToOpen = ""

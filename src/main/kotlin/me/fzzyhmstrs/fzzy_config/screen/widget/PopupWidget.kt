@@ -259,6 +259,7 @@ class PopupWidget
      * @param title [Text] - the header title shown at the top of the popup
      * @param spacingW Int, optional - Defines the default horizontal padding between elements. Defaults to 4
      * @param spacingH Int, optional - Defines the default vertical padding between elements. Defaults to using the value from spacingW
+     * @sample me.fzzyhmstrs.fzzy_config.examples.PopupWidgetExamples.popupExample
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -335,9 +336,8 @@ class PopupWidget
          * @param parent String - the id of the parent to key layout of this new element off of.
          * @param spacingW Int - the custom horizontal padding
          * @param spacingH Int - the custom vertical padding
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
+         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -358,7 +358,6 @@ class PopupWidget
          * @param spacingW Int - the custom horizontal padding
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -379,7 +378,6 @@ class PopupWidget
          * @param spacingH Int - the custom vertical padding
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to it's parent. See the doc for Position for details.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -400,7 +398,6 @@ class PopupWidget
          * @param spacingH Int - the custom vertical padding
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -420,7 +417,6 @@ class PopupWidget
          * @param spacingW Int - the custom horizontal padding
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -441,7 +437,6 @@ class PopupWidget
          * @param spacingH Int - the custom vertical padding
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -461,7 +456,6 @@ class PopupWidget
          * @param parent String - the id of the parent to key layout of this new element off of.
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -480,7 +474,6 @@ class PopupWidget
          * @param element E - the widget
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -494,7 +487,6 @@ class PopupWidget
          * The divider automatically uses the layout BELOW, ALIGN_JUSTIFY
          * @param parent String?, optional - default value is null. If parent isn't null, the divider will be keyed off the defined parent
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -511,7 +503,6 @@ class PopupWidget
          * @param pressAction [ButtonWidget.PressAction] - defines the buttons action when clicked
          * @param parent String, optional. defines the parent element for this button. by default (null), will be the previously added element.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -525,7 +516,6 @@ class PopupWidget
          * Defines a manual width for the widget. Will override any automatic sizing computations for width
          * @param width Int - the manual width of the Popup
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -537,7 +527,6 @@ class PopupWidget
          * Defines a manual height for the widget. Will override any automatic sizing computations for height
          * @param height Int - the manual height of the Popup
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -556,7 +545,6 @@ class PopupWidget
          * @see screenContext
          * @see center
          * @see centerOffset
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -575,7 +563,6 @@ class PopupWidget
          * @see screenContext
          * @see center
          * @see centerOffset
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -587,7 +574,6 @@ class PopupWidget
          * Defines an action to perform when this widget is closed
          * @param onClose [Runnable] - the action to be performed
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -598,7 +584,6 @@ class PopupWidget
         /**
          * The widget won't apply a layer of blur behind it when rendering.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -609,7 +594,6 @@ class PopupWidget
         /**
          * The widget won't close if a click misses its bounding box. Normal behavior closes the popup on a missed click.
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -623,7 +607,6 @@ class PopupWidget
          * NOTE: The border padding on a Popup is 8, inclusive of visual border and any "blank space" between the border and edges of elements.
          * @param id Identifier - the sprite identifier of the custom background
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -637,7 +620,6 @@ class PopupWidget
          * This narration will be in the TITLE narration part, so it will narrate directly after the main title, and before any other narration such as USAGE, HINT, etc. There is a pause in narration between the title and each appended message
          * @param message [Text] - the massage to be appended
          * @return Builder - this builder for further use
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -671,7 +653,6 @@ class PopupWidget
         /**
          * Builds this builder
          * @return [PopupWidget] - the built widget
-         * @sample
          * @author fzzyhmstrs
          * @since 0.2.0
          */

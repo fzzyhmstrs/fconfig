@@ -35,8 +35,7 @@ import java.util.function.BiFunction
  * @param keyHandler the Enum handler, typically a [ValidatedEnum]
  * @param valueHandler the value handler, an [Entry]
  * @see Builder using the builder is recommended
- * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.validatedMap
- * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.fieldLang
+ * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.maps
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -209,15 +208,13 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
      * @param K key type, needs to be [Enum] and [Translatable]
      * @param V value type. any non-null type.
      * @author fzzyhmstrs
-     * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.TestEnum
-     * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.enumTest
-     * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.enumEnumMapTest
+     * @sample me.fzzyhmstrs.fzzy_config.examples.MapBuilders.enumMap
      * @since 0.2.0
      */
     @Suppress("unused", "DeprecatedCallableAddReplaceWith")
     class Builder<K,V: Any> where K: Enum<*> {
         /**
-         * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map keys
+         * Defines the Entry used to handle validation, serialization, etc. for map keys
          * @param handler an [Entry] used as a handler for keys. Typically a [ValidatedEnum]
          * @author fzzyhmstrs
          * @since 0.2.0
@@ -227,7 +224,7 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
             return BuilderWithKey<K,V>(handler)
         }
         /**
-         * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map keys
+         * Defines the Entry used to handle validation, serialization, etc. for map values
          *
          * The builder will internally create a [ValidatedEnum] wrapping the default value.
          * @param defaultValue the default value of [K]

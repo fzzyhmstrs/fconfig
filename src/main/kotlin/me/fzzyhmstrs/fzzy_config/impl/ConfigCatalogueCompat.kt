@@ -3,8 +3,10 @@ package me.fzzyhmstrs.fzzy_config.impl
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import net.fabricmc.loader.api.ModContainer
 import net.minecraft.client.gui.screen.Screen
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
 
+@Internal
 object ConfigCatalogueCompat {
     @JvmStatic
     fun createConfigFactoryProvider(): Map<String, BiFunction<Screen, ModContainer, Screen?>> {

@@ -210,7 +210,6 @@ class ValidatedColor: ValidatedField<ColorHolder> {
          * Builds a ValidatedColor from the provided hex color string
          * @param transparent default true, whether this color will accept transparency
          * @throws IllegalStateException if the hex string isn't valid
-         * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedColorString
          * @author fzzyhmstrs
          * @since 0.2.0
          */

@@ -20,7 +20,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * A validated string value
  *
  * Ensure you don't actually want another string-like Validation, such as
- * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier]
+ * - [me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier]
  * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum]
  * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice]
  * @param defaultValue String default for the setting
@@ -131,9 +131,9 @@ class ValidatedString(defaultValue: String, private val checker: EntryChecker<St
     }
 
     /**
-     * A validated string builder, integrated with an EntryChecker builder
+     * A validated string builder, integrated with an [EntryChecker] builder
      * @param defaultValue the default String value
-     * @sample [me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.validatedString]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.strings
      * @author fzzyhmstrs
      * @since 0.2.0
      */

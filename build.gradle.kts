@@ -1,4 +1,9 @@
 import org.gradle.jvm.tasks.Jar
+import org.jetbrains.dokka.base.DokkaBase
+import org.jetbrains.dokka.base.DokkaBaseConfiguration
+import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.dokka.versioning.VersioningConfiguration
+import org.jetbrains.dokka.versioning.VersioningPlugin
 import java.net.URI
 
 plugins {
@@ -8,6 +13,13 @@ plugins {
     kotlin("plugin.serialization") version "1.9.22"
     id("com.modrinth.minotaur") version "2.+"
     id("org.jetbrains.dokka") version "1.9.20"
+}
+
+buildscript {
+    dependencies {
+        classpath("org.jetbrains.dokka:dokka-base:1.9.20")
+        classpath("org.jetbrains.dokka:versioning-plugin:1.9.20")
+    }
 }
 
 base {
@@ -21,6 +33,8 @@ version = modVersion
 val mavenGroup: String by project
 group = mavenGroup
 println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
+
+
 
 repositories {
     mavenCentral()
@@ -96,6 +110,7 @@ dependencies {
     testmodImplementation(sourceSets.main.get().output)
 
     dokkaPlugin("me.fzzyhmstrs:internal-skip-plugin:1.0-SNAPSHOT")
+    dokkaPlugin("org.jetbrains.dokka:versioning-plugin:1.9.20")
 }
 
 loom {
@@ -144,6 +159,51 @@ tasks.register("testmodJar", Jar::class) {
     destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
     archiveClassifier = "testmod"
 }
+
+tasks.withType<DokkaTask>().configureEach {
+    val docVersionsDir = projectDir.resolve("build/dokka/version")
+    // The version for which you are currently generating docs
+    val currentVersion = project.version.toString()
+
+    // Set the output to a folder with all other versions
+    // as you'll need the current version for future builds
+    val currentDocsDir = docVersionsDir.resolve(currentVersion)
+    outputDirectory.set(currentDocsDir)
+    dokkaSourceSets.configureEach {
+        perPackageOption {
+            matchingRegex.set("me.fzzyhmstrs.fzzy_config.examples|me.fzzyhmstrs.fzzy_config.impl|me.fzzyhmstrs.fzzy_config.test|me.fzzyhmstrs.fzzy_config.updates|me.fzzyhmstrs.fzzy_config")
+            suppress.set(true)
+        }
+        includes.from(project.files(), "dokka/module.md")
+    }
+    pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
+        moduleName = "Fzzy Config"
+        customAssets = listOf(file("src/main/resources/assets/fzzy_config/banner.png"))
+        customStyleSheets = listOf(file("dokka/style.css"),file("dokka/logo-styles.css"))
+        templatesDir = file("dokka")
+        footerMessage = "(c) 2024 fzzyhmstrs"
+    }
+
+    pluginConfiguration<VersioningPlugin, VersioningConfiguration> {
+        olderVersionsDir = docVersionsDir
+        version = currentVersion
+    }
+
+    doLast {
+        // This folder contains the latest documentation with all
+        // previous versions included, so it's ready to be published.
+        // Make sure it's copied and not moved - you'll still need this
+        // version for future builds
+        currentDocsDir.copyRecursively(file("build/dokka/hosting"), overwrite = true)
+
+        // Only once current documentation has been safely moved,
+        // remove previous versions bundled in it. They will not
+        // be needed in future builds, it's just overhead.
+        currentDocsDir.resolve("older").deleteRecursively()
+    }
+}
+
+
 
 modrinth {
     token.set(System.getenv("MODRINTH_TOKEN"))

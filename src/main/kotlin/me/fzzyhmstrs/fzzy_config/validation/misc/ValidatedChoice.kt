@@ -30,7 +30,6 @@ import java.util.function.Consumer
 import java.util.function.Predicate
 import kotlin.math.max
 
-//@sample me.fzzyhmstrs.fzzy_config.examples.ExampleTranslations.lang
 /**
  * A validated set of choices of any type
  *

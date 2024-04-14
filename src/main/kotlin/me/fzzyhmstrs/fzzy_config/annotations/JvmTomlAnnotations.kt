@@ -7,7 +7,7 @@ import net.peanuuutz.tomlkt.TomlConfigBuilder
 import net.peanuuutz.tomlkt.TomlInteger
 
 /**
- * Java field-friendly version of [TomlComment][net.peanuuutz.tomlkt.TomlComment]
+ * Java field-friendly version of [TomlComment](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-comment/index.html)
  *
  * Adds comments to corresponding property.
  *
@@ -39,7 +39,7 @@ import net.peanuuutz.tomlkt.TomlInteger
 public annotation class Comment(val value: String)
 
 /**
- * Java field-friendly version of [TomlInline][net.peanuuutz.tomlkt.TomlInline]
+ * Java field-friendly version of [TomlInline](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-inline/index.html)
  *
  * Forces the annotated array-like or table-like property to be a one-liner.
  *
@@ -71,7 +71,7 @@ public annotation class Comment(val value: String)
 annotation class Inline
 
 /**
- * Java field-friendly version of [TomlBlockArray][net.peanuuutz.tomlkt.TomlBlockArray]
+ * Java-field-friendly version of [TomlBlockArray](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-block-array/index.html)
  *
  * Modifies the encoding process of corresponding array-like property, either to
  * force array of table to be encoded as block array, or to change how many
@@ -105,7 +105,7 @@ annotation class Inline
 public annotation class BlockArray(val itemsPerLine: Int = 1)
 
 /**
- * Java field-friendly version of [TomlMultilimeString][net.peanuuutz.tomlkt.TomlMultilineString]
+ * Java field-friendly version of [TomlMultilimeString](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-multiline-string/index.html)
  *
  * Marks the annotated [String] property as multiline when encoded.
  *
@@ -135,7 +135,7 @@ public annotation class BlockArray(val itemsPerLine: Int = 1)
 annotation class MultilineString
 
 /**
- * Java field-friendly version of [TomlLiteralString][net.peanuuutz.tomlkt.TomlLiteralString]
+ * Java field-friendly version of [TomlLiteralString](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-literal-string/index.html)
  *
  * Marks the annotated [String] property as literal when encoded.
  *
@@ -160,7 +160,7 @@ annotation class MultilineString
 public annotation class LiteralString
 
 /**
- * Java field-friendly version of [TomlInteger][net.peanuuutz.tomlkt.TomlInteger]
+ * Java field-friendly version of [TomlInteger](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-integer/index.html)
  *
  * Changes the representation of the annotated [Byte], [Short], [Int], [Long]
  * property.
