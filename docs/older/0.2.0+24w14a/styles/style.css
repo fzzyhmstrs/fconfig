@@ -274,7 +274,7 @@ td:first-child {
     min-height: 40px;
 }
 
-.navigation-title, .filter-section {
+.navigation-title, .filter-section, .links-section {
     align-items: center;
 }
 
@@ -343,13 +343,10 @@ td:first-child {
 .navigation-controls {
     display: flex;
     margin-left: 4px;
+    align-items: center;
 }
 
-@media (min-width: 760px) {
-    .navigation-controls {
-        align-items: center;
-    }
-}
+
 
 .no-js .navigation-controls {
     display: none;
@@ -382,7 +379,7 @@ td:first-child {
     background-repeat: no-repeat;
 }
 
-@media (max-width: 759px) {
+@media (max-width: 779px) {
     .navigation-controls--theme {
         display: none;
     }
@@ -394,7 +391,7 @@ td:first-child {
     background-size:  24px 24px;
 }
 
-@media (max-width: 759px) {
+@media (max-width: 779px) {
     .navigation-controls--homepage {
         display: none;
     }
@@ -1080,6 +1077,84 @@ p.paragraph img {
     margin-left: -4px;
 }
 
+.links-section {
+    display: flex;
+    flex-wrap: wrap;
+    width: fit-content;
+}
+.discord-section {
+    background: var(--discord-image-url) center no-repeat;
+    background-size: var(--discord-height) var(--discord-width);
+    margin-bottom: -8px;
+    margin-right: 20px;
+    width: var(--discord-height);
+    height: var(--discord-width);
+    display: inline-block;
+}
+
+@media (max-width: 1025px) {
+    .discord-section {
+        background: var(--discord-small-image-url) center no-repeat;
+        background-size: var(--discord-small-height) var(--discord-small-width);
+        width: var(--discord-small-height);
+        height: var(--discord-small-width);
+    }
+}
+
+@media (max-width: 440px) {
+    .discord-section {
+        display: none;
+    }
+}
+
+.wiki-section {
+    background: var(--wiki-image-url) center no-repeat;
+    background-size: var(--wiki-height) var(--wiki-width);
+    margin-bottom: -8px;
+    margin-right: 12px;
+    width: var(--wiki-height);
+    height: var(--wiki-width);
+    display: inline-block;
+}
+
+@media (max-width: 1025px) {
+    .wiki-section {
+        background: var(--wiki-small-image-url) center no-repeat;
+        background-size: var(--wiki-small-height) var(--wiki-small-width);
+        width: var(--wiki-small-height);
+        height: var(--wiki-small-width);
+    }
+}
+
+.cf-section {
+    background: var(--cf-image-url) center no-repeat;
+    background-size: var(--cf-height) var(--cf-width);
+    margin-bottom: -8px;
+    margin-right: 13px;
+    width: var(--cf-height);
+    height: var(--cf-width);
+    display: inline-block;
+}
+
+.modrinth-section {
+    background: var(--modrinth-image-url) center no-repeat;
+    background-size: var(--modrinth-height) var(--modrinth-width);
+    margin-bottom: -8px;
+    margin-right: 12px;
+    width: var(--modrinth-height);
+    height: var(--modrinth-width);
+    display: inline-block;
+}
+
+@media (max-width: 860px) {
+    .modrinth-section {
+        display: none;
+    }
+    .cf-section {
+        display: none;
+    }
+}
+
 .platform-tag {
     --platform-tag-color: #bababb;
     border: 0 none;
@@ -1099,11 +1174,11 @@ p.paragraph img {
 .filter-section .platform-tag {
     cursor: pointer;
     border-radius: 4px;
-    padding: 2px 16px;
+    padding: 2px 8px;
 }
 
 .filter-section .platform-tag.jvm-like[data-active], .platform-tags .platform-tag.jvm-like {
-    --platform-tag-color: #4dbb5f;
+    --platform-tag-color: #fff;
 }
 
 .filter-section .platform-tag.js-like[data-active], .platform-tags .platform-tag.js-like {

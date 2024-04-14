@@ -1092,12 +1092,37 @@ p.paragraph img {
     display: inline-block;
 }
 
-@media (max-width: 875px) {
+@media (max-width: 1025px) {
     .discord-section {
         background: var(--discord-small-image-url) center no-repeat;
         background-size: var(--discord-small-height) var(--discord-small-width);
         width: var(--discord-small-height);
         height: var(--discord-small-width);
+    }
+}
+
+@media (max-width: 440px) {
+    .discord-section {
+        display: none;
+    }
+}
+
+.wiki-section {
+    background: var(--wiki-image-url) center no-repeat;
+    background-size: var(--wiki-height) var(--wiki-width);
+    margin-bottom: -8px;
+    margin-right: 12px;
+    width: var(--wiki-height);
+    height: var(--wiki-width);
+    display: inline-block;
+}
+
+@media (max-width: 1025px) {
+    .wiki-section {
+        background: var(--wiki-small-image-url) center no-repeat;
+        background-size: var(--wiki-small-height) var(--wiki-small-width);
+        width: var(--wiki-small-height);
+        height: var(--wiki-small-width);
     }
 }
 
@@ -1111,12 +1136,6 @@ p.paragraph img {
     display: inline-block;
 }
 
-@media (max-width: 510px) {
-    .cf-section {
-        display: none;
-    }
-}
-
 .modrinth-section {
     background: var(--modrinth-image-url) center no-repeat;
     background-size: var(--modrinth-height) var(--modrinth-width);
@@ -1127,8 +1146,11 @@ p.paragraph img {
     display: inline-block;
 }
 
-@media (max-width: 510px) {
+@media (max-width: 860px) {
     .modrinth-section {
+        display: none;
+    }
+    .cf-section {
         display: none;
     }
 }

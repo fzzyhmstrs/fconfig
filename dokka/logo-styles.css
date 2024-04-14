@@ -28,6 +28,10 @@
     --modrinth-width: 64px;
 
     --wiki-image-url: url('../images/wiki_banner.png');
-    --wiki-height: 61px;
+    --wiki-height: 139px;
     --wiki-width: 64px;
+
+    --wiki-small-image-url: url('../images/wiki_small_banner.png');
+    --wiki-small-height: 61px;
+    --wiki-small-width: 64px;
 }

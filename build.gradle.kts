@@ -161,6 +161,9 @@ tasks.register("testmodJar", Jar::class) {
 }
 
 tasks.withType<DokkaTask>().configureEach {
+
+    inputs.dir(file("dokka"))
+
     val docVersionsDir = projectDir.resolve("build/dokka/version")
     // The version for which you are currently generating docs
     val currentVersion = project.version.toString()
@@ -182,6 +185,10 @@ tasks.withType<DokkaTask>().configureEach {
             file("dokka/assets/fc_banner.png"),
             file("dokka/assets/discord_banner.png"),
             file("dokka/assets/discord_small_banner.png"),
+            file("dokka/assets/wiki_banner.png"),
+            file("dokka/assets/wiki_small_banner.png"),
+            file("dokka/assets/docs_banner.png"),
+            file("dokka/assets/docs_small_banner.png"),
             file("dokka/assets/cf_banner.png"),
             file("dokka/assets/modrinth_banner.png"),
             file("src/main/resources/assets/fzzy_config/icon.png"))
