@@ -1,0 +1,13 @@
+/*
+ * Copyright 2014-2023 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license.
+ */
+
+:root {
+    --dokka-logo-image-url: url('../images/fc_banner.png');
+    --dokka-logo-height: 284px;
+    --dokka-logo-width: 64px;
+
+    --discord-image-url: url('../images/discord_banner.png');
+    --discord-height: 139px;
+    --discord-width: 64px;
+}
