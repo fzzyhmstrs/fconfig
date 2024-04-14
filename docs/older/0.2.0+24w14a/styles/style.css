@@ -1085,7 +1085,7 @@ p.paragraph img {
 .discord-section {
     background: var(--discord-image-url) center no-repeat;
     background-size: var(--discord-height) var(--discord-width);
-    margin-bottom: -8px;
+    margin-bottom: -12px;
     margin-right: 20px;
     width: var(--discord-height);
     height: var(--discord-width);
@@ -1110,7 +1110,7 @@ p.paragraph img {
 .wiki-section {
     background: var(--wiki-image-url) center no-repeat;
     background-size: var(--wiki-height) var(--wiki-width);
-    margin-bottom: -8px;
+    margin-bottom: -12px;
     margin-right: 12px;
     width: var(--wiki-height);
     height: var(--wiki-width);
@@ -1129,7 +1129,7 @@ p.paragraph img {
 .cf-section {
     background: var(--cf-image-url) center no-repeat;
     background-size: var(--cf-height) var(--cf-width);
-    margin-bottom: -8px;
+    margin-bottom: -12px;
     margin-right: 13px;
     width: var(--cf-height);
     height: var(--cf-width);
@@ -1139,7 +1139,7 @@ p.paragraph img {
 .modrinth-section {
     background: var(--modrinth-image-url) center no-repeat;
     background-size: var(--modrinth-height) var(--modrinth-width);
-    margin-bottom: -8px;
+    margin-bottom: -12px;
     margin-right: 12px;
     width: var(--modrinth-height);
     height: var(--modrinth-width);
