@@ -26,4 +26,8 @@
     --modrinth-image-url: url('../images/modrinth_banner.png');
     --modrinth-height: 61px;
     --modrinth-width: 64px;
+
+    --wiki-image-url: url('../images/wiki_banner.png');
+    --wiki-height: 61px;
+    --wiki-width: 64px;
 }
