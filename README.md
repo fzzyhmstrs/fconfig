@@ -18,7 +18,7 @@ Fzzy Config is a powerful configuration engine for Minecraft Mods that meets you
 * Forward client settings to other users who want your setup.
 
 ### Validation
-* Validation and Correction built into everything, beyond primitive types. 
+* Validation and Correction built into everything, beyond just primitive types. 
 * Tightly control what values a player can choose from and how they choose them.
 * Automatic suggestions for settings like tags and identifiers.
 
