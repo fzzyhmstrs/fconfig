@@ -274,7 +274,7 @@ td:first-child {
     min-height: 40px;
 }
 
-.navigation-title, .filter-section {
+.navigation-title, .filter-section, .links-section {
     align-items: center;
 }
 
@@ -1078,6 +1078,21 @@ p.paragraph img {
     flex-wrap: wrap;
     margin-bottom: -8px;
     margin-left: -4px;
+}
+
+.links-section {
+    display: flex;
+    flex-wrap: wrap;
+    width: fit-content;
+}
+.discord-section {
+    background: var(--discord-image-url) center no-repeat;
+    background-size: var(--discord-height) var(--discord-width);
+    margin-bottom: -8px;
+    margin-right: 16px;
+    width: var(--discord-height);
+    height: var(--discord-width);
+    display: inline-block;
 }
 
 .platform-tag {

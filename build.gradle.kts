@@ -178,7 +178,7 @@ tasks.withType<DokkaTask>().configureEach {
     }
     pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
         moduleName = "Fzzy Config"
-        customAssets = listOf(file("src/main/resources/assets/fzzy_config/banner.png"))
+        customAssets = listOf(file("dokka/fc_banner.png"),file("dokka/discord_banner.png"))
         customStyleSheets = listOf(file("dokka/style.css"),file("dokka/logo-styles.css"))
         templatesDir = file("dokka")
         footerMessage = "(c) 2024 fzzyhmstrs"

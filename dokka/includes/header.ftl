@@ -7,7 +7,6 @@
             <div class="library-name">
                 <@template_cmd name="pathToRoot">
                     <a class="library-name--link" href="${pathToRoot}index.html">
-
                     </a>
                 </@template_cmd>
             </div>
