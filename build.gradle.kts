@@ -178,7 +178,13 @@ tasks.withType<DokkaTask>().configureEach {
     }
     pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
         moduleName = "Fzzy Config"
-        customAssets = listOf(file("dokka/fc_banner.png"),file("dokka/discord_banner.png"))
+        customAssets = listOf(
+            file("dokka/assets/fc_banner.png"),
+            file("dokka/assets/discord_banner.png"),
+            file("dokka/assets/discord_small_banner.png"),
+            file("dokka/assets/cf_banner.png"),
+            file("dokka/assets/modrinth_banner.png"),
+            file("src/main/resources/assets/fzzy_config/icon.png"))
         customStyleSheets = listOf(file("dokka/style.css"),file("dokka/logo-styles.css"))
         templatesDir = file("dokka")
         footerMessage = "(c) 2024 fzzyhmstrs"
@@ -194,7 +200,7 @@ tasks.withType<DokkaTask>().configureEach {
         // previous versions included, so it's ready to be published.
         // Make sure it's copied and not moved - you'll still need this
         // version for future builds
-        currentDocsDir.copyRecursively(file("build/dokka/hosting"), overwrite = true)
+        currentDocsDir.copyRecursively(file("docs"), overwrite = true)
 
         // Only once current documentation has been safely moved,
         // remove previous versions bundled in it. They will not

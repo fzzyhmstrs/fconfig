@@ -338,21 +338,15 @@ td:first-child {
     .filter-section {
         padding: 5px 0 5px;
     }
-    .discord-section {
-        display: none;
-    }
 }
 /* --- Navigation controls --- */
 .navigation-controls {
     display: flex;
     margin-left: 4px;
+    align-items: center;
 }
 
-@media (min-width: 760px) {
-    .navigation-controls {
-        align-items: center;
-    }
-}
+
 
 .no-js .navigation-controls {
     display: none;
@@ -385,7 +379,7 @@ td:first-child {
     background-repeat: no-repeat;
 }
 
-@media (max-width: 759px) {
+@media (max-width: 779px) {
     .navigation-controls--theme {
         display: none;
     }
@@ -397,7 +391,7 @@ td:first-child {
     background-size:  24px 24px;
 }
 
-@media (max-width: 759px) {
+@media (max-width: 779px) {
     .navigation-controls--homepage {
         display: none;
     }
@@ -1096,6 +1090,47 @@ p.paragraph img {
     width: var(--discord-height);
     height: var(--discord-width);
     display: inline-block;
+}
+
+@media (max-width: 875px) {
+    .discord-section {
+        background: var(--discord-small-image-url) center no-repeat;
+        background-size: var(--discord-small-height) var(--discord-small-width);
+        width: var(--discord-small-height);
+        height: var(--discord-small-width);
+    }
+}
+
+.cf-section {
+    background: var(--cf-image-url) center no-repeat;
+    background-size: var(--cf-height) var(--cf-width);
+    margin-bottom: -8px;
+    margin-right: 13px;
+    width: var(--cf-height);
+    height: var(--cf-width);
+    display: inline-block;
+}
+
+@media (max-width: 510px) {
+    .cf-section {
+        display: none;
+    }
+}
+
+.modrinth-section {
+    background: var(--modrinth-image-url) center no-repeat;
+    background-size: var(--modrinth-height) var(--modrinth-width);
+    margin-bottom: -8px;
+    margin-right: 12px;
+    width: var(--modrinth-height);
+    height: var(--modrinth-width);
+    display: inline-block;
+}
+
+@media (max-width: 510px) {
+    .modrinth-section {
+        display: none;
+    }
 }
 
 .platform-tag {
