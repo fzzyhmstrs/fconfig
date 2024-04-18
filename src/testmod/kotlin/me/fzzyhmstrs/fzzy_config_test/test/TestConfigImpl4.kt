@@ -18,7 +18,7 @@ import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 import java.awt.Color
 
-class TestConfigImpl4: Config("test_config4", "fzzy_config_test") {
+class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
 
     @RequiresRestart
     var bl1 = true

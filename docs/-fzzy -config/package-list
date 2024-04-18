@@ -47,7 +47,7 @@ $dokka.location:me.fzzyhmstrs.fzzy_config.api/RegisterType/valueOf/#kotlin.Strin
 $dokka.location:me.fzzyhmstrs.fzzy_config.api/RegisterType/values/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.api/-register-type/values.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.config////PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.config/index.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.config/Config///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.config/-config/index.html
-$dokka.location:me.fzzyhmstrs.fzzy_config.config/Config/Config/#kotlin.String#kotlin.String#kotlin.String/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.config/-config/-config.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.config/Config/Config/#net.minecraft.util.Identifier#kotlin.String#kotlin.String#kotlin.String/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.config/-config/-config.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.config/Config/defaultPermLevel/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.config/-config/default-perm-level.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.config/Config/folder/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.config/-config/folder.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.config/Config/getId/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.config/-config/get-id.html

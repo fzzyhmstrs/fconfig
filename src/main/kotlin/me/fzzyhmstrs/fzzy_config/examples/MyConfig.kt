@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
@@ -10,8 +11,9 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
 import net.minecraft.item.Items
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.ItemTags
+import net.minecraft.util.Identifier
 
-internal class MyConfig: Config("my_config","fzzy_config") {
+internal class MyConfig: Config(Identifier(FC.MOD_ID,"my_config")) {
 
     var bareDouble = 5.0 // this won't have most of the features of the lib
 

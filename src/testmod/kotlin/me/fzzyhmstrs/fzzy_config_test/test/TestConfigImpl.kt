@@ -19,7 +19,7 @@ import net.minecraft.util.Identifier
 import java.awt.Color
 
 @Version(1)
-class TestConfigImpl: Config("test_config", "fzzy_config_test", "test") {
+class TestConfigImpl: Config(Identifier("fzzy_config_test","test_config"), subfolder =  "test") {
 
     var bl1 = true
     var bl2 = ValidatedBoolean()

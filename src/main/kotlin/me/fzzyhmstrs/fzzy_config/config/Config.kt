@@ -34,7 +34,7 @@ import net.minecraft.util.Identifier
  * @since 0.2.0
  */
 @Suppress("unused")
-open class Config @JvmOverloads constructor(private val id: Identifier, val name: String = id.path, val folder: String = id.namespace, val subfolder: String = ""): Walkable, Translatable {
+open class Config @JvmOverloads constructor(protected val identifier: Identifier, val subfolder: String = "", val folder: String = identifier.namespace, val name: String = identifier.path): Walkable, Translatable {
 
 
     /**
@@ -46,7 +46,7 @@ open class Config @JvmOverloads constructor(private val id: Identifier, val name
      * @since 0.2.0
      */
     fun getId(): Identifier {
-        return id
+        return identifier
     }
 
     /**

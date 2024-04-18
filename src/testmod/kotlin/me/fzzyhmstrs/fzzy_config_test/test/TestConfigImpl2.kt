@@ -19,7 +19,7 @@ import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 import java.awt.Color
 
-class TestConfigImpl2: Config("test_config2", "fzzy_config_test") {
+class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
 
     @ClientModifiable
     @WithPerms(5)

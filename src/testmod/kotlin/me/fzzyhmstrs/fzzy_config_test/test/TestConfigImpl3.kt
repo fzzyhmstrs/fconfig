@@ -19,7 +19,7 @@ import net.minecraft.util.Identifier
 import java.awt.Color
 
 @ConvertFrom("test_config3.json","fzzy_config_test")
-class TestConfigImpl3: Config("test_config3", "fzzy_config_test") {
+class TestConfigImpl3: Config(Identifier("fzzy_config_test","test_config3")) {
 
     @RequiresRestart
     var bl1 = true

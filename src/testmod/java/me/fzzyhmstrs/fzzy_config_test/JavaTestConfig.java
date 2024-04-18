@@ -2,12 +2,11 @@ package me.fzzyhmstrs.fzzy_config_test;
 
 import me.fzzyhmstrs.fzzy_config.config.Config;
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.util.Identifier;
 
 public class JavaTestConfig extends Config {
-
     public JavaTestConfig() {
-        super("java_config", "fzzy_config_test", "test");
+        super(new Identifier("fzzy_config_test","java_config"),"test");
     }
 
     public int anInt = 4;
