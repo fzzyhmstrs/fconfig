@@ -22,9 +22,10 @@ import net.minecraft.util.Identifier
  * - Validation. Inputs are automatically validated
  * - Correction. Invalid inputs are automatically corrected, reverted, or skipped.
  * - Gui Support. FzzyConfigs auto-generated GUIs only take Entry's into account when building their GUI layers. The internal validation is used to build meaningful and helpful widgets with helpful tooltips and auto-suggestions, where possible. Entry's are auto-synced back to the server and other listening clients based on user permission level
- * @param name the name of the config, this will be the file name and the path of the default config ID used in registration. NOTE: Do not add a file type to this name. That is done automatically where needed
- * @param folder the folder inside the config folder the config will be saved in. Can be "", which will put the file in the base config folder. If not "", this will be used as the namespace of the default ID, otherwise "fzzy_config" will be used. In this case, it's recommended to override [getId] with the ID you want for the config. Common groups of namespace will be the first "layer" of the Config GUI (all like namespace in one group), so it's recommended to use a common namespace (modid, generally)
- * @param subfolder optional. puts the config into a subfolder inside the folder specified in [folder]. Does not affect ID or GUI layout
+ * @param id Identifier - The identifier of this config. Common groups of namespace will be the first "layer" of the Config GUI where applicable (all configs of the same namespace in one group), so it's recommended to use one unified namespace (modid, generally)
+ * @param name String, optional -  the name of the config, this will be the file name (sans file extension). By default this is defined from the path of the config identifier. NOTE: Do not add a file type to this name. That is done automatically where needed
+ * @param folder String, optional - the subfolder inside the root config folder the file will be saved in. By default this is defined from the namespace of the config identifier. Can be "", which will put the file in the root config folder.
+ * @param subfolder String, optional - puts the config into a sub-subfolder inside the subfolder specified in [folder]. Does not affect ID or GUI layout
  * @see ConfigApi
  * @see ConfigSection
  * @see getId
@@ -33,37 +34,19 @@ import net.minecraft.util.Identifier
  * @since 0.2.0
  */
 @Suppress("unused")
-open class Config(val name: String, val folder: String, val subfolder: String = ""): Walkable, Translatable {
+open class Config @JvmOverloads constructor(private val id: Identifier, val name: String = id.path, val folder: String = id.namespace, val subfolder: String = ""): Walkable, Translatable {
 
 
     /**
      * The identifier of this Config.
      *
-     * Used by the internal registry to store and group this registry with like registries. When the Config GUI is opened, all configs of a common namespace will be grouped together.
-     *
-     * Override if you are not passing a [folder], otherwise the config will be grouped as a "fzzy_config" config (probably not ideal)
+     * Used by the internal registries to store and group this registry with like registries. When the Config GUI is opened, all configs of a common namespace will be grouped together.
      * @return Identifier of this config
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    open fun getId(): Identifier {
-        return if (folder.isNotEmpty())
-            Identifier(folder, name)
-        else
-            name.fcId()
-    }
-
-    /**
-     * The default permission level of entries in this config. Users will need to have at least this permission level to modify entries for synced configs except for entries that are [me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable] or [me.fzzyhmstrs.fzzy_config.annotations.NonSync]
-     *
-     * Override specific setting permission levels with [me.fzzyhmstrs.fzzy_config.annotations.WithPerms]
-     *
-     * 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    open fun defaultPermLevel(): Int {
-        return 2
+    fun getId(): Identifier {
+        return id
     }
 
     /**
@@ -77,6 +60,19 @@ open class Config(val name: String, val folder: String, val subfolder: String = 
      */
     fun save(){
         ConfigApi.save(this)
+    }
+
+    /**
+     * The default permission level of entries in this config. Users will need to have at least this permission level to modify entries for synced configs except for entries that are [me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable] or [me.fzzyhmstrs.fzzy_config.annotations.NonSync]
+     *
+     * Override specific setting permission levels with [me.fzzyhmstrs.fzzy_config.annotations.WithPerms]
+     *
+     * 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    open fun defaultPermLevel(): Int {
+        return 2
     }
 
     /**
