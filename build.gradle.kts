@@ -8,12 +8,17 @@
 * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
 * */
 
+import com.matthewprenger.cursegradle.CurseArtifact
+import com.matthewprenger.cursegradle.CurseProject
+import com.matthewprenger.cursegradle.CurseRelation
+import com.matthewprenger.cursegradle.Options
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.dokka.versioning.VersioningConfiguration
 import org.jetbrains.dokka.versioning.VersioningPlugin
+import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.net.URI
 
 plugins {
@@ -23,6 +28,7 @@ plugins {
     kotlin("plugin.serialization") version "1.9.22"
     id("com.modrinth.minotaur") version "2.+"
     id("org.jetbrains.dokka") version "1.9.20"
+    id("com.matthewprenger.cursegradle") version "1.4.0"
 }
 
 buildscript {
@@ -61,11 +67,11 @@ sourceSets{
     main{
         kotlin{
             val includeExamples: String by project
-            if (!includeExamples.toBoolean()) {
+            if (includeExamples.toBooleanLenient() != true) {
                 exclude("me/fzzyhmstrs/fzzy_config/examples/**")
             }
             val testMode: String by project
-            if (!testMode.toBoolean()) {
+            if (testMode.toBooleanLenient() != true) {
                 exclude("me/fzzyhmstrs/fzzy_config/test/**")
             }
         }
@@ -162,6 +168,8 @@ tasks {
         targetCompatibility = javaVersion
         withSourcesJar()
     }
+    modrinth.get().group = "upload"
+    modrinthSyncBody.get().group = "upload"
 }
 
 tasks.register("testmodJar", Jar::class) {
@@ -227,22 +235,72 @@ tasks.withType<DokkaTask>().configureEach {
 }
 
 
+if (System.getenv("MODRINTH_TOKEN") != null) {
+    modrinth {
+        val releaseType: String by project
+        val mcVersions: String by project
+        val uploadDebugMode: String by project
 
-modrinth {
-    token.set(System.getenv("MODRINTH_TOKEN"))
-    projectId.set("fzzy-config")
-    versionNumber.set(modVersion)
-    versionName.set("${base.archivesName.get()}-$modVersion")
-    versionType.set("beta")
-    uploadFile.set(tasks.remapJar.get())
-    gameVersions.addAll("1.19.3")
-    loaders.addAll("fabric","quilt")
-    detectLoaders.set(false)
-    changelog.set("## Changelog for Fzzy Config $modVersion \n\n" + log.readText())
-    dependencies{
-        required.project("fabric-api")
-        required.project("fabric-language-kotlin")
-        optional.project("trinkets")
+        token.set(System.getenv("MODRINTH_TOKEN"))
+        projectId.set("fzzy-config")
+        versionNumber.set(modVersion)
+        versionName.set("${base.archivesName.get()}-$modVersion")
+        versionType.set(releaseType)
+        uploadFile.set(tasks.remapJar.get())
+        additionalFiles.add(tasks.remapSourcesJar.get())
+        gameVersions.addAll(mcVersions.split(","))
+        loaders.addAll("fabric", "quilt")
+        detectLoaders.set(false)
+        changelog.set(log.readText())
+        dependencies {
+            required.project("fabric-api")
+            required.project("fabric-language-kotlin")
+        }
+        debugMode.set(uploadDebugMode.toBooleanLenient() ?: true)
     }
-    debugMode.set(true)
+}
+
+if (System.getenv("CURSEFORGE_TOKEN") != null) {
+    curseforge {
+        val releaseType: String by project
+        val mcVersions: String by project
+        val uploadDebugMode: String by project
+
+        apiKey = System.getenv("CURSEFORGE_TOKEN")
+        project(closureOf<CurseProject> {
+            id = "1005914"
+            changelog = log
+            changelogType = "markdown"
+            this.releaseType = releaseType
+            for (ver in mcVersions.split(",")){
+                addGameVersion(ver)
+            }
+            addGameVersion("Fabric")
+            addGameVersion("Quilt")
+            mainArtifact(tasks.remapJar.get().archiveFile.get(), closureOf<CurseArtifact> {
+                displayName = "${base.archivesName.get()}-$modVersion"
+                relations(closureOf<CurseRelation>{
+                    this.requiredDependency("fabric-api")
+                    this.requiredDependency("fabric-language-kotlin")
+                })
+            })
+            addArtifact(tasks.remapSourcesJar.get().archiveFile.get())
+            relations(closureOf<CurseRelation>{
+                this.requiredDependency("fabric-api")
+                this.requiredDependency("fabric-language-kotlin")
+            })
+        })
+        options(closureOf<Options> {
+            javaIntegration = false
+            forgeGradleIntegration = false
+            javaVersionAutoDetect = false
+            debug = uploadDebugMode.toBooleanLenient() ?: true
+        })
+    }
+}
+
+tasks.register("uploadAll") {
+    group = "upload"
+    dependsOn(tasks.modrinth.get())
+    dependsOn(tasks.curseforge.get())
 }
