@@ -1,3 +1,13 @@
+/*
+* Copyright (c) 2024 Fzzyhmstrs
+*
+* This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+*
+* Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+* You should have received a copy of the TDL-M with this software.
+* If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+* */
+
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
@@ -14,11 +24,11 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.isRequiresRestart
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
-import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager.ConfigScreenBuilder
 import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigConfigEntry
-import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SectionConfigEntry
+import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
+import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager.ConfigScreenBuilder
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget

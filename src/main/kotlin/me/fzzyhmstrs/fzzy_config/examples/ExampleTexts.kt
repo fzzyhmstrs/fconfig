@@ -1,22 +1,23 @@
+/*
+* Copyright (c) 2024 Fzzyhmstrs
+*
+* This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+*
+* Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+* You should have received a copy of the TDL-M with this software.
+* If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+* */
+
 package me.fzzyhmstrs.fzzy_config.examples
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
-import me.fzzyhmstrs.fzzy_config.util.FcText.description
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.text
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.FcText.translation
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import me.fzzyhmstrs.fzzy_config.util.FcText.appended
-import me.fzzyhmstrs.fzzy_config.util.FcText.empty
-import me.fzzyhmstrs.fzzy_config.util.FcText.lit
-import me.fzzyhmstrs.fzzy_config.util.FcText.literal
-import me.fzzyhmstrs.fzzy_config.util.FcText.stringified
-import me.fzzyhmstrs.fzzy_config.util.FcText.text
-import me.fzzyhmstrs.fzzy_config.util.FcText.translatable
-import me.fzzyhmstrs.fzzy_config.util.FcText.translatableWithFallback
-import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier

@@ -1,3 +1,13 @@
+/*
+* Copyright (c) 2024 Fzzyhmstrs
+*
+* This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+*
+* Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+* You should have received a copy of the TDL-M with this software.
+* If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+* */
+
 package me.fzzyhmstrs.fzzy_config.examples
 
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient
@@ -12,7 +22,7 @@ object MinecraftExamples {
     fun tags() {
         //validated block tag that allows any tag in the Block Registry
         val validatedTag = ValidatedTagKey(BlockTags.ACACIA_LOGS)
-    
+
         //validated Item TagKey with a predicate on the various tool types (this is optional)
         val validatedTagPredicated = ValidatedTagKey(ItemTags.AXES) { id ->
             listOf(
@@ -40,16 +50,16 @@ object MinecraftExamples {
     }
 
 
-    fun ingredients() {    
+    fun ingredients() {
         // A validated Ingredient for a single item
         val validatedIngredientItem = ValidatedIngredient(Identifier("oak_log"))
-    
+
         // A validated ingredient accepting a set of items
         val validatedIngredientList = ValidatedIngredient(setOf(Identifier("oak_log"),Identifier("dark_oak_log")))
-    
+
         // A validated ingredient utilizing a tag
         val validatedIngredientTag = ValidatedIngredient(ItemTags.LOGS_THAT_BURN)
-    
+
         //get the ingredient from the holder for use in Materials etc
         val validatedIngredientIngredient: Ingredient = validatedIngredientItem.toIngredient()
 

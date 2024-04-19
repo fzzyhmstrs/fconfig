@@ -1,22 +1,20 @@
+/*
+* Copyright (c) 2024 Fzzyhmstrs
+*
+* This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+*
+* Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+* You should have received a copy of the TDL-M with this software.
+* If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+* */
+
 package me.fzzyhmstrs.fzzy_config_test.test
 
-import me.fzzyhmstrs.fzzy_config.annotations.ConvertFrom
 import me.fzzyhmstrs.fzzy_config.annotations.RequiresRestart
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
-import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
-import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient
-import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
-import me.fzzyhmstrs.fzzy_config.validation.misc.*
-import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedByte
-import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
-import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
-import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
-import java.awt.Color
 
 class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
 
