@@ -136,7 +136,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
             .addDivider()
             .addElement("header",ClickableTextWidget(this,"fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
                 style.withFormatting(Formatting.AQUA, Formatting.UNDERLINE)
-                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL,"https://www.curseforge.com/minecraft/mc-mods/fzzy-config"))
+                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL,"https://fzzyhmstrs.github.io/fconfig/"))
                     .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT,"fc.button.info.fc.tip".translate()))
             }),textRenderer), Position.BELOW, Position.ALIGN_CENTER)
             .addDivider()
