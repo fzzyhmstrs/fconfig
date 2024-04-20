@@ -311,7 +311,10 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
                     this.requiredDependency("fabric-language-kotlin")
                 })
             })
-            addArtifact(tasks.remapSourcesJar.get().archiveFile.get())
+            addArtifact(tasks.remapSourcesJar.get().archiveFile.get(), closureOf<CurseArtifact> {
+                changelogType = "markdown"
+                changelog = "Source files for ${base.archivesName.get()}-$modVersion"
+            })
             relations(closureOf<CurseRelation>{
                 this.requiredDependency("fabric-api")
                 this.requiredDependency("fabric-language-kotlin")
