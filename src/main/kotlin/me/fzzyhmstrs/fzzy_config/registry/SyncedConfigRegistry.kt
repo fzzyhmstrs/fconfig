@@ -28,6 +28,7 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.network.ServerPlayNetworkHandler
 import java.util.*
 
 /**
@@ -62,13 +63,16 @@ internal object SyncedConfigRegistry {
             if (syncedConfigs.containsKey(id)){
                 val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
-                val result = ConfigApi.deserializeConfig(config, configString, errors, 2) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
+                val result = ConfigApi.deserializeConfig(config, configString, errors, ConfigApiImpl.CHECK_RESTART) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
                 val restart = result.get().getBoolean(RESTART_KEY)
                 result.writeError(errors)
-                println("I saved my config! ${result.get().config.getId()}")
                 result.get().config.save() //save config to the client
                 if (restart) {
-                    println("A RESTART IS NEEDED AAAAHHHHH")
+                    client.execute {
+                        client.world?.disconnect()
+                        client.disconnect()
+                        ConfigApiImpl.openRestartScreen()
+                    }
                 }
             }
         }
@@ -80,12 +84,11 @@ internal object SyncedConfigRegistry {
                 if (syncedConfigs.containsKey(id)) {
                     val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                     val errors = mutableListOf<String>()
-                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
+                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
                     val restart = result.get().getBoolean(RESTART_KEY)
                     result.writeError(errors)
                     result.get().config.save()
                     if (restart) {
-                        println("A RESTART IS NEEDED AAAAHHHHH")
                         client.player?.sendMessage("fc.config.restart.update".translate())
                     }
                 }
@@ -102,22 +105,23 @@ internal object SyncedConfigRegistry {
         }
     }
 
+    fun syncConfigs(handler: ServerPlayNetworkHandler){
+        for ((id, config) in syncedConfigs) {
+            val syncErrors = mutableListOf<String>()
+            val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
+            if (syncErrors.isNotEmpty()){
+                val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C configuration stage sync.")
+                syncError.writeError(syncErrors)
+            }
+            val buf = PacketByteBufs.create()
+            payload.write(buf)
+            ServerPlayNetworking.send(handler.player,ConfigSyncS2CCustomPayload.id, buf)
+        }
+    }
+
     internal fun registerAll() {
 
         //handles synchronization of configs to clients on CONFIGURE stage of login
-        ServerPlayConnectionEvents.JOIN.register { handler, sender, server ->
-            for ((id, config) in syncedConfigs) {
-                val syncErrors = mutableListOf<String>()
-                val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
-                if (syncErrors.isNotEmpty()){
-                    val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C configuration stage sync.")
-                    syncError.writeError(syncErrors)
-                }
-                val buf = PacketByteBufs.create()
-                payload.write(buf)
-                ServerPlayNetworking.send(handler.player,ConfigSyncS2CCustomPayload.id, buf)
-            }
-        }
         //syncs configs to clients after datapack reload
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, _ ->
             val players = server.playerManager.playerList
@@ -141,7 +145,6 @@ internal object SyncedConfigRegistry {
             val payload = ConfigUpdateC2SCustomPayload(buf)
             val permLevel = payload.playerPerm
             val serializedConfigs = payload.updates
-            println(payload.updates)
             if(!serverPlayer.hasPermissionLevel(permLevel)){
                 FC.LOGGER.error("Player [${serverPlayer.name}] may have tried to cheat changes to the Server Config! Their perm level: ${getPlayerPermissionLevel(serverPlayer)}, perm level synced from client: $permLevel")
                 val changes = payload.changeHistory
@@ -155,7 +158,7 @@ internal object SyncedConfigRegistry {
             for ((id,configString) in serializedConfigs) {
                 val config = syncedConfigs[id] ?: continue
                 val errors = mutableListOf<String>()
-                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
+                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
                 val restart = result.get().getBoolean(RESTART_KEY)
                 result.writeError(errors)
                 result.get().config.save()
