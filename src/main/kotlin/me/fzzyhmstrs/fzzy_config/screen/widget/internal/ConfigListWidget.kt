@@ -17,7 +17,6 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -31,7 +30,7 @@ import java.util.*
 import java.util.function.Consumer
 
 @Environment(EnvType.CLIENT)
-internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, height: Int, private val contentHeight: Int, private val listHeaderHeight: Int, drawBackground: Boolean) :
+internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, height: Int, private var contentHeight: Int, private val listHeaderHeight: Int, drawBackground: Boolean) :
     ElementListWidget<BaseConfigEntry>(minecraftClient, width, height, listHeaderHeight, (height - (height - listHeaderHeight - contentHeight)), 24), LastSelectable, Widget
 {
 
@@ -39,10 +38,10 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
 
     private var visibleElements = 5
 
-    /*init{
+    init{
         this.setRenderHorizontalShadows(drawBackground)
         this.setRenderBackground(drawBackground)
-    }*/
+    }
 
     private val wholeList: List<BaseConfigEntry> by lazy{
         this.children().toList()
@@ -82,9 +81,11 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
 
     override fun setX(x: Int) {
         this.left = x
+        this.right = x + width
     }
     override fun setY(y: Int) {
         this.top = y + listHeaderHeight
+        this.bottom = y + listHeaderHeight + contentHeight
     }
     override fun getX(): Int {
         return this.left
@@ -105,10 +106,10 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
     }
 
     override fun getRowWidth(): Int {
-        return 280
+        return 260
     }
 
-    fun position(width: Int, height: Int, y: Int,contentHeight: Int) {
+    fun position(width: Int, height: Int, y: Int, contentHeight: Int) {
         this.setDimensions(width, height, contentHeight)
         setPosition(0, y)
         var count = 0
@@ -124,18 +125,23 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
     }
 
     private fun setDimensions(width: Int, height: Int, contentHeight: Int) {
+        this.contentHeight = contentHeight
         this.width = width
-        this.right = width
+        this.right = this.left + width
         this.height = height
-        this.bottom = (height - (height - listHeaderHeight - contentHeight))
+        this.bottom = this.top + (height - (height - listHeaderHeight - contentHeight))
     }
 
     fun position(width: Int, layout: ThreePartsLayoutWidget) {
         this.position(width, layout.height, 0,(layout.height - layout.headerHeight - layout.footerHeight))
     }
 
-    public fun getScrollbarX(): Int {
-        return super.getScrollbarPositionX()
+    fun getScrollbarX(): Int {
+        return scrollbarPositionX
+    }
+
+    override fun getScrollbarPositionX(): Int {
+        return this.left + this.width / 2 + this.rowWidth / 2 + 10
     }
 
     fun getClient(): MinecraftClient{

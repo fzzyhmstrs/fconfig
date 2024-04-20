@@ -43,7 +43,7 @@ object RenderUtil {
         }
         if (height == textureHeight) {
             this.drawTexture(texture, x, y, u, v, leftSliceWidth, height,textureWidth,textureHeight)
-            drawRepeatingTexture(this, texture, x + leftSliceWidth, y, width - rightSliceWidth - leftSliceWidth, height, u + leftSliceWidth, v, textureWidth, textureHeight, centerWidth, centerHeight)
+            drawThreeSliceHorizontal(this, texture, x + leftSliceWidth, y, width - rightSliceWidth - leftSliceWidth, height, u + leftSliceWidth, v, textureWidth, textureHeight, centerWidth)
             this.drawTexture(texture, x + width - rightSliceWidth, y, u + textureWidth - rightSliceWidth, v, rightSliceWidth, height, textureWidth, textureHeight)
             return
         }
@@ -91,6 +91,29 @@ object RenderUtil {
                 l += centerHeight
                 heightToGo -= centerHeight
             }
+            i += centerWidth
+            widthToGo -= centerWidth
+        }
+    }
+
+    private fun drawThreeSliceHorizontal(
+        context: DrawContext,
+        texture: Identifier,
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        u: Float,
+        v: Float,
+        textureWidth: Int,
+        textureHeight: Int,
+        centerWidth: Int
+    ) {
+        var i = x
+        var widthToGo = width
+        while (widthToGo > 0) {
+            val drawWidth = min(widthToGo,centerWidth)
+            context.drawTexture(texture, i, y, u, v, drawWidth, height, textureWidth, textureHeight)
             i += centerWidth
             widthToGo -= centerWidth
         }

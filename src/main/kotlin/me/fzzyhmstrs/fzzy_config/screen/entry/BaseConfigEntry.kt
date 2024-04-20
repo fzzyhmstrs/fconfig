@@ -54,7 +54,7 @@ internal open class BaseConfigEntry(
     }
 
     fun positionWidget(y: Int){
-        widget.setPosition(parent.getScrollbarX() - widget.width - 10, y)
+        widget.setPosition(parent.getScrollbarX() - widget.width, y)
     }
 
     override fun render(
