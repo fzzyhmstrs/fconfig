@@ -56,6 +56,6 @@ internal object ConfigApiImplClient {
         while(client.player?.hasPermissionLevel(i) == true){
             i++
         }
-        return i
+        return i - 1
     }
 }
