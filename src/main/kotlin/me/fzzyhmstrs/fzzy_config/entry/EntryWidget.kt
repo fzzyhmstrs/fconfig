@@ -25,7 +25,6 @@ import net.minecraft.client.gui.widget.ClickableWidget
  * @since 0.2.0
  */
 @FunctionalInterface
-@Environment(EnvType.CLIENT)
 interface EntryWidget<T> {
     @Environment(EnvType.CLIENT)
     fun widgetEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget
