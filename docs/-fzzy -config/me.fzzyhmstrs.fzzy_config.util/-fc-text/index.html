@@ -57,7 +57,11 @@
                     </a>
             </div>
             <div class="library-version">
-<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-fc-text/index.html&quot;}">0.2.0+1.20.5-rc1</dokka-template-command>            </div>
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-fc-text/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.2.0+1.20.5-rc2</div>
+  <div class="versions-dropdown-data"><a href="index.html">0.2.0+1.20.5-rc2</a><a href="..\..\..\older\0.2.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.2.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
         </div>
     <div class="links-section" id="links-section">
         <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
@@ -99,20 +103,11 @@
     <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">FcText</a></div><p class="paragraph">Various text utilities and wrappers for making kotlin minecraft modding more text-expressive</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.2.0</p></span><h4 class="">See also</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-translatable/index.html"><span><span>Translatable</span></span></a></div></span></div><div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
-import me.fzzyhmstrs.fzzy_config.util.FcText.description
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.text
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.FcText.translation
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import me.fzzyhmstrs.fzzy_config.util.FcText.appended
-import me.fzzyhmstrs.fzzy_config.util.FcText.empty
-import me.fzzyhmstrs.fzzy_config.util.FcText.lit
-import me.fzzyhmstrs.fzzy_config.util.FcText.literal
-import me.fzzyhmstrs.fzzy_config.util.FcText.stringified
-import me.fzzyhmstrs.fzzy_config.util.FcText.text
-import me.fzzyhmstrs.fzzy_config.util.FcText.translatable
-import me.fzzyhmstrs.fzzy_config.util.FcText.translatableWithFallback
-import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
