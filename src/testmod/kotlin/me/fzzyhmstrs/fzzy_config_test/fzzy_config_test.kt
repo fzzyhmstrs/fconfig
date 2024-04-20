@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig
+import me.fzzyhmstrs.fzzy_config_test.test.TestConfigClient
 import me.fzzyhmstrs.fzzy_config_test.test.TestPopupScreen
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
@@ -38,6 +39,7 @@ object FC: ModInitializer {
     val fcRandom = Random(System.currentTimeMillis())
 
     override fun onInitialize() {
+        TestConfig.init()
     }
 }
 
@@ -45,8 +47,8 @@ object FCC: ClientModInitializer {
 
     var openDamnScreen = ""
 
-    val testEnum = ValidatedEnum(Selectable.SelectionType.FOCUSED)
-    val testEnum2 = ValidatedEnum(Selectable.SelectionType.FOCUSED,ValidatedEnum.WidgetType.CYCLING)
+    //val testEnum = ValidatedEnum(Selectable.SelectionType.FOCUSED)
+    //val testEnum2 = ValidatedEnum(Selectable.SelectionType.FOCUSED,ValidatedEnum.WidgetType.CYCLING)
     val testInt = ValidatedInt(8,16,0)
     val testInt2 = ValidatedInt(8,Int.MAX_VALUE,0,ValidatedNumber.WidgetType.TEXTBOX)
     val testString = ValidatedString.Builder("chickenfrog")
@@ -70,10 +72,10 @@ object FCC: ClientModInitializer {
     val manager = BaseUpdateManager()
 
     override fun onInitializeClient() {
-        testEnum.setEntryKey("fc.test.enum.name")
-        testEnum.setUpdateManager(manager)
-        testEnum2.setEntryKey("fc.test.enum2.name")
-        testEnum2.setUpdateManager(manager)
+        //testEnum.setEntryKey("fc.test.enum.name")
+        //testEnum.setUpdateManager(manager)
+        //testEnum2.setEntryKey("fc.test.enum2.name")
+        //testEnum2.setUpdateManager(manager)
         testInt.setEntryKey("fc.test.int.name")
         testInt.setUpdateManager(manager)
         testInt2.setEntryKey("fc.test.int2.name")
@@ -94,7 +96,7 @@ object FCC: ClientModInitializer {
                 openDamnScreen = ""
             }
         }
-        TestConfig.init()
+        TestConfigClient.init()
     }
 
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>){
