@@ -380,12 +380,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
             .positionY(PopupWidget.Builder.at{ y })
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
-        popup.addElement("copy", ActiveButtonWidget(copyText, client.textRenderer.getWidth(copyText) + 8, 14, { true }, { pushToBuffer(entry.get()); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        popup.addElement("paste", ActiveButtonWidget(pasteText, client.textRenderer.getWidth(pasteText) + 8, 14, { entry.isValidEntry(copyBuffer) }, { entry.trySet(copyBuffer); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        popup.addElement("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 14, { entry.peekState() }, { entry.revert(); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        popup.addElement("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 14, { !entry.isDefault() }, { b -> openRestoreConfirmPopup(b, entry) },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("copy", ActiveButtonWidget(copyText, client.textRenderer.getWidth(copyText) + 8, 14, { true }, { pushToBuffer(entry.get()); PopupWidget.pop() },ActiveButtonWidget.Background("widget/popup/button_right_click_highlighted".fcId(),3,20,200)), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("paste", ActiveButtonWidget(pasteText, client.textRenderer.getWidth(pasteText) + 8, 14, { entry.isValidEntry(copyBuffer) }, { entry.trySet(copyBuffer); PopupWidget.pop() },ActiveButtonWidget.Background("widget/popup/button_right_click_highlighted".fcId(),3,20,200)), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 14, { entry.peekState() }, { entry.revert(); PopupWidget.pop() },ActiveButtonWidget.Background("widget/popup/button_right_click_highlighted".fcId(),3,20,200)), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 14, { !entry.isDefault() }, { b -> openRestoreConfirmPopup(b, entry) },ActiveButtonWidget.Background("widget/popup/button_right_click_highlighted".fcId(),3,20,200)), Position.BELOW, Position.ALIGN_LEFT)
         if(withForwarding)
-            popup.addElement("forward", ActiveButtonWidget(forwardText, client.textRenderer.getWidth(forwardText) + 8, 14, { true }, { openEntryForwardingPopup(entry) },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
+            popup.addElement("forward", ActiveButtonWidget(forwardText, client.textRenderer.getWidth(forwardText) + 8, 14, { true }, { openEntryForwardingPopup(entry) },ActiveButtonWidget.Background("widget/popup/button_right_click_highlighted".fcId(),3,20,200)), Position.BELOW, Position.ALIGN_LEFT)
         PopupWidget.push(popup.build())
     }
     private fun <T> openRestoreConfirmPopup(b: ActiveButtonWidget, entry: T) where T: Updatable, T: Entry<*,*> {

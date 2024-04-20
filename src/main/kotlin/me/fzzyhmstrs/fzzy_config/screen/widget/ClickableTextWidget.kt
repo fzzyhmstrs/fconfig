@@ -51,7 +51,7 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
         return this.align(1.0f)
     }
 
-    override fun renderWidget(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
         val text = message
         val i = getWidth()
         val j = textRenderer.getWidth(text)
@@ -67,6 +67,7 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (!isMouseOver(mouseX, mouseY)) return false
         val d = mouseX - this.x
         val style = textRenderer.textHandler.getStyleAt(message.asOrderedText(), MathHelper.floor(d)) ?: return false
         return parent.handleTextClick(style)

@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -39,9 +40,9 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         private val changesHighlightedTex: Identifier = "widget/changes_highlighted".fcId()
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = manager.hasChanges() || manager.hasChangeHistory() || manager.hasRestores(scope)
-        super.renderWidget(context, mouseX, mouseY, delta)
+        super.renderButton(context, mouseX, mouseY, delta)
         RenderSystem.enableBlend()
         if (manager.hasChanges()) {
             if (isFocused || isHovered)

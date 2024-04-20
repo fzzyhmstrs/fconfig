@@ -39,7 +39,7 @@ open class DecoratedActiveButtonWidget(
     private val decoration: Identifier,
     activeProvider: Supplier<Boolean>,
     pressAction: Consumer<ActiveButtonWidget>,
-    background: Identifier? = null)
+    background: Background? = null)
     :
     ActiveButtonWidget(titleSupplier,width,height,activeProvider,pressAction,background),
     Decorated{
@@ -50,7 +50,7 @@ open class DecoratedActiveButtonWidget(
                 decoration: Identifier,
                 activeProvider: Supplier<Boolean>,
                 pressAction: Consumer<ActiveButtonWidget>,
-                background: Identifier? = null): this(Supplier{title},width, height,decoration, activeProvider, pressAction, background)
+                background: Background? = null): this(Supplier{title},width, height,decoration, activeProvider, pressAction, background)
 
     override fun decorationId(): Identifier {
         return decoration

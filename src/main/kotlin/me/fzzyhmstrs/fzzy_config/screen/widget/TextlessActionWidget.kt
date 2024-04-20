@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.DrawContext
@@ -57,9 +58,9 @@ class TextlessActionWidget(
             activeIcon
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = activeSupplier.get()
-        super.renderWidget(context, mouseX, mouseY, delta)
+        super.renderButton(context, mouseX, mouseY, delta)
         context.drawGuiTexture(getTex(), x, y, getWidth(), getHeight())
         if (this.active && activeNarration.string != ""){
             tooltip = Tooltip.of(activeNarration)

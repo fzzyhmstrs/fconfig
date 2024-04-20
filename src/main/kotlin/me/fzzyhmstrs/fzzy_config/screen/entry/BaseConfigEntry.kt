@@ -16,6 +16,8 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -52,7 +54,7 @@ internal open class BaseConfigEntry(
     }
 
     fun positionWidget(y: Int){
-        widget.setPosition(parent.scrollbarX - widget.width - 10, y)
+        widget.setPosition(parent.getScrollbarX() - widget.width - 10, y)
     }
 
     override fun render(
@@ -69,7 +71,8 @@ internal open class BaseConfigEntry(
     ) {
         //75 = 10 + 20 + 20 + 20 + 5 = padding to scroll + revert width + default width + forward width + pad to widget
         //positions i at the left-hand side of the main widget
-        widget.setPosition(parent.scrollbarX - widget.width - 10, y)
+        widget.setPosition(parent.getScrollbarX() - widget.width - 10, y)
+        RenderSystem.disableDepthTest()
         widget.render(context, mouseX, mouseY, tickDelta)
         if (widget is Decorated)
             widget.renderDecoration(context,widget.x - 22, widget.y + 2, tickDelta)

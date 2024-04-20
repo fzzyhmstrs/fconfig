@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -352,8 +353,8 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
         fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
             return ValidatedIdentifier(defaultValue,
                 AllowableIdentifiers(
-                    { id -> registry.containsId(id) && predicate.test ((registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
-                    { registry.ids.filter { id -> predicate.test ((registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } }
+                    { id -> registry.containsId(id) && predicate.test(if (!registry.containsId(id)) return@AllowableIdentifiers false else registry.getEntry(registry.get(id))) },
+                    { registry.ids.filter { id -> predicate.test (if (!registry.containsId(id)) return@filter false else registry.getEntry(registry.get(id))) } }
                 )
             )
         }
@@ -388,8 +389,8 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
         fun <T> ofRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifier {
             return ValidatedIdentifier(Identifier("minecraft:air"),
                 AllowableIdentifiers(
-                    { id -> registry.containsId(id) && predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
-                    { registry.ids.filter { id -> predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } }
+                    { id -> registry.containsId(id) && predicate.test(id, if (!registry.containsId(id)) return@AllowableIdentifiers false else registry.getEntry(registry.get(id))) },
+                    { registry.ids.filter { id -> predicate.test (id, if (!registry.containsId(id)) return@filter false else registry.getEntry(registry.get(id))) } }
                 )
             )
         }
@@ -642,7 +643,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
             }
         }
 
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             val testValue = validatedIdentifier.get()
             if (cachedWrappedValue != testValue || needsUpdating) {
                 needsUpdating = false
@@ -654,7 +655,7 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
                 if (lastChangedTime != 0L && !ongoingChanges())
                     validatedIdentifier.accept(storedValue)
             }
-            super.renderWidget(context, mouseX, mouseY, delta)
+            super.renderButton(context, mouseX, mouseY, delta)
             if(isValid){
                 if (ongoingChanges())
                     context.drawGuiTexture(TextureIds.ENTRY_ONGOING,x + width - 20, y, 20, 20)
@@ -683,8 +684,8 @@ class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, va
             return if(bl) true else super.mouseClicked(mouseX, mouseY, button)
         }
 
-        override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-            return window?.mouseScrolled(mouseX.toInt(),mouseY.toInt(),verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+        override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
+            return window?.mouseScrolled(mouseX.toInt(),mouseY.toInt(),verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, verticalAmount)
         }
 
         override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {

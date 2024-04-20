@@ -20,11 +20,15 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
+import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
+import net.minecraft.client.gui.widget.Widget
 import net.minecraft.util.Colors
 import java.util.function.BiFunction
+import java.util.function.Consumer
 import java.util.function.Function
 import me.fzzyhmstrs.fzzy_config.entry.Entry as Entry1
 
@@ -35,7 +39,7 @@ internal class MapListWidget<K,V>(
     valueSupplier: Entry1<V, *>,
     entryValidator: BiFunction<MapListWidget<K,V>,MapEntry<K,V>?,ChoiceValidator<K>>)
     :
-    ElementListWidget<MapListWidget.MapEntry<K,V>>(MinecraftClient.getInstance(), 272, 160, 0, 22) {
+    ElementListWidget<MapListWidget.MapEntry<K,V>>(MinecraftClient.getInstance(), 272, 160, 0,0, 22), Widget {
 
     fun getRawMap(skip: MapEntry<K,V>? = null): Map<K,V>{
         val map: MutableMap<K,V> = mutableMapOf()
@@ -59,18 +63,43 @@ internal class MapListWidget<K,V>(
         return map.toMap()
     }
 
-    override fun drawHeaderAndFooterSeparators(context: DrawContext?) {
+    init{
+        this.setRenderHorizontalShadows(false)
+        this.setRenderBackground(false)
     }
 
-    override fun drawMenuListBackground(context: DrawContext?) {
+    override fun setX(x: Int) {
+        this.left = x
+        this.right = x + width
+    }
+    override fun setY(y: Int) {
+        this.top = y
+        this.bottom = y + 160
+    }
+    override fun getX(): Int {
+        return this.left
+    }
+    override fun getY(): Int {
+        return this.top
+    }
+    override fun getWidth(): Int {
+        return this.width
+    }
+    override fun getHeight(): Int {
+        return this.height
+    }
+    override fun getNavigationFocus(): ScreenRect {
+        return super<Widget>.getNavigationFocus()
+    }
+    override fun forEachChild(consumer: Consumer<ClickableWidget>) {
     }
 
     override fun getRowWidth(): Int {
         return 258 //16 padding, 20 slider width and padding
     }
 
-    override fun getScrollbarX(): Int {
-        return this.x + this.width / 2 + this.rowWidth / 2 + 6
+    override fun getScrollbarPositionX(): Int {
+        return this.left + this.width / 2 + this.rowWidth / 2 + 6
     }
 
     private fun makeVisible(entry: MapEntry<K,V>){

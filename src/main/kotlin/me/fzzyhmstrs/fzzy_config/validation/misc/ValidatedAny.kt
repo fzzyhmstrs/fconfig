@@ -132,7 +132,7 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
         val newThing = copyStoredValue()
         val newNewThing = defaultValue::class.createInstance()
         val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
-        val entryList = ConfigListWidget(MinecraftClient.getInstance(),298,160,0,false)
+        val entryList = ConfigListWidget(MinecraftClient.getInstance(),298,160,160,0,false)
         ConfigApiImpl.walk(newThing,getEntryKey(),1){_,_,new,thing,_,annotations,_ ->
             val restart = ConfigApiImpl.isRequiresRestart(annotations)
             if (thing is Updatable && thing is Entry<*, *>) {

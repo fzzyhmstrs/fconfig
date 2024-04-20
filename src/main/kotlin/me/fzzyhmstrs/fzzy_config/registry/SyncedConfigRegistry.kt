@@ -22,12 +22,10 @@ import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.SettingForwardCustomPayload
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
-import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents
-import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.entity.player.PlayerEntity
 import java.util.*
@@ -44,16 +42,21 @@ internal object SyncedConfigRegistry {
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
-        ClientPlayNetworking.send(SettingForwardCustomPayload(update,player,scope,summary))
+        val buf = PacketByteBufs.create()
+        SettingForwardCustomPayload(update,player,scope,summary).write(buf)
+        ClientPlayNetworking.send(SettingForwardCustomPayload.id,buf)
     }
 
     fun updateServer(serializedConfigs: Map<String,String>, changeHistory: List<String>, playerPerm: Int){
-        ClientPlayNetworking.send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
+        val buf = PacketByteBufs.create()
+        ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm).write(buf)
+        ClientPlayNetworking.send(ConfigUpdateC2SCustomPayload.id,buf)
     }
 
     internal fun registerClient() {
         //receives the entire NonSync config sent by the server during CONFIGURATION stage
-        ClientConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.type){ payload, _ ->
+        ClientPlayNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.id){ client, _, buf, _ ->
+            val payload = ConfigSyncS2CCustomPayload(buf)
             val id = payload.id
             val configString = payload.serializedConfig
             if (syncedConfigs.containsKey(id)){
@@ -69,7 +72,8 @@ internal object SyncedConfigRegistry {
             }
         }
         //receives a config update from the server after another client pushes changes to it.
-        ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.type){ payload, context ->
+        ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.id){ client, _,buf,_ ->
+            val payload = ConfigUpdateS2CCustomPayload(buf)
             val serializedConfigs = payload.updates
             for ((id, configString) in serializedConfigs) {
                 if (syncedConfigs.containsKey(id)) {
@@ -81,13 +85,14 @@ internal object SyncedConfigRegistry {
                     result.get().config.save()
                     if (restart) {
                         println("A RESTART IS NEEDED AAAAHHHHH")
-                        context.player().sendMessage("fc.config.restart.update".translate())
+                        client.player?.sendMessage("fc.config.restart.update".translate())
                     }
                 }
             }
         }
         //receives an update forwarded from another player and passes it to the client registry for handling.
-        ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type){ payload, _ ->
+        ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.id){ _,_,buf, _ ->
+            val payload = SettingForwardCustomPayload(buf)
             val update = payload.update
             val sendingUuid = payload.player
             val scope = payload.scope
@@ -97,19 +102,9 @@ internal object SyncedConfigRegistry {
     }
 
     internal fun registerAll() {
-        PayloadTypeRegistry.configurationC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        PayloadTypeRegistry.playC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        PayloadTypeRegistry.playC2S().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
-        PayloadTypeRegistry.playC2S().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
-        PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
 
         //handles synchronization of configs to clients on CONFIGURE stage of login
-        ServerConfigurationConnectionEvents.CONFIGURE.register { handler, _ ->
+        ServerPlayConnectionEvents.JOIN.register { handler, sender, server ->
             for ((id, config) in syncedConfigs) {
                 val syncErrors = mutableListOf<String>()
                 val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
@@ -117,7 +112,9 @@ internal object SyncedConfigRegistry {
                     val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C configuration stage sync.")
                     syncError.writeError(syncErrors)
                 }
-                ServerConfigurationNetworking.send(handler, payload)
+                val buf = PacketByteBufs.create()
+                payload.write(buf)
+                ServerPlayNetworking.send(handler.player,ConfigSyncS2CCustomPayload.id, buf)
             }
         }
         //syncs configs to clients after datapack reload
@@ -131,22 +128,25 @@ internal object SyncedConfigRegistry {
                         val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C datapack reload sync.")
                         syncError.writeError(syncErrors)
                     }
-                    ServerPlayNetworking.send(player, payload)
+                    val buf = PacketByteBufs.create()
+                    payload.write(buf)
+                    ServerPlayNetworking.send(player, ConfigSyncS2CCustomPayload.id, buf)
                 }
             }
         }
         //receives an update from a permissible client, throwing a cheat warning to the logs and to online moderators if permissions don't match (and discarding the update)
         //deserializes the updates to server configs, then propagates the updates to other online clients
-        ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
+        ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.id){ server, serverPlayer, context, buf, sender ->
+            val payload = ConfigUpdateC2SCustomPayload(buf)
             val permLevel = payload.playerPerm
             val serializedConfigs = payload.updates
-            if(!context.player().hasPermissionLevel(permLevel)){
-                FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes to the Server Config! Their perm level: ${getPlayerPermissionLevel(context.player())}, perm level synced from client: $permLevel")
+            if(!serverPlayer.hasPermissionLevel(permLevel)){
+                FC.LOGGER.error("Player [${serverPlayer.name}] may have tried to cheat changes to the Server Config! Their perm level: ${getPlayerPermissionLevel(serverPlayer)}, perm level synced from client: $permLevel")
                 val changes = payload.changeHistory
-                ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
-                for (player in context.player().server.playerManager.playerList){
+                ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), serverPlayer)
+                for (player in serverPlayer.server.playerManager.playerList){
                     if(player.hasPermissionLevel(2))
-                        player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
+                        player.sendMessageToClient("fc.networking.permission.cheat".translate(serverPlayer.name), false)
                 }
             }
             for ((id,configString) in serializedConfigs) {
@@ -160,23 +160,29 @@ internal object SyncedConfigRegistry {
                     FC.LOGGER.error("The server has received a config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
                 }
             }
-            for (player in context.player().server.playerManager.playerList) {
-                if (player == context.player()) continue // don't push back to the player that just sent the update
+            for (player in serverPlayer.server.playerManager.playerList) {
+                if (player == serverPlayer) continue // don't push back to the player that just sent the update
                 val newPayload = ConfigUpdateS2CCustomPayload(serializedConfigs)
-                ServerPlayNetworking.send(player, newPayload)
+                val newBuf = PacketByteBufs.create()
+                newPayload.write(newBuf)
+                ServerPlayNetworking.send(player, ConfigUpdateS2CCustomPayload.id, newBuf)
             }
             val changes = payload.changeHistory
-            ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
+            ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), serverPlayer)
         }
         //receives a forwarded client update and passes it along to the recipient
-        ServerPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type){ payload, context ->
+        ServerPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.id){ server, serverPlayer, context, buf, sender ->
+            val payload = SettingForwardCustomPayload(buf)
             val uuid = payload.player
-            val receivingPlayer = context.player().server.playerManager.getPlayer(uuid) ?: return@registerGlobalReceiver
+            val receivingPlayer = serverPlayer.server.playerManager.getPlayer(uuid) ?: return@registerGlobalReceiver
             val scope = payload.scope
             val update = payload.update
             val summary = payload.summary
-            val sendingPlayer = context.player()
-            ServerPlayNetworking.send(receivingPlayer,SettingForwardCustomPayload(update,sendingPlayer.uuid,scope,summary))
+            val sendingPlayer = serverPlayer
+            val newPayload = SettingForwardCustomPayload(update,sendingPlayer.uuid,scope,summary)
+            val newBuf = PacketByteBufs.create()
+            newPayload.write(newBuf)
+            ServerPlayNetworking.send(receivingPlayer,SettingForwardCustomPayload.id,newBuf)
         }
     }
 

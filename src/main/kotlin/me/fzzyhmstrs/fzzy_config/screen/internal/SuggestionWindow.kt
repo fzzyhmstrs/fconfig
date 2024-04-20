@@ -14,6 +14,8 @@ import com.google.common.collect.Lists
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.brigadier.suggestion.Suggestion
 import com.mojang.brigadier.suggestion.Suggestions
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.text
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -83,7 +85,7 @@ internal class SuggestionWindow(
             RenderSystem.disableDepthTest()
             if (mouseX > x && mouseX < x + w && mouseY > textY - 2 && mouseY < textY + 10)
                 select(l)
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, suggestions[l].text,x + 1,textY, if(selection == l) Colors.YELLOW else -5592406)
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, suggestions[l].text,x + 1,textY, if(selection == l) -256 else -5592406)
             textY += if(up) -12 else 12
         }
         context.matrices.pop()
@@ -189,7 +191,7 @@ internal class SuggestionWindow(
         val suggestion = suggestions[this.selection]
         val message = suggestion.tooltip
         return if (message != null) {
-            Text.translatable("narration.suggestion.tooltip", this.selection + 1, suggestions.size, suggestion.text, Text.of(message))
+            Text.translatable("narration.suggestion.tooltip", this.selection + 1, suggestions.size, suggestion.text, message.text())
         } else Text.translatable("narration.suggestion", this.selection + 1, suggestions.size, suggestion.text)
     }
 

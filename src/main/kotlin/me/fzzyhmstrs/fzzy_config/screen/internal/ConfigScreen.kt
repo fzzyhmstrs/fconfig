@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DirectionalLayoutWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -41,9 +42,11 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     private var parent: Screen? = null
 
     internal val layout = ThreePartsLayoutWidget(this)
-    private val searchField = TextFieldWidget(MinecraftClient.getInstance().textRenderer,110,20,FcText.empty())
+    private val searchField = TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0,110,20,FcText.empty())
     private val doneButton = ButtonWidget.builder(ScreenTexts.DONE) { _ -> close() }.size(70,20).build()
-    private val configList: ConfigListWidget = entriesWidget.apply(this)
+    private val configList: ConfigListWidget by lazy {
+        entriesWidget.apply(this)
+    }
 
     fun setParent(screen: Screen?) {
         this.parent = screen

@@ -209,7 +209,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
 
     @Environment(EnvType.CLIENT)
     private class ThreeTypesWidget(private val typeSupplier: Supplier<ProviderType>, private val stack: ClickableWidget, private val list: ClickableWidget, private val tag: ClickableWidget): ClickableWidget(0,0,110,20,FcText.empty()){
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             when(typeSupplier.get()){
                 ProviderType.STACK -> stack.render(context, mouseX, mouseY, delta)
                 ProviderType.LIST -> list.render(context, mouseX, mouseY, delta)
@@ -239,11 +239,11 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
             }
         }
 
-        override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
             return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-                ProviderType.LIST -> list.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-                ProviderType.TAG -> tag.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+                ProviderType.STACK -> stack.mouseScrolled(mouseX, mouseY, verticalAmount)
+                ProviderType.LIST -> list.mouseScrolled(mouseX, mouseY, verticalAmount)
+                ProviderType.TAG -> tag.mouseScrolled(mouseX, mouseY, verticalAmount)
             }
         }
 

@@ -19,20 +19,30 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
+import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
+import net.minecraft.client.gui.widget.Widget
 import net.minecraft.client.search.SuffixArray
 import java.util.*
+import java.util.function.Consumer
 
 @Environment(EnvType.CLIENT)
-internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, contentHeight: Int, headerHeight: Int, private val drawBackground: Boolean) :
-    ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable
+internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, height: Int, private val contentHeight: Int, private val listHeaderHeight: Int, drawBackground: Boolean) :
+    ElementListWidget<BaseConfigEntry>(minecraftClient, width, height, listHeaderHeight, (height - (height - listHeaderHeight - contentHeight)), 24), LastSelectable, Widget
 {
 
-    constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient,parent.width,parent.layout.contentHeight,parent.layout.headerHeight, drawBackground)
+    constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient,parent.width,parent.height,parent.layout.height - parent.layout.headerHeight - parent.layout.footerHeight, parent.layout.headerHeight, drawBackground)
 
     private var visibleElements = 5
+
+    /*init{
+        this.setRenderHorizontalShadows(drawBackground)
+        this.setRenderBackground(drawBackground)
+    }*/
 
     private val wholeList: List<BaseConfigEntry> by lazy{
         this.children().toList()
@@ -48,16 +58,6 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
     }
 
     override var lastSelected: Element? = null
-
-    override fun drawHeaderAndFooterSeparators(context: DrawContext) {
-        if (drawBackground)
-            super.drawHeaderAndFooterSeparators(context)
-    }
-
-    override fun drawMenuListBackground(context: DrawContext) {
-        if (drawBackground)
-            super.drawMenuListBackground(context)
-    }
 
     override fun pushLast() {
         lastSelected = focused
@@ -80,12 +80,37 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         return list.size
     }
 
-    override fun getRowWidth(): Int {
-        return 260
+    override fun setX(x: Int) {
+        this.left = x
+    }
+    override fun setY(y: Int) {
+        this.top = y + listHeaderHeight
+    }
+    override fun getX(): Int {
+        return this.left
+    }
+    override fun getY(): Int {
+        return this.top - listHeaderHeight
+    }
+    override fun getWidth(): Int {
+        return this.width
+    }
+    override fun getHeight(): Int {
+        return this.height
+    }
+    override fun getNavigationFocus(): ScreenRect {
+        return super<Widget>.getNavigationFocus()
+    }
+    override fun forEachChild(consumer: Consumer<ClickableWidget>) {
     }
 
-    override fun position(width: Int, height: Int, y: Int) {
-        super.position(width, height, y)
+    override fun getRowWidth(): Int {
+        return 280
+    }
+
+    fun position(width: Int, height: Int, y: Int,contentHeight: Int) {
+        this.setDimensions(width, height, contentHeight)
+        setPosition(0, y)
         var count = 0
         for (i in 0 until this.entryCount) {
             val entryY = getRowTop(i)
@@ -98,12 +123,19 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         visibleElements = count
     }
 
-    public override fun getScrollbarX(): Int {
-        return super.getScrollbarX()
+    private fun setDimensions(width: Int, height: Int, contentHeight: Int) {
+        this.width = width
+        this.right = width
+        this.height = height
+        this.bottom = (height - (height - listHeaderHeight - contentHeight))
     }
 
-    override fun isSelectButton(button: Int): Boolean {
-        return button == 0 || button == 1
+    fun position(width: Int, layout: ThreePartsLayoutWidget) {
+        this.position(width, layout.height, 0,(layout.height - layout.headerHeight - layout.footerHeight))
+    }
+
+    public fun getScrollbarX(): Int {
+        return super.getScrollbarPositionX()
     }
 
     fun getClient(): MinecraftClient{
@@ -130,8 +162,8 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         (focused as? SettingConfigEntry)?.pasteAction?.run() ?: (hoveredEntry as? SettingConfigEntry)?.pasteAction?.run()
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        super.appendClickableNarrations(builder)
+    override fun appendNarrations(builder: NarrationMessageBuilder) {
+        super.appendNarrations(builder)
         builder.put(NarrationPart.USAGE,"")
     }
 

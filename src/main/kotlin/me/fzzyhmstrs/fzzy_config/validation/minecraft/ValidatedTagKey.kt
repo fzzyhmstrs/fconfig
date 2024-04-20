@@ -20,7 +20,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.error
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -61,8 +60,8 @@ class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>,
         return try{
             val json = TomlOps.INSTANCE.convertTo(JsonOps.INSTANCE,toml)
             val dataResult = codec.parse(JsonOps.INSTANCE,json)
-            if (dataResult.isSuccess){
-                ValidationResult.success(dataResult.orThrow)
+            if (dataResult.result().isPresent){
+                ValidationResult.success(dataResult.result().get())
             } else {
                 ValidationResult.error(storedValue,"Error deserializing Validated Tag [$fieldName]: ${dataResult.error().getOrNull()?.message()}")
             }
@@ -73,11 +72,11 @@ class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>,
     @Internal
     override fun serialize(input: TagKey<T>): ValidationResult<TomlElement> {
         val encodeResult = codec.encodeStart(JsonOps.INSTANCE,input)
-        if (encodeResult.isError){
+        if (encodeResult.get().right().isPresent){
             return ValidationResult.error(TomlNull,"Error serializing TagKey: ${encodeResult.error().getOrNull()?.message()}")
         }
         return try {
-            ValidationResult.success(JsonOps.INSTANCE.convertTo(TomlOps.INSTANCE,encodeResult.orThrow))
+            ValidationResult.success(JsonOps.INSTANCE.convertTo(TomlOps.INSTANCE,encodeResult.result().get()))
         } catch (e: Exception){
             ValidationResult.error(TomlNull,"Critical Error while serializing TagKey: ${e.localizedMessage}")
         }
@@ -121,7 +120,7 @@ class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>,
     @Internal
     @Environment(EnvType.CLIENT)
     private fun popupTagPopup(b: ClickableWidget, choicePredicate: ChoiceValidator<TagKey<T>>){
-        val entryValidator = EntryValidator<String>{s,_ -> Identifier.tryParse(s)?.let { validator.validateEntry(it,EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: error(s,"invalid Identifier")}
+        val entryValidator = EntryValidator<String>{s,_ -> Identifier.tryParse(s)?.let { validator.validateEntry(it,EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: ValidationResult.error(s,"invalid Identifier")}
         val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.registry,Identifier(e))) }
         val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s,c,cv -> validator.allowableIds.getSuggestions(s,c,cv.convert({ Identifier(it) },{ Identifier(it) }))}
         val textField = SuggestionBackedTextFieldWidget(170,20, { validator.get().toString() },choicePredicate.convert({it.id.toString()}, {it.id.toString()}),entryValidator,entryApplier,suggestionProvider)

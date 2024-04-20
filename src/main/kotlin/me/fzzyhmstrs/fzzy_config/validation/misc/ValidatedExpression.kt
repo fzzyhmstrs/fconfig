@@ -182,7 +182,7 @@ class ValidatedExpression @JvmOverloads constructor(
                     editBox.cursor
                 }
                 editBox.text = StringBuilder(editBox.text).replace(i,j,s).toString()
-                editBox.setCursor(i + moveCursor,false)
+                editBox.cursor = i + moveCursor
                 if (MinecraftClient.getInstance().navigationType.isMouse)
                     PopupWidget.focusElement(editBox)
             }

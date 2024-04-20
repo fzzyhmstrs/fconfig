@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -199,7 +200,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             .addElement("r_box",ValidationBackedNumberFieldWidget(45,20,{ mutableColor.r }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ r -> mutableColor.updateRGB(r,mutableColor.g,mutableColor.b)}),"r_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("g_box",ValidationBackedNumberFieldWidget(45,20,{ mutableColor.g }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ g -> mutableColor.updateRGB(mutableColor.r,g,mutableColor.b)}),"g_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("b_box",ValidationBackedNumberFieldWidget(45,20,{ mutableColor.b }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ b -> mutableColor.updateRGB(mutableColor.r,mutableColor.g,b)}),"b_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("a_box",if(get().transparent()) ValidationBackedNumberFieldWidget(45,20,{ mutableColor.a }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer,45,20,"255".lit()).also { it.setEditable(false) },"a_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("a_box",if(get().transparent()) ValidationBackedNumberFieldWidget(45,20,{ mutableColor.a }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer,0,0,45,20,"255".lit()).also { it.setEditable(false) },"a_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("hl_map",HLMapWidget(mutableColor),"r_box",Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("s_slider",VerticalSliderWidget({mutableColor.s.toDouble()},0,0,20,68,FcText.empty(),{d -> mutableColor.updateHSL(mutableColor.h,d.toFloat(),mutableColor.l)}),"hl_map", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("hex_box",ValidationBackedTextFieldWidget(84, 20,{mutableColor.hex.get()}, ChoiceValidator.any(),mutableColor.hex,{s -> mutableColor.updateHex(s) }),"hl_map", Position.BELOW, Position.VERTICAL_TO_LEFT_EDGE)
@@ -634,7 +635,7 @@ class ValidatedColor: ValidatedField<ColorHolder> {
             return message.copy()
         }
 
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()

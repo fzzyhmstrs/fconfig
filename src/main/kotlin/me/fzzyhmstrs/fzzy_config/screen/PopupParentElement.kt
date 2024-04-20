@@ -34,7 +34,7 @@ interface PopupParentElement: ParentElement, LastSelectable {
      * @since 0.2.0
      */
     val popupWidgets: LinkedList<PopupWidget>
-    
+
     /**
      * Boolean prevents `mouseReleased` from triggering on the Popup or Widget underneath the active popup if it's closed on `mouseClicked`
      * @author fzzyhmstrs
@@ -61,7 +61,7 @@ interface PopupParentElement: ParentElement, LastSelectable {
     fun blurElements()
 
     /**
-     * called when a Popup is pushed to this element, after blurring. 
+     * called when a Popup is pushed to this element, after blurring.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -118,9 +118,9 @@ interface PopupParentElement: ParentElement, LastSelectable {
         return false
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        val popupWidget = activeWidget() ?: return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-        return popupWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
+        val popupWidget = activeWidget() ?: return super.mouseScrolled(mouseX, mouseY, verticalAmount)
+        return popupWidget.mouseScrolled(mouseX, mouseY, verticalAmount)
     }
 
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {

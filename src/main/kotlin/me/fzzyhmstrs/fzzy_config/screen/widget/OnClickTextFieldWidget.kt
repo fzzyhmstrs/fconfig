@@ -37,8 +37,8 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
         this.text = textSupplier.get()
     }
 
-    override fun renderWidget(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-        super.renderWidget(context, mouseX, mouseY, delta)
+    override fun renderButton(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+        super.renderButton(context, mouseX, mouseY, delta)
         this.text = textSupplier.get()
     }
 

@@ -16,6 +16,8 @@ import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -77,7 +79,7 @@ class PopupWidget
     private var focused: Element? = null
     private var focusedSelectable: Selectable? = null
     private var dragging = false
-    private val fillColor = Color(45,45,45,90).rgb
+    private val fillColor = Color(30,30,30,90).rgb
 
     fun onClose(){
         this.onClose.run()
@@ -92,11 +94,6 @@ class PopupWidget
         guiNavigationPath?.setFocused(false)
     }
 
-    fun applyBlur(delta: Float) {
-        MinecraftClient.getInstance().gameRenderer.renderBlur(delta)
-        MinecraftClient.getInstance().framebuffer.beginWrite(false)
-    }
-
     fun position(screenWidth: Int, screenHeight: Int){
         this.x = positionX.apply(screenWidth,width) //screenWidth/2 - width/2
         this.y = positionY.apply(screenHeight,height) //screenHeight/2 - height/2
@@ -108,18 +105,15 @@ class PopupWidget
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        context.matrices.push()
-        context.matrices.translate(x.toFloat(),y.toFloat(),0f)
         if (blurBackground) {
-            context.fill(0,0,width,height,fillColor)
-            applyBlur(delta)
+            context.fill(0,0,MinecraftClient.getInstance().currentScreen?.width ?: 0,MinecraftClient.getInstance().currentScreen?.height ?: 0,fillColor)
         }
-        context.matrices.pop()
         RenderSystem.enableBlend()
         RenderSystem.disableDepthTest()
-        context.drawGuiTexture(background, x, y, width, height)
+        context.drawNineSlice(background, x, y, width, height,4,4,64,64)
         for (drawable in drawables) {
-            RenderSystem.disableDepthTest()
+            /*RenderSystem.disableDepthTest()
+            RenderSystem.disableBlend()*/
             drawable.render(context, mouseX, mouseY, delta)
         }
 
@@ -310,9 +304,12 @@ class PopupWidget
         }
 
         private fun createInitialElement(): PositionedElement<TextWidget>{
-            val widget = TextWidget(title,MinecraftClient.getInstance().textRenderer)
-            if(set.spacingH < 4)
-                widget.height = widget.height + ((4 - set.spacingH) * 2)
+            val hh = if(set.spacingH < 4)
+                MinecraftClient.getInstance().textRenderer.fontHeight + ((4 - set.spacingH) * 2)
+            else
+                MinecraftClient.getInstance().textRenderer.fontHeight
+            val widget = TextWidget(MinecraftClient.getInstance().textRenderer.getWidth(title),height,title,MinecraftClient.getInstance().textRenderer)
+
             val posX = SuppliedPos(xPos,0) { (wPos.get() - xPos.get()) / 2 - widget.width / 2 }
             val posY = RelPos(yPos, 0)
             return PositionedElement(widget,posX,posY,Position.ALIGN_CENTER)

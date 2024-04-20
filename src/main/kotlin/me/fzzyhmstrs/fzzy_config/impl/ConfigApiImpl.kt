@@ -44,6 +44,7 @@ import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
 import java.util.function.Supplier
 import kotlin.experimental.and
+import kotlin.math.min
 import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
@@ -604,7 +605,7 @@ internal object ConfigApiImpl {
             }
             is Long -> {
                 val restriction = property.findAnnotation<ValidatedLong.Restrict>() ?: return thing
-                return MathHelper.clamp(thing,restriction.min,restriction.max)
+                return if (thing < restriction.min) { restriction.min } else min(thing, restriction.max)
             }
             is Double -> {
                 val restriction = property.findAnnotation<ValidatedDouble.Restrict>() ?: return thing

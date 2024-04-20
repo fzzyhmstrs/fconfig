@@ -140,7 +140,7 @@ loom {
 }
 
 tasks {
-    val javaVersion = JavaVersion.VERSION_21
+    val javaVersion = JavaVersion.VERSION_17
     withType<JavaCompile> {
         options.encoding = "UTF-8"
         sourceCompatibility = javaVersion.toString()
@@ -218,19 +218,6 @@ tasks.withType<DokkaTask>().configureEach {
     pluginConfiguration<VersioningPlugin, VersioningConfiguration> {
         olderVersionsDir = docVersionsDir
         version = currentVersion
-    }
-
-    doLast {
-        // This folder contains the latest documentation with all
-        // previous versions included, so it's ready to be published.
-        // Make sure it's copied and not moved - you'll still need this
-        // version for future builds
-        currentDocsDir.copyRecursively(file("docs"), overwrite = true)
-
-        // Only once current documentation has been safely moved,
-        // remove previous versions bundled in it. They will not
-        // be needed in future builds, it's just overhead.
-        currentDocsDir.resolve("older").deleteRecursively()
     }
 }
 

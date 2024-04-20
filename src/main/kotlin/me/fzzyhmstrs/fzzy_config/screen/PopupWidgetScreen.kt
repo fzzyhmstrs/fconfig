@@ -48,7 +48,8 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
 
     @Internal
     override fun blurElements() {
-        this.blur()
+        val guiNavigationPath = this.focusedPath
+        guiNavigationPath?.setFocused(false)
     }
 
     @Internal
@@ -72,13 +73,16 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
             super.render(context, mouseX, mouseY, delta)
         else
             super.render(context, 0, 0, delta)
+        context.matrices.push()
+        context.matrices.translate(0f,0f,450f)
         for ((index,popup) in popupWidgets.descendingIterator().withIndex()) {
             if(index == popupWidgets.lastIndex)
                 popup.render(context, mouseX, mouseY, delta)
             else
                 popup.render(context, 0, 0, delta)
-            context.matrices.translate(0f,0f,500f)
+            context.matrices.translate(0f,0f,450f)
         }
+        context.matrices.pop()
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {

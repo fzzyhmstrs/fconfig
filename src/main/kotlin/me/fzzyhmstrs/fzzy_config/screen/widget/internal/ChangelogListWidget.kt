@@ -15,29 +15,54 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget
+import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.Widget
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
+import java.util.function.Consumer
 import java.util.function.Supplier
 
 @Environment(EnvType.CLIENT)
-internal class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<Int>) : AlwaysSelectedEntryListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), sWidth.get() - 16, 180, 0, 11) {
+internal class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<Int>) : AlwaysSelectedEntryListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), sWidth.get() - 16, 180, 0,0, 11), Widget {
 
-    override fun drawHeaderAndFooterSeparators(context: DrawContext?) {
+    init{
+        this.setRenderHorizontalShadows(false)
+        this.setRenderBackground(false)
     }
 
-    override fun drawMenuListBackground(context: DrawContext?) {
+    override fun setX(x: Int) {
+        this.left = x
+        this.right = x + width
     }
-
+    override fun setY(y: Int) {
+        this.top = y
+        this.bottom = y + 160
+    }
+    override fun getX(): Int {
+        return this.left
+    }
+    override fun getY(): Int {
+        return this.top
+    }
     override fun getWidth(): Int {
         return sWidth.get() - 16
+    }
+    override fun getHeight(): Int {
+        return this.height
+    }
+    override fun getNavigationFocus(): ScreenRect {
+        return super<Widget>.getNavigationFocus()
+    }
+    override fun forEachChild(consumer: Consumer<ClickableWidget>) {
     }
 
     override fun getRowWidth(): Int {
         return sWidth.get() - 36 //16 padding, 20 slider width and padding
     }
 
-    override fun getScrollbarX(): Int {
+    override fun getScrollbarPositionX(): Int {
         return this.x + this.width / 2 + this.rowWidth / 2 + 4
     }
 

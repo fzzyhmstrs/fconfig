@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -53,7 +54,7 @@ class SuggestionBackedTextFieldWidget(
         return super.isValidTest(s)
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val testValue = wrappedValue.get()
         if (cachedWrappedValue != testValue || needsUpdating) {
             needsUpdating = false
@@ -65,7 +66,7 @@ class SuggestionBackedTextFieldWidget(
             if (lastChangedTime != 0L && !ongoingChanges())
                 applier.accept(storedValue)
         }
-        super.renderWidget(context, mouseX, mouseY, delta)
+        super.renderButton(context, mouseX, mouseY, delta)
         if(isValid){
             if (ongoingChanges())
                 context.drawGuiTexture(TextureIds.ENTRY_ONGOING,x + width - 20, y, 20, 20)
@@ -106,8 +107,8 @@ class SuggestionBackedTextFieldWidget(
         return if(bl) true else super.mouseClicked(mouseX, mouseY, button)
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        return window?.mouseScrolled(mouseX.toInt(),mouseY.toInt(),verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
+        return window?.mouseScrolled(mouseX.toInt(),mouseY.toInt(),verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, verticalAmount)
     }
 
     override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {

@@ -52,7 +52,7 @@ object FcText {
      * @since 0.2.0
      */
     fun stringified(key: String, vararg args: Any): MutableText {
-        return Text.stringifiedTranslatable(key, *args)
+        return Text.translatable(key, *args)
     }
     /**
      * Wrapper method around Text.literal. A backwards compatibility holdover from porting older versions
@@ -88,7 +88,7 @@ object FcText {
      * @since 0.2.0
      */
     fun Identifier.text(): Text{
-        return Text.of(this)
+        return Text.of(this.toString())
     }
     /**
      * Extension function for converting UUIDs into Texts in a kotlin style
@@ -96,7 +96,7 @@ object FcText {
      * @since 0.2.0
      */
     fun UUID.text(): Text{
-        return Text.of(this)
+        return Text.of(this.toString())
     }
     /**
      * Extension function for converting Dates into Texts in a kotlin style
@@ -104,7 +104,7 @@ object FcText {
      * @since 0.2.0
      */
     fun Date.text(): Text{
-        return Text.of(this)
+        return Text.of(this.toString())
     }
     /**
      * Extension function for converting Messages into Texts in a kotlin style
@@ -112,7 +112,10 @@ object FcText {
      * @since 0.2.0
      */
     fun Message.text(): Text{
-        return Text.of(this)
+        return if
+                (this is Text) this
+        else
+            Text.of(this.toString())
     }
     /**
      * Extension function for converting ChunkPos into Texts in a kotlin style
@@ -120,7 +123,7 @@ object FcText {
      * @since 0.2.0
      */
     fun ChunkPos.text(): Text{
-        return Text.of(this)
+        return Text.of(this.toString())
     }
 
     /**

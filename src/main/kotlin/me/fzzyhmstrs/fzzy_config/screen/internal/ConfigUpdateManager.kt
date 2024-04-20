@@ -30,12 +30,16 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
+import net.minecraft.client.gui.widget.Widget
 import net.minecraft.util.Colors
 import net.peanuuutz.tomlkt.Toml
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.Consumer
 import java.util.function.Supplier
 
 @Environment(EnvType.CLIENT)
@@ -173,17 +177,44 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             pushUpdatableStates()
     }
 
-    private class ForwardedEntryListWidget(forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, manager: ConfigUpdateManager): ElementListWidget<ForwardedEntryListWidget.ForwardEntry>(MinecraftClient.getInstance(), 190, 120, 0, 22) {
+    private class ForwardedEntryListWidget(forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, manager: ConfigUpdateManager): ElementListWidget<ForwardedEntryListWidget.ForwardEntry>(MinecraftClient.getInstance(), 190, 120, 0,0, 22), Widget {
 
-        override fun drawHeaderAndFooterSeparators(context: DrawContext?) {
+        init{
+            this.setRenderHorizontalShadows(false)
+            this.setRenderBackground(false)
         }
-        override fun drawMenuListBackground(context: DrawContext?) {
+
+        override fun setX(x: Int) {
+            this.left = x
+            this.right = x + width
         }
+        override fun setY(y: Int) {
+            this.top = y
+            this.bottom = y + 160
+        }
+        override fun getX(): Int {
+            return this.left
+        }
+        override fun getY(): Int {
+            return this.top
+        }
+        override fun getWidth(): Int {
+            return this.width
+        }
+        override fun getHeight(): Int {
+            return this.height
+        }
+        override fun getNavigationFocus(): ScreenRect {
+            return super<Widget>.getNavigationFocus()
+        }
+        override fun forEachChild(consumer: Consumer<ClickableWidget>) {
+        }
+
         override fun getRowWidth(): Int {
             return 170
         }
 
-        override fun getScrollbarX(): Int {
+        override fun getScrollbarPositionX(): Int {
             return this.x + this.width / 2 + this.rowWidth / 2 + 4
         }
 

@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.Scalable
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.DrawContext
@@ -59,7 +60,7 @@ internal class DividerWidget(width: Int): Widget, Drawable, Scalable {
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        context.drawGuiTexture(DIVIDER,xx,yy - 3,ww,hh + 6)
+        context.drawNineSlice(DIVIDER, xx,yy - 3,ww,hh + 6,3,3,64,7)
     }
 
     companion object{

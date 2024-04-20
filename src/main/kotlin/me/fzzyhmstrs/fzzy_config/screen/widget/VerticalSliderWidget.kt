@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -73,7 +75,7 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>,x: Int, y:
             HANDLE
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if (wrappedValue.get() != value){
             value = wrappedValue.get()
         }
@@ -81,8 +83,8 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>,x: Int, y:
         RenderSystem.enableBlend()
         RenderSystem.defaultBlendFunc()
         RenderSystem.enableDepthTest()
-        context.drawGuiTexture(getTexture(), x, y, getWidth(), getHeight())
-        context.drawGuiTexture(getHandlerTexture(),x, y + (value * (height - 8).toDouble()).toInt(),getWidth(),8)
+        context.drawNineSlice(getTexture(), x, y, getWidth(), getHeight(),1,1,200,20)
+        context.drawNineSlice(getHandlerTexture(),x, y + (value * (height - 8).toDouble()).toInt(),getWidth(),8,2,2,20,8)
     }
 
     override fun setFocused(focused: Boolean) {
