@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.networking.ConfigSyncS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateC2SCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.SettingForwardCustomPayload
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
@@ -29,6 +30,7 @@ import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
+import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity
 import java.util.*
 
@@ -53,19 +55,21 @@ internal object SyncedConfigRegistry {
 
     internal fun registerClient() {
         //receives the entire NonSync config sent by the server during CONFIGURATION stage
-        ClientConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.type){ payload, _ ->
+        ClientConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.type){ payload, handler ->
             val id = payload.id
             val configString = payload.serializedConfig
             if (syncedConfigs.containsKey(id)){
                 val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
-                val result = ConfigApi.deserializeConfig(config, configString, errors, 2) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
+                val result = ConfigApi.deserializeConfig(config, configString, errors, ConfigApiImpl.CHECK_RESTART) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
                 val restart = result.get().getBoolean(RESTART_KEY)
                 result.writeError(errors)
-                println("I saved my config! ${result.get().config.getId()}")
                 result.get().config.save() //save config to the client
                 if (restart) {
-                    println("A RESTART IS NEEDED AAAAHHHHH")
+                    MinecraftClient.getInstance().execute {
+                        handler.responseSender().disconnect(FcText.translatable("fc.networking.restart"))
+                        ConfigApiImpl.openRestartScreen()
+                    }
                 }
             }
         }
@@ -76,12 +80,11 @@ internal object SyncedConfigRegistry {
                 if (syncedConfigs.containsKey(id)) {
                     val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                     val errors = mutableListOf<String>()
-                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
+                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors,ConfigApiImpl.CHECK_RESTART)
                     val restart = result.get().getBoolean(RESTART_KEY)
                     result.writeError(errors)
                     result.get().config.save()
                     if (restart) {
-                        println("A RESTART IS NEEDED AAAAHHHHH")
                         context.player().sendMessage("fc.config.restart.update".translate())
                     }
                 }
@@ -136,6 +139,10 @@ internal object SyncedConfigRegistry {
                 }
             }
         }
+
+        ServerConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.type){ packet, handler ->
+
+        }
         //receives an update from a permissible client, throwing a cheat warning to the logs and to online moderators if permissions don't match (and discarding the update)
         //deserializes the updates to server configs, then propagates the updates to other online clients
         ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
@@ -154,7 +161,7 @@ internal object SyncedConfigRegistry {
             for ((id,configString) in serializedConfigs) {
                 val config = syncedConfigs[id] ?: continue
                 val errors = mutableListOf<String>()
-                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors)
+                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors,ConfigApiImpl.CHECK_RESTART)
                 val restart = result.get().getBoolean(RESTART_KEY)
                 result.writeError(errors)
                 result.get().config.save()

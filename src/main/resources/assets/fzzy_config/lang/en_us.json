@@ -45,6 +45,7 @@
 "test.walkable.testChildDave.testChildBool.desc": "Dave's favorite boolean. Please treat it well.",
 
 "fc.networking.permission.cheat": "Player [%1$s] may have tried cheating server config options! See the server logs for details.",
+"fc.networking.restart": "Configs require a restart.",
 
 "fc.config.generic.section" : "Config Section",
 "fc.config.generic.section.desc" : "This Config Section doesn't implement it's translation key. The screen doesn't know what to call it!",

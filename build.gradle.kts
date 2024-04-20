@@ -157,11 +157,25 @@ tasks {
         //targetCompatibility = javaVersion.toString()
     }
     jar {
-        from("LICENSE") { rename { "${it}_${base.archivesName.get()}" } }
+        from("LICENSE") { rename { "${base.archivesName.get()}_${it}" } }
+    }
+    jar {
+        from( "credits.txt") { rename { "${base.archivesName.get()}_${it}" } }
     }
     processResources {
+        val loaderVersion: String by project
+        val fabricKotlinVersion: String by project
         inputs.property("version", project.version)
-        filesMatching("fabric.mod.json") { expand(mutableMapOf("version" to project.version)) }
+        inputs.property("id", base.archivesName.get())
+        inputs.property("loaderVersion", loaderVersion)
+        inputs.property("fabricKotlinVersion", fabricKotlinVersion)
+        filesMatching("fabric.mod.json") {
+            expand(mutableMapOf(
+                "version" to project.version,
+                "id" to base.archivesName.get(),
+                "loaderVersion" to loaderVersion,
+                "fabricKotlinVersion" to fabricKotlinVersion
+            )) }
     }
     java {
         toolchain { languageVersion.set(JavaLanguageVersion.of(javaVersion.toString())) }
