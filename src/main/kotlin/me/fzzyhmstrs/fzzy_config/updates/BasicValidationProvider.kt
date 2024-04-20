@@ -93,7 +93,7 @@ internal interface BasicValidationProvider {
                 if (input is ValidatedField<*>)
                     return input
                 else if (input is Walkable && input !is ConfigSection)
-                    return ValidatedAny(input).also { println(it) }
+                    return ValidatedAny(input)
                 else
                     when (inputType.jvmErasure.javaObjectType) {
                         java.lang.Integer::class.java -> getIntRestrict(annotations)?.let { ValidatedInt(input as Int, it.max, it.min) } ?: ValidatedInt(input as Int)

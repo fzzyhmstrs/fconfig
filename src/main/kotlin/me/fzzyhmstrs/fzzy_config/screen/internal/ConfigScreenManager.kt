@@ -190,7 +190,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val scopes = functionMap.keys.toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
         val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
-        println(restartSet)
         for((scope, entryBuilders) in functionMap){
             val name = nameMap[scope] ?: continue
             builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, restartSet, entryBuilders.values.toList())

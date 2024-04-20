@@ -119,7 +119,6 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             val testValue = wrappedValue.get()
             if (cachedWrappedValue != testValue) {
-                println("I got changed!")
                 this.value = testValue
                 cachedWrappedValue = testValue
                 this.message = this.value.toString().lit()
