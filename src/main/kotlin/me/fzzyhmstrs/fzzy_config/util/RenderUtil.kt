@@ -17,13 +17,46 @@ import net.minecraft.util.math.Divider
 import net.minecraft.util.math.MathHelper
 import kotlin.math.min
 
+/**
+ * Render utils for DrawContext to provide functionality similar to 1.20.2+ sprite rendering
+ * @author fzzyhmstrs
+ * @since 0.2.0
+ */
 object RenderUtil {
 
+    /**
+     * Extension function to replicate drawGuiTexture from 1.20.2+. Will brute force render the texture passed as a "standard" texture by adding the necessary identifier path information (such as the .png).
+     *
+     * This method is surely not very efficient. It is designed to be a porting feature.
+     * @param id Identier - The sprite identifier (1.20.2+ style) for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width - the width of the texture
+     * @param height - the height of the texture
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun DrawContext.drawGuiTexture(id: Identifier, x: Int, y: Int, width: Int, height: Int){
         this.drawTexture(Identifier(id.namespace,"textures/gui/sprites/${id.path}.png"),x,y,width, height,0f,0f,width,height,width,height)
     }
 
-    fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int, outerWidth: Int, outerHeight: Int, textureWidth: Int,textureHeight: Int) {
+    /**
+     * Extension function to replicate the nine-slice functionality drawGuiTexture from 1.20.2+. Will brute force render the texture passed as a "standard" texture by adding the necessary identifier path information (such as the .png).
+     *
+     * This method is surely not very efficient. It is designed to be a porting feature.
+     * @param id Identier - The sprite identifier (1.20.2+ style) for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width Int - the width of the drawn texture
+     * @param height Int - the height of the drawn texture
+     * @param outerWidth Int - the width in pixels of the left and right nine-slice borders
+     * @param outerHeight Int - the height in pixels of the top and bottom nine-slice borders
+     * @param textureWidth Int - the width of the png texture to be tiled
+     * @param textureHeight Int - the height of the png texture to be tiled
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int, outerWidth: Int, outerHeight: Int, textureWidth: Int, textureHeight: Int) {
         var leftSliceWidth = outerWidth
         var topSliceHeight = outerHeight
         var rightSliceWidth = outerWidth
