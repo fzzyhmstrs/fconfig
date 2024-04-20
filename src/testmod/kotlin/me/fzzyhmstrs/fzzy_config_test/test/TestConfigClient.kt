@@ -14,11 +14,15 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig
 
-object TestConfig {
+object TestConfigClient {
 
     fun init(){
         println("I registered my config")
     }
 
-    var testConfig4 = ConfigApi.registerAndLoadConfig({ TestConfigImpl4() }, RegisterType.BOTH)
+    var testConfig = ConfigApi.registerAndLoadConfig({ TestConfigImpl() }, RegisterType.CLIENT)
+    var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.CLIENT)
+    var testConfig3 = ConfigApi.registerAndLoadConfig({ TestConfigImpl3() }, RegisterType.CLIENT)
+
+    var javaConfig = ConfigApi.registerAndLoadConfig({ JavaTestConfig() }, RegisterType.CLIENT)
 }
