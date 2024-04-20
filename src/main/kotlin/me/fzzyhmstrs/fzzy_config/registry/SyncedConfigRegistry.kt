@@ -62,6 +62,7 @@ internal object SyncedConfigRegistry {
                 val result = ConfigApi.deserializeConfig(config, configString, errors, 2) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
                 val restart = result.get().getBoolean(RESTART_KEY)
                 result.writeError(errors)
+                println("I saved my config! ${result.get().config.getId()}")
                 result.get().config.save() //save config to the client
                 if (restart) {
                     println("A RESTART IS NEEDED AAAAHHHHH")
@@ -148,6 +149,7 @@ internal object SyncedConfigRegistry {
                     if(player.hasPermissionLevel(2))
                         player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
                 }
+                return@registerGlobalReceiver
             }
             for ((id,configString) in serializedConfigs) {
                 val config = syncedConfigs[id] ?: continue
@@ -185,7 +187,7 @@ internal object SyncedConfigRegistry {
         while(player.hasPermissionLevel(i)){
             i++
         }
-        return i
+        return i - 1
     }
 
     internal fun hasConfig(id: String): Boolean{

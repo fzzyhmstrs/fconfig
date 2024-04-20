@@ -12,6 +12,7 @@ import com.matthewprenger.cursegradle.CurseArtifact
 import com.matthewprenger.cursegradle.CurseProject
 import com.matthewprenger.cursegradle.CurseRelation
 import com.matthewprenger.cursegradle.Options
+import net.fabricmc.loom.task.RemapJarTask
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
@@ -172,10 +173,22 @@ tasks {
     modrinthSyncBody.get().group = "upload"
 }
 
-tasks.register("testmodJar", Jar::class) {
+val testmodJar =  tasks.register("testmodJar", Jar::class) {
     from(sourceSets["testmod"].output)
     destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
     archiveClassifier = "testmod"
+}
+
+val remapTestmodJar =  tasks.register("remapTestmodJar", RemapJarTask::class){
+    dependsOn(testmodJar.get())
+    input.set(testmodJar.get().archiveFile)
+    archiveClassifier = "testmod"
+    addNestedDependencies = false
+    //destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
+}
+
+tasks.build{
+    dependsOn(remapTestmodJar.get())
 }
 
 tasks.withType<DokkaTask>().configureEach {

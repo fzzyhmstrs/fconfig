@@ -161,13 +161,12 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             if (!config.clientOnly)
                 count++
         }
-        val log = flush()
         if (count > 0) {
             //send updates to the server for distribution and saving there
             val updates = this.configs.filter { !it.clientOnly }.associate { it.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.active, this, mutableListOf()) }
-            SyncedConfigRegistry.updateServer(updates, log, perms)
+            SyncedConfigRegistry.updateServer(updates, flush(), perms)
         } else {
-            ConfigApiImpl.printChangeHistory(log,configs.map { it.active }.toString(),MinecraftClient.getInstance().player)
+            ConfigApiImpl.printChangeHistory(flush(), configs.map { it.active }.toString(),MinecraftClient.getInstance().player)
         }
         if (!final)
             pushUpdatableStates()
