@@ -184,7 +184,7 @@ val remapTestmodJar =  tasks.register("remapTestmodJar", RemapJarTask::class){
     input.set(testmodJar.get().archiveFile)
     archiveClassifier = "testmod"
     addNestedDependencies = false
-    destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
+    //destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
 }
 
 tasks.build{
