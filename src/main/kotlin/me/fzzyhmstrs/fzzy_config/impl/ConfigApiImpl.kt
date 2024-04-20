@@ -625,7 +625,7 @@ internal object ConfigApiImpl {
     }
 
     internal fun requiresRestart(flags: Byte): Boolean {
-        return flags and 2.toByte() == 1.toByte()
+        return flags and 2.toByte() == 2.toByte()
     }
 
     ////////////////////////////////

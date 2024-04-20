@@ -192,7 +192,7 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
                 }
             }
         }
-        return restart.also { println("I tested for restarts: $it") }
+        return restart
     }
 
     @Environment(EnvType.CLIENT)
