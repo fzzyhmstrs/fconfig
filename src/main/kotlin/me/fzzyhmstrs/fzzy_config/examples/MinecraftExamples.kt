@@ -35,7 +35,7 @@ object MinecraftExamples {
         }
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
-        //Lange key composition is as follows
+        //Lang key composition is as follows
         //1. the namespace of the config id: (my_mod)
         //2. the path of the config id: (my_mod.my_config)
         //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
