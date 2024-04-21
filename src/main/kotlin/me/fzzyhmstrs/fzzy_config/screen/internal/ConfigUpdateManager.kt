@@ -109,11 +109,11 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         var clientRestart = false
         var serverRestart = false
         for ((config,base,isClient) in configs) {
-            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { walkable,_,new,thing,prop,annotations,_ ->
+            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { walkable,_,new,thing,prop,annotations,callback ->
                 if (!(thing is Updatable && thing is Entry<*, *>)) {
                     val update = getUpdate(new)
                     if (update != null && update is Supplier<*>){
-                        if (ConfigApiImpl.isRequiresRestart(annotations)) {
+                        if (ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)) {
                             if (ConfigApiImpl.isNonSync(annotations) || isClient){
                                 clientRestart = true
                             } else {
@@ -128,7 +128,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                         }
                     }
                 } else if (getUpdate(new) != null) {
-                    if (ConfigApiImpl.isRequiresRestart(annotations)) {
+                    if (ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)) {
                         if (ConfigApiImpl.isNonSync(annotations) || isClient){
                             clientRestart = true
                         } else {

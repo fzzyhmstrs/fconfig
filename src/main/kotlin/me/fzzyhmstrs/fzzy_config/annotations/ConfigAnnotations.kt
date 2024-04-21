@@ -49,7 +49,7 @@ annotation class WithPerms(val opLevel: Int = 3)
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Target(AnnotationTarget.PROPERTY)
+@Target(AnnotationTarget.PROPERTY,AnnotationTarget.FIELD)
 annotation class NonSync()
 
 /**
@@ -65,13 +65,15 @@ annotation class NonSync()
 annotation class Version(val version: Int)
 
 /**
- * Properties marked with RequiresRestart will prompt the user that changes will require a restart of the server/client
+ * Properties or fields marked with RequiresRestart will prompt the user that changes will require a restart of the server/client
+ *
+ * Classes marked with RequiresRestart will prompt the user that changes will require a restart of the server/client if any of their containing properties/fields are changed
  *
  * On sync, if a property doesn't match synced data <-> loaded data, a screen will pop up prompting
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Target(AnnotationTarget.PROPERTY)
+@Target(AnnotationTarget.PROPERTY,AnnotationTarget.FIELD, AnnotationTarget.CLASS)
 annotation class RequiresRestart
 
 /**

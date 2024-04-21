@@ -360,6 +360,7 @@ internal object ConfigApiImpl {
     internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
         val checkForRestart = requiresRestart(flags)
+        val globalIsRequiresRestart = isRequiresRestart(config::class)
         var restartNeeded = false
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
@@ -386,7 +387,7 @@ internal object ConfigApiImpl {
                         continue
                     }
                     if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
-                        val result = if(checkForRestart && propVal is Supplier<*> && isRequiresRestart(prop)) {
+                        val result = if(checkForRestart && propVal is Supplier<*> && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
                             val before = propVal.get()
                             propVal.deserializeEntry(tomlElement, errorBuilder, name, flags).also { r -> if(r.get() != before) restartNeeded = true }
                         } else {
@@ -401,7 +402,7 @@ internal object ConfigApiImpl {
                             @Suppress("DEPRECATION")
                             val thing = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, flags)
                             try {
-                                if(checkForRestart && isRequiresRestart(prop))
+                                if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart))
                                     if (propVal != thing.get()) restartNeeded = true
                                 prop.setter.call(config, thing.get())
                             } catch(e: Exception) {
@@ -409,7 +410,7 @@ internal object ConfigApiImpl {
                             }
                         } else {
                             try {
-                                if(checkForRestart && isRequiresRestart(prop)) {
+                                if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
                                     prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType),prop).also{ if (propVal != it) restartNeeded = true })
                                 } else {
                                     prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType),prop))
@@ -449,6 +450,7 @@ internal object ConfigApiImpl {
     private fun <T: Any> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
         val checkForRestart = requiresRestart(flags)
+        val globalIsRequiresRestart = isRequiresRestart(config::class)
         var restartNeeded = false
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
@@ -457,7 +459,7 @@ internal object ConfigApiImpl {
         try {
             walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _,_,str,v,prop,annotations,_ -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
-                    if(checkForRestart && v is Supplier<*> && isRequiresRestart(prop)) {
+                    if(checkForRestart && v is Supplier<*> && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
                         val before = v.get()
                         v.deserializeEntry(it, errorBuilder, str, flags).also { r -> if(r.get() != before) restartNeeded = true }
                     } else {
@@ -469,7 +471,7 @@ internal object ConfigApiImpl {
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(it, errorBuilder, str, flags)
                         try {
-                            if(checkForRestart && isRequiresRestart(prop))
+                            if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart))
                                 if (v != thing.get()) restartNeeded = true
                             prop.setter.call(config, thing.get())
                         } catch(e: Exception) {
@@ -551,6 +553,9 @@ internal object ConfigApiImpl {
     }
     private fun isRequiresRestart(property: KProperty<*>): Boolean {
         return isRequiresRestart(property.annotations)
+    }
+    private fun isRequiresRestart(clazz: KClass<*>): Boolean {
+        return isRequiresRestart(clazz.annotations)
     }
     internal fun isRequiresRestart(annotations: List<Annotation>): Boolean {
         return annotations.firstOrNull { (it is RequiresRestart) }?.let { true } ?: false
@@ -649,7 +654,7 @@ internal object ConfigApiImpl {
         }.withIndex().associate {
             it.value.name to it.index
         }
-        val walkCallback = WalkCallback()
+        val walkCallback = WalkCallback(walkable)
         for (property in walkable.javaClass.kotlin.memberProperties
             .filter {
                 it is KMutableProperty<*>
@@ -685,7 +690,7 @@ internal object ConfigApiImpl {
             && it.visibility == KVisibility.PUBLIC
         }.associateBy{ it.name }
 
-        val callback = WalkCallback()
+        val callback = WalkCallback(walkable)
         val propTry = props[target]
         if (propTry != null){
             return try {
@@ -719,7 +724,7 @@ internal object ConfigApiImpl {
         fun act(walkable: Any, oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>, walkCallback: WalkCallback)
     }
 
-    internal class WalkCallback{
+    internal class WalkCallback (val walkable: Any){
         private var cancelled = false
         fun isCancelled(): Boolean{
             return cancelled
