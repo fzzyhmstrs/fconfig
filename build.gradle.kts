@@ -274,7 +274,7 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
         versionName.set("${base.archivesName.get()}-$modVersion")
         versionType.set(releaseType)
         uploadFile.set(tasks.remapJar.get())
-        additionalFiles.add(File(tasks.remapSourcesJar.get().archiveFile.get().asFile.toString().replace(".jar","-sources.jar")))
+        additionalFiles.add(tasks.remapSourcesJar.get().archiveFile)
         gameVersions.addAll(mcVersions.split(","))
         loaders.addAll("fabric", "quilt")
         detectLoaders.set(false)
@@ -311,7 +311,7 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
                     this.requiredDependency("fabric-language-kotlin")
                 })
             })
-            addArtifact(File(tasks.remapSourcesJar.get().archiveFile.get().asFile.toString().replace(".jar","-sources.jar")), closureOf<CurseArtifact> {
+            addArtifact(tasks.remapSourcesJar.get().archiveFile, closureOf<CurseArtifact> {
                 changelogType = "markdown"
                 changelog = "Source files for ${base.archivesName.get()}-$modVersion"
             })
