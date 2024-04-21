@@ -46,7 +46,7 @@ import java.util.function.BiFunction
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler: Entry<String,*>, private val valueHandler: Entry<V,*>): ValidatedField<Map<String, V>>(defaultValue) {
+class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler: Entry<String,*>, private val valueHandler: Entry<V,*>): ValidatedField<Map<String, V>>(defaultValue), Map<String,V> {
 
     init {
         for((key,value) in defaultValue){
@@ -176,6 +176,31 @@ class ValidatedStringMap<V>(defaultValue: Map<String,V>, private val keyHandler:
         } catch (e: Exception){
             false
         }
+    }
+
+    override val entries: Set<Map.Entry<String, V>>
+        get() = get().entries
+    override val keys: Set<String>
+        get() = get().keys
+    override val size: Int
+        get() = get().size
+    override val values: Collection<V>
+        get() = get().values
+
+    override fun isEmpty(): Boolean {
+        return get().isEmpty()
+    }
+
+    override fun get(key: String): V? {
+        return get()[key]
+    }
+
+    override fun containsValue(value: V): Boolean {
+        return get().containsValue(value)
+    }
+
+    override fun containsKey(key: String): Boolean {
+        return get().containsKey(key)
     }
 
     companion object{
