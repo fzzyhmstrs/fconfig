@@ -133,8 +133,8 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
         val newNewThing = defaultValue::class.createInstance()
         val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
         val entryList = ConfigListWidget(MinecraftClient.getInstance(),298,160,160,0,false)
-        ConfigApiImpl.walk(newThing,getEntryKey(),1){_,_,new,thing,_,annotations,_ ->
-            val restart = ConfigApiImpl.isRequiresRestart(annotations)
+        ConfigApiImpl.walk(newThing,getEntryKey(),1){_,_,new,thing,_,annotations,callback ->
+            val restart = ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)
             if (thing is Updatable && thing is Entry<*, *>) {
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
@@ -181,11 +181,11 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
     fun restartRequired(): Boolean {
         var restart = false
         ConfigApiImpl.walk(storedValue,getEntryKey(),1){_,_,_,thing,_,annotations,callback ->
-            if (ConfigApiImpl.isRequiresRestart(annotations)) {
+            if (ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)) {
                 restart = true
                 callback.cancel()
             }
-            if (thing is ValidatedAny<*>){
+            if (thing is ValidatedAny<*>) {
                 if (thing.restartRequired()) {
                     restart = true
                     callback.cancel()

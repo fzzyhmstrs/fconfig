@@ -16,15 +16,15 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import net.minecraft.util.Identifier
 
+@RequiresRestart
 class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
 
-    @RequiresRestart
+
     var bl1 = true
     var bl2 = ValidatedBoolean()
 
     @ValidatedInt.Restrict(0,20)
     var int1 = 6
-    @RequiresRestart
     var int2 = ValidatedInt(6,10,1)
 
     /*

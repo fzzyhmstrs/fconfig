@@ -206,8 +206,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         var index = 0
         val prefix = config.getId().toTranslationKey()
-        ConfigApiImpl.walk(config,prefix,1) { _,old,new,thing,_,annotations,_ ->
-            val restart = isRequiresRestart(annotations)
+        ConfigApiImpl.walk(config,prefix,1) { _,old,new,thing,_,annotations,callback ->
+            val restart = isRequiresRestart(annotations) || isRequiresRestart(callback.walkable::class.annotations)
             if (restart) restartSet.add(new)
             if(thing is ConfigSection) {
                 val fieldName = new.substringAfterLast('.')
