@@ -49,7 +49,7 @@ import java.util.function.BiFunction
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandler: Entry<K,*>, private val valueHandler: Entry<V,*>): ValidatedField<Map<K, V>>(defaultValue){
+class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandler: Entry<K,*>, private val valueHandler: Entry<V,*>): ValidatedField<Map<K, V>>(defaultValue), Map<K,V>{
 
     init {
         for((key,value) in defaultValue){
@@ -191,6 +191,31 @@ class ValidatedEnumMap<K:Enum<*>,V>(defaultValue: Map<K,V>, private val keyHandl
         } catch (e: Exception){
             false
         }
+    }
+
+    override val entries: Set<Map.Entry<K, V>>
+        get() = get().entries
+    override val keys: Set<K>
+        get() = get().keys
+    override val size: Int
+        get() = get().size
+    override val values: Collection<V>
+        get() = get().values
+
+    override fun isEmpty(): Boolean {
+        return get().isEmpty()
+    }
+
+    override fun get(key: K): V? {
+        return get()[key]
+    }
+
+    override fun containsValue(value: V): Boolean {
+        return get().containsValue(value)
+    }
+
+    override fun containsKey(key: K): Boolean {
+        return get().containsKey(key)
     }
 
     /**

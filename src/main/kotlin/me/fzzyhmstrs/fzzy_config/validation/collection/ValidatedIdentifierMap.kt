@@ -45,7 +45,7 @@ import java.util.function.BiFunction
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val keyHandler: ValidatedIdentifier, private val valueHandler: Entry<V,*>): ValidatedField<Map<Identifier, V>>(defaultValue) {
+class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val keyHandler: ValidatedIdentifier, private val valueHandler: Entry<V,*>): ValidatedField<Map<Identifier, V>>(defaultValue), Map<Identifier,V> {
 
     init {
         for((key,value) in defaultValue){
@@ -190,6 +190,31 @@ class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val key
         } catch (e: Exception){
             false
         }
+    }
+
+    override val entries: Set<Map.Entry<Identifier, V>>
+        get() = get().entries
+    override val keys: Set<Identifier>
+        get() = get().keys
+    override val size: Int
+        get() = get().size
+    override val values: Collection<V>
+        get() = get().values
+
+    override fun isEmpty(): Boolean {
+        return get().isEmpty()
+    }
+
+    override fun get(key: Identifier): V? {
+        return get()[key]
+    }
+
+    override fun containsValue(value: V): Boolean {
+        return get().containsValue(value)
+    }
+
+    override fun containsKey(key: Identifier): Boolean {
+        return get().containsKey(key)
     }
 
     /**
