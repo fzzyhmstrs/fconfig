@@ -11,8 +11,10 @@
 package me.fzzyhmstrs.fzzy_config_test;
 
 import me.fzzyhmstrs.fzzy_config.config.Config;
+import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable;
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 public class JavaTestConfig extends Config {
     public JavaTestConfig() {
@@ -23,4 +25,16 @@ public class JavaTestConfig extends Config {
     public boolean aBoolean = true;
 
     public ValidatedDouble validatedDouble = new ValidatedDouble(1.0,1.0,0.0);
+
+    public enum TestEnum implements EnumTranslatable {
+        A,
+        B,
+        C;
+
+        @NotNull
+        @Override
+        public String prefix() {
+            return "my_mod.test_enum";
+        }
+    }
 }
