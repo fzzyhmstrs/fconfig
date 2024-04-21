@@ -806,9 +806,13 @@ $dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor///Point
 $dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/ValidatedColor/#java.awt.Color#kotlin.Boolean/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/-validated-color.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/ValidatedColor/#kotlin.Boolean/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/-validated-color.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/ValidatedColor/#kotlin.Int#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/-validated-color.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/a/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/a.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/b/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/b.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/copyStoredValue/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/copy-stored-value.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/fromInt/#kotlin.Int/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/from-int.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/g/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/g.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/instanceEntry/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/instance-entry.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/r/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/r.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/setFromHexString/#kotlin.String/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/set-from-hex-string.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/toHexString/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/to-hex-string.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.validation.misc/ValidatedColor/toInt/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/to-int.html
