@@ -126,6 +126,46 @@ class ValidatedColor: ValidatedField<ColorHolder> {
         validateAndSet(get().fromInt(i))
     }
 
+    /**
+     * Returns the 'r' component of the held ColorHolder
+     * @return Int representing red component of the color
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun r(): Int{
+        return get().r
+    }
+
+    /**
+     * Returns the 'g' component of the held ColorHolder
+     * @return Int representing green component of the color
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun g(): Int{
+        return get().g
+    }
+
+    /**
+     * Returns the 'b' component of the held ColorHolder
+     * @return Int representing blue component of the color
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun b(): Int{
+        return get().b
+    }
+
+    /**
+     * Returns the 'a' component of the held ColorHolder
+     * @return Int representing alpha component of the color
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun a(): Int{
+        return get().a
+    }
+
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<ColorHolder> {
