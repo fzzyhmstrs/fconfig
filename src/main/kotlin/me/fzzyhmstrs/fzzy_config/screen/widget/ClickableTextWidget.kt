@@ -51,14 +51,14 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
         return this.align(1.0f)
     }
 
-    override fun renderButton(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = message
         val i = getWidth()
         val j = textRenderer.getWidth(text)
         val k = x + (horizontalAlignment * (i - j).toFloat()).roundToInt()
         val l = y + (getHeight() - textRenderer.fontHeight) / 2
         val orderedText = if (j > i) this.trim(text, i) else text.asOrderedText()
-        context!!.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
+        context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
     }
 
     private fun trim(text: Text, width: Int): OrderedText? {
