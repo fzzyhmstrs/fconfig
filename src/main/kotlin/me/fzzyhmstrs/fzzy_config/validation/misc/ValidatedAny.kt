@@ -130,7 +130,7 @@ class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
     @Environment(EnvType.CLIENT)
     private fun openObjectPopup() {
         val newThing = copyStoredValue()
-        val newNewThing = defaultValue::class.createInstance()
+        val newNewThing = try{ defaultValue::class.createInstance() } catch (e: Exception) { defaultValue }
         val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
         val entryList = ConfigListWidget(MinecraftClient.getInstance(),298,160,0,false)
         ConfigApiImpl.walk(newThing,getEntryKey(),1){_,_,new,thing,_,annotations,callback ->
