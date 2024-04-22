@@ -49,7 +49,7 @@ import kotlin.math.max
  */
 class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
 
-    private val valuesMap: Map<String, T> = defaultValue::class.java.enumConstants.associateBy { it.name }
+    private val valuesMap: Map<String, T> = defaultValue.declaringJavaClass.enumConstants.associateBy { it.name } as Map<String, T>
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
