@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation.number
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -153,8 +154,8 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             drawScrollableText(context, textRenderer, message, i, y, j, y + getHeight(), color)
         }
 
-        override fun getNarrationMessage(): MutableText? {
-            return Text.translatable("gui.narrate.slider", message)
+        override fun getNarrationMessage(): MutableText {
+            return FcText.translatable("gui.narrate.slider", message)
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder) {

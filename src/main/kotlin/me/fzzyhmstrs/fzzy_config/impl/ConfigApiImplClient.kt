@@ -21,7 +21,9 @@ import java.util.*
 
 internal object ConfigApiImplClient {
 
-    private val ellipses = FcText.literal("...")
+    private val ellipses by lazy {
+        FcText.literal("...")
+    }
 
     private val ellipsesWidth by lazy {
         MinecraftClient.getInstance().textRenderer.getWidth(ellipses)
