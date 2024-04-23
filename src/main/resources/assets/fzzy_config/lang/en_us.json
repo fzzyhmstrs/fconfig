@@ -62,7 +62,7 @@
 "fc.config.restart.warning.config": "Some settings within this config will require a restart if changed!",
 "fc.config.restart.update": "You have received a configuration update that may require a client restart. Please contact a Server Operator for more information.",
 "fc.config.restart.update.client": "You have made changes to configuration(s) that require a client restart.",
-"fc.config.restart.update.server": "You have made changes to configuration(s) that require a server restart. Connected clients have ben automatically updated and notified; please follow up with them and/or staff members to schedule a restart.",
+"fc.config.restart.update.server": "You have made changes to configuration(s) that require a server restart. Connected clients have been automatically updated and notified; please follow up with them and/or staff members to schedule a restart.",
 "fc.config.restart.sync": "Settings received during synchronization require a client restart. Proceed?",
 
 "fc.button.accept": "Accept",

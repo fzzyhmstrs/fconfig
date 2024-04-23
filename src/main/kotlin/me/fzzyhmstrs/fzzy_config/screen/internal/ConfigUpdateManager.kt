@@ -154,7 +154,10 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.client".translate())
         }
         if (serverRestart){
-            MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.server".translate())
+            if (MinecraftClient.getInstance().isInSingleplayer)
+                MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.client".translate())
+            else
+                MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.server".translate())
         }
         //save config updates locally
         for (config in configs){
