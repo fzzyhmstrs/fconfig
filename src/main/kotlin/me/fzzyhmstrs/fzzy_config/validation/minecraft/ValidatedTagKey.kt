@@ -47,7 +47,7 @@ import kotlin.jvm.optionals.getOrNull
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>, private val predicate: Predicate<Identifier>? = null): ValidatedField<TagKey<T>>(defaultValue) {
+open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>, private val predicate: Predicate<Identifier>? = null): ValidatedField<TagKey<T>>(defaultValue) {
 
     private val validator = if(predicate == null) ValidatedIdentifier.ofRegistryTags(defaultValue.registry) else ValidatedIdentifier.ofRegistryTags(defaultValue.registry, predicate)
     private val codec = TagKey.codec(defaultValue.registry)

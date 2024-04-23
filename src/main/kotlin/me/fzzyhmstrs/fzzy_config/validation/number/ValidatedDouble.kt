@@ -28,7 +28,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: Double, minValue: Double, widgetType: WidgetType = if(maxValue == Double.MAX_VALUE || minValue == -Double.MAX_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Double>(defaultValue, minValue, maxValue, widgetType) {
+open class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: Double, minValue: Double, widgetType: WidgetType = if(maxValue == Double.MAX_VALUE || minValue == -Double.MAX_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Double>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated double number with a default selected from the min of the allowable range.
