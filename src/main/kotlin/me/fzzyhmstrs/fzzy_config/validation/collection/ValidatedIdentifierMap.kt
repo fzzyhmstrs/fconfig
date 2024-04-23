@@ -45,7 +45,7 @@ import java.util.function.BiFunction
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val keyHandler: ValidatedIdentifier, private val valueHandler: Entry<V,*>): ValidatedField<Map<Identifier, V>>(defaultValue), Map<Identifier,V> {
+open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier,V>, private val keyHandler: ValidatedIdentifier, private val valueHandler: Entry<V,*>): ValidatedField<Map<Identifier, V>>(defaultValue), Map<Identifier,V> {
 
     init {
         for((key,value) in defaultValue){

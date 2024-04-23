@@ -54,7 +54,7 @@ import kotlin.reflect.full.createInstance
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
+open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return ConfigApi.deserializeFromToml(storedValue,toml, mutableListOf()).contextualize()

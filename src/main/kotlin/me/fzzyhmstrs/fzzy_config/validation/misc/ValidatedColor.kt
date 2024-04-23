@@ -63,7 +63,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.1.2
  */
-class ValidatedColor: ValidatedField<ColorHolder> {
+open class ValidatedColor: ValidatedField<ColorHolder> {
 
     @JvmOverloads
     constructor(r: Int, g: Int, b: Int, a: Int = Int.MIN_VALUE): super(ColorHolder(r, g, b, if(a > Int.MIN_VALUE) a else 255, a > Int.MIN_VALUE)) {

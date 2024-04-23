@@ -46,7 +46,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,*>): ValidatedField<List<T>>(defaultValue), List<T> {
+open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,*>): ValidatedField<List<T>>(defaultValue), List<T> {
 
     init {
         for(thing in defaultValue){

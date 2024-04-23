@@ -47,7 +47,7 @@ import java.util.function.BiFunction
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>): ValidatedField<Set<T>>(defaultValue), Set<T> {
+open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>): ValidatedField<Set<T>>(defaultValue), Set<T> {
 
     init {
         for(thing in defaultValue){

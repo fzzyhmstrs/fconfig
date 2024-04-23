@@ -34,7 +34,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * since 0.1.0
  */
-class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultValue) {
+open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defaultValue) {
 
     /**
      * A validated boolean value wth  default 'true' value

@@ -45,7 +45,7 @@ import java.util.function.BiFunction
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedMap<K,V>(defaultValue: Map<K,V>, private val keyHandler: Entry<K,*>, private val valueHandler: Entry<V,*>): ValidatedField<Map<K, V>>(defaultValue), Map<K,V> {
+open class ValidatedMap<K,V>(defaultValue: Map<K,V>, private val keyHandler: Entry<K,*>, private val valueHandler: Entry<V,*>): ValidatedField<Map<K, V>>(defaultValue), Map<K,V> {
 
     init {
         for((key,value) in defaultValue){

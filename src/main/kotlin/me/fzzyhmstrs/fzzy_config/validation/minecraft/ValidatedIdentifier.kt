@@ -63,7 +63,7 @@ import java.util.function.*
  * @since 0.1.2
  */
 @Suppress("unused")
-class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, val allowableIds: AllowableIdentifiers, private val validator: EntryValidator<Identifier> = default(allowableIds))
+open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifier, val allowableIds: AllowableIdentifiers, private val validator: EntryValidator<Identifier> = default(allowableIds))
     :
     ValidatedField<Identifier>(defaultValue),
     Updatable,

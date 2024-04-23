@@ -46,7 +46,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @since 0.2.0
  */
 @Suppress("DEPRECATION")
-class ValidatedExpression @JvmOverloads constructor(
+open class ValidatedExpression @JvmOverloads constructor(
     defaultValue: String,
     private val validVars: Set<Char> = setOf(),
     private val validator: EntryValidator<String> = object: EntryValidator<String>{

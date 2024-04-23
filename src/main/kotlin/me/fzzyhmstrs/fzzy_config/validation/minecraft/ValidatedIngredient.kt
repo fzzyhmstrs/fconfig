@@ -52,7 +52,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<ValidatedIngredient.IngredientProvider>(defaultValue) {
+open class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<ValidatedIngredient.IngredientProvider>(defaultValue) {
 
     /**
      * A validated provider of [Ingredient]

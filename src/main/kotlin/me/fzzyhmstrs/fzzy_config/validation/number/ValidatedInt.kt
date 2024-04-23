@@ -29,7 +29,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @since 0.1.0
  */
 
-class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, minValue: Int, widgetType: WidgetType = if(maxValue == Int.MAX_VALUE || minValue == Int.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Int>(defaultValue, minValue, maxValue, widgetType) {
+open class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, minValue: Int, widgetType: WidgetType = if(maxValue == Int.MAX_VALUE || minValue == Int.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Int>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated int number generated with an [IntRange].

@@ -28,7 +28,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte, minValue: Byte, widgetType: WidgetType = if(maxValue == Byte.MAX_VALUE || minValue == Byte.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Byte>(defaultValue, minValue, maxValue, widgetType) {
+open class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte, minValue: Byte, widgetType: WidgetType = if(maxValue == Byte.MAX_VALUE || minValue == Byte.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Byte>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated byte number with a default selected from the min of the allowable range.
