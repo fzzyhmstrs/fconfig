@@ -2,7 +2,8 @@
 * None
 
 ### Changes
-* Validated numbers lock to textbox widgets if either bound is a MAX or MIN value
+* Validated fields are no longer final classes, allowing for custom impl as needed.
 
 ### Fixes
-* Fixed `ValidatedAny` crashing on an object without a 0-arg constructor.
+* Fixed Typo in lang.
+* Fixed single player clients getting multiplayer restart message.
