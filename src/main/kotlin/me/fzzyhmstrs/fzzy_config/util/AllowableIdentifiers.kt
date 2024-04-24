@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
+import me.fzzyhmstrs.fzzy_config.entry.EntrySuggester
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.command.CommandSource
@@ -27,11 +28,11 @@ import java.util.function.Supplier
  * NOTE: Expectation is that the predicate and supplier are based on matching sets of information; someone in theory could use the suppliers information to predicate an input, and the predicate could be used on a theoretical "parent" dataset of identifiers to derive the same contents as the supplier. Behavior may be undefined if this isn't the case.
  * @param predicate Predicate&lt;Identifier&gt; - tests a candidate Identifier to see if it is allowable
  * @param supplier Supplier&lt;List&lt;Identifier&gt;&gt; - supplies all allowable identifiers in the form of a list. As typical with suppliers, it is not required but beneficial that the supplier provide a new list on each call
- * @see me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedIdentifier
+ * @see me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private val supplier: Supplier<List<Identifier>>) {
+class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private val supplier: Supplier<List<Identifier>>): EntryValidator<Identifier>, EntrySuggester<Identifier> {
     /**
      * Test the provided Identifier vs. the predicate
      * @param identifier Identifier to test
@@ -60,10 +61,22 @@ class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun getSuggestions(input: String, cursor: Int, choiceValidator: ChoiceValidator<Identifier>): CompletableFuture<Suggestions> {
+    override fun getSuggestions(input: String, cursor: Int, choiceValidator: ChoiceValidator<Identifier>): CompletableFuture<Suggestions> {
         val truncatedInput: String = input.substring(0, cursor)
         val builder = SuggestionsBuilder(truncatedInput, truncatedInput.lowercase(Locale.ROOT), 0)
         return CommandSource.suggestIdentifiers(get().filter { choiceValidator.validateEntry(it,EntryValidator.ValidationType.STRONG).isValid() },builder)
+    }
+
+    /**
+     * Validates the provided Identifier versus the provided Predicate
+     * @param input Identifer - the Identifier to test
+     * @param type EntryValidator.ValidationType - whether this is testing with weak or strong validation
+     */
+    override fun validateEntry(input: Identifier, type: EntryValidator.ValidationType): ValidationResult<Identifier> {
+        return if (type == EntryValidator.ValidationType.WEAK)
+            ValidationResult.success(input)
+        else
+            ValidationResult.predicated(input, this.test(input), "Identifier invalid or not allowed")
     }
 
     companion object{
@@ -74,4 +87,5 @@ class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private
          */
         val ANY = AllowableIdentifiers({true},{listOf()})
     }
+
 }
