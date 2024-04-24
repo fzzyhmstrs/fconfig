@@ -161,8 +161,8 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
          * @since 0.2.6
          */
         @JvmStatic
-        fun fromList(strings: List<String>){
-            ValidatedString(try{ strings[0] } catch (e: Exception) { throw IllegalStateException("List passed to ValidatedString can't be empty.") }, AllowableStrings({s -> strings.contains(s)}, { strings }))
+        fun fromList(strings: List<String>): ValidatedString{
+            return ValidatedString(try{ strings[0] } catch (e: Exception) { throw IllegalStateException("List passed to ValidatedString can't be empty.") }, AllowableStrings({s -> strings.contains(s)}, { strings }))
         }
 
         /**
@@ -174,10 +174,10 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
          * @since 0.2.6
          */
         @JvmStatic
-        fun fromList(defaultValue: String, strings: List<String>){
+        fun fromList(defaultValue: String, strings: List<String>): ValidatedString{
             if (!strings.contains(defaultValue)) throw IllegalStateException("List passed to ValidatedString doesn't contain the default value [$defaultValue].")
             if (strings.isEmpty()) throw IllegalStateException("List passed to ValidatedString can't be empty.")
-            ValidatedString(defaultValue, AllowableStrings({s -> strings.contains(s)}, { strings }))
+            return ValidatedString(defaultValue, AllowableStrings({s -> strings.contains(s)}, { strings }))
         }
 
         /**
@@ -190,8 +190,8 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
          * @since 0.2.6
          */
         @JvmStatic
-        fun fromList(defaultValue: String, strings: Supplier<List<String>>){
-            ValidatedString(defaultValue, AllowableStrings({s -> strings.get().contains(s)}, strings))
+        fun fromList(defaultValue: String, strings: Supplier<List<String>>): ValidatedString{
+            return ValidatedString(defaultValue, AllowableStrings({s -> strings.get().contains(s)}, strings))
         }
     }
 
