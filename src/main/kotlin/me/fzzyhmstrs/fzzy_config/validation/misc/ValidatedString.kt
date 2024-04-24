@@ -10,10 +10,14 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import jdk.internal.org.jline.utils.Colors.s
 import me.fzzyhmstrs.fzzy_config.entry.EntryChecker
 import me.fzzyhmstrs.fzzy_config.entry.EntryCorrector
+import me.fzzyhmstrs.fzzy_config.entry.EntrySuggester
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedTextFieldWidget
+import me.fzzyhmstrs.fzzy_config.util.AllowableStrings
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -25,6 +29,7 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.Supplier
 
 /**
  * A validated string value
@@ -34,7 +39,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum]
  * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice]
  * @param defaultValue String default for the setting
- * @param checker [EntryChecker] defining validation and correction for the string inputs.
+ * @param checker [EntryChecker] defining validation and correction for the string inputs. If the provided checker is an AllowableStrings, this will show suggestions in its text field widget.
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.strings
  * @see Builder
  * @author fzzyhmstrs
@@ -116,7 +121,14 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
-        return ValidationBackedTextFieldWidget(110,20,this, choicePredicate,this,this)
+        return if (checker !is AllowableStrings)
+            ValidationBackedTextFieldWidget(110,20,this, choicePredicate,this,this)
+        else
+            try {
+                SuggestionBackedTextFieldWidget(110,20,this, choicePredicate,this,this) { s, cursor, choiceValidator -> checker.getSuggestions(s, cursor, choiceValidator) }
+            } catch (e: Exception){
+                throw IllegalStateException("Entry Checker provided to Validated String [${getEntryKey()}] is a EntrySuggester of type other than String")
+            }
     }
 
     /**
@@ -139,6 +151,52 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
     override fun toString(): String {
         return "Validated String[value=$storedValue, validation=$checker]"
     }
+
+    companion object{
+        /**
+         * Validated string based on a list of allowable strings
+         *
+         * Default value will be the first string in the list.
+         * @param strings [List]$lt;String&gt; - the list of allowable string values, can't be empty.
+         * @throws IllegalStateException Passed list can't be empty.
+         * @author fzzyhmstrs
+         * @since 0.2.6
+         */
+        @JvmStatic
+        fun fromList(strings: List<String>){
+            ValidatedString(try{ strings[0] } catch (e: Exception) { throw IllegalStateException("List passed to ValidatedString can't be empty.") }, AllowableStrings({s -> strings.contains(s)}, { strings }))
+        }
+
+        /**
+         * Validated string based on a list of allowable strings, with a provided default value
+         * @param defaultValue String - the default string value, must be in the strings list
+         * @param strings [List]$lt;String&gt; - the list of allowable string values, can't be empty.
+         * @throws IllegalStateException Passed list can't be empty; default value must be in the strings list.
+         * @author fzzyhmstrs
+         * @since 0.2.6
+         */
+        @JvmStatic
+        fun fromList(defaultValue: String, strings: List<String>){
+            if (!strings.contains(defaultValue)) throw IllegalStateException("List passed to ValidatedString doesn't contain the default value [$defaultValue].")
+            if (strings.isEmpty()) throw IllegalStateException("List passed to ValidatedString can't be empty.")
+            ValidatedString(defaultValue, AllowableStrings({s -> strings.contains(s)}, { strings }))
+        }
+
+        /**
+         * Validated string based on a list of allowable strings, with a provided default value
+         *
+         * NOTE: the default value provided should be present in the supplied list at some point (doesn't have to be at launch). Otherwise, the default value shown will be immediately invalid on use. Since the list is supplied, this can't be checked up front when list validation may be weak.
+         * @param defaultValue String - the default string value, must be in the strings list
+         * @param strings [List]$lt;String&gt; - the list of allowable string values, can't be empty.
+         * @author fzzyhmstrs
+         * @since 0.2.6
+         */
+        @JvmStatic
+        fun fromList(defaultValue: String, strings: Supplier<List<String>>){
+            ValidatedString(defaultValue, AllowableStrings({s -> strings.get().contains(s)}, strings))
+        }
+    }
+
 
     /**
      * A validated string builder, integrated with an [EntryChecker] builder
