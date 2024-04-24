@@ -567,6 +567,37 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             val validator = strong(allowableIds)
             return ValidatedIdentifier(Identifier("minecraft:air"), allowableIds, validator)
         }
+        /**
+         * Builds a ValidatedIdentifier based on an allowable list of values
+         *
+         * This list does not have to be complete at validation time.
+         * @param defaultValue the default value of the ValidatedIdentifier
+         * @param listSupplier Supplier of the list whose entries are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the provided default and list supplier
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        fun ofSuppliedList(defaultValue: Identifier, listSupplier: Supplier<List<Identifier>>): ValidatedIdentifier {
+            val allowableIds = AllowableIdentifiers({ id -> listSupplier.get().contains(id) }, listSupplier)
+            return ValidatedIdentifier(defaultValue, allowableIds)
+        }
+        /**
+         * Builds a ValidatedIdentifier based on an allowable list of values
+         *
+         * This list does not have to be complete at validation time.
+         *
+         * uses "minecraft:air" as the default value
+         * @param listSupplier Supplier of the list whose entries are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the provided list supplier
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmStatic
+        fun ofSuppliedList(listSupplier: Supplier<List<Identifier>>): ValidatedIdentifier {
+            val allowableIds = AllowableIdentifiers({ id -> listSupplier.get().contains(id) }, listSupplier)
+            return ValidatedIdentifier(Identifier("minecraft:air"), allowableIds)
+        }
 
         /**
          * wraps a list in a [Supplier]
