@@ -10,10 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import jdk.internal.org.jline.utils.Colors.s
 import me.fzzyhmstrs.fzzy_config.entry.EntryChecker
 import me.fzzyhmstrs.fzzy_config.entry.EntryCorrector
-import me.fzzyhmstrs.fzzy_config.entry.EntrySuggester
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedTextFieldWidget
