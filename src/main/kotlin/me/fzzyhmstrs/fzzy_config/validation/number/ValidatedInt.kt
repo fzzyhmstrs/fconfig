@@ -111,6 +111,14 @@ open class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: I
         return ValidationResult.predicated(input.toInt(),input.toLong() == input.toInt().toLong(),"[$input] out of Bounds for int value (${Int.MIN_VALUE} to ${Int.MAX_VALUE} )")
     }
 
+    override fun minBound(): Int {
+        return Int.MIN_VALUE
+    }
+
+    override fun maxBound(): Int {
+        return Int.MAX_VALUE
+    }
+
     override fun toString(): String {
         val validation = if(minValue==Int.MIN_VALUE && maxValue== Int.MAX_VALUE)
             "Unbounded"

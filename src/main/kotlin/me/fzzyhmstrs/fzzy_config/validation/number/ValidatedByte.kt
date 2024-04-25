@@ -90,6 +90,14 @@ open class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue:
         return ValidationResult.predicated(input.toInt().toByte(),input.toLong() == input.toInt().toByte().toLong(),"[$input] out of Bounds for byte value (${Byte.MIN_VALUE} to ${Byte.MAX_VALUE} )")
     }
 
+    override fun minBound(): Byte {
+        return Byte.MIN_VALUE
+    }
+
+    override fun maxBound(): Byte {
+        return Byte.MAX_VALUE
+    }
+
     override fun toString(): String {
         val validation = if(minValue==Byte.MIN_VALUE && maxValue== Byte.MAX_VALUE)
             "Unbounded"

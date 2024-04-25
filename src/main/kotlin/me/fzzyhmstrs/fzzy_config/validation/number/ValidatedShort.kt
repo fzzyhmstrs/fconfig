@@ -11,7 +11,9 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import net.minecraft.text.MutableText
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
@@ -88,6 +90,14 @@ open class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValu
 
     override fun convert(input: Double): ValidationResult<Short> {
         return ValidationResult.predicated(input.toInt().toShort(),input.toLong() == input.toInt().toShort().toLong(),"[$input] out of Bounds for short value (${Short.MIN_VALUE} to ${Short.MAX_VALUE} )")
+    }
+
+    override fun minBound(): Short {
+        return Short.MIN_VALUE
+    }
+
+    override fun maxBound(): Short {
+        return Short.MAX_VALUE
     }
 
     override fun toString(): String {

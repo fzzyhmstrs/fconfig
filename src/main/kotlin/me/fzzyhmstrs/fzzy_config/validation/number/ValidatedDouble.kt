@@ -89,6 +89,14 @@ open class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxVa
         return ValidationResult.success(input)
     }
 
+    override fun minBound(): Double {
+        return -Double.MAX_VALUE
+    }
+
+    override fun maxBound(): Double {
+        return Double.MAX_VALUE
+    }
+
     override fun toString(): String {
         val validation = if(minValue==-Double.MAX_VALUE && maxValue== Double.MAX_VALUE)
             "Unbounded"
