@@ -1,8 +1,8 @@
 ### Additions
-* None.
+* `Translatable` now has a `hasTranslation()` and `hasDescription` method in case an inheritor can have valid descriptions or translations other than via the typical I18n key check.
 
 ### Changes
-* None.
+* Number settings now have a default description that describes the valid range for the selection.
 
 ### Fixes
 * Fixed blank line at top of description tooltips.
