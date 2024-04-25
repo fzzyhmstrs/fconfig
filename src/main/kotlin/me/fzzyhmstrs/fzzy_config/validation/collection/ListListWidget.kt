@@ -11,6 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -33,7 +35,7 @@ import java.util.function.Function
 @Environment(EnvType.CLIENT)
 internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>>, entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, entryValidator: BiFunction<ListListWidget<T>,ListEntry<T>?,ChoiceValidator<T>>)
     :
-    ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0,160, 22), Widget {
+    ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0,160, 22), Widget, SuggestionWindowListener {
 
     fun getRawList(skip: ListEntry<T>? = null): List<T>{
         val list: MutableList<T> = mutableListOf()
@@ -58,6 +60,12 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     init{
         this.setRenderHorizontalShadows(false)
         this.setRenderBackground(false)
+    }
+
+    private var suggestionWindowElement: Element? = null
+
+    override fun setSuggestionWindowElement(element: Element?) {
+        this.suggestionWindowElement = element
     }
 
     override fun setX(x: Int) {
@@ -98,6 +106,21 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         this.ensureVisible(entry)
     }
 
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) == true) return true
+        return super.mouseClicked(mouseX, mouseY, button)
+    }
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
+        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, amount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, amount) }.isPresent) return true
+        return super.mouseScrolled(mouseX, mouseY, amount)
+    }
+
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) == true) return true
+        return super.keyPressed(keyCode, scanCode, modifiers)
+    }
+
     init{
         for (e in entryList){
             this.addEntry(ExistingEntry(e,this,entryValidator))
@@ -107,7 +130,9 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
 
     private class ExistingEntry<T>(private val entry: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, private val parent: ListListWidget<T>, validator: BiFunction<ListListWidget<T>,ListEntry<T>?,ChoiceValidator<T>>): ListEntry<T>() {
 
-        private val entryWidget = entry.widgetEntry(validator.apply(parent,this))
+        private var clickedWidget: Element? = null
+
+        private val entryWidget = entry.widgetEntry(validator.apply(parent,this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val deleteWidget = TextlessActionWidget(
             TextureIds.DELETE,
             TextureIds.DELETE_INACTIVE,
@@ -131,6 +156,18 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
 
         override fun selectableChildren(): MutableList<out Selectable> {
             return mutableListOf(entryWidget, deleteWidget)
+        }
+
+        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+            hoveredElement(mouseX, mouseY).ifPresentOrElse({clickedWidget = it}, {clickedWidget = null})
+            return super.mouseClicked(mouseX, mouseY, button)
+        }
+
+        override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+            if (clickedWidget != null){
+                return (clickedWidget?.mouseReleased(mouseX, mouseY, button) ?: super.mouseReleased(mouseX, mouseY, button)).also { clickedWidget = null }
+            }
+            return super.mouseReleased(mouseX, mouseY, button)
         }
 
         override fun render(

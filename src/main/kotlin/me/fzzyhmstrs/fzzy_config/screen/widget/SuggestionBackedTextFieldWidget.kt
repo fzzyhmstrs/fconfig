@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
@@ -25,7 +27,16 @@ import java.util.function.Supplier
 
 /**
  * A [ValidationBackedTextFieldWidget] that provides suggestions for string completion to the user
- * @param
+ * @param width Int - the width of the widget in pixels
+ * @param height Int - the height of the widget in pixels
+ * @param wrappedValue [Supplier]&lt;String&gt; - supplies strings to the text field for display
+ * @param choiceValidator [ChoiceValidator]&lt;String&gt; - additional choice validation, if any. Generally this can be [ChoiceValidator.any]
+ * @param validator [EntryValidator]&lt;String&gt; - String validation provider see [EntryValidator.Builder] for more details on validation construction
+ * @param applier [Consumer]&lt;String&gt; - accepts newly valid user inputs.
+ * @param suggestionProvider [SuggestionProvider] - provides the valid suggestions for the user
+ * @param closePopup Boolean - if true, this window will 'pop' the latest PopupWidget, if any.
+ * @author fzzyhmstrs
+ * @since 0.2.0
  */
 @Environment(EnvType.CLIENT)
 class SuggestionBackedTextFieldWidget(
@@ -35,16 +46,32 @@ class SuggestionBackedTextFieldWidget(
     choiceValidator: ChoiceValidator<String>,
     validator: EntryValidator<String>,
     applier: Consumer<String>,
-    private val suggestionProvider: SuggestionProvider)
+    private val suggestionProvider: SuggestionProvider,
+    private val closePopup: Boolean)
     :
-    ValidationBackedTextFieldWidget(width, height, wrappedValue, choiceValidator, validator, applier)
+    ValidationBackedTextFieldWidget(width, height, wrappedValue, choiceValidator, validator, applier),
+    SuggestionWindowProvider
 {
+
+    constructor(width: Int,
+                height: Int,
+                wrappedValue: Supplier<String>,
+                choiceValidator: ChoiceValidator<String>,
+                validator: EntryValidator<String>,
+                applier: Consumer<String>,
+                suggestionProvider: SuggestionProvider): this(width, height, wrappedValue, choiceValidator, validator, applier, suggestionProvider, true)
+
     private var pendingSuggestions: CompletableFuture<Suggestions>? = null
     private var lastSuggestionText = ""
     private var shownText = ""
     private var window: SuggestionWindow? = null
     private var closeWindow = false
     private var needsUpdating = false
+    private var suggestionWindowListener: SuggestionWindowListener? = null
+
+    override fun addListener(listener: SuggestionWindowListener) {
+        this.suggestionWindowListener = listener
+    }
 
     override fun isValidTest(s: String): Boolean {
         if (s != lastSuggestionText) {
@@ -89,12 +116,14 @@ class SuggestionBackedTextFieldWidget(
         val applier: Consumer<String> = Consumer { s ->
             try {
                 applier.accept(s)
+                needsUpdating = true
             } catch (e: Exception) {
                 //
             }
         }
         val closer: Consumer<SuggestionWindow> = Consumer { closeWindow = true }
         this.window = SuggestionWindow.createSuggestionWindow(this.x,this.y,suggestions,this.text,this.cursor,applier,closer)
+        suggestionWindowListener?.setSuggestionWindowElement(this)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -102,6 +131,7 @@ class SuggestionBackedTextFieldWidget(
         if (closeWindow) {
             pendingSuggestions = null
             window = null
+            suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }
         return if(bl) true else super.mouseClicked(mouseX, mouseY, button)
@@ -120,17 +150,19 @@ class SuggestionBackedTextFieldWidget(
         if (closeWindow) {
             pendingSuggestions = null
             window = null
+            suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }
-        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER){
+        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
             pushChanges()
-            PopupWidget.pop()
+            if (closePopup)
+                PopupWidget.pop()
         }
         return if(bl) true else super.keyPressed(keyCode, scanCode, modifiers)
     }
 
     fun pushChanges(){
-        if(isChanged()){
+        if(isChanged() && !needsUpdating){
             applier.accept(storedValue)
         }
     }
