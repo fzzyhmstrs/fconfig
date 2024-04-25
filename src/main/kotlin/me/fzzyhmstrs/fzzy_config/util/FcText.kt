@@ -147,7 +147,7 @@ object FcText {
      */
     fun Any?.translation(fallback: String): MutableText {
         return if(this is Translatable)
-            this.translation().takeIf { I18n.hasTranslation(this.translationKey()) } ?: translatable(fallback).formatted(Formatting.ITALIC)
+            this.translation().takeIf { this.hasTranslation() } ?: translatable(fallback).formatted(Formatting.ITALIC)
         else
             translatable(fallback).formatted(Formatting.ITALIC)
     }
@@ -158,7 +158,7 @@ object FcText {
      */
     fun Any?.transLit(literalFallback: String = ""): MutableText {
         return if(this is Translatable)
-            this.translation().takeIf { I18n.hasTranslation(this.translationKey()) } ?: literal(literalFallback).formatted(Formatting.ITALIC)
+            this.translation().takeIf { this.hasTranslation() } ?: literal(literalFallback).formatted(Formatting.ITALIC)
         else if (literalFallback != "")
             literal(literalFallback).formatted(Formatting.ITALIC)
         else
@@ -171,7 +171,7 @@ object FcText {
      */
     fun Any?.description(fallback: String): Text {
         return if(this is Translatable)
-            this.description().takeIf {I18n.hasTranslation(this.descriptionKey()) } ?: translatable(fallback).formatted(Formatting.ITALIC)
+            this.description().takeIf { this.hasDescription() } ?: translatable(fallback).formatted(Formatting.ITALIC)
         else
             translatable(fallback).formatted(Formatting.ITALIC)
     }
@@ -182,7 +182,7 @@ object FcText {
      */
     fun Any?.descLit(literalFallback: String = ""): Text {
         return if(this is Translatable) {
-            this.description().takeIf {I18n.hasTranslation(this.descriptionKey()) } ?: literal(literalFallback).formatted(Formatting.ITALIC)
+            this.description().takeIf { this.hasDescription() } ?: literal(literalFallback).formatted(Formatting.ITALIC)
         } else if(literalFallback != "")
             literal(literalFallback).formatted(Formatting.ITALIC)
         else
