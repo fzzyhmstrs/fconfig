@@ -132,7 +132,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
 
         private var clickedWidget: Element? = null
 
-        private val entryWidget = entry.widgetEntry(validator.apply(parent,this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
+        private val entryWidget = entry.widgetAndTooltipEntry(validator.apply(parent,this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val deleteWidget = TextlessActionWidget(
             TextureIds.DELETE,
             TextureIds.DELETE_INACTIVE,
@@ -182,9 +182,6 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             hovered: Boolean,
             tickDelta: Float
         ) {
-            if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && entryWidget.tooltip != null){
-                MinecraftClient.getInstance().currentScreen?.setTooltip(entryWidget.tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
-            }
             entryWidget.setPosition(x,y)
             entryWidget.render(context, mouseX, mouseY, tickDelta)
             deleteWidget.setPosition(x+114,y)
