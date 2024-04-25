@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -45,6 +46,11 @@ internal open class BaseConfigEntry(
 
     private val truncatedName = ConfigApiImplClient.ellipses(name,if(widget is Decorated) 124 else 146)
     private var tooltip: List<OrderedText>? = null
+
+    init {
+        if (widget is SuggestionWindowProvider)
+            widget.addListener(parent)
+    }
 
     fun restartTriggering(bl: Boolean): BaseConfigEntry{
         isRestartTriggering = bl
@@ -97,9 +103,10 @@ internal open class BaseConfigEntry(
         val list: MutableList<OrderedText> = mutableListOf()
         if(isRestartTriggering) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText().formatted(Formatting.RED),170))
+            if (description.string != "")
+                list.add(FcText.empty().asOrderedText())
         }
         if (description.string != ""){
-            list.add(FcText.empty().asOrderedText())
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description,170))
         }
         tooltip = list

@@ -11,6 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -35,7 +37,7 @@ internal class MapListWidget<K,V>(
     valueSupplier: Entry1<V, *>,
     entryValidator: BiFunction<MapListWidget<K,V>,MapEntry<K,V>?,ChoiceValidator<K>>)
     :
-    ElementListWidget<MapListWidget.MapEntry<K,V>>(MinecraftClient.getInstance(), 272, 160, 0, 22) {
+    ElementListWidget<MapListWidget.MapEntry<K,V>>(MinecraftClient.getInstance(), 272, 160, 0,0, 22), SuggestionWindowListener {
 
     fun getRawMap(skip: MapEntry<K,V>? = null): Map<K,V>{
         val map: MutableMap<K,V> = mutableMapOf()
@@ -46,6 +48,12 @@ internal class MapListWidget<K,V>(
             map[pair.first] = pair.second
         }
         return map.toMap()
+    }
+
+    private var suggestionWindowElement: Element? = null
+
+    override fun setSuggestionWindowElement(element: Element?) {
+        this.suggestionWindowElement = element
     }
 
     fun getMap(): Map<K,V>{
@@ -77,6 +85,11 @@ internal class MapListWidget<K,V>(
         this.ensureVisible(entry)
     }
 
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
+        if (hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, amount) }.isPresent) return true
+        return super.mouseScrolled(mouseX, mouseY, amount)
+    }
+
     init{
         for (e in entryMap){
             this.addEntry(ExistingEntry(e.key,e.value,this,entryValidator))
@@ -86,8 +99,10 @@ internal class MapListWidget<K,V>(
 
     private class ExistingEntry<K,V>(private val key: me.fzzyhmstrs.fzzy_config.entry.Entry<K, *>,private val value: me.fzzyhmstrs.fzzy_config.entry.Entry<V, *>, private val parent: MapListWidget<K,V>, keyValidator: BiFunction<MapListWidget<K,V>,MapEntry<K,V>?,ChoiceValidator<K>>): MapEntry<K,V>() {
 
-        private val keyWidget = key.widgetEntry(keyValidator.apply(parent,this))
-        private val valueWidget = value.widgetEntry(ChoiceValidator.any())
+        private var clickedWidget: Element? = null
+
+        private val keyWidget = key.widgetEntry(keyValidator.apply(parent,this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
+        private val valueWidget = value.widgetEntry(ChoiceValidator.any()).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val deleteWidget = TextlessActionWidget(
             TextureIds.DELETE,
             TextureIds.DELETE_INACTIVE,
@@ -111,6 +126,18 @@ internal class MapListWidget<K,V>(
 
         override fun selectableChildren(): MutableList<out Selectable> {
             return mutableListOf(keyWidget,valueWidget, deleteWidget)
+        }
+
+        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+            hoveredElement(mouseX, mouseY).ifPresentOrElse({clickedWidget = it}, {clickedWidget = null})
+            return super.mouseClicked(mouseX, mouseY, button)
+        }
+
+        override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+            if (clickedWidget != null){
+                return (clickedWidget?.mouseReleased(mouseX, mouseY, button) ?: super.mouseReleased(mouseX, mouseY, button)).also { clickedWidget = null }
+            }
+            return super.mouseReleased(mouseX, mouseY, button)
         }
 
         override fun render(

@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -27,12 +28,18 @@ import java.util.*
 
 @Environment(EnvType.CLIENT)
 internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, contentHeight: Int, headerHeight: Int, private val drawBackground: Boolean) :
-    ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable
+    ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable, SuggestionWindowListener
 {
 
     constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient,parent.width,parent.layout.contentHeight,parent.layout.headerHeight, drawBackground)
 
     private var visibleElements = 5
+
+    private var suggestionWindowElement: Element? = null
+
+    override fun setSuggestionWindowElement(element: Element?) {
+        this.suggestionWindowElement = element
+    }
 
     private val wholeList: List<BaseConfigEntry> by lazy{
         this.children().toList()
@@ -66,6 +73,19 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
     override fun popLast() {
         (lastSelected as? BaseConfigEntry)?.let { focused = it }
     }
+
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) ?: super.mouseClicked(mouseX, mouseY, button)
+    }
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
+        return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, amount) ?: super.mouseScrolled(mouseX, mouseY, amount)
+    }
+
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        return suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)
+    }
+
 
     fun updateSearchedEntries(searchInput: String): Int {
         if (searchInput == "") {

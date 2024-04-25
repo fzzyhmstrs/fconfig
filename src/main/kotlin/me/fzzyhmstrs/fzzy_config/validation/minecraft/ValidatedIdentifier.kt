@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.validation.minecraft
 import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
@@ -614,8 +616,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         width: Int,
         height: Int,
         private val choiceValidator: ChoiceValidator<Identifier>,
-        private val validatedIdentifier: ValidatedIdentifier
-    ): TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty()){
+        private val validatedIdentifier: ValidatedIdentifier)
+        :
+        TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty()),
+        SuggestionWindowProvider
+    {
 
         private var cachedWrappedValue = validatedIdentifier.get()
         private var storedValue = validatedIdentifier.get()
@@ -627,6 +632,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         private var window: SuggestionWindow? = null
         private var closeWindow = false
         private var needsUpdating = false
+        private var suggestionWindowListener: SuggestionWindowListener? = null
+
+        override fun addListener(listener: SuggestionWindowListener) {
+            this.suggestionWindowListener = listener
+        }
 
         private fun isValidTest(s: String): Boolean {
             if (s != lastSuggestionText) {
@@ -709,6 +719,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             if (closeWindow) {
                 pendingSuggestions = null
                 window = null
+                suggestionWindowListener?.setSuggestionWindowElement(null)
                 closeWindow = false
             }
             return if(bl) true else super.mouseClicked(mouseX, mouseY, button)
@@ -727,6 +738,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             if (closeWindow) {
                 pendingSuggestions = null
                 window = null
+                suggestionWindowListener?.setSuggestionWindowElement(null)
                 closeWindow = false
             }
             if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER){
@@ -753,6 +765,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             }
             val closer: Consumer<SuggestionWindow> = Consumer { closeWindow = true }
             this.window = SuggestionWindow.createSuggestionWindow(this.x,this.y,suggestions,this.text,this.cursor,applier,closer)
+            suggestionWindowListener?.setSuggestionWindowElement(this)
         }
     }
 }

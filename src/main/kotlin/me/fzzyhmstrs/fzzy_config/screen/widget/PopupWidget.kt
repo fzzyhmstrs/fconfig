@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -69,7 +71,8 @@ class PopupWidget
     :
     ParentElement,
     Narratable,
-    Drawable
+    Drawable,
+    SuggestionWindowListener
 {
 
     private var x: Int = 0
@@ -77,7 +80,19 @@ class PopupWidget
     private var focused: Element? = null
     private var focusedSelectable: Selectable? = null
     private var dragging = false
-    private val fillColor = Color(45,45,45,90).rgb
+    private val fillColor = Color(30,30,30,90).rgb
+    private var suggestionWindowElement: Element? = null
+
+    init {
+        for (child in children){
+            if (child is SuggestionWindowProvider)
+                child.addListener(this)
+        }
+    }
+
+    override fun setSuggestionWindowElement(element: Element?) {
+        this.suggestionWindowElement
+    }
 
     fun onClose(){
         this.onClose.run()
@@ -126,7 +141,11 @@ class PopupWidget
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return super.mouseClicked(mouseX, mouseY, button).takeIf { it } ?: isMouseOver(mouseX, mouseY)
+        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button)?.takeIf { it } ?: super.mouseClicked(mouseX, mouseY, button).takeIf { it } ?: isMouseOver(mouseX, mouseY)
+    }
+
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return suggestionWindowElement?.mouseReleased(mouseX, mouseY, button) ?: super.mouseReleased(mouseX, mouseY, button)
     }
 
     override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
@@ -134,11 +153,15 @@ class PopupWidget
     }
 
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+        return suggestionWindowElement?.mouseDragged(mouseX, mouseY, button, deltaX, deltaY) ?: super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    }
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
+        return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, amount) ?: super.mouseScrolled(mouseX, mouseY, amount)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (super.keyPressed(keyCode, scanCode, modifiers)) {
+        if (suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)) {
             return true
         }
         val guiNavigation: GuiNavigation? = when(keyCode){

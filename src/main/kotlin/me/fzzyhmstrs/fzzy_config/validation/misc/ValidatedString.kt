@@ -123,7 +123,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
             ValidationBackedTextFieldWidget(110,20,this, choicePredicate,this,this)
         else
             try {
-                SuggestionBackedTextFieldWidget(110,20,this, choicePredicate,this,this) { s, cursor, choiceValidator -> checker.getSuggestions(s, cursor, choiceValidator) }
+                SuggestionBackedTextFieldWidget(110,20,this, choicePredicate,this,this, { s, cursor, choiceValidator -> checker.getSuggestions(s, cursor, choiceValidator) }, false)
             } catch (e: Exception){
                 throw IllegalStateException("Entry Checker provided to Validated String [${getEntryKey()}] is a EntrySuggester of type other than String")
             }
