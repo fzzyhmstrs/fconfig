@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 
@@ -48,5 +49,24 @@ interface Translatable {
      */
     fun description(fallback: String? = null): MutableText{
         return FcText.translatableWithFallback(descriptionKey(),fallback ?: "")
+    }
+
+    /**
+     * Whether this Translatable has a valid translation
+     * @return Boolean - If there is a valid translation.
+     * @author fzzyhmstrs
+     * @since 0.2.8
+     */
+    fun hasTranslation(): Boolean{
+        return I18n.hasTranslation(translationKey())
+    }
+    /**
+     * Whether this Translatable has a valid description
+     * @return Boolean - If there is a valid description.
+     * @author fzzyhmstrs
+     * @since 0.2.8
+     */
+    fun hasDescription(): Boolean{
+        return I18n.hasTranslation(descriptionKey())
     }
 }

@@ -110,6 +110,14 @@ open class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue:
         return ValidationResult.success(input.toLong())
     }
 
+    override fun minBound(): Long {
+        return Long.MIN_VALUE
+    }
+
+    override fun maxBound(): Long {
+        return Long.MAX_VALUE
+    }
+
     override fun toString(): String {
         val validation = if(minValue==Long.MIN_VALUE && maxValue== Long.MAX_VALUE)
             "Unbounded"

@@ -30,6 +30,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.resource.language.I18n
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -76,6 +77,32 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             }
         }
     }
+
+    override fun description(fallback: String?): MutableText {
+        return if(I18n.hasTranslation(descriptionKey())) super.description(fallback) else genericDescription()
+    }
+    private fun genericDescription(): MutableText{
+        return if (minValue.compareTo(minBound()) == 0){
+            if (maxValue.compareTo(maxBound()) == 0) {
+                "fc.validated_field.number.desc.fallback.any".translate()
+            } else {
+                "fc.validated_field.number.desc.fallback.min".translate(maxValue)
+            }
+        } else if (maxValue.compareTo(maxBound()) == 0){
+            "fc.validated_field.number.desc.fallback.max".translate(minValue)
+        } else{
+            "fc.validated_field.number.desc.fallback".translate(minValue,maxValue)
+        }
+    }
+
+    override fun hasDescription(): Boolean {
+        return true
+    }
+
+    @Internal
+    protected abstract fun minBound(): T
+    @Internal
+    protected abstract fun maxBound(): T
 
     /**
      * Determines which type of selector widget will be used for the Number selection

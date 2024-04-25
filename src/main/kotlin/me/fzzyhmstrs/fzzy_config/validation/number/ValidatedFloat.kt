@@ -88,6 +88,14 @@ open class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValu
         return ValidationResult.predicated(input.toFloat(),input <= Float.MAX_VALUE.toDouble() && input >= (-Float.MAX_VALUE).toDouble(),"[$input] out of Bounds for float value (${-Float.MIN_VALUE} to ${Float.MAX_VALUE} )")
     }
 
+    override fun minBound(): Float {
+        return -Float.MAX_VALUE
+    }
+
+    override fun maxBound(): Float {
+        return Float.MIN_VALUE
+    }
+
     override fun toString(): String {
         val validation = if(minValue==-Float.MAX_VALUE && maxValue== Float.MAX_VALUE)
             "Unbounded"
