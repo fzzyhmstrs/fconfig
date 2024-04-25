@@ -114,9 +114,19 @@ internal class MapListWidget<K,V>(
         this.ensureVisible(entry)
     }
 
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) == true) return true
+        return super.mouseClicked(mouseX, mouseY, button)
+    }
+
     override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
-        if (hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, amount) }.isPresent) return true
+        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, amount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, amount) }.isPresent) return true
         return super.mouseScrolled(mouseX, mouseY, amount)
+    }
+
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) == true) return true
+        return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
     init{
