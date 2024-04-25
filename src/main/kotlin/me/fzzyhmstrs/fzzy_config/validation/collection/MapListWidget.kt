@@ -111,8 +111,8 @@ internal class MapListWidget<K,V>(
 
         private var clickedWidget: Element? = null
 
-        private val keyWidget = key.widgetEntry(keyValidator.apply(parent,this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
-        private val valueWidget = value.widgetEntry(ChoiceValidator.any()).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
+        private val keyWidget = key.widgetAndTooltipEntry(keyValidator.apply(parent,this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
+        private val valueWidget = value.widgetAndTooltipEntry(ChoiceValidator.any()).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val deleteWidget = TextlessActionWidget(
             TextureIds.DELETE,
             TextureIds.DELETE_INACTIVE,
@@ -162,9 +162,6 @@ internal class MapListWidget<K,V>(
             hovered: Boolean,
             tickDelta: Float
         ) {
-            if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && keyWidget.tooltip != null){
-                MinecraftClient.getInstance().currentScreen?.setTooltip(keyWidget.tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
-            }
             keyWidget.setPosition(x,y)
             keyWidget.render(context, mouseX, mouseY, tickDelta)
             context.drawTextWithShadow(parent.client.textRenderer,TextureIds.MAP_ARROW,x + 115,y + 5, Colors.WHITE)

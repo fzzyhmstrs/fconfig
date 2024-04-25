@@ -188,7 +188,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             .addDivider()
             .addElement("hint",MultilineTextWidget("fc.validated_field.ingredient".translate(),textRenderer).setMaxWidth(110).setCentered(true), Position.BELOW, Position.ALIGN_CENTER)
             .addElement("type",typeChooser.widgetEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("three_widget",ThreeTypesWidget({ fromWrapper(typeChooser.get()) }, itemValidator.widgetEntry(ChoiceValidator.any()), listValidator.widgetEntry(ChoiceValidator.any()),tagValidator.widgetEntry(ChoiceValidator.any())), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("three_widget",ThreeTypesWidget({ fromWrapper(typeChooser.get()) }, itemValidator.widgetAndTooltipEntry(ChoiceValidator.any()), listValidator.widgetAndTooltipEntry(ChoiceValidator.any()),tagValidator.widgetAndTooltipEntry(ChoiceValidator.any())), Position.BELOW, Position.ALIGN_LEFT)
             .addDoneButton()
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
