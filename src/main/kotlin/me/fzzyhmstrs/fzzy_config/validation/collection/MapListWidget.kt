@@ -37,7 +37,7 @@ internal class MapListWidget<K,V>(
     valueSupplier: Entry1<V, *>,
     entryValidator: BiFunction<MapListWidget<K,V>,MapEntry<K,V>?,ChoiceValidator<K>>)
     :
-    ElementListWidget<MapListWidget.MapEntry<K,V>>(MinecraftClient.getInstance(), 272, 160, 0,0, 22), SuggestionWindowListener {
+    ElementListWidget<MapListWidget.MapEntry<K,V>>(MinecraftClient.getInstance(), 272, 160, 0,22), SuggestionWindowListener {
 
     fun getRawMap(skip: MapEntry<K,V>? = null): Map<K,V>{
         val map: MutableMap<K,V> = mutableMapOf()
@@ -85,9 +85,19 @@ internal class MapListWidget<K,V>(
         this.ensureVisible(entry)
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
-        if (hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, amount) }.isPresent) return true
-        return super.mouseScrolled(mouseX, mouseY, amount)
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        if (suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) == true) return true
+        return super.mouseClicked(mouseX, mouseY, button)
+    }
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) }.isPresent) return true
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount,verticalAmount)
+    }
+
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) == true) return true
+        return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
     init{

@@ -53,6 +53,13 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         return list.toList()
     }
 
+    private var suggestionWindowElement: Element? = null
+
+    override fun setSuggestionWindowElement(element: Element?) {
+        this.suggestionWindowElement = element
+    }
+
+
     override fun drawHeaderAndFooterSeparators(context: DrawContext?) {
     }
 
@@ -76,9 +83,9 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         return super.mouseClicked(mouseX, mouseY, button)
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
-        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, amount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, amount) }.isPresent) return true
-        return super.mouseScrolled(mouseX, mouseY, amount)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, horizontalAmount,verticalAmount) }.isPresent) return true
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount,verticalAmount)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
