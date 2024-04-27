@@ -64,10 +64,12 @@ import kotlin.math.min
 internal class ConfigScreenManager(private val scope: String, private val configs: List<ConfigSet>) {
 
     private val configMap: Map<String,Set<Config>>
-    private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
-    private var copyBuffer: Any? = null
     private val manager: ConfigUpdateManager
+
+    private var screens: Map<String, ConfigScreenBuilder> = mapOf()
+    private var copyBuffer: Any? = null
+    private var cachedPermissionLevel = 0
 
     init{
         val map: MutableMap<String,Set<Config>> = mutableMapOf()
@@ -77,7 +79,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         configMap = map
 
         manager = ConfigUpdateManager(configs, forwardedUpdates, ConfigApiImplClient.getPlayerPermissionLevel())
-
+        cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
         prepareScreens()
     }
 
@@ -107,7 +109,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             return
         try {
             forwardedUpdates.add(ForwardedUpdate(scope,update, player, entry!!, summary))
-        } catch (e: Exception){
+        } catch (e: Exception) {
             //empty catch block to avoid stupid crashes
         }
     }
@@ -129,6 +131,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     internal fun openScreen(scope: String = this.scope) {
+        if(cachedPermissionLevel != ConfigApiImplClient.getPlayerPermissionLevel()){
+            cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
+            manager.flush()
+            prepareScreens()
+        }
         if (MinecraftClient.getInstance().currentScreen !is ConfigScreen) {
             manager.flush()
             manager.pushUpdatableStates()

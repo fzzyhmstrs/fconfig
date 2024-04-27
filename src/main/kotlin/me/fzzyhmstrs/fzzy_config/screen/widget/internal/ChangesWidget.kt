@@ -53,7 +53,7 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
     }
 
     override fun getNarrationMessage(): MutableText {
-        return "fc.button.changes.message".translate()
+        return if (manager.hasChanges()) "fc.button.changes.message".translate(manager.changeCount()) else "fc.button.changes.message.noChanges".translate()
     }
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
@@ -70,7 +70,7 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         val revertText = "fc.button.revert".translate()
         val restoreText = "fc.button.restore".translate()
         val changelogText = "fc.button.changelog".translate()
-        val popup = PopupWidget.Builder("fc.button.changes.message".translate())
+        val popup = PopupWidget.Builder("fc.button.changes.title".translate())
             // Apply Changes
             .addElement("apply", ActiveButtonWidget(applyText,client.textRenderer.getWidth(applyText) + 8, 20, { manager.hasChanges() }, { manager.apply(false) }), Position.BELOW, Position.ALIGN_JUSTIFY)
             // Revert Changes

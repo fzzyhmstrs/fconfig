@@ -13,6 +13,15 @@ package me.fzzyhmstrs.fzzy_config.annotations
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 
+/**
+ * A config marked with this annotation will attempt to ignore field visibility when de/serializing
+ *
+ * Without this annotation, only PUBLIC fields/properties are considered
+ * @author fzzyhmstrs
+ * @since 0.3.0
+ */
+@Target(AnnotationTarget.CLASS)
+annotation class IgnoreVisibility
 
 /**
  * Marks the annotated config entry as modifiable by any player, not just Ops. Has higher priority than [WithPerms]

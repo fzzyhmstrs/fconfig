@@ -161,7 +161,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {
-        return OnClickTextFieldWidget({ this.get().toString() }, {
+        return OnClickTextFieldWidget({ this.get().toString() }, { it, isKb, key, code, mods ->
             val textField = PopupIdentifierTextFieldWidget(170,20,choicePredicate,this)
             val popup = PopupWidget.Builder(this.translation())
                 .addElement("text_field", textField, PopupWidget.Builder.Position.BELOW)
@@ -171,6 +171,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 .build()
             PopupWidget.push(popup)
             PopupWidget.focusElement(textField)
+            if (isKb)
+                textField.keyPressed(key,code,mods)
         })
     }
 

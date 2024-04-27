@@ -156,8 +156,9 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
     }
 
     override fun appendNarrations(builder: NarrationMessageBuilder, entry: BaseConfigEntry) {
-        if(entry == focused){
+        if(entry == focused || entry == hoveredEntry) {
             builder.put(NarrationPart.TITLE, entry.name)
+            entry.appendEntryNarrations(builder)
         }
         super.appendNarrations(builder, entry)
     }

@@ -160,7 +160,7 @@ internal class SuggestionWindow(
                     index += 1
                 return true
             }
-            GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER -> {
+            GLFW.GLFW_KEY_ENTER, GLFW.GLFW_KEY_KP_ENTER, GLFW.GLFW_KEY_TAB -> {
                 return if (selection != -1){
                     applier.accept(suggestions[selection].text)
                     closer.accept(this)
