@@ -17,7 +17,6 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -28,10 +27,7 @@ import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.tooltip.WidgetTooltipPositioner
+import net.minecraft.client.gui.tooltip.*
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.text.MutableText
@@ -39,6 +35,8 @@ import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
+import org.joml.Vector2i
+import org.joml.Vector2ic
 
 @Environment(EnvType.CLIENT)
 internal open class BaseConfigEntry(
@@ -164,4 +162,29 @@ internal open class BaseConfigEntry(
     fun interface RightClickAction{
         fun rightClick(mouseX: Int, mouseY: Int, configEntry: BaseConfigEntry)
     }
+
+
+    @Environment(value = EnvType.CLIENT)
+    class FocusedTooltipPositioner(private val widget: ScreenRect) : TooltipPositioner {
+        override fun getPosition(
+            screenWidth: Int,
+            screenHeight: Int,
+            x: Int,
+            y: Int,
+            width: Int,
+            height: Int
+        ): Vector2ic {
+            val vector2i = Vector2i()
+            vector2i.x = widget.left + 3
+            vector2i.y = widget.top + widget.height + 3 + 1
+            if (vector2i.y + height + 3 > screenHeight) {
+                vector2i.y = widget.top - height - 3 - 1
+            }
+            if (vector2i.x + width > screenWidth) {
+                vector2i.x = (widget.left + widget.width - width - 3).coerceAtLeast(4)
+            }
+            return vector2i
+        }
+    }
+
 }

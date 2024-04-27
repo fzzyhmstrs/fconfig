@@ -15,7 +15,7 @@ import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
 
-class NavigableTextFieldWidget(textRenderer: TextRenderer, width: Int, height: Int, text: Text) : TextFieldWidget(textRenderer, width, height, text) {
+class NavigableTextFieldWidget(textRenderer: TextRenderer, width: Int, height: Int, text: Text) : TextFieldWidget(textRenderer,0,0, width, height, text) {
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
          if (!this.isNarratable || !this.isFocused) {
             return false
