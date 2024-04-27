@@ -24,9 +24,14 @@ import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.Selectable
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.client.gui.tooltip.WidgetTooltipPositioner
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.text.MutableText
@@ -47,7 +52,12 @@ internal open class BaseConfigEntry(
 {
 
     private val truncatedName = ConfigApiImplClient.ellipses(name,if(widget is Decorated) 124 else 146)
-    private var tooltip: List<OrderedText>? = null
+    private val tooltip: List<OrderedText> by lazy {
+        createTooltip()
+    }
+    private val tooltipString: String by lazy {
+        createTooltipString()
+    }
 
     init {
         if (widget is SuggestionWindowProvider)
@@ -96,13 +106,14 @@ internal open class BaseConfigEntry(
         }
         if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null){
             //let widgets tooltip win
-        } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && (description.string != "" || isRestartTriggering)){
-            MinecraftClient.getInstance().currentScreen?.setTooltip(createTooltip(), HoveredTooltipPositioner.INSTANCE,this.isFocused)
+        } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty()){
+            MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
+        } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && tooltip.isNotEmpty()) {
+            MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
         }
     }
 
     private fun createTooltip(): List<OrderedText>{
-        if (tooltip != null) return tooltip as List<OrderedText>
         val list: MutableList<OrderedText> = mutableListOf()
         if(isRestartTriggering) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText().formatted(Formatting.RED),170))
@@ -112,8 +123,17 @@ internal open class BaseConfigEntry(
         if (description.string != ""){
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description,170))
         }
-        tooltip = list
         return list
+    }
+    private fun createTooltipString(): String{
+        val builder = StringBuilder()
+        for (tip in tooltip){
+            tip.accept{ _, _, codepoint ->
+                builder.appendCodePoint(codepoint)
+                true
+            }
+        }
+        return builder.toString()
     }
     open fun restartText(): MutableText{
         return "fc.config.restart.warning".translate()
@@ -132,6 +152,12 @@ internal open class BaseConfigEntry(
             widget.tooltip = Tooltip.of(description)
         }
         widget.isFocused = focused
+    }
+
+    open fun appendEntryNarrations(builder: NarrationMessageBuilder){
+        if(tooltip.isNotEmpty()) {
+            builder.put(NarrationPart.HINT, tooltipString)
+        }
     }
 
     @FunctionalInterface

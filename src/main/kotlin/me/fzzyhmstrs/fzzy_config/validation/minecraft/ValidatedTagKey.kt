@@ -107,7 +107,9 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     }
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<TagKey<T>>): ClickableWidget {
-        return DecorationWrappedWidget(OnClickTextFieldWidget({ validator.get().toString() },{ popupTagPopup(it,choicePredicate) }),"widget/decoration/tag".fcId())
+        return DecorationWrappedWidget(OnClickTextFieldWidget({ validator.get().toString() },{ it, isKb, key, code, mods ->
+            popupTagPopup(it,isKb, key, code, mods, choicePredicate)
+        }),"widget/decoration/tag".fcId())
     }
 
     /**
@@ -119,8 +121,8 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
 
     @Internal
     @Environment(EnvType.CLIENT)
-    private fun popupTagPopup(b: ClickableWidget, choicePredicate: ChoiceValidator<TagKey<T>>){
-        val entryValidator = EntryValidator<String>{s,_ -> Identifier.tryParse(s)?.let { validator.validateEntry(it,EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: ValidationResult.error(s,"invalid Identifier")}
+    private fun popupTagPopup(b: ClickableWidget, isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>>){
+        val entryValidator = EntryValidator<String>{s,_ -> Identifier.tryParse(s)?.let { validator.validateEntry(it,EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: error(s,"invalid Identifier")}
         val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.registry,Identifier(e))) }
         val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s,c,cv -> validator.allowableIds.getSuggestions(s,c,cv.convert({ Identifier(it) },{ Identifier(it) }))}
         val textField = SuggestionBackedTextFieldWidget(170,20, { validator.get().toString() },choicePredicate.convert({it.id.toString()}, {it.id.toString()}),entryValidator,entryApplier,suggestionProvider)
@@ -132,5 +134,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
             .build()
         PopupWidget.push(popup)
         PopupWidget.focusElement(textField)
+        if (isKeyboard)
+            textField.keyPressed(keyCode, scanCode, modifiers)
     }
 }

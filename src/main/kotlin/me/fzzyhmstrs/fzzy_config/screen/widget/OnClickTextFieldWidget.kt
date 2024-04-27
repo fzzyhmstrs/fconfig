@@ -28,7 +28,7 @@ import java.util.function.Supplier
  * @since 0.2.0
  */
 @Environment(EnvType.CLIENT)
-class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: Consumer<OnClickTextFieldWidget>)
+class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: OnInteractAction)
     :
     TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, 110, 20, FcText.empty())
 {
@@ -43,16 +43,41 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
     }
 
     override fun onClick(mouseX: Double, mouseY: Double) {
-        onClick.accept(this)
+        onClick.interact(this, false, 0,0,0)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         return if (!this.isFocused) {
             false
-        } else if(KeyCodes.isToggle(keyCode)) {
-            onClick.accept(this)
+        } else {
+            if(KeyCodes.isToggle(keyCode))
+                onClick.interact(this, false, keyCode, scanCode, modifiers)
+            else
+                onClick.interact(this, true, keyCode, scanCode, modifiers)
             return true
-        } else super.keyPressed(keyCode, scanCode, modifiers)
+        }
+    }
+
+    /**
+     * Called when the text field widget is interacted with
+     *
+     * SAM: [interact] - callback with the widget as context, as well as optional keyboard input + flag if kb input is present (isKeyboard == true) or just dummies (isKeyboard == false)
+     * @author fzzyhmstrs
+     * @since 0.3.0
+     */
+    @FunctionalInterface
+    fun interface OnInteractAction{
+        /**
+         * interaction callback from an [OnClickTextFieldWidget]
+         * @param widget [OnClickTextFieldWidget] - context from the widget calling back
+         * @param isKeyboard Boolean - if this callback is passing valid keyboard inputs. If false, keyCode, scanCode, and modifiers are dummy values
+         * @param keyCode Int - if isKeyboard, the keycode passed through from `keyPressed`
+         * @param scanCode Int - if isKeyboard, the scancode passed through from `keyPressed`
+         * @param modifiers Int - if isKeyboard, the modifiers passed through from `keyPressed`
+         * @author fzzyhmstrs
+         * @since 0.3.0
+         */
+        fun interact(widget: OnClickTextFieldWidget, isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int)
     }
 
 }

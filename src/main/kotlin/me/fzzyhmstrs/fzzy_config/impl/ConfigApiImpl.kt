@@ -45,6 +45,7 @@ import java.lang.reflect.Modifier.isTransient
 import java.util.function.Supplier
 import kotlin.experimental.and
 import kotlin.math.min
+import kotlin.experimental.or
 import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
@@ -56,10 +57,11 @@ internal object ConfigApiImpl {
         FabricLoader.getInstance().environmentType == EnvType.CLIENT
     }
 
-    internal val CHECK_NON_SYNC: Byte = 0
-    internal val IGNORE_NON_SYNC: Byte = 1
-    internal val CHECK_RESTART: Byte = 2
-    internal val IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
+    internal const val CHECK_NON_SYNC: Byte = 0
+    internal const val IGNORE_NON_SYNC: Byte = 1
+    internal const val CHECK_RESTART: Byte = 2
+    internal const val IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
+    internal const val IGNORE_VISIBILITY: Byte = 4
 
     internal fun openScreen(scope: String){
         if (isClient)
@@ -256,13 +258,14 @@ internal object ConfigApiImpl {
     internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): TomlElement {
         //used to build a TOML table piece by piece
         val toml = TomlTableBuilder()
-        if (config is Config){
-            val version = getVersion(config::class)
-            val headerAnnotations = tomlHeaderAnnotations(config::class).toMutableList()
-            headerAnnotations.add(TomlHeaderComment("Don't change this! Version used to track needed updates."))
-            toml.element("version", TomlLiteral(version),headerAnnotations.map { TomlComment(it.text) })
-        }
         try {
+            if (config is Config){
+                val version = getVersion(config::class)
+                val headerAnnotations = tomlHeaderAnnotations(config::class).toMutableList()
+                headerAnnotations.add(TomlHeaderComment("Don't change this! Version used to track needed updates."))
+                toml.element("version", TomlLiteral(version),headerAnnotations.map { TomlComment(it.text) })
+            }
+            val ignoreVisibility = isIgnoreVisibility(config::class) || ignoreVisibility(flags)
             //java fields are ordered in declared order, apparently not so for Kotlin properties. use these first to get ordering. skip Transient
             val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
             //generate an index map, so I can order the properties based on name
@@ -271,44 +274,47 @@ internal object ConfigApiImpl {
             for (prop in config.javaClass.kotlin.memberProperties.filter {
                 orderById.containsKey(it.name)
                 && if (ignoreNonSync(flags)) true else !isNonSync(it)
+                && if(ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
             }.sortedBy { orderById[it.name] }) {
                 //has to be a public mutable property. private and protected and val another way to have serialization ignore
-                if (prop is KMutableProperty<*> && prop.visibility == KVisibility.PUBLIC) {
-                    //get the actual [thing] from the property
-                    val propVal = prop.get(config)
-                    //things name
-                    val name = prop.name
-                    //serialize the element. EntrySerializer elements will have a set serialization method
-                    val el = if (propVal is EntrySerializer<*>) { //is EntrySerializer
-                        try {
-                            propVal.serializeEntry(null, errorBuilder, flags)
-                        } catch (e: Exception) {
-                            errorBuilder.add("Problem encountered with serialization of [$name]: ${e.localizedMessage}")
-                            TomlNull
-                        }
-                        //fallback is to use by-type TOML serialization
-                    } else if (propVal != null) {
-                        val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
-                        if (basicValidation != null) {
-                            basicValidation.trySerialize(propVal,errorBuilder,flags) ?: TomlNull
-                        } else {
-                            try {
-                                encodeToTomlElement(propVal, prop.returnType) ?: TomlNull
-                            } catch (e: Exception) {
-                                errorBuilder.add("Problem encountered with raw data during serialization of [$name]: ${e.localizedMessage}")
-                                TomlNull
-                            }
-                        }
-                        //TomlNull for properties with Null state (improper state, no config values should be nullable)
-                    } else {
-                        errorBuilder.add("Property [$name] was null during serialization!")
+                if (prop !is KMutableProperty<*>) continue
+                //get the actual [thing] from the property
+                if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                val propVal = prop.get(config)
+                //if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                //things name
+                val name = prop.name
+                //serialize the element. EntrySerializer elements will have a set serialization method
+                val el = if (propVal is EntrySerializer<*>) { //is EntrySerializer
+                    try {
+                        propVal.serializeEntry(null, errorBuilder, flags)
+                    } catch (e: Exception) {
+                        errorBuilder.add("Problem encountered with serialization of [$name]: ${e.localizedMessage}")
                         TomlNull
                     }
-                    //scrape all the TomlAnnotations associated
-                    val tomlAnnotations = tomlAnnotations(prop)
-                    //add the element to the TomlTable, with annotations
-                    toml.element(name, el, tomlAnnotations)
+                    //fallback is to use by-type TOML serialization
+                } else if (propVal != null) {
+                    val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
+                    if (basicValidation != null) {
+                        basicValidation.trySerialize(propVal,errorBuilder,flags) ?: TomlNull
+                    } else {
+                        try {
+                            encodeToTomlElement(propVal, prop.returnType) ?: TomlNull
+                        } catch (e: Exception) {
+                            errorBuilder.add("Problem encountered with raw data during serialization of [$name]: ${e.localizedMessage}")
+                            TomlNull
+                        }
+                    }
+                    //TomlNull for properties with Null state (improper state, no config values should be nullable)
+                } else {
+                    errorBuilder.add("Property [$name] was null during serialization!")
+                    TomlNull
                 }
+                //scrape all the TomlAnnotations associated
+                val tomlAnnotations = tomlAnnotations(prop)
+                //add the element to the TomlTable, with annotations
+                toml.element(name, el, tomlAnnotations)
+
             }
         } catch (e: Exception){
             errorBuilder.add("Critical error encountered while serializing config!: ${e.localizedMessage}")
@@ -360,68 +366,74 @@ internal object ConfigApiImpl {
 
     internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
-        val checkForRestart = requiresRestart(flags)
-        val globalIsRequiresRestart = isRequiresRestart(config::class)
         var restartNeeded = false
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
             return ValidationResult.error(ConfigContext(config).withFlag(RESTART_KEY, false), "Improper TOML format passed to deserializeFromToml")
         }
         try {
+            val checkForRestart = requiresRestart(flags)
+            val globalIsRequiresRestart = isRequiresRestart(config::class)
+            val ignoreVisibility = isIgnoreVisibility(config::class) || ignoreVisibility(flags)
             val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             for (prop in config.javaClass.kotlin.memberProperties.filter {
                 orderById.containsKey(it.name)
                 && if (ignoreNonSync(flags)) true else !isNonSync(it)
+                && if(ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
             }.sortedBy { orderById[it.name] }) {
-                if (prop is KMutableProperty<*> && prop.visibility == KVisibility.PUBLIC) {
-                    val propVal = prop.get(config)
-                    val name = prop.name
-                    val tomlElement = if (toml.containsKey(name)) {
-                        toml[name]
+                if (prop !is KMutableProperty<*>) continue
+                if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                val propVal = prop.get(config)
+                val name = prop.name
+                val tomlElement = if (toml.containsKey(name)) {
+                    toml[name]
+                } else {
+                    errorBuilder.add("Key [$name] not found in TOML file.")
+                    continue
+                }
+                if (tomlElement == null || tomlElement is TomlNull) {
+                    errorBuilder.add("TomlElement [$name] was null!.")
+                    continue
+                }
+                if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
+                    val result = if(checkForRestart && propVal is Supplier<*> && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
+                        val before = propVal.get()
+                        propVal.deserializeEntry(tomlElement, errorBuilder, name, flags).also { r -> if(r.get() != before) restartNeeded = true }
                     } else {
-                        errorBuilder.add("Key [$name] not found in TOML file.")
-                        continue
+                        propVal.deserializeEntry(tomlElement, errorBuilder, name, flags)
                     }
-                    if (tomlElement == null || tomlElement is TomlNull) {
-                        errorBuilder.add("TomlElement [$name] was null!.")
-                        continue
+                    if (result.isError()) {
+                        errorBuilder.add(result.getError())
                     }
-                    if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
-                        val result = if(checkForRestart && propVal is Supplier<*> && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
-                            val before = propVal.get()
-                            propVal.deserializeEntry(tomlElement, errorBuilder, name, flags).also { r -> if(r.get() != before) restartNeeded = true }
-                        } else {
-                            propVal.deserializeEntry(tomlElement, errorBuilder, name, flags)
-                        }
-                        if (result.isError()) {
-                            errorBuilder.add(result.getError())
+                } else {
+                    val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
+                    if (basicValidation != null){
+                        @Suppress("DEPRECATION")
+                        val thing = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, flags)
+                        try {
+                            if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart))
+                                if (propVal != thing.get()) restartNeeded = true
+                            if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                            prop.setter.call(config, thing.get())
+                        } catch(e: Exception) {
+                            errorBuilder.add("Error deserializing basic validation [$name]: ${e.localizedMessage}")
                         }
                     } else {
-                        val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
-                        if (basicValidation != null){
-                            @Suppress("DEPRECATION")
-                            val thing = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, flags)
-                            try {
-                                if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart))
-                                    if (propVal != thing.get()) restartNeeded = true
-                                prop.setter.call(config, thing.get())
-                            } catch(e: Exception) {
-                                errorBuilder.add("Error deserializing basic validation [$name]: ${e.localizedMessage}")
+                        try {
+                            if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
+                                if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                                prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType),prop).also{ if (propVal != it) restartNeeded = true })
+                            } else {
+                                if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                                prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType),prop))
                             }
-                        } else {
-                            try {
-                                if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
-                                    prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType),prop).also{ if (propVal != it) restartNeeded = true })
-                                } else {
-                                    prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType),prop))
-                                }
-                            } catch (e: Exception) {
-                                errorBuilder.add("Error deserializing raw field [$name]: ${e.localizedMessage}")
-                            }
+                        } catch (e: Exception) {
+                            errorBuilder.add("Error deserializing raw field [$name]: ${e.localizedMessage}")
                         }
                     }
                 }
+
             }
         } catch (e: Exception){
             errorBuilder.add("Critical error encountered while deserializing")
@@ -450,14 +462,15 @@ internal object ConfigApiImpl {
 
     private fun <T: Any> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
-        val checkForRestart = requiresRestart(flags)
-        val globalIsRequiresRestart = isRequiresRestart(config::class)
         var restartNeeded = false
-        if (toml !is TomlTable) {
-            errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
-            return ValidationResult.error(ConfigContext(config),"Improper TOML format passed to deserializeDirtyFromToml")
-        }
         try {
+            val checkForRestart = requiresRestart(flags)
+            val globalIsRequiresRestart = isRequiresRestart(config::class)
+
+            if (toml !is TomlTable) {
+                errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
+                return ValidationResult.error(ConfigContext(config),"Improper TOML format passed to deserializeDirtyFromToml")
+            }
             walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _,_,str,v,prop,annotations,_ -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
                     if(checkForRestart && v is Supplier<*> && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
@@ -474,7 +487,7 @@ internal object ConfigApiImpl {
                         try {
                             if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart))
                                 if (v != thing.get()) restartNeeded = true
-                            prop.setter.call(config, thing.get())
+                            prop.setter.call(config, thing.get()) //change?
                         } catch(e: Exception) {
                             errorBuilder.add("Error deserializing basic validation [$str]: ${e.localizedMessage}")
                         }
@@ -546,6 +559,9 @@ internal object ConfigApiImpl {
 
     ///////////////////////////////////////
 
+    private fun isIgnoreVisibility(clazz: KClass<*>): Boolean {
+        return clazz.annotations.firstOrNull { (it is IgnoreVisibility) }?.let { true } ?: false
+    }
     private fun isNonSync(property: KProperty<*>): Boolean{
         return isNonSync(property.annotations)
     }
@@ -626,98 +642,131 @@ internal object ConfigApiImpl {
 
     /////////////////////////////////
 
-    internal fun ignoreNonSync(flags: Byte): Boolean {
+    private fun ignoreNonSync(flags: Byte): Boolean {
         return flags and 1.toByte() == 1.toByte()
     }
-
-    internal fun requiresRestart(flags: Byte): Boolean {
+    private fun requiresRestart(flags: Byte): Boolean {
         return flags and 2.toByte() == 2.toByte()
+    }
+    private fun ignoreVisibility(flags: Byte): Boolean {
+        return flags and 4.toByte() == 4.toByte()
     }
 
     ////////////////////////////////
 
     internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null){
-        FC.LOGGER.info("∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨∨")
+        FC.LOGGER.info("$$$$$$$$$$$$$$$$$$$$$$$$$$")
         FC.LOGGER.info("Completed updates for configs: [$id]")
         if (player != null)
             FC.LOGGER.info("Updates made by: ${player.name.string}")
         FC.LOGGER.info("-------------------------")
         for (str in history)
             FC.LOGGER.info("  $str")
-        FC.LOGGER.info("∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧∧")
+        FC.LOGGER.info("$$$$$$$$$$$$$$$$$$$$$$$$$$")
     }
 
     /////////////////////////////////
 
-    internal fun<W: Any> walk(walkable: W, prefix: String, flags: Byte, walkAction: WalkAction){
-        val orderById = walkable::class.java.declaredFields.filter {
-            !isTransient(it.modifiers)
-        }.withIndex().associate {
-            it.value.name to it.index
-        }
-        val walkCallback = WalkCallback(walkable)
-        for (property in walkable.javaClass.kotlin.memberProperties
-            .filter {
-                it is KMutableProperty<*>
-                && (if (ignoreNonSync(flags)) true else !isNonSync(it) )
-                && it.visibility == KVisibility.PUBLIC
-            }.sortedBy {
-                orderById[it.name]
+    internal fun<W: Any> walk(walkable: W, prefix: String, flags: Byte, walkAction: WalkAction) {
+        try {
+            // check for IgnoreVisiblity
+            val ignoreVisibility = isIgnoreVisibility(walkable::class) || ignoreVisibility(flags)
+            val orderById = walkable::class.java.declaredFields.filter {
+                !isTransient(it.modifiers)
+            }.withIndex().associate {
+                it.value.name to it.index
             }
-        ) {
-            try {
-                val newPrefix = prefix + "." + property.name
-                val propVal = property.get(walkable)
-                walkAction.act(walkable,prefix, newPrefix, propVal, property as KMutableProperty<*>, property.annotations, walkCallback)
-                if (walkCallback.isCancelled())
-                    break
-                if (propVal is Walkable){
-                    walk(propVal, newPrefix, flags, walkAction)
+            val walkCallback = WalkCallback(walkable)
+            for (property in walkable.javaClass.kotlin.memberProperties
+                .filter {
+                    it is KMutableProperty<*>
+                            && (if (ignoreNonSync(flags)) true else !isNonSync(it))
+                            && if (ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
+                }.sortedBy {
+                    orderById[it.name]
                 }
-            } catch (e: Exception){
-                FC.LOGGER.error("Critical exception caught while walking $prefix")
-                e.printStackTrace()
-                // continue without borking
+            ) {
+                try {
+                    val newPrefix = prefix + "." + property.name
+                    val propVal = property.get(walkable)
+                    walkAction.act(
+                        walkable,
+                        prefix,
+                        newPrefix,
+                        propVal,
+                        property as KMutableProperty<*>,
+                        property.annotations,
+                        walkCallback
+                    )
+                    if (walkCallback.isCancelled())
+                        break
+                    if (propVal is Walkable) {
+                        val newFlags = if (ignoreVisibility) flags or IGNORE_VISIBILITY else flags
+                        walk(propVal, newPrefix, newFlags, walkAction)
+                    }
+                } catch (e: Exception) {
+                    FC.LOGGER.error("Critical exception caught while walking $prefix")
+                    e.printStackTrace()
+                    // continue without borking
+                }
             }
+        } catch (e: Exception){
+            FC.LOGGER.error("Critical exception encountered while Walking through ${walkable::class.simpleName}")
+            e.printStackTrace()
         }
     }
 
-    internal fun<W: Any> drill(walkable: W, target: String, delimiter: Char, flags: Byte, walkAction: WalkAction){
-        //generate an index map, so I can order the properties based on name
-        val props = walkable.javaClass.kotlin.memberProperties.filter {
-            !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-            && it is KMutableProperty<*>
-            && (if (ignoreNonSync(flags)) true else !isNonSync(it) )
-            && it.visibility == KVisibility.PUBLIC
-        }.associateBy{ it.name }
-
-        val callback = WalkCallback(walkable)
-        val propTry = props[target]
-        if (propTry != null){
-            return try {
-                val propVal = propTry.get(walkable)
-                walkAction.act(walkable, "", "", propVal, propTry as KMutableProperty<*>, propTry.annotations, callback)
-            } catch (e: Exception){
-                FC.LOGGER.error("Critical exception caught while drill to $target")
-                e.printStackTrace()
-                // continue without borking
-            }
-        }
-        for ((string, property) in props) {
-            if(target.startsWith(string)){
-                try {
-                    val propVal = property.get(walkable)
-                    if (propVal is Walkable) {
-                        drill(propVal, target.substringAfter(delimiter), delimiter, flags, walkAction)
-                    } else {
-                        break
-                    }
-                } catch (e: Exception){
+    internal fun<W: Any> drill(walkable: W, target: String, delimiter: Char, flags: Byte, walkAction: WalkAction) {
+        try {
+            // check for IgnoreVisiblity
+            val ignoreVisibility = isIgnoreVisibility(walkable::class) || ignoreVisibility(flags)
+            //generate an index map, so I can order the properties based on name
+            val props = walkable.javaClass.kotlin.memberProperties.filter {
+                !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
+                        && it is KMutableProperty<*>
+                        && (if (ignoreNonSync(flags)) true else !isNonSync(it))
+                        && if (ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
+            }.associateBy { it.name }
+            val callback = WalkCallback(walkable)
+            val propTry = props[target]
+            if (propTry != null) {
+                return try {
+                    val propVal = propTry.get(walkable)
+                    walkAction.act(
+                        walkable,
+                        "",
+                        "",
+                        propVal,
+                        propTry as KMutableProperty<*>,
+                        propTry.annotations,
+                        callback
+                    )
+                } catch (e: Exception) {
                     FC.LOGGER.error("Critical exception caught while drill to $target")
                     e.printStackTrace()
                     // continue without borking
                 }
             }
+            for ((string, property) in props) {
+                if (target.startsWith(string)) {
+                    try {
+                        val propVal = property.get(walkable)
+                        if (propVal is Walkable) {
+                            val newFlags = if (ignoreVisibility) flags or IGNORE_VISIBILITY else flags
+                            drill(propVal, target.substringAfter(delimiter), delimiter, newFlags, walkAction)
+                        } else {
+                            break
+                        }
+                    } catch (e: Exception) {
+                        FC.LOGGER.error("Critical exception caught while drill to $target")
+                        e.printStackTrace()
+                        // continue without borking
+                    }
+                }
+            }
+        } catch (e: Exception){
+            FC.LOGGER.error("Critical exception encountered while Drilling into ${walkable::class.simpleName}")
+            e.printStackTrace()
         }
     }
 
