@@ -10,6 +10,7 @@ $dokka.location:me.fzzyhmstrs.fzzy_config.annotations/ConvertFrom///PointingToDe
 $dokka.location:me.fzzyhmstrs.fzzy_config.annotations/ConvertFrom/fileName/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.annotations/-convert-from/file-name.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.annotations/ConvertFrom/folder/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.annotations/-convert-from/folder.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.annotations/ConvertFrom/subfolder/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.annotations/-convert-from/subfolder.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.annotations/IgnoreVisibility///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.annotations/-ignore-visibility/index.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.annotations/Inline///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.annotations/-inline/index.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.annotations/Integer///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.annotations/-integer/index.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.annotations/Integer/base/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.annotations/-integer/base.html
@@ -132,6 +133,10 @@ $dokka.location:me.fzzyhmstrs.fzzy_config.screen.internal/SuggestionWindowListen
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.internal/SuggestionWindowListener/setSuggestionWindowElement/#net.minecraft.client.gui.Element?/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.internal/-suggestion-window-listener/set-suggestion-window-element.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.internal/SuggestionWindowProvider///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.internal/-suggestion-window-provider/index.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.internal/SuggestionWindowProvider/addListener/#me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.internal/-suggestion-window-provider/add-listener.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget.internal////PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget.internal/index.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget.internal/NavigableTextFieldWidget///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget.internal/-navigable-text-field-widget/index.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget.internal/NavigableTextFieldWidget/NavigableTextFieldWidget/#net.minecraft.client.font.TextRenderer#kotlin.Int#kotlin.Int#net.minecraft.text.Text/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget.internal/-navigable-text-field-widget/-navigable-text-field-widget.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget.internal/NavigableTextFieldWidget/keyPressed/#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget.internal/-navigable-text-field-widget/key-pressed.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget////PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/index.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/ActiveButtonWidget///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-active-button-widget/index.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/ActiveButtonWidget/ActiveButtonWidget/#java.util.function.Supplier[net.minecraft.text.Text]#kotlin.Int#kotlin.Int#java.util.function.Supplier[kotlin.Boolean]#java.util.function.Consumer[me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget]#net.minecraft.util.Identifier?/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-active-button-widget/-active-button-widget.html
@@ -166,8 +171,10 @@ $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/DecorationWrappedWidget/
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/DecorationWrappedWidget/setFocused/#kotlin.Boolean/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-decoration-wrapped-widget/set-focused.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/DecorationWrappedWidget/setX/#kotlin.Int/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-decoration-wrapped-widget/set-x.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/DecorationWrappedWidget/setY/#kotlin.Int/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-decoration-wrapped-widget/set-y.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/OnClickTextFieldWidget.OnInteractAction///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-on-click-text-field-widget/-on-interact-action/index.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/OnClickTextFieldWidget.OnInteractAction/interact/#me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget#kotlin.Boolean#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-on-click-text-field-widget/-on-interact-action/interact.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/OnClickTextFieldWidget///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-on-click-text-field-widget/index.html
-$dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/OnClickTextFieldWidget/OnClickTextFieldWidget/#java.util.function.Supplier[kotlin.String]#java.util.function.Consumer[me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget]/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-on-click-text-field-widget/-on-click-text-field-widget.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/OnClickTextFieldWidget/OnClickTextFieldWidget/#java.util.function.Supplier[kotlin.String]#me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget.OnInteractAction/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-on-click-text-field-widget/-on-click-text-field-widget.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/OnClickTextFieldWidget/keyPressed/#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-on-click-text-field-widget/key-pressed.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/OnClickTextFieldWidget/onClick/#kotlin.Double#kotlin.Double/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-on-click-text-field-widget/on-click.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.screen.widget/OnClickTextFieldWidget/renderWidget/#net.minecraft.client.gui.DrawContext?#kotlin.Int#kotlin.Int#kotlin.Float/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-on-click-text-field-widget/render-widget.html
@@ -1032,6 +1039,7 @@ me.fzzyhmstrs.fzzy_config.screen
 me.fzzyhmstrs.fzzy_config.screen.entry
 me.fzzyhmstrs.fzzy_config.screen.internal
 me.fzzyhmstrs.fzzy_config.screen.widget
+me.fzzyhmstrs.fzzy_config.screen.widget.internal
 me.fzzyhmstrs.fzzy_config.util
 me.fzzyhmstrs.fzzy_config.util.pos
 me.fzzyhmstrs.fzzy_config.validation
