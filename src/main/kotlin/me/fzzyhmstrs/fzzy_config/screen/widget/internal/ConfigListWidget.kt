@@ -120,7 +120,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         return this.height
     }
     override fun getNavigationFocus(): ScreenRect {
-        return super<Widget>.getNavigationFocus()
+        return ScreenRect(this.left,this.top, this.width, this.contentHeight)
     }
     override fun forEachChild(consumer: Consumer<ClickableWidget>) {
     }
