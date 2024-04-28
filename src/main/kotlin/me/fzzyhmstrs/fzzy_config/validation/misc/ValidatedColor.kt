@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -170,12 +171,12 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<ColorHolder> {
-        return storedValue.deserializeEntry(toml, mutableListOf(), fieldName, 1)
+        return storedValue.deserializeEntry(toml, mutableListOf(), fieldName, ConfigApiImpl.IGNORE_NON_SYNC)
     }
     @Internal
     override fun serialize(input: ColorHolder): ValidationResult<TomlElement> {
         val errors: MutableList<String> = mutableListOf()
-        return ValidationResult.predicated(storedValue.serializeEntry(input, errors, 1), errors.isEmpty(), errors.toString())
+        return ValidationResult.predicated(storedValue.serializeEntry(input, errors, ConfigApiImpl.IGNORE_NON_SYNC), errors.isEmpty(), errors.toString())
     }
     @Internal
     override fun correctEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
