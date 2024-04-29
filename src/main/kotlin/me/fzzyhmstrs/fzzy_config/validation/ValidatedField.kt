@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -297,6 +298,28 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
      * @since 0.2.0
      */
     fun toList(collection: Collection<T>): ValidatedList<T> {
+        return ValidatedList(collection.toList(), this)
+    }
+    /**
+     * wraps the provided values into a [ValidatedSet] with this field as validation
+     * @param elements the inputs for the set generation. Same type as this field
+     * @return [ValidatedSet] wrapping the provided values and this field as validation
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.sets
+     * @author fzzyhmstrs
+     * @since 0.3.1
+     */
+    fun toSet(vararg elements: T): ValidatedSet<T> {
+        return ValidatedSet(setOf(*elements), this)
+    }
+    /**
+     * wraps the provided collection into a [ValidatedList] with this field as validation
+     * @param collection the collection to wrap. Same type as this field
+     * @return [ValidatedList] wrapping the collection and this field as validation
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.sets
+     * @author fzzyhmstrs
+     * @since 0.3.1
+     */
+    fun toSet(collection: Collection<T>): ValidatedList<T> {
         return ValidatedList(collection.toList(), this)
     }
 }

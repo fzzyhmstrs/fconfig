@@ -47,14 +47,17 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
 
     /**
      * A validated string value validated with Regex
-     *
-     * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
-     * @param defaultValue String, the default string for this setting
+     * @param defaultValue String - the default string for this setting
+     * @param regex String - the Regex pattern to match against
+     * @throws IllegalStateException If the regex can't match to the default input
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    constructor(defaultValue: String, regex: String): this(defaultValue, object : EntryChecker<String>{
+    constructor(defaultValue: String, regex: String): this(defaultValue, object : EntryChecker<String> {
         private val re = Regex(regex)
+        init {
+            if (!re.matches(defaultValue)) throw IllegalStateException("Default value [$defaultValue] doesn't match to supplied regex [$regex]")
+        }
         override fun correctEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
             val newVal = re.findAll(input).map { it.value }.joinToString("")
             return validateEntry(input, type).wrap(newVal)

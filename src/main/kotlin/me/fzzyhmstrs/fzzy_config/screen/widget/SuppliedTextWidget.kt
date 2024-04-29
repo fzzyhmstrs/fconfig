@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import com.google.common.base.Supplier
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -23,57 +24,62 @@ import net.minecraft.util.math.MathHelper
 import kotlin.math.roundToInt
 
 /**
- * A [AbstractTextWidget] that can process click and hover actions on rendered text
- * @param parent Screen - this widgets parent screen
- * @param message Text - the text to render with this widget
- * @param textRenderer [TextRenderer] - textrenderer instance
+ * An [AbstractTextWidget] that renders text from a supplier of text, not a static text instance
+ * @param messageSupplier [Supplier]&lt;[Text]&gt; - supplies text to this widget
+ * @param textRenderer [TextRenderer] - textRenderer instance
+ * @param width Int - width of the widget in pixels
+ * @param height Int - height of the widget in pixels
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.3.1
  */
-class ClickableTextWidget(private val parent: Screen, message: Text, textRenderer: TextRenderer): AbstractTextWidget(0,0,textRenderer.getWidth(message.asOrderedText()), textRenderer.fontHeight, message, textRenderer) {
+class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): AbstractTextWidget(0,0,width, height, messageSupplier.get(), textRenderer) {
+
+    constructor(messageSupplier: Supplier<Text>, textRenderer: TextRenderer): this(messageSupplier, textRenderer, textRenderer.getWidth(messageSupplier.get().asOrderedText()), textRenderer.fontHeight)
 
     private var horizontalAlignment = 0.5f
+
     /**
      * Aligns the widget text to the alignment fraction provided
      * @param horizontalAlignment Float - fraction between 0f and 1f specifying the horizontal alignment. 0f = fully left-aligned, 1f = fully right-aligned
-     * @return [ClickableTextWidget] this widget
+     * @return [SuppliedTextWidget] this widget
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.3.1
      */
-    private fun align(horizontalAlignment: Float): ClickableTextWidget {
+    private fun align(horizontalAlignment: Float): SuppliedTextWidget {
         this.horizontalAlignment = horizontalAlignment
         return this
     }
+
     /**
      * Aligns the widget text to the left
-     * @return [ClickableTextWidget] this widget
+     * @return [SuppliedTextWidget] this widget
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.3.1
      */
-    fun alignLeft(): ClickableTextWidget {
+    fun alignLeft(): SuppliedTextWidget {
         return this.align(0.0f)
     }
     /**
      * Aligns the widget text to the center
-     * @return [ClickableTextWidget] this widget
+     * @return [SuppliedTextWidget] this widget
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.3.1
      */
-    fun alignCenter(): ClickableTextWidget {
+    fun alignCenter(): SuppliedTextWidget {
         return this.align(0.5f)
     }
     /**
      * Aligns the widget text to the right
-     * @return [ClickableTextWidget] this widget
+     * @return [SuppliedTextWidget] this widget
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.3.1
      */
-    fun alignRight(): ClickableTextWidget {
+    fun alignRight(): SuppliedTextWidget {
         return this.align(1.0f)
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        val text = message
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        val text = messageSupplier.get()
         val i = getWidth()
         val j = textRenderer.getWidth(text)
         val k = x + (horizontalAlignment * (i - j).toFloat()).roundToInt()
@@ -86,12 +92,4 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
         val stringVisitable = textRenderer.trimToWidth(text, width - textRenderer.getWidth(ScreenTexts.ELLIPSIS))
         return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
     }
-
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (!isMouseOver(mouseX, mouseY)) return false
-        val d = mouseX - this.x
-        val style = textRenderer.textHandler.getStyleAt(message.asOrderedText(), MathHelper.floor(d)) ?: return false
-        return parent.handleTextClick(style)
-    }
-
 }
