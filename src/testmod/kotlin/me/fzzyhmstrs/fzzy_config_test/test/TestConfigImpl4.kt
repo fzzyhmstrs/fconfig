@@ -15,11 +15,13 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedMap
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedEntityAttribute
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.util.Identifier
 
 @RequiresRestart
@@ -39,6 +41,27 @@ class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
 
     var testString = ValidatedString.fromList(FabricLoader.getInstance().allMods.map{ it.metadata.id })
 
+    var exampleValidatedAttribute1 = ValidatedEntityAttribute.Builder("generic.max_health", true)
+        // supply a UUID and name, otherwise generic ones will be used for you
+        .uuid("f68e98a2-0599-11ef-9262-0242ac120002")
+        .name("My Example ValidatedEntityAttribute")
+        //set amount, and optionally provide a range restriction
+        .amount(1.0,0.0,8.0)
+        //set the operation for the modifier, and optionally lock the modifier to the operation chosen
+        .operation(EntityAttributeModifier.Operation.ADDITION, true)
+        //build! gets you a ValidatedEntity Attribute
+        .build()
+
+    var exampleValidatedAttribute2 = ValidatedEntityAttribute.Builder("generic.max_health", false)
+        // supply a UUID and name, otherwise generic ones will be used for you
+        .uuid("8563c5ba-059b-11ef-9262-0242ac120002")
+        .name("My Example ValidatedEntityAttribute")
+        //set amount, and optionally provide a range restriction
+        .amount(0.1,0.0,1.0)
+        //set the operation for the modifier, and optionally lock the modifier to the operation chosen
+        .operation(EntityAttributeModifier.Operation.MULTIPLY_TOTAL, false)
+        //build! gets you a ValidatedEntity Attribute
+        .build()
     /*
     {
       "bl1": false,

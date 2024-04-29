@@ -35,11 +35,13 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
     init {
         setMaxLength(1000)
         this.text = textSupplier.get()
+        this.setCursorToStart()
     }
 
     override fun renderButton(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
         super.renderButton(context, mouseX, mouseY, delta)
         this.text = textSupplier.get()
+        this.setCursorToStart()
     }
 
     override fun onClick(mouseX: Double, mouseY: Double) {

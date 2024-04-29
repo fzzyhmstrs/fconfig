@@ -58,7 +58,13 @@ object ValidatedCollectionExamples {
 
     fun sets() {
         //validated set, based on TestEnum, validation limiting to those keys
-        val validatedSet = ValidatedList(listOf(KeyEnum.KEY_1), KeyEnum::class.java.validated())
+        val validatedSet = ValidatedSet(setOf(KeyEnum.KEY_1), KeyEnum::class.java.validated())
+
+        //wraps the vararg valued provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
+        val setFromFieldArg = ValidatedIdentifier().toSet(Identifier("stick"), Identifier("blaze_rod"))
+
+        //wraps the collection provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
+        val setFromFieldCollection = ValidatedIdentifier().toSet(setOf(Identifier("wooden_sword"), Identifier("stone_sword")))
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows
