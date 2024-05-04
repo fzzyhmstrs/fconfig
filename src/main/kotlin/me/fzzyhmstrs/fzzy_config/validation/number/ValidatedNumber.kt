@@ -43,6 +43,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
 import kotlin.math.max
+import kotlin.math.min
 
 sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, protected val maxValue: T, protected val widgetType: WidgetType): ValidatedField<T>(defaultValue) where T: Number, T:Comparable<T> {
 
@@ -138,11 +139,25 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         }
 
+        private fun split(range: Double): Double{
+            var d = range
+            while (d.toInt().toDouble() != d){
+                d *= 10.0
+            }
+            return if (d % 16.0 == 0.0){
+                (range / 16.0)
+            } else if (d % 12.0 == 0.0){
+                (range / 12.0)
+            } else {
+                (range / 10.0)
+            }
+        }
+
         private var confirmActive = false
         private var cachedWrappedValue: T = wrappedValue.get()
         private var value: T = wrappedValue.get()
-        private val increment = max((maxValue.toDouble() - minValue.toDouble())/ 102.0, 1.0)
-        private var isValid = validator.validateEntry(wrappedValue.get(),EntryValidator.ValidationType.STRONG).isValid()
+        private val increment = max((maxValue.toDouble() - minValue.toDouble())/ 102.0, min(1.0,split(maxValue.toDouble() - minValue.toDouble())))
+        private var isValid = validator.validateEntry(wrappedValue.get(), EntryValidator.ValidationType.STRONG).isValid()
 
         private fun isChanged(): Boolean{
             return value != wrappedValue.get()

@@ -17,6 +17,8 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.input.KeyCodes
+import net.minecraft.entity.ai.pathing.NavigationType
+import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -49,7 +51,7 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return if (!this.isFocused) {
+        return if (!this.isFocused || isNavigation(keyCode)) {
             false
         } else {
             if(KeyCodes.isToggle(keyCode))
@@ -58,6 +60,9 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
                 onClick.interact(this, true, keyCode, scanCode, modifiers)
             return true
         }
+    }
+    private fun isNavigation(keyCode: Int): Boolean{
+        return keyCode == GLFW.GLFW_KEY_TAB || keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_DOWN || keyCode == GLFW.GLFW_KEY_UP
     }
 
     /**

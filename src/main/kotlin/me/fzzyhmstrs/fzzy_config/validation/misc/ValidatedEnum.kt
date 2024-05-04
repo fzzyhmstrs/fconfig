@@ -49,7 +49,7 @@ import kotlin.math.max
  */
 open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
 
-    private val valuesMap: Map<String, T> = defaultValue.declaringJavaClass.enumConstants.associateBy { it.name } as Map<String, T>
+    private val valuesMap: Map<String, T> = defaultValue.declaringJavaClass.enumConstants.associateBy { (it as Enum<*>).name } as Map<String, T>
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
@@ -130,8 +130,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     @Environment(EnvType.CLIENT)
     private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedEnum<T>): PressableWidget(0,0,110,20, FcText.empty()) {
 
-        val constants = entry.get()::class.java.enumConstants.filter { choicePredicate.validateEntry(it,
-            EntryValidator.ValidationType.STRONG).isValid() }
+        val constants = entry.get().declaringJavaClass.enumConstants.mapNotNull { it as? T }.filter { choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }
 
         override fun getMessage(): Text {
             return entry.get().let { it.transLit(it.name) }
