@@ -13,3 +13,4 @@
 * PopupWidget fires mouse released on things when dragged out of bounds
 * Fixed `ValidatedEnum` client crash related to certain types of Enums.
 * Fixed `OnClickTextFieldWidget` improperly trapping keyboard navigation.
+* Polished fabric.mod.json file to be more accurate to the mod requirements.
