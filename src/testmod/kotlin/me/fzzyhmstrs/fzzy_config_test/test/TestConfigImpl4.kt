@@ -48,7 +48,7 @@ class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
         //set amount, and optionally provide a range restriction
         .amount(1.0,0.0,8.0)
         //set the operation for the modifier, and optionally lock the modifier to the operation chosen
-        .operation(EntityAttributeModifier.Operation.ADDITION, true)
+        .operation(EntityAttributeModifier.Operation.ADD_VALUE, true)
         //build! gets you a ValidatedEntity Attribute
         .build()
 
@@ -59,7 +59,7 @@ class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
         //set amount, and optionally provide a range restriction
         .amount(0.1,0.0,1.0)
         //set the operation for the modifier, and optionally lock the modifier to the operation chosen
-        .operation(EntityAttributeModifier.Operation.MULTIPLY_TOTAL, false)
+        .operation(EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, false)
         //build! gets you a ValidatedEntity Attribute
         .build()
     /*

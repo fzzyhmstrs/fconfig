@@ -78,7 +78,7 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         return this.align(1.0f)
     }
 
-    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = messageSupplier.get()
         val i = getWidth()
         val j = textRenderer.getWidth(text)

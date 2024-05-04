@@ -37,6 +37,8 @@ import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.client.gui.widget.TextWidget
+import net.minecraft.component.type.AttributeModifierSlot
+import net.minecraft.component.type.AttributeModifiersComponent
 import net.minecraft.entity.attribute.EntityAttribute
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributeModifier.Operation
@@ -68,13 +70,38 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
 ) {
 
     /**
-     * adds the stored Attribute and its modifier to a passed modifier map. This is useful when dealing with methods such as [ItemStack.getAttributeModifiers]
+     * adds the stored Attribute and its modifier to a passed modifier map.
      * @param map [Multimap]&lt;[EntityAttribute],[EntityAttributeModifier]&gt; - the map to add the modifier pair to
      * @author fzzyhmstrs
      * @since 0.3.1
      */
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Probably not useful in 1.20.5+")
     fun addToMap(map: Multimap<EntityAttribute, EntityAttributeModifier>){
         storedValue.addToMap(map)
+    }
+    /**
+     * adds the stored Attribute and its modifier to a passed Attribute Component builder
+     * @param builder [AttributeModifiersComponent.Builder] - to add this attribute/modifier pair to
+     * @param slot [AttributeModifierSlot] - the slot for the attribute, defaults to [AttributeModifierSlot.ANY]
+     * @author fzzyhmstrs
+     * @since 0.3.1
+     */
+    @JvmOverloads
+    fun addToBuilder(builder: AttributeModifiersComponent.Builder, slot: AttributeModifierSlot = AttributeModifierSlot.ANY){
+        storedValue.addToBuilder(builder, slot)
+    }
+    /**
+     * adds the stored Attribute and its modifier to a passed Attribute Component builder
+     * @param component [AttributeModifiersComponent] - to add this attribute/modifier pair to
+     * @param slot [AttributeModifierSlot] - the slot for the attribute, defaults to [AttributeModifierSlot.ANY]
+     * @return [AttributeModifiersComponent] the new component with the new attribute/modifier pair added
+     * @author fzzyhmstrs
+     * @since 0.3.1
+     */
+    @JvmOverloads
+    fun addToComponent(component: AttributeModifiersComponent, slot: AttributeModifierSlot = AttributeModifierSlot.ANY): AttributeModifiersComponent{
+        return storedValue.addToComponent(component, slot)
     }
 
     /**
@@ -96,7 +123,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @since 0.3.1
      */
     fun updateModifier(new: EntityAttributeModifier){
-        validateAndSet(storedValue.copy(uuid = new.id, name = new.name, amount = amountValidator.correctEntry(new.value,EntryValidator.ValidationType.STRONG).get(), operation = if(lockOperation) storedValue.operation else new.operation))
+        validateAndSet(storedValue.copy(uuid = new.uuid, name = new.name, amount = amountValidator.correctEntry(new.value,EntryValidator.ValidationType.STRONG).get(), operation = if(lockOperation) storedValue.operation else new.operation))
     }
     /**
      * updates this validation with a new double value
@@ -213,14 +240,14 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
     private fun getButtonText(inputAttribute: Identifier, inputAmount: Double, inputOperation: Operation): MutableText{
         val attribute = Registries.ATTRIBUTE.get(inputAttribute) ?: return "fc.validated_field.entity_attribute.error".translate()
         val amount = when(inputOperation){
-            Operation.ADDITION -> if (attribute == EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE) inputAmount * 10.0 else inputAmount
-            Operation.MULTIPLY_BASE -> inputAmount * 100.0
-            Operation.MULTIPLY_TOTAL -> inputAmount * 100.0
+            Operation.ADD_VALUE -> if (attribute == EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE) inputAmount * 10.0 else inputAmount
+            Operation.ADD_MULTIPLIED_BASE -> inputAmount * 100.0
+            Operation.ADD_MULTIPLIED_TOTAL -> inputAmount * 100.0
         }
         return if (inputAmount > 0.0){
-            FcText.translatable("attribute.modifier.plus.${inputOperation.id}",ItemStack.MODIFIER_FORMAT.format(amount),FcText.translatable(attribute.translationKey)).formatted(Formatting.DARK_GREEN)
+            FcText.translatable("attribute.modifier.plus.${inputOperation.id}", AttributeModifiersComponent.DECIMAL_FORMAT.format(amount),FcText.translatable(attribute.translationKey)).formatted(Formatting.DARK_GREEN)
         } else {
-            FcText.translatable("attribute.modifier.take.${inputOperation.id}",ItemStack.MODIFIER_FORMAT.format(-amount),FcText.translatable(attribute.translationKey)).formatted(Formatting.RED)
+            FcText.translatable("attribute.modifier.take.${inputOperation.id}",AttributeModifiersComponent.DECIMAL_FORMAT.format(-amount),FcText.translatable(attribute.translationKey)).formatted(Formatting.RED)
         }
     }
 
@@ -254,7 +281,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         private var uuid: UUID? = null
         private var name: String = attributeId.toTranslationKey()
         private var amount: ValidatedDouble = ValidatedDouble(0.0)
-        private var operation: Operation = Operation.ADDITION
+        private var operation: Operation = Operation.ADD_VALUE
         private var lockOperation = false
 
         /**
@@ -325,9 +352,22 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         internal fun validator(): ValidatedIdentifier{
             return idValidator
         }
+        @Deprecated("Not used in 1.20.5")
         @Internal
         internal fun addToMap(map: Multimap<EntityAttribute, EntityAttributeModifier>){
                 Registries.ATTRIBUTE.get(attributeId)?.let { map.put(it, EntityAttributeModifier(uuid,name,amount,operation)) }
+        }
+        @Internal
+        internal fun addToBuilder(builder: AttributeModifiersComponent.Builder, slot: AttributeModifierSlot){
+            Registries.ATTRIBUTE.getEntry(attributeId).ifPresent {
+                builder.add(it,createModifier(), slot)
+            }
+        }
+        @Internal
+        internal fun addToComponent(component: AttributeModifiersComponent, slot: AttributeModifierSlot): AttributeModifiersComponent{
+            var new: AttributeModifiersComponent = component
+            Registries.ATTRIBUTE.getEntry(attributeId).ifPresent{ new = component.with(it, createModifier(), slot) }
+            return new
         }
         @Internal
         internal fun createModifier(): EntityAttributeModifier{
