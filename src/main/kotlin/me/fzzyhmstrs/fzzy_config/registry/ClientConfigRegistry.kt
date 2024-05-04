@@ -10,6 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.registry
 
+import com.google.common.collect.HashMultimap
+import com.google.common.collect.Multimap
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
@@ -33,7 +35,7 @@ internal object ClientConfigRegistry {
     private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
     private val configScreenManagers: MutableMap<String, ConfigScreenManager> = mutableMapOf()
     private var validScopes: MutableSet<String> = mutableSetOf() //configs are sorted into Managers by namespace
-    private var validSubScopes: MutableSet<String> = mutableSetOf()
+    private var validSubScopes: HashMultimap<String,String> = HashMultimap.create()
     private var hasScrapedMetadata = false
     @Environment(EnvType.CLIENT)
     internal fun getScreenScopes(): Set<String>{
@@ -56,8 +58,8 @@ internal object ClientConfigRegistry {
     }
 
     @Environment(EnvType.CLIENT)
-    internal fun getSubScreenScopes(): Set<String>{
-        return validSubScopes
+    internal fun getSubScreenScopes(parentScope: String): Set<String> {
+        return validSubScopes.get(parentScope)
     }
 
     @Environment(EnvType.CLIENT)
@@ -119,7 +121,7 @@ internal object ClientConfigRegistry {
     @Environment(EnvType.CLIENT)
     internal fun registerConfig(config: Config, baseConfig: Config){
         validScopes.add(config.getId().namespace)
-        validSubScopes.add(config.getId().path)
+        validSubScopes.put(config.getId().namespace, config.getId().path)
         UpdateManager.applyKeys(config)
         clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config,baseConfig)
     }

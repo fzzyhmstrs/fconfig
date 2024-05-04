@@ -6,9 +6,9 @@
 ### Changes
 * `OnClickTextFieldWidget` now renders its displayed text from the beginning, instead of the end.
 * `ValidatedString` will throw an exception from the Regex constructor if the regex can't match to the default value given
+* `ValidatedDouble` or `ValidatedFloat` with small ranges now have better slider scaling with keyboard navigation, instead of sticking to increments of 1.0
 
 ### Fixes
-* `ValidatedDouble` or `ValidatedFloat` with small ranges now have better slider scaling, instead of sticking to increments of 1.0
 * Fixed `configure` command including all screen subscopes, not just the relevant subscopes
 * PopupWidget fires mouse released on things when dragged out of bounds
 * Fixed `ValidatedEnum` client crash related to certain types of Enums.
