@@ -30,7 +30,8 @@ internal class ValidSubScopesArgumentType: ArgumentType<String> {
         context: CommandContext<S>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
-        return CommandSource.suggestMatching(ClientConfigRegistry.getSubScreenScopes(),builder)
+        val parentScope = try { ValidScopesArgumentType.getValidScope(context,"base_scope") ?: "" } catch (e: Exception) { "" }
+        return CommandSource.suggestMatching(ClientConfigRegistry.getSubScreenScopes(parentScope),builder)
     }
     override fun getExamples(): MutableCollection<String> {
         return mutableSetOf("my_config", "item_config", "items")
