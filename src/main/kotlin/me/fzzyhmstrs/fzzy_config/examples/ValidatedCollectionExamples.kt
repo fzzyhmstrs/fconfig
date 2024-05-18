@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import net.minecraft.registry.Registries
+import net.minecraft.registry.RegistryKeys
 import net.minecraft.util.Identifier
 
 object ValidatedCollectionExamples {
@@ -122,7 +123,7 @@ object ValidatedCollectionExamples {
     fun identifierMaps() {
         //Example ValidatedIdentifierMap with identifiers restricted to all registered enchantments
         val validatedIdentifierMap = ValidatedIdentifierMap(mapOf(Identifier("sharpness") to true),
-            ValidatedIdentifier.ofRegistry(Registries.ENCHANTMENT),ValidatedBoolean())
+            ValidatedIdentifier.ofRegistryKey(RegistryKeys.ENCHANTMENT),ValidatedBoolean())
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows
