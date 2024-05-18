@@ -108,7 +108,7 @@ internal object ClientConfigRegistry {
     }
 
     @Environment(EnvType.CLIENT)
-    private fun getValidScope(scope: String): String?{
+    private fun getValidScope(scope: String): String? {
         if(validScopes.contains(scope)) return scope
         var validScopeTry = scope.substringBeforeLast('.')
         if (validScopeTry == scope) return null
@@ -119,7 +119,7 @@ internal object ClientConfigRegistry {
     }
 
     @Environment(EnvType.CLIENT)
-    internal fun registerConfig(config: Config, baseConfig: Config){
+    internal fun registerConfig(config: Config, baseConfig: Config) {
         validScopes.add(config.getId().namespace)
         validSubScopes.put(config.getId().namespace, config.getId().path)
         UpdateManager.applyKeys(config)

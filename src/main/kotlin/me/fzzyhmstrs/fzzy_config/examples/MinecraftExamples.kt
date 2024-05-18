@@ -94,7 +94,7 @@ object MinecraftExamples {
             //set amount, and optionally provide a range restriction
             .amount(1.0,0.0,8.0)
             //set the operation for the modifier, and optionally lock the modifier to the operation chosen
-            .operation(EntityAttributeModifier.Operation.ADDITION, true)
+            .operation(EntityAttributeModifier.Operation.ADD_VALUE, true)
             //build! gets you a ValidatedEntity Attribute
             .build()
 

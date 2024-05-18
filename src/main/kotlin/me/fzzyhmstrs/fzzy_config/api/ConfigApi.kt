@@ -23,6 +23,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.peanuuutz.tomlkt.*
 import java.io.File
+import java.util.function.Supplier
 
 /**
  * API for management of config files.
@@ -44,7 +45,7 @@ object ConfigApi {
      * - BOTH: Will be registered to both registries (default functionality). Updates made in the client-side GUI by Server Operators with the correct permissions will be automatically propagated to the server and out to any clients currently connected.
      * @param T the config type, any subclass of [Config]
      * @param config the config to register
-     * @param configClass A supplier of config class instances.
+     * @param configClass A Function0 of config class instances.
      * @param registerType enum of [RegisterType] that defines which registries to register to. defaults to [RegisterType.BOTH]
      * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration.registration
      * @author fzzyhmstrs
@@ -58,13 +59,37 @@ object ConfigApi {
     }
 
     /**
+     * Registers a [Config] to registries. Does NOT load or validate it from file. Use this if you have custom initialization to perform, otherwise use [registerAndLoadConfig] for full initialization functionality.
+     *
+     * Configs registered this way still have to handle their own initialization. That is to say, they have to be instantiated and passed to the registry in a timely manner, otherwise they will not be loaded in time for CONFIGURATION stage syncing with clients. Loading with the Fabric [ModInitializer][net.fabricmc.api.ModInitializer] is a convenient and typical way to achieve this.
+     *
+     * Depending on the RegistryType(s) picked, the config will have different functionalities:
+     * - SYNC: Will be registered to the SyncedConfigRegistry. Configs will be automatically synchronized and saved to clients during the CONFIGURATION stage, and also during any datapack reloads. Configs will NOT have client-side GUIs with this selection.
+     * - CLIENT: Will be registered to the ClientConfigRegistry. Configs will have GUI Screens automatically generated for in-game configuration, and screens will be automatically registered with ModMenu and Catalogue. Clients will not sync between servers and clients, and players don't need any special permissions to edit entries in a CLIENT config.
+     * - BOTH: Will be registered to both registries (default functionality). Updates made in the client-side GUI by Server Operators with the correct permissions will be automatically propagated to the server and out to any clients currently connected.
+     * @param T the config type, any subclass of [Config]
+     * @param config the config to register
+     * @param configClass A Supplier of config class instances.
+     * @param registerType enum of [RegisterType] that defines which registries to register to. defaults to [RegisterType.BOTH]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration.registration
+     * @author fzzyhmstrs
+     * @since 0.3.2
+     */
+    @JvmStatic
+    @JvmOverloads
+    @Deprecated("Consider registerAndLoadConfig() instead, to perform automatic loading, registering, and validating in one step.")
+    fun <T: Config> registerConfig(config: T,configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T{
+        return ConfigApiImpl.registerConfig(config, { configClass.get() }, registerType)
+    }
+
+    /**
      * Creates and registers a Config. Use this over [registerConfig] and [readOrCreateAndValidate] if possible.
      *
      * Performs the entire creation, loading, validation, and registration process on a config class. Internally performs the two steps
      * 1) [readOrCreateAndValidate]
      * 2) [registerConfig]
      * @param T the config type, any subclass of [Config]
-     * @param configClass supplier of config class instances
+     * @param configClass Function0 of config class instances
      * @param registerType enum of [RegisterType] that defines which registries to register to. defaults to [RegisterType.BOTH]
      * @return loaded, validated, and registered instance of T
      * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration.registration
@@ -78,6 +103,26 @@ object ConfigApi {
     }
 
     /**
+     * Creates and registers a Config. Use this over [registerConfig] and [readOrCreateAndValidate] if possible.
+     *
+     * Performs the entire creation, loading, validation, and registration process on a config class. Internally performs the two steps
+     * 1) [readOrCreateAndValidate]
+     * 2) [registerConfig]
+     * @param T the config type, any subclass of [Config]
+     * @param configClass Supplier of config class instances
+     * @param registerType enum of [RegisterType] that defines which registries to register to. defaults to [RegisterType.BOTH]
+     * @return loaded, validated, and registered instance of T
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ConfigRegistration.registration
+     * @author fzzyhmstrs
+     * @since 0.3.2
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T: Config> registerAndLoadConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T{
+        return ConfigApiImpl.registerAndLoadConfig({ configClass.get() }, registerType)
+    }
+
+    /**
      * Reads a config from File or Creates a new config class; writes out any corrections, updates, or new content to File. Automatically adds ".toml" to the name for reading and writing.
      *
      * Includes [Version] updating support, automatic validation and correction, and detailed error reporting. Use this to generate the actual config class instance to be used in-game, if you have other custom initialization to perform, otherwise see [registerAndLoadConfig]. See the Example Config for typical usage case.
@@ -85,7 +130,7 @@ object ConfigApi {
      * @param name String. The config name, will become the file name. In an identifier, would be the "path". Adds ".toml" to the name for reading/writing to file automatically.
      * @param folder String, optional. A base config folder name. If left out, will write to the main config directory (not recommended). In an Identifier, this would be the "namespace"
      * @param subfolder String, optional. A subfolder name if desired. By default, blank. The file will appear in the base "namespace" folder if no child is given.
-     * @param configClass () -> T. A provider of instances of the config class itself. In Kotlin this can typically be written like `{ MyConfigClass() }`
+     * @param configClass Function0. A provider of instances of the config class itself. In Kotlin this can typically be written like `{ MyConfigClass() }`
      * @return An instance of the configClass passed to it, updated and validated or passed back as-is, depending on circumstances and errors encountered
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -98,9 +143,29 @@ object ConfigApi {
     }
 
     /**
+     * Reads a config from File or Creates a new config class; writes out any corrections, updates, or new content to File. Automatically adds ".toml" to the name for reading and writing.
+     *
+     * Includes [Version] updating support, automatic validation and correction, and detailed error reporting. Use this to generate the actual config class instance to be used in-game, if you have other custom initialization to perform, otherwise see [registerAndLoadConfig]. See the Example Config for typical usage case.
+     * @param T The config class type. Must be a subclass of [Config]
+     * @param name String. The config name, will become the file name. In an identifier, would be the "path". Adds ".toml" to the name for reading/writing to file automatically.
+     * @param folder String, optional. A base config folder name. If left out, will write to the main config directory (not recommended). In an Identifier, this would be the "namespace"
+     * @param subfolder String, optional. A subfolder name if desired. By default, blank. The file will appear in the base "namespace" folder if no child is given.
+     * @param configClass Supplier. A provider of instances of the config class itself.
+     * @return An instance of the configClass passed to it, updated and validated or passed back as-is, depending on circumstances and errors encountered
+     * @author fzzyhmstrs
+     * @since 0.3.2
+     */
+    @JvmStatic
+    @JvmOverloads
+    @Deprecated("Consider registerAndLoadConfig() instead, or readOrCreateAndValidate(configClass) for consistent application of names")
+    fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: Supplier<T>): T{
+        return ConfigApiImpl.readOrCreateAndValidate(name, folder, subfolder) { configClass.get() }
+    }
+
+    /**
      * overload of [readOrCreateAndValidate] that automatically applies the name, folder, and subfolder from the config itself. Automatically adds ".toml" to the name for reading and writing.
      * @param T type of config being created. Any subclass of [Config]
-     * @param configClass supplier of T
+     * @param configClass Function0 of T
      * @return An instance of the configClass passed to it, updated and validated or passed back as-is, depending on circumstances and errors encountered
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -108,6 +173,19 @@ object ConfigApi {
     @JvmStatic
     fun <T: Config> readOrCreateAndValidate(configClass: () -> T): T{
         return ConfigApiImpl.readOrCreateAndValidate(configClass)
+    }
+
+    /**
+     * overload of [readOrCreateAndValidate] that automatically applies the name, folder, and subfolder from the config itself. Automatically adds ".toml" to the name for reading and writing.
+     * @param T type of config being created. Any subclass of [Config]
+     * @param configClass Supplier of T
+     * @return An instance of the configClass passed to it, updated and validated or passed back as-is, depending on circumstances and errors encountered
+     * @author fzzyhmstrs
+     * @since 0.3.2
+     */
+    @JvmStatic
+    fun <T: Config> readOrCreateAndValidate(configClass: Supplier<T>): T{
+        return ConfigApiImpl.readOrCreateAndValidate { configClass.get() }
     }
 
     /**

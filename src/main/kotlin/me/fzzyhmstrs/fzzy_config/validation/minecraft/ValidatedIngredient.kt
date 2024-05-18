@@ -52,7 +52,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<ValidatedIngredient.IngredientProvider>(defaultValue) {
+open class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<IngredientProvider>(defaultValue) {
 
     /**
      * A validated provider of [Ingredient]
@@ -114,6 +114,46 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
     fun toIngredient(): Ingredient{
         return storedValue.provide()
     }
+
+    /**
+     * Updates this ValidatedIngredient with a new single-item Ingredient
+     * @param identifier [Identifier] - the id of the new single item to wrap in this ingredient
+     * @return This validated ingredient after validating and updating with the new input
+     * @author fzzyhmstrs
+     * @since 0.3.2
+     */
+    fun validateAndSet(identifier: Identifier): ValidatedIngredient {
+        val provider = ItemProvider(identifier)
+        validateAndSet(provider)
+        return this
+    }
+
+    /**
+     * Updates this ValidatedIngredient with a new multi-item Ingredient
+     * @param identifiers [List]&lt;[Identifier]&gt; - list of ids of the new items to wrap in this ingredient
+     * @return This validated ingredient after validating and updating with the new input
+     * @author fzzyhmstrs
+     * @since 0.3.2
+     */
+    fun validateAndSet(identifiers: Set<Identifier>): ValidatedIngredient {
+        val provider = ListProvider(identifiers)
+        validateAndSet(provider)
+        return this
+    }
+
+    /**
+     * Updates this ValidatedIngredient with a new tag Ingredient
+     * @param tag [TagKey] - the tagkey of the new item tag to wrap in this ingredient
+     * @return This validated ingredient after validating and updating with the new input
+     * @author fzzyhmstrs
+     * @since 0.3.2
+     */
+    fun validateAndSet(tag: TagKey<Item>): ValidatedIngredient {
+        val provider = TagProvider(tag.id)
+        validateAndSet(provider)
+        return this
+    }
+
     @Internal
     @Deprecated("use deserialize to avoid accidentally overwriting validation and error reporting")
     override fun deserializeEntry(
