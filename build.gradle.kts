@@ -160,6 +160,9 @@ tasks {
         exclude("me/fzzyhmstrs/fzzy_config/examples/**")
         from("LICENSE") { rename { "${it}_${base.archivesName.get()}" } }
     }
+    jar {
+        from( "credits.txt") { rename { "${base.archivesName.get()}_${it}" } }
+    }
     processResources {
         inputs.property("version", project.version)
         filesMatching("fabric.mod.json") { expand(mutableMapOf("version" to project.version)) }

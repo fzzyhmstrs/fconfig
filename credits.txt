@@ -1,0 +1,4 @@
+BackupCup of "https://www.curseforge.com/members/backupcup/projects" and "https://github.com/EndLone"
+* entry_ok.png
+* entry_error.png
+* ingredient.png
