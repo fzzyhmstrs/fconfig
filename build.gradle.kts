@@ -157,6 +157,7 @@ tasks {
         //targetCompatibility = javaVersion.toString()
     }
     jar {
+        exclude("me/fzzyhmstrs/fzzy_config/examples/**")
         from("LICENSE") { rename { "${base.archivesName.get()}_${it}" } }
     }
     jar {
