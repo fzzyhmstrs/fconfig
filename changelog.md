@@ -1,9 +1,9 @@
 ### Additions
-* Added `Supplier` overloads to `ConfigApi` to provide smoother interop with Java implementations, reducing the need for java mods to add fabric language kotlin to their compile class path.
-* Added custom `validateAndSet` methods to `ValidatedIngredient` that allow for direct updating via Identifier, Set, or Tag without having to make your own Ingredient Provider instance first.
+* None.
 
 ### Changes
-* None.
+* Updated the `ValidatedIngredient` interface to a new popup with two list editors, list viewers, and "Clear" buttons.
+* Added a `supplyTooltipOnOverflow` method to `SuppliedTextWidget` that allows for provision of a tooltip in case the text widget overflows and "trims" the input. This can be identical to the text supplier (can be the text supplier instance itself), or can be a separate supplier with, for example, newlines instead of commas separating text elements
 
 ### Fixes
-* None.
+* `ValidatedIngredient` now supports both tags and item IDs, instead of just item ids. The constructor now accepts `Set<Object>`, which can be composed of TagKeys and Identifiers (for tags and items, respectively)
