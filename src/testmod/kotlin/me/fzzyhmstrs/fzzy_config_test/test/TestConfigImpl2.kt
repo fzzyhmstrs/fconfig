@@ -27,11 +27,14 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
+import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.ItemTags
+import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 import java.awt.Color
 
+@Version(1)
 class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
 
     @ClientModifiable
@@ -70,7 +73,9 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
             }
             .build()
 
-        var ingredient1 = ValidatedIngredient(Identifier("stick"))
+        var ingredient1 = ValidatedIngredient(Identifier("diamond_axe"))
+
+        var ingredient2 = ValidatedIngredient(setOf(Identifier("diamond_axe"),TagKey.of(RegistryKeys.ITEM,Identifier("barrels"))))
 
         var tag1 = ValidatedTagKey(ItemTags.PICKAXES)
 

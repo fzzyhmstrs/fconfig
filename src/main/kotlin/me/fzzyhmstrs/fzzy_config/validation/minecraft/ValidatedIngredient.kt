@@ -14,8 +14,10 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
+import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -30,14 +32,19 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.MultilineTextWidget
+import net.minecraft.client.gui.widget.TextWidget
+import net.minecraft.data.server.tag.TagProvider
 import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.recipe.Ingredient
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.TagKey
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -75,14 +82,14 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
      * This does not store an ingredient, it stores an [IngredientProvider], which lazily generates the ingredient only when requested.
      *
      * Initializes this validation with a multi-item IngredientProvider
-     * @param set [Set]<[Identifier]> defining the items
+     * @param set [Set]<Any> - Set defining the default tags and items. Anything that isn't an Identifier or Tagkey&lt;Item&gt; will be ignored
      * @param itemPredicate [Predicate]<Identifier>, optional - restricts the set of allowable items (default is any item in the Items registry)
      * @param tagPredicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag in the Items registry)
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmOverloads
-    constructor(set: Set<Identifier>, itemPredicate: Predicate<Identifier>? = null, tagPredicate: Predicate<Identifier>? = null): this(ListProvider(set), itemPredicate, tagPredicate)
+    constructor(set: Set<Any>, itemPredicate: Predicate<Identifier>? = null, tagPredicate: Predicate<Identifier>? = null): this(ListProvider(set), itemPredicate, tagPredicate)
 
     /**
      * A validated provider of [Ingredient]
@@ -97,13 +104,34 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
      * @since 0.2.0
      */
     @JvmOverloads
-    constructor(tag: TagKey<Item>, itemPredicate: Predicate<Identifier>? = null, tagPredicate: Predicate<Identifier>? = null): this(TagProvider(tag.id), itemPredicate, tagPredicate)
+    constructor(tag: TagKey<Item>, itemPredicate: Predicate<Identifier>? = null, tagPredicate: Predicate<Identifier>? = null): this(
+        TagProvider(tag.id), itemPredicate, tagPredicate)
 
 
     private val tagValidator = if(tagPredicate == null) ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM) else ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM,tagPredicate)
     @Suppress("DEPRECATION")
     private val itemValidator = if(itemPredicate == null) ValidatedIdentifier.ofRegistry(Registries.ITEM) else ValidatedIdentifier.ofRegistry(Registries.ITEM) { id, _ -> itemPredicate.test(id) }
-    private val listValidator = ValidatedSet(setOf(), itemValidator)
+    private val listTagValidator = tagValidator.toSet()
+    private val listItemValidator = itemValidator.toSet()
+
+
+    init{
+        when(storedValue.type()) {
+            ProviderType.STACK -> {
+                listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))
+                listTagValidator.validateAndSet(setOf())
+            }
+            ProviderType.LIST -> {
+                listItemValidator.validateAndSet((storedValue as ListProvider).ids)
+                listTagValidator.validateAndSet((storedValue as ListProvider).tags)
+            }
+            ProviderType.TAG -> {
+                listItemValidator.validateAndSet(setOf())
+                listTagValidator.validateAndSet(setOf((storedValue as TagProvider).tag))
+            }
+        }
+    }
+
 
     /**
      * Supplies the [Ingredient] from this ValidatedIngredients Provider
@@ -130,12 +158,12 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
 
     /**
      * Updates this ValidatedIngredient with a new multi-item Ingredient
-     * @param identifiers [List]&lt;[Identifier]&gt; - list of ids of the new items to wrap in this ingredient
+     * @param identifiers [List]&lt;[Any]&gt; - List of tags and ids. Anything that isn't an Identifier or Tagkey&lt;Item&gt; will be ignored
      * @return This validated ingredient after validating and updating with the new input
      * @author fzzyhmstrs
-     * @since 0.3.2
+     * @since 0.3.3
      */
-    fun validateAndSet(identifiers: Set<Identifier>): ValidatedIngredient {
+    fun validateAndSet(identifiers: Set<Any>): ValidatedIngredient {
         val provider = ListProvider(identifiers)
         validateAndSet(provider)
         return this
@@ -165,9 +193,18 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         @Suppress("DEPRECATION")
         val result = super.deserializeEntry(toml, errorBuilder, fieldName, flags)
         when(storedValue.type()){
-            ProviderType.STACK -> itemValidator.validateAndSet((storedValue as ItemProvider).id)
-            ProviderType.LIST -> listValidator.validateAndSet((storedValue as ListProvider).ids)
-            ProviderType.TAG -> tagValidator.validateAndSet((storedValue as TagProvider).tag)
+            ProviderType.STACK -> {
+                listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))
+                listTagValidator.validateAndSet(setOf())
+            }
+            ProviderType.LIST -> {
+                listItemValidator.validateAndSet((storedValue as ListProvider).ids)
+                listTagValidator.validateAndSet((storedValue as ListProvider).tags)
+            }
+            ProviderType.TAG -> {
+                listItemValidator.validateAndSet(setOf())
+                listTagValidator.validateAndSet(setOf((storedValue as TagProvider).tag))
+            }
         }
         return result
     }
@@ -217,176 +254,42 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
      * @suppress
      */
      override fun toString(): String{
-         return "Validated Ingredient[value=$storedValue, validation={$itemValidator, $listValidator, $tagValidator}]"
+         return "Validated Ingredient[value=$storedValue, validation={$itemValidator, $tagValidator, $listItemValidator, $listTagValidator}]"
      }
 
     @Environment(EnvType.CLIENT)
     private fun openIngredientPopup(b: ClickableWidget){
         val textRenderer = MinecraftClient.getInstance().textRenderer
-        val typeChooser = ValidatedEnum(storedValue.type().toWrapper(), ValidatedEnum.WidgetType.CYCLING)
-        val popup = PopupWidget.Builder(translation())
+
+        val popupNew = PopupWidget.Builder(translation())
             .addDivider()
-            .addElement("hint",MultilineTextWidget("fc.validated_field.ingredient".translate(),textRenderer).setMaxWidth(110).setCentered(true), Position.BELOW, Position.ALIGN_CENTER)
-            .addElement("type",typeChooser.widgetEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("three_widget",ThreeTypesWidget({ fromWrapper(typeChooser.get()) }, itemValidator.widgetAndTooltipEntry(ChoiceValidator.any()), listValidator.widgetAndTooltipEntry(ChoiceValidator.any()),tagValidator.widgetAndTooltipEntry(ChoiceValidator.any())), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("items_label",TextWidget(110,13,"fc.validated_field.ingredient.items".translate(),textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("items",listItemValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("items_clear",ButtonWidget.Builder("fc.validated_field.ingredient.clear".translate()){ _ -> listItemValidator.validateAndSet(setOf()) }.size(60,20).build(),"items", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("items_textbox", SuppliedTextWidget({ listItemValidator.get().toString().lit().formatted(Formatting.GRAY) },textRenderer,110,20).supplyTooltipOnOverflow { listItemValidator.get().joinToString("\n").lit() },"items", Position.ALIGN_JUSTIFY, Position.BELOW)
+            .addDivider()
+            .addElement("tags_label",TextWidget(110,13,"fc.validated_field.ingredient.tags".translate(),textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("tags",listTagValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("tags_clear",ButtonWidget.Builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60,20).build(),"tags", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().formatted(Formatting.GRAY) },textRenderer,110,20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() },"tags", Position.ALIGN_JUSTIFY, Position.BELOW)
             .addDoneButton()
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
-            .onClose{ this.setAndUpdate(fromWrapper(typeChooser.get()).create(this)) }
+            .onClose{ this.setAndUpdate(fromLists()) }
             .build()
-        PopupWidget.push(popup)
+        PopupWidget.push(popupNew)
     }
 
     @Environment(EnvType.CLIENT)
-    private fun fromWrapper(wrapper: ProviderTypeWrapper): ProviderType{
-        return when(wrapper){
-            ProviderTypeWrapper.STACK -> ProviderType.STACK
-            ProviderTypeWrapper.LIST -> ProviderType.LIST
-            ProviderTypeWrapper.TAG -> ProviderType.TAG
-        }
-    }
-
-
-    @Environment(EnvType.CLIENT)
-    private class ThreeTypesWidget(private val typeSupplier: Supplier<ProviderType>, private val stack: ClickableWidget, private val list: ClickableWidget, private val tag: ClickableWidget): ClickableWidget(0,0,110,20,FcText.empty()){
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            when(typeSupplier.get()){
-                ProviderType.STACK -> stack.render(context, mouseX, mouseY, delta)
-                ProviderType.LIST -> list.render(context, mouseX, mouseY, delta)
-                ProviderType.TAG -> tag.render(context, mouseX, mouseY, delta)
-            }
-        }
-
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.mouseClicked(mouseX, mouseY, button)
-                ProviderType.LIST -> list.mouseClicked(mouseX, mouseY, button)
-                ProviderType.TAG -> tag.mouseClicked(mouseX, mouseY, button)
-            }
-        }
-        override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
-                ProviderType.LIST -> list.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
-                ProviderType.TAG -> tag.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
-            }
-        }
-        override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.mouseReleased(mouseX, mouseY, button)
-                ProviderType.LIST -> list.mouseReleased(mouseX, mouseY, button)
-                ProviderType.TAG -> tag.mouseReleased(mouseX, mouseY, button)
-            }
-        }
-
-        override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-                ProviderType.LIST -> list.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-                ProviderType.TAG -> tag.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-            }
-        }
-
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.keyPressed(keyCode, scanCode, modifiers)
-                ProviderType.LIST -> list.keyPressed(keyCode, scanCode, modifiers)
-                ProviderType.TAG -> tag.keyPressed(keyCode, scanCode, modifiers)
-            }
-        }
-        override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.keyReleased(keyCode, scanCode, modifiers)
-                ProviderType.LIST -> list.keyReleased(keyCode, scanCode, modifiers)
-                ProviderType.TAG -> tag.keyReleased(keyCode, scanCode, modifiers)
-            }
-        }
-
-        override fun setFocused(focused: Boolean) {
-            when(typeSupplier.get()){
-                ProviderType.STACK -> stack.isFocused = focused
-                ProviderType.LIST -> list.isFocused = focused
-                ProviderType.TAG -> tag.isFocused = focused
-            }
-        }
-        override fun isFocused(): Boolean {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.isFocused
-                ProviderType.LIST -> list.isFocused
-                ProviderType.TAG -> tag.isFocused
-            }
-        }
-
-        override fun isHovered(): Boolean {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.isHovered
-                ProviderType.LIST -> list.isHovered
-                ProviderType.TAG -> tag.isHovered
-            }
-        }
-
-        override fun isSelected(): Boolean {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.isSelected
-                ProviderType.LIST -> list.isSelected
-                ProviderType.TAG -> tag.isSelected
-            }
-        }
-
-        override fun getType(): Selectable.SelectionType {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.type
-                ProviderType.LIST -> list.type
-                ProviderType.TAG -> tag.type
-            }
-        }
-
-        override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.isMouseOver(mouseX, mouseY)
-                ProviderType.LIST -> list.isMouseOver(mouseX, mouseY)
-                ProviderType.TAG -> tag.isMouseOver(mouseX, mouseY)
-            }
-        }
-
-        override fun getTooltip(): Tooltip? {
-            return when(typeSupplier.get()){
-                ProviderType.STACK -> stack.tooltip
-                ProviderType.LIST -> list.tooltip
-                ProviderType.TAG -> tag.tooltip
-            }
-        }
-
-        override fun setX(x: Int) {
-            super.setX(x)
-            stack.x = x
-            list.x = x
-            tag.x = x
-        }
-
-        override fun setY(y: Int) {
-            super.setY(y)
-            stack.y = y
-            list.y = y
-            tag.y = y
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            when(typeSupplier.get()){
-                ProviderType.STACK -> stack.appendNarrations(builder)
-                ProviderType.LIST -> list.appendNarrations(builder)
-                ProviderType.TAG -> tag.appendNarrations(builder)
-            }
-        }
-
-    }
-
-    enum class ProviderTypeWrapper: EnumTranslatable{
-        STACK,
-        LIST,
-        TAG;
-        override fun prefix(): String {
-            return "fc.validated_field.ingredient"
+    private fun fromLists(): IngredientProvider {
+        if (listItemValidator.isEmpty() && listTagValidator.isEmpty())
+            return ListProvider(setOf(), setOf())
+        if (listItemValidator.size == 1 && listTagValidator.isEmpty()){
+            return ItemProvider(listItemValidator.first())
+        } else if (listItemValidator.isEmpty() && listTagValidator.size == 1){
+            return TagProvider(listTagValidator.first())
+        } else {
+            return ListProvider(listItemValidator.get(),listTagValidator.get())
         }
     }
 
@@ -398,19 +301,13 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             override fun type(): String {
                 return "stack"
             }
-            override fun toWrapper(): ProviderTypeWrapper {
-                return ProviderTypeWrapper.STACK
-            }
         },
         LIST {
             override fun create(ingredient: ValidatedIngredient): IngredientProvider {
-                return ListProvider(ingredient.listValidator.get())
+                return ListProvider(ingredient.listItemValidator.get(),ingredient.listTagValidator.get())
             }
             override fun type(): String {
                 return "stacks"
-            }
-            override fun toWrapper(): ProviderTypeWrapper {
-                return ProviderTypeWrapper.LIST
             }
         },
         TAG {
@@ -420,9 +317,6 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             override fun type(): String {
                 return  "tag"
             }
-            override fun toWrapper(): ProviderTypeWrapper {
-                return ProviderTypeWrapper.TAG
-            }
         };
 
         override fun prefix(): String {
@@ -430,7 +324,6 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         }
         abstract fun create(ingredient: ValidatedIngredient): IngredientProvider
         abstract fun type(): String
-        abstract fun toWrapper(): ProviderTypeWrapper
     }
 
     class ItemProvider(val id: Identifier): IngredientProvider {
@@ -466,34 +359,72 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         }
     }
 
-    class ListProvider(val ids: Set<Identifier>): IngredientProvider {
+    class ListProvider(val ids: Set<Identifier>, val tags: Set<Identifier>): IngredientProvider {
+
+        constructor(input: Set<Any>):this(input.mapNotNull { it as? Identifier }.toSet(),input.mapNotNull { try { (it as? TagKey<Item>)?.id } catch (e: Exception){ null } }.toSet())
+
         override fun type(): ProviderType {
             return ProviderType.LIST
         }
         override fun provide(): Ingredient {
-            val items = ids.map { Registries.ITEM.get(it) }.filter { it != Items.AIR }
-            return Ingredient.ofItems(*items.toTypedArray())
+            if (ids.isEmpty() && tags.isEmpty())
+                return Ingredient.empty()
+            val items = ids.map { Registries.ITEM.get(it) }.filter { it != Items.AIR }.map { ItemStack(it) }
+            val tagItems: MutableList<ItemStack> = mutableListOf()
+            for (tag in tags){
+                Registries.ITEM.iterateEntries(TagKey.of(RegistryKeys.ITEM,tag)).forEach {
+                    tagItems.add(ItemStack(it))
+                }
+            }
+            return Ingredient.ofStacks((items + tagItems).stream())
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
             val array = toml.asTomlArray()
-            return ListProvider( array.mapNotNull { try{Identifier(it.asTomlLiteral().toString())} catch (e: Exception) { null } }.toSet() )
+            val ids = array.mapNotNull {
+                try{
+                    val str = it.asTomlLiteral().toString()
+                    if (str.startsWith("#")){
+                        null
+                    } else {
+                        Identifier(str)
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+            }.toSet()
+            val tags = array.mapNotNull {
+                try{
+                    val str = it.asTomlLiteral().toString()
+                    if (str.startsWith("#")){
+                        Identifier(str.substring(1))
+                    } else {
+                        null
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+            }.toSet()
+            return ListProvider(ids,tags)
         }
         override fun serialize(): TomlElement {
             val toml = TomlArrayBuilder(ids.size)
             for (id in ids){
                 toml.element(TomlLiteral(id.toString()))
             }
+            for (tag in tags){
+                toml.element(TomlLiteral("#$tag"))
+            }
             return toml.build()
         }
         override fun copy(): IngredientProvider{
-            return ListProvider(ids.toSet())
+            return ListProvider(ids.toSet(),tags.toSet())
         }
         override fun toString(): String {
-            return "List Ingredient $ids"
+            return "List Ingredient {Items: $ids, Tags: $tags}"
         }
         override fun equals(other: Any?): Boolean {
             if (other !is ListProvider) return false
-            return ids == other.ids
+            return ids == other.ids && tags == other.tags
         }
         override fun hashCode(): Int {
             return ids.hashCode()

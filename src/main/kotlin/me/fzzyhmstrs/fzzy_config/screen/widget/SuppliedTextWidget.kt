@@ -14,6 +14,7 @@ import com.google.common.base.Supplier
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.OrderedText
@@ -21,6 +22,7 @@ import net.minecraft.text.StringVisitable
 import net.minecraft.text.Text
 import net.minecraft.util.Language
 import net.minecraft.util.math.MathHelper
+import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
@@ -37,6 +39,7 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
     constructor(messageSupplier: Supplier<Text>, textRenderer: TextRenderer): this(messageSupplier, textRenderer, textRenderer.getWidth(messageSupplier.get().asOrderedText()), textRenderer.fontHeight)
 
     private var horizontalAlignment = 0.5f
+    private var overflowTooltip: Supplier<Text>? = null
 
     /**
      * Aligns the widget text to the alignment fraction provided
@@ -78,14 +81,33 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         return this.align(1.0f)
     }
 
+    /**
+     * supplies a text for tooltips if the text overflows the width of the widget.
+     *
+     * This can be identical to the primary text supplier, but it can be used to, for example, provide a tooltip that is split with line breaks, where the widget text is separated with commas.
+     * @param tooltipText [Supplier]&lt;[Text]&gt; - the text for the screen tooltip
+     * @return [SuppliedTextWidget] this widget
+     * @author fzzyhmstrs
+     * @since 0.3.3
+     */
+    fun supplyTooltipOnOverflow(tooltipText: Supplier<Text>): SuppliedTextWidget{
+        overflowTooltip = tooltipText
+        return this
+    }
+
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = messageSupplier.get()
         val i = getWidth()
         val j = textRenderer.getWidth(text)
-        val k = x + (horizontalAlignment * (i - j).toFloat()).roundToInt()
+        val k = x + (horizontalAlignment * (max(i - j,0)).toFloat()).roundToInt()
         val l = y + (getHeight() - textRenderer.fontHeight) / 2
         val orderedText = if (j > i) this.trim(text, i) else text.asOrderedText()
         context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
+        if (overflowTooltip != null){
+            if (j > i){
+                tooltip = Tooltip.of(overflowTooltip?.get())
+            }
+        }
     }
 
     private fun trim(text: Text, width: Int): OrderedText? {
