@@ -132,10 +132,10 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double,T>, private val valueApplier: Consumer<T>):
         ClickableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
         companion object{
-            private val TEXTURE = Identifier("widget/slider")
-            private val HIGHLIGHTED_TEXTURE = Identifier("widget/slider_highlighted")
-            private val HANDLE_TEXTURE = Identifier("widget/slider_handle")
-            private val HANDLE_HIGHLIGHTED_TEXTURE = Identifier("widget/slider_handle_highlighted")
+            private val TEXTURE = Identifier.of("widget/slider")
+            private val HIGHLIGHTED_TEXTURE = Identifier.of("widget/slider_highlighted")
+            private val HANDLE_TEXTURE = Identifier.of("widget/slider_handle")
+            private val HANDLE_HIGHLIGHTED_TEXTURE = Identifier.of("widget/slider_handle_highlighted")
 
         }
 

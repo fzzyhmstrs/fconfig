@@ -73,7 +73,7 @@ object PopupWidgetExamples {
             .noCloseOnClick()
             //provide a custom background like so.
             //make sure the texture is a nine-patch texture, and the popup will expect 8 pixels of border and padding before content
-            .background(Identifier("my_mod","my_custom_background"))
+            .background(Identifier.of("my_mod","my_custom_background"))
             //create the popup!
             .build()
 

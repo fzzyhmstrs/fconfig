@@ -35,7 +35,7 @@ object ExampleTexts{
         val appendedText = FcText.appended(standardText, fallbackText)
 
         //several extension functions for converting common MC and Java objects into text
-        val idText = Identifier("stick").text()
+        val idText = Identifier.of("stick").text()
         val uuidText = UUID.fromString("732bf411-5bb5-4f5d-8ef0-feb45d6032ee").text()
         //val dateText = TODO()
         //val messageText = TODO()

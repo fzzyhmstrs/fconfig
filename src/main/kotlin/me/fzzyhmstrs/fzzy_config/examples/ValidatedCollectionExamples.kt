@@ -28,10 +28,10 @@ object ValidatedCollectionExamples {
         val validatedList = ValidatedList(listOf(1,2,4,8), ValidatedInt(1..16))
 
         //wraps the vararg valued provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
-        val listFromFieldVararg = ValidatedIdentifier().toList(Identifier("stick"), Identifier("blaze_rod"))
+        val listFromFieldVararg = ValidatedIdentifier().toList(Identifier.of("stick"), Identifier.of("blaze_rod"))
 
         //wraps the collection provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
-        val listFromFieldCollection = ValidatedIdentifier().toList(listOf(Identifier("wooden_sword"), Identifier("stone_sword")))
+        val listFromFieldCollection = ValidatedIdentifier().toList(listOf(Identifier.of("wooden_sword"), Identifier.of("stone_sword")))
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows
@@ -62,10 +62,10 @@ object ValidatedCollectionExamples {
         val validatedSet = ValidatedSet(setOf(KeyEnum.KEY_1), KeyEnum::class.java.validated())
 
         //wraps the vararg valued provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
-        val setFromFieldArg = ValidatedIdentifier().toSet(Identifier("stick"), Identifier("blaze_rod"))
+        val setFromFieldArg = ValidatedIdentifier().toSet(Identifier.of("stick"), Identifier.of("blaze_rod"))
 
         //wraps the collection provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
-        val setFromFieldCollection = ValidatedIdentifier().toSet(setOf(Identifier("wooden_sword"), Identifier("stone_sword")))
+        val setFromFieldCollection = ValidatedIdentifier().toSet(setOf(Identifier.of("wooden_sword"), Identifier.of("stone_sword")))
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows
@@ -122,7 +122,7 @@ object ValidatedCollectionExamples {
 
     fun identifierMaps() {
         //Example ValidatedIdentifierMap with identifiers restricted to all registered enchantments
-        val validatedIdentifierMap = ValidatedIdentifierMap(mapOf(Identifier("sharpness") to true),
+        val validatedIdentifierMap = ValidatedIdentifierMap(mapOf(Identifier.of("sharpness") to true),
             ValidatedIdentifier.ofRegistryKey(RegistryKeys.ENCHANTMENT),ValidatedBoolean())
 
         //fields and sections have lang keys based on their "location" in the Config class graph.

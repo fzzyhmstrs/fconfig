@@ -23,7 +23,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 
-internal class MyConfig: Config(Identifier(FC.MOD_ID,"my_config")) {
+internal class MyConfig: Config(Identifier.of(FC.MOD_ID,"my_config")) {
 
     var bareDouble = 5.0 // this won't have most of the features of the lib
 

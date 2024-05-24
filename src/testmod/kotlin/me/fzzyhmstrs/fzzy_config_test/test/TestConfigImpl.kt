@@ -32,7 +32,7 @@ import net.minecraft.util.Identifier
 import java.awt.Color
 
 @Version(1)
-class TestConfigImpl: Config(Identifier("fzzy_config_test","test_config"), subfolder =  "test") {
+class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), subfolder =  "test") {
 
     var bl1 = true
     var bl2 = ValidatedBoolean()
@@ -70,7 +70,7 @@ class TestConfigImpl: Config(Identifier("fzzy_config_test","test_config"), subfo
             }
             .build()
 
-        var ingredient1 = ValidatedIngredient(Identifier("stick"))
+        var ingredient1 = ValidatedIngredient(Identifier.of("stick"))
 
         @RequiresRestart
         var tag1 = ValidatedTagKey(ItemTags.PICKAXES)
@@ -96,7 +96,7 @@ class TestConfigImpl: Config(Identifier("fzzy_config_test","test_config"), subfo
 
     var map1 = mapOf(1 to "a", 2 to "c")
 
-    var id1 = ValidatedIdentifier.ofList(Identifier("stick"), listOf(Identifier("stick"),Identifier("blaze_rod"),Identifier("coal"),Identifier("charcoal")))
+    var id1 = ValidatedIdentifier.ofList(Identifier.of("stick"), listOf(Identifier.of("stick"),Identifier.of("blaze_rod"),Identifier.of("coal"),Identifier.of("charcoal")))
 
     var choice1 = ValidatedList.ofInt(1,2,5,10).toChoices()
 

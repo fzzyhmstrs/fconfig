@@ -124,8 +124,8 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     @Environment(EnvType.CLIENT)
     private fun popupTagPopup(b: ClickableWidget, isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>>){
         val entryValidator = EntryValidator<String>{s,_ -> Identifier.tryParse(s)?.let { validator.validateEntry(it,EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: error(s,"invalid Identifier")}
-        val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.registry,Identifier(e))) }
-        val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s,c,cv -> validator.allowableIds.getSuggestions(s,c,cv.convert({ Identifier(it) },{ Identifier(it) }))}
+        val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.registry,Identifier.of(e))) }
+        val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s,c,cv -> validator.allowableIds.getSuggestions(s,c,cv.convert({ Identifier.of(it) },{ Identifier.of(it) }))}
         val textField = SuggestionBackedTextFieldWidget(170,20, { validator.get().toString() },choicePredicate.convert({it.id.toString()}, {it.id.toString()}),entryValidator,entryApplier,suggestionProvider)
         val popup = PopupWidget.Builder(translation())
             .addElement("text_field",textField, Position.BELOW,Position.ALIGN_LEFT)

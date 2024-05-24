@@ -172,10 +172,10 @@ object ValidatedMiscExamples{
     fun identifiers() {
         //Example validated identifier. Note that this "raw" usage of the constructor is not recommended in most cases.
         //For instance, in this case, an implementation of ofRegistry(Registry, BiPredicate) would be advisable
-        val validatedIdentifier = ValidatedIdentifier(Identifier("oak_planks"), AllowableIdentifiers({ id -> id.toString().contains("planks") }, { Registries.BLOCK.ids.filter { it.toString().contains("planks") } }))
+        val validatedIdentifier = ValidatedIdentifier(Identifier.of("oak_planks"), AllowableIdentifiers({ id -> id.toString().contains("planks") }, { Registries.BLOCK.ids.filter { it.toString().contains("planks") } }))
 
         //Unbounded validated Identifier. Any valid Identifier will be allowed
-        val unboundedIdentifier = ValidatedIdentifier(Identifier("nether_star"))
+        val unboundedIdentifier = ValidatedIdentifier(Identifier.of("nether_star"))
 
         //Unbounded validated Identifier directly from string. Any valid Identifier will be allowed
         val stringIdentifier = ValidatedIdentifier("nether_star")

@@ -77,5 +77,5 @@ object FCC: ClientModInitializer {
 }
 
 internal fun String.fcId(): Identifier {
-    return Identifier(FC.MOD_ID,this)
+    return Identifier.of(FC.MOD_ID,this)
 }

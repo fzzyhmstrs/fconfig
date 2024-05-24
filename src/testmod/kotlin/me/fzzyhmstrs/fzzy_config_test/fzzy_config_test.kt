@@ -120,5 +120,5 @@ object FCC: ClientModInitializer {
 }
 
 fun String.fctId(): Identifier {
-    return Identifier(FC.MOD_ID,this)
+    return Identifier.of(FC.MOD_ID,this)
 }

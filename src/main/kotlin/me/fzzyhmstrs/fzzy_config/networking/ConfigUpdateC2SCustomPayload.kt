@@ -14,6 +14,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
+import net.minecraft.util.Identifier
 
 internal class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, val changeHistory: List<String>, val playerPerm: Int): CustomPayload {
 
@@ -44,7 +45,7 @@ internal class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, va
     }
 
     companion object{
-        val type: Id<ConfigUpdateC2SCustomPayload> = CustomPayload.id("fzzy_config:config_update_c2s")
+        val type: Id<ConfigUpdateC2SCustomPayload> = Id(Identifier.of("fzzy_config:config_update_c2s"))
         val codec: PacketCodec<PacketByteBuf, ConfigUpdateC2SCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> ConfigUpdateC2SCustomPayload(b)})
         private fun readList(buf: PacketByteBuf): List<String>{
             val size = buf.readVarInt()

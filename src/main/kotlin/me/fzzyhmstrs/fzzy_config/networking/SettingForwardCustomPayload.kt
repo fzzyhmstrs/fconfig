@@ -14,6 +14,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
+import net.minecraft.util.Identifier
 import java.util.*
 
 internal class SettingForwardCustomPayload(val update: String, val player: UUID, val scope: String, val summary: String): CustomPayload {
@@ -32,7 +33,7 @@ internal class SettingForwardCustomPayload(val update: String, val player: UUID,
     }
 
     companion object{
-        val type: Id<SettingForwardCustomPayload> = CustomPayload.id("fzzy_config:setting_forward")
+        val type: Id<SettingForwardCustomPayload> = Id(Identifier.of("fzzy_config:setting_forward"))
         val codec: PacketCodec<PacketByteBuf, SettingForwardCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> SettingForwardCustomPayload(b)})
 
     }

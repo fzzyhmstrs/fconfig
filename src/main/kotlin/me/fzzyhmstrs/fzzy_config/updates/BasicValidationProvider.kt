@@ -56,7 +56,7 @@ internal interface BasicValidationProvider {
                         ValidatedEnumMap.tryMake(if (input != null) input as Map<Enum<*>,*> else mapOf(), keyProjectionValidation, valueProjectionValidation)
                     } else if (keyArgumentType.jvmErasure.javaObjectType.isInstance("")) {
                         ValidatedStringMap.tryMake(if (input != null)input as Map<String,*> else mapOf(), keyProjectionValidation, valueProjectionValidation)
-                    } else if (keyArgumentType.jvmErasure.javaObjectType.isInstance(Identifier(""))) {
+                    } else if (keyArgumentType.jvmErasure.javaObjectType.isInstance(Identifier.of(""))) {
                         ValidatedIdentifierMap.tryMake(if (input != null)input as Map<Identifier,*> else mapOf(), keyProjectionValidation, valueProjectionValidation)
                     } else {
                         ValidatedMap.tryMake(if (input != null)input as Map<*,*> else mapOf(), keyProjectionValidation, valueProjectionValidation)

@@ -65,8 +65,8 @@ import java.util.function.Consumer
  * @since 0.3.1
  */
 @Suppress("MemberVisibilityCanBePrivate")
-open class ValidatedEntityAttribute private constructor(attributeId: Identifier, private val lockAttribute: Boolean, uuid: UUID, name: String, amount: Double, operation: Operation, private val lockOperation: Boolean, private val amountValidator: Entry<Double,*> = ValidatedDouble(amount)): ValidatedField<ValidatedEntityAttribute.EntityAttributeInstanceHolder>(
-    EntityAttributeInstanceHolder(attributeId,uuid, name, amount, operation)
+open class ValidatedEntityAttribute private constructor(attributeId: Identifier, private val lockAttribute: Boolean, id: Identifier, amount: Double, operation: Operation, private val lockOperation: Boolean, private val amountValidator: Entry<Double,*> = ValidatedDouble(amount)): ValidatedField<ValidatedEntityAttribute.EntityAttributeInstanceHolder>(
+    EntityAttributeInstanceHolder(attributeId, id, amount, operation)
 ) {
 
     /**
@@ -123,7 +123,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @since 0.3.1
      */
     fun updateModifier(new: EntityAttributeModifier){
-        validateAndSet(storedValue.copy(uuid = new.uuid, name = new.name, amount = amountValidator.correctEntry(new.value,EntryValidator.ValidationType.STRONG).get(), operation = if(lockOperation) storedValue.operation else new.operation))
+        validateAndSet(storedValue.copy(id = new.id, amount = amountValidator.correctEntry(new.value,EntryValidator.ValidationType.STRONG).get(), operation = if(lockOperation) storedValue.operation else new.operation))
     }
     /**
      * updates this validation with a new double value
@@ -199,7 +199,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @since 0.3.1
      */
     override fun instanceEntry(): ValidatedField<EntityAttributeInstanceHolder> {
-        return ValidatedEntityAttribute(storedValue.attributeId, lockAttribute, storedValue.uuid, storedValue.name, storedValue.amount, storedValue.operation, lockOperation, amountValidator)
+        return ValidatedEntityAttribute(storedValue.attributeId, lockAttribute, storedValue.id, storedValue.amount, storedValue.operation, lockOperation, amountValidator)
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
@@ -276,10 +276,9 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
     class Builder @JvmOverloads constructor(private val attributeId: Identifier, private val lockAttribute: Boolean = false){
 
         @JvmOverloads
-        constructor(attributeId: String, lockAttribute: Boolean = false): this(Identifier(attributeId), lockAttribute)
+        constructor(attributeId: String, lockAttribute: Boolean = false): this(Identifier.of(attributeId), lockAttribute)
 
-        private var uuid: UUID? = null
-        private var name: String = attributeId.toTranslationKey()
+        private var id: Identifier = Identifier.of(attributeId.toString())
         private var amount: ValidatedDouble = ValidatedDouble(0.0)
         private var operation: Operation = Operation.ADD_VALUE
         private var lockOperation = false
@@ -289,32 +288,10 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
          * @param uuid String - String representation of a UUID.
          * @return [Builder] this builder
          * @author fzzyhmstrs
-         * @since 0.3.1
+         * @since 0.3.3+24w21a
          */
-        fun uuid(uuid: String): Builder{
-            this.uuid = UUID.fromString(uuid)
-            return this
-        }
-        /**
-         * Define a UUID for the attribute modifier
-         * @param uuid UUID
-         * @return [Builder] this builder
-         * @author fzzyhmstrs
-         * @since 0.3.1
-         */
-        fun uuid(uuid: UUID): Builder{
-            this.uuid = uuid
-            return this
-        }
-        /**
-         * Define a name for the attribute modifier
-         * @param uuid String - String representation of a UUID.
-         * @return [Builder] this builder
-         * @author fzzyhmstrs
-         * @since 0.3.1
-         */
-        fun name(name: String): Builder{
-            this.name = name
+        fun id(id: Identifier): Builder{
+            this.id = id
             return this
         }
         @JvmOverloads
@@ -329,7 +306,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         }
 
         fun build(): ValidatedEntityAttribute{
-            return ValidatedEntityAttribute(attributeId,lockAttribute,uuid?:UUID.nameUUIDFromBytes("$name+${operation.name}".toByteArray()),name,amount.get(),operation,lockOperation,amount)
+            return ValidatedEntityAttribute(attributeId,lockAttribute,id,amount.get(),operation,lockOperation,amount)
         }
     }
 
@@ -345,7 +322,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
-    data class EntityAttributeInstanceHolder(val attributeId: Identifier, val uuid: UUID, val name: String, val amount: Double, val operation: Operation): EntryHandler<EntityAttributeInstanceHolder>{
+    data class EntityAttributeInstanceHolder(val attributeId: Identifier, val id: Identifier, val amount: Double, val operation: Operation): EntryHandler<EntityAttributeInstanceHolder>{
 
         private val idValidator = ValidatedIdentifier.ofRegistry(attributeId,Registries.ATTRIBUTE)
         @Internal
@@ -355,7 +332,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         @Deprecated("Not used in 1.20.5")
         @Internal
         internal fun addToMap(map: Multimap<EntityAttribute, EntityAttributeModifier>){
-                Registries.ATTRIBUTE.get(attributeId)?.let { map.put(it, EntityAttributeModifier(uuid,name,amount,operation)) }
+                Registries.ATTRIBUTE.get(attributeId)?.let { map.put(it, EntityAttributeModifier(id,amount,operation)) }
         }
         @Internal
         internal fun addToBuilder(builder: AttributeModifiersComponent.Builder, slot: AttributeModifierSlot){
@@ -371,7 +348,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         }
         @Internal
         internal fun createModifier(): EntityAttributeModifier{
-            return EntityAttributeModifier(uuid,name,amount,operation)
+            return EntityAttributeModifier(id,amount,operation)
         }
 
         @Internal
@@ -399,7 +376,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
             } catch (e: Exception){
                 return ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName], TomlElement not a TomlTable")
             }
-            val id = table["id"]?.let { idValidator.deserializeEntry(it,errorBuilder, fieldName, flags).takeIf { result -> result.isValid() }?.get() ?: return ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName], invalid identifier")} ?: return ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName], key 'id' is missing")
+            val attributeId = table["id"]?.let { idValidator.deserializeEntry(it,errorBuilder, fieldName, flags).takeIf { result -> result.isValid() }?.get() ?: return ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName], invalid identifier")} ?: return ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName], key 'id' is missing")
             val modifierElement = table["modifier"] ?: return ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName], key 'modifier' is missing")
             val modifierResult = NbtCompound.CODEC.parse(TomlOps.INSTANCE,modifierElement)
             var finalResult = ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName]: error deserializing modifier")
@@ -407,9 +384,8 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
                 EntityAttributeModifier.fromNbt(it)?.let { mod ->
                     finalResult = ValidationResult.success(
                         EntityAttributeInstanceHolder(
-                            id,
-                            this.uuid, //uuid is immutable
-                            this.name, //name is immutable
+                            attributeId,
+                            this.id, //name is immutable
                             mod.value,
                             mod.operation
                         )

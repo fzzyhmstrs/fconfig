@@ -35,7 +35,7 @@ import net.peanuuutz.tomlkt.TomlComment
 import java.awt.Color
 
 @Version(1)
-class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
+class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) {
 
     @ClientModifiable
     @WithPerms(5)
@@ -73,9 +73,9 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
             }
             .build()
 
-        var ingredient1 = ValidatedIngredient(Identifier("diamond_axe"))
+        var ingredient1 = ValidatedIngredient(Identifier.of("diamond_axe"))
 
-        var ingredient2 = ValidatedIngredient(setOf(Identifier("diamond_axe"),TagKey.of(RegistryKeys.ITEM,Identifier("barrels"))))
+        var ingredient2 = ValidatedIngredient(setOf(Identifier.of("diamond_axe"),TagKey.of(RegistryKeys.ITEM,Identifier.of("barrels"))))
 
         var tag1 = ValidatedTagKey(ItemTags.PICKAXES)
 
@@ -115,7 +115,7 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
 
     var map1 = mapOf(1 to "a", 2 to "c")
 
-    var id1 = ValidatedIdentifier.ofList(Identifier("stick"), listOf(Identifier("stick"),Identifier("blaze_rod"),Identifier("coal"),Identifier("charcoal")))
+    var id1 = ValidatedIdentifier.ofList(Identifier.of("stick"), listOf(Identifier.of("stick"),Identifier.of("blaze_rod"),Identifier.of("coal"),Identifier.of("charcoal")))
 
     var choice1 = ValidatedList.ofInt(1,2,5,10).toChoices()
 }

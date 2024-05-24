@@ -56,10 +56,10 @@ object MinecraftExamples {
 
     fun ingredients() {
         // A validated Ingredient for a single item
-        val validatedIngredientItem = ValidatedIngredient(Identifier("oak_log"))
+        val validatedIngredientItem = ValidatedIngredient(Identifier.of("oak_log"))
 
         // A validated ingredient accepting a set of items
-        val validatedIngredientList = ValidatedIngredient(setOf(Identifier("oak_log"),Identifier("dark_oak_log")))
+        val validatedIngredientList = ValidatedIngredient(setOf(Identifier.of("oak_log"),Identifier.of("dark_oak_log")))
 
         // A validated ingredient utilizing a tag
         val validatedIngredientTag = ValidatedIngredient(ItemTags.LOGS_THAT_BURN)
@@ -89,8 +89,7 @@ object MinecraftExamples {
         // lockAttribute lets you constrain the attribute to the one chosen in the builder (Max Health in this case_
         val exampleValidatedAttribute = ValidatedEntityAttribute.Builder("generic.max_health", true)
             // supply a UUID and name, otherwise generic ones will be used for you
-            .uuid("f68e98a2-0599-11ef-9262-0242ac120002")
-            .name("My Example ValidatedEntityAttribute")
+            .id(Identifier.of("my_mod","my_example_attribute"))
             //set amount, and optionally provide a range restriction
             .amount(1.0,0.0,8.0)
             //set the operation for the modifier, and optionally lock the modifier to the operation chosen

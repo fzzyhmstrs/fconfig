@@ -33,7 +33,7 @@ object MapBuilders {
         val stringTest = ValidatedStringMap.Builder<Int>()
             .keyHandler(ValidatedString("yay"))
             .valueHandler(ValidatedInt(1, 100, 0))
-            .defaultIds(mapOf(Identifier("minecraft:stick") to 50))
+            .defaultIds(mapOf(Identifier.of("minecraft:stick") to 50))
             .build()
     }
     private enum class TestEnum: Translatable {
