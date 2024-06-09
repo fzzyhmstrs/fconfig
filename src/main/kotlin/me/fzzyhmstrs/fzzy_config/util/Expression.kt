@@ -86,7 +86,7 @@ fun interface Expression {
         }
     }
 
-    @Suppress("SameParameterValue")
+    @Suppress("SameParameterValue", "OVERRIDE_DEPRECATION")
     companion object Impl {
 
         /**
@@ -410,137 +410,976 @@ fun interface Expression {
             return str.map { parseExpression(StringReader(it), context, 1000) }
         }
 
+        private interface Const{
+            fun c(): Double
+        }
 
         private fun constant(constant: Double): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return constant
-                }
-                override fun toString(): String {
-                    return "$constant"
-                }
+            return Constant(constant)
+        }
+        private class Constant(val c1: Double): Expression,Const{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c1
+            }
+            override fun c(): Double {
+                return c1
+            }
+            override fun toString(): String {
+                return "$c1"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as Constant
+                return c1 == other.c1
+            }
+            override fun hashCode(): Int {
+                return c1.hashCode()
             }
         }
+
         private fun parentheses(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return e1.eval(vars)
-                }
-                override fun toString(): String {
-                    return "($e1)"
-                }
+            return if(e1 is Const){
+                ConstParentheses(e1.c(), e1.toString())
+            } else {
+                ExpParentheses(e1)
             }
         }
+        private class ExpParentheses(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars)
+            }
+            override fun toString(): String {
+                return "($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpParentheses
+                return e1 == other.e1
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode()
+            }
+        }
+        private class ConstParentheses(val c1: Double, val s1: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c1
+            }
+            override fun toString(): String {
+                return "($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstParentheses
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * c1.hashCode() + s1.hashCode()
+            }
+        }
+
         private fun variable(variable: Char): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return vars[variable] ?: throw IllegalStateException("Expected variable '$variable', didn't find")
-                }
-                override fun toString(): String {
-                    return variable.toString()
-                }
+            return Variable(variable)
+        }
+        private class Variable(val variable: Char): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return vars[variable] ?: throw IllegalStateException("Expected variable '$variable', didn't find")
+            }
+            override fun toString(): String {
+                return variable.toString()
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as Variable
+                return variable == other.variable
+            }
+            override fun hashCode(): Int {
+                return variable.hashCode()
             }
         }
+
         private fun plus(e1: Expression, e2: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return e1.eval(vars) + e2.eval(vars)
+            return if(e1 is Const){
+                if (e2 is Const) {
+                    ConstPlus(e1.c(), e2.c(), e1.toString(), e2.toString())
+                } else {
+                    ConstFirstPlus(e1.c(),e2, e1.toString())
                 }
-                override fun toString(): String {
-                    return "$e1 + $e2"
-                }
+            } else if (e2 is Const) {
+                ConstSecondPlus(e1,e2.c(), e2.toString())
+            } else {
+                ExpPlus(e1, e2)
             }
         }
+        private class ExpPlus(val e1: Expression, val e2: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars) + e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$e1 + $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpPlus
+                if (e1 != other.e1) return false
+                if (e2 != other.e2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * e1.hashCode() + e2.hashCode()
+            }
+        }
+        private class ConstFirstPlus(val c1: Double, val e2: Expression, val s1: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c1 + e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$s1 + $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstFirstPlus
+                if (c1 != other.c1) return false
+                if (e2 != other.e2) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * c1.hashCode() + e2.hashCode()) + s1.hashCode()
+            }
+        }
+        private class ConstSecondPlus(val e1: Expression, val c2: Double, val s2: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars) + c2
+            }
+            override fun toString(): String {
+                return "$e1 + $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstSecondPlus
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 95821 * (92821 * e1.hashCode() + c2.hashCode()) + s2.hashCode()
+            }
+        }
+        private class ConstPlus(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression, Const{
+            private val c3: Double = c1 + c2
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c3
+            }
+            override fun c(): Double {
+                return c3
+            }
+            override fun toString(): String {
+                return "$s1 + $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstPlus
+                if (c1 != other.c1) return false
+                if (c2 != other.c2) return false
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (92821 * c1.hashCode() + c2.hashCode()) + s1.hashCode()) + s2.hashCode()
+            }
+        }
+
+
         private fun minus(e1: Expression, e2: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return e1.eval(vars) - e2.eval(vars)
+            return if(e1 is Const){
+                if (e2 is Const) {
+                    ConstMinus(e1.c(), e2.c(),e1.toString(),e2.toString())
+                } else {
+                    ConstFirstMinus(e1.c(),e2,e1.toString())
                 }
-                override fun toString(): String {
-                    return "$e1 - $e2"
-                }
+            } else if (e2 is Const) {
+                ConstSecondMinus(e1,e2.c(),e2.toString())
+            } else {
+                ExpMinus(e1, e2)
             }
         }
+        private class ExpMinus(val e1: Expression, val e2: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars) - e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$e1 - $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpMinus
+                if (e1 != other.e1) return false
+                if (e2 != other.e2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (e1.hashCode() + 1) + e2.hashCode()
+            }
+        }
+        private class ConstFirstMinus(val c1: Double, val e2: Expression, val s1: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c1 - e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$s1 - $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstFirstMinus
+                if (c1 != other.c1) return false
+                if (e2 != other.e2) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (c1.hashCode() + 1) + e2.hashCode()) + s1.hashCode()
+            }
+        }
+        private class ConstSecondMinus(val e1: Expression, val c2: Double, val s2: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars) - c2
+            }
+            override fun toString(): String {
+                return "$e1 - $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstSecondMinus
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (e1.hashCode() + 1) + c2.hashCode()) + s2.hashCode()
+            }
+        }
+        private class ConstMinus(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression{
+            private val c3: Double = c1 - c2
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c3
+            }
+            override fun toString(): String {
+                return "$s1 - $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstMinus
+                if (c1 != other.c1) return false
+                if (c2 != other.c2) return false
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (92821 * (c1.hashCode() + 1) + c2.hashCode()) + s1.hashCode()) + s2.hashCode()
+            }
+        }
+
         private fun times(e1: Expression, e2: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return e1.eval(vars) * e2.eval(vars)
+            return if(e1 is Const){
+                if (e2 is Const) {
+                    ConstTimes(e1.c(), e2.c(), e1.toString(), e2.toString())
+                } else {
+                    ConstFirstTimes(e1.c(),e2, e1.toString())
                 }
-                override fun toString(): String {
-                    return "$e1 * $e2"
-                }
+            } else if (e2 is Const) {
+                ConstSecondTimes(e1,e2.c(), e2.toString())
+            } else {
+                ExpTimes(e1, e2)
             }
         }
+        private class ExpTimes(val e1: Expression, val e2: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars) * e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$e1 * $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpTimes
+                if (e1 != other.e1) return false
+                if (e2 != other.e2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (e1.hashCode() + 2) + e2.hashCode()
+            }
+        }
+        private class ConstFirstTimes(val c1: Double, val e2: Expression, val s1: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c1 * e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$s1 * $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstFirstTimes
+                if (c1 != other.c1) return false
+                if (e2 != other.e2) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (c1.hashCode() + 2) + e2.hashCode()) + s1.hashCode()
+            }
+        }
+        private class ConstSecondTimes(val e1: Expression, val c2: Double, val s2: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars) * c2
+            }
+            override fun toString(): String {
+                return "$e1 * $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstSecondTimes
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (e1.hashCode() + 2) + c2.hashCode()) + s2.hashCode()
+            }
+        }
+        private class ConstTimes(val c1: Double, val c2: Double,val s1: String, val s2: String): Expression{
+            private val c3: Double = c1 * c2
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c3
+            }
+            override fun toString(): String {
+                return "$s1 * $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstTimes
+                if (c1 != other.c1) return false
+                if (c2 != other.c2) return false
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (92821 * (c1.hashCode() + 2) + c2.hashCode()) + s1.hashCode()) + s2.hashCode()
+            }
+        }
+
         private fun divide(e1: Expression, e2: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return e1.eval(vars) / e2.eval(vars)
+            return if(e1 is Const){
+                if (e2 is Const) {
+                    ConstDivide(e1.c(), e2.c(), e1.toString(), e2.toString())
+                } else {
+                    ConstFirstDivide(e1.c(),e2,e1.toString())
                 }
-                override fun toString(): String {
-                    return "$e1 / $e2"
-                }
+            } else if (e2 is Const) {
+                ConstSecondDivide(e1,e2.c(),e2.toString())
+            } else {
+                ExpDivide(e1, e2)
             }
         }
+        private class ExpDivide(val e1: Expression, val e2: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars) / e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$e1 / $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpDivide
+                if (e1 != other.e1) return false
+                if (e2 != other.e2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (e1.hashCode() + 3) + e2.hashCode()
+            }
+        }
+        private class ConstFirstDivide(val c1: Double, val e2: Expression, val s1: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c1 / e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$s1 / $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstFirstDivide
+                if (c1 != other.c1) return false
+                if (e2 != other.e2) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (c1.hashCode() + 3) + e2.hashCode()) + s1.hashCode()
+            }
+        }
+        private class ConstSecondDivide(val e1: Expression, val c2: Double, val s2: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars) / c2
+            }
+            override fun toString(): String {
+                return "$e1 / $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstSecondDivide
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (e1.hashCode() + 3) + c2.hashCode()) + s2.hashCode()
+            }
+        }
+        private class ConstDivide(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression{
+            private val c3: Double = c1 / c2
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c3
+            }
+            override fun toString(): String {
+                return "$s1 / $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstDivide
+                if (c1 != other.c1) return false
+                if (c2 != other.c2) return false
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (92821 * (c1.hashCode() + 3) + c2.hashCode()) + s1.hashCode()) + s2.hashCode()
+            }
+        }
+
         private fun mod(e1: Expression, e2: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return e1.eval(vars) % e2.eval(vars)
+            return if(e1 is Const){
+                if (e2 is Const) {
+                    ConstMod(e1.c(), e2.c(),e1.toString(),e2.toString())
+                } else {
+                    ConstFirstMod(e1.c(),e2, e1.toString())
                 }
-                override fun toString(): String {
-                    return "$e1 % $e2"
-                }
+            } else if (e2 is Const) {
+                ConstSecondMod(e1,e2.c(),e2.toString())
+            } else {
+                ExpMod(e1, e2)
             }
         }
+        private class ExpMod(val e1: Expression, val e2: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars) % e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$e1 % $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpMod
+                if (e1 != other.e1) return false
+                if (e2 != other.e2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (e1.hashCode() + 4) + e2.hashCode()
+            }
+        }
+        private class ConstFirstMod(val c1: Double, val e2: Expression, val s1: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c1 % e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$s1 % $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstFirstMod
+                if (c1 != other.c1) return false
+                if (e2 != other.e2) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (c1.hashCode() + 4) + e2.hashCode()) + s1.hashCode()
+            }
+        }
+        private class ConstSecondMod(val e1: Expression, val c2: Double, val s2: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars) % c2
+            }
+            override fun toString(): String {
+                return "$e1 % $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstSecondMod
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (e1.hashCode() + 4) + c2.hashCode()) + s2.hashCode()
+            }
+        }
+        private class ConstMod(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression{
+            private val c3: Double = c1 % c2
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c3
+            }
+            override fun toString(): String {
+                return "$s1 % $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstMod
+                if (c1 != other.c1) return false
+                if (c2 != other.c2) return false
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (92821 * (c1.hashCode() + 4) + c2.hashCode()) + s1.hashCode()) + s2.hashCode()
+            }
+        }
+
         private fun pow(e1: Expression, e2: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return e1.eval(vars).pow(e2.eval(vars))
+            return if (e2 is Const) {
+                val c2 = e2.c()
+                if (c2 == 0.0){
+                    ZeroPower(e1.toString(),e2.toString())
+                } else if (c2 == 1.0){
+                    if(e1 is Const){
+                        OneConstPower(e1.c(),e2.toString())
+                    } else {
+                        OneExpPower(e1,e2.toString())
+                    }
+                } else if (e1 is Const){
+                    ConstPower(e1.c(),c2,e1.toString(),e2.toString())
+                } else if (c2 % 1 == 0.0) {
+                    ExpIntPower(e1,c2.toInt(),e2.toString())
+                } else {
+                    ExpConstPower(e1,c2,e2.toString())
                 }
-                override fun toString(): String {
-                    return "$e1 ^ $e2"
-                }
+            } else if (e1 is Const) {
+                ConstExpPower(e1.c(),e2,e1.toString())
+            } else{
+                ExpPower(e1,e2)
             }
         }
+        private class ConstPower(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression, Const{
+            private val c3 = c1.pow(c2)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c3
+            }
+            override fun c(): Double {
+                return c3
+            }
+            override fun toString(): String {
+                return "$s1 ^ $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstPower
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (s1.hashCode() + 5) + s2.hashCode()
+            }
+        }
+        private class ZeroPower(val s1: String, val s2: String): Expression, Const{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return 1.0
+            }
+            override fun c(): Double {
+                return 1.0
+            }
+            override fun toString(): String {
+                return "$s1 ^ $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ZeroPower
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (s1.hashCode() + 5) + s2.hashCode()
+            }
+        }
+        private class OneExpPower(val e1: Expression, val s2: String): Expression {
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars)
+            }
+            override fun toString(): String {
+                return "$e1 ^ $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as OneExpPower
+                if (e1 != other.e1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (e1.hashCode() + 5) + s2.hashCode()
+            }
+        }
+        private class OneConstPower(val c1: Double, val s2: String): Expression, Const {
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c1
+            }
+            override fun c(): Double {
+                return c1
+            }
+            override fun toString(): String {
+                return "$c1 ^ $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as OneConstPower
+                if (c1 != other.c1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 5) + s2.hashCode()
+            }
+        }
+        private class ExpIntPower(val e1: Expression, val c2: Int, val s2: String): Expression{
+            val e2: Expression
+            init{
+                var exp = times(e1,e1)
+                for (i in 2 until c2){
+                    exp = times(exp,e1)
+                }
+                e2 = exp
+            }
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e2.eval(vars)
+            }
+            override fun toString(): String {
+                return "$e1 ^ $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpIntPower
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 95821 * (92821 * (e1.hashCode() + 5) + c2.hashCode()) + s2.hashCode()
+            }
+        }
+        private class ExpConstPower(val e1: Expression, val c2: Double, val s2: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars).pow(c2)
+            }
+            override fun toString(): String {
+                return "$e1 ^ $s2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpConstPower
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 95821 * (92821 * (e1.hashCode() + 5) + c2.hashCode()) + s2.hashCode()
+            }
+        }
+        private class ConstExpPower(val c1: Double, val e2: Expression, val s1: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c1.pow(e2.eval(vars))
+            }
+            override fun toString(): String {
+                return "$s1 ^ $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstExpPower
+                if (c1 != other.c1) return false
+                if (e2 != other.e2) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 95821 * (92821 * (c1.hashCode() + 5) + e2.hashCode()) + s1.hashCode()
+            }
+        }
+        private class ExpPower(val e1: Expression, val e2: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return e1.eval(vars).pow(e2.eval(vars))
+            }
+            override fun toString(): String {
+                return "$e1 ^ $e2"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpPower
+                if (e1 != other.e1) return false
+                if (e2 != other.e2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (e1.hashCode() + 5) + e2.hashCode()
+            }
+        }
+
         private fun sqrt(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.sqrt(e1.eval(vars))
-                }
-                override fun toString(): String {
-                    return "sqrt$e1"
-                }
+            return if (e1 is ConstParentheses){
+                ConstSqrt(e1.c1,e1.s1)
+            } else {
+                ExpSqrt((e1 as ExpParentheses).e1)
             }
         }
+        private class ConstSqrt(val c1: Double, val s1: String): Expression, Const{
+            private val c2 = kotlin.math.sqrt(c1)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c2
+            }
+            override fun c(): Double {
+                return c2
+            }
+            override fun toString(): String {
+                return "sqrt($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstSqrt
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
+
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 6) + s1.hashCode()
+            }
+        }
+        private class ExpSqrt(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.sqrt(e1.eval(vars))
+            }
+            override fun toString(): String {
+                return "sqrt($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpSqrt
+                return (e1 == other.e1)
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode() + 6
+            }
+        }
+
+
         private fun ceil(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.ceil(e1.eval(vars))
-                }
-                override fun toString(): String {
-                    return "ceil$e1"
-                }
+            return if (e1 is ConstParentheses){
+                ConstCeil(e1.c1,e1.s1)
+            } else {
+                ExpCeil((e1 as ExpParentheses).e1)
             }
         }
+        private class ConstCeil(val c1: Double, val s1: String): Expression, Const{
+            private val c2 = kotlin.math.ceil(c1)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c2
+            }
+            override fun c(): Double {
+                return c2
+            }
+            override fun toString(): String {
+                return "ceil($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstCeil
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
+
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 7) + s1.hashCode()
+            }
+        }
+        private class ExpCeil(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.ceil(e1.eval(vars))
+            }
+            override fun toString(): String {
+                return "ceil($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpCeil
+                return (e1 == other.e1)
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode() + 7
+            }
+        }
+
+
         private fun floor(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.floor(e1.eval(vars))
-                }
-                override fun toString(): String {
-                    return "floor$e1"
-                }
+            return if (e1 is ConstParentheses){
+                ConstFloor(e1.c1,e1.s1)
+            } else {
+                ExpFloor((e1 as ExpParentheses).e1)
             }
         }
+        private class ConstFloor(val c1: Double, val s1: String): Expression, Const{
+            private val c2 = kotlin.math.floor(c1)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c2
+            }
+            override fun c(): Double {
+                return c2
+            }
+            override fun toString(): String {
+                return "floor($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstFloor
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
+
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 8) + s1.hashCode()
+            }
+        }
+        private class ExpFloor(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.floor(e1.eval(vars))
+            }
+            override fun toString(): String {
+                return "floor($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpFloor
+                return (e1 == other.e1)
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode() + 8
+            }
+        }
+
+
         private fun round(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.round(e1.eval(vars))
-                }
-                override fun toString(): String {
-                    return "round$e1"
-                }
+            return if (e1 is ConstParentheses){
+                ConstRound(e1.c1,e1.s1)
+            } else {
+                ExpRound((e1 as ExpParentheses).e1)
             }
         }
+        private class ConstRound(val c1: Double, val s1: String): Expression, Const{
+            private val c2 = kotlin.math.round(c1)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c2
+            }
+            override fun c(): Double {
+                return c2
+            }
+            override fun toString(): String {
+                return "round($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstRound
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
+
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 9) + s1.hashCode()
+            }
+        }
+        private class ExpRound(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.round(e1.eval(vars))
+            }
+            override fun toString(): String {
+                return "round($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpRound
+                return (e1 == other.e1)
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode() + 9
+            }
+        }
+
+
         private fun log(e1: Expression, power: Expression): Expression {
             return object : Expression {
                 override fun eval(vars: Map<Char, Double>): Double {
@@ -553,59 +1392,254 @@ fun interface Expression {
             }
         }
 
-        private fun log10(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.log10(e1.eval(vars))
-                }
-                override fun toString(): String {
 
-                    return "log10$e1"
-                }
+        private fun log10(e1: Expression): Expression {
+            return if(e1 is ConstParentheses){
+                ConstLog10(e1.c1,e1.s1)
+            } else {
+                ExpLog10((e1 as ExpParentheses).e1)
+            }
+        }
+        private class ConstLog10(val c1: Double, val s1: String): Expression, Const{
+            private val c2 = kotlin.math.log10(c1)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c2
+            }
+            override fun c(): Double {
+                return c2
+            }
+            override fun toString(): String {
+                return "log10($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstLog10
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
+
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 11) + s1.hashCode()
+            }
+        }
+        private class ExpLog10(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.log10(e1.eval(vars))
+            }
+            override fun toString(): String {
+                return "log10($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpLog10
+                return (e1 == other.e1)
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode() + 11
             }
         }
 
         private fun log2(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.log2(e1.eval(vars))
-                }
-                override fun toString(): String {
+            return if(e1 is ConstParentheses){
+                ConstLog2(e1.c1,e1.s1)
+            } else {
+                ExpLog2((e1 as ExpParentheses).e1)
+            }
+        }
+        private class ConstLog2(val c1: Double, val s1: String): Expression, Const{
+            private val c2 = kotlin.math.log2(c1)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c2
+            }
+            override fun c(): Double {
+                return c2
+            }
+            override fun toString(): String {
+                return "log2($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstLog2
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
 
-                    return "log2$e1"
-                }
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 12) + s1.hashCode()
             }
         }
+        private class ExpLog2(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.log2(e1.eval(vars))
+            }
+            override fun toString(): String {
+                return "log2($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpLog2
+                return (e1 == other.e1)
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode() + 12
+            }
+        }
+
+
         private fun ln(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.ln(e1.eval(vars))
-                }
-                override fun toString(): String {
-                    return "ln$e1"
-                }
+            return if(e1 is ConstParentheses){
+                ConstLn(e1.c1,e1.s1)
+            } else {
+                ExpLn((e1 as ExpParentheses).e1)
             }
         }
+        private class ConstLn(val c1: Double, val s1: String): Expression, Const{
+            private val c2 = kotlin.math.ln(c1)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c2
+            }
+            override fun c(): Double {
+                return c2
+            }
+            override fun toString(): String {
+                return "ln($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstLn
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
+
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 13) + s1.hashCode()
+            }
+        }
+        private class ExpLn(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.ln(e1.eval(vars))
+            }
+            override fun toString(): String {
+                return "ln($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpLn
+                return (e1 == other.e1)
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode() + 13
+            }
+        }
+
         private fun abs(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.abs(e1.eval(vars))
-                }
-                override fun toString(): String {
-                    return "abs$e1"
-                }
+            return if(e1 is ConstParentheses){
+                ConstAbs(e1.c1,e1.s1)
+            } else {
+                ExpAbs((e1 as ExpParentheses).e1)
             }
         }
+        private class ConstAbs(val c1: Double, val s1: String): Expression, Const{
+            private val c2 = kotlin.math.abs(c1)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c2
+            }
+            override fun c(): Double {
+                return c2
+            }
+            override fun toString(): String {
+                return "abs($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstAbs
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
+
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 14) + s1.hashCode()
+            }
+        }
+        private class ExpAbs(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.abs(e1.eval(vars))
+            }
+            override fun toString(): String {
+                return "abs($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpAbs
+                return (e1 == other.e1)
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode() + 14
+            }
+        }
+
         private fun sin(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.sin(e1.eval(vars))
-                }
-                override fun toString(): String {
-                    return "sin$e1"
-                }
+            return if(e1 is ConstParentheses){
+                ConstSin(e1.c1,e1.s1)
+            } else {
+                ExpSin((e1 as ExpParentheses).e1)
             }
         }
+        private class ConstSin(val c1: Double, val s1: String): Expression, Const{
+            private val c2 = kotlin.math.sin(c1)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c2
+            }
+            override fun c(): Double {
+                return c2
+            }
+            override fun toString(): String {
+                return "sin($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstSin
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
+
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 15) + s1.hashCode()
+            }
+        }
+        private class ExpSin(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return MathHelper.sin(e1.eval(vars).toFloat()).toDouble()
+            }
+            override fun toString(): String {
+                return "sin($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpSin
+                return (e1 == other.e1)
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode() + 15
+            }
+        }
+
+
         private fun cos(e1: Expression): Expression {
             return object : Expression {
                 override fun eval(vars: Map<Char, Double>): Double {
@@ -616,18 +1650,148 @@ fun interface Expression {
                 }
             }
         }
-        private fun incr(e1: Expression, e2: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    val base = e1.eval(vars)
-                    val increment = e2.eval(vars)
-                    return base - (base % increment)
-                }
-                override fun toString(): String {
-                    return "incr($e1,$e2)"
-                }
+        private class ConstCos(val c1: Double, val s1: String): Expression, Const{
+            private val c2 = kotlin.math.cos(c1)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c2
+            }
+            override fun c(): Double {
+                return c2
+            }
+            override fun toString(): String {
+                return "cos($s1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstCos
+                if (c1 != other.c1) return false
+                if (s1 != other.s1) return false
+
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (c1.hashCode() + 16) + s1.hashCode()
             }
         }
+        private class ExpCos(val e1: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return MathHelper.cos(e1.eval(vars).toFloat()).toDouble()
+            }
+            override fun toString(): String {
+                return "cos($e1)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpCos
+                return (e1 == other.e1)
+            }
+            override fun hashCode(): Int {
+                return e1.hashCode() + 16
+            }
+        }
+
+
+        private fun incr(e1: Expression, e2: Expression): Expression {
+            return if(e1 is Const){
+                if (e2 is Const) {
+                    ConstIncr(e1.c(), e2.c(), e1.toString(), e2.toString())
+                } else {
+                    ConstFirstIncr(e1.c(),e2, e1.toString())
+                }
+            } else if (e2 is Const) {
+                ConstSecondIncr(e1,e2.c(), e2.toString())
+            } else {
+                ExpIncr(e1, e2)
+            }
+        }
+        private class ExpIncr(val e1: Expression, val e2: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                val base = e1.eval(vars)
+                val increment = e2.eval(vars)
+                return base - (base % increment)
+            }
+            override fun toString(): String {
+                return "incr($e1,$e2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpIncr
+                if (e1 != other.e1) return false
+                if (e2 != other.e2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (e1.hashCode() + 17) + e2.hashCode()
+            }
+        }
+        private class ConstFirstIncr(val c1: Double, val e2: Expression, val s1: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                val increment = e2.eval(vars)
+                return c1 - (c1 % increment)
+            }
+            override fun toString(): String {
+                return "incr($s1,$e2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstFirstIncr
+                if (c1 != other.c1) return false
+                if (e2 != other.e2) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (c1.hashCode() + 17) + e2.hashCode()) + s1.hashCode()
+            }
+        }
+        private class ConstSecondIncr(val e1: Expression, val c2: Double, val s2: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                val base = e1.eval(vars)
+                return base - (base % c2)
+            }
+            override fun toString(): String {
+                return "incr($e1,$s2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstSecondIncr
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (e1.hashCode() + 17) + c2.hashCode()) + s2.hashCode()
+            }
+        }
+        private class ConstIncr(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression{
+            private val c3 = c1 - (c1 % c2)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c3
+            }
+            override fun toString(): String {
+                return "incr($s1,$s2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstIncr
+                if (c1 != other.c1) return false
+                if (c2 != other.c2) return false
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (92821 * (c1.hashCode() + 17) + c2.hashCode()) + s1.hashCode()) + s2.hashCode()
+            }
+        }
+
 
         private val doubleType = typeOf<Double>()
         private val randomClassifier = typeOf<Random>().classifier
