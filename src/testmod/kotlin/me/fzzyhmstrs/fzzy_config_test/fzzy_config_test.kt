@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config_test
 import com.mojang.brigadier.CommandDispatcher
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
+import me.fzzyhmstrs.fzzy_config.util.Expression
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
@@ -29,8 +30,10 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.gui.Selectable
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.MathHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import kotlin.math.exp
 import kotlin.random.Random
 
 object FC: ModInitializer {
@@ -40,6 +43,64 @@ object FC: ModInitializer {
 
     override fun onInitialize() {
         TestConfig.init()
+        val expressionTestResults = AssertionResults()
+        assertConstExpression("3 + 5",8.0,expressionTestResults)
+        assertConstExpression("3 - 5",-2.0,expressionTestResults)
+        assertConstExpression("3 * 5",15.0,expressionTestResults)
+        assertConstExpression("3 / 5",3.0/5.0,expressionTestResults)
+        assertConstExpression("8 % 2",0.0,expressionTestResults)
+        assertConstExpression("3 + 5 + 3 + 5 + 3 + 5",24.0,expressionTestResults)
+        assertVarExpression("3 + x", mapOf('x' to 5.0),8.0,expressionTestResults)
+        assertVarExpression("3 - x", mapOf('x' to 5.0),-2.0,expressionTestResults)
+        assertVarExpression("3 * x", mapOf('x' to 5.0),15.0,expressionTestResults)
+        assertVarExpression("3 / x", mapOf('x' to 5.0),3.0/5.0,expressionTestResults)
+        assertVarExpression("8 % x", mapOf('x' to 3.0),8.0 % 3.0,expressionTestResults)
+        assertConstExpression("sqrt(4)",2.0,expressionTestResults)
+        assertConstExpression("ceil(4.5)",5.0,expressionTestResults)
+        assertConstExpression("floor(4.5)",4.0,expressionTestResults)
+        assertConstExpression("round(4.25)",4.0,expressionTestResults)
+        assertConstExpression("ln(4.5)",kotlin.math.ln(4.5),expressionTestResults)
+        assertConstExpression("log(4,4)",kotlin.math.log(4.0,4.0),expressionTestResults)
+        assertConstExpression("log10(5)",kotlin.math.log10(5.0),expressionTestResults)
+        assertConstExpression("log2(5)",kotlin.math.log2(5.0),expressionTestResults)
+        assertConstExpression("abs(-4.5)",4.5,expressionTestResults)
+        assertConstExpression("sin(4.5)",MathHelper.sin(4.5.toFloat()).toDouble(),expressionTestResults)
+        assertConstExpression("cos(4.5)",MathHelper.cos(4.5.toFloat()).toDouble(),expressionTestResults)
+        assertConstExpression("incr(4.268,0.1)",4.2,expressionTestResults)
+        println(expressionTestResults)
+    }
+
+    private fun assertConstExpression(exp: String, result: Double, results: AssertionResults){
+        println("Expression Input: $exp")
+        val e = Expression.parse(exp)
+        println("Expression Parsed: $e")
+        this.assert(e.eval(mapOf()),result, results)
+    }
+
+    private fun assertVarExpression(exp: String, vars: Map<Char, Double>, result: Double, results: AssertionResults){
+        println("Expression Input: $exp")
+        val e = Expression.parse(exp)
+        println("Expression Parsed: $e")
+        this.assert(e.eval(vars),result, results)
+    }
+
+    private fun assert(testVal: Any, assertionVal: Any, assertions: AssertionResults){
+        println("Assertion [$testVal] == [$assertionVal]: ${(testVal == assertionVal).also { assertions.inc(it) }}")
+    }
+
+    private class AssertionResults(var fails: Int = 0, var tests: Int = 0){
+        override fun toString(): String {
+            return "ASSERTIONS PASSED: ${tests - fails} out of $tests"
+        }
+        fun inc(result: Boolean){
+            tests++
+            if(!result)
+                fails++
+        }
+        fun addTo(other: AssertionResults){
+            other.tests += tests
+            other.fails += fails
+        }
     }
 }
 
