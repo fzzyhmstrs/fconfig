@@ -151,7 +151,7 @@ fun interface Expression {
         }
 
         /**
-         * Attempts to parse and evaluate an expression with dummy values, faling null instead of throwing
+         * Attempts to parse and evaluate an expression with dummy values, failing null instead of throwing
          * @param str the math expression to try parsing
          * @param vars [Set] of valid variable characters. This method will build a dummy Map<Char,Double> to test eval() of the expression
          * @return ValidationResult<Expression?> wrapping an Expression if parsing succeeds, or null if it fails (with the exception message passed back with the Result)
@@ -425,7 +425,7 @@ fun interface Expression {
                 return c1
             }
             override fun toString(): String {
-                return "$c1"
+                return c1.toString()
             }
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -441,6 +441,10 @@ fun interface Expression {
         private fun parentheses(e1: Expression): Expression {
             return if(e1 is Const){
                 ConstParentheses(e1.c(), e1.toString())
+            } else if (e1 is ConstParentheses) {
+                ConstParentheses(e1.c1, e1.s1)
+            }else if (e1 is ExpParentheses) {
+                ExpParentheses(e1.e1)
             } else {
                 ExpParentheses(e1)
             }
@@ -462,7 +466,7 @@ fun interface Expression {
                 return e1.hashCode()
             }
         }
-        private class ConstParentheses(val c1: Double, val s1: String): Expression{
+        private class ConstParentheses(val c1: Double, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return c1
             }
@@ -1379,16 +1383,119 @@ fun interface Expression {
             }
         }
 
-
-        private fun log(e1: Expression, power: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.log(e1.eval(vars),power.eval(vars))
+        private fun log(e1: Expression, base: Expression): Expression {
+            return if (base is Const){
+                if (base.c() == 2.0){
+                    log2(e1)
+                } else if (base.c() == 10.0){
+                    log10(e1)
+                } else if (e1 is Const) {
+                    ConstLog(e1.c(),base.c(),e1.toString(),base.toString())
+                } else {
+                    ConstBaseLog(e1, base.c(), base.toString())
                 }
-                override fun toString(): String {
+            } else if (e1 is Const) {
+                ConstOperandLog(e1.c(),base,e1.toString())
+            } else {
+                ExpLog(e1,base)
+            }
+        }
+        private class ConstLog(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression, Const{
+            private val c3 = kotlin.math.log(c1,c2)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c3
+            }
+            override fun c(): Double {
+                return c3
+            }
+            override fun toString(): String {
+                return "log($s1,$s2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstLog
+                if (c1 != other.c1) return false
+                if (c2 != other.c2) return false
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
 
-                    return "log[${power.toString()}]$e1"
-                }
+            override fun hashCode(): Int {
+                var result = c1.hashCode() + 10
+                result = 92821 * result + c2.hashCode()
+                result = 92821 * result + s1.hashCode()
+                result = 92821 * result + s2.hashCode()
+                return result
+            }
+
+        }
+        private class ConstBaseLog(val e1: Expression, val c2: Double, val s2: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.log(e1.eval(vars),c2)
+            }
+            override fun toString(): String {
+                return "log($e1,$s2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstBaseLog
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                var result = e1.hashCode()
+                result = 92821 * result + c2.hashCode()
+                result = 92821 * result + s2.hashCode()
+                return result
+            }
+        }
+        private class ConstOperandLog(val c1: Double, val e2: Expression, val s1: String): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.log(c1,e2.eval(vars))
+            }
+            override fun toString(): String {
+                return "log($s1,$e2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstOperandLog
+                if (c1 != other.c1) return false
+                if (e2 != other.e2) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                var result = c1.hashCode()
+                result = 92821 * result + e2.hashCode()
+                result = 92821 * result + s1.hashCode()
+                return result
+            }
+        }
+        private class ExpLog(val e1: Expression, val e2: Expression): Expression{
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.log(e1.eval(vars),e2.eval(vars))
+            }
+            override fun toString(): String {
+                return "log($e1,$e2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpLog
+                if (e1 != other.e1) return false
+                if (e2 != other.e2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                var result = e1.hashCode()
+                result = 92821 * result + e2.hashCode()
+                return result
             }
         }
 
@@ -1598,12 +1705,12 @@ fun interface Expression {
             }
         }
         private class ConstSin(val c1: Double, val s1: String): Expression, Const{
-            private val c2 = kotlin.math.sin(c1)
+            private val c3 = MathHelper.sin(c1.toFloat()).toDouble()
             override fun eval(vars: Map<Char, Double>): Double {
-                return c2
+                return c3
             }
             override fun c(): Double {
-                return c2
+                return c3
             }
             override fun toString(): String {
                 return "sin($s1)"
@@ -1641,22 +1748,19 @@ fun interface Expression {
 
 
         private fun cos(e1: Expression): Expression {
-            return object : Expression {
-                override fun eval(vars: Map<Char, Double>): Double {
-                    return kotlin.math.cos(e1.eval(vars))
-                }
-                override fun toString(): String {
-                    return "cos$e1"
-                }
+            return if(e1 is ConstParentheses){
+                ConstCos(e1.c1,e1.s1)
+            } else {
+                ExpCos((e1 as ExpParentheses).e1)
             }
         }
         private class ConstCos(val c1: Double, val s1: String): Expression, Const{
-            private val c2 = kotlin.math.cos(c1)
+            private val c3 = MathHelper.cos(c1.toFloat()).toDouble()
             override fun eval(vars: Map<Char, Double>): Double {
-                return c2
+                return c3
             }
             override fun c(): Double {
-                return c2
+                return c3
             }
             override fun toString(): String {
                 return "cos($s1)"
