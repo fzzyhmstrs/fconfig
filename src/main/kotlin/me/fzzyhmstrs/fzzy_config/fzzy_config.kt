@@ -26,6 +26,14 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+inline fun<reified T> Any?.cast(): T{
+    return this as T
+}
+
+inline fun<reified T> Any?.nullCast(): T?{
+    return this as? T
+}
+
 @Internal
 object FC: ModInitializer {
     internal const val MOD_ID = "fzzy_config"
