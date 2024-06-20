@@ -195,7 +195,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     @Environment(EnvType.CLIENT)
     private class CyclingOptionsWidget<T: Enum<*>>(choicePredicate: ChoiceValidator<T>, private val entry: Entry<T,*>): PressableWidget(0,0,110,20, entry.get().let { it.transLit(it.name) }) {
 
-        private val constants = entry.get()::class.java.enumConstants.filter {
+        private val constants = entry.get().declaringJavaClass.enumConstants.mapNotNull { it as? T }.filter {
             choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
         }
 
