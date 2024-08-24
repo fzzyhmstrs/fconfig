@@ -36,6 +36,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Predicate
 import kotlin.math.max
@@ -48,27 +49,73 @@ import kotlin.math.max
  * @param defaultValue the default choice
  * @param choices [List]<T> defining the appropriate choices
  * @param handler [EntryHandler] to provide validation tasks for individual choice elements
+ * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
+ * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base description key of this ValidatedChoice into a text Description
  * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.choices
  * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList.toChoices
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, added providers 0.3.6
  */
-open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val choices: List<T>, private val handler: EntryHandler<T>, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
+open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val choices: List<T>, private val handler: EntryHandler<T>, private val translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, private val descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
+
+    /**
+     * A validated set of choices of any type
+     *
+     * Similar to a [ValidatedEnum], but constructed from a pre-defined list of choices
+     * @param T the choice type
+     * @param defaultValue the default choice
+     * @param choices [List]<T> defining the appropriate choices
+     * @param handler [EntryHandler] to provide validation tasks for individual choice elements
+     * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.choices
+     * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList.toChoices
+     * @author fzzyhmstrs
+     * @since 0.3.6
+     */
+    constructor(defaultValue: T, choices: List<T>, handler: EntryHandler<T>, widgetType: WidgetType): this(defaultValue, choices, handler, BiFunction { t, _ -> t.transLit(t.toString()) }, BiFunction { t, _ -> t.descLit("") }, widgetType)
 
     /**
      * A validated set of choices of any type using the first choice as the default
      *
      * Similar to a [ValidatedEnum], but constructed from a pre-defined list of choices
      * @param T the choice type
-     * @param choices [List]<T> defining the appropriate choices
+     * @param choices [List]<T> defining the appropriate choices; the first choice in the list will be the default
+     * @param handler [EntryHandler] to provide validation tasks for individual choice elements
+     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
+     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base description key of this ValidatedChoice into a text Description
+     * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
+     * @author fzzyhmstrs
+     * @since 0.2.0, added providers 0.3.6
+     */
+    @JvmOverloads
+    constructor(choices: List<T>, handler: EntryHandler<T>, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit(t.toString()) }, widgetType: WidgetType = WidgetType.POPUP): this(choices[0], choices, handler, translationProvider, descriptionProvider, widgetType)
+
+    /**
+     * A validated set of choices of any type using the first choice as the default
+     *
+     * Similar to a [ValidatedEnum], but constructed from a pre-defined list of choices
+     * @param T the choice type
+     * @param choices [List]<T> defining the appropriate choices; the first choice in the list will be the default
      * @param handler [EntryHandler] to provide validation tasks for individual choice elements
      * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.3.6
      */
-    @JvmOverloads
-    constructor(choices: List<T>, handler: EntryHandler<T>, widgetType: WidgetType = WidgetType.POPUP): this(choices[0], choices, handler, widgetType)
+    constructor(choices: List<T>, handler: EntryHandler<T>, widgetType: WidgetType): this(choices[0], choices, handler, widgetType = widgetType)
+
+
+    /**
+     * A validated set of choices of any type using the first choice as the default
+     *
+     * Similar to a [ValidatedEnum], but constructed from a pre-defined list of choices
+     * @param T the choice type
+     * @param handler [EntryHandler] to provide validation tasks for individual choice elements
+     * @param choice vararg [T] defining the appropriate choices; the first provided choice will be the default
+     * @author fzzyhmstrs
+     * @since 0.3.6
+     */
+    constructor(handler: EntryHandler<T>, vararg choice: T): this(choice.toList(), handler)
 
     init {
         if (!choices.contains(defaultValue))
@@ -121,7 +168,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedChoice<T> {
-        return ValidatedChoice(copyStoredValue(), this.choices, this.handler)
+        return ValidatedChoice(copyStoredValue(), this.choices, this.handler, this.translationProvider, this.descriptionProvider, this.widgetType)
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
@@ -168,7 +215,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         }
 
         override fun getMessage(): Text {
-            return entry.get().let { it.transLit(it.toString()) }
+            return entry.translationProvider.apply(entry.get(), entry.translationKey())
         }
 
         override fun getNarrationMessage(): MutableText {
@@ -185,7 +232,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             val textRenderer = MinecraftClient.getInstance().textRenderer
             var buttonWidth = 86
             for (const in choices) {
-                buttonWidth = max(buttonWidth, textRenderer.getWidth(const.let { it.transLit(it.toString()) }))
+                buttonWidth = max(buttonWidth, textRenderer.getWidth(entry.translationProvider.apply(const, entry.translationKey())))
             }
             buttonWidth = max(150, buttonWidth + 4)
             var prevParent = "title"
@@ -194,22 +241,23 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
                     const,
                     buttonWidth,
                     { c: T -> c != entry.get() },
+                    entry,
                     { entry.accept(it); PopupWidget.pop() })
                 builder.addElement("choice$index", button, prevParent, PopupWidget.Builder.PositionRelativePos.BELOW)
                 prevParent = "choice$index"
             }
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
             builder.positionY(PopupWidget.Builder.popupContext { this.y - 20 })
-            builder.additionalNarration("fc.validated_field.enum.current".translate(entry.get().transLit(entry.get().toString())))
+            builder.additionalNarration("fc.validated_field.enum.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey())))
             PopupWidget.push(builder.build())
         }
     }
 
     @Environment(EnvType.CLIENT)
-    private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val valueApplier: Consumer<T>): PressableWidget(0, 0, width, 20, thisVal.transLit(thisVal.toString())) {
+    private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val entry: ValidatedChoice<T>, private val valueApplier: Consumer<T>): PressableWidget(0, 0, width, 20, entry.translationProvider.apply(thisVal, entry.translationKey())) {
 
         init {
-            thisVal.descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
+            entry.descriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
         }
 
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -218,7 +266,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         }
 
         override fun getNarrationMessage(): MutableText {
-            return thisVal.transLit(thisVal.toString())
+            return entry.translationProvider.apply(thisVal, entry.translationKey())
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
@@ -231,7 +279,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     }
 
     @Environment(EnvType.CLIENT)
-    private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0, 0, 110, 20, entry.get().let { it.transLit(it.toString()) }) {
+    private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0, 0, 110, 20, entry.translationProvider.apply(entry.get(), entry.translationKey())) {
 
         private val choices = entry.choices.filter {
             choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
@@ -243,7 +291,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
 
         private fun constructTooltip() {
             val text1 = entry.descLit("").takeIf { it.string != "" }?.copy()
-            val text2 = entry.get().descLit("").takeIf { it.string != "" }
+            val text2 = entry.descriptionProvider.apply(entry.get(), entry.descriptionKey()).takeIf { it.string != "" }
             val totalText = if(text1 != null) {
                 if (text2 != null) {
                     text1.append("; ".lit()).append(text2)
@@ -258,7 +306,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         }
 
         override fun getNarrationMessage(): MutableText {
-            return entry.get().let { it.transLit(it.toString()) }
+            return entry.translationProvider.apply(entry.get(), entry.translationKey())
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
@@ -268,7 +316,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         override fun onPress() {
             val newIndex = (choices.indexOf(entry.get()) + 1).takeIf { it < choices.size } ?: 0
             val newConst = choices[newIndex]
-            message = newConst.let { it.transLit(it.toString()) }
+            message = entry.translationProvider.apply(newConst, entry.translationKey())
             constructTooltip()
             entry.accept(newConst)
         }

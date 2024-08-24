@@ -36,14 +36,14 @@ class TestConfigImpl3: Config(Identifier.of("fzzy_config_test","test_config3")) 
     fun getInt1(): Int {
         return int1
     }
-    @ValidatedInt.Restrict(0,20)
+    @ValidatedInt.Restrict(0, 20)
     private var int1 = 6
 
     fun getInt2(): Int {
         return int2.get()
     }
     @RequiresRestart
-    private var int2 = ValidatedInt(6,10,1)
+    private var int2 = ValidatedInt(6, 10, 1)
 
     /*
     {

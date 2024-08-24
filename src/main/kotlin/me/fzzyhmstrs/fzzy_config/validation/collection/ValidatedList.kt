@@ -16,6 +16,8 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
+import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
@@ -23,15 +25,19 @@ import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.WidgetType
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.BiFunction
 
 /**
  * a validated list
@@ -58,11 +64,15 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
     /**
      * Converts this ValidatedList into [ValidatedChoice] wrapping this list as the valid choice options
      * @return [ValidatedChoice] with options based on this list's contents
+     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
+     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
+     * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, added optional params 0.3.6
      */
-    fun toChoices(): ValidatedChoice<T> {
-        return ValidatedChoice(defaultValue, entryHandler)
+    @JvmOverloads
+    fun toChoices(widgetType: WidgetType = WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoice<T> {
+        return ValidatedChoice(defaultValue, entryHandler, translationProvider, descriptionProvider, widgetType)
     }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {
