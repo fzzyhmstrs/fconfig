@@ -214,6 +214,10 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
         }
 
+        init {
+            constructTooltip()
+        }
+
         override fun getMessage(): Text {
             return entry.translationProvider.apply(entry.get(), entry.translationKey())
         }
@@ -225,6 +229,22 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
             builder.put(NarrationPart.TITLE, this.narrationMessage)
             //builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+        }
+
+        private fun constructTooltip() {
+            val text1 = entry.descLit("").takeIf { it.string != "" }?.copy()
+            val text2 = entry.descriptionProvider.apply(entry.get(), entry.descriptionKey()).takeIf { it.string != "" }
+            val totalText = if(text1 != null) {
+                if (text2 != null) {
+                    text1.append("; ".lit()).append(text2)
+                } else {
+                    text1
+                }
+            } else {
+                text2 ?: FcText.empty()
+            }
+            if(totalText.string != "")
+                tooltip = Tooltip.of(totalText)
         }
 
         override fun onPress() {
@@ -242,7 +262,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
                     buttonWidth,
                     { c: T -> c != entry.get() },
                     entry,
-                    { entry.accept(it); PopupWidget.pop() })
+                    { entry.accept(it); constructTooltip(); PopupWidget.pop() })
                 builder.addElement("choice$index", button, prevParent, PopupWidget.Builder.PositionRelativePos.BELOW)
                 prevParent = "choice$index"
             }

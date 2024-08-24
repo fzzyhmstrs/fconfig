@@ -29,11 +29,11 @@
   "fzzy_config_test.test_config2.section1.desc" : "This is a cool section description for a section with important setting that will require a restart.",
   "fzzy_config_test.test_config2.choice1" : "Choices with Translation",
   "fzzy_config_test.test_config2.choice1.1" : "One",
-  "fzzy_config_test.test_config2.choice1.1.desc" : "Epic rarity",
+  "fzzy_config_test.test_config2.choice1.desc.1" : "Epic rarity",
   "fzzy_config_test.test_config2.choice1.2" : "Two",
-  "fzzy_config_test.test_config2.choice1.2.desc" : "Rare rarity",
+  "fzzy_config_test.test_config2.choice1.desc.2" : "Rare rarity",
   "fzzy_config_test.test_config2.choice1.5" : "Five",
-  "fzzy_config_test.test_config2.choice1.5.desc" : "Uncommon rarity",
+  "fzzy_config_test.test_config2.choice1.desc.5" : "Uncommon rarity",
   "fzzy_config_test.test_config2.choice1.10" : "Ten",
-  "fzzy_config_test.test_config2.choice1.10.desc" : "Common rarity"
+  "fzzy_config_test.test_config2.choice1.desc.10" : "Common rarity"
 }
