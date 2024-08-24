@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.entry
 
-import me.fzzyhmstrs.fzzy_config.util.FcText.description
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
@@ -26,12 +25,14 @@ import net.minecraft.client.gui.widget.ClickableWidget
  * @since 0.2.0
  */
 interface EntryWidget<T> {
+
     @Environment(EnvType.CLIENT)
     fun widgetEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget
+
     @Environment(EnvType.CLIENT)
-    fun widgetAndTooltipEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget{
+    fun widgetAndTooltipEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget {
         val widget = widgetEntry(choicePredicate)
-        if (this is Translatable && this.hasDescription()){
+        if (this is Translatable && this.hasDescription()) {
             widget.tooltip = Tooltip.of(this.description(""))
         }
         return widget

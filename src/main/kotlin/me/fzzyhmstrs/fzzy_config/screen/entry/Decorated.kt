@@ -19,7 +19,7 @@ import net.minecraft.util.Identifier
 @Environment(EnvType.CLIENT)
 interface Decorated {
     fun decorationId(): Identifier
-    fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float){
+    fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
         context.drawGuiTexture(decorationId(), x, y, 16, 16)

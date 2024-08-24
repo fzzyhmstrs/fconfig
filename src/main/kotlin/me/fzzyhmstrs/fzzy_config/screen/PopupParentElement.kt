@@ -34,7 +34,7 @@ interface PopupParentElement: ParentElement, LastSelectable {
      * @since 0.2.0
      */
     val popupWidgets: LinkedList<PopupWidget>
-    
+
     /**
      * Boolean prevents `mouseReleased` from triggering on the Popup or Widget underneath the active popup if it's closed on `mouseClicked`
      * @author fzzyhmstrs
@@ -42,10 +42,10 @@ interface PopupParentElement: ParentElement, LastSelectable {
      */
     var justClosedWidget: Boolean
 
-    override fun pushLast(){
+    override fun pushLast() {
         this.lastSelected = focused
     }
-    override fun popLast(){
+    override fun popLast() {
         focused = lastSelected
     }
 
@@ -61,14 +61,14 @@ interface PopupParentElement: ParentElement, LastSelectable {
     fun blurElements()
 
     /**
-     * called when a Popup is pushed to this element, after blurring. 
+     * called when a Popup is pushed to this element, after blurring.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     fun initPopup(widget: PopupWidget)
 
     fun setPopup(widget: PopupWidget?) {
-        if(widget == null){
+        if(widget == null) {
             if (popupWidgets.isEmpty())
                 return
             justClosedWidget = true
@@ -107,7 +107,7 @@ interface PopupParentElement: ParentElement, LastSelectable {
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (justClosedWidget){
+        if (justClosedWidget) {
             justClosedWidget = false
             return false
         }

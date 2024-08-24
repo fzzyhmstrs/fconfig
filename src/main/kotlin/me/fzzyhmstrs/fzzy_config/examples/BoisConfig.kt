@@ -15,13 +15,13 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import net.minecraft.util.Identifier
 
-class BoisConfig: Config(Identifier.of(FC.MOD_ID,"bois_config")) {
+class BoisConfig: Config(Identifier.of(FC.MOD_ID, "bois_config")) {
 
     // If there are common clusters of settings you want to use in many places, such as mob stats,
     // you can use ValidatedAny to implement arrangements of settings from one common source
     class BoiStats(hp: Double, dmg: Double, spd: Double) { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
 
-        constructor(): this(20.0,5.0,0.3) // empty constructor for serialization and validation
+        constructor(): this(20.0, 5.0, 0.3) // empty constructor for serialization and validation
 
         var health = hp
         var damage = dmg
@@ -30,9 +30,9 @@ class BoisConfig: Config(Identifier.of(FC.MOD_ID,"bois_config")) {
 
     //settings built from your generic boi stats object
 
-    var bigBoi = ValidatedAny(BoiStats(40.0,8.0,0.15))
+    var bigBoi = ValidatedAny(BoiStats(40.0, 8.0, 0.15))
 
-    var littleBoi = ValidatedAny(BoiStats(10.0,1.0,0.4))
+    var littleBoi = ValidatedAny(BoiStats(10.0, 1.0, 0.4))
 
     var regularBoi = ValidatedAny(BoiStats())
 

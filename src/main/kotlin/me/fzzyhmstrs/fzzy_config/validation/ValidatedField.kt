@@ -41,7 +41,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  */
 @Suppress("DeprecatedCallableAddReplaceWith")
 abstract class ValidatedField<T>(protected var storedValue: T, protected val defaultValue: T = storedValue):
-    Entry<T,ValidatedField<T>>,
+    Entry<T, ValidatedField<T>>,
     Updatable,
     Translatable
 {
@@ -77,24 +77,24 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     }
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun restore(){
+    override fun restore() {
         reset()
-        updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.default",translation(), defaultValue.toString()))
+        updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.default", translation(), defaultValue.toString()))
     }
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun revert() {
-        if(pushedValue != null){
+        if(pushedValue != null) {
             try {
                 pushedValue?.let {
-                    updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert",translation(), get().toString(), pushedValue.toString()))
+                    updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert", translation(), get().toString(), pushedValue.toString()))
                     set(it)
                 }
-            } catch (e: Exception){
-                updateManager?.addUpdateMessage(this,FcText.translatable("fc.validated_field.revert.error",translation(), e.localizedMessage))
+            } catch (e: Exception) {
+                updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert.error", translation(), e.localizedMessage))
             }
         } else {
-            updateManager?.addUpdateMessage(this,FcText.translatable("fc.validated_field.revert.error",translation(), "Unexpected null PushedState."))
+            updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert.error", translation(), "Unexpected null PushedState."))
         }
     }
     /**
@@ -102,7 +102,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
      */
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun pushState(){
+    override fun pushState() {
         pushedValue = copyStoredValue()
     }
     /**
@@ -118,14 +118,14 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
      */
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun popState(): Boolean{
+    override fun popState(): Boolean {
         if (pushedValue == null) return false
         val updated = pushedValue != get()
         pushedValue = null
         return updated
     }
 
-    open fun copyStoredValue(): T{
+    open fun copyStoredValue(): T {
         return get()
     }
 
@@ -142,13 +142,13 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     ): ValidationResult<T> {
         val tVal = deserialize(toml, fieldName) //1
         if (tVal.isError()){ //2
-            return ValidationResult.error(get(),"Error deserializing config entry [$fieldName], using default value [${tVal.get()}]  >>> Possible reasons: ${tVal.getError()}")
+            return ValidationResult.error(get(), "Error deserializing config entry [$fieldName], using default value [${tVal.get()}]  >>> Possible reasons: ${tVal.getError()}")
         }
         //3
         val tVal2 = correctEntry(tVal.get(), EntryValidator.ValidationType.WEAK)
         set(tVal2.get()) //4
         if (tVal2.isError()){ //5
-            return ValidationResult.error(get(),"Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]  >>> Possible reasons: ${tVal2.getError()}")
+            return ValidationResult.error(get(), "Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]  >>> Possible reasons: ${tVal2.getError()}")
         }
         return ValidationResult.success(get())
     }
@@ -170,8 +170,8 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     fun trySerialize(input: Any?, errorBuilder: MutableList<String>, flags: Byte): TomlElement? {
         return try {
             @Suppress("DEPRECATION", "UNCHECKED_CAST")
-            serializeEntry(input as T?,errorBuilder, flags)
-        } catch (e: Exception){
+            serializeEntry(input as T?, errorBuilder, flags)
+        } catch (e: Exception) {
             null
         }
     }
@@ -201,8 +201,8 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     open fun validateAndSet(input: T): ValidationResult<T> {
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.WEAK)
         set(tVal1.get())
-        if (tVal1.isError()){
-            return ValidationResult.error(tVal1.get(),"Error validating and setting input [$input]. Corrected to [${tVal1.get()}] >>>> Possible reasons: [${tVal1.getError()}]")
+        if (tVal1.isError()) {
+            return ValidationResult.error(tVal1.get(), "Error validating and setting input [$input]. Corrected to [${tVal1.get()}] >>>> Possible reasons: [${tVal1.getError()}]")
         }
         return ValidationResult.success(get())
     }
@@ -213,8 +213,8 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         val oldVal = get()
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
         set(tVal1.get())
-        val message = if (tVal1.isError()){
-            FcText.translatable("fc.validated_field.update.error",translation(),oldVal.toString(),get().toString(),tVal1.getError())
+        val message = if (tVal1.isError()) {
+            FcText.translatable("fc.validated_field.update.error", translation(), oldVal.toString(), get().toString(), tVal1.getError())
         } else {
             updateMessage(oldVal, get())
         }
@@ -225,13 +225,13 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         try {
             @Suppress("UNCHECKED_CAST")
             setAndUpdate(input as T)
-        } catch (e: Exception){
+        } catch (e: Exception) {
             //
         }
     }
 
     protected open fun updateMessage(old: T, new: T): Text {
-        return FcText.translatable("fc.validated_field.update",translation(),old.toString(),new.toString())
+        return FcText.translatable("fc.validated_field.update", translation(), old.toString(), new.toString())
     }
 
     /**
@@ -275,7 +275,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     }
 
     override fun translation(fallback: String?): MutableText {
-        return FcText.translatableWithFallback(translationKey(),fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+        return FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
     }
 
     /**

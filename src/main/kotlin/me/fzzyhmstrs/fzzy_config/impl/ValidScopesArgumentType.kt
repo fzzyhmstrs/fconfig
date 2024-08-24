@@ -23,20 +23,23 @@ import java.util.concurrent.CompletableFuture
 
 @Environment(EnvType.CLIENT)
 internal class ValidScopesArgumentType: ArgumentType<String> {
+
     override fun parse(reader: StringReader): String {
         return reader.readUnquotedString()
     }
+
     override fun <S : Any?> listSuggestions(
         context: CommandContext<S>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
-        return CommandSource.suggestMatching(ClientConfigRegistry.getScreenScopes(),builder)
+        return CommandSource.suggestMatching(ClientConfigRegistry.getScreenScopes(), builder)
     }
+
     override fun getExamples(): MutableCollection<String> {
         return mutableSetOf("my_mod", "mod_id", "fzzy_config")
     }
 
-    companion object{
+    companion object {
         fun getValidScope(context: CommandContext<*>, name: String?): String? {
             return context.getArgument(name, String::class.java)
         }

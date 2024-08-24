@@ -69,12 +69,12 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     @ApiStatus.Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
-        return when(widgetType){
+        return when(widgetType) {
             SLIDER -> {
-                ConfirmButtonSliderWidget(this,this.minValue, this.maxValue, choicePredicate, {d -> convert(d).get() }, { setAndUpdate(it) })
+                ConfirmButtonSliderWidget(this, this.minValue, this.maxValue, choicePredicate, {d -> convert(d).get() }, { setAndUpdate(it) })
             }
             TEXTBOX -> {
-                ConfirmButtonTextFieldWidget(this,choicePredicate,{d -> val result = convert(d); this.validateEntry(result.get(), EntryValidator.ValidationType.STRONG).also(result.isValid(), result.getError())}, { setAndUpdate(it) })
+                ConfirmButtonTextFieldWidget(this, choicePredicate, {d -> val result = convert(d); this.validateEntry(result.get(), EntryValidator.ValidationType.STRONG).also(result.isValid(), result.getError())}, { setAndUpdate(it) })
             }
         }
     }
@@ -82,17 +82,17 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     override fun description(fallback: String?): MutableText {
         return if(I18n.hasTranslation(descriptionKey())) super.description(fallback) else genericDescription()
     }
-    private fun genericDescription(): MutableText{
-        return if (minValue.compareTo(minBound()) == 0){
+    private fun genericDescription(): MutableText {
+        return if (minValue.compareTo(minBound()) == 0) {
             if (maxValue.compareTo(maxBound()) == 0) {
                 "fc.validated_field.number.desc.fallback.any".translate()
             } else {
                 "fc.validated_field.number.desc.fallback.min".translate(maxValue)
             }
-        } else if (maxValue.compareTo(maxBound()) == 0){
+        } else if (maxValue.compareTo(maxBound()) == 0) {
             "fc.validated_field.number.desc.fallback.max".translate(minValue)
-        } else{
-            "fc.validated_field.number.desc.fallback".translate(minValue,maxValue)
+        } else {
+            "fc.validated_field.number.desc.fallback".translate(minValue, maxValue)
         }
     }
 
@@ -110,7 +110,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    enum class WidgetType{
+    enum class WidgetType {
         /**
          * An MC-style slider widget bounded between min and max.
          * @author fzzyhmstrs
@@ -129,9 +129,9 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     }
 
     @Environment(EnvType.CLIENT)
-    protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double,T>, private val valueApplier: Consumer<T>):
+    protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
         ClickableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
-        companion object{
+        companion object {
             private val TEXTURE = Identifier.of("widget/slider")
             private val HIGHLIGHTED_TEXTURE = Identifier.of("widget/slider_highlighted")
             private val HANDLE_TEXTURE = Identifier.of("widget/slider_handle")
@@ -139,14 +139,14 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         }
 
-        private fun split(range: Double): Double{
+        private fun split(range: Double): Double {
             var d = range
-            while (d.toInt().toDouble() != d){
+            while (d.toInt().toDouble() != d) {
                 d *= 10.0
             }
-            return if (d % 16.0 == 0.0){
+            return if (d % 16.0 == 0.0) {
                 (range / 16.0)
-            } else if (d % 12.0 == 0.0){
+            } else if (d % 12.0 == 0.0) {
                 (range / 12.0)
             } else {
                 (range / 10.0)
@@ -156,10 +156,10 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         private var confirmActive = false
         private var cachedWrappedValue: T = wrappedValue.get()
         private var value: T = wrappedValue.get()
-        private val increment = max((maxValue.toDouble() - minValue.toDouble())/ 102.0, min(1.0,split(maxValue.toDouble() - minValue.toDouble())))
+        private val increment = max((maxValue.toDouble() - minValue.toDouble())/ 102.0, min(1.0, split(maxValue.toDouble() - minValue.toDouble())))
         private var isValid = validator.validateEntry(wrappedValue.get(), EntryValidator.ValidationType.STRONG).isValid()
 
-        private fun isChanged(): Boolean{
+        private fun isChanged(): Boolean {
             return value != wrappedValue.get()
         }
 
@@ -191,7 +191,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             RenderSystem.defaultBlendFunc()
             RenderSystem.enableDepthTest()
             context.drawGuiTexture(getTexture(), x, y, getWidth(), getHeight())
-            val progress = MathHelper.getLerpProgress(value.toDouble(),minValue.toDouble(),maxValue.toDouble())
+            val progress = MathHelper.getLerpProgress(value.toDouble(), minValue.toDouble(), maxValue.toDouble())
             context.drawGuiTexture(getHandleTexture(), x + (progress * (width - 8).toDouble()).toInt(), y, 8, getHeight())
             context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             this.drawScrollableText(context, minecraftClient.textRenderer, 2, 0xFFFFFF or (MathHelper.ceil(alpha * 255.0f) shl 24))
@@ -213,7 +213,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
                 if (this.isFocused) {
                     builder.put(NarrationPart.USAGE, "fc.validated_field.number.slider.usage".translate())
                 } else {
-                    builder.put(NarrationPart.USAGE,"fc.validated_field.number.slider.usage.unfocused".translate())
+                    builder.put(NarrationPart.USAGE, "fc.validated_field.number.slider.usage.unfocused".translate())
                 }
             }
         }
@@ -224,8 +224,8 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
                 val f = if (bl) -increment else increment
                 val ff = MathHelper.clamp(value.toDouble() + f, minValue.toDouble(), maxValue.toDouble())
                 this.setValue(ff)
-                this.isValid = validator.validateEntry(this.value,EntryValidator.ValidationType.STRONG).isValid()
-                if(isChanged() && isValid){
+                this.isValid = validator.validateEntry(this.value, EntryValidator.ValidationType.STRONG).isValid()
+                if(isChanged() && isValid) {
                     cachedWrappedValue = value
                     valueApplier.accept(value)
                     this.confirmActive = isChanged() && isValid
@@ -237,7 +237,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         private fun setValueFromMouse(mouseX: Double) {
-            this.setValue(MathHelper.clampedMap((mouseX - (x + 4).toDouble()) / (width - 8).toDouble(),0.0,1.0,minValue.toDouble(), maxValue.toDouble()))
+            this.setValue(MathHelper.clampedMap((mouseX - (x + 4).toDouble()) / (width - 8).toDouble(), 0.0, 1.0, minValue.toDouble(), maxValue.toDouble()))
         }
 
         private fun setValue(value: Double) {
@@ -257,8 +257,8 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         override fun playDownSound(soundManager: SoundManager?) {}
 
         override fun onRelease(mouseX: Double, mouseY: Double) {
-            this.isValid = validator.validateEntry(this.value,EntryValidator.ValidationType.STRONG).isValid()
-            if(isChanged() && isValid){
+            this.isValid = validator.validateEntry(this.value, EntryValidator.ValidationType.STRONG).isValid()
+            if(isChanged() && isValid) {
                 cachedWrappedValue = value
                 valueApplier.accept(value)
                 this.confirmActive = isChanged() && isValid
@@ -274,5 +274,5 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         validationProvider: Function<Double, ValidationResult<T>>,
         valueApplier: Consumer<T>)
         :
-        ValidationBackedNumberFieldWidget<T>(110, 20, wrappedValue,choiceValidator,validationProvider,valueApplier)
+        ValidationBackedNumberFieldWidget<T>(110, 20, wrappedValue, choiceValidator, validationProvider, valueApplier)
 }

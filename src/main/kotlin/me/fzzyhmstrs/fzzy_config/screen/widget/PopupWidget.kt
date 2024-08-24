@@ -61,9 +61,9 @@ class PopupWidget
         private val blurBackground: Boolean,
         private val closeOnOutOfBounds: Boolean,
         private val background: Identifier,
-        private val positionX: BiFunction<Int,Int,Int>,
-        private val positionY: BiFunction<Int,Int,Int>,
-        private val positioner: BiConsumer<Int,Int>,
+        private val positionX: BiFunction<Int, Int, Int>,
+        private val positionY: BiFunction<Int, Int, Int>,
+        private val positioner: BiConsumer<Int, Int>,
         private val onClose: Runnable,
         private val children: List<Element>,
         private val selectables: List<Selectable>,
@@ -80,11 +80,11 @@ class PopupWidget
     private var focused: Element? = null
     private var focusedSelectable: Selectable? = null
     private var dragging = false
-    private val fillColor = Color(30,30,30,90).rgb
+    private val fillColor = Color(30, 30, 30, 90).rgb
     private var suggestionWindowElement: Element? = null
 
     init {
-        for (child in children){
+        for (child in children) {
             if (child is SuggestionWindowProvider)
                 child.addListener(this)
         }
@@ -94,11 +94,11 @@ class PopupWidget
         this.suggestionWindowElement
     }
 
-    fun onClose(){
+    fun onClose() {
         this.onClose.run()
     }
 
-    fun closesOnMissedClick(): Boolean{
+    fun closesOnMissedClick(): Boolean {
         return closeOnOutOfBounds
     }
 
@@ -112,9 +112,9 @@ class PopupWidget
         MinecraftClient.getInstance().framebuffer.beginWrite(false)
     }
 
-    fun position(screenWidth: Int, screenHeight: Int){
-        this.x = positionX.apply(screenWidth,width) //screenWidth/2 - width/2
-        this.y = positionY.apply(screenHeight,height) //screenHeight/2 - height/2
+    fun position(screenWidth: Int, screenHeight: Int) {
+        this.x = positionX.apply(screenWidth, width) //screenWidth/2 - width/2
+        this.y = positionY.apply(screenHeight, height) //screenHeight/2 - height/2
         positioner.accept(this.x, this.y)
     }
 
@@ -124,9 +124,9 @@ class PopupWidget
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.matrices.push()
-        context.matrices.translate(x.toFloat(),y.toFloat(),0f)
+        context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
         if (blurBackground) {
-            context.fill(0,0,width,height,fillColor)
+            context.fill(0, 0, width, height, fillColor)
             applyBlur(delta)
         }
         context.matrices.pop()
@@ -164,7 +164,7 @@ class PopupWidget
         if (suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)) {
             return true
         }
-        val guiNavigation: GuiNavigation? = when(keyCode){
+        val guiNavigation: GuiNavigation? = when(keyCode) {
             GLFW.GLFW_KEY_LEFT -> getArrowNavigation(NavigationDirection.LEFT)
             GLFW.GLFW_KEY_RIGHT -> getArrowNavigation(NavigationDirection.RIGHT)
             GLFW.GLFW_KEY_UP -> getArrowNavigation(NavigationDirection.UP)
@@ -172,7 +172,7 @@ class PopupWidget
             GLFW.GLFW_KEY_TAB ->  getTabNavigation()
             else -> null
         }
-        if(guiNavigation != null){
+        if(guiNavigation != null) {
             var guiNavigationPath = super.getNavigationPath(guiNavigation)
             if (guiNavigationPath == null && guiNavigation is GuiNavigation.Tab) {
                 blur()
@@ -197,7 +197,7 @@ class PopupWidget
         path.setFocused(true)
     }
 
-    private fun trySetFocused(focused: Element){
+    private fun trySetFocused(focused: Element) {
         if (!children().contains(focused)) return
         setFocused(focused)
     }
@@ -280,7 +280,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun focusElement(element: Element){
+        fun focusElement(element: Element) {
             (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.popupWidgets?.peek()?.trySetFocused(element)
         }
     }
@@ -296,7 +296,7 @@ class PopupWidget
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    @Suppress("DEPRECATION","UNUSED")
+    @Suppress("DEPRECATION", "UNUSED")
     @Environment(EnvType.CLIENT)
     class Builder @JvmOverloads constructor(private val title: Text, spacingW: Int = 4, spacingH: Int = spacingW) {
 
@@ -304,19 +304,19 @@ class PopupWidget
         private var height: Int = 21
         private var manualWidth: Int = -1
         private var manualHeight: Int = -1
-        private var positionX: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
-        private var positionY: BiFunction<Int,Int,Int> = BiFunction { sw, w -> sw/2 - w/2 }
+        private var positionX: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
+        private var positionY: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var onClose = Runnable { }
         private var blurBackground = true
         private var closeOnOutOfBounds = true
         private var background = "widget/popup/background".fcId()
         private var additionalTitleNarration: MutableList<Text> = mutableListOf()
 
-        private val xPos = RelPos(ImmutablePos(8),0)
-        private val yPos = RelPos(ImmutablePos(8),0)
-        private val wPos = RelPos(xPos,width - 16)
-        private val hPos = RelPos(yPos,height - 16)
-        private val set = PosSet(xPos,yPos,wPos,hPos,spacingW,spacingH)
+        private val xPos = RelPos(ImmutablePos(8), 0)
+        private val yPos = RelPos(ImmutablePos(8), 0)
+        private val wPos = RelPos(xPos, width - 16)
+        private val hPos = RelPos(yPos, height - 16)
+        private val set = PosSet(xPos, yPos, wPos, hPos, spacingW, spacingH)
 
         private val titleElement: PositionedElement<TextWidget> = createInitialElement()
         private val elements: MutableMap<String, PositionedElement<*>> = mutableMapOf(
@@ -332,25 +332,25 @@ class PopupWidget
             hPos.set(newHeight - 16)
         }
 
-        private fun createInitialElement(): PositionedElement<TextWidget>{
-            val widget = TextWidget(title,MinecraftClient.getInstance().textRenderer)
+        private fun createInitialElement(): PositionedElement<TextWidget> {
+            val widget = TextWidget(title, MinecraftClient.getInstance().textRenderer)
             if(set.spacingH < 4)
                 widget.height = widget.height + ((4 - set.spacingH) * 2)
-            val posX = SuppliedPos(xPos,0) { (wPos.get() - xPos.get()) / 2 - widget.width / 2 }
+            val posX = SuppliedPos(xPos, 0) { (wPos.get() - xPos.get()) / 2 - widget.width / 2 }
             val posY = RelPos(yPos, 0)
-            return PositionedElement(widget,posX,posY,Position.ALIGN_CENTER)
+            return PositionedElement(widget, posX, posY, Position.ALIGN_CENTER)
         }
 
-        private fun<E> createPositionedElement(set: PosSet, el: E, parent: String, positions: Array<out Position>): PositionedElement<E> where E: Widget{
-            var newX: Pos = RelPos(set.x,set.spacingW)
-            var newY: Pos = RelPos(set.y,set.spacingH)
+        private fun<E> createPositionedElement(set: PosSet, el: E, parent: String, positions: Array<out Position>): PositionedElement<E> where E: Widget {
+            var newX: Pos = RelPos(set.x, set.spacingW)
+            var newY: Pos = RelPos(set.y, set.spacingH)
             val parentEl = elements[parent] ?: titleElement
             var alignment: PositionGlobalAlignment = parentEl.alignment
-            for(pos in positions){
-                val pair = pos.position(parentEl,el,set,newX,newY)
+            for(pos in positions) {
+                val pair = pos.position(parentEl, el, set, newX, newY)
                 newX = pair.first
                 newY = pair.second
-                if (pos is PositionGlobalAlignment){
+                if (pos is PositionGlobalAlignment) {
                     alignment = pos
                 }
             }
@@ -524,7 +524,7 @@ class PopupWidget
          * @since 0.2.0
          */
         @JvmOverloads
-        fun addDivider(parent: String? = null): Builder{
+        fun addDivider(parent: String? = null): Builder {
             val trueParent = parent ?: lastEl
             addElement("divider_for_$trueParent", DividerWidget(10), trueParent, Position.BELOW, Position.ALIGN_JUSTIFY)
             return this
@@ -540,9 +540,9 @@ class PopupWidget
          * @since 0.2.0
          */
         @JvmOverloads
-        fun addDoneButton(pressAction: ButtonWidget.PressAction = ButtonWidget.PressAction{ pop() }, parent: String? = null, spacingH: Int = 4): Builder{
+        fun addDoneButton(pressAction: ButtonWidget.PressAction = ButtonWidget.PressAction{ pop() }, parent: String? = null, spacingH: Int = 4): Builder {
             val trueParent = parent ?: lastEl
-            addElementSpacedH("done_for_$trueParent", ButtonWidget.builder(ScreenTexts.DONE, pressAction).size(50,20).build(), trueParent, spacingH, Position.BELOW, Position.ALIGN_JUSTIFY)
+            addElementSpacedH("done_for_$trueParent", ButtonWidget.builder(ScreenTexts.DONE, pressAction).size(50, 20).build(), trueParent, spacingH, Position.BELOW, Position.ALIGN_JUSTIFY)
             return this
         }
         /**
@@ -552,7 +552,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun width(width: Int): Builder{
+        fun width(width: Int): Builder {
             this.manualWidth = width
             return this
         }
@@ -563,7 +563,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun height(height: Int): Builder{
+        fun height(height: Int): Builder {
             this.manualHeight = height
             return this
         }
@@ -581,7 +581,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun positionX(positionX: BiFunction<Int,Int,Int>): Builder{
+        fun positionX(positionX: BiFunction<Int, Int, Int>): Builder {
             this.positionX = positionX
             return this
         }
@@ -599,7 +599,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun positionY(positionY: BiFunction<Int,Int,Int>): Builder{
+        fun positionY(positionY: BiFunction<Int, Int, Int>): Builder {
             this.positionY = positionY
             return this
         }
@@ -610,7 +610,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun onClose(onClose: Runnable): Builder{
+        fun onClose(onClose: Runnable): Builder {
             this.onClose = onClose
             return this
         }
@@ -620,7 +620,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun noBlur(): Builder{
+        fun noBlur(): Builder {
             this.blurBackground = false
             return this
         }
@@ -630,7 +630,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun noCloseOnClick(): Builder{
+        fun noCloseOnClick(): Builder {
             this.closeOnOutOfBounds = false
             return this
         }
@@ -643,7 +643,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun background(id: Identifier): Builder{
+        fun background(id: Identifier): Builder {
             this.background = id
             return this
         }
@@ -656,20 +656,20 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun additionalNarration(message: Text): Builder{
+        fun additionalNarration(message: Text): Builder {
             additionalTitleNarration.add(message)
             return this
         }
 
-        private fun attemptRecomputeDims(){
-            if (manualHeight > 0 && manualWidth > 0){
+        private fun attemptRecomputeDims() {
+            if (manualHeight > 0 && manualWidth > 0) {
                 updateWidth(manualWidth)
                 updateHeight(manualHeight)
                 return
             }
             var maxW = 0
             var maxH = 0
-            for ((name,posEl) in elements){
+            for ((name, posEl) in elements) {
                 maxW = (posEl.getRight() + 8 - ((posEl.getLeft() - 8).takeIf { it < 0 } ?: 0)).takeIf { it > maxW } ?: maxW //6 = outer edge padding
                 maxH = (posEl.getBottom() + 8).takeIf { it > maxH } ?: maxH //6 = outer edge padding
             }
@@ -696,10 +696,10 @@ class PopupWidget
             val drawables: MutableList<Drawable> = mutableListOf()
             val selectables: MutableList<Selectable> = mutableListOf()
             val narratedTitle = title.copy()
-            for (additional in additionalTitleNarration){
+            for (additional in additionalTitleNarration) {
                 narratedTitle.append(", ".lit()).append(additional)
             }
-            for ((name,posEl) in elements){
+            for ((name, posEl) in elements) {
                 if(posEl.element is Element)
                     children.add(posEl.element)
                 if(posEl.element is Drawable)
@@ -709,7 +709,7 @@ class PopupWidget
                 if(posEl.element is AbstractTextWidget && name != "title")
                     narratedTitle.append(". ".lit()).append(posEl.element.message)
             }
-            for (posEl in elements.values){
+            for (posEl in elements.values) {
                 if (posEl.alignment == Position.ALIGN_JUSTIFY) {
                     if (posEl.element is ClickableWidget) {
                         posEl.element.width = width - 16
@@ -721,7 +721,7 @@ class PopupWidget
                     var rightPos = 1000000000
                     for (posElRight in elements.values) {
                         if (posEl.otherIsRightwards(posElRight)) {
-                            if(posElRight.getLeft() < rightPos){
+                            if(posElRight.getLeft() < rightPos) {
                                 closestRightEl = posElRight
                                 rightPos = posElRight.getLeft()
                             }
@@ -745,7 +745,7 @@ class PopupWidget
                     var leftPos = -1000000000
                     for (posElLeft in elements.values) {
                         if (posEl.otherIsLeftwards(posElLeft)) {
-                            if(posElLeft.getRight() > leftPos){
+                            if(posElLeft.getRight() > leftPos) {
                                 closestLeftEl = posElLeft
                                 leftPos = posElLeft.getLeft()
                             }
@@ -776,7 +776,7 @@ class PopupWidget
             val positioner: BiConsumer<Int, Int> = BiConsumer { x, y ->
                 xPos.set(x)
                 yPos.set(y)
-                for (posEl in elements.values){
+                for (posEl in elements.values) {
                     posEl.update()
                 }
             }
@@ -801,8 +801,8 @@ class PopupWidget
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            fun abs(a: Int): BiFunction<Int,Int,Int>{
-                return BiFunction { _,_ -> a }
+            fun abs(a: Int): BiFunction<Int, Int, Int> {
+                return BiFunction { _, _ -> a }
             }
             /**
              * Positions a Popup dimension at a specific location
@@ -813,32 +813,32 @@ class PopupWidget
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            fun at(a: Supplier<Int>): BiFunction<Int,Int,Int>{
-                return BiFunction { sd, d -> max(min(sd - d, a.get()),0) }
+            fun at(a: Supplier<Int>): BiFunction<Int, Int, Int> {
+                return BiFunction { sd, d -> max(min(sd - d, a.get()), 0) }
             }
             /**
              * Positions a Popup dimension based on Popup dimension context
              *
              * The position will be bound to the screen dimensions automatically (the popup won't overflow "off-screen")
-             * @param f Function<Int,Int> - function to provide the dimension. Supplies the corresponding widget size in the relevant dimension (PositionX -> widget width, etc)
+             * @param f Function<Int, Int> - function to provide the dimension. Supplies the corresponding widget size in the relevant dimension (PositionX -> widget width, etc)
              * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            fun popupContext(f: Function<Int, Int>): BiFunction<Int,Int,Int>{
-                return BiFunction { sd, d -> max(min(sd - d, f.apply(d)),0) }
+            fun popupContext(f: Function<Int, Int>): BiFunction<Int, Int, Int> {
+                return BiFunction { sd, d -> max(min(sd - d, f.apply(d)), 0) }
             }
             /**
              * Positions a Popup dimension based on screen dimension context
              *
              * The position will be bound to the screen dimensions automatically (the popup won't overflow "off-screen")
-             * @param f Function<Int,Int> - function to provide the dimension. Supplies the corresponding screen size in the relevant dimension (PositionX -> screen width, etc)
+             * @param f Function<Int, Int> - function to provide the dimension. Supplies the corresponding screen size in the relevant dimension (PositionX -> screen width, etc)
              * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            fun screenContext(f: Function<Int, Int>): BiFunction<Int,Int,Int>{
-                return BiFunction { sd, d -> max(min(sd - d, f.apply(sd)),0) }
+            fun screenContext(f: Function<Int, Int>): BiFunction<Int, Int, Int> {
+                return BiFunction { sd, d -> max(min(sd - d, f.apply(sd)), 0) }
             }
             /**
              * Positions a Popup in the center of the screen
@@ -848,7 +848,7 @@ class PopupWidget
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            fun center(): BiFunction<Int,Int,Int> {
+            fun center(): BiFunction<Int, Int, Int> {
                 return BiFunction { sd, d -> sd/2 - d/2 }
             }
             /**
@@ -860,8 +860,8 @@ class PopupWidget
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            fun centerOffset(o: Supplier<Int>): BiFunction<Int,Int,Int> {
-                return BiFunction { sd, d -> max(min(sd - d,(sd/2 - d/2 + o.get())),0) }
+            fun centerOffset(o: Supplier<Int>): BiFunction<Int, Int, Int> {
+                return BiFunction { sd, d -> max(min(sd - d, (sd/2 - d/2 + o.get())), 0) }
             }
         }
 
@@ -878,14 +878,14 @@ class PopupWidget
          */
         @Environment(EnvType.CLIENT)
         sealed interface Position {
-            fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos,Pos>
+            fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
 
             /**
              * Collection of all implemented [Position]. Preferred practice is to use this collection rather than referring directly to the underlying Enums
              * @author fzzyhmstrs
              * @since 0.2.0
              */
-            @Suppress("DEPRECATION","UNUSED")
+            @Suppress("DEPRECATION", "UNUSED")
             companion object Impl {
                 /**
                  * Positions an element below its parent. Does not define horizontal alignment or positioning.
@@ -1000,19 +1000,19 @@ class PopupWidget
             @Deprecated("Use Positions Impl values")
             BELOW {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(prevX, RelPos(parent.y,globalSet.spacingH + parent.elHeight()))
+                    return Pair(prevX, RelPos(parent.y, globalSet.spacingH + parent.elHeight()))
                 }
             },
             @Deprecated("Use Positions Impl values")
             LEFT {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(parent.x,-el.width - globalSet.spacingW),prevY)
+                    return Pair(RelPos(parent.x, -el.width - globalSet.spacingW), prevY)
                 }
             },
             @Deprecated("Use Positions Impl values")
             RIGHT {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(parent.x,parent.elWidth() + globalSet.spacingW),prevY)
+                    return Pair(RelPos(parent.x, parent.elWidth() + globalSet.spacingW), prevY)
                 }
             }
         }
@@ -1068,31 +1068,31 @@ class PopupWidget
             @Deprecated("Use Positions Impl values")
             ALIGN_RIGHT {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(SuppliedPos(globalSet.w,0) {-el.width}, prevY)
+                    return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
                 }
             },
             @Deprecated("Use Positions Impl values")
             ALIGN_CENTER {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(SuppliedPos(globalSet.x,0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
+                    return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
                 }
             },
             @Deprecated("Use Positions Impl values")
-            ALIGN_JUSTIFY{
+            ALIGN_JUSTIFY {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(SuppliedPos(globalSet.x,0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
+                    return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
                 }
             },
             @Deprecated("Use Positions Impl values")
-            ALIGN_LEFT_AND_JUSTIFY{
+            ALIGN_LEFT_AND_JUSTIFY {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                     return Pair(RelPos(globalSet.x), prevY)
                 }
             },
             @Deprecated("Use Positions Impl values")
-            ALIGN_RIGHT_AND_JUSTIFY{
+            ALIGN_RIGHT_AND_JUSTIFY {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(SuppliedPos(globalSet.w,0) {-el.width}, prevY)
+                    return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
                 }
             }
         }
@@ -1100,9 +1100,9 @@ class PopupWidget
         @Internal
         @Suppress("UNUSED")
         @Environment(EnvType.CLIENT)
-        class PositionedElement<T>(val element: T, var x: Pos, var y: Pos, val alignment: PositionGlobalAlignment) where T: Widget{
-            private fun upDown(): IntRange{
-                return IntRange(getTop(),getBottom())
+        class PositionedElement<T>(val element: T, var x: Pos, var y: Pos, val alignment: PositionGlobalAlignment) where T: Widget {
+            private fun upDown(): IntRange {
+                return IntRange(getTop(), getBottom())
             }
             fun getLeft(): Int {
                 return x.get()
@@ -1122,17 +1122,17 @@ class PopupWidget
             fun elHeight(): Int {
                 return element.height
             }
-            fun update(){
+            fun update() {
                 element.x = x.get()
                 element.y = y.get()
             }
-            fun otherIsLeftwards(element: PositionedElement<*>): Boolean{
+            fun otherIsLeftwards(element: PositionedElement<*>): Boolean {
                 return inUpDownBounds(element.upDown()) && element.getRight() <= getLeft()
             }
-            fun otherIsRightwards(element: PositionedElement<*>): Boolean{
+            fun otherIsRightwards(element: PositionedElement<*>): Boolean {
                 return inUpDownBounds(element.upDown()) && element.getLeft() >= getRight()
             }
-            private fun inUpDownBounds(chk: IntRange): Boolean{
+            private fun inUpDownBounds(chk: IntRange): Boolean {
                 return upDown().intersect(chk).isNotEmpty()
             }
         }

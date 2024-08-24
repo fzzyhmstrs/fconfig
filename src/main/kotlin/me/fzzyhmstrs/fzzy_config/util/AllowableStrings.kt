@@ -41,7 +41,7 @@ class AllowableStrings(private val predicate: Predicate<String>, private val sup
      * @author fzzyhmstrs
      * @since 0.2.6
      */
-    fun test(str: String): Boolean{
+    fun test(str: String): Boolean {
         return predicate.test(str)
     }
     /**
@@ -50,7 +50,7 @@ class AllowableStrings(private val predicate: Predicate<String>, private val sup
      * @author fzzyhmstrs
      * @since 0.2.6
      */
-    fun get(): List<String>{
+    fun get(): List<String> {
         return supplier.get()
     }
     /**
@@ -65,7 +65,7 @@ class AllowableStrings(private val predicate: Predicate<String>, private val sup
     override fun getSuggestions(input: String, cursor: Int, choiceValidator: ChoiceValidator<String>): CompletableFuture<Suggestions> {
         val truncatedInput: String = input.substring(0, cursor)
         val builder = SuggestionsBuilder(truncatedInput, truncatedInput.lowercase(Locale.ROOT), 0)
-        return CommandSource.suggestMatching(get().filter { choiceValidator.validateEntry(it,EntryValidator.ValidationType.STRONG).isValid() },builder)
+        return CommandSource.suggestMatching(get().filter { choiceValidator.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }, builder)
     }
 
     /**
@@ -97,13 +97,13 @@ class AllowableStrings(private val predicate: Predicate<String>, private val sup
        return validateEntry(input, type)
     }
 
-    companion object{
+    companion object {
         /**
          * An AllowableStrings instance that allows any valid String. The supplier provides an empty list, as a list of every valid String is unbounded.
          * @author fzzyhmstrs
          * @since 0.2.6
          */
-        val ANY = AllowableStrings({true},{listOf()})
+        val ANY = AllowableStrings({ true }, { listOf() })
     }
 
 }

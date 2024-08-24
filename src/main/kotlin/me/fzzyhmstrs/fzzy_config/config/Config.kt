@@ -27,13 +27,13 @@ import net.minecraft.util.Identifier
  * FzzyConfig can interact with three types of vars
  * 1) {Not Recommended} "Bare" properties. Your standard property (ex: `var myOption = 5`). These properties won't be validated, corrected, and won't show up in Config Guis. For an internal server-only setting, this may be an appropriate choice, but generally strongly recommended to use a Validation wrapper.
  * 2) {Recommended} [ConfigSection]. Inner "sections" of a Config. Can be used to organize related topics of a larger config. Interfaces with the auto-GUI system as a "sub-layer". A button will allow the user to drill down into the section, showing only the options for that section. Sections automatically de/serialize updated entries back to the server/clients like #3 below.
- * 3) {Recommended} [ValidatedField][me.fzzyhmstrs.fzzy_config.validation.ValidatedField] properties, or custom [Entry][me.fzzyhmstrs.fzzy_config.validation.entry.Entry] implementations. These properties offer a wide array of powerful benefits to the user and the implementer
+ * 3) {Recommended} [ValidatedField][me.fzzyhmstrs.fzzy_config.validation.ValidatedField] properties, or custom [Entry][me.fzzyhmstrs.fzzy_config.entry.Entry] implementations. These properties offer a wide array of powerful benefits to the user and the implementer
  * - Validation. Inputs are automatically validated
  * - Correction. Invalid inputs are automatically corrected, reverted, or skipped.
  * - Gui Support. FzzyConfigs auto-generated GUIs only take Entry's into account when building their GUI layers. The internal validation is used to build meaningful and helpful widgets with helpful tooltips and auto-suggestions, where possible. Entry's are auto-synced back to the server and other listening clients based on user permission level
- * @param id Identifier - The identifier of this config. Common groups of namespace will be the first "layer" of the Config GUI where applicable (all configs of the same namespace in one group), so it's recommended to use one unified namespace (modid, generally)
- * @param name String, optional -  the name of the config, this will be the file name (sans file extension). By default this is defined from the path of the config identifier. NOTE: Do not add a file type to this name. That is done automatically where needed
- * @param folder String, optional - the subfolder inside the root config folder the file will be saved in. By default this is defined from the namespace of the config identifier. Can be "", which will put the file in the root config folder.
+ * @param identifier Identifier - The identifier of this config. Common groups of namespace will be the first "layer" of the Config GUI where applicable (all configs of the same namespace in one group), so it's recommended to use one unified namespace (modid, generally)
+ * @param name String, optional -  the name of the config, this will be the file name (sans file extension). By default, this is defined from the path of the config identifier. NOTE: Do not add a file type to this name. That is done automatically where needed
+ * @param folder String, optional - the subfolder inside the root config folder the file will be saved in. By default, this is defined from the namespace of the config identifier. Can be "", which will put the file in the root config folder.
  * @param subfolder String, optional - puts the config into a sub-subfolder inside the subfolder specified in [folder]. Does not affect ID or GUI layout
  * @see ConfigApi
  * @see ConfigSection
@@ -67,7 +67,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun save(){
+    fun save() {
         ConfigApi.save(this)
     }
 
@@ -93,13 +93,13 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    open fun update(deserializedVersion: Int){}
+    open fun update(deserializedVersion: Int) {}
 
     /**
      * @suppress
      */
     override fun toString(): String {
-        return ConfigApi.serializeConfig(this,mutableListOf())
+        return ConfigApi.serializeConfig(this, mutableListOf())
     }
     /**
      * @suppress
@@ -111,7 +111,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @suppress
      */
     override fun descriptionKey(): String {
-        return getId().toTranslationKey("",".desc")
+        return getId().toTranslationKey("", ".desc")
     }
 
 }

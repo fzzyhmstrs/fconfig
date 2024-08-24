@@ -22,8 +22,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
  */
 interface EntryChecker<T>: EntryValidator<T>, EntryCorrector<T> {
 
-    class Impl<T>(private val validator: EntryValidator<T>, private val corrector: EntryCorrector<T>):
-        EntryChecker<T> {
+    class Impl<T>(private val validator: EntryValidator<T>, private val corrector: EntryCorrector<T>): EntryChecker<T> {
         override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
             return validator.validateEntry(input, type)
         }

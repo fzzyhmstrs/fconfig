@@ -37,13 +37,13 @@ import org.lwjgl.glfw.GLFW
 import java.util.function.Function
 
 @Environment(EnvType.CLIENT)
-internal class ConfigScreen(title: Text, private val scope: String, private val manager: UpdateManager, entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen,ClickableWidget>>) : PopupWidgetScreen(title) {
+internal class ConfigScreen(title: Text, private val scope: String, private val manager: UpdateManager, entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen, ClickableWidget>>) : PopupWidgetScreen(title) {
 
     private var parent: Screen? = null
 
     internal val layout = ThreePartsLayoutWidget(this)
-    private val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer,110,20, FcText.empty())
-    private val doneButton = ButtonWidget.builder(ScreenTexts.DONE) { _ -> close() }.size(70,20).build()
+    private val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.empty())
+    private val doneButton = ButtonWidget.builder(ScreenTexts.DONE) { _ -> close() }.size(70, 20).build()
     private val configList: ConfigListWidget = entriesWidget.apply(this)
 
     fun setParent(screen: Screen?) {
@@ -75,9 +75,9 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
         for (scopeButton in parentScopesButtons) {
             directionalLayoutWidget.add(scopeButton.apply(this))
-            directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(" > ".lit()),20," > ".lit(),this.textRenderer))
+            directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(" > ".lit()), 20, " > ".lit(), this.textRenderer))
         }
-        directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(this.title),20,this.title,this.textRenderer))
+        directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(this.title), 20, this.title, this.textRenderer))
 
     }
     private fun initBody() {
@@ -90,9 +90,9 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     private fun initFooter() {
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //info button
-        directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(),"widget/action/info_inactive".fcId(),"widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(),{ true } ) { openInfoPopup() }) { p -> p.alignLeft() }
+        directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
-        fun setColor(entries: Int){
+        fun setColor(entries: Int) {
             if(entries > 0)
                 searchField.setEditableColor(Colors.WHITE)
             else
@@ -103,7 +103,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         searchField.setChangedListener { s -> setColor(configList.updateSearchedEntries(s)) }
         directionalLayoutWidget.add(searchField)
         //forward alert button
-        directionalLayoutWidget.add(TextlessActionWidget("widget/action/alert".fcId(),"widget/action/alert_inactive".fcId(),"widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(),{ manager.hasForwards() } ) { manager.forwardsHandler() })
+        directionalLayoutWidget.add(TextlessActionWidget("widget/action/alert".fcId(), "widget/action/alert_inactive".fcId(), "widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(), { manager.hasForwards() } ) { manager.forwardsHandler() })
         //changes button
         directionalLayoutWidget.add(ChangesWidget(scope, { this.width }, manager))
         //done button
@@ -141,28 +141,28 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
-    private fun openInfoPopup(){
+    private fun openInfoPopup() {
         val textRenderer = MinecraftClient.getInstance().textRenderer
         val popup = PopupWidget.Builder("fc.button.info".translate())
             .addDivider()
-            .addElement("header",ClickableTextWidget(this,"fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
+            .addElement("header", ClickableTextWidget(this, "fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
                 style.withFormatting(Formatting.AQUA, Formatting.UNDERLINE)
-                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL,"https://fzzyhmstrs.github.io/fconfig/"))
-                    .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT,"fc.button.info.fc.tip".translate()))
-            }),textRenderer), Position.BELOW, Position.ALIGN_CENTER)
+                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://fzzyhmstrs.github.io/fconfig/"))
+                    .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, "fc.button.info.fc.tip".translate()))
+            }), textRenderer), Position.BELOW, Position.ALIGN_CENTER)
             .addDivider()
-            .addElement("undo",TextWidget("fc.button.info.undo".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("find",TextWidget("fc.button.info.find".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("copy",TextWidget("fc.button.info.copy".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("paste",TextWidget("fc.button.info.paste".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("save",TextWidget("fc.button.info.save".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("page",TextWidget("fc.button.info.page".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("undo", TextWidget("fc.button.info.undo".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("find", TextWidget("fc.button.info.find".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("copy", TextWidget("fc.button.info.copy".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("paste", TextWidget("fc.button.info.paste".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("save", TextWidget("fc.button.info.save".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("page", TextWidget("fc.button.info.page".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
             .addDivider()
-            .addElement("click",TextWidget("fc.button.info.click".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("click_kb",TextWidget("fc.button.info.click_kb".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("click_kb2",TextWidget("fc.button.info.click_kb2".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("click", TextWidget("fc.button.info.click".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("click_kb", TextWidget("fc.button.info.click_kb".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("click_kb2", TextWidget("fc.button.info.click_kb2".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
             .addDivider()
-            .addElement("alert",TextWidget("fc.button.info.alert".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("alert", TextWidget("fc.button.info.alert".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
             .addDoneButton()
             .build()
         PopupWidget.push(popup)

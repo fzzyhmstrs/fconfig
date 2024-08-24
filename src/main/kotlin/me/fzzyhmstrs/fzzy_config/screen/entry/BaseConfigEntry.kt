@@ -49,7 +49,7 @@ internal open class BaseConfigEntry(
     ElementListWidget.Entry<BaseConfigEntry>()
 {
 
-    private val truncatedName = ConfigApiImplClient.ellipses(name,if(widget is Decorated) 124 else 146)
+    private val truncatedName = ConfigApiImplClient.ellipses(name, if(widget is Decorated) 124 else 146)
     private val tooltip: List<OrderedText> by lazy {
         createTooltip()
     }
@@ -62,12 +62,12 @@ internal open class BaseConfigEntry(
             widget.addListener(parent)
     }
 
-    fun restartTriggering(bl: Boolean): BaseConfigEntry{
+    fun restartTriggering(bl: Boolean): BaseConfigEntry {
         isRestartTriggering = bl
         return this
     }
 
-    fun positionWidget(y: Int){
+    fun positionWidget(y: Int) {
         widget.setPosition(parent.scrollbarX - widget.width - 10, y)
     }
 
@@ -88,7 +88,7 @@ internal open class BaseConfigEntry(
         widget.setPosition(parent.scrollbarX - widget.width - 10, y)
         widget.render(context, mouseX, mouseY, tickDelta)
         if (widget is Decorated)
-            widget.renderDecoration(context,widget.x - 22, widget.y + 2, tickDelta)
+            widget.renderDecoration(context, widget.x - 22, widget.y + 2, tickDelta)
         context.drawTextWithShadow(
             parent.getClient().textRenderer,
             truncatedName,
@@ -96,35 +96,35 @@ internal open class BaseConfigEntry(
             y + entryHeight / 2 - parent.getClient().textRenderer.fontHeight / 2,
             Colors.WHITE
         )
-        if (isRestartTriggering){
+        if (isRestartTriggering) {
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()
             context.drawGuiTexture("widget/entry_error".fcId(), x - 24, y, 20, 20)
         }
-        if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null){
+        if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null) {
             //let widgets tooltip win
-        } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty()){
-            MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, HoveredTooltipPositioner.INSTANCE,this.isFocused)
+        } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty()) {
+            MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, HoveredTooltipPositioner.INSTANCE, this.isFocused)
         } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && tooltip.isNotEmpty()) {
             MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
         }
     }
 
-    private fun createTooltip(): List<OrderedText>{
+    private fun createTooltip(): List<OrderedText> {
         val list: MutableList<OrderedText> = mutableListOf()
         if(isRestartTriggering) {
-            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText().formatted(Formatting.RED),170))
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText().formatted(Formatting.RED), 170))
             if (description.string != "")
                 list.add(FcText.empty().asOrderedText())
         }
-        if (description.string != ""){
-            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description,170))
+        if (description.string != "") {
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 170))
         }
         return list
     }
-    private fun createTooltipString(): String{
+    private fun createTooltipString(): String {
         val builder = StringBuilder()
-        for (tip in tooltip){
+        for (tip in tooltip) {
             tip.accept{ _, _, codepoint ->
                 builder.appendCodePoint(codepoint)
                 true
@@ -132,7 +132,7 @@ internal open class BaseConfigEntry(
         }
         return builder.toString()
     }
-    open fun restartText(): MutableText{
+    open fun restartText(): MutableText {
         return "fc.config.restart.warning".translate()
     }
 
@@ -151,14 +151,14 @@ internal open class BaseConfigEntry(
         widget.isFocused = focused
     }
 
-    open fun appendEntryNarrations(builder: NarrationMessageBuilder){
+    open fun appendEntryNarrations(builder: NarrationMessageBuilder) {
         if(tooltip.isNotEmpty()) {
             builder.put(NarrationPart.HINT, tooltipString)
         }
     }
 
     @FunctionalInterface
-    fun interface RightClickAction{
+    fun interface RightClickAction {
         fun rightClick(mouseX: Int, mouseY: Int, configEntry: BaseConfigEntry)
     }
 }

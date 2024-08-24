@@ -20,9 +20,9 @@ class NavigableTextFieldWidget(textRenderer: TextRenderer, width: Int, height: I
          if (!this.isNarratable || !this.isFocused) {
             return false
         }
-        if (keyCode == GLFW.GLFW_KEY_LEFT && this.text.isEmpty()){
+        if (keyCode == GLFW.GLFW_KEY_LEFT && this.text.isEmpty()) {
             return false
-        } else if (keyCode == GLFW.GLFW_KEY_RIGHT && this.text.isEmpty()){
+        } else if (keyCode == GLFW.GLFW_KEY_RIGHT && this.text.isEmpty()) {
             return false
         }
         return super.keyPressed(keyCode, scanCode, modifiers)

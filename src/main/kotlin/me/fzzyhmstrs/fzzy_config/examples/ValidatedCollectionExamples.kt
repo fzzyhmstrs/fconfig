@@ -25,7 +25,7 @@ object ValidatedCollectionExamples {
 
     fun lists() {
         //validated int list, with validation on entries restricting inputs to 1 to 16 (inclusive)
-        val validatedList = ValidatedList(listOf(1,2,4,8), ValidatedInt(1..16))
+        val validatedList = ValidatedList(listOf(1, 2, 4, 8), ValidatedInt(1..16))
 
         //wraps the vararg valued provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
         val listFromFieldVararg = ValidatedIdentifier().toList(Identifier.of("stick"), Identifier.of("blaze_rod"))
@@ -52,7 +52,7 @@ object ValidatedCollectionExamples {
         KEY_1,
         KEY_2,
         KEY_3;
-        override fun prefix(): String{
+        override fun prefix(): String {
             return "my.config.key_enum"
         }
     }
@@ -84,7 +84,7 @@ object ValidatedCollectionExamples {
 
     fun maps() {
         //Example ValidatedMap. NOTE: this is not a ValidatedEnumMap, but that can be used too
-        val validatedMap = ValidatedMap(mapOf(KeyEnum.KEY_1 to true),KeyEnum.KEY_1.validated(),ValidatedBoolean())
+        val validatedMap = ValidatedMap(mapOf(KeyEnum.KEY_1 to true), KeyEnum.KEY_1.validated(), ValidatedBoolean())
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows
@@ -103,7 +103,7 @@ object ValidatedCollectionExamples {
 
     fun enumMaps() {
         //Example ValidatedEnumMap with basic validation providers
-        val validatedEnumMap = ValidatedEnumMap(mapOf(KeyEnum.KEY_1 to true),KeyEnum.KEY_1.validated(),ValidatedBoolean())
+        val validatedEnumMap = ValidatedEnumMap(mapOf(KeyEnum.KEY_1 to true), KeyEnum.KEY_1.validated(), ValidatedBoolean())
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows
@@ -123,7 +123,7 @@ object ValidatedCollectionExamples {
     fun identifierMaps() {
         //Example ValidatedIdentifierMap with identifiers restricted to all registered enchantments
         val validatedIdentifierMap = ValidatedIdentifierMap(mapOf(Identifier.of("sharpness") to true),
-            ValidatedIdentifier.ofRegistryKey(RegistryKeys.ENCHANTMENT),ValidatedBoolean())
+            ValidatedIdentifier.ofRegistryKey(RegistryKeys.ENCHANTMENT), ValidatedBoolean())
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows
@@ -142,7 +142,7 @@ object ValidatedCollectionExamples {
 
     fun stringMaps() {
         //Example ValidatedStringMap with basic validation
-        val validatedStringMap = ValidatedStringMap(mapOf("a" to 1), ValidatedString(),ValidatedInt())
+        val validatedStringMap = ValidatedStringMap(mapOf("a" to 1), ValidatedString(), ValidatedInt())
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows

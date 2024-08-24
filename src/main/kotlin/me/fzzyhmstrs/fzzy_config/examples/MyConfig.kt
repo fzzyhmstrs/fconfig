@@ -23,13 +23,13 @@ import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 
-internal class MyConfig: Config(Identifier.of(FC.MOD_ID,"my_config")) {
+internal class MyConfig: Config(Identifier.of(FC.MOD_ID, "my_config")) {
 
     var bareDouble = 5.0 // this won't have most of the features of the lib
 
     var booleanThing = false //yay, booleanssssss
 
-    var validatedDouble = ValidatedDouble(5.0,10.0,0.0) //this has automatic validation, error correction, and will auto-generate a widget in the GUI for user selection
+    var validatedDouble = ValidatedDouble(5.0, 10.0, 0.0) //this has automatic validation, error correction, and will auto-generate a widget in the GUI for user selection
 
     var mySection = MySection() // a section of the config with its own validated fields and other sections as applicable
     internal class MySection: ConfigSection(){ // a Config Section. Self-serializable, and will add a "layer" to the GUI.
@@ -38,12 +38,12 @@ internal class MyConfig: Config(Identifier.of(FC.MOD_ID,"my_config")) {
 
         var sectionMap = ValidatedIdentifierMap(
             mapOf(),
-            ValidatedIdentifier.ofTag(Registries.ITEM.getId(Items.IRON_AXE),ItemTags.AXES),
-            ValidatedDouble(1.0,1.0,0.0)
+            ValidatedIdentifier.ofTag(Registries.ITEM.getId(Items.IRON_AXE), ItemTags.AXES),
+            ValidatedDouble(1.0, 1.0, 0.0)
         )
     }
 
-    fun saveMe(){
+    fun saveMe() {
         /**
          * Saves the config to file.
          *

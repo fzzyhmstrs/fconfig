@@ -31,5 +31,4 @@ object ExampleMath {
         //eval the result, in this case (0.5 * 10) ^ 5.0 = 3125.0
         val mathResult = mathExpression.eval(mathVariables)
     }
-
 }

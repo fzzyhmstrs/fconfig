@@ -45,10 +45,10 @@ class TextlessActionWidget(
     private val activeSupplier: Supplier<Boolean>,
     private val pressAction: Consumer<TextlessActionWidget>)
     :
-    PressableWidget(0,0, 20, 20, FcText.empty())
+    PressableWidget(0, 0, 20, 20, FcText.empty())
 {
 
-    private fun getTex(): Identifier{
+    private fun getTex(): Identifier {
         if(!active)
             return inactiveIcon
         return if (hovered || isFocused)
@@ -61,9 +61,9 @@ class TextlessActionWidget(
         this.active = activeSupplier.get()
         super.renderWidget(context, mouseX, mouseY, delta)
         context.drawGuiTexture(getTex(), x, y, getWidth(), getHeight())
-        if (this.active && activeNarration.string != ""){
+        if (this.active && activeNarration.string != "") {
             tooltip = Tooltip.of(activeNarration)
-        } else if (inactiveNarration.string != ""){
+        } else if (inactiveNarration.string != "") {
             tooltip = Tooltip.of(inactiveNarration)
         }
     }

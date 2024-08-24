@@ -26,11 +26,11 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-inline fun<reified T> Any?.cast(): T{
+inline fun<reified T> Any?.cast(): T {
     return this as T
 }
 
-inline fun<reified T> Any?.nullCast(): T?{
+inline fun<reified T> Any?.nullCast(): T? {
     return this as? T
 }
 
@@ -65,13 +65,13 @@ object FCC: ClientModInitializer {
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>) {
         dispatcher.register(
             ClientCommandManager.literal("configure")
-                .then(ClientCommandManager.argument("base_scope",ValidScopesArgumentType())
+                .then(ClientCommandManager.argument("base_scope", ValidScopesArgumentType())
                     .executes{ context ->
                         val scope = ValidScopesArgumentType.getValidScope(context, "base_scope")
                         scopeToOpen = scope ?: ""
                         1
                     }
-                    .then(ClientCommandManager.argument("sub_scope",ValidSubScopesArgumentType())
+                    .then(ClientCommandManager.argument("sub_scope", ValidSubScopesArgumentType())
                         .executes{ context ->
                             val scope = ValidScopesArgumentType.getValidScope(context, "base_scope")
                             val subScope = ValidSubScopesArgumentType.getValidSubScope(context, "sub_scope")
@@ -85,5 +85,5 @@ object FCC: ClientModInitializer {
 }
 
 internal fun String.fcId(): Identifier {
-    return Identifier.of(FC.MOD_ID,this)
+    return Identifier.of(FC.MOD_ID, this)
 }

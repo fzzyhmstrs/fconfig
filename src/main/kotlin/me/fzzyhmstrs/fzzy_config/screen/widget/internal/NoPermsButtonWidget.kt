@@ -24,9 +24,9 @@ import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 
 @Environment(EnvType.CLIENT)
-internal class NoPermsButtonWidget : PressableWidget(0,0,110,20, FcText.empty()), Decorated {
+internal class NoPermsButtonWidget : PressableWidget(0, 0, 110, 20, FcText.empty()), Decorated {
 
-    init{
+    init {
         this.active = false
     }
 

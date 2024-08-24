@@ -34,16 +34,16 @@ internal open class SettingConfigEntry(
     private var clickedWidget = false
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (((Screen.hasShiftDown() && keyCode == GLFW.GLFW_KEY_F10) || keyCode == GLFW.GLFW_KEY_MENU) && rightClickAction != null){
-            rightClickAction.rightClick(this.widget.x,this.widget.y,this)
+        if (((Screen.hasShiftDown() && keyCode == GLFW.GLFW_KEY_F10) || keyCode == GLFW.GLFW_KEY_MENU) && rightClickAction != null) {
+            rightClickAction.rightClick(this.widget.x, this.widget.y, this)
             return true
         }
         return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if(button == 1 && rightClickAction != null){
-            rightClickAction.rightClick(mouseX.toInt(),mouseY.toInt(),this)
+        if(button == 1 && rightClickAction != null) {
+            rightClickAction.rightClick(mouseX.toInt(), mouseY.toInt(), this)
             clickedWidget = false
             return true
         }

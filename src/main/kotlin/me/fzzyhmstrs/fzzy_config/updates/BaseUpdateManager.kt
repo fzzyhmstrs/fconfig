@@ -56,18 +56,18 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
         addUpdateMessage(updatable, updateMessage)
     }
 
-    override fun hasUpdate(scope: String): Boolean{
+    override fun hasUpdate(scope: String): Boolean {
         return updateMap[scope]?.popState() ?: false
     }
 
-    override fun getUpdate(scope: String): Updatable?{
+    override fun getUpdate(scope: String): Updatable? {
         return updateMap[scope]
     }
 
     override fun addUpdateMessage(key: Updatable, text: Text) {
         val updateLog = changeHistory.computeIfAbsent(key){ sortedMapOf() }
         var baseTime = System.currentTimeMillis()
-        while(updateLog.containsKey(baseTime)){
+        while(updateLog.containsKey(baseTime)) {
             baseTime++
         }
         updateLog[baseTime] = text
@@ -80,8 +80,8 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     override fun changeHistory(): List<String> {
         val formatter = DateTimeFormatter.ofPattern("HH:mm")
         val list: MutableList<String> = mutableListOf()
-        for ((_, updateLog) in changeHistory){
-            for ((time, updates) in updateLog){
+        for ((_, updateLog) in changeHistory) {
+            for ((time, updates) in updateLog) {
                 list.add("[${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: ${updates.string}")
             }
         }
@@ -113,8 +113,8 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     }
 
     override fun revertLast() {
-        for ((_,update) in updateMap.entries.reversed()){
-            if (update.peekState()){
+        for ((_, update) in updateMap.entries.reversed()) {
+            if (update.peekState()) {
                 update.revert()
                 return
             }
@@ -134,8 +134,8 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     private fun buildChangeHistoryLog(): List<String> {
         val formatter = DateTimeFormatter.ofPattern("dd/MM/yy HH:mm")
         val list: MutableList<String> = mutableListOf()
-        for ((updatable, updateLog) in changeHistory){
-            for ((time, updates) in updateLog){
+        for ((updatable, updateLog) in changeHistory) {
+            for ((time, updates) in updateLog) {
                 list.add("Updated scope [${updatable.getEntryKey()}] at [${formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(time), ZoneId.systemDefault()))}]: ${updates.string}")
             }
         }
@@ -143,10 +143,10 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     }
 
     fun applyKeys(config: Config) {
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { _,_,str,v,_,_,_ -> if (v is EntryKeyed) v.setEntryKey(str)}
+        ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, str, v, _, _, _ -> if (v is EntryKeyed) v.setEntryKey(str)}
     }
 
     fun pushStates(config: Config) {
-        ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { _,_,_,v,_,_,_ -> if (v is Updatable) v.pushState()}
+        ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, _, v, _, _, _ -> if (v is Updatable) v.pushState()}
     }
 }

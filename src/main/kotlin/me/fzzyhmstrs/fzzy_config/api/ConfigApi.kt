@@ -54,7 +54,7 @@ object ConfigApi {
     @JvmStatic
     @JvmOverloads
     @Deprecated("Consider registerAndLoadConfig() instead, to perform automatic loading, registering, and validating in one step.")
-    fun <T: Config> registerConfig(config: T,configClass: () -> T, registerType: RegisterType = RegisterType.BOTH): T{
+    fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApiImpl.registerConfig(config, configClass, registerType)
     }
 
@@ -78,7 +78,7 @@ object ConfigApi {
     @JvmStatic
     @JvmOverloads
     @Deprecated("Consider registerAndLoadConfig() instead, to perform automatic loading, registering, and validating in one step.")
-    fun <T: Config> registerConfig(config: T,configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T{
+    fun <T: Config> registerConfig(config: T, configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApiImpl.registerConfig(config, { configClass.get() }, registerType)
     }
 
@@ -98,7 +98,7 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Config> registerAndLoadConfig(configClass: () -> T, registerType: RegisterType = RegisterType.BOTH): T{
+    fun <T: Config> registerAndLoadConfig(configClass: () -> T, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApiImpl.registerAndLoadConfig(configClass, registerType)
     }
 
@@ -118,7 +118,7 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Config> registerAndLoadConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T{
+    fun <T: Config> registerAndLoadConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApiImpl.registerAndLoadConfig({ configClass.get() }, registerType)
     }
 
@@ -138,7 +138,7 @@ object ConfigApi {
     @JvmStatic
     @JvmOverloads
     @Deprecated("Consider registerAndLoadConfig() instead, or readOrCreateAndValidate(configClass) for consistent application of names")
-    fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T{
+    fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T {
         return ConfigApiImpl.readOrCreateAndValidate(name, folder, subfolder, configClass)
     }
 
@@ -158,7 +158,7 @@ object ConfigApi {
     @JvmStatic
     @JvmOverloads
     @Deprecated("Consider registerAndLoadConfig() instead, or readOrCreateAndValidate(configClass) for consistent application of names")
-    fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: Supplier<T>): T{
+    fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: Supplier<T>): T {
         return ConfigApiImpl.readOrCreateAndValidate(name, folder, subfolder) { configClass.get() }
     }
 
@@ -171,7 +171,7 @@ object ConfigApi {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Config> readOrCreateAndValidate(configClass: () -> T): T{
+    fun <T: Config> readOrCreateAndValidate(configClass: () -> T): T {
         return ConfigApiImpl.readOrCreateAndValidate(configClass)
     }
 
@@ -184,7 +184,7 @@ object ConfigApi {
      * @since 0.3.2
      */
     @JvmStatic
-    fun <T: Config> readOrCreateAndValidate(configClass: Supplier<T>): T{
+    fun <T: Config> readOrCreateAndValidate(configClass: Supplier<T>): T {
         return ConfigApiImpl.readOrCreateAndValidate { configClass.get() }
     }
 
@@ -254,14 +254,19 @@ object ConfigApi {
      * @param T Type of the config to serialize. Can be any Non-Null type.
      * @param config the config instance to serialize from
      * @param errorBuilder the error list. error messages are appended to this for display after the serialization call
-     * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to serialize the entire config (ex: saving to file), use false for syncing (ex: initial sync server -> client)
+     * @param flags default IGNORE_NON_SYNC. With the default, elements with the [NonSync] annotation will be skipped. See the flag options below to serialize the entire config (ex: saving to file), fully syncing (ex: initial sync server -> client), etc.
+     * - CHECK_NON_SYNC: Byte = 0
+     * - IGNORE_NON_SYNC: Byte = 1
+     * - CHECK_RESTART: Byte = 2
+     * - IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
+     * - IGNORE_VISIBILITY: Byte = 4
      * @return Returns a [TomlElement] of the serialized config
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): TomlElement{
+    fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): TomlElement {
         return ConfigApiImpl.serializeToToml(config, errorBuilder, flags)
     }
 
@@ -272,14 +277,19 @@ object ConfigApi {
      * @param T Type of the config to serialize. Can be any Non-Null type.
      * @param config the config instance to serialize from
      * @param errorBuilder the error list. error messages are appended to this for display after the serialization call
-     * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to serialize the entire config (ex: saving to file), use false for syncing (ex: initial sync server -> client)
+     * @param flags default IGNORE_NON_SYNC. With the default, elements with the [NonSync] annotation will be skipped. See the flag options below to serialize the entire config (ex: saving to file), fully syncing (ex: initial sync server -> client), etc.
+     * - CHECK_NON_SYNC: Byte = 0
+     * - IGNORE_NON_SYNC: Byte = 1
+     * - CHECK_RESTART: Byte = 2
+     * - IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
+     * - IGNORE_VISIBILITY: Byte = 4
      * @return Returns a [TomlElement] of the serialized config
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): String{
+    fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): String {
         return ConfigApiImpl.serializeConfig(config, errorBuilder, flags)
     }
 
@@ -297,7 +307,12 @@ object ConfigApi {
      * @param config the config pre-deserialization
      * @param toml the TomlElement to deserialize from. Needs to be a TomlTable
      * @param errorBuilder a mutableList of strings the original caller of deserialization can use to print a detailed error log
-     * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to deserialize the entire config (ex: loading from file), use false for syncing (ex: initial sync server -> client)
+     * @param flags default IGNORE_NON_SYNC. With the default, elements with the [NonSync] annotation will be skipped. See the flag options below to serialize the entire config (ex: saving to file), fully syncing (ex: initial sync server -> client), etc.
+     * - CHECK_NON_SYNC: Byte = 0
+     * - IGNORE_NON_SYNC: Byte = 1
+     * - CHECK_RESTART: Byte = 2
+     * - IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
+     * - IGNORE_VISIBILITY: Byte = 4
      * @return Returns a [ValidationResult] of [ConfigContext] and applicable error, containing the config and any flag information
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -317,7 +332,12 @@ object ConfigApi {
      * @param config the config pre-deserialization
      * @param string the string to deserialize from. Needs to be valid Toml.
      * @param errorBuilder a mutableList of strings the original caller of deserialization can use to print a detailed error log
-     * @param ignoreNonSync default true. If false, elements with the [NonSync] annotation will be skipped. Use true to deserialize the entire config (ex: loading from file), use false for syncing (ex: initial sync server -> client)
+     * @param flags default IGNORE_NON_SYNC. With the default, elements with the [NonSync] annotation will be skipped. See the flag options below to serialize the entire config (ex: saving to file), fully syncing (ex: initial sync server -> client), etc.
+     * - CHECK_NON_SYNC: Byte = 0
+     * - IGNORE_NON_SYNC: Byte = 1
+     * - CHECK_RESTART: Byte = 2
+     * - IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
+     * - IGNORE_VISIBILITY: Byte = 4
      * @return Returns [ValidationResult] of [ConfigContext]. The validation result includes the config and any applicable errors, and any flag information
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -340,7 +360,7 @@ object ConfigApi {
      */
     @JvmStatic
     @Suppress("MemberVisibilityCanBePrivate")
-    fun makeDir(folder: String, subfolder: String): Pair<File,Boolean>{
+    fun makeDir(folder: String, subfolder: String): Pair<File, Boolean> {
         return ConfigApiImpl.makeDir(folder, subfolder)
     }
 

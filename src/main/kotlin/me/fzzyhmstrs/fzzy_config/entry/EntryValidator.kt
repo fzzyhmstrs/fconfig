@@ -17,7 +17,7 @@ import java.util.function.Predicate
 /**
  * Validates individual entries in a complex [Entry].
  *
- * For example, in a [ValidatedList][me.fzzyhmstrs.fzzy_config.validation.list.ValidatedList], individual new additions need to be validated, and validation of the entire list will take place as a piece-wise validation of each element, to preserve as much of the valid contents as possible
+ * For example, in a [ValidatedList][me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList], individual new additions need to be validated, and validation of the entire list will take place as a piece-wise validation of each element, to preserve as much of the valid contents as possible
  *
  * SAM: [validateEntry] takes an input of type T and a [ValidationType], returns a [ValidationResult]<T>
  * @param T the non-null type of the Entry stored value
@@ -67,11 +67,11 @@ fun interface EntryValidator<T> {
             return builder()
         }
         fun buildValidator(): EntryValidator<T> {
-            return EntryValidator{ i, t -> if(t == ValidationType.WEAK) ifWeak.validateEntry(i,t) else ifStrong.validateEntry(i,t) }
+            return EntryValidator{ i, t -> if(t == ValidationType.WEAK) ifWeak.validateEntry(i, t) else ifStrong.validateEntry(i, t) }
         }
     }
 
-    enum class ValidationType{
+    enum class ValidationType {
         WEAK,
         STRONG
     }

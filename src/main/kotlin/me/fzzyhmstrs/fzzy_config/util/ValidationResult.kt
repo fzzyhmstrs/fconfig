@@ -23,7 +23,7 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigContext
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidationResult<T> private constructor(private val storedVal: T, private val error: String = ""){
+class ValidationResult<T> private constructor(private val storedVal: T, private val error: String = "") {
     /**
      * Boolean check to determine if this result is valid (no errors)
      *
@@ -31,7 +31,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun isValid(): Boolean{
+    fun isValid(): Boolean {
         return error.isEmpty()
     }
 
@@ -42,7 +42,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @author fzzyhmstrs
      * @since 0.1.0
      */
-    fun isError(): Boolean{
+    fun isError(): Boolean {
         return error.isNotEmpty()
     }
 
@@ -53,7 +53,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @author fzzyhmstrs
      * @since 0.1.0
      */
-    fun getError(): String{
+    fun getError(): String {
         return error
     }
 
@@ -64,7 +64,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @author fzzyhmstrs
      * @since 0.1.0
      */
-    fun get(): T{
+    fun get(): T {
         return storedVal
     }
 
@@ -75,12 +75,12 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @author fzzyhmstrs
      * @since 0.1.0
      */
-    fun writeError(errors: List<String>){
+    fun writeError(errors: List<String>) {
         if (!isError())return
         FC.LOGGER.error(">>>>>>>>>>>>>>>")
         FC.LOGGER.error(getError())
         FC.LOGGER.error(">>>>>>>>>>>>>>>")
-        for (e in errors){
+        for (e in errors) {
             FC.LOGGER.error(e)
         }
         FC.LOGGER.error(">>>>>>>>>>>>>>>")
@@ -92,18 +92,18 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @author fzzyhmstrs
      * @since 0.1.0
      */
-    fun writeWarning(errors: List<String>){
+    fun writeWarning(errors: List<String>) {
         if (!isError())return
         FC.LOGGER.warn(">>>>>>>>>>>>>>>")
         FC.LOGGER.warn(getError())
         FC.LOGGER.warn(">>>>>>>>>>>>>>>")
-        for (e in errors){
+        for (e in errors) {
             FC.LOGGER.warn(e)
         }
         FC.LOGGER.warn(">>>>>>>>>>>>>>>")
     }
 
-    companion object{
+    companion object {
         /**
          * Creates a successful validation result.
          *
@@ -130,18 +130,18 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @since 0.1.0
          */
         fun <T> error(storedVal: T, error: String): ValidationResult<T> {
-            return ValidationResult(storedVal,error)
+            return ValidationResult(storedVal, error)
         }
 
         /**
          * Convenience shortcut for creating a success or error depending on a boolean state.
          *
-         * Used if the value returned will be the same regardless of validation, eg. in the case of [EntryValidator][me.fzzyhmstrs.fzzy_config.validation.entry.EntryValidator] usage, where no changes are being made to the result
+         * Used if the value returned will be the same regardless of validation, eg. in the case of [EntryValidator][me.fzzyhmstrs.fzzy_config.entry.EntryValidator] usage, where no changes are being made to the result
          * @param T Type of result
          * @param storedVal default or fallback instance of type T
          * @param valid test applied to determine validation or error.
          * @param error string with error message
-         * @return the errored ValidationResult
+         * @return the error ValidationResult
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -173,7 +173,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          */
         fun <T> ValidationResult<T>.also(newTest: Boolean, error: String): ValidationResult<T> {
             return if(!newTest) {
-                val totalError = if(this.isError()){
+                val totalError = if(this.isError()) {
                     "${this.error}, also $error"
                 } else {
                     error

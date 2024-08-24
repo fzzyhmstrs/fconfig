@@ -60,7 +60,7 @@ interface EnumTranslatable: Translatable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    override fun translation(fallback: String?): MutableText{
-        return FcText.translatableWithFallback(translationKey(),fallback ?: (this as Enum<*>).name)
+    override fun translation(fallback: String?): MutableText {
+        return FcText.translatableWithFallback(translationKey(), fallback ?: (this as Enum<*>).name)
     }
 }

@@ -47,11 +47,11 @@ import java.util.function.BiFunction
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T,*>): ValidatedField<Set<T>>(defaultValue), Set<T> {
+open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T, *>): ValidatedField<Set<T>>(defaultValue), Set<T> {
 
     init {
-        for(thing in defaultValue){
-            if (entryHandler.validateEntry(thing,EntryValidator.ValidationType.WEAK).isError())
+        for(thing in defaultValue) {
+            if (entryHandler.validateEntry(thing, EntryValidator.ValidationType.WEAK).isError())
                 throw IllegalStateException("Default Set entry [$thing] not valid per entryHandler provided")
         }
     }
@@ -63,23 +63,23 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
      * @since 0.2.0
      */
     fun toChoices(): ValidatedChoice<T> {
-        return ValidatedChoice(defaultValue.toList(),entryHandler)
+        return ValidatedChoice(defaultValue.toList(), entryHandler)
     }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Set<T>> {
-        return try{
+        return try {
             val array = toml.asTomlArray()
             val set: MutableSet<T> = mutableSetOf()
             val errors: MutableList<String> = mutableListOf()
-            for ((index, el) in array.content.withIndex()){
+            for ((index, el) in array.content.withIndex()) {
                 val result = entryHandler.deserializeEntry(el, errors, "$fieldName[$index]", 1).report(errors)
-                if (!result.isError()){
+                if (!result.isError()) {
                     set.add(result.get())
                 }
             }
-            ValidationResult.predicated(set, errors.isEmpty(),"Error(s) encountered while deserializing set, some entries were skipped: $errors")
-        } catch (e: Exception){
-            ValidationResult.error(defaultValue,"Critical error encountered while deserializing set [$fieldName], using defaults.")
+            ValidationResult.predicated(set, errors.isEmpty(), "Error(s) encountered while deserializing set, some entries were skipped: $errors")
+        } catch (e: Exception) {
+            ValidationResult.error(defaultValue, "Critical error encountered while deserializing set [$fieldName], using defaults.")
         }
     }
     @Internal
@@ -92,15 +92,15 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
                 val annotations = if (entry != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(entry!!::class)
-                    } catch (e: Exception){
+                    } catch (e: Exception) {
                         listOf()
                     }
                 else
                     listOf()
                 toml.element(tomlEntry, annotations)
             }
-        } catch (e: Exception){
-            return ValidationResult.error(toml.build(),"Critical error encountered while serializing set: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            return ValidationResult.error(toml.build(), "Critical error encountered while serializing set: ${e.localizedMessage}")
         }
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
@@ -108,21 +108,21 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     override fun correctEntry(input: Set<T>, type: EntryValidator.ValidationType): ValidationResult<Set<T>> {
         val set: MutableSet<T> = mutableSetOf()
         val errors: MutableList<String> = mutableListOf()
-        for (entry in input){
+        for (entry in input) {
             val result = entryHandler.correctEntry(entry, type)
             set.add(result.get())
             if (result.isError()) errors.add(result.getError())
         }
-        return ValidationResult.predicated(set,errors.isEmpty(),"Errors corrected in set: $errors")
+        return ValidationResult.predicated(set, errors.isEmpty(), "Errors corrected in set: $errors")
     }
     @Internal
     override fun validateEntry(input: Set<T>, type: EntryValidator.ValidationType): ValidationResult<Set<T>> {
         val errors: MutableList<String> = mutableListOf()
-        for (entry in input){
+        for (entry in input) {
             val result = entryHandler.validateEntry(entry, type)
             if (result.isError()) errors.add(result.getError())
         }
-        return ValidationResult.predicated(input,errors.isEmpty(),"Errors found in set: $errors")
+        return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in set: $errors")
     }
 
     /**
@@ -149,7 +149,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         if (input !is Set<*>) return false
         return try {
             validateEntry(input as Set<T>, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception){
+        } catch (e: Exception) {
             false
         }
     }
@@ -157,7 +157,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.set".translate(),110,20, TextureIds.DECO_LIST,{true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
+        return DecoratedActiveButtonWidget("fc.validated_field.set".translate(), 110, 20, TextureIds.DECO_LIST, {true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -170,7 +170,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
             val choiceValidator: BiFunction<ListListWidget<T>, ListListWidget.ListEntry<T>?, ChoiceValidator<T>> = BiFunction{ ll, le ->
                 ListListWidget.ExcludeSelfChoiceValidator(le) { self -> ll.getRawList(self) }
             }
-            val listWidget = ListListWidget(list, entryHandler,choiceValidator)
+            val listWidget = ListListWidget(list, entryHandler, choiceValidator)
             val popup = PopupWidget.Builder(this.translation())
                 .addElement("list", listWidget, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT)
                 .addDoneButton()
@@ -179,7 +179,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
                 .build()
             PopupWidget.push(popup)
-        } catch (e: Exception){
+        } catch (e: Exception) {
             FC.LOGGER.error("Unexpected exception caught while opening list popup")
         }
     }
@@ -205,7 +205,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         return storedValue.contains(element)
     }
 
-    companion object{
+    companion object {
 
         /**
          * attempts to create a ValidatedSet from the provided set and Entry
@@ -218,10 +218,10 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        internal fun <T> tryMake(set: Set<T>, entry: Entry<*,*>): ValidatedSet<T>?{
-            return try{
-                ValidatedSet(set, entry as Entry<T,*>)
-            } catch (e: Exception){
+        internal fun <T> tryMake(set: Set<T>, entry: Entry<*, *>): ValidatedSet<T>? {
+            return try {
+                ValidatedSet(set, entry as Entry<T, *>)
+            } catch (e: Exception) {
                 null
             }
         }

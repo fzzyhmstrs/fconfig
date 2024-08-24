@@ -66,10 +66,10 @@ open class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxVa
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Double> {
-        return try{
+        return try {
             ValidationResult.success(toml.asTomlLiteral().toDouble())
-        } catch (e: Exception){
-            ValidationResult.error(defaultValue,"Problem deserializing ValidatedDouble [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(defaultValue, "Problem deserializing ValidatedDouble [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal

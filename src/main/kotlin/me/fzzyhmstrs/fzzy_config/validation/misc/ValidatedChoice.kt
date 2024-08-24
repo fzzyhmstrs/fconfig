@@ -57,7 +57,7 @@ import kotlin.math.max
 open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val choices: List<T>, private val handler: EntryHandler<T>, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
 
     /**
-     * A validated set of choices of any typem using the first choice as the default
+     * A validated set of choices of any type using the first choice as the default
      *
      * Similar to a [ValidatedEnum], but constructed from a pre-defined list of choices
      * @param T the choice type
@@ -70,7 +70,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     @JvmOverloads
     constructor(choices: List<T>, handler: EntryHandler<T>, widgetType: WidgetType = WidgetType.POPUP): this(choices[0], choices, handler, widgetType)
 
-    init{
+    init {
         if (!choices.contains(defaultValue))
             throw IllegalStateException("Default value [$defaultValue] of ValidatedChoices not within valid choice lists [$choices]")
         if(choices.isEmpty())
@@ -83,14 +83,14 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
             val errors = mutableListOf<String>()
-            val value =  handler.deserializeEntry(toml,errors,fieldName,1).report(errors)
+            val value =  handler.deserializeEntry(toml, errors, fieldName, 1).report(errors)
             if (errors.isNotEmpty()) {
                 ValidationResult.error(value.get(), "Error(s) encountered while deserializing choice: $errors")
             } else {
                 value
             }
-        } catch (e: Exception){
-            ValidationResult.error(storedValue,"Critical error deserializing choices [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(storedValue, "Critical error deserializing choices [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal
@@ -99,17 +99,17 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     }
     @Internal
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
-        return handler.validateEntry(input,type).also(choices.contains(input),"[$input] not a valid choice: [$choices]")
+        return handler.validateEntry(input, type).also(choices.contains(input), "[$input] not a valid choice: [$choices]")
     }
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
-        return when(widgetType){
+        return when(widgetType) {
             WidgetType.POPUP -> {
-                ChoicePopupButtonWidget(translation(),choicePredicate,this)
+                ChoicePopupButtonWidget(translation(), choicePredicate, this)
             }
             WidgetType.CYCLING -> {
-                CyclingOptionsWidget(choicePredicate,this)
+                CyclingOptionsWidget(choicePredicate, this)
             }
         }
     }
@@ -121,14 +121,14 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedChoice<T> {
-        return ValidatedChoice(copyStoredValue(),this.choices,this.handler)
+        return ValidatedChoice(copyStoredValue(), this.choices, this.handler)
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input == null) return false
         return try {
             input::class.java == defaultValue!!::class.java && validateEntry(input as T, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception){
+        } catch (e: Exception) {
             false
         }
     }
@@ -161,10 +161,10 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     }
 
     @Environment(EnvType.CLIENT)
-    private class ChoicePopupButtonWidget<T>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0,0,110,20, FcText.empty()) {
+    private class ChoicePopupButtonWidget<T>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0, 0, 110, 20, FcText.empty()) {
 
         private val choices = entry.choices.filter {
-            choicePredicate.validateEntry(it,EntryValidator.ValidationType.STRONG).isValid()
+            choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
         }
 
         override fun getMessage(): Text {
@@ -189,13 +189,13 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             }
             buttonWidth = max(150, buttonWidth + 4)
             var prevParent = "title"
-            for ((index,const) in choices.withIndex()){
+            for ((index, const) in choices.withIndex()) {
                 val button = ChoiceOptionWidget(
                     const,
                     buttonWidth,
                     { c: T -> c != entry.get() },
                     { entry.accept(it); PopupWidget.pop() })
-                builder.addElement("choice$index",button, prevParent, PopupWidget.Builder.PositionRelativePos.BELOW)
+                builder.addElement("choice$index", button, prevParent, PopupWidget.Builder.PositionRelativePos.BELOW)
                 prevParent = "choice$index"
             }
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
@@ -206,7 +206,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     }
 
     @Environment(EnvType.CLIENT)
-    private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val valueApplier: Consumer<T>): PressableWidget(0,0,width,20, thisVal.transLit(thisVal.toString())) {
+    private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val valueApplier: Consumer<T>): PressableWidget(0, 0, width, 20, thisVal.transLit(thisVal.toString())) {
 
         init {
             thisVal.descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
@@ -231,10 +231,10 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     }
 
     @Environment(EnvType.CLIENT)
-    private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0,0,110,20, entry.get().let { it.transLit(it.toString()) }) {
+    private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0, 0, 110, 20, entry.get().let { it.transLit(it.toString()) }) {
 
         private val choices = entry.choices.filter {
-            choicePredicate.validateEntry(it,EntryValidator.ValidationType.STRONG).isValid()
+            choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
         }
 
         init {
@@ -244,8 +244,8 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         private fun constructTooltip() {
             val text1 = entry.descLit("").takeIf { it.string != "" }?.copy()
             val text2 = entry.get().descLit("").takeIf { it.string != "" }
-            val totalText = if(text1 != null){
-                if (text2 != null){
+            val totalText = if(text1 != null) {
+                if (text2 != null) {
                     text1.append("; ".lit()).append(text2)
                 } else {
                     text1
