@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config_test.test
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
+import me.fzzyhmstrs.fzzy_config.util.FcText.description
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
@@ -33,6 +35,7 @@ import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 import java.awt.Color
+import java.util.function.BiFunction
 
 @Version(1)
 class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
@@ -117,5 +120,5 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
 
     var id1 = ValidatedIdentifier.ofList(Identifier("stick"), listOf(Identifier("stick"),Identifier("blaze_rod"),Identifier("coal"),Identifier("charcoal")))
 
-    var choice1 = ValidatedList.ofInt(1,2,5,10).toChoices()
+    var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> ("$u.$t").translate() })
 }
