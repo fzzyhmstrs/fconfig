@@ -46,11 +46,11 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T,*>): ValidatedField<List<T>>(defaultValue), List<T> {
+open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T, *>): ValidatedField<List<T>>(defaultValue), List<T> {
 
     init {
-        for(thing in defaultValue){
-            if (entryHandler.validateEntry(thing,EntryValidator.ValidationType.WEAK).isError())
+        for(thing in defaultValue) {
+            if (entryHandler.validateEntry(thing, EntryValidator.ValidationType.WEAK).isError())
                 throw IllegalStateException("Default List entry [$thing] not valid per entryHandler provided")
         }
     }
@@ -62,18 +62,18 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
      * @since 0.2.0
      */
     fun toChoices(): ValidatedChoice<T> {
-        return ValidatedChoice(defaultValue,entryHandler)
+        return ValidatedChoice(defaultValue, entryHandler)
     }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {
-        return try{
+        return try {
             val array = toml.asTomlArray()
             val list: MutableList<T> = mutableListOf()
             val errors: MutableList<String> = mutableListOf()
-            for ((index, el) in array.content.withIndex()){
+            for ((index, el) in array.content.withIndex()) {
                 val result = entryHandler.deserializeEntry(el, errors, "$fieldName[$index]", 1).report(errors)
-                if (!result.isError()){
-                    list.add(index,result.get())
+                if (!result.isError()) {
+                    list.add(index, result.get())
                 }
             }
             if (errors.isNotEmpty()) {
@@ -81,8 +81,8 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
             } else {
                 ValidationResult.success(list)
             }
-        } catch (e: Exception){
-            ValidationResult.error(defaultValue,"Critical error enountered while deserializing list [$fieldName], using defaults.")
+        } catch (e: Exception) {
+            ValidationResult.error(defaultValue, "Critical error enountered while deserializing list [$fieldName], using defaults.")
         }
     }
     @Internal
@@ -96,15 +96,15 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
                 val annotations = if (entry != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(entry!!::class)
-                    } catch (e: Exception){
+                    } catch (e: Exception) {
                         listOf()
                     }
                 else
                     listOf()
                 toml.element(tomlEntry, annotations)
             }
-        } catch (e: Exception){
-            return ValidationResult.error(toml.build(),"Critical error encountered while serializing list: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            return ValidationResult.error(toml.build(), "Critical error encountered while serializing list: ${e.localizedMessage}")
         }
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
@@ -112,21 +112,21 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
     override fun correctEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val list: MutableList<T> = mutableListOf()
         val errors: MutableList<String> = mutableListOf()
-        for (entry in input){
+        for (entry in input) {
             val result = entryHandler.correctEntry(entry, type)
             list.add(result.get())
             if (result.isError()) errors.add(result.getError())
         }
-        return ValidationResult.predicated(list,errors.isEmpty(),"Errors corrected in list: $errors")
+        return ValidationResult.predicated(list, errors.isEmpty(), "Errors corrected in list: $errors")
     }
     @Internal
     override fun validateEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val errors: MutableList<String> = mutableListOf()
-        for (entry in input){
+        for (entry in input) {
             val result = entryHandler.validateEntry(entry, type)
             if (result.isError()) errors.add(result.getError())
         }
-        return ValidationResult.predicated(input,errors.isEmpty(),"Errors found in list: $errors")
+        return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in list: $errors")
     }
 
     /**
@@ -153,19 +153,19 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         if (input !is List<*>) return false
         return try {
             validateEntry(input as List<T>, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception){
+        } catch (e: Exception) {
             false
         }
     }
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.list".translate(),110,20, TextureIds.DECO_LIST,{true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
+        return DecoratedActiveButtonWidget("fc.validated_field.list".translate(), 110, 20, TextureIds.DECO_LIST, {true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")
     @Environment(EnvType.CLIENT)
-    private fun openListEditPopup(b: ActiveButtonWidget){
+    private fun openListEditPopup(b: ActiveButtonWidget) {
         try {
             val list = storedValue.map {
                 (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.accept(it) }
@@ -179,7 +179,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
                 .build()
             PopupWidget.push(popup)
-        } catch (e: Exception){
+        } catch (e: Exception) {
             FC.LOGGER.error("Unexpected exception caught while opening list popup")
         }
     }
@@ -229,7 +229,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         return storedValue.contains(element)
     }
 
-    companion object{
+    companion object {
 
         /**
          * attempts to create a ValidatedList from the provided list and Entry
@@ -244,10 +244,10 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
-        internal fun <T> tryMake(list: List<T>, entry: Entry<*,*>): ValidatedList<T>?{
-            return try{
-                ValidatedList(list, entry as Entry<T,*>)
-            } catch (e: Exception){
+        internal fun <T> tryMake(list: List<T>, entry: Entry<*, *>): ValidatedList<T>? {
+            return try {
+                ValidatedList(list, entry as Entry<T, *>)
+            } catch (e: Exception) {
                 null
             }
         }

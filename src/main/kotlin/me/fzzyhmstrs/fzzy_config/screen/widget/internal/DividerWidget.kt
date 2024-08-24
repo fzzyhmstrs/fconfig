@@ -59,10 +59,10 @@ internal class DividerWidget(width: Int): Widget, Drawable, Scalable {
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        context.drawGuiTexture(DIVIDER,xx,yy - 3,ww,hh + 6)
+        context.drawGuiTexture(DIVIDER, xx, yy - 3, ww, hh + 6)
     }
 
-    companion object{
+    companion object {
         private val DIVIDER = "widget/popup/divider".fcId()
     }
 

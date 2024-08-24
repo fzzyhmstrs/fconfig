@@ -67,7 +67,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun save(){
+    fun save() {
         ConfigApi.save(this)
     }
 
@@ -99,7 +99,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @suppress
      */
     override fun toString(): String {
-        return ConfigApi.serializeConfig(this,mutableListOf())
+        return ConfigApi.serializeConfig(this, mutableListOf())
     }
     /**
      * @suppress
@@ -111,7 +111,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @suppress
      */
     override fun descriptionKey(): String {
-        return getId().toTranslationKey("",".desc")
+        return getId().toTranslationKey("", ".desc")
     }
 
 }

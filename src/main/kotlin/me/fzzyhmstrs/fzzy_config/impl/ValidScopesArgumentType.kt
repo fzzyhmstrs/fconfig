@@ -30,13 +30,13 @@ internal class ValidScopesArgumentType: ArgumentType<String> {
         context: CommandContext<S>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
-        return CommandSource.suggestMatching(ClientConfigRegistry.getScreenScopes(),builder)
+        return CommandSource.suggestMatching(ClientConfigRegistry.getScreenScopes(), builder)
     }
     override fun getExamples(): MutableCollection<String> {
         return mutableSetOf("my_mod", "mod_id", "fzzy_config")
     }
 
-    companion object{
+    companion object {
         fun getValidScope(context: CommandContext<*>, name: String?): String? {
             return context.getArgument(name, String::class.java)
         }

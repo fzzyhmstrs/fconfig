@@ -29,13 +29,13 @@ import java.util.function.BiFunction
 import java.util.function.Function
 
 @Environment(EnvType.CLIENT)
-internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>>, entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, entryValidator: BiFunction<ListListWidget<T>,ListEntry<T>?,ChoiceValidator<T>>)
+internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>>, entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, entryValidator: BiFunction<ListListWidget<T>, ListEntry<T>?, ChoiceValidator<T>>)
     :
     ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0, 22), SuggestionWindowListener {
 
-    fun getRawList(skip: ListEntry<T>? = null): List<T>{
+    fun getRawList(skip: ListEntry<T>? = null): List<T> {
         val list: MutableList<T> = mutableListOf()
-        for (e in this.children()){
+        for (e in this.children()) {
             if (e !is ExistingEntry<T>) continue
             if (e == skip) continue
             list.add(e.get())
@@ -45,7 +45,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
 
     fun getList(): List<T> {
         val list: MutableList<T> = mutableListOf()
-        for (e in this.children()){
+        for (e in this.children()) {
             if (e !is ExistingEntry<T>) continue
             if (!e.isValid) continue
             list.add(e.get())
@@ -74,7 +74,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         return this.x + this.width / 2 + this.rowWidth / 2 + 6
     }
 
-    private fun makeVisible(entry: ListEntry<T>){
+    private fun makeVisible(entry: ListEntry<T>) {
         this.ensureVisible(entry)
     }
 
@@ -84,8 +84,8 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, horizontalAmount,verticalAmount) }.isPresent) return true
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount,verticalAmount)
+        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) }.isPresent) return true
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
@@ -93,18 +93,18 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
-    init{
-        for (e in entryList){
-            this.addEntry(ExistingEntry(e,this,entryValidator))
+    init {
+        for (e in entryList) {
+            this.addEntry(ExistingEntry(e, this, entryValidator))
         }
-        this.addEntry(NewEntry(entrySupplier,this,entryValidator))
+        this.addEntry(NewEntry(entrySupplier, this, entryValidator))
     }
 
-    private class ExistingEntry<T>(private val entry: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, private val parent: ListListWidget<T>, validator: BiFunction<ListListWidget<T>,ListEntry<T>?,ChoiceValidator<T>>): ListEntry<T>() {
+    private class ExistingEntry<T>(private val entry: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, private val parent: ListListWidget<T>, validator: BiFunction<ListListWidget<T>, ListEntry<T>?, ChoiceValidator<T>>): ListEntry<T>() {
 
         private var clickedWidget: Element? = null
 
-        private val entryWidget = entry.widgetAndTooltipEntry(validator.apply(parent,this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
+        private val entryWidget = entry.widgetAndTooltipEntry(validator.apply(parent, this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val deleteWidget = TextlessActionWidget(
             TextureIds.DELETE,
             TextureIds.DELETE_INACTIVE,
@@ -118,7 +118,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
                 }
             } })
 
-        fun get(): T{
+        fun get(): T {
             return entry.get()
         }
 
@@ -136,7 +136,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         }
 
         override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            if (clickedWidget != null){
+            if (clickedWidget != null) {
                 return (clickedWidget?.mouseReleased(mouseX, mouseY, button) ?: super.mouseReleased(mouseX, mouseY, button)).also { clickedWidget = null }
             }
             return super.mouseReleased(mouseX, mouseY, button)
@@ -154,15 +154,15 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             hovered: Boolean,
             tickDelta: Float
         ) {
-            entryWidget.setPosition(x,y)
+            entryWidget.setPosition(x, y)
             entryWidget.render(context, mouseX, mouseY, tickDelta)
-            deleteWidget.setPosition(x+114,y)
+            deleteWidget.setPosition(x+114, y)
             deleteWidget.render(context, mouseX, mouseY, tickDelta)
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    private class NewEntry<T>(private val entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, private val parent: ListListWidget<T>, private val validator: BiFunction<ListListWidget<T>,ListEntry<T>?,ChoiceValidator<T>>): ListEntry<T>() {
+    private class NewEntry<T>(private val entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, private val parent: ListListWidget<T>, private val validator: BiFunction<ListListWidget<T>, ListEntry<T>?, ChoiceValidator<T>>): ListEntry<T>() {
 
         private val addWidget = TextlessActionWidget(
             TextureIds.ADD,
@@ -172,7 +172,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             TextureIds.ADD_LANG,
             { true },
             {
-                parent.children().let { it.add(it.lastIndex,ExistingEntry(entrySupplier.instanceEntry() as me.fzzyhmstrs.fzzy_config.entry.Entry<T,*>,parent,validator)) }
+                parent.children().let { it.add(it.lastIndex, ExistingEntry(entrySupplier.instanceEntry() as me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, parent, validator)) }
                 parent.makeVisible(this)
             })
 
@@ -197,17 +197,17 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             hovered: Boolean,
             tickDelta: Float
         ) {
-            addWidget.setPosition(x+114,y)
+            addWidget.setPosition(x+114, y)
             addWidget.render(context, mouseX, mouseY, tickDelta)
         }
     }
 
-    abstract class ListEntry<T>: Entry<ListEntry<T>>(){
+    abstract class ListEntry<T>: Entry<ListEntry<T>>() {
         var isValid = true
     }
 
     internal class ExcludeSelfChoiceValidator<T>(private val self: ListEntry<T>?, private val disallowed: Function<ListEntry<T>?, List<T>>) : ChoiceValidator<T>(
-        ValuesPredicate(null,null)
+        ValuesPredicate(null, null)
     ) {
         override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
             if (self == null) return ValidationResult.success(input)

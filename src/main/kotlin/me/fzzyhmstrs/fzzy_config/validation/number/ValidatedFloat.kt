@@ -39,7 +39,7 @@ open class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValu
      * @since 0.2.0
      */
     @JvmOverloads
-    constructor(minValue: Float,maxValue: Float, widgetType: WidgetType = WidgetType.SLIDER): this(minValue, maxValue, minValue, widgetType)
+    constructor(minValue: Float, maxValue: Float, widgetType: WidgetType = WidgetType.SLIDER): this(minValue, maxValue, minValue, widgetType)
 
     /**
      * an unbounded validated float number.
@@ -65,10 +65,10 @@ open class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValu
     constructor(): this(0f, Float.MAX_VALUE, -Float.MAX_VALUE, WidgetType.TEXTBOX)
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Float> {
-        return try{
+        return try {
             ValidationResult.success(toml.asTomlLiteral().toFloat())
-        } catch (e: Exception){
-            ValidationResult.error(defaultValue,"Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(defaultValue, "Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal
@@ -85,7 +85,7 @@ open class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValu
     }
 
     override fun convert(input: Double): ValidationResult<Float> {
-        return ValidationResult.predicated(input.toFloat(),input <= Float.MAX_VALUE.toDouble() && input >= (-Float.MAX_VALUE).toDouble(),"[$input] out of Bounds for float value (${-Float.MIN_VALUE} to ${Float.MAX_VALUE} )")
+        return ValidationResult.predicated(input.toFloat(), input <= Float.MAX_VALUE.toDouble() && input >= (-Float.MAX_VALUE).toDouble(), "[$input] out of Bounds for float value (${-Float.MIN_VALUE} to ${Float.MAX_VALUE} )")
     }
 
     override fun minBound(): Float {

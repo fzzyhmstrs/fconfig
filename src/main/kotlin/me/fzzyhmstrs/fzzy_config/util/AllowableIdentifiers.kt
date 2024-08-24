@@ -40,7 +40,7 @@ class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun test(identifier: Identifier): Boolean{
+    fun test(identifier: Identifier): Boolean {
         return predicate.test(identifier)
     }
     /**
@@ -49,7 +49,7 @@ class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun get(): List<Identifier>{
+    fun get(): List<Identifier> {
         return supplier.get()
     }
     /**
@@ -64,7 +64,7 @@ class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private
     override fun getSuggestions(input: String, cursor: Int, choiceValidator: ChoiceValidator<Identifier>): CompletableFuture<Suggestions> {
         val truncatedInput: String = input.substring(0, cursor)
         val builder = SuggestionsBuilder(truncatedInput, truncatedInput.lowercase(Locale.ROOT), 0)
-        return CommandSource.suggestIdentifiers(get().filter { choiceValidator.validateEntry(it,EntryValidator.ValidationType.STRONG).isValid() },builder)
+        return CommandSource.suggestIdentifiers(get().filter { choiceValidator.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }, builder)
     }
 
     /**
@@ -79,13 +79,13 @@ class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private
             ValidationResult.predicated(input, this.test(input), "Identifier invalid or not allowed")
     }
 
-    companion object{
+    companion object {
         /**
          * An AllowableIdentifiers instance that allows any valid Identifier. The supplier provides an empty list, as a list of every valid Identifier is unbounded.
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        val ANY = AllowableIdentifiers({true},{listOf()})
+        val ANY = AllowableIdentifiers({true}, {listOf()})
     }
 
 }

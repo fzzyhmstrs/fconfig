@@ -28,7 +28,7 @@ import net.minecraft.util.Identifier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class DecorationWrappedWidget(private val child: ClickableWidget, private val decoration: Identifier): ClickableWidget(child.x,child.y,child.width, child.height, FcText.empty()), Decorated {
+class DecorationWrappedWidget(private val child: ClickableWidget, private val decoration: Identifier): ClickableWidget(child.x, child.y, child.width, child.height, FcText.empty()), Decorated {
 
     override fun decorationId(): Identifier {
         return decoration

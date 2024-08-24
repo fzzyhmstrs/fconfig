@@ -35,10 +35,10 @@ internal object ClientConfigRegistry {
     private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
     private val configScreenManagers: MutableMap<String, ConfigScreenManager> = mutableMapOf()
     private var validScopes: MutableSet<String> = mutableSetOf() //configs are sorted into Managers by namespace
-    private var validSubScopes: HashMultimap<String,String> = HashMultimap.create()
+    private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
     private var hasScrapedMetadata = false
     @Environment(EnvType.CLIENT)
-    internal fun getScreenScopes(): Set<String>{
+    internal fun getScreenScopes(): Set<String> {
         if (!hasScrapedMetadata) {
             val set = mutableSetOf(*validScopes.toTypedArray())
             for (container in FabricLoader.getInstance().allMods) {
@@ -65,7 +65,7 @@ internal object ClientConfigRegistry {
     @Environment(EnvType.CLIENT)
     internal fun openScreen(scope: String) {
         val namespaceScope = getValidScope(scope)
-        if (namespaceScope == null){
+        if (namespaceScope == null) {
             FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
             return
         }
@@ -80,7 +80,7 @@ internal object ClientConfigRegistry {
     @Environment(EnvType.CLIENT)
     internal fun provideScreen(scope: String): Screen? {
         val namespaceScope = getValidScope(scope)
-        if (namespaceScope == null){
+        if (namespaceScope == null) {
             FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
             return null
         }
@@ -93,14 +93,14 @@ internal object ClientConfigRegistry {
     }
 
     @Environment(EnvType.CLIENT)
-    internal fun handleForwardedUpdate(update: String, player: UUID, scope: String, summary: String){
+    internal fun handleForwardedUpdate(update: String, player: UUID, scope: String, summary: String) {
         val namespaceScope = getValidScope(scope)
-        if (namespaceScope == null){
+        if (namespaceScope == null) {
             FC.LOGGER.error("Failed to handle a forwarded setting. Invalid scope provided: [$scope]")
             return
         }
         val manager = configScreenManagers[namespaceScope]
-        if (manager == null){
+        if (manager == null) {
             FC.LOGGER.error("Failed to handle a forwarded setting. Unknown scope provided: [$scope]")
             return
         }
@@ -112,7 +112,7 @@ internal object ClientConfigRegistry {
         if(validScopes.contains(scope)) return scope
         var validScopeTry = scope.substringBeforeLast('.')
         if (validScopeTry == scope) return null
-        while(!validScopes.contains(validScopeTry) && validScopeTry.contains('.')){
+        while(!validScopes.contains(validScopeTry) && validScopeTry.contains('.')) {
             validScopeTry = validScopeTry.substringBeforeLast('.')
         }
         return if(validScopes.contains(validScopeTry)) validScopeTry else null
@@ -123,7 +123,7 @@ internal object ClientConfigRegistry {
         validScopes.add(config.getId().namespace)
         validSubScopes.put(config.getId().namespace, config.getId().path)
         UpdateManager.applyKeys(config)
-        clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config,baseConfig)
+        clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config, baseConfig)
     }
 
     private class ConfigPair(val active: Config, val base: Config)

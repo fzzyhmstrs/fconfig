@@ -33,7 +33,7 @@ internal object ConfigApiImplClient {
         return if (MinecraftClient.getInstance().textRenderer.getWidth(input) <= maxWidth)
             input
         else
-            MinecraftClient.getInstance().textRenderer.trimToWidth(input.string,maxWidth - ellipsesWidth).trimEnd().lit().append(ellipses)
+            MinecraftClient.getInstance().textRenderer.trimToWidth(input.string, maxWidth - ellipsesWidth).trimEnd().lit().append(ellipses)
     }
 
     internal fun registerConfig(config: Config, baseConfig: Config) {
@@ -51,11 +51,11 @@ internal object ConfigApiImplClient {
         ClientConfigRegistry.handleForwardedUpdate(update, player, scope, summary)
     }
 
-    internal fun getPlayerPermissionLevel(): Int{
+    internal fun getPlayerPermissionLevel(): Int {
         val client = MinecraftClient.getInstance()
         if(client.server != null && client?.server?.isRemote != true) return 4 // single player game, they can change whatever they want
         var i = 0
-        while(client.player?.hasPermissionLevel(i) == true){
+        while(client.player?.hasPermissionLevel(i) == true) {
             i++
         }
         return i - 1

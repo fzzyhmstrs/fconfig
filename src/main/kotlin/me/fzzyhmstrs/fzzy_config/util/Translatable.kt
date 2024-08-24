@@ -39,7 +39,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun translation(fallback: String? = null): MutableText{
+    fun translation(fallback: String? = null): MutableText {
         return FcText.translatableWithFallback(translationKey(), fallback ?: this::class.java.simpleName.split(FcText.regex).joinToString(" ").trimStart())
     }
     /**
@@ -47,8 +47,8 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun description(fallback: String? = null): MutableText{
-        return FcText.translatableWithFallback(descriptionKey(),fallback ?: "")
+    fun description(fallback: String? = null): MutableText {
+        return FcText.translatableWithFallback(descriptionKey(), fallback ?: "")
     }
 
     /**
@@ -57,7 +57,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.2.8
      */
-    fun hasTranslation(): Boolean{
+    fun hasTranslation(): Boolean {
         return I18n.hasTranslation(translationKey())
     }
     /**
@@ -66,7 +66,7 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.2.8
      */
-    fun hasDescription(): Boolean{
+    fun hasDescription(): Boolean {
         return I18n.hasTranslation(descriptionKey())
     }
 }

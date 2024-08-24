@@ -42,10 +42,10 @@ interface PopupParentElement: ParentElement, LastSelectable {
      */
     var justClosedWidget: Boolean
 
-    override fun pushLast(){
+    override fun pushLast() {
         this.lastSelected = focused
     }
-    override fun popLast(){
+    override fun popLast() {
         focused = lastSelected
     }
 
@@ -68,7 +68,7 @@ interface PopupParentElement: ParentElement, LastSelectable {
     fun initPopup(widget: PopupWidget)
 
     fun setPopup(widget: PopupWidget?) {
-        if(widget == null){
+        if(widget == null) {
             if (popupWidgets.isEmpty())
                 return
             justClosedWidget = true
@@ -107,7 +107,7 @@ interface PopupParentElement: ParentElement, LastSelectable {
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (justClosedWidget){
+        if (justClosedWidget) {
             justClosedWidget = false
             return false
         }

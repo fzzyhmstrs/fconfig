@@ -31,7 +31,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
     ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable, SuggestionWindowListener
 {
 
-    constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient,parent.width,parent.layout.contentHeight,parent.layout.headerHeight, drawBackground)
+    constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient, parent.width, parent.layout.contentHeight, parent.layout.headerHeight, drawBackground)
 
     private var visibleElements = 5
 
@@ -41,14 +41,14 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         this.suggestionWindowElement = element
     }
 
-    private val wholeList: List<BaseConfigEntry> by lazy{
+    private val wholeList: List<BaseConfigEntry> by lazy {
         this.children().toList()
     }
 
     private val  search: SuffixArray<Int> by lazy {
         val array = SuffixArray<Int>()
-        for ((i, entry) in wholeList.withIndex()){
-            array.add(i,entry.name.string.lowercase(Locale.ROOT))
+        for ((i, entry) in wholeList.withIndex()) {
+            array.add(i, entry.name.string.lowercase(Locale.ROOT))
         }
         array.build()
         array
@@ -110,7 +110,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         for (i in 0 until this.entryCount) {
             val entryY = getRowTop(i)
             val entryYBottom = getRowBottom(i)
-            if (entryY >= this.y && entryYBottom <= this.bottom){
+            if (entryY >= this.y && entryYBottom <= this.bottom) {
                 count++
             }
             this.getEntry(i).positionWidget(entryY)
@@ -126,19 +126,19 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         return button == 0 || button == 1
     }
 
-    fun getClient(): MinecraftClient{
+    fun getClient(): MinecraftClient {
         return this.client
     }
 
-    fun page(up: Boolean){
-        if (up){
+    fun page(up: Boolean) {
+        if (up) {
             scrollAmount -= (visibleElements * itemHeight)
         } else {
             scrollAmount += (visibleElements * itemHeight)
         }
     }
 
-    fun add(entry: BaseConfigEntry){
+    fun add(entry: BaseConfigEntry) {
         this.addEntry(entry)
     }
 
@@ -152,7 +152,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
         super.appendClickableNarrations(builder)
-        builder.put(NarrationPart.USAGE,"")
+        builder.put(NarrationPart.USAGE, "")
     }
 
     override fun appendNarrations(builder: NarrationMessageBuilder, entry: BaseConfigEntry) {

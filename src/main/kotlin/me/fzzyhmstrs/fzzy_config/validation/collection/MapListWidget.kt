@@ -31,18 +31,18 @@ import java.util.function.Function
 import me.fzzyhmstrs.fzzy_config.entry.Entry as Entry1
 
 @Environment(EnvType.CLIENT)
-internal class MapListWidget<K,V>(
-    entryMap: Map<Entry1<K, *>,Entry1<V, *>>,
+internal class MapListWidget<K, V>(
+    entryMap: Map<Entry1<K, *>, Entry1<V, *>>,
     keySupplier: Entry1<K, *>,
     valueSupplier: Entry1<V, *>,
-    entryValidator: BiFunction<MapListWidget<K,V>,MapEntry<K,V>?,ChoiceValidator<K>>)
+    entryValidator: BiFunction<MapListWidget<K, V>, MapEntry<K, V>?, ChoiceValidator<K>>)
     :
-    ElementListWidget<MapListWidget.MapEntry<K,V>>(MinecraftClient.getInstance(), 272, 160, 0,22), SuggestionWindowListener {
+    ElementListWidget<MapListWidget.MapEntry<K, V>>(MinecraftClient.getInstance(), 272, 160, 0, 22), SuggestionWindowListener {
 
-    fun getRawMap(skip: MapEntry<K,V>? = null): Map<K,V>{
-        val map: MutableMap<K,V> = mutableMapOf()
-        for (e in this.children()){
-            if (e !is ExistingEntry<K,V>) continue
+    fun getRawMap(skip: MapEntry<K, V>? = null): Map<K, V> {
+        val map: MutableMap<K, V> = mutableMapOf()
+        for (e in this.children()) {
+            if (e !is ExistingEntry<K, V>) continue
             if (e == skip) continue
             val pair = e.get()
             map[pair.first] = pair.second
@@ -56,10 +56,10 @@ internal class MapListWidget<K,V>(
         this.suggestionWindowElement = element
     }
 
-    fun getMap(): Map<K,V>{
-        val map: MutableMap<K,V> = mutableMapOf()
-        for (e in this.children()){
-            if (e !is ExistingEntry<K,V>) continue
+    fun getMap(): Map<K, V> {
+        val map: MutableMap<K, V> = mutableMapOf()
+        for (e in this.children()) {
+            if (e !is ExistingEntry<K, V>) continue
             if (!e.isValid) continue
             val pair = e.get()
             map[pair.first] = pair.second
@@ -81,7 +81,7 @@ internal class MapListWidget<K,V>(
         return this.x + this.width / 2 + this.rowWidth / 2 + 6
     }
 
-    private fun makeVisible(entry: MapEntry<K,V>){
+    private fun makeVisible(entry: MapEntry<K, V>) {
         this.ensureVisible(entry)
     }
 
@@ -92,7 +92,7 @@ internal class MapListWidget<K,V>(
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) }.isPresent) return true
-        return super.mouseScrolled(mouseX, mouseY, horizontalAmount,verticalAmount)
+        return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
@@ -100,18 +100,18 @@ internal class MapListWidget<K,V>(
         return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
-    init{
-        for (e in entryMap){
-            this.addEntry(ExistingEntry(e.key,e.value,this,entryValidator))
+    init {
+        for (e in entryMap) {
+            this.addEntry(ExistingEntry(e.key, e.value, this, entryValidator))
         }
-        this.addEntry(NewEntry(keySupplier,valueSupplier,this,entryValidator))
+        this.addEntry(NewEntry(keySupplier, valueSupplier, this, entryValidator))
     }
 
-    private class ExistingEntry<K,V>(private val key: me.fzzyhmstrs.fzzy_config.entry.Entry<K, *>,private val value: me.fzzyhmstrs.fzzy_config.entry.Entry<V, *>, private val parent: MapListWidget<K,V>, keyValidator: BiFunction<MapListWidget<K,V>,MapEntry<K,V>?,ChoiceValidator<K>>): MapEntry<K,V>() {
+    private class ExistingEntry<K, V>(private val key: me.fzzyhmstrs.fzzy_config.entry.Entry<K, *>, private val value: me.fzzyhmstrs.fzzy_config.entry.Entry<V, *>, private val parent: MapListWidget<K, V>, keyValidator: BiFunction<MapListWidget<K, V>, MapEntry<K, V>?, ChoiceValidator<K>>): MapEntry<K, V>() {
 
         private var clickedWidget: Element? = null
 
-        private val keyWidget = key.widgetAndTooltipEntry(keyValidator.apply(parent,this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
+        private val keyWidget = key.widgetAndTooltipEntry(keyValidator.apply(parent, this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val valueWidget = value.widgetAndTooltipEntry(ChoiceValidator.any()).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val deleteWidget = TextlessActionWidget(
             TextureIds.DELETE,
@@ -126,16 +126,16 @@ internal class MapListWidget<K,V>(
                 }
             } })
 
-        fun get(): Pair<K,V>{
-            return Pair(key.get(),value.get())
+        fun get(): Pair<K, V> {
+            return Pair(key.get(), value.get())
         }
 
         override fun children(): MutableList<out Element> {
-            return mutableListOf(keyWidget,valueWidget, deleteWidget)
+            return mutableListOf(keyWidget, valueWidget, deleteWidget)
         }
 
         override fun selectableChildren(): MutableList<out Selectable> {
-            return mutableListOf(keyWidget,valueWidget, deleteWidget)
+            return mutableListOf(keyWidget, valueWidget, deleteWidget)
         }
 
         override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -144,7 +144,7 @@ internal class MapListWidget<K,V>(
         }
 
         override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            if (clickedWidget != null){
+            if (clickedWidget != null) {
                 return (clickedWidget?.mouseReleased(mouseX, mouseY, button) ?: super.mouseReleased(mouseX, mouseY, button)).also { clickedWidget = null }
             }
             return super.mouseReleased(mouseX, mouseY, button)
@@ -162,18 +162,18 @@ internal class MapListWidget<K,V>(
             hovered: Boolean,
             tickDelta: Float
         ) {
-            keyWidget.setPosition(x,y)
+            keyWidget.setPosition(x, y)
             keyWidget.render(context, mouseX, mouseY, tickDelta)
-            context.drawTextWithShadow(parent.client.textRenderer,TextureIds.MAP_ARROW,x + 115,y + 5, Colors.WHITE)
-            valueWidget.setPosition(x+124,y)
+            context.drawTextWithShadow(parent.client.textRenderer, TextureIds.MAP_ARROW, x + 115, y + 5, Colors.WHITE)
+            valueWidget.setPosition(x+124, y)
             valueWidget.render(context, mouseX, mouseY, tickDelta)
-            deleteWidget.setPosition(x+238,y)
+            deleteWidget.setPosition(x+238, y)
             deleteWidget.render(context, mouseX, mouseY, tickDelta)
         }
     }
 
     @Suppress("UNCHECKED_CAST")
-    private class NewEntry<K,V>(private val keySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<K, *>,private val valueSupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<V, *>, private val parent: MapListWidget<K,V>, private val validator: BiFunction<MapListWidget<K,V>,MapEntry<K,V>?,ChoiceValidator<K>>): MapEntry<K,V>() {
+    private class NewEntry<K, V>(private val keySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<K, *>, private val valueSupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<V, *>, private val parent: MapListWidget<K, V>, private val validator: BiFunction<MapListWidget<K, V>, MapEntry<K, V>?, ChoiceValidator<K>>): MapEntry<K, V>() {
 
         private val addWidget = TextlessActionWidget(
             TextureIds.ADD,
@@ -183,7 +183,7 @@ internal class MapListWidget<K,V>(
             TextureIds.ADD_LANG,
             { true },
             {
-                parent.children().let { it.add(it.lastIndex,ExistingEntry(keySupplier.instanceEntry() as Entry1<K,*>,valueSupplier.instanceEntry() as Entry1<V,*>,parent,validator)) }
+                parent.children().let { it.add(it.lastIndex, ExistingEntry(keySupplier.instanceEntry() as Entry1<K, *>, valueSupplier.instanceEntry() as Entry1<V, *>, parent, validator)) }
                 parent.makeVisible(this)
             })
 
@@ -208,17 +208,17 @@ internal class MapListWidget<K,V>(
             hovered: Boolean,
             tickDelta: Float
         ) {
-            addWidget.setPosition(x+238,y)
+            addWidget.setPosition(x+238, y)
             addWidget.render(context, mouseX, mouseY, tickDelta)
         }
     }
 
-    abstract class MapEntry<K,V>: Entry<MapEntry<K,V>>(){
+    abstract class MapEntry<K, V>: Entry<MapEntry<K, V>>() {
         var isValid = true
     }
 
-    internal class ExcludeSelfChoiceValidator<K,V>(private val self: MapEntry<K,V>?, private val disallowed: Function<MapEntry<K,V>?, Map<K,V>>) : ChoiceValidator<K>(
-        ValuesPredicate(null,null)
+    internal class ExcludeSelfChoiceValidator<K, V>(private val self: MapEntry<K, V>?, private val disallowed: Function<MapEntry<K, V>?, Map<K, V>>) : ChoiceValidator<K>(
+        ValuesPredicate(null, null)
     ) {
         override fun validateEntry(input: K, type: EntryValidator.ValidationType): ValidationResult<K> {
             if (self == null) return ValidationResult.success(input)

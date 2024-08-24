@@ -46,10 +46,10 @@ internal object SyncedConfigRegistry {
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
-        ClientPlayNetworking.send(SettingForwardCustomPayload(update,player,scope,summary))
+        ClientPlayNetworking.send(SettingForwardCustomPayload(update, player, scope, summary))
     }
 
-    fun updateServer(serializedConfigs: Map<String,String>, changeHistory: List<String>, playerPerm: Int){
+    fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
         ClientPlayNetworking.send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
     }
 
@@ -58,7 +58,7 @@ internal object SyncedConfigRegistry {
         ClientConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.type){ payload, handler ->
             val id = payload.id
             val configString = payload.serializedConfig
-            if (syncedConfigs.containsKey(id)){
+            if (syncedConfigs.containsKey(id)) {
                 val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
                 val result = ConfigApi.deserializeConfig(config, configString, errors, ConfigApiImpl.CHECK_RESTART) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
@@ -80,7 +80,7 @@ internal object SyncedConfigRegistry {
                 if (syncedConfigs.containsKey(id)) {
                     val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                     val errors = mutableListOf<String>()
-                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors,ConfigApiImpl.CHECK_RESTART)
+                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
                     val restart = result.get().getBoolean(RESTART_KEY)
                     result.writeError(errors)
                     result.get().config.save()
@@ -117,8 +117,8 @@ internal object SyncedConfigRegistry {
             for ((id, config) in syncedConfigs) {
                 val syncErrors = mutableListOf<String>()
                 val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
-                if (syncErrors.isNotEmpty()){
-                    val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C configuration stage sync.")
+                if (syncErrors.isNotEmpty()) {
+                    val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C configuration stage sync.")
                     syncError.writeError(syncErrors)
                 }
                 ServerConfigurationNetworking.send(handler, payload)
@@ -131,8 +131,8 @@ internal object SyncedConfigRegistry {
                 for ((id, config) in syncedConfigs) {
                     val syncErrors = mutableListOf<String>()
                     val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
-                    if (syncErrors.isNotEmpty()){
-                        val syncError = ValidationResult.error(true,"Error encountered while serializing config for S2C datapack reload sync.")
+                    if (syncErrors.isNotEmpty()) {
+                        val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C datapack reload sync.")
                         syncError.writeError(syncErrors)
                     }
                     ServerPlayNetworking.send(player, payload)
@@ -148,20 +148,20 @@ internal object SyncedConfigRegistry {
         ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
             val permLevel = payload.playerPerm
             val serializedConfigs = payload.updates
-            if(!context.player().hasPermissionLevel(permLevel)){
+            if(!context.player().hasPermissionLevel(permLevel)) {
                 FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes to the Server Config! Their perm level: ${getPlayerPermissionLevel(context.player())}, perm level synced from client: $permLevel")
                 val changes = payload.changeHistory
                 ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
-                for (player in context.player().server.playerManager.playerList){
+                for (player in context.player().server.playerManager.playerList) {
                     if(player.hasPermissionLevel(2))
                         player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
                 }
                 return@registerGlobalReceiver
             }
-            for ((id,configString) in serializedConfigs) {
+            for ((id, configString) in serializedConfigs) {
                 val config = syncedConfigs[id] ?: continue
                 val errors = mutableListOf<String>()
-                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors,ConfigApiImpl.CHECK_RESTART)
+                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
                 val restart = result.get().getBoolean(RESTART_KEY)
                 result.writeError(errors)
                 result.get().config.save()
@@ -185,23 +185,23 @@ internal object SyncedConfigRegistry {
             val update = payload.update
             val summary = payload.summary
             val sendingPlayer = context.player()
-            ServerPlayNetworking.send(receivingPlayer,SettingForwardCustomPayload(update,sendingPlayer.uuid,scope,summary))
+            ServerPlayNetworking.send(receivingPlayer, SettingForwardCustomPayload(update, sendingPlayer.uuid, scope, summary))
         }
     }
 
-    private fun getPlayerPermissionLevel(player: PlayerEntity): Int{
+    private fun getPlayerPermissionLevel(player: PlayerEntity): Int {
         var i = 0
-        while(player.hasPermissionLevel(i)){
+        while(player.hasPermissionLevel(i)) {
             i++
         }
         return i - 1
     }
 
-    internal fun hasConfig(id: String): Boolean{
+    internal fun hasConfig(id: String): Boolean {
         return syncedConfigs.containsKey(id)
     }
 
-    internal fun registerConfig(config: Config){
+    internal fun registerConfig(config: Config) {
         syncedConfigs[config.getId().toTranslationKey()] = config
     }
 }

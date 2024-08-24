@@ -44,7 +44,7 @@ object FcText {
      * @since 0.2.0
      */
     fun translatableWithFallback(key: String, fallback: String?, vararg args: Any): MutableText {
-        return Text.translatableWithFallback(key,fallback, *args)
+        return Text.translatableWithFallback(key, fallback, *args)
     }
     /**
      * Wrapper method around Text.stringified. A backwards compatibility holdover from porting older versions
@@ -87,7 +87,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun Identifier.text(): Text{
+    fun Identifier.text(): Text {
         return Text.of(this)
     }
     /**
@@ -95,7 +95,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun UUID.text(): Text{
+    fun UUID.text(): Text {
         return Text.of(this)
     }
     /**
@@ -103,7 +103,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun Date.text(): Text{
+    fun Date.text(): Text {
         return Text.of(this)
     }
     /**
@@ -111,7 +111,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun Message.text(): Text{
+    fun Message.text(): Text {
         return Text.of(this)
     }
     /**
@@ -119,7 +119,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun ChunkPos.text(): Text{
+    fun ChunkPos.text(): Text {
         return Text.of(this)
     }
 
@@ -128,7 +128,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun String.lit(): MutableText{
+    fun String.lit(): MutableText {
         return literal(this)
     }
     /**
@@ -136,7 +136,7 @@ object FcText {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun String.translate(vararg args: Any): MutableText{
+    fun String.translate(vararg args: Any): MutableText {
         return translatable(this, *args)
     }
 

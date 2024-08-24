@@ -24,7 +24,7 @@ import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 import java.awt.Color
 
-object ValidatedMiscExamples{
+object ValidatedMiscExamples {
 
     fun booleans() {
         //example validated boolean. It's pretty straightforward, and in general it's recommended to use the shorthand
@@ -47,13 +47,13 @@ object ValidatedMiscExamples{
 
     fun choices() {
         //fully defined validated choice, defining a set of valid ints (which happen to be the enchantment weights from the old Enchantment.Rarity enum.
-        val validatedChoice = ValidatedChoice(1, listOf(1,2,5,10),ValidatedInt(1,10,1),ValidatedChoice.WidgetType.CYCLING)
+        val validatedChoice = ValidatedChoice(1, listOf(1, 2, 5, 10), ValidatedInt(1, 10, 1), ValidatedChoice.WidgetType.CYCLING)
 
         //validated choice that uses "default" as its default choice automatically, and is defaulting to using the popup widget
-        val validatedChoiceDefault = ValidatedChoice(listOf("default","rare", "abundant"),ValidatedString())
+        val validatedChoiceDefault = ValidatedChoice(listOf("default", "rare", "abundant"), ValidatedString())
 
         //validated choices built from a validated list instance.
-        val validatedChoiceList = ValidatedList.ofString("default","rare", "abundant").toChoices()
+        val validatedChoiceList = ValidatedList.ofString("default", "rare", "abundant").toChoices()
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows
@@ -82,7 +82,7 @@ object ValidatedMiscExamples{
         val validatedColorSimple = ValidatedColor()
 
         //Validated color built from a java Color. This color will not allow transparency
-        val validatedColorColor = ValidatedColor(Color(1f,0.5f,0f),false)
+        val validatedColorColor = ValidatedColor(Color(1f, 0.5f, 0f), false)
 
         //validated color built from a hex string, with transparency enabled.
         val validatedColorString = "D6FF00AA".validatedColor(true)
@@ -102,7 +102,7 @@ object ValidatedMiscExamples{
         """
     }
 
-    fun colorClasses(){
+    fun colorClasses() {
         //generate a color holder from a ValidatedColor wrapper
         val validatedColor: ValidatedColor = ValidatedColor(255, 128, 0, 255)
 
@@ -118,7 +118,7 @@ object ValidatedMiscExamples{
         val mutable: ValidatedColor.MutableColor = holder.mutable()
 
         //update the RGB to something new
-        mutable.updateRGB(128,0,128)
+        mutable.updateRGB(128, 0, 128)
 
         //the colors HSL is automatically updated too
         val h = mutable.h
@@ -134,7 +134,7 @@ object ValidatedMiscExamples{
         VERY,
         COOL,
         ENUM;
-        override fun prefix(): String{
+        override fun prefix(): String {
             return "my.config.test_enum"
         }
     }
@@ -181,7 +181,7 @@ object ValidatedMiscExamples{
         val stringIdentifier = ValidatedIdentifier("nether_star")
 
         //Unbounded validated Identifier directly from string nbamespace and path. Any valid Identifier will be allowed
-        val stringStringIdentifier = ValidatedIdentifier("minecraft","nether_star")
+        val stringStringIdentifier = ValidatedIdentifier("minecraft", "nether_star")
 
         //Unbounded validated Identifier with a dummy default. used only for validation of other things
         val emptyIdentifier = ValidatedIdentifier()
@@ -205,17 +205,17 @@ object ValidatedMiscExamples{
         //example validated string. This is built using the Builder, which is typically recommended except in special circumstances
         //this string requires that lowercase chicken be included in the string
         val validatedString = ValidatedString.Builder("chickenfrog")
-            .both { s,_ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
+            .both { s, _ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
             .withCorrector()
-            .both { s,_ ->
-                if(s.contains("chicken")){
+            .both { s, _ ->
+                if(s.contains("chicken")) {
                     ValidationResult.success(s)
                 } else {
-                    if(s.contains("chicken", true)){
-                        val s2 = s.replace(Regex("(?i)chicken"),"chicken")
-                        ValidationResult.error(s2,"'chicken' needs to be lowercase in the string")
+                    if(s.contains("chicken", true)) {
+                        val s2 = s.replace(Regex("(?i)chicken"), "chicken")
+                        ValidationResult.error(s2, "'chicken' needs to be lowercase in the string")
                     } else {
-                        ValidationResult.error(s,"String must contain the lowercase word 'chicken'")
+                        ValidationResult.error(s, "String must contain the lowercase word 'chicken'")
                     }
                 }
             }

@@ -30,7 +30,7 @@ import kotlin.math.roundToInt
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ClickableTextWidget(private val parent: Screen, message: Text, textRenderer: TextRenderer): AbstractTextWidget(0,0,textRenderer.getWidth(message.asOrderedText()), textRenderer.fontHeight, message, textRenderer) {
+class ClickableTextWidget(private val parent: Screen, message: Text, textRenderer: TextRenderer): AbstractTextWidget(0, 0, textRenderer.getWidth(message.asOrderedText()), textRenderer.fontHeight, message, textRenderer) {
 
     private var horizontalAlignment = 0.5f
     /**

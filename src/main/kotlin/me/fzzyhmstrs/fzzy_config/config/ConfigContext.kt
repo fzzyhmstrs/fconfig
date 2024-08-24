@@ -19,12 +19,12 @@ package me.fzzyhmstrs.fzzy_config.config
  */
 class ConfigContext<T: Any>(val config: T) {
 
-    companion object Keys{
+    companion object Keys {
         val RESTART_KEY = "restart"
         val VERSION_KEY = "version"
     }
 
-    private val contextFlags: MutableMap<String,Any> = mutableMapOf()
+    private val contextFlags: MutableMap<String, Any> = mutableMapOf()
 
     /**
      * Adds a flag-info pair into this context. Information should be a boolean or integer value
@@ -34,7 +34,7 @@ class ConfigContext<T: Any>(val config: T) {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun withFlag(flag: String, value: Any): ConfigContext<T>{
+    fun withFlag(flag: String, value: Any): ConfigContext<T> {
         contextFlags[flag] = value
         return this
     }

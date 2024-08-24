@@ -38,7 +38,7 @@ import java.util.function.Supplier
 @Suppress("LeakingThis")
 @Environment(EnvType.CLIENT)
 open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected val wrappedValue: Supplier<String>, protected val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, protected val applier: Consumer<String>):
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty())
+    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.empty())
 {
 
     protected var cachedWrappedValue: String = wrappedValue.get()
@@ -50,31 +50,31 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         return storedValue
     }
 
-    protected fun ongoingChanges(): Boolean{
+    protected fun ongoingChanges(): Boolean {
         return System.currentTimeMillis() - lastChangedTime <= 350L
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val testValue = wrappedValue.get()
-        if (cachedWrappedValue != testValue){
+        if (cachedWrappedValue != testValue) {
             this.storedValue = testValue
             this.cachedWrappedValue = testValue
             this.text = this.storedValue
         }
-        if(isChanged()){
+        if(isChanged()) {
             if (lastChangedTime != 0L && !ongoingChanges()) {
                 applier.accept(storedValue)
                 cachedWrappedValue = storedValue
             }
         }
         super.renderWidget(context, mouseX, mouseY, delta)
-        if(isValid){
+        if(isValid) {
             if (ongoingChanges())
-                context.drawGuiTexture(TextureIds.ENTRY_ONGOING,x + width - 20, y, 20, 20)
+                context.drawGuiTexture(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
             else
-                context.drawGuiTexture(TextureIds.ENTRY_OK,x + width - 20, y, 20, 20)
+                context.drawGuiTexture(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
         } else {
-            context.drawGuiTexture(TextureIds.ENTRY_ERROR,x + width - 20, y, 20, 20)
+            context.drawGuiTexture(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
         }
 
     }
@@ -88,7 +88,7 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         } else {
             this.tooltip = null
             val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
-            if (result2.isError()){
+            if (result2.isError()) {
                 this.tooltip = Tooltip.of(result.getError().lit())
                 setEditableColor(0xFF5555)
                 false

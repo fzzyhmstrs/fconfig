@@ -57,12 +57,12 @@ import kotlin.reflect.full.createInstance
 open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
-        return ConfigApi.deserializeFromToml(storedValue,toml, mutableListOf()).contextualize()
+        return ConfigApi.deserializeFromToml(storedValue, toml, mutableListOf()).contextualize()
     }
     @Internal
     override fun serialize(input: T): ValidationResult<TomlElement> {
         val errors = mutableListOf<String>()
-        return ValidationResult.predicated(ConfigApi.serializeToToml(input,errors),errors.isEmpty(),"Errors encountered while serializing Object: $errors")
+        return ValidationResult.predicated(ConfigApi.serializeToToml(input, errors), errors.isEmpty(), "Errors encountered while serializing Object: $errors")
     }
 
     /**
@@ -79,14 +79,14 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     override fun setAndUpdate(input: T) {
         if (input == get()) return
         val oldVal = get()
-        val oldStr = ConfigApi.serializeConfig(oldVal, mutableListOf(),1).lines().joinToString(" ", transform = {s -> s.trim()})
+        val oldStr = ConfigApi.serializeConfig(oldVal, mutableListOf(), 1).lines().joinToString(" ", transform = {s -> s.trim()})
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
-        val newStr = ConfigApi.serializeConfig(tVal1.get(), mutableListOf(),1).lines().joinToString(" ", transform = {s -> s.trim()})
+        val newStr = ConfigApi.serializeConfig(tVal1.get(), mutableListOf(), 1).lines().joinToString(" ", transform = {s -> s.trim()})
         set(tVal1.get())
-        val message = if (tVal1.isError()){
-            FcText.translatable("fc.validated_field.update.error",translation(),oldStr,newStr,tVal1.getError())
+        val message = if (tVal1.isError()) {
+            FcText.translatable("fc.validated_field.update.error", translation(), oldStr, newStr, tVal1.getError())
         } else {
-            FcText.translatable("fc.validated_field.update",translation(),oldStr,newStr)
+            FcText.translatable("fc.validated_field.update", translation(), oldStr, newStr)
         }
         update(message)
     }
@@ -117,14 +117,14 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.object".translate(),110,20,"widget/decoration/object".fcId(),{ true }, { openObjectPopup() })
+        return DecoratedActiveButtonWidget("fc.validated_field.object".translate(), 110, 20, "widget/decoration/object".fcId(), { true }, { openObjectPopup() })
     }
 
     /**
      * @suppress
      */
-     override fun toString(): String{
-         return "Validated Walkable[value=${ConfigApi.serializeConfig(get(), mutableListOf(),1).lines().joinToString(" ", transform = {s -> s.trim()})}, validation=per contained member validation]"
+     override fun toString(): String {
+         return "Validated Walkable[value=${ConfigApi.serializeConfig(get(), mutableListOf(), 1).lines().joinToString(" ", transform = {s -> s.trim()})}, validation=per contained member validation]"
      }
 
     @Environment(EnvType.CLIENT)
@@ -132,8 +132,8 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         val newThing = copyStoredValue()
         val newNewThing = try{ defaultValue::class.createInstance() } catch (e: Exception) { defaultValue }
         val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
-        val entryList = ConfigListWidget(MinecraftClient.getInstance(),298,160,0,false)
-        ConfigApiImpl.walk(newThing,getEntryKey(),1){_,_,new,thing,_,annotations,callback ->
+        val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 0, false)
+        ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, callback ->
             val restart = ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)
             if (thing is Updatable && thing is Entry<*, *>) {
                 val fieldName = new.substringAfterLast('.')
@@ -141,7 +141,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                 thing.setEntryKey(new)
                 thing.setUpdateManager(manager)
                 manager.setUpdatableEntry(thing)
-                entryList.add(SettingConfigEntry(name,thing.descLit(""),restart,entryList,thing.widgetEntry(),null,null,null))
+                entryList.add(SettingConfigEntry(name, thing.descLit(""), restart, entryList, thing.widgetEntry(), null, null, null))
 
             } else if (thing is Walkable) {
                 val validation = ValidatedAny(thing)
@@ -149,12 +149,12 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                 validation.setUpdateManager(manager)
                 manager.setUpdatableEntry(validation)
                 val name = validation.translation()
-                entryList.add(SettingConfigEntry(name,validation.descLit(""),restart,entryList,validation.widgetEntry(),null,null,null))
+                entryList.add(SettingConfigEntry(name, validation.descLit(""), restart, entryList, validation.widgetEntry(), null, null, null))
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("${getEntryKey()}.")
-                ConfigApiImpl.drill(newNewThing,target,'.',1) { _,_,_,thing2,drillProp,drillAnnotations,_ ->
-                    basicValidation = manager.basicValidationStrategy(thing2,drillProp.returnType,drillAnnotations)?.instanceEntry()
+                ConfigApiImpl.drill(newNewThing, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _ ->
+                    basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
                 }
                 val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {
@@ -163,15 +163,15 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                     basicValidation2.setUpdateManager(manager)
                     manager.setUpdatableEntry(basicValidation2)
                     val name = basicValidation2.translation()
-                    entryList.add(BaseConfigEntry(name,basicValidation2.descLit(""),restart,entryList,basicValidation2.widgetEntry()))
+                    entryList.add(BaseConfigEntry(name, basicValidation2.descLit(""), restart, entryList, basicValidation2.widgetEntry()))
                 }
             }
         }
         manager.pushUpdatableStates()
         val popup = PopupWidget.Builder(translation())
             .addElement("list", entryList, Position.BELOW, Position.ALIGN_CENTER)
-            .addElement("revert", ActiveButtonWidget("fc.button.revert".translate(),147,20,{ manager.hasChanges() }, { manager.revert() }), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("restore",ActiveButtonWidget("fc.button.restore".translate(),147,20,{ manager.hasRestores("") }, { manager.restore("") }), Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("revert", ActiveButtonWidget("fc.button.revert".translate(), 147, 20, { manager.hasChanges() }, { manager.revert() }), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("restore", ActiveButtonWidget("fc.button.restore".translate(), 147, 20, { manager.hasRestores("") }, { manager.restore("") }), Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addDoneButton()
             .onClose { manager.apply(true); if(manager.hasChanges()) setAndUpdate(newThing) }
             .build()
@@ -180,7 +180,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
 
     fun restartRequired(): Boolean {
         var restart = false
-        ConfigApiImpl.walk(storedValue,getEntryKey(),1){_,_,_,thing,_,annotations,callback ->
+        ConfigApiImpl.walk(storedValue, getEntryKey(), 1){_, _, _, thing, _, annotations, callback ->
             if (ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)) {
                 restart = true
                 callback.cancel()
@@ -196,7 +196,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     @Environment(EnvType.CLIENT)
-    private class ValidatedObjectUpdateManager<T: Any>(private val thing: T, private val key: String): BaseUpdateManager(){
+    private class ValidatedObjectUpdateManager<T: Any>(private val thing: T, private val key: String): BaseUpdateManager() {
 
         private val updatableEntries: MutableMap<String, Updatable> = mutableMapOf()
 
@@ -204,15 +204,15 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             updatableEntries[entry.getEntryKey()] = entry
         }
 
-        fun pushUpdatableStates(){
-            for (updatable in updatableEntries.values){
+        fun pushUpdatableStates() {
+            for (updatable in updatableEntries.values) {
                 updatable.pushState()
             }
         }
 
         override fun restoreCount(scope: String): Int {
             var count = 0
-            for ((_, updatable) in updatableEntries){
+            for ((_, updatable) in updatableEntries) {
                 if(updatable.isDefault()) continue
                 count++
             }
@@ -220,7 +220,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         }
 
         override fun restore(scope: String) {
-            for ((_, updatable) in updatableEntries){
+            for ((_, updatable) in updatableEntries) {
                 updatable.restore()
             }
         }
@@ -229,13 +229,13 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             if (updateMap.isEmpty()) return
             //push updates from basic validation to the configs
 
-            ConfigApiImpl.walk(thing,key,1) { walkable,_,new,thing,prop,_,_ ->
-                if (!(thing is Updatable && thing is Entry<*, *>)){
+            ConfigApiImpl.walk(thing, key, 1) { walkable, _, new, thing, prop, _, _ ->
+                if (!(thing is Updatable && thing is Entry<*, *>)) {
                     val update = getUpdate(new)
-                    if (update != null && update is Supplier<*>){
+                    if (update != null && update is Supplier<*>) {
                         try {
                             prop.setter.call(walkable, update.get())
-                        } catch (e: Exception){
+                        } catch (e: Exception) {
                             FC.LOGGER.error("Error pushing update to simple property [$new]")
                             e.printStackTrace()
                         }

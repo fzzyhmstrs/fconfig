@@ -54,10 +54,10 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
             val string = toml.toString()
-            val chkEnum = valuesMap[string] ?: return ValidationResult.error(storedValue,"Invalid enum selection at setting [$fieldName]. Possible values are: [${valuesMap.keys}]")
+            val chkEnum = valuesMap[string] ?: return ValidationResult.error(storedValue, "Invalid enum selection at setting [$fieldName]. Possible values are: [${valuesMap.keys}]")
             ValidationResult.success(chkEnum)
-        } catch (e: Exception){
-            ValidationResult.error(storedValue,"Critical error deserializing enum [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(storedValue, "Critical error deserializing enum [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal
@@ -67,7 +67,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
-        return when(widgetType){
+        return when(widgetType) {
             WidgetType.POPUP -> {
                 EnumPopupButtonWidget(this.translation(), choicePredicate, this)
             }
@@ -78,7 +78,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     }
 
     override fun description(fallback: String?): MutableText {
-        return FcText.translatable(descriptionKey(),fallback ?: valuesMap.keys.toString())
+        return FcText.translatable(descriptionKey(), fallback ?: valuesMap.keys.toString())
     }
 
     /**
@@ -88,14 +88,14 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedEnum<T> {
-        return ValidatedEnum(this.defaultValue,this.widgetType)
+        return ValidatedEnum(this.defaultValue, this.widgetType)
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input == null) return false
         return try {
             input::class.java == defaultValue::class.java && validateEntry(input as T, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception){
+        } catch (e: Exception) {
             false
         }
     }
@@ -128,7 +128,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     }
 
     @Environment(EnvType.CLIENT)
-    private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedEnum<T>): PressableWidget(0,0,110,20, FcText.empty()) {
+    private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedEnum<T>): PressableWidget(0, 0, 110, 20, FcText.empty()) {
 
         val constants = entry.get().declaringJavaClass.enumConstants.mapNotNull { it as? T }.filter { choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }
 
@@ -154,9 +154,9 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
             }
             buttonWidth = max(150, buttonWidth + 4)
             var prevParent = "title"
-            for (const in constants){
+            for (const in constants) {
                 val button = EnumOptionWidget(const, buttonWidth, {c -> (c as Enum<*>) != entry.get()}, { entry.accept(it); PopupWidget.pop() })
-                builder.addElement(const.name,button,prevParent,PopupWidget.Builder.PositionRelativePos.BELOW)
+                builder.addElement(const.name, button, prevParent, PopupWidget.Builder.PositionRelativePos.BELOW)
                 prevParent = const.name
             }
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
@@ -167,7 +167,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     }
 
     @Environment(EnvType.CLIENT)
-    private class EnumOptionWidget<T: Enum<*>>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val valueApplier: Consumer<T>): PressableWidget(0,0,width,20, thisVal.transLit(thisVal.name)) {
+    private class EnumOptionWidget<T: Enum<*>>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val valueApplier: Consumer<T>): PressableWidget(0, 0, width, 20, thisVal.transLit(thisVal.name)) {
 
         init {
             thisVal.descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
@@ -193,7 +193,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     }
 
     @Environment(EnvType.CLIENT)
-    private class CyclingOptionsWidget<T: Enum<*>>(choicePredicate: ChoiceValidator<T>, private val entry: Entry<T,*>): PressableWidget(0,0,110,20, entry.get().let { it.transLit(it.name) }) {
+    private class CyclingOptionsWidget<T: Enum<*>>(choicePredicate: ChoiceValidator<T>, private val entry: Entry<T, *>): PressableWidget(0, 0, 110, 20, entry.get().let { it.transLit(it.name) }) {
 
         private val constants = entry.get().declaringJavaClass.enumConstants.mapNotNull { it as? T }.filter {
             choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()

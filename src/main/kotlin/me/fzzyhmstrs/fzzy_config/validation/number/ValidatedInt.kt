@@ -88,10 +88,10 @@ open class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: I
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Int> {
-        return try{
+        return try {
             ValidationResult.success(toml.asTomlLiteral().toInt())
-        } catch (e: Exception){
-            ValidationResult.error(defaultValue,"Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(defaultValue, "Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal
@@ -108,7 +108,7 @@ open class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: I
     }
 
     override fun convert(input: Double): ValidationResult<Int> {
-        return ValidationResult.predicated(input.toInt(),input.toLong() == input.toInt().toLong(),"[$input] out of Bounds for int value (${Int.MIN_VALUE} to ${Int.MAX_VALUE} )")
+        return ValidationResult.predicated(input.toInt(), input.toLong() == input.toInt().toLong(), "[$input] out of Bounds for int value (${Int.MIN_VALUE} to ${Int.MAX_VALUE} )")
     }
 
     override fun minBound(): Int {

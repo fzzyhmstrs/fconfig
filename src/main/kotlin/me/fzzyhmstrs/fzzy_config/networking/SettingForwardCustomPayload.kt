@@ -20,7 +20,7 @@ internal class SettingForwardCustomPayload(val update: String, val player: UUID,
 
     constructor(buf: PacketByteBuf): this(buf.readString(), buf.readUuid(), buf.readString(), buf.readString())
 
-    fun write(buf: PacketByteBuf){
+    fun write(buf: PacketByteBuf) {
         buf.writeString(update)
         buf.writeUuid(player)
         buf.writeString(scope)
@@ -31,7 +31,7 @@ internal class SettingForwardCustomPayload(val update: String, val player: UUID,
         return type
     }
 
-    companion object{
+    companion object {
         val type: Id<SettingForwardCustomPayload> = CustomPayload.id("fzzy_config:setting_forward")
         val codec: PacketCodec<PacketByteBuf, SettingForwardCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> SettingForwardCustomPayload(b)})
 

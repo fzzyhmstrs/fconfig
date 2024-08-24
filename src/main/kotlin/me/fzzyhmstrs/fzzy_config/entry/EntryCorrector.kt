@@ -25,7 +25,7 @@ import java.util.function.Predicate
 fun interface EntryCorrector<T> {
     fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T>
 
-    class Builder<T:Any>: AbstractBuilder<T, Builder<T>>(){
+    class Builder<T:Any>: AbstractBuilder<T, Builder<T>>() {
         override fun builder(): Builder<T> {
             return this
         }
@@ -62,7 +62,7 @@ fun interface EntryCorrector<T> {
             return builder()
         }
         fun buildCorrector(): EntryCorrector<T> {
-            return EntryCorrector{ i, t -> if(t == EntryValidator.ValidationType.WEAK) ifWeak.correctEntry(i,t) else ifStrong.correctEntry(i,t) }
+            return EntryCorrector{ i, t -> if(t == EntryValidator.ValidationType.WEAK) ifWeak.correctEntry(i, t) else ifStrong.correctEntry(i, t) }
         }
     }
 }

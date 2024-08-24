@@ -30,7 +30,7 @@ internal interface BasicValidationProvider {
 
     fun basicValidationStrategy(input: Any?, inputType: KType, annotations: List<Annotation>): ValidatedField<*>? {
 
-        fun complexStrategy(input: Any?,type: KType, annotations: List<Annotation>): ValidatedField<*>? {
+        fun complexStrategy(input: Any?, type: KType, annotations: List<Annotation>): ValidatedField<*>? {
             try {
                 val clazz = type.jvmErasure
                 if (clazz.javaObjectType.isEnum) {
@@ -52,39 +52,39 @@ internal interface BasicValidationProvider {
                     val valueArgument = type.arguments[1]
                     val valueArgumentType = valueArgument.type ?: return null
                     val valueProjectionValidation = basicValidationStrategy(null, valueArgumentType, annotations) ?: return null
-                    return if(keyArgumentType.jvmErasure.javaObjectType.isEnum){
-                        ValidatedEnumMap.tryMake(if (input != null) input as Map<Enum<*>,*> else mapOf(), keyProjectionValidation, valueProjectionValidation)
+                    return if(keyArgumentType.jvmErasure.javaObjectType.isEnum) {
+                        ValidatedEnumMap.tryMake(if (input != null) input as Map<Enum<*>, *> else mapOf(), keyProjectionValidation, valueProjectionValidation)
                     } else if (keyArgumentType.jvmErasure.javaObjectType.isInstance("")) {
-                        ValidatedStringMap.tryMake(if (input != null)input as Map<String,*> else mapOf(), keyProjectionValidation, valueProjectionValidation)
+                        ValidatedStringMap.tryMake(if (input != null)input as Map<String, *> else mapOf(), keyProjectionValidation, valueProjectionValidation)
                     } else if (keyArgumentType.jvmErasure.javaObjectType.isInstance(Identifier(""))) {
-                        ValidatedIdentifierMap.tryMake(if (input != null)input as Map<Identifier,*> else mapOf(), keyProjectionValidation, valueProjectionValidation)
+                        ValidatedIdentifierMap.tryMake(if (input != null)input as Map<Identifier, *> else mapOf(), keyProjectionValidation, valueProjectionValidation)
                     } else {
-                        ValidatedMap.tryMake(if (input != null)input as Map<*,*> else mapOf(), keyProjectionValidation, valueProjectionValidation)
+                        ValidatedMap.tryMake(if (input != null)input as Map<*, *> else mapOf(), keyProjectionValidation, valueProjectionValidation)
                     }
                 } else {
                     return null
                 }
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 return null
             }
         }
 
-        fun getIntRestrict(annotations: List<Annotation>): ValidatedInt.Restrict?{
+        fun getIntRestrict(annotations: List<Annotation>): ValidatedInt.Restrict? {
             return annotations.firstOrNull { it is ValidatedInt.Restrict } as? ValidatedInt.Restrict
         }
-        fun getByteRestrict(annotations: List<Annotation>): ValidatedByte.Restrict?{
+        fun getByteRestrict(annotations: List<Annotation>): ValidatedByte.Restrict? {
             return annotations.firstOrNull { it is ValidatedByte.Restrict } as? ValidatedByte.Restrict
         }
-        fun getShortRestrict(annotations: List<Annotation>): ValidatedShort.Restrict?{
+        fun getShortRestrict(annotations: List<Annotation>): ValidatedShort.Restrict? {
             return annotations.firstOrNull { it is ValidatedShort.Restrict } as? ValidatedShort.Restrict
         }
-        fun getLongRestrict(annotations: List<Annotation>): ValidatedLong.Restrict?{
+        fun getLongRestrict(annotations: List<Annotation>): ValidatedLong.Restrict? {
             return annotations.firstOrNull { it is ValidatedLong.Restrict } as? ValidatedLong.Restrict
         }
-        fun getDoubleRestrict(annotations: List<Annotation>): ValidatedDouble.Restrict?{
+        fun getDoubleRestrict(annotations: List<Annotation>): ValidatedDouble.Restrict? {
             return annotations.firstOrNull { it is ValidatedDouble.Restrict } as? ValidatedDouble.Restrict
         }
-        fun getFloatRestrict(annotations: List<Annotation>): ValidatedFloat.Restrict?{
+        fun getFloatRestrict(annotations: List<Annotation>): ValidatedFloat.Restrict? {
             return annotations.firstOrNull { it is ValidatedFloat.Restrict } as? ValidatedFloat.Restrict
         }
 
@@ -123,7 +123,7 @@ internal interface BasicValidationProvider {
                     java.lang.String::class.java -> ValidatedString()
                     else -> complexStrategy(null, inputType, annotations)
                 }
-        } catch (e: Exception){
+        } catch (e: Exception) {
             return null
         }
     }

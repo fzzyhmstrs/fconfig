@@ -63,7 +63,7 @@ import kotlin.math.min
 @Environment(EnvType.CLIENT)
 internal class ConfigScreenManager(private val scope: String, private val configs: List<ConfigSet>) {
 
-    private val configMap: Map<String,Set<Config>>
+    private val configMap: Map<String, Set<Config>>
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
     private val manager: ConfigUpdateManager
 
@@ -71,8 +71,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private var copyBuffer: Any? = null
     private var cachedPermissionLevel = 0
 
-    init{
-        val map: MutableMap<String,Set<Config>> = mutableMapOf()
+    init {
+        val map: MutableMap<String, Set<Config>> = mutableMapOf()
         if (configs.size > 1)
             map[scope] = configs.map { it.active }.toSet()
         configs.forEach { map[it.active.getId().toTranslationKey()] = setOf(it.active) }
@@ -86,16 +86,16 @@ internal class ConfigScreenManager(private val scope: String, private val config
     //////////////////////////////////////////////
 
     internal fun receiveForwardedUpdate(update: String, player: UUID, scope: String, summary: String) {
-        var entry: Entry<*,*>? = null
-        for ((config,_,_) in configs){
-            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { _,_,new,thing,_,_,callback ->
-                if (new == scope){
-                    if(thing is Entry<*,*>) {
+        var entry: Entry<*, *>? = null
+        for ((config, _, _) in configs) {
+            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, new, thing, _, _, callback ->
+                if (new == scope) {
+                    if(thing is Entry<*, *>) {
                         entry = thing
                         callback.cancel()
                     } else {
                         val basicThing = manager.getUpdatableEntry(new)
-                        if (basicThing != null && basicThing is Entry<*,*>){
+                        if (basicThing != null && basicThing is Entry<*, *>) {
                             entry = basicThing
                             callback.cancel()
                         }
@@ -108,7 +108,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         if (entry == null)
             return
         try {
-            forwardedUpdates.add(ForwardedUpdate(scope,update, player, entry!!, summary))
+            forwardedUpdates.add(ForwardedUpdate(scope, update, player, entry!!, summary))
         } catch (e: Exception) {
             //empty catch block to avoid stupid crashes
         }
@@ -131,7 +131,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     internal fun openScreen(scope: String = this.scope) {
-        if(cachedPermissionLevel != ConfigApiImplClient.getPlayerPermissionLevel()){
+        if(cachedPermissionLevel != ConfigApiImplClient.getPlayerPermissionLevel()) {
             cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
             manager.flush()
             prepareScreens()
@@ -143,7 +143,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         openScopedScreen(scope)
     }
 
-    private fun openScopedScreen(scope: String){
+    private fun openScopedScreen(scope: String) {
         val realScope = if(scope == this.scope && configMap.size == 1)
             configMap.keys.toList()[0]
         else
@@ -152,7 +152,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         MinecraftClient.getInstance().setScreen(screen)
     }
 
-    private fun pushToBuffer(input: Any?){
+    private fun pushToBuffer(input: Any?) {
         copyBuffer = input
     }
 
@@ -160,7 +160,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     private fun prepareScreens() {
         val permLevel = ConfigApiImplClient.getPlayerPermissionLevel()
-        if (configs.size == 1){
+        if (configs.size == 1) {
             prepareSingleConfigScreen(permLevel)
         } else {
             prepareMultiConfigScreens(permLevel)
@@ -168,8 +168,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun prepareSingleConfigScreen(playerPermLevel: Int) {
-        val functionMap: MutableMap<String, SortedMap<Int, Pair<String,Function<ConfigListWidget, BaseConfigEntry>>>> = mutableMapOf()
-        val nameMap: MutableMap<String,Text> = mutableMapOf()
+        val functionMap: MutableMap<String, SortedMap<Int, Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>> = mutableMapOf()
+        val nameMap: MutableMap<String, Text> = mutableMapOf()
         val restartSet: MutableSet<String> = mutableSetOf()
         val config = configs[0]
         walkConfig(config, functionMap, nameMap, restartSet, if(config.clientOnly) 4 else playerPermLevel)
@@ -177,7 +177,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val scopes = functionMap.keys.toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
         val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
-        for((scope, entryBuilders) in functionMap){
+        for((scope, entryBuilders) in functionMap) {
             val name = nameMap[scope] ?: continue
             builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, restartSet, entryBuilders.values.toList())
         }
@@ -185,11 +185,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun prepareMultiConfigScreens(playerPermLevel: Int) {
-        val functionMap: MutableMap<String, SortedMap<Int, Pair<String,Function<ConfigListWidget, BaseConfigEntry>>>> = mutableMapOf()
-        val nameMap: MutableMap<String,Text> = mutableMapOf()
+        val functionMap: MutableMap<String, SortedMap<Int, Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>> = mutableMapOf()
+        val nameMap: MutableMap<String, Text> = mutableMapOf()
         val restartSet: MutableSet<String> = mutableSetOf()
         nameMap[scope] = FabricLoader.getInstance().getModContainer(this.scope)?.get()?.metadata?.name?.lit() ?: "Config Root".lit()
-        for ((i,config) in configs.withIndex()) {
+        for ((i, config) in configs.withIndex()) {
             functionMap.computeIfAbsent(scope) { sortedMapOf()}[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(config.active.translation(), config.active.description(), false, config.active.getId().toTranslationKey()))
             walkConfig(config, functionMap, nameMap, restartSet, if(config.clientOnly) 4 else playerPermLevel)
             //walkBasicValues(config.base, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
@@ -197,14 +197,14 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val scopes = functionMap.keys.toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
         val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
-        for((scope, entryBuilders) in functionMap){
+        for((scope, entryBuilders) in functionMap) {
             val name = nameMap[scope] ?: continue
             builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, restartSet, entryBuilders.values.toList())
         }
         this.screens = builders
     }
 
-    private fun walkConfig(set: ConfigSet, functionMap: MutableMap<String, SortedMap<Int, Pair<String,Function<ConfigListWidget, BaseConfigEntry>>>>, nameMap: MutableMap<String, Text>, restartSet: MutableSet<String>, playerPermLevel: Int){
+    private fun walkConfig(set: ConfigSet, functionMap: MutableMap<String, SortedMap<Int, Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>>, nameMap: MutableMap<String, Text>, restartSet: MutableSet<String>, playerPermLevel: Int) {
         val config: Config = set.active
         val baseConfig: Config = set.base
         val defaultPermLevel = config.defaultPermLevel()
@@ -213,36 +213,36 @@ internal class ConfigScreenManager(private val scope: String, private val config
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         var index = 0
         val prefix = config.getId().toTranslationKey()
-        ConfigApiImpl.walk(config,prefix,1) { _,old,new,thing,_,annotations,callback ->
+        ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, callback ->
             val restart = isRequiresRestart(annotations) || isRequiresRestart(callback.walkable::class.annotations)
             if (restart) restartSet.add(new)
             if(thing is ConfigSection) {
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                 nameMap[new] = name
-                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new,sectionOpenEntryBuilder(name, thing.descLit(getComments(annotations)), restart, new))
+                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, sectionOpenEntryBuilder(name, thing.descLit(getComments(annotations)), restart, new))
                 index++
-            } else if (thing is Updatable && thing is Entry<*,*>) {
+            } else if (thing is Updatable && thing is Entry<*, *>) {
                 val anyRestart = thing is ValidatedAny<*> && thing.restartRequired()
                 if (anyRestart && !restart) restartSet.add(new)
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                 nameMap[new] = name
-                if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations)) {
+                if(hasNeededPermLevel(playerPermLevel, defaultPermLevel, annotations)) {
                     thing.setUpdateManager(manager)
                     manager.setUpdatableEntry(thing)
                     if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
-                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new,forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), restart || anyRestart, thing))
+                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), restart || anyRestart, thing))
                     else
-                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new,updatableEntryBuilder(name, thing.descLit(getComments(annotations)), restart || anyRestart, thing))
+                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, thing.descLit(getComments(annotations)), restart || anyRestart, thing))
                 } else
-                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new,noPermsEntryBuilder(name, FcText.empty(), restart || anyRestart))
+                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), restart || anyRestart))
                 index++
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("$prefix.")
-                ConfigApiImpl.drill(baseConfig,target,'.',1) { _,_,_,thing2,drillProp,drillAnnotations,_ ->
-                    basicValidation = manager.basicValidationStrategy(thing2,drillProp.returnType, drillAnnotations)?.instanceEntry()
+                ConfigApiImpl.drill(baseConfig, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _ ->
+                    basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
                 }
                 val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {
@@ -250,29 +250,29 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     basicValidation2.setEntryKey(new)
                     val name = basicValidation2.translation()
                     nameMap[new] = name
-                    if(hasNeededPermLevel(playerPermLevel,defaultPermLevel,annotations)) {
+                    if(hasNeededPermLevel(playerPermLevel, defaultPermLevel, annotations)) {
                         basicValidation2.setUpdateManager(manager)
                         manager.setUpdatableEntry(basicValidation2)
                         if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
-                            functionMap.computeIfAbsent(old) { sortedMapOf() } [index] = Pair(new,forwardableEntryBuilder(name, basicValidation2.descLit(getComments(annotations)), restart, basicValidation2))
+                            functionMap.computeIfAbsent(old) { sortedMapOf() } [index] = Pair(new, forwardableEntryBuilder(name, basicValidation2.descLit(getComments(annotations)), restart, basicValidation2))
                         else
-                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new,updatableEntryBuilder(name, basicValidation2.descLit(getComments(annotations)), restart, basicValidation2))
+                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, basicValidation2.descLit(getComments(annotations)), restart, basicValidation2))
                     } else
-                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new,noPermsEntryBuilder(name, FcText.empty(),restart))
+                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), restart))
                 }
                 index++
             }
         }
     }
 
-    private fun getComments(annotations: List<Annotation>): String{
+    private fun getComments(annotations: List<Annotation>): String {
         var comment = ""
-        for (annotation in annotations){
-            if (annotation is TomlComment){
+        for (annotation in annotations) {
+            if (annotation is TomlComment) {
                 if (comment.isNotEmpty())
                     comment += ". "
                 comment += annotation.text
-            } else if(annotation is Comment){
+            } else if(annotation is Comment) {
                 if (comment.isNotEmpty())
                     comment += ". "
                 comment += annotation.value
@@ -283,19 +283,19 @@ internal class ConfigScreenManager(private val scope: String, private val config
         return comment
     }
 
-    private fun buildScopeButtons(nameMap: Map<String,Text>): Map<String, Function<ConfigScreen,ClickableWidget>>{
+    private fun buildScopeButtons(nameMap: Map<String, Text>): Map<String, Function<ConfigScreen, ClickableWidget>> {
         val textRenderer = MinecraftClient.getInstance().textRenderer
         return nameMap.mapValues { (name, translation) ->
                 Function { _ ->
                     ButtonWidget.builder(translation) { openScopedScreen(name) }
-                        .dimensions(0, 0, min(100,textRenderer.getWidth(translation) + 8),20)
-                        .narrationSupplier{ _ -> FcText.translatable("fc.button.navigate",translation) }
+                        .dimensions(0, 0, min(100, textRenderer.getWidth(translation) + 8), 20)
+                        .narrationSupplier{ _ -> FcText.translatable("fc.button.navigate", translation) }
                         .build()
                 }
             }
     }
 
-    private fun buildBuilder(name:Text, scope: String, scopes: List<String>, scopeButtonFunctions: Map<String, Function<ConfigScreen,ClickableWidget>>, restartSet: MutableSet<String>, entryBuilders: List<Pair<String,Function<ConfigListWidget,BaseConfigEntry>>>): ConfigScreenBuilder {
+    private fun buildBuilder(name:Text, scope: String, scopes: List<String>, scopeButtonFunctions: Map<String, Function<ConfigScreen, ClickableWidget>>, restartSet: MutableSet<String>, entryBuilders: List<Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>): ConfigScreenBuilder {
         val scopeSplit = scope.split(".")
         val parentScopes = scopes.filter { scopeSplit.containsAll(it.split(".")) && it != scope }.sortedBy { it.length }
         val functionList: MutableList<Function<ConfigScreen, ClickableWidget>> = mutableListOf()
@@ -304,13 +304,13 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
         val configListFunction = Function { screen: ConfigScreen ->
             val listWidget = ConfigListWidget(MinecraftClient.getInstance(), screen)
-            for ((entryScope,entryBuilder) in entryBuilders){
+            for ((entryScope, entryBuilder) in entryBuilders) {
                 listWidget.add(entryBuilder.apply(listWidget).restartTriggering(restartSet.find{ it.startsWith(entryScope) } != null))
             }
             listWidget
         }
         return ConfigScreenBuilder {
-            val screen = ConfigScreen(name, scope,manager, configListFunction, functionList)
+            val screen = ConfigScreen(name, scope, manager, configListFunction, functionList)
             screen.setParent(MinecraftClient.getInstance().currentScreen)
             screen
         }
@@ -318,11 +318,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     private fun hasNeededPermLevel(playerPermLevel: Int, defaultPerm: Int, annotations: List<Annotation>): Boolean {
         if (ConfigApiImpl.isNonSync(annotations)) return true
-        for (annotation in annotations){
+        for (annotation in annotations) {
             if (annotation is ClientModifiable)
                 return true
         }
-        for (annotation in annotations){
+        for (annotation in annotations) {
             if (annotation is WithPerms)
                 return playerPermLevel >= annotation.opLevel
         }
@@ -331,7 +331,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     //////////////////////////////////////
 
-    private fun <T> updatableEntryBuilder(name: Text, desc: Text, restart: Boolean, entry: T): Function<ConfigListWidget, BaseConfigEntry> where T: Updatable, T: Entry<*,*> {
+    private fun <T> updatableEntryBuilder(name: Text, desc: Text, restart: Boolean, entry: T): Function<ConfigListWidget, BaseConfigEntry> where T: Updatable, T: Entry<*, *> {
         return Function { parent ->
             SettingConfigEntry(
                 name,
@@ -345,7 +345,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
     }
 
-    private fun <T> forwardableEntryBuilder(name: Text, desc: Text, restart: Boolean, entry: T): Function<ConfigListWidget, BaseConfigEntry> where T: Updatable, T: Entry<*,*> {
+    private fun <T> forwardableEntryBuilder(name: Text, desc: Text, restart: Boolean, entry: T): Function<ConfigListWidget, BaseConfigEntry> where T: Updatable, T: Entry<*, *> {
         return Function { parent ->
             SettingConfigEntry(
                 name,
@@ -363,50 +363,50 @@ internal class ConfigScreenManager(private val scope: String, private val config
         return Function { parent -> BaseConfigEntry(name, desc, restart, parent, NoPermsButtonWidget()) }
     }
 
-    private fun sectionOpenEntryBuilder(name: Text, desc: Text, restart: Boolean, scope: String): Function<ConfigListWidget,BaseConfigEntry> {
+    private fun sectionOpenEntryBuilder(name: Text, desc: Text, restart: Boolean, scope: String): Function<ConfigListWidget, BaseConfigEntry> {
         return Function { parent -> SectionConfigEntry(name, desc, restart, parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) }) }
     }
 
-    private fun configOpenEntryBuilder(name: Text, desc: Text, restart: Boolean, scope: String): Function<ConfigListWidget,BaseConfigEntry> {
+    private fun configOpenEntryBuilder(name: Text, desc: Text, restart: Boolean, scope: String): Function<ConfigListWidget, BaseConfigEntry> {
         return Function { parent -> ConfigConfigEntry(name, desc, restart, parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) }) }
     }
 
     /////////////////////////////
 
-    private fun <T> openRightClickPopup(x: Int, y: Int, entry: T, withForwarding: Boolean) where T: Updatable, T: Entry<*,*> {
+    private fun <T> openRightClickPopup(x: Int, y: Int, entry: T, withForwarding: Boolean) where T: Updatable, T: Entry<*, *> {
         val client = MinecraftClient.getInstance()
         val copyText = "fc.button.copy".translate()
         val pasteText = "fc.button.paste".translate()
         val revertText = "fc.button.revert".translate()
         val restoreText = "fc.button.restore".translate()
         val forwardText = "fc.button.forward".translate()
-        val popup = PopupWidget.Builder("fc.config.right_click".translate(),2,2)
+        val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
             .addDivider()
             .positionX(PopupWidget.Builder.at{ x })
             .positionY(PopupWidget.Builder.at{ y })
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
-        popup.addElement("copy", ActiveButtonWidget(copyText, client.textRenderer.getWidth(copyText) + 8, 14, { true }, { pushToBuffer(entry.get()); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        popup.addElement("paste", ActiveButtonWidget(pasteText, client.textRenderer.getWidth(pasteText) + 8, 14, { entry.isValidEntry(copyBuffer) }, { entry.trySet(copyBuffer); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        popup.addElement("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 14, { entry.peekState() }, { entry.revert(); PopupWidget.pop() },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        popup.addElement("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 14, { !entry.isDefault() }, { b -> openRestoreConfirmPopup(b, entry) },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("copy", ActiveButtonWidget(copyText, client.textRenderer.getWidth(copyText) + 8, 14, { true }, { pushToBuffer(entry.get()); PopupWidget.pop() }, "widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("paste", ActiveButtonWidget(pasteText, client.textRenderer.getWidth(pasteText) + 8, 14, { entry.isValidEntry(copyBuffer) }, { entry.trySet(copyBuffer); PopupWidget.pop() }, "widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 14, { entry.peekState() }, { entry.revert(); PopupWidget.pop() }, "widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 14, { !entry.isDefault() }, { b -> openRestoreConfirmPopup(b, entry) }, "widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
         if(withForwarding)
-            popup.addElement("forward", ActiveButtonWidget(forwardText, client.textRenderer.getWidth(forwardText) + 8, 14, { true }, { openEntryForwardingPopup(entry) },"widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
+            popup.addElement("forward", ActiveButtonWidget(forwardText, client.textRenderer.getWidth(forwardText) + 8, 14, { true }, { openEntryForwardingPopup(entry) }, "widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
         PopupWidget.push(popup.build())
     }
-    private fun <T> openRestoreConfirmPopup(b: ActiveButtonWidget, entry: T) where T: Updatable, T: Entry<*,*> {
+    private fun <T> openRestoreConfirmPopup(b: ActiveButtonWidget, entry: T) where T: Updatable, T: Entry<*, *> {
         val client = MinecraftClient.getInstance()
         val confirmText = "fc.button.restore.confirm".translate()
-        val confirmTextWidth = max(50,client.textRenderer.getWidth(confirmText) + 8)
+        val confirmTextWidth = max(50, client.textRenderer.getWidth(confirmText) + 8)
         val cancelText = "fc.button.cancel".translate()
-        val cancelTextWidth = max(50,client.textRenderer.getWidth(cancelText) + 8)
-        val buttonWidth = max(confirmTextWidth,cancelTextWidth)
+        val cancelTextWidth = max(50, client.textRenderer.getWidth(cancelText) + 8)
+        val buttonWidth = max(confirmTextWidth, cancelTextWidth)
 
         val popup = PopupWidget.Builder("fc.button.restore".translate())
             .addDivider()
             .addElement("confirm_text", MultilineTextWidget("fc.config.restore.confirm.desc".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
-            .addElement("confirm_button", ButtonWidget.builder(confirmText) { entry.restore(); PopupWidget.pop(); PopupWidget.pop() }.size(buttonWidth,20).build(), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth,20).build(),"confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
+            .addElement("confirm_button", ButtonWidget.builder(confirmText) { entry.restore(); PopupWidget.pop(); PopupWidget.pop() }.size(buttonWidth, 20).build(), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y - h + 28 })
             .width(buttonWidth + 4 + buttonWidth + 16)
@@ -414,34 +414,34 @@ internal class ConfigScreenManager(private val scope: String, private val config
         PopupWidget.push(popup)
     }
 
-    private fun <T> openEntryForwardingPopup(entry: T) where T: Updatable, T: Entry<*,*> {
+    private fun <T> openEntryForwardingPopup(entry: T) where T: Updatable, T: Entry<*, *> {
         val client = MinecraftClient.getInstance()
         val playerEntries = client.player?.networkHandler?.playerList?.associateBy { it.profile.name } ?: return
         val validator = EntryValidator.Builder<String>().both({s -> playerEntries.containsKey(s)}).buildValidator()
         var player = ""
         val forwardText = "fc.button.forward.confirm".translate()
-        val forwardTextWidth = max(50,client.textRenderer.getWidth(forwardText) + 8)
+        val forwardTextWidth = max(50, client.textRenderer.getWidth(forwardText) + 8)
         val cancelText = "fc.button.cancel".translate()
-        val cancelTextWidth = max(50,client.textRenderer.getWidth(cancelText) + 8)
-        val buttonWidth = max(forwardTextWidth,cancelTextWidth)
+        val cancelTextWidth = max(50, client.textRenderer.getWidth(cancelText) + 8)
+        val buttonWidth = max(forwardTextWidth, cancelTextWidth)
         val popup = PopupWidget.Builder("fc.button.forward".translate())
             .addDivider()
             .addElement("desc",
                 MultilineTextWidget("fc.button.forward.active".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
-            .addElement("player_finder", SuggestionBackedTextFieldWidget(110,20, {player}, ChoiceValidator.any(), validator, {s -> player = s}, { s, cursor, choiceValidator -> CommandSource.suggestMatching(playerEntries.keys.filter { choiceValidator.validateEntry(it,EntryValidator.ValidationType.STRONG).isValid() }, s.substring(0,cursor).let{ SuggestionsBuilder(it,it.lowercase(Locale.ROOT),0) }) }), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("forward_button", ActiveButtonWidget(forwardText,buttonWidth,20,{playerEntries.containsKey(player)},{ forwardUpdate(entry,playerEntries[player]); PopupWidget.pop(); PopupWidget.pop() }), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth,20).build(),"forward_button", Position.ALIGN_RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("player_finder", SuggestionBackedTextFieldWidget(110, 20, {player}, ChoiceValidator.any(), validator, {s -> player = s}, { s, cursor, choiceValidator -> CommandSource.suggestMatching(playerEntries.keys.filter { choiceValidator.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }, s.substring(0, cursor).let{ SuggestionsBuilder(it, it.lowercase(Locale.ROOT), 0) }) }), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("forward_button", ActiveButtonWidget(forwardText, buttonWidth, 20, {playerEntries.containsKey(player)}, { forwardUpdate(entry, playerEntries[player]); PopupWidget.pop(); PopupWidget.pop() }), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "forward_button", Position.ALIGN_RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .build()
         PopupWidget.push(popup)
     }
 
-    private fun<T> forwardUpdate(entry: T, playerListEntry: PlayerListEntry?)where T: Updatable, T: Entry<*,*>{
+    private fun<T> forwardUpdate(entry: T, playerListEntry: PlayerListEntry?)where T: Updatable, T: Entry<*, *> {
         if (playerListEntry == null) return
         val update = ConfigApiImpl.serializeEntry(entry, mutableListOf())
         val id = playerListEntry.profile.id
         val key = entry.getEntryKey()
         val summary = entry.get().toString()
-        SyncedConfigRegistry.forwardSetting(update,id,key, summary)
+        SyncedConfigRegistry.forwardSetting(update, id, key, summary)
     }
 
     ///////////////////////////////////////
@@ -450,6 +450,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
         fun build(): ConfigScreen
     }
 
-    internal class ForwardedUpdate(val scope: String, val update: String, val player: UUID, val entry: Entry<*,*>, val summary: String)
+    internal class ForwardedUpdate(val scope: String, val update: String, val player: UUID, val entry: Entry<*, *>, val summary: String)
 
 }

@@ -17,9 +17,9 @@ import net.minecraft.network.packet.CustomPayload.Id
 
 internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: String): CustomPayload {
 
-    constructor(buf: PacketByteBuf): this(buf.readString(),buf.readString())
+    constructor(buf: PacketByteBuf): this(buf.readString(), buf.readString())
 
-    fun write(buf: PacketByteBuf){
+    fun write(buf: PacketByteBuf) {
         buf.writeString(id)
         buf.writeString(serializedConfig)
     }
@@ -28,7 +28,7 @@ internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: 
         return type
     }
 
-    companion object{
+    companion object {
         val type: Id<ConfigSyncS2CCustomPayload> = CustomPayload.id("fzzy_config:config_sync_s2c")
         val codec: PacketCodec<PacketByteBuf, ConfigSyncS2CCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> ConfigSyncS2CCustomPayload(b)})
     }

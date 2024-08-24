@@ -104,7 +104,7 @@ object Shorthand {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Any> List<T>.validated(handler: Entry<T,*>): ValidatedList<T> {
+    fun <T: Any> List<T>.validated(handler: Entry<T, *>): ValidatedList<T> {
         return ValidatedList(this, handler)
     }
 
@@ -141,13 +141,13 @@ object Shorthand {
      * List used will be the default
      * @param T the registry type
      * @param registry [Registry] used to validate entries
-     * @param predicate [BiPredicate]<Identifier,[RegistryEntry]>
+     * @param predicate [BiPredicate]<Identifier, [RegistryEntry]>
      * @return [ValidatedList] wrapping the list and predicated registry validation
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
-    fun<T: Any> List<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedList<Identifier> {
+    fun<T: Any> List<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedList<Identifier> {
         return ValidatedList(this, ValidatedIdentifier.ofRegistry(registry, predicate))
     }
     /**
@@ -175,7 +175,7 @@ object Shorthand {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Any> Set<T>.validated(handler: Entry<T,*>): ValidatedSet<T> {
+    fun <T: Any> Set<T>.validated(handler: Entry<T, *>): ValidatedSet<T> {
         return ValidatedSet(this, handler)
     }
 
@@ -212,13 +212,13 @@ object Shorthand {
      * Set used will be the default
      * @param T the registry type
      * @param registry [Registry] used to validate entries
-     * @param predicate [BiPredicate]<Identifier,[RegistryEntry]>
+     * @param predicate [BiPredicate]<Identifier, [RegistryEntry]>
      * @return [ValidatedSet] wrapping the set and predicated registry validation
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
-    fun<T: Any> Set<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedSet<Identifier> {
+    fun<T: Any> Set<Identifier>.validatedRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedSet<Identifier> {
         return ValidatedSet(this, ValidatedIdentifier.ofRegistry(registry, predicate))
     }
     /**
@@ -239,7 +239,7 @@ object Shorthand {
 
 
     @Internal
-    val shorthandValidationMap: Map<Class<*>,ValidatedField<*>> = mapOf(
+    val shorthandValidationMap: Map<Class<*>, ValidatedField<*>> = mapOf(
         java.lang.Integer::class.java to ValidatedInt(0),
         java.lang.Short::class.java to ValidatedShort(0.toShort()),
         java.lang.Byte::class.java to ValidatedByte(0.toByte()),
@@ -258,7 +258,7 @@ object Shorthand {
      */
     @JvmStatic
     inline fun <reified T: Number> List<T>.validated(): ValidatedList<T> {
-        val entry = shorthandValidationMap[T::class.java] as? Entry<T,*> ?: throw IllegalStateException("Incompatible shorthand type [${T::class.java}] in List")
+        val entry = shorthandValidationMap[T::class.java] as? Entry<T, *> ?: throw IllegalStateException("Incompatible shorthand type [${T::class.java}] in List")
         return ValidatedList(this, entry)
     }
 
@@ -272,7 +272,7 @@ object Shorthand {
      */
     @JvmStatic
     inline fun <reified T: Number> Set<T>.validated(): ValidatedSet<T> {
-        val entry = shorthandValidationMap[T::class.java] as? Entry<T,*> ?: throw IllegalStateException("Incompatible shorthand type [${T::class.java}] in List")
+        val entry = shorthandValidationMap[T::class.java] as? Entry<T, *> ?: throw IllegalStateException("Incompatible shorthand type [${T::class.java}] in List")
         return ValidatedSet(this, entry)
     }
 
@@ -320,14 +320,14 @@ object Shorthand {
      *
      * Does not have a default value, so should only be for list or map validation
      * @param T the registry type
-     * @param predicate [BiPredicate]<Identifier,[RegistryEntry]> to filter the registry id list
+     * @param predicate [BiPredicate]<Identifier, [RegistryEntry]> to filter the registry id list
      * @return [ValidatedIdentifier] using the predicated registry for validation.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     @JvmStatic
     @Deprecated("Use only for validation of a list or map.")
-    fun <T: Any> Registry<T>.validatedIds(predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifier {
+    fun <T: Any> Registry<T>.validatedIds(predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
         return ValidatedIdentifier.ofRegistry(this, predicate)
     }
     /**

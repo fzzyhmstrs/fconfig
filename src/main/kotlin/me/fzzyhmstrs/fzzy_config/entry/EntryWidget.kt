@@ -29,9 +29,9 @@ interface EntryWidget<T> {
     @Environment(EnvType.CLIENT)
     fun widgetEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget
     @Environment(EnvType.CLIENT)
-    fun widgetAndTooltipEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget{
+    fun widgetAndTooltipEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget {
         val widget = widgetEntry(choicePredicate)
-        if (this is Translatable && this.hasDescription()){
+        if (this is Translatable && this.hasDescription()) {
             widget.tooltip = Tooltip.of(this.description(""))
         }
         return widget

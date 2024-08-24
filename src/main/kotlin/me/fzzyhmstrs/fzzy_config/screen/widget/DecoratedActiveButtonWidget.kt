@@ -41,8 +41,8 @@ open class DecoratedActiveButtonWidget(
     pressAction: Consumer<ActiveButtonWidget>,
     background: Identifier? = null)
     :
-    ActiveButtonWidget(titleSupplier,width,height,activeProvider,pressAction,background),
-    Decorated{
+    ActiveButtonWidget(titleSupplier, width, height, activeProvider, pressAction, background),
+    Decorated {
 
     constructor(title: Text,
                 width: Int,
@@ -50,7 +50,7 @@ open class DecoratedActiveButtonWidget(
                 decoration: Identifier,
                 activeProvider: Supplier<Boolean>,
                 pressAction: Consumer<ActiveButtonWidget>,
-                background: Identifier? = null): this(Supplier{title},width, height,decoration, activeProvider, pressAction, background)
+                background: Identifier? = null): this(Supplier{title}, width, height, decoration, activeProvider, pressAction, background)
 
     override fun decorationId(): Identifier {
         return decoration

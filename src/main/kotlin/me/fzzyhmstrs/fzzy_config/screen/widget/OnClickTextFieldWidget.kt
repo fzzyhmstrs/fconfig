@@ -32,7 +32,7 @@ import java.util.function.Supplier
 @Environment(EnvType.CLIENT)
 class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: OnInteractAction)
     :
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, 110, 20, FcText.empty())
+    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, 110, 20, FcText.empty())
 {
     init {
         setMaxLength(1000)
@@ -47,7 +47,7 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
     }
 
     override fun onClick(mouseX: Double, mouseY: Double) {
-        onClick.interact(this, false, 0,0,0)
+        onClick.interact(this, false, 0, 0, 0)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
@@ -61,7 +61,7 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
             return true
         }
     }
-    private fun isNavigation(keyCode: Int): Boolean{
+    private fun isNavigation(keyCode: Int): Boolean {
         return keyCode == GLFW.GLFW_KEY_TAB || keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_DOWN || keyCode == GLFW.GLFW_KEY_UP
     }
 
@@ -73,7 +73,7 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
      * @since 0.3.0
      */
     @FunctionalInterface
-    fun interface OnInteractAction{
+    fun interface OnInteractAction {
         /**
          * interaction callback from an [OnClickTextFieldWidget]
          * @param widget [OnClickTextFieldWidget] - context from the widget calling back

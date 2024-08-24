@@ -108,14 +108,14 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         TagProvider(tag.id), itemPredicate, tagPredicate)
 
 
-    private val tagValidator = if(tagPredicate == null) ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM) else ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM,tagPredicate)
+    private val tagValidator = if(tagPredicate == null) ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM) else ValidatedIdentifier.ofRegistryTags(RegistryKeys.ITEM, tagPredicate)
     @Suppress("DEPRECATION")
     private val itemValidator = if(itemPredicate == null) ValidatedIdentifier.ofRegistry(Registries.ITEM) else ValidatedIdentifier.ofRegistry(Registries.ITEM) { id, _ -> itemPredicate.test(id) }
     private val listTagValidator = tagValidator.toSet()
     private val listItemValidator = itemValidator.toSet()
 
 
-    init{
+    init {
         when(storedValue.type()) {
             ProviderType.STACK -> {
                 listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))
@@ -139,7 +139,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun toIngredient(): Ingredient{
+    fun toIngredient(): Ingredient {
         return storedValue.provide()
     }
 
@@ -192,7 +192,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
     ): ValidationResult<IngredientProvider> {
         @Suppress("DEPRECATION")
         val result = super.deserializeEntry(toml, errorBuilder, fieldName, flags)
-        when(storedValue.type()){
+        when(storedValue.type()) {
             ProviderType.STACK -> {
                 listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))
                 listTagValidator.validateAndSet(setOf())
@@ -210,10 +210,10 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
     }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<IngredientProvider> {
-        return try{
+        return try {
             ValidationResult.success(IngredientProvider.deserialize(toml, fieldName))
-        } catch (e: Exception){
-            ValidationResult.error(storedValue,"Critical error while deserializing ValidatedIngredient [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(storedValue, "Critical error while deserializing ValidatedIngredient [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal
@@ -227,7 +227,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    override fun copyStoredValue(): IngredientProvider{
+    override fun copyStoredValue(): IngredientProvider {
         return storedValue.copy()
     }
 
@@ -247,31 +247,31 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<IngredientProvider>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.ingredient.edit".translate(),110,20,"widget/decoration/ingredient".fcId(),{ true },{ openIngredientPopup(it) })
+        return DecoratedActiveButtonWidget("fc.validated_field.ingredient.edit".translate(), 110, 20, "widget/decoration/ingredient".fcId(), { true }, { openIngredientPopup(it) })
     }
 
     /**
      * @suppress
      */
-     override fun toString(): String{
+     override fun toString(): String {
          return "Validated Ingredient[value=$storedValue, validation={$itemValidator, $tagValidator, $listItemValidator, $listTagValidator}]"
      }
 
     @Environment(EnvType.CLIENT)
-    private fun openIngredientPopup(b: ClickableWidget){
+    private fun openIngredientPopup(b: ClickableWidget) {
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         val popupNew = PopupWidget.Builder(translation())
             .addDivider()
-            .addElement("items_label",TextWidget(110,13,"fc.validated_field.ingredient.items".translate(),textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("items",listItemValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("items_clear",ButtonWidget.Builder("fc.validated_field.ingredient.clear".translate()){ _ -> listItemValidator.validateAndSet(setOf()) }.size(60,20).build(),"items", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("items_textbox", SuppliedTextWidget({ listItemValidator.get().toString().lit().formatted(Formatting.GRAY) },textRenderer,110,20).supplyTooltipOnOverflow { listItemValidator.get().joinToString("\n").lit() },"items", Position.ALIGN_JUSTIFY, Position.BELOW)
+            .addElement("items_label", TextWidget(110, 13, "fc.validated_field.ingredient.items".translate(), textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("items", listItemValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("items_clear", ButtonWidget.Builder("fc.validated_field.ingredient.clear".translate()){ _ -> listItemValidator.validateAndSet(setOf()) }.size(60, 20).build(), "items", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("items_textbox", SuppliedTextWidget({ listItemValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listItemValidator.get().joinToString("\n").lit() }, "items", Position.ALIGN_JUSTIFY, Position.BELOW)
             .addDivider()
-            .addElement("tags_label",TextWidget(110,13,"fc.validated_field.ingredient.tags".translate(),textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("tags",listTagValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("tags_clear",ButtonWidget.Builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60,20).build(),"tags", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().formatted(Formatting.GRAY) },textRenderer,110,20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() },"tags", Position.ALIGN_JUSTIFY, Position.BELOW)
+            .addElement("tags_label", TextWidget(110, 13, "fc.validated_field.ingredient.tags".translate(), textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("tags", listTagValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("tags_clear", ButtonWidget.Builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60, 20).build(), "tags", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() }, "tags", Position.ALIGN_JUSTIFY, Position.BELOW)
             .addDoneButton()
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
@@ -284,16 +284,16 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
     private fun fromLists(): IngredientProvider {
         if (listItemValidator.isEmpty() && listTagValidator.isEmpty())
             return ListProvider(setOf(), setOf())
-        if (listItemValidator.size == 1 && listTagValidator.isEmpty()){
+        if (listItemValidator.size == 1 && listTagValidator.isEmpty()) {
             return ItemProvider(listItemValidator.first())
-        } else if (listItemValidator.isEmpty() && listTagValidator.size == 1){
+        } else if (listItemValidator.isEmpty() && listTagValidator.size == 1) {
             return TagProvider(listTagValidator.first())
         } else {
-            return ListProvider(listItemValidator.get(),listTagValidator.get())
+            return ListProvider(listItemValidator.get(), listTagValidator.get())
         }
     }
 
-    enum class ProviderType: EnumTranslatable{
+    enum class ProviderType: EnumTranslatable {
         STACK {
             override fun create(ingredient: ValidatedIngredient): IngredientProvider {
                 return ItemProvider(ingredient.itemValidator.get())
@@ -304,7 +304,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         },
         LIST {
             override fun create(ingredient: ValidatedIngredient): IngredientProvider {
-                return ListProvider(ingredient.listItemValidator.get(),ingredient.listTagValidator.get())
+                return ListProvider(ingredient.listItemValidator.get(), ingredient.listTagValidator.get())
             }
             override fun type(): String {
                 return "stacks"
@@ -361,7 +361,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
 
     class ListProvider(val ids: Set<Identifier>, val tags: Set<Identifier>): IngredientProvider {
 
-        constructor(input: Set<Any>):this(input.mapNotNull { it as? Identifier }.toSet(),input.mapNotNull { try { (it as? TagKey<Item>)?.id } catch (e: Exception){ null } }.toSet())
+        constructor(input: Set<Any>):this(input.mapNotNull { it as? Identifier }.toSet(), input.mapNotNull { try { (it as? TagKey<Item>)?.id } catch (e: Exception){ null } }.toSet())
 
         override fun type(): ProviderType {
             return ProviderType.LIST
@@ -371,8 +371,8 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
                 return Ingredient.empty()
             val items = ids.map { Registries.ITEM.get(it) }.filter { it != Items.AIR }.map { ItemStack(it) }
             val tagItems: MutableList<ItemStack> = mutableListOf()
-            for (tag in tags){
-                Registries.ITEM.iterateEntries(TagKey.of(RegistryKeys.ITEM,tag)).forEach {
+            for (tag in tags) {
+                Registries.ITEM.iterateEntries(TagKey.of(RegistryKeys.ITEM, tag)).forEach {
                     tagItems.add(ItemStack(it))
                 }
             }
@@ -381,9 +381,9 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         override fun deserialize(toml: TomlElement): IngredientProvider {
             val array = toml.asTomlArray()
             val ids = array.mapNotNull {
-                try{
+                try {
                     val str = it.asTomlLiteral().toString()
-                    if (str.startsWith("#")){
+                    if (str.startsWith("#")) {
                         null
                     } else {
                         Identifier(str)
@@ -393,9 +393,9 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
                 }
             }.toSet()
             val tags = array.mapNotNull {
-                try{
+                try {
                     val str = it.asTomlLiteral().toString()
-                    if (str.startsWith("#")){
+                    if (str.startsWith("#")) {
                         Identifier(str.substring(1))
                     } else {
                         null
@@ -404,20 +404,20 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
                     null
                 }
             }.toSet()
-            return ListProvider(ids,tags)
+            return ListProvider(ids, tags)
         }
         override fun serialize(): TomlElement {
             val toml = TomlArrayBuilder(ids.size)
-            for (id in ids){
+            for (id in ids) {
                 toml.element(TomlLiteral(id.toString()))
             }
-            for (tag in tags){
+            for (tag in tags) {
                 toml.element(TomlLiteral("#$tag"))
             }
             return toml.build()
         }
-        override fun copy(): IngredientProvider{
-            return ListProvider(ids.toSet(),tags.toSet())
+        override fun copy(): IngredientProvider {
+            return ListProvider(ids.toSet(), tags.toSet())
         }
         override fun toString(): String {
             return "List Ingredient {Items: $ids, Tags: $tags}"
@@ -436,15 +436,15 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             return ProviderType.TAG
         }
         override fun provide(): Ingredient {
-            return Ingredient.fromTag(TagKey.of(RegistryKeys.ITEM,tag))
+            return Ingredient.fromTag(TagKey.of(RegistryKeys.ITEM, tag))
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
-            return TagProvider(Identifier(toml.asTomlLiteral().toString().replace("#","")))
+            return TagProvider(Identifier(toml.asTomlLiteral().toString().replace("#", "")))
         }
         override fun serialize(): TomlElement {
             return TomlLiteral("#${tag}")
         }
-        override fun copy(): IngredientProvider{
+        override fun copy(): IngredientProvider {
             return TagProvider(Identifier(tag.toString()))
         }
         override fun toString(): String {
@@ -460,21 +460,21 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
     }
 
     sealed interface IngredientProvider {
-        companion object{
+        companion object {
             private val STACK_INSTANCE = ItemProvider(Identifier("dummy"))
             private val STACKS_INSTANCE = ListProvider(setOf())
             private val TAG_INSTANCE = TagProvider(Identifier("dummy"))
-            fun serialize(provider: IngredientProvider): TomlElement{
+            fun serialize(provider: IngredientProvider): TomlElement {
                 val toml = TomlTableBuilder(2)
                 toml.element("type", TomlLiteral(provider.type().type()))
-                toml.element("value",provider.serialize())
+                toml.element("value", provider.serialize())
                 return toml.build()
             }
-            fun deserialize(toml: TomlElement, fieldName: String): IngredientProvider{
+            fun deserialize(toml: TomlElement, fieldName: String): IngredientProvider {
                 val table = toml.asTomlTable()
                 val type = table["type"]?.asTomlLiteral()?.toString() ?: throw IllegalStateException("Unknown or missing type in IngredientProvider [$fieldName]")
                 val value = table["value"] ?: throw IllegalStateException("Unknown or missing value in IngredientProvider [$fieldName]")
-                return when(type){
+                return when(type) {
                     "stack" -> STACK_INSTANCE.deserialize(value)
                     "stacks"-> STACKS_INSTANCE.deserialize(value)
                     "tag"-> TAG_INSTANCE.deserialize(value)
