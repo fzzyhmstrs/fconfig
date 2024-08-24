@@ -2,7 +2,7 @@
 * None.
 
 ### Changes
-* `ValidatedChoice` now has the param `translationProvider`, a BiFunction that lets you convert the choices base translation key and an instance of the choice into a Text instance. Useful for creating translations for strings or other choices that aren't `Translatable`.
+* `ValidatedChoice` now has the params `translationProvider` and `descriptionProvider`, BiFunctions that let you convert the choices base translation key and an instance of the choice into a Text instance. Useful for creating translations/Descriptions for strings or other choices that aren't `Translatable`.
 * `ValidatedList.toChoices` now lets the user define translation and widget behavior.
 
 ### Fixes
