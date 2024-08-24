@@ -1,0 +1,404 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Fzzy Config</title>
+    <link href="images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="scripts/sourceset_dependencies.js" async></script>
+<link href="styles/style.css" rel="Stylesheet">
+<link href="styles/main.css" rel="Stylesheet">
+<link href="styles/prism.css" rel="Stylesheet">
+<link href="styles/logo-styles.css" rel="Stylesheet">
+<link href="styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="scripts/clipboard.js" async></script>
+<script type="text/javascript" src="scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="scripts/main.js" defer></script>
+<script type="text/javascript" src="scripts/prism.js" async></script>
+<script type="text/javascript" src="scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="styles/multimodule.css" rel="Stylesheet">
+<link href="images/fc_banner.png">
+<link href="images/discord_banner.png">
+<link href="images/discord_small_banner.png">
+<link href="images/wiki_banner.png">
+<link href="images/wiki_small_banner.png">
+<link href="images/docs_banner.png">
+<link href="images/docs_small_banner.png">
+<link href="images/cf_banner.png">
+<link href="images/modrinth_banner.png">
+<link href="images/icon.png">
+<link href="styles/style.css" rel="Stylesheet">
+<link href="styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.3.4+1.21</div>
+  <div class="versions-dropdown-data"><a href="..\..\index.html">0.3.6+1.20.6</a><a href="..\0.3.6+1.20.1\index.html">0.3.6+1.20.1</a><a href="index.html">0.3.4+1.21</a><a href="..\0.3.3+1.20.6\index.html">0.3.3+1.20.6</a><a href="..\0.3.3+1.20.1\index.html">0.3.3+1.20.1</a><a href="..\0.3.2+1.20.6\index.html">0.3.2+1.20.6</a><a href="..\0.3.2+1.20.1\index.html">0.3.2+1.20.1</a><a href="..\0.3.1+1.20.5\index.html">0.3.1+1.20.5</a><a href="..\0.3.1+1.20.1\index.html">0.3.1+1.20.1</a><a href="..\0.3.0+1.20.5\index.html">0.3.0+1.20.5</a><a href="..\0.3.0+1.20.1\index.html">0.3.0+1.20.1</a><a href="..\0.2.8+1.20.5\index.html">0.2.8+1.20.5</a><a href="..\0.2.8+1.20.1\index.html">0.2.8+1.20.1</a><a href="..\0.2.7+1.20.5\index.html">0.2.7+1.20.5</a><a href="..\0.2.7+1.20.1\index.html">0.2.7+1.20.1</a><a href="..\0.2.5+1.20.5\index.html">0.2.5+1.20.5</a><a href="..\0.2.4+1.20.1\index.html">0.2.4+1.20.1</a><a href="..\0.2.2+1.20.1\index.html">0.2.2+1.20.1</a><a href="..\0.2.0+1.20.1\index.html">0.2.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://curseforge.com" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" id="content" pageids="Fzzy Config::////PointingToDeclaration//769193423">
+  <div class="breadcrumbs"></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Fzzy</span></span> <span><span>Config</span></span></h1>
+    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><p class="paragraph">Fzzy Config is a powerful configuration engine for Minecraft Mods that meets you where you want to be. Quick and dirty or detailed and featureful, Fzzy Config will work with you. It provides a wide array of features above and beyond what you can find in other libraries.</p></div></div>
+  </div>
+  <h2 class="">Packages</h2>
+  <div class="table"><a data-name="-1804992920%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.annotations" id="-1804992920%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.annotations/index.html">me.fzzyhmstrs.fzzy_config.annotations</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1804992920%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1263462434%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.api" id="-1263462434%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.api/index.html">me.fzzyhmstrs.fzzy_config.api</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1263462434%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-726677246%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.config" id="-726677246%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.config/index.html">me.fzzyhmstrs.fzzy_config.config</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-726677246%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1414785098%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.entry" id="-1414785098%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.entry/index.html">me.fzzyhmstrs.fzzy_config.entry</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1414785098%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="69240236%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.screen" id="69240236%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.screen/index.html">me.fzzyhmstrs.fzzy_config.screen</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="69240236%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="410533424%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.screen.entry" id="410533424%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.entry/index.html">me.fzzyhmstrs.fzzy_config.screen.entry</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="410533424%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-593655677%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.screen.internal" id="-593655677%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.internal/index.html">me.fzzyhmstrs.fzzy_config.screen.internal</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-593655677%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1881385546%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.screen.widget" id="1881385546%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/index.html">me.fzzyhmstrs.fzzy_config.screen.widget</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1881385546%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1563866533%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.screen.widget.internal" id="1563866533%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget.internal/index.html">me.fzzyhmstrs.fzzy_config.screen.widget.internal</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1563866533%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1175452350%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.util" id="-1175452350%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.util/index.html">me.fzzyhmstrs.fzzy_config.util</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1175452350%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1705663784%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.util.pos" id="1705663784%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.util.pos/index.html">me.fzzyhmstrs.fzzy_config.util.pos</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1705663784%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1735587719%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.validation" id="-1735587719%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.validation/index.html">me.fzzyhmstrs.fzzy_config.validation</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1735587719%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="765057847%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.validation.collection" id="765057847%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.collection/index.html">me.fzzyhmstrs.fzzy_config.validation.collection</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="765057847%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1651448776%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.validation.minecraft" id="-1651448776%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.minecraft/index.html">me.fzzyhmstrs.fzzy_config.validation.minecraft</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1651448776%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1349852859%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.validation.misc" id="-1349852859%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/index.html">me.fzzyhmstrs.fzzy_config.validation.misc</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1349852859%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-932615262%2FPackages%2F769193423" anchor-label="me.fzzyhmstrs.fzzy_config.validation.number" id="-932615262%2FPackages%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+    <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.number/index.html">me.fzzyhmstrs.fzzy_config.validation.number</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-932615262%2FPackages%2F769193423"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag jvm-like">jvm</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

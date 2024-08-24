@@ -1,0 +1,375 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>FcText</title>
+    <link href="../../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../../images/fc_banner.png">
+<link href="../../../images/discord_banner.png">
+<link href="../../../images/discord_small_banner.png">
+<link href="../../../images/wiki_banner.png">
+<link href="../../../images/wiki_small_banner.png">
+<link href="../../../images/docs_banner.png">
+<link href="../../../images/docs_small_banner.png">
+<link href="../../../images/cf_banner.png">
+<link href="../../../images/modrinth_banner.png">
+<link href="../../../images/icon.png">
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-fc-text/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.3.6+1.20.1</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.3.6+1.20.6</a><a href="index.html">0.3.6+1.20.1</a><a href="..\..\..\..\0.3.4+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.3.4+1.21</a><a href="..\..\..\..\0.3.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.3.3+1.20.6</a><a href="..\..\..\..\0.3.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.3.3+1.20.1</a><a href="..\..\..\..\0.3.2+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.3.2+1.20.6</a><a href="..\..\..\..\0.3.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.3.2+1.20.1</a><a href="..\..\..\..\0.3.1+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.3.1+1.20.5</a><a href="..\..\..\..\0.3.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.3.1+1.20.1</a><a href="..\..\..\..\0.3.0+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.3.0+1.20.5</a><a href="..\..\..\..\0.3.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.3.0+1.20.1</a><a href="..\..\..\..\0.2.8+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.2.8+1.20.5</a><a href="..\..\..\..\0.2.8+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.2.8+1.20.1</a><a href="..\..\..\..\0.2.7+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.2.7+1.20.5</a><a href="..\..\..\..\0.2.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.2.7+1.20.1</a><a href="..\..\..\..\0.2.5+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.2.5+1.20.5</a><a href="..\..\..\..\0.2.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.2.4+1.20.1</a><a href="..\..\..\..\0.2.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.2.2+1.20.1</a><a href="..\..\..\..\0.2.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-fc-text\index.html">0.2.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://curseforge.com" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.util/FcText///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Fzzy Config</a><span class="delimiter">/</span><a href="../index.html">me.fzzyhmstrs.fzzy_config.util</a><span class="delimiter">/</span><span class="current">FcText</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Fc</span><wbr><span><span>Text</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">FcText</a></div><p class="paragraph">Various text utilities and wrappers for making kotlin minecraft modding more text-expressive</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.2.0</p></span><h4 class="">See also</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-translatable/index.html"><span><span>Translatable</span></span></a></div></span></div><div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.text
+import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Translatable
+import net.minecraft.registry.RegistryKeys
+import net.minecraft.registry.tag.TagKey
+import net.minecraft.util.Identifier
+import java.util.*
+
+fun main() { 
+   //sampleStart 
+   //FcText has wrappers for the standard Text methods, historically used for porting
+val standardText = FcText.literal("Normal text")
+val translateText = FcText.translatable("my.translatable.text")
+val fallbackText = FcText.translatableWithFallback("my.translatable.text","My Fallback")
+val stringifiedText = FcText.stringified("my.stringified.text", TagKey.of(RegistryKeys.ITEM,"arg_requiring_stringification".fcId()))
+val emptyText = FcText.empty()
+val appendedText = FcText.appended(standardText, fallbackText)
+
+//several extension functions for converting common MC and Java objects into text
+val idText = Identifier("stick").text()
+val uuidText = UUID.fromString("732bf411-5bb5-4f5d-8ef0-feb45d6032ee").text()
+//val dateText = TODO()
+//val messageText = TODO()
+//val chunkPosText = TODO()
+
+//string extension functions for simple text-ification of string literals
+val stringLit = "My Cool String".lit()
+val stringTranslate = "my.cool.string".translate() // can add args too
+
+// simple example class that implements Translatable
+class TranslatableExample: Translatable {
+    override fun translationKey(): String{
+        return "example.translatable.translation"
+    }
+    override fun descriptionKey(): String{
+        return "example.translatable.translation.desc"
+    }
+}
+
+//provide translations and descriptions for anything, particularly hooking into Translatable
+val myTranslatableThing = TranslatableExample()
+
+// translates anything, first checking if the thing is Translatable and using that translation if found, otherwise it translates the fallback key
+val anyTranslate = myTranslatableThing.translation("my.fallback.translation")
+//translate anything, first checking if the thing is Translatable and using that translation if found, otherwise it provides the fallback string literally
+val anyTransLit = myTranslatableThing.transLit("Fallback Message")
+
+// describes anything, first checking if the thing is Translatable and using that description if found, otherwise it translates the fallback key
+val anyDescription = myTranslatableThing.description("my.fallback.translation.desc")
+//describes anything, first checking if the thing is Translatable and using that description if found, otherwise it provides the fallback string literally
+val anyDescLit = myTranslatableThing.descLit("Fallback Description") 
+   //sampleEnd
+}</code></pre></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="168579005%2FFunctions%2F769193423" anchor-label="appended" id="168579005%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="appended.html"><span><span>appended</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="168579005%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="appended.html"><span class="token function">appended</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">baseText<span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">vararg </span>appended<span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">Appends multiple texts to a base text</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-813081547%2FFunctions%2F769193423" anchor-label="descLit" id="-813081547%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="desc-lit.html"><span>desc</span><wbr><span><span>Lit</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-813081547%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token punctuation">.</span><a href="desc-lit.html"><span class="token function">descLit</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">literalFallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span></div><div class="brief "><p class="paragraph">Describes anything (In enchantment description style, or for tooltips, for example). If the thing is <a href="../-translatable/index.html">Translatable</a>, it will use the built-in description, otherwise it will use the fallback literally</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-874222017%2FFunctions%2F769193423" anchor-label="description" id="-874222017%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="description.html"><span><span>description</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-874222017%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token punctuation">.</span><a href="description.html"><span class="token function">description</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span></div><div class="brief "><p class="paragraph">Describes anything (In enchantment description style, or for tooltips, for example). If the thing is <a href="../-translatable/index.html">Translatable</a>, it will use the built in description, otherwise it will translate the fallback key</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1011163046%2FFunctions%2F769193423" anchor-label="empty" id="1011163046%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="empty.html"><span><span>empty</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1011163046%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="empty.html"><span class="token function">empty</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">Wrapper method around Text.empty. A backwards compatibility holdover from porting older versions</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1920191614%2FFunctions%2F769193423" anchor-label="lit" id="1920191614%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="lit.html"><span><span>lit</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1920191614%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">.</span><a href="lit.html"><span class="token function">lit</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">Extension function converts a string into a literal Text representing it</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="792587904%2FFunctions%2F769193423" anchor-label="literal" id="792587904%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="literal.html"><span><span>literal</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="792587904%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="literal.html"><span class="token function">literal</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">text<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">Wrapper method around Text.literal. A backwards compatibility holdover from porting older versions</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-47867995%2FFunctions%2F769193423" anchor-label="stringified" id="-47867995%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="stringified.html"><span><span>stringified</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-47867995%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="stringified.html"><span class="token function">stringified</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">vararg </span>args<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">Wrapper method around Text.stringified. A backwards compatibility holdover from porting older versions</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1927494890%2FFunctions%2F769193423" anchor-label="text" id="1927494890%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="text.html"><span><span>text</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1927494890%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="com.mojang.brigadier/Message///PointingToDeclaration/">Message</span><span class="token punctuation">.</span><a href="text.html"><span class="token function">text</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span></div><div class="brief "><p class="paragraph">Extension function for converting Messages into Texts in a kotlin style</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Date.html">Date</a><span class="token punctuation">.</span><a href="text.html"><span class="token function">text</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span></div><div class="brief "><p class="paragraph">Extension function for converting Dates into Texts in a kotlin style</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/UUID.html">UUID</a><span class="token punctuation">.</span><a href="text.html"><span class="token function">text</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span></div><div class="brief "><p class="paragraph">Extension function for converting UUIDs into Texts in a kotlin style</p></div><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token punctuation">.</span><a href="text.html"><span class="token function">text</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span></div><div class="brief "><p class="paragraph">Extension function for converting Identifiers into Texts in a kotlin style</p></div><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="net.minecraft.util.math/ChunkPos///PointingToDeclaration/">ChunkPos</span><span class="token punctuation">.</span><a href="text.html"><span class="token function">text</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span></div><div class="brief "><p class="paragraph">Extension function for converting ChunkPos into Texts in a kotlin style</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1822217310%2FFunctions%2F769193423" anchor-label="translatable" id="-1822217310%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="translatable.html"><span><span>translatable</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1822217310%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="translatable.html"><span class="token function">translatable</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">vararg </span>args<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">Wrapper method around Text.translatable. A backwards compatibility holdover from porting older versions</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-811589496%2FFunctions%2F769193423" anchor-label="translatableWithFallback" id="-811589496%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="translatable-with-fallback.html"><span>translatable</span><wbr><span>With</span><wbr><span><span>Fallback</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-811589496%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="translatable-with-fallback.html"><span class="token function">translatableWithFallback</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">fallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">vararg </span>args<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">Wrapper method around Text.translatableWithFallback. A backwards compatibility holdover from porting older versions</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-325777690%2FFunctions%2F769193423" anchor-label="translate" id="-325777690%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="translate.html"><span><span>translate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-325777690%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">.</span><a href="translate.html"><span class="token function">translate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">vararg </span>args<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">Extension function uses the receiver String as a translation key to convert it into Text</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1348193238%2FFunctions%2F769193423" anchor-label="translation" id="-1348193238%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="translation.html"><span><span>translation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1348193238%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token punctuation">.</span><a href="translation.html"><span class="token function">translation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">Translates anything. If the thing is <a href="../-translatable/index.html">Translatable</a>, it will use the built-in translation, otherwise it will translate the fallback key</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-950533280%2FFunctions%2F769193423" anchor-label="transLit" id="-950533280%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="trans-lit.html"><span>trans</span><wbr><span><span>Lit</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-950533280%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token punctuation">.</span><a href="trans-lit.html"><span class="token function">transLit</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">literalFallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">Translates anything. If the thing is <a href="../-translatable/index.html">Translatable</a>, it will use the built in translation, otherwise it will use the fallback literally</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
