@@ -16,7 +16,9 @@ import kotlinx.serialization.SerialInfo
 /**
  * A config marked with this annotation will attempt to ignore field visibility when de/serializing
  *
- * Without this annotation, only PUBLIC fields/properties are considered
+ * This can also be used to widen the access for Sections or other inner classes like classes wrapped by a [ValidatedAny][me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny]
+ *
+ * Without this annotation, only PUBLIC fields/properties are considered, and there will be a crash if you try to pass a less-than-public inner class as a Section or Any
  * @author fzzyhmstrs
  * @since 0.3.0
  */
