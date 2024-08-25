@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofList
@@ -485,7 +486,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.toList() }
+            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.tag.id }.toList() }
             val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
             return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
         }
@@ -501,7 +502,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.filter(predicate).toList() }
+            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
             val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
             return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
         }
@@ -516,7 +517,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.filter(predicate).toList() }
+            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
             val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
             return ValidatedIdentifier(default.id, ids)
         }
@@ -530,7 +531,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.toList() }
+            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.tag.id }.toList() }
             val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
             return ValidatedIdentifier(default.id, ids)
         }

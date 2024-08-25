@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.pos.*
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -108,7 +109,7 @@ class PopupWidget
     }
 
     fun applyBlur(delta: Float) {
-        MinecraftClient.getInstance().gameRenderer.renderBlur(delta)
+        MinecraftClient.getInstance().gameRenderer.renderBlur()
         MinecraftClient.getInstance().framebuffer.beginWrite(false)
     }
 

@@ -136,9 +136,11 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
     /**
      * Supplies the [Ingredient] from this ValidatedIngredients Provider
      * @return [Ingredient] generated from the current [IngredientProvider]
+     * @throws UnsupportedOperationException - if the ingredient can't be correctly created, [Ingredient] now throws an exception, and no longer allows for empty ingredients.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
+    @Deprecated("24w34a+: Ingredient creation can now throw UnsupportedOperationException, be sure to handle.")
     fun toIngredient(): Ingredient {
         return storedValue.provide()
     }
@@ -333,7 +335,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         override fun provide(): Ingredient {
             val item = Registries.ITEM.get(id)
             return if (item == Items.AIR) {
-                Ingredient.empty()
+                throw UnsupportedOperationException("Ingredients can't be empty; item ID [$id] not found in the Items Registry.")
             } else {
                 Ingredient.ofItems(item)
             }
@@ -368,15 +370,15 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         }
         override fun provide(): Ingredient {
             if (ids.isEmpty() && tags.isEmpty())
-                return Ingredient.empty()
-            val items = ids.map { Registries.ITEM.get(it) }.filter { it != Items.AIR }.map { ItemStack(it) }
-            val tagItems: MutableList<ItemStack> = mutableListOf()
+                throw UnsupportedOperationException("Ingredients can't be empty; no item ids nor tags provided")
+            val items = ids.map { Registries.ITEM.get(it) }.filter { it != Items.AIR }
+            val tagItems: MutableList<Item> = mutableListOf()
             for (tag in tags) {
                 Registries.ITEM.iterateEntries(TagKey.of(RegistryKeys.ITEM, tag)).forEach {
-                    tagItems.add(ItemStack(it))
+                    tagItems.add(it.value())
                 }
             }
-            return Ingredient.ofStacks((items + tagItems).stream())
+            return Ingredient.ofItems((items + tagItems).stream())
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
             val array = toml.asTomlArray()
@@ -436,7 +438,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             return ProviderType.TAG
         }
         override fun provide(): Ingredient {
-            return Ingredient.fromTag(TagKey.of(RegistryKeys.ITEM, tag))
+            return Ingredient.fromTag(Registries.ITEM.getEntryList(TagKey.of(RegistryKeys.ITEM, tag)).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
             return TagProvider(Identifier.of(toml.asTomlLiteral().toString().replace("#", "")))

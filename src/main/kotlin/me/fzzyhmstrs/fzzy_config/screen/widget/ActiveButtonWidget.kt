@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -19,6 +20,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -60,12 +62,10 @@ open class ActiveButtonWidget(
         this.active = activeSupplier.get()
         if (background != null) {
             if (this.isSelected && active) {
-                context.setShaderColor(1.0f, 1.0f, 1.0f, alpha)
                 RenderSystem.enableBlend()
                 RenderSystem.disableDepthTest()
-                context.drawGuiTexture(background, x, y, getWidth(), getHeight())
+                context.drawGuiTexture(background, x, y, getWidth(), getHeight(), ColorHelper.getWhite(alpha))
             }
-            context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             val i = if (active) 0xFFFFFF else 0xA0A0A0
             drawMessage(context, MinecraftClient.getInstance().textRenderer, i or (MathHelper.ceil(alpha * 255.0f) shl 24))
         } else {

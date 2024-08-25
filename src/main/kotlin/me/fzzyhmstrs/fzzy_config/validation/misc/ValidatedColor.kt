@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -40,6 +41,7 @@ import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -676,28 +678,23 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         }
 
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()
             context.drawGuiTexture(if (isSelected) BORDER_HIGHLIGHTED else BORDER, x, y, getWidth(), getHeight())
             if (mutableColor.s == 1f) {
-                context.setShaderColor(1.0f, 1.0f, 1.0f, mutableColor.a / 255f)
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
-                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60)
+                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60, ColorHelper.getWhite((mutableColor.a / 255f)))
             } else {
-                context.setShaderColor(1.0f, 1.0f, 1.0f, mutableColor.a / 255f)
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
-                context.drawGuiTexture(CENTER_DESAT, x+4, y+4, 52, 60)
-                context.setShaderColor(1.0f, 1.0f, 1.0f, (mutableColor.a / 255f)*(mutableColor.s / 1f))
+                context.drawGuiTexture(CENTER_DESAT, x+4, y+4, 52, 60, ColorHelper.getWhite((mutableColor.a / 255f)))
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
-                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60)
+                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60, ColorHelper.getWhite((mutableColor.a / 255f)*(mutableColor.s / 1f)))
             }
             val cX = x + 4 + MathHelper.clampedMap(mutableColor.l, 0f, 1f, 0f, 52f).toInt() - 2
             val cY = y + 4 + MathHelper.clampedMap(mutableColor.h, 0f, 1f, 0f, 60f).toInt() - 2
-            context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()
             context.drawGuiTexture(CROSSHAIR, cX, cY, 5, 5)
