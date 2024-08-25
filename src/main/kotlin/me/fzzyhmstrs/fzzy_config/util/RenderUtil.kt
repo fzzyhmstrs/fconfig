@@ -36,8 +36,8 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun DrawContext.drawGuiTexture(id: Identifier, x: Int, y: Int, width: Int, height: Int){
-        this.drawTexture(Identifier(id.namespace,"textures/gui/sprites/${id.path}.png"),x,y,width, height,0f,0f,width,height,width,height)
+    fun DrawContext.drawGuiTexture(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        this.drawTexture(Identifier(id.namespace, "textures/gui/sprites/${id.path}.png"), x, y, width, height, 0f, 0f, width, height, width, height)
     }
 
     /**
@@ -69,32 +69,32 @@ object RenderUtil {
         val centerHeight = textureHeight - topSliceHeight - bottomSliceHeight
         val u = 0f
         val v = 0f
-        val texture = Identifier(id.namespace,"textures/gui/sprites/${id.path}.png")
+        val texture = Identifier(id.namespace, "textures/gui/sprites/${id.path}.png")
         if (width == textureWidth && height == textureHeight) {
-            this.drawTexture(texture, x, y, u, v, width, height,textureWidth,textureHeight)
+            this.drawTexture(texture, x, y, u, v, width, height, textureWidth, textureHeight)
             return
         }
         if (height == textureHeight) {
-            this.drawTexture(texture, x, y, u, v, leftSliceWidth, height,textureWidth,textureHeight)
+            this.drawTexture(texture, x, y, u, v, leftSliceWidth, height, textureWidth, textureHeight)
             drawThreeSliceHorizontal(this, texture, x + leftSliceWidth, y, width - rightSliceWidth - leftSliceWidth, height, u + leftSliceWidth, v, textureWidth, textureHeight, centerWidth)
             this.drawTexture(texture, x + width - rightSliceWidth, y, u + textureWidth - rightSliceWidth, v, rightSliceWidth, height, textureWidth, textureHeight)
             return
         }
         if (width == textureWidth) {
-            this.drawTexture(texture, x, y, u, v, width, topSliceHeight,textureWidth,textureHeight)
+            this.drawTexture(texture, x, y, u, v, width, topSliceHeight, textureWidth, textureHeight)
             drawRepeatingTexture(this, texture, x, y + topSliceHeight, width, height - bottomSliceHeight - topSliceHeight, u, v + topSliceHeight, textureWidth, textureHeight, centerWidth, centerHeight)
-            this.drawTexture(texture, x, y + height - bottomSliceHeight, u, v + textureHeight - bottomSliceHeight, width, bottomSliceHeight,textureWidth,textureHeight)
+            this.drawTexture(texture, x, y + height - bottomSliceHeight, u, v + textureHeight - bottomSliceHeight, width, bottomSliceHeight, textureWidth, textureHeight)
             return
         }
-        this.drawTexture(texture, x, y, u, v, leftSliceWidth, topSliceHeight,textureWidth,textureHeight)
+        this.drawTexture(texture, x, y, u, v, leftSliceWidth, topSliceHeight, textureWidth, textureHeight)
         drawRepeatingTexture(this, texture, x + leftSliceWidth, y, width - rightSliceWidth - leftSliceWidth, topSliceHeight, u + leftSliceWidth, v, textureWidth, textureHeight, centerWidth, centerHeight)
-        this.drawTexture(texture, x + width - rightSliceWidth, y, u + textureWidth - rightSliceWidth, v, rightSliceWidth, topSliceHeight,textureWidth,textureHeight)
-        this.drawTexture(texture, x, y + height - bottomSliceHeight, u, v + textureHeight - bottomSliceHeight, leftSliceWidth, bottomSliceHeight,textureWidth,textureHeight)
+        this.drawTexture(texture, x + width - rightSliceWidth, y, u + textureWidth - rightSliceWidth, v, rightSliceWidth, topSliceHeight, textureWidth, textureHeight)
+        this.drawTexture(texture, x, y + height - bottomSliceHeight, u, v + textureHeight - bottomSliceHeight, leftSliceWidth, bottomSliceHeight, textureWidth, textureHeight)
         drawRepeatingTexture(this, texture, x + leftSliceWidth, y + height - bottomSliceHeight, width - rightSliceWidth - leftSliceWidth, bottomSliceHeight, u + leftSliceWidth, v + textureHeight - bottomSliceHeight, textureWidth, textureHeight, centerWidth, centerHeight)
-        this.drawTexture(texture, x + width - rightSliceWidth, y + height - bottomSliceHeight, u + textureWidth - rightSliceWidth, v + textureHeight - bottomSliceHeight, rightSliceWidth, bottomSliceHeight,textureWidth,textureHeight)
-        drawRepeatingTexture(this, texture, x, y + topSliceHeight, leftSliceWidth, height - bottomSliceHeight - topSliceHeight, u, v + topSliceHeight, textureWidth,textureHeight, centerWidth, centerHeight)
-        drawRepeatingTexture(this, texture, x + leftSliceWidth, y + topSliceHeight, width - rightSliceWidth - leftSliceWidth, height - bottomSliceHeight - topSliceHeight, u + leftSliceWidth, v + topSliceHeight, textureWidth,textureHeight, centerWidth, centerHeight)
-        drawRepeatingTexture(this, texture, x + width - rightSliceWidth, y + topSliceHeight, leftSliceWidth, height - bottomSliceHeight - topSliceHeight, u + textureWidth - rightSliceWidth, v + topSliceHeight, textureWidth,textureHeight, centerWidth, centerHeight)
+        this.drawTexture(texture, x + width - rightSliceWidth, y + height - bottomSliceHeight, u + textureWidth - rightSliceWidth, v + textureHeight - bottomSliceHeight, rightSliceWidth, bottomSliceHeight, textureWidth, textureHeight)
+        drawRepeatingTexture(this, texture, x, y + topSliceHeight, leftSliceWidth, height - bottomSliceHeight - topSliceHeight, u, v + topSliceHeight, textureWidth, textureHeight, centerWidth, centerHeight)
+        drawRepeatingTexture(this, texture, x + leftSliceWidth, y + topSliceHeight, width - rightSliceWidth - leftSliceWidth, height - bottomSliceHeight - topSliceHeight, u + leftSliceWidth, v + topSliceHeight, textureWidth, textureHeight, centerWidth, centerHeight)
+        drawRepeatingTexture(this, texture, x + width - rightSliceWidth, y + topSliceHeight, leftSliceWidth, height - bottomSliceHeight - topSliceHeight, u + textureWidth - rightSliceWidth, v + topSliceHeight, textureWidth, textureHeight, centerWidth, centerHeight)
     }
 
 
@@ -115,11 +115,11 @@ object RenderUtil {
         var i = x
         var widthToGo = width
         while (widthToGo > 0) {
-            val drawWidth = min(widthToGo,centerWidth)
+            val drawWidth = min(widthToGo, centerWidth)
             var l = y
             var heightToGo = height
             while (heightToGo > 0) {
-                val drawHeight = min(heightToGo,centerHeight)
+                val drawHeight = min(heightToGo, centerHeight)
                 context.drawTexture(texture, i, l, u, v, drawWidth, drawHeight, textureWidth, textureHeight)
                 l += centerHeight
                 heightToGo -= centerHeight
@@ -145,7 +145,7 @@ object RenderUtil {
         var i = x
         var widthToGo = width
         while (widthToGo > 0) {
-            val drawWidth = min(widthToGo,centerWidth)
+            val drawWidth = min(widthToGo, centerWidth)
             context.drawTexture(texture, i, y, u, v, drawWidth, height, textureWidth, textureHeight)
             i += centerWidth
             widthToGo -= centerWidth

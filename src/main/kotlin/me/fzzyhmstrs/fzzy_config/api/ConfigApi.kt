@@ -54,7 +54,7 @@ object ConfigApi {
     @JvmStatic
     @JvmOverloads
     @Deprecated("Consider registerAndLoadConfig() instead, to perform automatic loading, registering, and validating in one step.")
-    fun <T: Config> registerConfig(config: T,configClass: () -> T, registerType: RegisterType = RegisterType.BOTH): T{
+    fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApiImpl.registerConfig(config, configClass, registerType)
     }
 
@@ -78,7 +78,7 @@ object ConfigApi {
     @JvmStatic
     @JvmOverloads
     @Deprecated("Consider registerAndLoadConfig() instead, to perform automatic loading, registering, and validating in one step.")
-    fun <T: Config> registerConfig(config: T,configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T{
+    fun <T: Config> registerConfig(config: T, configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApiImpl.registerConfig(config, { configClass.get() }, registerType)
     }
 
@@ -98,7 +98,7 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Config> registerAndLoadConfig(configClass: () -> T, registerType: RegisterType = RegisterType.BOTH): T{
+    fun <T: Config> registerAndLoadConfig(configClass: () -> T, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApiImpl.registerAndLoadConfig(configClass, registerType)
     }
 
@@ -118,7 +118,7 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Config> registerAndLoadConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T{
+    fun <T: Config> registerAndLoadConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApiImpl.registerAndLoadConfig({ configClass.get() }, registerType)
     }
 
@@ -138,7 +138,7 @@ object ConfigApi {
     @JvmStatic
     @JvmOverloads
     @Deprecated("Consider registerAndLoadConfig() instead, or readOrCreateAndValidate(configClass) for consistent application of names")
-    fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T{
+    fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T {
         return ConfigApiImpl.readOrCreateAndValidate(name, folder, subfolder, configClass)
     }
 
@@ -158,7 +158,7 @@ object ConfigApi {
     @JvmStatic
     @JvmOverloads
     @Deprecated("Consider registerAndLoadConfig() instead, or readOrCreateAndValidate(configClass) for consistent application of names")
-    fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: Supplier<T>): T{
+    fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: Supplier<T>): T {
         return ConfigApiImpl.readOrCreateAndValidate(name, folder, subfolder) { configClass.get() }
     }
 
@@ -171,7 +171,7 @@ object ConfigApi {
      * @since 0.2.0
      */
     @JvmStatic
-    fun <T: Config> readOrCreateAndValidate(configClass: () -> T): T{
+    fun <T: Config> readOrCreateAndValidate(configClass: () -> T): T {
         return ConfigApiImpl.readOrCreateAndValidate(configClass)
     }
 
@@ -184,7 +184,7 @@ object ConfigApi {
      * @since 0.3.2
      */
     @JvmStatic
-    fun <T: Config> readOrCreateAndValidate(configClass: Supplier<T>): T{
+    fun <T: Config> readOrCreateAndValidate(configClass: Supplier<T>): T {
         return ConfigApiImpl.readOrCreateAndValidate { configClass.get() }
     }
 
@@ -261,7 +261,7 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): TomlElement{
+    fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): TomlElement {
         return ConfigApiImpl.serializeToToml(config, errorBuilder, flags)
     }
 
@@ -279,7 +279,7 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): String{
+    fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): String {
         return ConfigApiImpl.serializeConfig(config, errorBuilder, flags)
     }
 
@@ -340,7 +340,7 @@ object ConfigApi {
      */
     @JvmStatic
     @Suppress("MemberVisibilityCanBePrivate")
-    fun makeDir(folder: String, subfolder: String): Pair<File,Boolean>{
+    fun makeDir(folder: String, subfolder: String): Pair<File, Boolean> {
         return ConfigApiImpl.makeDir(folder, subfolder)
     }
 

@@ -35,7 +35,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
     ElementListWidget<BaseConfigEntry>(minecraftClient, width, height, listHeaderHeight, (height - (height - listHeaderHeight - contentHeight)), 24), LastSelectable, Widget, SuggestionWindowListener
 {
 
-    constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient,parent.width,parent.height,parent.layout.height - parent.layout.headerHeight - parent.layout.footerHeight, parent.layout.headerHeight, drawBackground)
+    constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient, parent.width, parent.height, parent.layout.height - parent.layout.headerHeight - parent.layout.footerHeight, parent.layout.headerHeight, drawBackground)
 
     private var visibleElements = 5
 
@@ -45,19 +45,19 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         this.suggestionWindowElement = element
     }
 
-    init{
+    init {
         this.setRenderHorizontalShadows(drawBackground)
         this.setRenderBackground(drawBackground)
     }
 
-    private val wholeList: List<BaseConfigEntry> by lazy{
+    private val wholeList: List<BaseConfigEntry> by lazy {
         this.children().toList()
     }
 
     private val  search: SuffixArray<Int> by lazy {
         val array = SuffixArray<Int>()
-        for ((i, entry) in wholeList.withIndex()){
-            array.add(i,entry.name.string.lowercase(Locale.ROOT))
+        for ((i, entry) in wholeList.withIndex()) {
+            array.add(i, entry.name.string.lowercase(Locale.ROOT))
         }
         array.build()
         array
@@ -120,7 +120,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         return this.height
     }
     override fun getNavigationFocus(): ScreenRect {
-        return ScreenRect(this.left,this.top, this.width, this.contentHeight)
+        return ScreenRect(this.left, this.top, this.width, this.contentHeight)
     }
     override fun forEachChild(consumer: Consumer<ClickableWidget>) {
     }
@@ -136,7 +136,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         for (i in 0 until this.entryCount) {
             val entryY = getRowTop(i)
             val entryYBottom = getRowBottom(i)
-            if (entryY >= this.y && entryYBottom <= this.bottom){
+            if (entryY >= this.y && entryYBottom <= this.bottom) {
                 count++
             }
             this.getEntry(i).positionWidget(entryY)
@@ -153,7 +153,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
     }
 
     fun position(width: Int, layout: ThreePartsLayoutWidget) {
-        this.position(width, layout.height, 0,(layout.height - layout.headerHeight - layout.footerHeight))
+        this.position(width, layout.height, 0, (layout.height - layout.headerHeight - layout.footerHeight))
     }
 
     fun getScrollbarX(): Int {
@@ -164,19 +164,19 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         return this.left + this.width / 2 + this.rowWidth / 2 + 10
     }
 
-    fun getClient(): MinecraftClient{
+    fun getClient(): MinecraftClient {
         return this.client
     }
 
-    fun page(up: Boolean){
-        if (up){
+    fun page(up: Boolean) {
+        if (up) {
             scrollAmount -= (visibleElements * itemHeight)
         } else {
             scrollAmount += (visibleElements * itemHeight)
         }
     }
 
-    fun add(entry: BaseConfigEntry){
+    fun add(entry: BaseConfigEntry) {
         this.addEntry(entry)
     }
 
@@ -190,7 +190,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
 
     override fun appendNarrations(builder: NarrationMessageBuilder) {
         super.appendNarrations(builder)
-        builder.put(NarrationPart.USAGE,"")
+        builder.put(NarrationPart.USAGE, "")
     }
 
     override fun appendNarrations(builder: NarrationMessageBuilder, entry: BaseConfigEntry) {

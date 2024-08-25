@@ -89,22 +89,22 @@ class SuggestionBackedTextFieldWidget(
             this.cachedWrappedValue = testValue
             this.text = this.storedValue
         }
-        if(isChanged()){
+        if(isChanged()) {
             if (lastChangedTime != 0L && !ongoingChanges())
                 applier.accept(storedValue)
         }
         super.renderButton(context, mouseX, mouseY, delta)
-        if(isValid){
+        if(isValid) {
             if (ongoingChanges())
-                context.drawGuiTexture(TextureIds.ENTRY_ONGOING,x + width - 20, y, 20, 20)
+                context.drawGuiTexture(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
             else
-                context.drawGuiTexture(TextureIds.ENTRY_OK,x + width - 20, y, 20, 20)
+                context.drawGuiTexture(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
         } else {
-            context.drawGuiTexture(TextureIds.ENTRY_ERROR,x + width - 20, y, 20, 20)
+            context.drawGuiTexture(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
         }
-        if (pendingSuggestions?.isDone == true){
+        if (pendingSuggestions?.isDone == true) {
             val suggestions = pendingSuggestions?.get()
-            if (suggestions != null && !suggestions.isEmpty && shownText != lastSuggestionText){
+            if (suggestions != null && !suggestions.isEmpty && shownText != lastSuggestionText) {
                 shownText = lastSuggestionText
                 addSuggestionWindow(suggestions)
             }
@@ -112,7 +112,7 @@ class SuggestionBackedTextFieldWidget(
         window?.render(context, mouseX, mouseY, delta)
     }
 
-    private fun addSuggestionWindow(suggestions: Suggestions){
+    private fun addSuggestionWindow(suggestions: Suggestions) {
         val applier: Consumer<String> = Consumer { s ->
             try {
                 applier.accept(s)
@@ -122,7 +122,7 @@ class SuggestionBackedTextFieldWidget(
             }
         }
         val closer: Consumer<SuggestionWindow> = Consumer { closeWindow = true }
-        this.window = SuggestionWindow.createSuggestionWindow(this.x,this.y,suggestions,this.text,this.cursor,applier,closer)
+        this.window = SuggestionWindow.createSuggestionWindow(this.x, this.y, suggestions, this.text, this.cursor, applier, closer)
         suggestionWindowListener?.setSuggestionWindowElement(this)
     }
 
@@ -138,11 +138,11 @@ class SuggestionBackedTextFieldWidget(
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
-        return window?.mouseScrolled(mouseX.toInt(),mouseY.toInt(),verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, verticalAmount)
+        return window?.mouseScrolled(mouseX.toInt(), mouseY.toInt(), verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, verticalAmount)
     }
 
     override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
-        return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(),mouseY.toInt()) == true
+        return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(), mouseY.toInt()) == true
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
@@ -161,13 +161,13 @@ class SuggestionBackedTextFieldWidget(
         return if(bl) true else super.keyPressed(keyCode, scanCode, modifiers)
     }
 
-    fun pushChanges(){
-        if(isChanged() && !needsUpdating){
+    fun pushChanges() {
+        if(isChanged() && !needsUpdating) {
             applier.accept(storedValue)
         }
     }
 
-    fun interface SuggestionProvider{
+    fun interface SuggestionProvider {
         fun getSuggestions(s: String, cursor: Int, choiceValidator: ChoiceValidator<String>): CompletableFuture<Suggestions>
     }
 }

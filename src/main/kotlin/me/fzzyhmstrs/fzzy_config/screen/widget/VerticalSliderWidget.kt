@@ -46,11 +46,11 @@ import java.util.function.Supplier
  * @since 0.2.0
  */
 @Environment(EnvType.CLIENT)
-class VerticalSliderWidget(private val wrappedValue: Supplier<Double>,x: Int, y: Int, width: Int, height: Int, message: Text, private val valueApplier: Consumer<Double>)
+class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y: Int, width: Int, height: Int, message: Text, private val valueApplier: Consumer<Double>)
     :
     ClickableWidget(x, y, width, height, message)
 {
-    companion object{
+    companion object {
         private val TEXTURE = "widget/vertical_slider".fcId()
         private val TEXTURE_HIGHLIGHTED = "widget/vertical_slider_highlighted".fcId()
         private val HANDLE = "widget/vertical_slider_handle".fcId()
@@ -61,7 +61,7 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>,x: Int, y:
     private var sliderFocused = false
     private var value: Double = wrappedValue.get()
 
-    private fun getTexture(): Identifier{
+    private fun getTexture(): Identifier {
         return if(isFocused && !sliderFocused) {
             TEXTURE_HIGHLIGHTED
         } else
@@ -76,20 +76,20 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>,x: Int, y:
     }
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        if (wrappedValue.get() != value){
+        if (wrappedValue.get() != value) {
             value = wrappedValue.get()
         }
         context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
         RenderSystem.enableBlend()
         RenderSystem.defaultBlendFunc()
         RenderSystem.enableDepthTest()
-        context.drawNineSlice(getTexture(), x, y, getWidth(), getHeight(),1,1,200,20)
-        context.drawNineSlice(getHandlerTexture(),x, y + (value * (height - 8).toDouble()).toInt(),getWidth(),8,2,2,20,8)
+        context.drawNineSlice(getTexture(), x, y, getWidth(), getHeight(), 1, 1, 200, 20)
+        context.drawNineSlice(getHandlerTexture(), x, y + (value * (height - 8).toDouble()).toInt(), getWidth(), 8, 2, 2, 20, 8)
     }
 
     override fun setFocused(focused: Boolean) {
         super.setFocused(focused)
-        if (!focused){
+        if (!focused) {
             this.sliderFocused = false
             return
         }

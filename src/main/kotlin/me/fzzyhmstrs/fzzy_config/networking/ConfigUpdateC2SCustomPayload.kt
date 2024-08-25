@@ -15,9 +15,9 @@ import net.minecraft.util.Identifier
 
 internal class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, val changeHistory: List<String>, val playerPerm: Int) {
 
-    constructor(buf: PacketByteBuf): this(readMap(buf),readList(buf), buf.readByte().toInt())
+    constructor(buf: PacketByteBuf): this(readMap(buf), readList(buf), buf.readByte().toInt())
 
-    fun write(buf: PacketByteBuf){
+    fun write(buf: PacketByteBuf) {
         writeMap(buf)
         writeList(buf)
         buf.writeByte(playerPerm)
@@ -37,21 +37,21 @@ internal class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, va
         }
     }
 
-    companion object{
+    companion object {
         val id = Identifier("fzzy_config:config_update_c2s")
 
-        private fun readList(buf: PacketByteBuf): List<String>{
+        private fun readList(buf: PacketByteBuf): List<String> {
             val size = buf.readVarInt()
             val list: MutableList<String> = mutableListOf()
-            for (i in 1..size){
+            for (i in 1..size) {
                 list.add(buf.readString())
             }
             return list
         }
-        private fun readMap(buf: PacketByteBuf): Map<String,String>{
+        private fun readMap(buf: PacketByteBuf): Map<String, String> {
             val size = buf.readVarInt()
             val map: MutableMap<String, String> = mutableMapOf()
-            for (i in 1..size){
+            for (i in 1..size) {
                 map[buf.readString()] = buf.readString()
             }
             return map

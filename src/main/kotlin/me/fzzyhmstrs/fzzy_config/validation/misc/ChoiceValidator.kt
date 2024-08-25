@@ -30,36 +30,36 @@ open class ChoiceValidator<T>(private val  predicate: ValuesPredicate<T>): Entry
         return ValidationResult.predicated(input, predicate.test(input), "Value not allowed")
     }
 
-    fun<N> convert(disallowedConverter: Function<T,N>?,allowableConverter: Function<T,N>?): ChoiceValidator<N>{
-        return ChoiceValidator(predicate.convert(disallowedConverter,allowableConverter))
+    fun<N> convert(disallowedConverter: Function<T, N>?, allowableConverter: Function<T, N>?): ChoiceValidator<N> {
+        return ChoiceValidator(predicate.convert(disallowedConverter, allowableConverter))
     }
 
-    class ValuesPredicate<T>(private val disallowedValues: List<T>?, private val allowableValues: List<T>?): Predicate<T>{
+    class ValuesPredicate<T>(private val disallowedValues: List<T>?, private val allowableValues: List<T>?): Predicate<T> {
         override fun test(t: T): Boolean {
-            return if(disallowedValues != null){
-                if (allowableValues != null){
+            return if(disallowedValues != null) {
+                if (allowableValues != null) {
                     !disallowedValues.contains(t) && allowableValues.contains(t)
                 } else {
                     !disallowedValues.contains(t)
                 }
             } else allowableValues?.contains(t) ?: true
         }
-        fun<N> convert(disallowedConverter: Function<T,N>?,allowableConverter: Function<T,N>?): ValuesPredicate<N>{
-            return if(disallowedValues == null){
-                if(allowableValues == null){
-                    ValuesPredicate(null,null)
+        fun<N> convert(disallowedConverter: Function<T, N>?, allowableConverter: Function<T, N>?): ValuesPredicate<N> {
+            return if(disallowedValues == null) {
+                if(allowableValues == null) {
+                    ValuesPredicate(null, null)
                 } else {
                     if (allowableConverter == null) throw IllegalStateException("Allowable converter null")
-                    ValuesPredicate(null,allowableValues.map { allowableConverter.apply(it) })
+                    ValuesPredicate(null, allowableValues.map { allowableConverter.apply(it) })
                 }
             } else {
-                if(allowableValues == null){
+                if(allowableValues == null) {
                     if (disallowedConverter == null) throw IllegalStateException("Disallowed converter null")
-                    ValuesPredicate(disallowedValues.map { disallowedConverter.apply(it) },null)
+                    ValuesPredicate(disallowedValues.map { disallowedConverter.apply(it) }, null)
                 } else {
                     if (allowableConverter == null) throw IllegalStateException("Allowable converter null")
                     if (disallowedConverter == null) throw IllegalStateException("Disallowed converter null")
-                    ValuesPredicate(disallowedValues.map { disallowedConverter.apply(it) },allowableValues.map { allowableConverter.apply(it) })
+                    ValuesPredicate(disallowedValues.map { disallowedConverter.apply(it) }, allowableValues.map { allowableConverter.apply(it) })
                 }
             }
         }
@@ -67,7 +67,7 @@ open class ChoiceValidator<T>(private val  predicate: ValuesPredicate<T>): Entry
 
     companion object {
         fun <T> any(): ChoiceValidator<T> {
-            return ChoiceValidator(ValuesPredicate(null,null))
+            return ChoiceValidator(ValuesPredicate(null, null))
         }
     }
 }

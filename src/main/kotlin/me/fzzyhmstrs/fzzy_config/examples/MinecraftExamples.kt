@@ -59,7 +59,7 @@ object MinecraftExamples {
         val validatedIngredientItem = ValidatedIngredient(Identifier("oak_log"))
 
         // A validated ingredient accepting a set of items
-        val validatedIngredientList = ValidatedIngredient(setOf(Identifier("oak_log"),Identifier("dark_oak_log")))
+        val validatedIngredientList = ValidatedIngredient(setOf(Identifier("oak_log"), Identifier("dark_oak_log")))
 
         // A validated ingredient utilizing a tag
         val validatedIngredientTag = ValidatedIngredient(ItemTags.LOGS_THAT_BURN)
@@ -92,7 +92,7 @@ object MinecraftExamples {
             .uuid("f68e98a2-0599-11ef-9262-0242ac120002")
             .name("My Example ValidatedEntityAttribute")
             //set amount, and optionally provide a range restriction
-            .amount(1.0,0.0,8.0)
+            .amount(1.0, 0.0, 8.0)
             //set the operation for the modifier, and optionally lock the modifier to the operation chosen
             .operation(EntityAttributeModifier.Operation.ADD_VALUE, true)
             //build! gets you a ValidatedEntity Attribute

@@ -44,14 +44,14 @@ open class ActiveButtonWidget(
     private val pressAction: Consumer<ActiveButtonWidget>,
     private val background: Background? = null)
     :
-    PressableWidget(0,0,width,height,titleSupplier.get()) {
+    PressableWidget(0, 0, width, height, titleSupplier.get()) {
 
     constructor(title: Text,
                 width: Int,
                 height: Int,
                 activeProvider: Supplier<Boolean>,
                 pressAction: Consumer<ActiveButtonWidget>,
-                background: Background? = null): this({title},width, height, activeProvider, pressAction, background)
+                background: Background? = null): this({title}, width, height, activeProvider, pressAction, background)
 
     override fun getMessage(): Text {
         return titleSupplier.get()
@@ -60,11 +60,11 @@ open class ActiveButtonWidget(
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = activeSupplier.get()
         if (background != null) {
-            if (this.isSelected && active){
+            if (this.isSelected && active) {
                 context.setShaderColor(1.0f, 1.0f, 1.0f, alpha)
                 RenderSystem.enableBlend()
                 RenderSystem.disableDepthTest()
-                context.drawNineSlice(background.bg, x, y, getWidth(), getHeight(),background.border, background.border, background.height, background.width)
+                context.drawNineSlice(background.bg, x, y, getWidth(), getHeight(), background.border, background.border, background.height, background.width)
             }
             context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             val i = if (active) 0xFFFFFF else 0xA0A0A0

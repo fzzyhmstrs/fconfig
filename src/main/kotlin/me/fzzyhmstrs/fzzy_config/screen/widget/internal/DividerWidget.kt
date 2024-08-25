@@ -60,10 +60,10 @@ internal class DividerWidget(width: Int): Widget, Drawable, Scalable {
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        context.drawNineSlice(DIVIDER, xx,yy - 3,ww,hh + 6,3,3,64,7)
+        context.drawNineSlice(DIVIDER, xx, yy - 3, ww, hh + 6, 3, 3, 64, 7)
     }
 
-    companion object{
+    companion object {
         private val DIVIDER = "widget/popup/divider".fcId()
     }
 

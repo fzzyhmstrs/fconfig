@@ -28,7 +28,7 @@ internal open class SectionConfigEntry(
     :
     BaseConfigEntry(name, description, isRestartTriggering, parent, widget)
 {
-    override fun restartText(): MutableText{
+    override fun restartText(): MutableText {
         return "fc.config.restart.warning.section".translate()
     }
 

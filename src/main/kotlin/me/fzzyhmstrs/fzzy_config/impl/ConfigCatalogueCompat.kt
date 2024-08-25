@@ -20,6 +20,6 @@ import java.util.function.BiFunction
 object ConfigCatalogueCompat {
     @JvmStatic
     fun createConfigFactoryProvider(): Map<String, BiFunction<Screen, ModContainer, Screen?>> {
-        return ClientConfigRegistry.getScreenScopes().associateWith { scope -> BiFunction { _: Screen,_: ModContainer -> ClientConfigRegistry.provideScreen(scope) } }
+        return ClientConfigRegistry.getScreenScopes().associateWith { scope -> BiFunction { _: Screen, _: ModContainer -> ClientConfigRegistry.provideScreen(scope) } }
     }
 }

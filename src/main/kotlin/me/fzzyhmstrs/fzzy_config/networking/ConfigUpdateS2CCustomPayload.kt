@@ -17,7 +17,7 @@ internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>) {
 
     constructor(buf: PacketByteBuf): this(readMap(buf))
 
-    fun write(buf: PacketByteBuf){
+    fun write(buf: PacketByteBuf) {
         writeMap(buf)
     }
     private fun writeMap(buf: PacketByteBuf) {
@@ -28,14 +28,14 @@ internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>) {
         }
     }
 
-    companion object{
+    companion object {
 
         val id = Identifier("fzzy_config:config_update_s2c")
 
-        private fun readMap(buf: PacketByteBuf): Map<String,String>{
+        private fun readMap(buf: PacketByteBuf): Map<String, String> {
             val size = buf.readVarInt()
             val map: MutableMap<String, String> = mutableMapOf()
-            for (i in 1..size){
+            for (i in 1..size) {
                 map[buf.readString()] = buf.readString()
             }
             return map

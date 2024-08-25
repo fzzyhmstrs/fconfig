@@ -39,7 +39,7 @@ open class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue:
      * @since 0.2.0
      */
     @JvmOverloads
-    constructor(minValue: Byte,maxValue: Byte,widgetType: WidgetType = WidgetType.SLIDER): this(minValue,maxValue, minValue, widgetType)
+    constructor(minValue: Byte, maxValue: Byte, widgetType: WidgetType = WidgetType.SLIDER): this(minValue, maxValue, minValue, widgetType)
 
     /**
      * an unbounded validated byte number.
@@ -66,10 +66,10 @@ open class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue:
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Byte> {
-        return try{
+        return try {
             ValidationResult.success(toml.asTomlLiteral().toByte())
-        } catch (e: Exception){
-            ValidationResult.error(defaultValue,"Problem deserializing ValidatedByte [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(defaultValue, "Problem deserializing ValidatedByte [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal
@@ -87,7 +87,7 @@ open class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue:
     }
 
     override fun convert(input: Double): ValidationResult<Byte> {
-        return ValidationResult.predicated(input.toInt().toByte(),input.toLong() == input.toInt().toByte().toLong(),"[$input] out of Bounds for byte value (${Byte.MIN_VALUE} to ${Byte.MAX_VALUE} )")
+        return ValidationResult.predicated(input.toInt().toByte(), input.toLong() == input.toInt().toByte().toLong(), "[$input] out of Bounds for byte value (${Byte.MIN_VALUE} to ${Byte.MAX_VALUE} )")
     }
 
     override fun minBound(): Byte {

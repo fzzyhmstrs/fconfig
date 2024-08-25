@@ -23,16 +23,16 @@ interface UpdateManager {
     fun addUpdateMessage(key: Updatable, text: Text)
     fun hasChangeHistory(): Boolean
     fun changeHistory(): List<String>
-    fun hasChanges(): Boolean{
+    fun hasChanges(): Boolean {
         return changeCount() > 0
     }
     fun changeCount(): Int
-    fun hasRestores(scope: String): Boolean{
+    fun hasRestores(scope: String): Boolean {
         return restoreCount(scope) > 0
     }
     fun restoreCount(scope: String): Int
     fun restore(scope: String)
-    fun hasForwards(): Boolean{
+    fun hasForwards(): Boolean {
         return forwardsCount() > 0
     }
     fun forwardsCount(): Int

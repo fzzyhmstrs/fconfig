@@ -64,9 +64,9 @@ repositories {
     }
 }
 
-sourceSets{
-    main{
-        kotlin{
+sourceSets {
+    main {
+        kotlin {
             val includeExamples: String by project
             if (includeExamples.toBooleanLenient() != true) {
                 exclude("me/fzzyhmstrs/fzzy_config/examples/**")
@@ -77,7 +77,7 @@ sourceSets{
             }
         }
     }
-    create("testmod"){
+    create("testmod") {
         compileClasspath += sourceSets.main.get().compileClasspath
         runtimeClasspath += sourceSets.main.get().runtimeClasspath
     }
@@ -132,7 +132,7 @@ dependencies {
 
 loom {
     runs {
-        create("testmodClient"){
+        create("testmodClient") {
             client()
             name = "Testmod Client"
             source(sourceSets["testmod"])
@@ -183,7 +183,7 @@ val testmodJar =  tasks.register("testmodJar", Jar::class) {
     archiveClassifier = "testmod"
 }
 
-val remapTestmodJar =  tasks.register("remapTestmodJar", RemapJarTask::class){
+val remapTestmodJar =  tasks.register("remapTestmodJar", RemapJarTask::class) {
     dependsOn(testmodJar.get())
     input.set(testmodJar.get().archiveFile)
     archiveClassifier = "testmod"
@@ -191,7 +191,7 @@ val remapTestmodJar =  tasks.register("remapTestmodJar", RemapJarTask::class){
     //destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
 }
 
-tasks.build{
+tasks.build {
     dependsOn(remapTestmodJar.get())
 }
 
@@ -227,7 +227,7 @@ tasks.withType<DokkaTask>().configureEach {
             file("dokka/assets/cf_banner.png"),
             file("dokka/assets/modrinth_banner.png"),
             file("src/main/resources/assets/fzzy_config/icon.png"))
-        customStyleSheets = listOf(file("dokka/style.css"),file("dokka/logo-styles.css"))
+        customStyleSheets = listOf(file("dokka/style.css"), file("dokka/logo-styles.css"))
         templatesDir = file("dokka")
         footerMessage = "(c) 2024 fzzyhmstrs"
     }
@@ -251,8 +251,8 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
         versionName.set("${base.archivesName.get()}-$modVersion")
         versionType.set(releaseType)
         uploadFile.set(tasks.remapJar.get())
-        additionalFiles.add(File(tasks.remapSourcesJar.get().archiveFile.get().asFile.toString().replace(".jar","-sources.jar")))
-        gameVersions.addAll(mcVersions.split(","))
+        additionalFiles.add(File(tasks.remapSourcesJar.get().archiveFile.get().asFile.toString().replace(".jar", "-sources.jar")))
+        gameVersions.addAll(mcVersions.split(", "))
         loaders.addAll("fabric", "quilt")
         detectLoaders.set(false)
         changelog.set(log.readText())
@@ -276,20 +276,20 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             changelog = log
             changelogType = "markdown"
             this.releaseType = releaseType
-            for (ver in mcVersions.split(",")){
+            for (ver in mcVersions.split(", ")) {
                 addGameVersion(ver)
             }
             addGameVersion("Fabric")
             addGameVersion("Quilt")
             mainArtifact(tasks.remapJar.get().archiveFile.get(), closureOf<CurseArtifact> {
                 displayName = "${base.archivesName.get()}-$modVersion"
-                relations(closureOf<CurseRelation>{
+                relations(closureOf<CurseRelation> {
                     this.requiredDependency("fabric-api")
                     this.requiredDependency("fabric-language-kotlin")
                 })
             })
-            addArtifact(File(tasks.remapSourcesJar.get().archiveFile.get().asFile.toString().replace(".jar","-sources.jar")))
-            relations(closureOf<CurseRelation>{
+            addArtifact(File(tasks.remapSourcesJar.get().archiveFile.get().asFile.toString().replace(".jar", "-sources.jar")))
+            relations(closureOf<CurseRelation> {
                 this.requiredDependency("fabric-api")
                 this.requiredDependency("fabric-language-kotlin")
             })

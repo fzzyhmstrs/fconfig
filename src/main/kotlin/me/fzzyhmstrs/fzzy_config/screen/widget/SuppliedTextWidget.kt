@@ -34,7 +34,7 @@ import kotlin.math.roundToInt
  * @author fzzyhmstrs
  * @since 0.3.1
  */
-class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): AbstractTextWidget(0,0,width, height, messageSupplier.get(), textRenderer) {
+class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): AbstractTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer) {
 
     constructor(messageSupplier: Supplier<Text>, textRenderer: TextRenderer): this(messageSupplier, textRenderer, textRenderer.getWidth(messageSupplier.get().asOrderedText()), textRenderer.fontHeight)
 
@@ -90,7 +90,7 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
      * @author fzzyhmstrs
      * @since 0.3.3
      */
-    fun supplyTooltipOnOverflow(tooltipText: Supplier<Text>): SuppliedTextWidget{
+    fun supplyTooltipOnOverflow(tooltipText: Supplier<Text>): SuppliedTextWidget {
         overflowTooltip = tooltipText
         return this
     }
@@ -99,12 +99,12 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         val text = messageSupplier.get()
         val i = getWidth()
         val j = textRenderer.getWidth(text)
-        val k = x + (horizontalAlignment * (max(i - j,0)).toFloat()).roundToInt()
+        val k = x + (horizontalAlignment * (max(i - j, 0)).toFloat()).roundToInt()
         val l = y + (getHeight() - textRenderer.fontHeight) / 2
         val orderedText = if (j > i) this.trim(text, i) else text.asOrderedText()
         context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
-        if (overflowTooltip != null){
-            if (j > i){
+        if (overflowTooltip != null) {
+            if (j > i) {
                 tooltip = Tooltip.of(overflowTooltip?.get())
             }
         }

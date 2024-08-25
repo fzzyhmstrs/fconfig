@@ -57,12 +57,12 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
 
     @Internal
     override fun initPopup(widget: PopupWidget) {
-        widget.position(width,height)
+        widget.position(width, height)
     }
 
     protected open fun initPopup() {
         popupWidgets.descendingIterator().forEach {
-            it.position(width,height)
+            it.position(width, height)
         }
     }
 
@@ -76,18 +76,18 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
             super.render(context, mouseX, mouseY, delta)
         else {
             context.matrices.push()
-            context.matrices.translate(0f,0f,-450f*popupWidgets.size)
+            context.matrices.translate(0f, 0f, -450f*popupWidgets.size)
             super.render(context, 0, 0, delta)
             context.matrices.pop()
         }
         context.matrices.push()
-        context.matrices.translate(0f,0f,-450f*popupWidgets.size + 450f)
-        for ((index,popup) in popupWidgets.descendingIterator().withIndex()) {
+        context.matrices.translate(0f, 0f, -450f*popupWidgets.size + 450f)
+        for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
             if(index == popupWidgets.lastIndex)
                 popup.render(context, mouseX, mouseY, delta)
             else
                 popup.render(context, 0, 0, delta)
-            context.matrices.translate(0f,0f,450f)
+            context.matrices.translate(0f, 0f, 450f)
         }
         context.matrices.pop()
         if (popupWidgets.isNotEmpty())

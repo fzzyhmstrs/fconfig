@@ -25,9 +25,9 @@ import java.util.function.Consumer
 import java.util.function.Supplier
 
 @Environment(EnvType.CLIENT)
-internal class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<Int>) : AlwaysSelectedEntryListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), sWidth.get() - 16, 180, 0,0, 11), Widget {
+internal class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<Int>) : AlwaysSelectedEntryListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), sWidth.get() - 16, 180, 0, 0, 11), Widget {
 
-    init{
+    init {
         this.setRenderHorizontalShadows(false)
         this.setRenderBackground(false)
     }
@@ -66,8 +66,8 @@ internal class ChangelogListWidget(changelog: List<String>, private val sWidth: 
         return this.x + this.width / 2 + this.rowWidth / 2 + 4
     }
 
-    init{
-        for (logEntry in changelog){
+    init {
+        for (logEntry in changelog) {
             this.addEntry(Entry(client.textRenderer.trimToWidth(logEntry, rowWidth - 4), logEntry))
         }
     }

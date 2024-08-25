@@ -42,13 +42,13 @@ import kotlin.reflect.typeOf
  * - {floor(...)} - round down
  * - {round(...)} - round nearest
  * - {ln(...)} - natural logarithm
- * - {log(exp,power)} - logarithm of <expression> to <power>: log(5,5) is log5(5)
+ * - {log(exp, power)} - logarithm of <expression> to <power>: log(5, 5) is log5(5)
  * - {log10(...)} - log 10
  * - {log2(...)} - log 2
  * - {abs(...)} - absolute value
  * - {sin(...)} - sine (radians)
  * - {cos(...)} - cosine (radians)
- * - {incr(exp,incr)} - round incrementally: incr(0.913,0.1) will return 0.90
+ * - {incr(exp, incr)} - round incrementally: incr(0.913, 0.1) will return 0.90
  * - {mathHelper methods} - Expression will reflectively evaluate any valid [MathHelper] method that takes doubles and returns doubles
  * @see validated for use in configs
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleMath.maths
@@ -68,7 +68,7 @@ fun interface Expression {
      * @since 0.2.0
      */
     @Deprecated("Where possible use safeEval() to avoid throwing exceptions on evaluation failure")
-    fun eval(vars: Map<Char,Double>): Double
+    fun eval(vars: Map<Char, Double>): Double
 
     /**
      * Evaluates an expression with a fallback. Will fail to fallback instead of throwing. This call is recommended over the 'raw' eval call
@@ -78,8 +78,8 @@ fun interface Expression {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun evalSafe(vars: Map<Char,Double>, fallback: Double): Double {
-        return try{
+    fun evalSafe(vars: Map<Char, Double>, fallback: Double): Double {
+        return try {
             this.eval(vars)
         } catch(e: Exception) {
             fallback
@@ -127,8 +127,8 @@ fun interface Expression {
         fun parse(str: String, context: String): Expression {
             try {
                 val reader = StringReader(str)
-                return parseExpression(reader, context,1000)
-            } catch (e: Exception){
+                return parseExpression(reader, context, 1000)
+            } catch (e: Exception) {
                 throw IllegalStateException("Error parsing math equation [$context]: ${e.localizedMessage}")
             }
         }
@@ -144,8 +144,8 @@ fun interface Expression {
         fun tryParse(str: String): ValidationResult<Expression?> {
             return try {
                 val reader = StringReader(str)
-                ValidationResult.success(parseExpression(reader, str,1000))
-            } catch (e: Exception){
+                ValidationResult.success(parseExpression(reader, str, 1000))
+            } catch (e: Exception) {
                 ValidationResult.error(null, e.localizedMessage)
             }
         }
@@ -153,7 +153,7 @@ fun interface Expression {
         /**
          * Attempts to parse and evaluate an expression with dummy values, failing null instead of throwing
          * @param str the math expression to try parsing
-         * @param vars [Set] of valid variable characters. This method will build a dummy Map<Char,Double> to test eval() of the expression
+         * @param vars [Set] of valid variable characters. This method will build a dummy Map<Char, Double> to test eval() of the expression
          * @return ValidationResult<Expression?> wrapping an Expression if parsing succeeds, or null if it fails (with the exception message passed back with the Result)
          * @author fzzyhmstrs
          * @since 0.2.0
@@ -166,8 +166,8 @@ fun interface Expression {
             return try {
                 result.get()?.eval(varMap)
                 result
-            } catch(e: Exception){
-                ValidationResult.error(null,"Incorrect variables used in expression: [$str], available: [$vars]")
+            } catch(e: Exception) {
+                ValidationResult.error(null, "Incorrect variables used in expression: [$str], available: [$vars]")
             }
         }
 
@@ -183,7 +183,7 @@ fun interface Expression {
          * @since 0.2.0
          */
         @JvmStatic
-        fun validated(str: String, vars: Set<Char> = setOf()): ValidatedExpression{
+        fun validated(str: String, vars: Set<Char> = setOf()): ValidatedExpression {
             parse(str)
             return ValidatedExpression(str, vars)
         }
@@ -192,7 +192,7 @@ fun interface Expression {
             "sqrt" to NamedExpression { reader, context, _ -> val parentheses = parseParentheses(reader, context, false)
                 val sqrt = sqrt(parentheses)
                 if (reader.canRead())
-                    parseExpression(reader, context,1000, sqrt)
+                    parseExpression(reader, context, 1000, sqrt)
                 else
                     sqrt },
             "ceil" to NamedExpression { reader, context, _ ->
@@ -268,7 +268,7 @@ fun interface Expression {
                     cos },
             "incr" to NamedExpression { reader, context, _ ->
                 val parentheses = parseParenthesesMultiple(reader, context, false)
-                val incr = incr(parentheses[0],parentheses[1])
+                val incr = incr(parentheses[0], parentheses[1])
                 if (reader.canRead())
                     parseExpression(reader, context, 1000, incr)
                 else
@@ -278,7 +278,7 @@ fun interface Expression {
         private fun parseExpression(reader: StringReader, context: String, order: Int, vararg inputs: Expression): Expression {
             if (reader.string.isEmpty()) throw IllegalStateException("Empty Expression found in math equation [$context]")
             reader.skipWhitespace()
-            if (StringReader.isAllowedNumber(reader.peek())){
+            if (StringReader.isAllowedNumber(reader.peek())) {
                 if (reader.peek() == '-') {
                     if(reader.canRead(1) && (reader.peek(1).isWhitespace() || !StringReader.isAllowedNumber(reader.peek(1)))) {
                         if (3 > order) return inputs[0]
@@ -289,7 +289,7 @@ fun interface Expression {
                     } else if (reader.canRead(1)) {
                         val number1 = reader.readDouble()
                         return if (reader.canRead())
-                            parseExpression(reader,context,order, constant(number1))
+                            parseExpression(reader, context, order, constant(number1))
                         else
                             constant(number1)
                     } else {
@@ -299,57 +299,57 @@ fun interface Expression {
                 }
                 val number1 = reader.readDouble()
                 return if (reader.canRead())
-                    parseExpression(reader,context,order, constant(number1))
+                    parseExpression(reader, context, order, constant(number1))
                 else
                     constant(number1)
             } else if (reader.peek() == '(') {
                 val parentheses = parseParentheses(reader, context)
                 return if(reader.canRead())
-                    parseExpression(reader,context,1000, parentheses)
+                    parseExpression(reader, context, 1000, parentheses)
                 else
                     parentheses
             }else if (reader.peek() == '^') {
                 if (1 > order) return inputs[0]
                 reader.read()
                 val expression1 = inputs[0]
-                val expression2 = parseExpression(reader, context,1)
+                val expression2 = parseExpression(reader, context, 1)
                 return if(reader.canRead())
-                    parseExpression(reader,context,1000, pow(expression1,expression2))
+                    parseExpression(reader, context, 1000, pow(expression1, expression2))
                 else
-                    pow(expression1,expression2)
+                    pow(expression1, expression2)
             }else if (reader.peek() == '*') {
                 if (2 > order) return inputs[0]
                 reader.read()
                 val expression1 = inputs[0]
-                val expression2 = parseExpression(reader, context,2)
-                return times(expression1,expression2)
+                val expression2 = parseExpression(reader, context, 2)
+                return times(expression1, expression2)
             } else if (reader.peek() == '/') {
                 if (2 > order) return inputs[0]
                 reader.read()
                 val expression1 = inputs[0]
                 val expression2 = parseExpression(reader, context, 2)
-                return divide(expression1,expression2)
+                return divide(expression1, expression2)
             } else if (reader.peek() == '%') {
                 if (2 > order) return inputs[0]
                 reader.read()
                 val expression1 = inputs[0]
                 val expression2 = parseExpression(reader, context, 3)
-                return mod(expression1,expression2)
+                return mod(expression1, expression2)
             } else if (reader.peek() == '+') {
                 if (3 > order) return inputs[0]
                 reader.read()
                 val expression1 = inputs[0]
                 val expression2 = parseExpression(reader, context, 3)
-                return plus(expression1,expression2)
+                return plus(expression1, expression2)
             } else if (reader.peek() == '-') {
                 if (3 > order) return inputs[0]
                 reader.read()
                 val expression1 = inputs[0]
                 val expression2 = parseExpression(reader, context, 3)
-                return minus(expression1,expression2)
-            }  else if (reader.peek().isLetter() && !reader.canRead(2)){
+                return minus(expression1, expression2)
+            }  else if (reader.peek().isLetter() && !reader.canRead(2)) {
                 return variable(reader.peek())
-            } else if (reader.peek().isLetter() && reader.canRead(2)){
+            } else if (reader.peek().isLetter() && reader.canRead(2)) {
                 return if (!reader.peek(1).isLetter()) {
                     val variable = variable(reader.peek())
                     reader.read()
@@ -393,11 +393,11 @@ fun interface Expression {
             var splitIndex = 0
             var count2 = 0
             val toEat = builder.toString()
-            for ((i,c) in toEat.withIndex()){
+            for ((i, c) in toEat.withIndex()) {
                 when (c) {
                     '(' -> count2++
                     ')' -> count2--
-                    ',' -> {
+                    ', ' -> {
                         if (count2 == 0) {
                             str.add(toEat.substring(splitIndex, i))
                             splitIndex = i + 1
@@ -410,14 +410,14 @@ fun interface Expression {
             return str.map { parseExpression(StringReader(it), context, 1000) }
         }
 
-        private interface Const{
+        private interface Const {
             fun c(): Double
         }
 
         private fun constant(constant: Double): Expression {
             return Constant(constant)
         }
-        private class Constant(val c1: Double): Expression,Const{
+        private class Constant(val c1: Double): Expression, Const {
             override fun eval(vars: Map<Char, Double>): Double {
                 return c1
             }
@@ -439,7 +439,7 @@ fun interface Expression {
         }
 
         private fun parentheses(e1: Expression): Expression {
-            return if(e1 is Const){
+            return if(e1 is Const) {
                 ConstParentheses(e1.c(), e1.toString())
             } else if (e1 is ConstParentheses) {
                 ConstParentheses(e1.c1, e1.s1)
@@ -449,7 +449,7 @@ fun interface Expression {
                 ExpParentheses(e1)
             }
         }
-        private class ExpParentheses(val e1: Expression): Expression{
+        private class ExpParentheses(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars)
             }
@@ -489,7 +489,7 @@ fun interface Expression {
         private fun variable(variable: Char): Expression {
             return Variable(variable)
         }
-        private class Variable(val variable: Char): Expression{
+        private class Variable(val variable: Char): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return vars[variable] ?: throw IllegalStateException("Expected variable '$variable', didn't find")
             }
@@ -508,19 +508,19 @@ fun interface Expression {
         }
 
         private fun plus(e1: Expression, e2: Expression): Expression {
-            return if(e1 is Const){
+            return if(e1 is Const) {
                 if (e2 is Const) {
                     ConstPlus(e1.c(), e2.c(), e1.toString(), e2.toString())
                 } else {
-                    ConstFirstPlus(e1.c(),e2, e1.toString())
+                    ConstFirstPlus(e1.c(), e2, e1.toString())
                 }
             } else if (e2 is Const) {
-                ConstSecondPlus(e1,e2.c(), e2.toString())
+                ConstSecondPlus(e1, e2.c(), e2.toString())
             } else {
                 ExpPlus(e1, e2)
             }
         }
-        private class ExpPlus(val e1: Expression, val e2: Expression): Expression{
+        private class ExpPlus(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars) + e2.eval(vars)
             }
@@ -539,7 +539,7 @@ fun interface Expression {
                 return 92821 * e1.hashCode() + e2.hashCode()
             }
         }
-        private class ConstFirstPlus(val c1: Double, val e2: Expression, val s1: String): Expression{
+        private class ConstFirstPlus(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return c1 + e2.eval(vars)
             }
@@ -559,7 +559,7 @@ fun interface Expression {
                 return 92821 * (92821 * c1.hashCode() + e2.hashCode()) + s1.hashCode()
             }
         }
-        private class ConstSecondPlus(val e1: Expression, val c2: Double, val s2: String): Expression{
+        private class ConstSecondPlus(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars) + c2
             }
@@ -579,7 +579,7 @@ fun interface Expression {
                 return 95821 * (92821 * e1.hashCode() + c2.hashCode()) + s2.hashCode()
             }
         }
-        private class ConstPlus(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression, Const{
+        private class ConstPlus(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression, Const {
             private val c3: Double = c1 + c2
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
@@ -607,19 +607,19 @@ fun interface Expression {
 
 
         private fun minus(e1: Expression, e2: Expression): Expression {
-            return if(e1 is Const){
+            return if(e1 is Const) {
                 if (e2 is Const) {
-                    ConstMinus(e1.c(), e2.c(),e1.toString(),e2.toString())
+                    ConstMinus(e1.c(), e2.c(), e1.toString(), e2.toString())
                 } else {
-                    ConstFirstMinus(e1.c(),e2,e1.toString())
+                    ConstFirstMinus(e1.c(), e2, e1.toString())
                 }
             } else if (e2 is Const) {
-                ConstSecondMinus(e1,e2.c(),e2.toString())
+                ConstSecondMinus(e1, e2.c(), e2.toString())
             } else {
                 ExpMinus(e1, e2)
             }
         }
-        private class ExpMinus(val e1: Expression, val e2: Expression): Expression{
+        private class ExpMinus(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars) - e2.eval(vars)
             }
@@ -638,7 +638,7 @@ fun interface Expression {
                 return 92821 * (e1.hashCode() + 1) + e2.hashCode()
             }
         }
-        private class ConstFirstMinus(val c1: Double, val e2: Expression, val s1: String): Expression{
+        private class ConstFirstMinus(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return c1 - e2.eval(vars)
             }
@@ -658,7 +658,7 @@ fun interface Expression {
                 return 92821 * (92821 * (c1.hashCode() + 1) + e2.hashCode()) + s1.hashCode()
             }
         }
-        private class ConstSecondMinus(val e1: Expression, val c2: Double, val s2: String): Expression{
+        private class ConstSecondMinus(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars) - c2
             }
@@ -678,7 +678,7 @@ fun interface Expression {
                 return 92821 * (92821 * (e1.hashCode() + 1) + c2.hashCode()) + s2.hashCode()
             }
         }
-        private class ConstMinus(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression{
+        private class ConstMinus(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression {
             private val c3: Double = c1 - c2
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
@@ -702,19 +702,19 @@ fun interface Expression {
         }
 
         private fun times(e1: Expression, e2: Expression): Expression {
-            return if(e1 is Const){
+            return if(e1 is Const) {
                 if (e2 is Const) {
                     ConstTimes(e1.c(), e2.c(), e1.toString(), e2.toString())
                 } else {
-                    ConstFirstTimes(e1.c(),e2, e1.toString())
+                    ConstFirstTimes(e1.c(), e2, e1.toString())
                 }
             } else if (e2 is Const) {
-                ConstSecondTimes(e1,e2.c(), e2.toString())
+                ConstSecondTimes(e1, e2.c(), e2.toString())
             } else {
                 ExpTimes(e1, e2)
             }
         }
-        private class ExpTimes(val e1: Expression, val e2: Expression): Expression{
+        private class ExpTimes(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars) * e2.eval(vars)
             }
@@ -733,7 +733,7 @@ fun interface Expression {
                 return 92821 * (e1.hashCode() + 2) + e2.hashCode()
             }
         }
-        private class ConstFirstTimes(val c1: Double, val e2: Expression, val s1: String): Expression{
+        private class ConstFirstTimes(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return c1 * e2.eval(vars)
             }
@@ -753,7 +753,7 @@ fun interface Expression {
                 return 92821 * (92821 * (c1.hashCode() + 2) + e2.hashCode()) + s1.hashCode()
             }
         }
-        private class ConstSecondTimes(val e1: Expression, val c2: Double, val s2: String): Expression{
+        private class ConstSecondTimes(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars) * c2
             }
@@ -773,7 +773,7 @@ fun interface Expression {
                 return 92821 * (92821 * (e1.hashCode() + 2) + c2.hashCode()) + s2.hashCode()
             }
         }
-        private class ConstTimes(val c1: Double, val c2: Double,val s1: String, val s2: String): Expression{
+        private class ConstTimes(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression {
             private val c3: Double = c1 * c2
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
@@ -797,19 +797,19 @@ fun interface Expression {
         }
 
         private fun divide(e1: Expression, e2: Expression): Expression {
-            return if(e1 is Const){
+            return if(e1 is Const) {
                 if (e2 is Const) {
                     ConstDivide(e1.c(), e2.c(), e1.toString(), e2.toString())
                 } else {
-                    ConstFirstDivide(e1.c(),e2,e1.toString())
+                    ConstFirstDivide(e1.c(), e2, e1.toString())
                 }
             } else if (e2 is Const) {
-                ConstSecondDivide(e1,e2.c(),e2.toString())
+                ConstSecondDivide(e1, e2.c(), e2.toString())
             } else {
                 ExpDivide(e1, e2)
             }
         }
-        private class ExpDivide(val e1: Expression, val e2: Expression): Expression{
+        private class ExpDivide(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars) / e2.eval(vars)
             }
@@ -828,7 +828,7 @@ fun interface Expression {
                 return 92821 * (e1.hashCode() + 3) + e2.hashCode()
             }
         }
-        private class ConstFirstDivide(val c1: Double, val e2: Expression, val s1: String): Expression{
+        private class ConstFirstDivide(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return c1 / e2.eval(vars)
             }
@@ -848,7 +848,7 @@ fun interface Expression {
                 return 92821 * (92821 * (c1.hashCode() + 3) + e2.hashCode()) + s1.hashCode()
             }
         }
-        private class ConstSecondDivide(val e1: Expression, val c2: Double, val s2: String): Expression{
+        private class ConstSecondDivide(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars) / c2
             }
@@ -868,7 +868,7 @@ fun interface Expression {
                 return 92821 * (92821 * (e1.hashCode() + 3) + c2.hashCode()) + s2.hashCode()
             }
         }
-        private class ConstDivide(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression{
+        private class ConstDivide(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression {
             private val c3: Double = c1 / c2
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
@@ -892,19 +892,19 @@ fun interface Expression {
         }
 
         private fun mod(e1: Expression, e2: Expression): Expression {
-            return if(e1 is Const){
+            return if(e1 is Const) {
                 if (e2 is Const) {
-                    ConstMod(e1.c(), e2.c(),e1.toString(),e2.toString())
+                    ConstMod(e1.c(), e2.c(), e1.toString(), e2.toString())
                 } else {
-                    ConstFirstMod(e1.c(),e2, e1.toString())
+                    ConstFirstMod(e1.c(), e2, e1.toString())
                 }
             } else if (e2 is Const) {
-                ConstSecondMod(e1,e2.c(),e2.toString())
+                ConstSecondMod(e1, e2.c(), e2.toString())
             } else {
                 ExpMod(e1, e2)
             }
         }
-        private class ExpMod(val e1: Expression, val e2: Expression): Expression{
+        private class ExpMod(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars) % e2.eval(vars)
             }
@@ -923,7 +923,7 @@ fun interface Expression {
                 return 92821 * (e1.hashCode() + 4) + e2.hashCode()
             }
         }
-        private class ConstFirstMod(val c1: Double, val e2: Expression, val s1: String): Expression{
+        private class ConstFirstMod(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return c1 % e2.eval(vars)
             }
@@ -943,7 +943,7 @@ fun interface Expression {
                 return 92821 * (92821 * (c1.hashCode() + 4) + e2.hashCode()) + s1.hashCode()
             }
         }
-        private class ConstSecondMod(val e1: Expression, val c2: Double, val s2: String): Expression{
+        private class ConstSecondMod(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars) % c2
             }
@@ -963,7 +963,7 @@ fun interface Expression {
                 return 92821 * (92821 * (e1.hashCode() + 4) + c2.hashCode()) + s2.hashCode()
             }
         }
-        private class ConstMod(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression{
+        private class ConstMod(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression {
             private val c3: Double = c1 % c2
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
@@ -989,28 +989,28 @@ fun interface Expression {
         private fun pow(e1: Expression, e2: Expression): Expression {
             return if (e2 is Const) {
                 val c2 = e2.c()
-                if (c2 == 0.0){
-                    ZeroPower(e1.toString(),e2.toString())
-                } else if (c2 == 1.0){
-                    if(e1 is Const){
-                        OneConstPower(e1.c(),e2.toString())
+                if (c2 == 0.0) {
+                    ZeroPower(e1.toString(), e2.toString())
+                } else if (c2 == 1.0) {
+                    if(e1 is Const) {
+                        OneConstPower(e1.c(), e2.toString())
                     } else {
-                        OneExpPower(e1,e2.toString())
+                        OneExpPower(e1, e2.toString())
                     }
-                } else if (e1 is Const){
-                    ConstPower(e1.c(),c2,e1.toString(),e2.toString())
+                } else if (e1 is Const) {
+                    ConstPower(e1.c(), c2, e1.toString(), e2.toString())
                 } else if (c2 % 1 == 0.0) {
-                    ExpIntPower(e1,c2.toInt(),e2.toString())
+                    ExpIntPower(e1, c2.toInt(), e2.toString())
                 } else {
-                    ExpConstPower(e1,c2,e2.toString())
+                    ExpConstPower(e1, c2, e2.toString())
                 }
             } else if (e1 is Const) {
-                ConstExpPower(e1.c(),e2,e1.toString())
-            } else{
-                ExpPower(e1,e2)
+                ConstExpPower(e1.c(), e2, e1.toString())
+            } else {
+                ExpPower(e1, e2)
             }
         }
-        private class ConstPower(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression, Const{
+        private class ConstPower(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression, Const {
             private val c3 = c1.pow(c2)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
@@ -1033,7 +1033,7 @@ fun interface Expression {
                 return 92821 * (s1.hashCode() + 5) + s2.hashCode()
             }
         }
-        private class ZeroPower(val s1: String, val s2: String): Expression, Const{
+        private class ZeroPower(val s1: String, val s2: String): Expression, Const {
             override fun eval(vars: Map<Char, Double>): Double {
                 return 1.0
             }
@@ -1096,12 +1096,12 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 5) + s2.hashCode()
             }
         }
-        private class ExpIntPower(val e1: Expression, val c2: Int, val s2: String): Expression{
+        private class ExpIntPower(val e1: Expression, val c2: Int, val s2: String): Expression {
             val e2: Expression
-            init{
-                var exp = times(e1,e1)
-                for (i in 2 until c2){
-                    exp = times(exp,e1)
+            init {
+                var exp = times(e1, e1)
+                for (i in 2 until c2) {
+                    exp = times(exp, e1)
                 }
                 e2 = exp
             }
@@ -1124,7 +1124,7 @@ fun interface Expression {
                 return 95821 * (92821 * (e1.hashCode() + 5) + c2.hashCode()) + s2.hashCode()
             }
         }
-        private class ExpConstPower(val e1: Expression, val c2: Double, val s2: String): Expression{
+        private class ExpConstPower(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars).pow(c2)
             }
@@ -1144,7 +1144,7 @@ fun interface Expression {
                 return 95821 * (92821 * (e1.hashCode() + 5) + c2.hashCode()) + s2.hashCode()
             }
         }
-        private class ConstExpPower(val c1: Double, val e2: Expression, val s1: String): Expression{
+        private class ConstExpPower(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return c1.pow(e2.eval(vars))
             }
@@ -1164,7 +1164,7 @@ fun interface Expression {
                 return 95821 * (92821 * (c1.hashCode() + 5) + e2.hashCode()) + s1.hashCode()
             }
         }
-        private class ExpPower(val e1: Expression, val e2: Expression): Expression{
+        private class ExpPower(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return e1.eval(vars).pow(e2.eval(vars))
             }
@@ -1185,13 +1185,13 @@ fun interface Expression {
         }
 
         private fun sqrt(e1: Expression): Expression {
-            return if (e1 is ConstParentheses){
-                ConstSqrt(e1.c1,e1.s1)
+            return if (e1 is ConstParentheses) {
+                ConstSqrt(e1.c1, e1.s1)
             } else {
                 ExpSqrt((e1 as ExpParentheses).e1)
             }
         }
-        private class ConstSqrt(val c1: Double, val s1: String): Expression, Const{
+        private class ConstSqrt(val c1: Double, val s1: String): Expression, Const {
             private val c2 = kotlin.math.sqrt(c1)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c2
@@ -1215,7 +1215,7 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 6) + s1.hashCode()
             }
         }
-        private class ExpSqrt(val e1: Expression): Expression{
+        private class ExpSqrt(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return kotlin.math.sqrt(e1.eval(vars))
             }
@@ -1235,13 +1235,13 @@ fun interface Expression {
 
 
         private fun ceil(e1: Expression): Expression {
-            return if (e1 is ConstParentheses){
-                ConstCeil(e1.c1,e1.s1)
+            return if (e1 is ConstParentheses) {
+                ConstCeil(e1.c1, e1.s1)
             } else {
                 ExpCeil((e1 as ExpParentheses).e1)
             }
         }
-        private class ConstCeil(val c1: Double, val s1: String): Expression, Const{
+        private class ConstCeil(val c1: Double, val s1: String): Expression, Const {
             private val c2 = kotlin.math.ceil(c1)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c2
@@ -1265,7 +1265,7 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 7) + s1.hashCode()
             }
         }
-        private class ExpCeil(val e1: Expression): Expression{
+        private class ExpCeil(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return kotlin.math.ceil(e1.eval(vars))
             }
@@ -1285,13 +1285,13 @@ fun interface Expression {
 
 
         private fun floor(e1: Expression): Expression {
-            return if (e1 is ConstParentheses){
-                ConstFloor(e1.c1,e1.s1)
+            return if (e1 is ConstParentheses) {
+                ConstFloor(e1.c1, e1.s1)
             } else {
                 ExpFloor((e1 as ExpParentheses).e1)
             }
         }
-        private class ConstFloor(val c1: Double, val s1: String): Expression, Const{
+        private class ConstFloor(val c1: Double, val s1: String): Expression, Const {
             private val c2 = kotlin.math.floor(c1)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c2
@@ -1315,7 +1315,7 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 8) + s1.hashCode()
             }
         }
-        private class ExpFloor(val e1: Expression): Expression{
+        private class ExpFloor(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return kotlin.math.floor(e1.eval(vars))
             }
@@ -1335,13 +1335,13 @@ fun interface Expression {
 
 
         private fun round(e1: Expression): Expression {
-            return if (e1 is ConstParentheses){
-                ConstRound(e1.c1,e1.s1)
+            return if (e1 is ConstParentheses) {
+                ConstRound(e1.c1, e1.s1)
             } else {
                 ExpRound((e1 as ExpParentheses).e1)
             }
         }
-        private class ConstRound(val c1: Double, val s1: String): Expression, Const{
+        private class ConstRound(val c1: Double, val s1: String): Expression, Const {
             private val c2 = kotlin.math.round(c1)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c2
@@ -1365,7 +1365,7 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 9) + s1.hashCode()
             }
         }
-        private class ExpRound(val e1: Expression): Expression{
+        private class ExpRound(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return kotlin.math.round(e1.eval(vars))
             }
@@ -1384,24 +1384,24 @@ fun interface Expression {
         }
 
         private fun log(e1: Expression, base: Expression): Expression {
-            return if (base is Const){
-                if (base.c() == 2.0){
+            return if (base is Const) {
+                if (base.c() == 2.0) {
                     log2(e1)
-                } else if (base.c() == 10.0){
+                } else if (base.c() == 10.0) {
                     log10(e1)
                 } else if (e1 is Const) {
-                    ConstLog(e1.c(),base.c(),e1.toString(),base.toString())
+                    ConstLog(e1.c(), base.c(), e1.toString(), base.toString())
                 } else {
                     ConstBaseLog(e1, base.c(), base.toString())
                 }
             } else if (e1 is Const) {
-                ConstOperandLog(e1.c(),base,e1.toString())
+                ConstOperandLog(e1.c(), base, e1.toString())
             } else {
-                ExpLog(e1,base)
+                ExpLog(e1, base)
             }
         }
-        private class ConstLog(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression, Const{
-            private val c3 = kotlin.math.log(c1,c2)
+        private class ConstLog(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression, Const {
+            private val c3 = kotlin.math.log(c1, c2)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
             }
@@ -1409,7 +1409,7 @@ fun interface Expression {
                 return c3
             }
             override fun toString(): String {
-                return "log($s1,$s2)"
+                return "log($s1, $s2)"
             }
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -1431,12 +1431,12 @@ fun interface Expression {
             }
 
         }
-        private class ConstBaseLog(val e1: Expression, val c2: Double, val s2: String): Expression{
+        private class ConstBaseLog(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
-                return kotlin.math.log(e1.eval(vars),c2)
+                return kotlin.math.log(e1.eval(vars), c2)
             }
             override fun toString(): String {
-                return "log($e1,$s2)"
+                return "log($e1, $s2)"
             }
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -1454,12 +1454,12 @@ fun interface Expression {
                 return result
             }
         }
-        private class ConstOperandLog(val c1: Double, val e2: Expression, val s1: String): Expression{
+        private class ConstOperandLog(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
-                return kotlin.math.log(c1,e2.eval(vars))
+                return kotlin.math.log(c1, e2.eval(vars))
             }
             override fun toString(): String {
-                return "log($s1,$e2)"
+                return "log($s1, $e2)"
             }
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -1477,12 +1477,12 @@ fun interface Expression {
                 return result
             }
         }
-        private class ExpLog(val e1: Expression, val e2: Expression): Expression{
+        private class ExpLog(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
-                return kotlin.math.log(e1.eval(vars),e2.eval(vars))
+                return kotlin.math.log(e1.eval(vars), e2.eval(vars))
             }
             override fun toString(): String {
-                return "log($e1,$e2)"
+                return "log($e1, $e2)"
             }
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -1501,13 +1501,13 @@ fun interface Expression {
 
 
         private fun log10(e1: Expression): Expression {
-            return if(e1 is ConstParentheses){
-                ConstLog10(e1.c1,e1.s1)
+            return if(e1 is ConstParentheses) {
+                ConstLog10(e1.c1, e1.s1)
             } else {
                 ExpLog10((e1 as ExpParentheses).e1)
             }
         }
-        private class ConstLog10(val c1: Double, val s1: String): Expression, Const{
+        private class ConstLog10(val c1: Double, val s1: String): Expression, Const {
             private val c2 = kotlin.math.log10(c1)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c2
@@ -1531,7 +1531,7 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 11) + s1.hashCode()
             }
         }
-        private class ExpLog10(val e1: Expression): Expression{
+        private class ExpLog10(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return kotlin.math.log10(e1.eval(vars))
             }
@@ -1550,13 +1550,13 @@ fun interface Expression {
         }
 
         private fun log2(e1: Expression): Expression {
-            return if(e1 is ConstParentheses){
-                ConstLog2(e1.c1,e1.s1)
+            return if(e1 is ConstParentheses) {
+                ConstLog2(e1.c1, e1.s1)
             } else {
                 ExpLog2((e1 as ExpParentheses).e1)
             }
         }
-        private class ConstLog2(val c1: Double, val s1: String): Expression, Const{
+        private class ConstLog2(val c1: Double, val s1: String): Expression, Const {
             private val c2 = kotlin.math.log2(c1)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c2
@@ -1580,7 +1580,7 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 12) + s1.hashCode()
             }
         }
-        private class ExpLog2(val e1: Expression): Expression{
+        private class ExpLog2(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return kotlin.math.log2(e1.eval(vars))
             }
@@ -1600,13 +1600,13 @@ fun interface Expression {
 
 
         private fun ln(e1: Expression): Expression {
-            return if(e1 is ConstParentheses){
-                ConstLn(e1.c1,e1.s1)
+            return if(e1 is ConstParentheses) {
+                ConstLn(e1.c1, e1.s1)
             } else {
                 ExpLn((e1 as ExpParentheses).e1)
             }
         }
-        private class ConstLn(val c1: Double, val s1: String): Expression, Const{
+        private class ConstLn(val c1: Double, val s1: String): Expression, Const {
             private val c2 = kotlin.math.ln(c1)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c2
@@ -1630,7 +1630,7 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 13) + s1.hashCode()
             }
         }
-        private class ExpLn(val e1: Expression): Expression{
+        private class ExpLn(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return kotlin.math.ln(e1.eval(vars))
             }
@@ -1649,13 +1649,13 @@ fun interface Expression {
         }
 
         private fun abs(e1: Expression): Expression {
-            return if(e1 is ConstParentheses){
-                ConstAbs(e1.c1,e1.s1)
+            return if(e1 is ConstParentheses) {
+                ConstAbs(e1.c1, e1.s1)
             } else {
                 ExpAbs((e1 as ExpParentheses).e1)
             }
         }
-        private class ConstAbs(val c1: Double, val s1: String): Expression, Const{
+        private class ConstAbs(val c1: Double, val s1: String): Expression, Const {
             private val c2 = kotlin.math.abs(c1)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c2
@@ -1679,7 +1679,7 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 14) + s1.hashCode()
             }
         }
-        private class ExpAbs(val e1: Expression): Expression{
+        private class ExpAbs(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return kotlin.math.abs(e1.eval(vars))
             }
@@ -1698,13 +1698,13 @@ fun interface Expression {
         }
 
         private fun sin(e1: Expression): Expression {
-            return if(e1 is ConstParentheses){
-                ConstSin(e1.c1,e1.s1)
+            return if(e1 is ConstParentheses) {
+                ConstSin(e1.c1, e1.s1)
             } else {
                 ExpSin((e1 as ExpParentheses).e1)
             }
         }
-        private class ConstSin(val c1: Double, val s1: String): Expression, Const{
+        private class ConstSin(val c1: Double, val s1: String): Expression, Const {
             private val c3 = MathHelper.sin(c1.toFloat()).toDouble()
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
@@ -1728,7 +1728,7 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 15) + s1.hashCode()
             }
         }
-        private class ExpSin(val e1: Expression): Expression{
+        private class ExpSin(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return MathHelper.sin(e1.eval(vars).toFloat()).toDouble()
             }
@@ -1748,13 +1748,13 @@ fun interface Expression {
 
 
         private fun cos(e1: Expression): Expression {
-            return if(e1 is ConstParentheses){
-                ConstCos(e1.c1,e1.s1)
+            return if(e1 is ConstParentheses) {
+                ConstCos(e1.c1, e1.s1)
             } else {
                 ExpCos((e1 as ExpParentheses).e1)
             }
         }
-        private class ConstCos(val c1: Double, val s1: String): Expression, Const{
+        private class ConstCos(val c1: Double, val s1: String): Expression, Const {
             private val c3 = MathHelper.cos(c1.toFloat()).toDouble()
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
@@ -1778,7 +1778,7 @@ fun interface Expression {
                 return 92821 * (c1.hashCode() + 16) + s1.hashCode()
             }
         }
-        private class ExpCos(val e1: Expression): Expression{
+        private class ExpCos(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 return MathHelper.cos(e1.eval(vars).toFloat()).toDouble()
             }
@@ -1798,26 +1798,26 @@ fun interface Expression {
 
 
         private fun incr(e1: Expression, e2: Expression): Expression {
-            return if(e1 is Const){
+            return if(e1 is Const) {
                 if (e2 is Const) {
                     ConstIncr(e1.c(), e2.c(), e1.toString(), e2.toString())
                 } else {
-                    ConstFirstIncr(e1.c(),e2, e1.toString())
+                    ConstFirstIncr(e1.c(), e2, e1.toString())
                 }
             } else if (e2 is Const) {
-                ConstSecondIncr(e1,e2.c(), e2.toString())
+                ConstSecondIncr(e1, e2.c(), e2.toString())
             } else {
                 ExpIncr(e1, e2)
             }
         }
-        private class ExpIncr(val e1: Expression, val e2: Expression): Expression{
+        private class ExpIncr(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 val base = e1.eval(vars)
                 val increment = e2.eval(vars)
                 return base - (base % increment)
             }
             override fun toString(): String {
-                return "incr($e1,$e2)"
+                return "incr($e1, $e2)"
             }
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -1831,13 +1831,13 @@ fun interface Expression {
                 return 92821 * (e1.hashCode() + 17) + e2.hashCode()
             }
         }
-        private class ConstFirstIncr(val c1: Double, val e2: Expression, val s1: String): Expression{
+        private class ConstFirstIncr(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 val increment = e2.eval(vars)
                 return c1 - (c1 % increment)
             }
             override fun toString(): String {
-                return "incr($s1,$e2)"
+                return "incr($s1, $e2)"
             }
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -1852,13 +1852,13 @@ fun interface Expression {
                 return 92821 * (92821 * (c1.hashCode() + 17) + e2.hashCode()) + s1.hashCode()
             }
         }
-        private class ConstSecondIncr(val e1: Expression, val c2: Double, val s2: String): Expression{
+        private class ConstSecondIncr(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 val base = e1.eval(vars)
                 return base - (base % c2)
             }
             override fun toString(): String {
-                return "incr($e1,$s2)"
+                return "incr($e1, $s2)"
             }
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -1873,13 +1873,13 @@ fun interface Expression {
                 return 92821 * (92821 * (e1.hashCode() + 17) + c2.hashCode()) + s2.hashCode()
             }
         }
-        private class ConstIncr(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression{
+        private class ConstIncr(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression {
             private val c3 = c1 - (c1 % c2)
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
             }
             override fun toString(): String {
-                return "incr($s1,$s2)"
+                return "incr($s1, $s2)"
             }
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
@@ -1901,7 +1901,7 @@ fun interface Expression {
         private val randomClassifier = typeOf<Random>().classifier
         private val random = Random.createLocal()
 
-        private fun mathHelper(reader: StringReader, context: String, chunk: String): Expression?{
+        private fun mathHelper(reader: StringReader, context: String, chunk: String): Expression? {
             val member = MathHelper::class.members.firstOrNull {
                 it.name == chunk && it.parameters.mapNotNull {
                     p -> if(p.type == doubleType || p.type.classifier == randomClassifier) true else null
@@ -1916,15 +1916,15 @@ fun interface Expression {
             println(doubleType)*/
             var numCount = 0
             val inputs: MutableList<Any> = mutableListOf()
-            for (param in params){
-                if (param.type == doubleType){
+            for (param in params) {
+                if (param.type == doubleType) {
                     numCount++
                 }
             }
             if (numCount > 0) {
                 val expressions = parseParenthesesMultiple(reader, context, false)
                 var j = 0
-                for (param in params){
+                for (param in params) {
                     if (param.type == doubleType) {
                         //println("Double TYPE")
                         inputs.add(expressions[j])
@@ -1942,7 +1942,7 @@ fun interface Expression {
                 }
                 //println(inputs)
             } else {
-                for (param in params){
+                for (param in params) {
                     //println("Random TYPE")
                     inputs.add(random)
                 }
@@ -1955,12 +1955,12 @@ fun interface Expression {
                 }
 
                 override fun toString(): String {
-                    return "$chunk${inputs.toString().replace('[','(').replace(']',')')}"
+                    return "$chunk${inputs.toString().replace('[', '(').replace(']', ')')}"
                 }
             }
         }
 
-        fun interface NamedExpression{
+        fun interface NamedExpression {
             fun get(reader: StringReader, context: String, chunk: String): Expression
         }
 

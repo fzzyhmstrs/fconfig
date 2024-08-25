@@ -19,8 +19,8 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import net.minecraft.util.Identifier
 
 @IgnoreVisibility
-@ConvertFrom("test_config3.json","fzzy_config_test")
-class TestConfigImpl3: Config(Identifier("fzzy_config_test","test_config3")) {
+@ConvertFrom("test_config3.json", "fzzy_config_test")
+class TestConfigImpl3: Config(Identifier("fzzy_config_test", "test_config3")) {
 
     fun getBl1(): Boolean {
         return bl1

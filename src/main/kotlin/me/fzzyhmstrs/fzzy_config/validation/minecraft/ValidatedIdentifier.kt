@@ -125,10 +125,10 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Identifier> {
         return try {
             val string = toml.toString()
-            val id = Identifier.tryParse(string) ?: return ValidationResult.error(storedValue,"Invalid identifier [$fieldName].")
+            val id = Identifier.tryParse(string) ?: return ValidationResult.error(storedValue, "Invalid identifier [$fieldName].")
             ValidationResult.success(id)
-        } catch (e: Exception){
-            ValidationResult.error(storedValue,"Critical error deserializing identifier [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(storedValue, "Critical error deserializing identifier [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal
@@ -157,13 +157,13 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
-        return input is Identifier && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
+        return input is Identifier && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {
         return OnClickTextFieldWidget({ this.get().toString() }, { it, isKb, key, code, mods ->
-            val textField = PopupIdentifierTextFieldWidget(170,20,choicePredicate,this)
+            val textField = PopupIdentifierTextFieldWidget(170, 20, choicePredicate, this)
             val popup = PopupWidget.Builder(this.translation())
                 .addElement("text_field", textField, PopupWidget.Builder.Position.BELOW)
                 .addDoneButton({ textField.pushChanges(); PopupWidget.pop() })
@@ -173,7 +173,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             PopupWidget.push(popup)
             PopupWidget.focusElement(textField)
             if (isKb)
-                textField.keyPressed(key,code,mods)
+                textField.keyPressed(key, code, mods)
         })
     }
 
@@ -390,7 +390,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          */
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifier {
+        fun <T> ofRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
             return ValidatedIdentifier(Identifier("minecraft:air"),
                 AllowableIdentifiers(
                     { id -> registry.containsId(id) && predicate.test(id, if (!registry.containsId(id)) return@AllowableIdentifiers false else registry.getEntry(registry.get(id))) },
@@ -411,11 +411,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(defaultValue: Identifier,key: RegistryKey<Registry<T>>): ValidatedIdentifier {
+        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            return ofRegistry(defaultValue,registry)
+            return ofRegistry(defaultValue, registry)
         }
         /**
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
@@ -429,11 +429,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(defaultValue: Identifier,key: RegistryKey<Registry<T>>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
+        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            return ofRegistry(defaultValue,registry,predicate)
+            return ofRegistry(defaultValue, registry, predicate)
         }
         /**
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
@@ -467,12 +467,12 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier,RegistryEntry<T>>): ValidatedIdentifier {
+        fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             @Suppress("DEPRECATION")
-            return ofRegistry(registry,predicate)
+            return ofRegistry(registry, predicate)
         }
 
         /**
@@ -488,7 +488,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.toList() }
             val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
-            return ValidatedIdentifier(Identifier("c:dummy"),ids)
+            return ValidatedIdentifier(Identifier("c:dummy"), ids)
         }
         /**
          * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey, and predicated by the provided predicate
@@ -504,7 +504,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.filter(predicate).toList() }
             val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
-            return ValidatedIdentifier(Identifier("c:dummy"),ids)
+            return ValidatedIdentifier(Identifier("c:dummy"), ids)
         }
         /**
          * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey, and predicated by the provided predicate
@@ -519,7 +519,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.filter(predicate).toList() }
             val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
-            return ValidatedIdentifier(default.id,ids)
+            return ValidatedIdentifier(default.id, ids)
         }
         /**
          * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey
@@ -533,7 +533,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.id }.toList() }
             val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
-            return ValidatedIdentifier(default.id,ids)
+            return ValidatedIdentifier(default.id, ids)
         }
         /**
          * Builds a ValidatedIdentifier based on an allowable list of values
@@ -609,7 +609,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.2.0
          */
         @Suppress("MemberVisibilityCanBePrivate")
-        fun<T> List<T>.supply(): Supplier<List<T>>{
+        fun<T> List<T>.supply(): Supplier<List<T>> {
             return Supplier { this }
         }
     }
@@ -621,7 +621,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         private val choiceValidator: ChoiceValidator<Identifier>,
         private val validatedIdentifier: ValidatedIdentifier)
         :
-        TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty()),
+        TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.empty()),
         SuggestionWindowProvider
     {
 
@@ -647,12 +647,12 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 lastSuggestionText = s
             }
             val id = Identifier.tryParse(s)
-            if (id == null){
+            if (id == null) {
                 setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
                 return false
             }
             return if (validatedIdentifier.validateEntry(id, EntryValidator.ValidationType.STRONG).isValid()) {
-                val result = choiceValidator.validateEntry(id,EntryValidator.ValidationType.STRONG)
+                val result = choiceValidator.validateEntry(id, EntryValidator.ValidationType.STRONG)
                 if (result.isValid()) {
                     storedValue = result.get()
                     lastChangedTime = System.currentTimeMillis()
@@ -676,12 +676,12 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             return storedValue != validatedIdentifier.get()
         }
 
-        private fun ongoingChanges(): Boolean{
+        private fun ongoingChanges(): Boolean {
             return System.currentTimeMillis() - lastChangedTime <= 350L
         }
 
-        fun pushChanges(){
-            if(isChanged() && !needsUpdating){
+        fun pushChanges() {
+            if(isChanged() && !needsUpdating) {
                 validatedIdentifier.accept(storedValue)
             }
         }
@@ -694,22 +694,22 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 this.cachedWrappedValue = testValue
                 this.text = this.storedValue.toString()
             }
-            if(isChanged()){
+            if(isChanged()) {
                 if (lastChangedTime != 0L && !ongoingChanges())
                     validatedIdentifier.accept(storedValue)
             }
             super.renderButton(context, mouseX, mouseY, delta)
-            if(isValid){
+            if(isValid) {
                 if (ongoingChanges())
-                    context.drawGuiTexture(TextureIds.ENTRY_ONGOING,x + width - 20, y, 20, 20)
+                    context.drawGuiTexture(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
                 else
-                    context.drawGuiTexture(TextureIds.ENTRY_OK,x + width - 20, y, 20, 20)
+                    context.drawGuiTexture(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
             } else {
-                context.drawGuiTexture(TextureIds.ENTRY_ERROR,x + width - 20, y, 20, 20)
+                context.drawGuiTexture(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
             }
-            if (pendingSuggestions?.isDone == true){
+            if (pendingSuggestions?.isDone == true) {
                 val suggestions = pendingSuggestions?.get()
-                if (suggestions != null && !suggestions.isEmpty && shownText != lastSuggestionText){
+                if (suggestions != null && !suggestions.isEmpty && shownText != lastSuggestionText) {
                     shownText = lastSuggestionText
                     addSuggestionWindow(suggestions)
                 }
@@ -729,11 +729,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         }
 
         override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
-            return window?.mouseScrolled(mouseX.toInt(),mouseY.toInt(),verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, verticalAmount)
+            return window?.mouseScrolled(mouseX.toInt(), mouseY.toInt(), verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, verticalAmount)
         }
 
         override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
-            return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(),mouseY.toInt()) == true
+            return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(), mouseY.toInt()) == true
         }
 
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
@@ -744,7 +744,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 suggestionWindowListener?.setSuggestionWindowElement(null)
                 closeWindow = false
             }
-            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER){
+            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
                 pushChanges()
                 PopupWidget.pop()
             }
@@ -767,7 +767,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 }
             }
             val closer: Consumer<SuggestionWindow> = Consumer { closeWindow = true }
-            this.window = SuggestionWindow.createSuggestionWindow(this.x,this.y,suggestions,this.text,this.cursor,applier,closer)
+            this.window = SuggestionWindow.createSuggestionWindow(this.x, this.y, suggestions, this.text, this.cursor, applier, closer)
             suggestionWindowListener?.setSuggestionWindowElement(this)
         }
     }

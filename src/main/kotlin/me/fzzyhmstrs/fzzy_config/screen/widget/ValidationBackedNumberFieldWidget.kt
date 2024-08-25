@@ -47,8 +47,8 @@ import java.util.function.Supplier
  */
 @Suppress("LeakingThis")
 @Environment(EnvType.CLIENT)
-open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int, private val wrappedValue: Supplier<T>,private val choiceValidator: ChoiceValidator<T>, private val validationProvider: Function<Double, ValidationResult<T>>, private val applier: Consumer<T> = Consumer { _ ->}):
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer,0,0, width, height, FcText.empty())
+open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int, private val wrappedValue: Supplier<T>, private val choiceValidator: ChoiceValidator<T>, private val validationProvider: Function<Double, ValidationResult<T>>, private val applier: Consumer<T> = Consumer { _ ->}):
+    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.empty())
 {
 
     private var cachedWrappedValue: T = wrappedValue.get()
@@ -86,25 +86,25 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val testValue = wrappedValue.get()
-        if (cachedWrappedValue != testValue){
+        if (cachedWrappedValue != testValue) {
             this.storedValue = testValue
             this.cachedWrappedValue = testValue
             this.text = this.storedValue.toString()
         }
-        if(isChanged()){
+        if(isChanged()) {
             if (lastChangedTime != 0L && !ongoingChanges()) {
                 cachedWrappedValue = storedValue
                 applier.accept(storedValue)
             }
         }
         super.renderButton(context, mouseX, mouseY, delta)
-        if(isValid){
+        if(isValid) {
             if (ongoingChanges())
-                context.drawGuiTexture(ENTRY_ONGOING,x + width - 20, y, 20, 20)
+                context.drawGuiTexture(ENTRY_ONGOING, x + width - 20, y, 20, 20)
             else
-                context.drawGuiTexture(ENTRY_OK,x + width - 20, y, 20, 20)
+                context.drawGuiTexture(ENTRY_OK, x + width - 20, y, 20, 20)
         } else {
-            context.drawGuiTexture(ENTRY_ERROR,x + width - 20, y, 20, 20)
+            context.drawGuiTexture(ENTRY_ERROR, x + width - 20, y, 20, 20)
         }
 
     }
@@ -127,7 +127,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
             false
         } else {
             this.tooltip = null
-            val result2 = choiceValidator.validateEntry(result.get(),EntryValidator.ValidationType.STRONG)
+            val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
             if (result2.isError()) {
                 this.tooltip = Tooltip.of(result.getError().lit())
                 setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)

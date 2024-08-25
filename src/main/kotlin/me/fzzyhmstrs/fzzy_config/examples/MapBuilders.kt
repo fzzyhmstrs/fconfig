@@ -29,7 +29,7 @@ object MapBuilders {
         // a ValidatedMap built with the Builder.
         // KeyHandler takes any String Entry, such as ValidatedIdentifier (ValidatedIdentifier is recommended, in general)
         // valueHandler takes any Entry, in this case a ValidatedInt
-        // defaultIds takes the default map in Map<Identifier,V> form. see defaults for Map<String,V> impl
+        // defaultIds takes the default map in Map<Identifier, V> form. see defaults for Map<String, V> impl
         val stringTest = ValidatedStringMap.Builder<Int>()
             .keyHandler(ValidatedString("yay"))
             .valueHandler(ValidatedInt(1, 100, 0))
@@ -54,7 +54,7 @@ object MapBuilders {
         // a ValidatedEnumMap built with the Builder.
         // KeyHandler automatically builds a ValidatedEnum of the enum class of the default passed
         // valueHandler takes any Entry, in this case a ValidatedFloat
-        // defaults builds the default map. In this case out of vararg set of Pair<Enum,V>
+        // defaults builds the default map. In this case out of vararg set of Pair<Enum, V>
         val enumTest: ValidatedEnumMap<TestEnum, Float> =
             ValidatedEnumMap.Builder<TestEnum, Float>()
                 .keyHandler(TestEnum.TEST)

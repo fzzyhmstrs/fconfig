@@ -68,10 +68,10 @@ open class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValu
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Short> {
-        return try{
+        return try {
             ValidationResult.success(toml.asTomlLiteral().toShort())
-        } catch (e: Exception){
-            ValidationResult.error(defaultValue,"Problem deserializing ValidatedShort [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(defaultValue, "Problem deserializing ValidatedShort [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal
@@ -85,11 +85,11 @@ open class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValu
 
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
-        return input is Short && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
+        return input is Short && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
 
     override fun convert(input: Double): ValidationResult<Short> {
-        return ValidationResult.predicated(input.toInt().toShort(),input.toLong() == input.toInt().toShort().toLong(),"[$input] out of Bounds for short value (${Short.MIN_VALUE} to ${Short.MAX_VALUE} )")
+        return ValidationResult.predicated(input.toInt().toShort(), input.toLong() == input.toInt().toShort().toLong(), "[$input] out of Bounds for short value (${Short.MIN_VALUE} to ${Short.MAX_VALUE} )")
     }
 
     override fun minBound(): Short {

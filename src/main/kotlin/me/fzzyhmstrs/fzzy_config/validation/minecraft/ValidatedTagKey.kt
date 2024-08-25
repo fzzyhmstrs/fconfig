@@ -57,28 +57,28 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<TagKey<T>> {
-        return try{
-            val json = TomlOps.INSTANCE.convertTo(JsonOps.INSTANCE,toml)
-            val dataResult = codec.parse(JsonOps.INSTANCE,json)
-            if (dataResult.result().isPresent){
+        return try {
+            val json = TomlOps.INSTANCE.convertTo(JsonOps.INSTANCE, toml)
+            val dataResult = codec.parse(JsonOps.INSTANCE, json)
+            if (dataResult.result().isPresent) {
                 ValidationResult.success(dataResult.result().get())
             } else {
-                ValidationResult.error(storedValue,"Error deserializing Validated Tag [$fieldName]: ${dataResult.error().getOrNull()?.message()}")
+                ValidationResult.error(storedValue, "Error deserializing Validated Tag [$fieldName]: ${dataResult.error().getOrNull()?.message()}")
             }
-        } catch (e: Exception){
-            ValidationResult.error(storedValue,"Critical error encountered while deserializing Validated Tag [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(storedValue, "Critical error encountered while deserializing Validated Tag [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal
     override fun serialize(input: TagKey<T>): ValidationResult<TomlElement> {
-        val encodeResult = codec.encodeStart(JsonOps.INSTANCE,input)
-        if (encodeResult.get().right().isPresent){
-            return ValidationResult.error(TomlNull,"Error serializing TagKey: ${encodeResult.error().getOrNull()?.message()}")
+        val encodeResult = codec.encodeStart(JsonOps.INSTANCE, input)
+        if (encodeResult.get().right().isPresent) {
+            return ValidationResult.error(TomlNull, "Error serializing TagKey: ${encodeResult.error().getOrNull()?.message()}")
         }
         return try {
-            ValidationResult.success(JsonOps.INSTANCE.convertTo(TomlOps.INSTANCE,encodeResult.result().get()))
-        } catch (e: Exception){
-            ValidationResult.error(TomlNull,"Critical Error while serializing TagKey: ${e.localizedMessage}")
+            ValidationResult.success(JsonOps.INSTANCE.convertTo(TomlOps.INSTANCE, encodeResult.result().get()))
+        } catch (e: Exception) {
+            ValidationResult.error(TomlNull, "Critical Error while serializing TagKey: ${e.localizedMessage}")
         }
     }
 
@@ -89,7 +89,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
      * @since 0.2.0
      */
     override fun copyStoredValue(): TagKey<T> {
-        return TagKey.of(storedValue.registry,storedValue.id)
+        return TagKey.of(storedValue.registry, storedValue.id)
     }
 
     /**
@@ -107,9 +107,9 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     }
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<TagKey<T>>): ClickableWidget {
-        return DecorationWrappedWidget(OnClickTextFieldWidget({ validator.get().toString() },{ it, isKb, key, code, mods ->
-            popupTagPopup(it,isKb, key, code, mods, choicePredicate)
-        }),"widget/decoration/tag".fcId())
+        return DecorationWrappedWidget(OnClickTextFieldWidget({ validator.get().toString() }, { it, isKb, key, code, mods ->
+            popupTagPopup(it, isKb, key, code, mods, choicePredicate)
+        }), "widget/decoration/tag".fcId())
     }
 
     /**
@@ -121,13 +121,13 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
 
     @Internal
     @Environment(EnvType.CLIENT)
-    private fun popupTagPopup(b: ClickableWidget, isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>>){
-        val entryValidator = EntryValidator<String>{s,_ -> Identifier.tryParse(s)?.let { validator.validateEntry(it,EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: ValidationResult.error(s,"invalid Identifier")}
-        val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.registry,Identifier(e))) }
-        val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s,c,cv -> validator.allowableIds.getSuggestions(s,c,cv.convert({ Identifier(it) },{ Identifier(it) }))}
-        val textField = SuggestionBackedTextFieldWidget(170,20, { validator.get().toString() },choicePredicate.convert({it.id.toString()}, {it.id.toString()}),entryValidator,entryApplier,suggestionProvider)
+    private fun popupTagPopup(b: ClickableWidget, isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>>) {
+        val entryValidator = EntryValidator<String>{s, _ -> Identifier.tryParse(s)?.let { validator.validateEntry(it, EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: ValidationResult.error(s, "invalid Identifier")}
+        val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.registry, Identifier(e))) }
+        val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s, c, cv -> validator.allowableIds.getSuggestions(s, c, cv.convert({ Identifier(it) }, { Identifier(it) }))}
+        val textField = SuggestionBackedTextFieldWidget(170, 20, { validator.get().toString() }, choicePredicate.convert({it.id.toString()}, {it.id.toString()}), entryValidator, entryApplier, suggestionProvider)
         val popup = PopupWidget.Builder(translation())
-            .addElement("text_field",textField, Position.BELOW,Position.ALIGN_LEFT)
+            .addElement("text_field", textField, Position.BELOW, Position.ALIGN_LEFT)
             .addDoneButton({ textField.pushChanges(); PopupWidget.pop() })
             .positionX { _, _ -> b.x - 8 }
             .positionY { _, h -> b.y + 28 + 24 - h }

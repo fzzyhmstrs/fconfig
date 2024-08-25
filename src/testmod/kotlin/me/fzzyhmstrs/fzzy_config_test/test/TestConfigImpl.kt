@@ -32,13 +32,13 @@ import net.minecraft.util.Identifier
 import java.awt.Color
 
 @Version(1)
-class TestConfigImpl: Config(Identifier("fzzy_config_test","test_config"), subfolder =  "test") {
+class TestConfigImpl: Config(Identifier("fzzy_config_test", "test_config"), subfolder =  "test") {
 
     var bl1 = true
     var bl2 = ValidatedBoolean()
 
     var int1 = 6
-    var int2 = ValidatedInt(6,10,1)
+    var int2 = ValidatedInt(6, 10, 1)
 
     @RequiresRestart
     var enum1 = TestEnum.ALPHA
@@ -46,25 +46,25 @@ class TestConfigImpl: Config(Identifier("fzzy_config_test","test_config"), subfo
     var enum2 = TestEnum.BETA.validated()
 
     var section1 = TestSectionImpl()
-    class TestSectionImpl: ConfigSection(){
+    class TestSectionImpl: ConfigSection() {
         @ValidatedFloat.Restrict(-500f, 500f)
         var float1 = 1f
         @RequiresRestart
-        var float2 = ValidatedFloat(3f,6f,1f,ValidatedNumber.WidgetType.TEXTBOX)
-        var float3 = ValidatedFloat(3f,6f,1f)
+        var float2 = ValidatedFloat(3f, 6f, 1f, ValidatedNumber.WidgetType.TEXTBOX)
+        var float3 = ValidatedFloat(3f, 6f, 1f)
         var string1 = "hello"
         var string2 = ValidatedString.Builder("chickenfrog")
-            .both { s,_ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
+            .both { s, _ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
             .withCorrector()
-            .both { s,_ ->
-                if(s.contains("chicken")){
+            .both { s, _ ->
+                if(s.contains("chicken")) {
                     ValidationResult.success(s)
                 } else {
-                    if(s.contains("chicken", true)){
-                        val s2 = s.replace(Regex("(?i)chicken"),"chicken")
-                        ValidationResult.error(s2,"'chicken' needs to be lowercase in the string")
+                    if(s.contains("chicken", true)) {
+                        val s2 = s.replace(Regex("(?i)chicken"), "chicken")
+                        ValidationResult.error(s2, "'chicken' needs to be lowercase in the string")
                     } else {
-                        ValidationResult.error(s,"String must contain the lowercase word 'chicken'")
+                        ValidationResult.error(s, "String must contain the lowercase word 'chicken'")
                     }
                 }
             }
@@ -79,29 +79,29 @@ class TestConfigImpl: Config(Identifier("fzzy_config_test","test_config"), subfo
 
         class TestAny {
             var testInt = 1
-            var testValidated = ValidatedFloat(3f,6f,1f)
-            var testValidated2 = listOf(1,3,5,7).validated()
+            var testValidated = ValidatedFloat(3f, 6f, 1f)
+            var testValidated2 = listOf(1, 3, 5, 7).validated()
         }
     }
 
     var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
-    var list1 = listOf(1,3,5,7)
-    var list2 = listOf(1,3,5,7).validated()
+    var list1 = listOf(1, 3, 5, 7)
+    var list2 = listOf(1, 3, 5, 7).validated()
 
-    var color1 = Color(255,128,0).validated(true)
+    var color1 = Color(255, 128, 0).validated(true)
 
-    var set1 = setOf(0.2,0.4,0.6)
-    var set2 = setOf(0.2,0.4,0.6).validated()
+    var set1 = setOf(0.2, 0.4, 0.6)
+    var set2 = setOf(0.2, 0.4, 0.6).validated()
 
     var map1 = mapOf(1 to "a", 2 to "c")
 
-    var id1 = ValidatedIdentifier.ofList(Identifier("stick"), listOf(Identifier("stick"),Identifier("blaze_rod"),Identifier("coal"),Identifier("charcoal")))
+    var id1 = ValidatedIdentifier.ofList(Identifier("stick"), listOf(Identifier("stick"), Identifier("blaze_rod"), Identifier("coal"), Identifier("charcoal")))
 
-    var choice1 = ValidatedList.ofInt(1,2,5,10).toChoices()
+    var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices()
 
     override fun update(deserializedVersion: Int) {
-        if (deserializedVersion == 0){
+        if (deserializedVersion == 0) {
             println("I updated from version 0")
             println(int1)
             int1 /= 10

@@ -15,15 +15,15 @@ import net.minecraft.util.Identifier
 
 internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: String) {
 
-    constructor(buf: PacketByteBuf): this(buf.readString(),buf.readString())
+    constructor(buf: PacketByteBuf): this(buf.readString(), buf.readString())
 
-    fun write(buf: PacketByteBuf){
+    fun write(buf: PacketByteBuf) {
         buf.writeString(id)
         buf.writeString(serializedConfig)
     }
 
 
-    companion object{
+    companion object {
         val id = Identifier("fzzy_config:config_sync_s2c")
     }
 }

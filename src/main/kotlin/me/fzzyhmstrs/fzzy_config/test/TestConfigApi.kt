@@ -15,7 +15,7 @@ import net.minecraft.entity.player.PlayerEntity
 
 object TestConfigApi {
 
-    fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null){
+    fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null) {
         ConfigApiImpl.printChangeHistory(history, id, player)
     }
 

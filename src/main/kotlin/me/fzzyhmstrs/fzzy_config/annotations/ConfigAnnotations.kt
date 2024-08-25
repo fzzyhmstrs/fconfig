@@ -33,7 +33,7 @@ annotation class IgnoreVisibility
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Target(AnnotationTarget.PROPERTY,AnnotationTarget.FIELD,AnnotationTarget.CLASS)
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
 annotation class ClientModifiable
 
 /**
@@ -45,7 +45,7 @@ annotation class ClientModifiable
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Target(AnnotationTarget.PROPERTY,AnnotationTarget.FIELD,AnnotationTarget.CLASS)
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
 annotation class WithPerms(val opLevel: Int = 3)
 
 /**
@@ -58,7 +58,7 @@ annotation class WithPerms(val opLevel: Int = 3)
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Target(AnnotationTarget.PROPERTY,AnnotationTarget.FIELD)
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD)
 annotation class NonSync()
 
 /**
@@ -82,7 +82,7 @@ annotation class Version(val version: Int)
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Target(AnnotationTarget.PROPERTY,AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
 annotation class RequiresRestart
 
 /**

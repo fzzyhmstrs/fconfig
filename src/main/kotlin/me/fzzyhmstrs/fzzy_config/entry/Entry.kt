@@ -30,7 +30,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-interface Entry<T, E: Entry<T,E>>: EntryHandler<T>, EntryWidget<T>, Consumer<T>, Supplier<T> {
+interface Entry<T, E: Entry<T, E>>: EntryHandler<T>, EntryWidget<T>, Consumer<T>, Supplier<T> {
     fun instanceEntry(): E
     fun isValidEntry(input: Any?): Boolean
     fun trySet(input: Any?)

@@ -33,9 +33,9 @@ import java.util.function.Supplier
 import kotlin.math.max
 
 @Environment(EnvType.CLIENT)
-internal class ChangesWidget(private val scope: String, private val widthSupplier: Supplier<Int>, private val manager: UpdateManager): PressableWidget(0,0,80,20,"fc.button.changes".translate()) {
+internal class ChangesWidget(private val scope: String, private val widthSupplier: Supplier<Int>, private val manager: UpdateManager): PressableWidget(0, 0, 80, 20, "fc.button.changes".translate()) {
 
-    companion object{
+    companion object {
         private val changesTex: Identifier = "widget/changes".fcId()
         private val changesHighlightedTex: Identifier = "widget/changes_highlighted".fcId()
     }
@@ -49,7 +49,7 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
                 context.drawGuiTexture(changesHighlightedTex, x + 68, y - 4, 16, 16)
             else
                 context.drawGuiTexture(changesTex, x + 67, y - 4, 16, 16)
-            context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, manager.changeCount().toString(),x + 76, y,0xFFFFFF)
+            context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, manager.changeCount().toString(), x + 76, y, 0xFFFFFF)
         }
     }
 
@@ -73,13 +73,13 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         val changelogText = "fc.button.changelog".translate()
         val popup = PopupWidget.Builder("fc.button.changes.title".translate())
             // Apply Changes
-            .addElement("apply", ActiveButtonWidget(applyText,client.textRenderer.getWidth(applyText) + 8, 20, { manager.hasChanges() }, { manager.apply(false) }), Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addElement("apply", ActiveButtonWidget(applyText, client.textRenderer.getWidth(applyText) + 8, 20, { manager.hasChanges() }, { manager.apply(false) }), Position.BELOW, Position.ALIGN_JUSTIFY)
             // Revert Changes
-            .addElementSpacedH("revert", ActiveButtonWidget(revertText,client.textRenderer.getWidth(revertText) + 8, 20, { manager.hasChanges() }, { manager.revert() }),2, Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addElementSpacedH("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 20, { manager.hasChanges() }, { manager.revert() }), 2, Position.BELOW, Position.ALIGN_JUSTIFY)
             // Restore Defaults > confirm popup
-            .addElementSpacedH("restore", ActiveButtonWidget(restoreText,client.textRenderer.getWidth(restoreText) + 8, 20, { manager.hasRestores(scope) }, { b -> openRestoreConfirmPopup(b) }),2, Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addElementSpacedH("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 20, { manager.hasRestores(scope) }, { b -> openRestoreConfirmPopup(b) }), 2, Position.BELOW, Position.ALIGN_JUSTIFY)
             // Change History
-            .addElementSpacedH("changelog", ActiveButtonWidget(changelogText,client.textRenderer.getWidth(changelogText) + 8, 20, { manager.hasChangeHistory() }, { openChangelogPopup() }),2, Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addElementSpacedH("changelog", ActiveButtonWidget(changelogText, client.textRenderer.getWidth(changelogText) + 8, 20, { manager.hasChangeHistory() }, { openChangelogPopup() }), 2, Position.BELOW, Position.ALIGN_JUSTIFY)
             .addDoneButton(spacingH = 2)
             .positionX(PopupWidget.Builder.at { this.x - 8 })
             .positionY(PopupWidget.Builder.popupContext { h -> this.y - h + 28 })
@@ -90,16 +90,16 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
     private fun openRestoreConfirmPopup(b: ActiveButtonWidget) {
         val client = MinecraftClient.getInstance()
         val confirmText = "fc.button.restore.confirm".translate()
-        val confirmTextWidth = max(50,client.textRenderer.getWidth(confirmText) + 8)
+        val confirmTextWidth = max(50, client.textRenderer.getWidth(confirmText) + 8)
         val cancelText = "fc.button.cancel".translate()
-        val cancelTextWidth = max(50,client.textRenderer.getWidth(cancelText) + 8)
-        val buttonWidth = max(confirmTextWidth,cancelTextWidth)
+        val cancelTextWidth = max(50, client.textRenderer.getWidth(cancelText) + 8)
+        val buttonWidth = max(confirmTextWidth, cancelTextWidth)
 
         val popup = PopupWidget.Builder("fc.button.restore".translate())
             .addDivider()
             .addElement("confirm_text", MultilineTextWidget("fc.button.restore.confirm.desc".translate(), client.textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
-            .addElement("confirm_button", ButtonWidget.builder(confirmText) { manager.restore(scope); PopupWidget.pop() }.size(buttonWidth,20).build(), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth,20).build(),"confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
+            .addElement("confirm_button", ButtonWidget.builder(confirmText) { manager.restore(scope); PopupWidget.pop() }.size(buttonWidth, 20).build(), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width / 2 - w / 2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y - h + 28 })
             .width(buttonWidth + 4 + buttonWidth + 16)
@@ -110,8 +110,8 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
     private fun openChangelogPopup() {
         val changes = manager.changeHistory()
         val popup = PopupWidget.Builder("fc.button.changelog".translate())
-            .addElement("changelog", ChangelogListWidget(changes,widthSupplier), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("done_button", ButtonWidget.builder(ScreenTexts.DONE) { PopupWidget.pop() }.size(50,20).build(), Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addElement("changelog", ChangelogListWidget(changes, widthSupplier), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("done_button", ButtonWidget.builder(ScreenTexts.DONE) { PopupWidget.pop() }.size(50, 20).build(), Position.BELOW, Position.ALIGN_JUSTIFY)
             .positionX(PopupWidget.Builder.at { 0 })
             .build()
         PopupWidget.push(popup)

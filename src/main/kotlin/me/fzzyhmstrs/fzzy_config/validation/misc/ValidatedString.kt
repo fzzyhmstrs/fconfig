@@ -63,7 +63,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
             return validateEntry(input, type).wrap(newVal)
         }
         override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
-            return ValidationResult.predicated(input,re.matches(input),"String doesn't meet regex [$regex]")
+            return ValidationResult.predicated(input, re.matches(input), "String doesn't meet regex [$regex]")
         }
 
         override fun toString(): String {
@@ -103,8 +103,8 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<String> {
         return try {
             ValidationResult.success(toml.asTomlLiteral().toString())
-        } catch (e: Exception){
-            ValidationResult.error(storedValue,"Critical error deserializing string [$fieldName]: ${e.localizedMessage}")
+        } catch (e: Exception) {
+            ValidationResult.error(storedValue, "Critical error deserializing string [$fieldName]: ${e.localizedMessage}")
         }
     }
     @Internal
@@ -123,11 +123,11 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
         return if (checker !is AllowableStrings)
-            ValidationBackedTextFieldWidget(110,20,this, choicePredicate,this,this)
+            ValidationBackedTextFieldWidget(110, 20, this, choicePredicate, this, this)
         else
             try {
-                SuggestionBackedTextFieldWidget(110,20,this, choicePredicate,this,this, { s, cursor, choiceValidator -> checker.getSuggestions(s, cursor, choiceValidator) }, false)
-            } catch (e: Exception){
+                SuggestionBackedTextFieldWidget(110, 20, this, choicePredicate, this, this, { s, cursor, choiceValidator -> checker.getSuggestions(s, cursor, choiceValidator) }, false)
+            } catch (e: Exception) {
                 throw IllegalStateException("Entry Checker provided to Validated String [${getEntryKey()}] is a EntrySuggester of type other than String")
             }
     }
@@ -143,7 +143,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
-        return input is String && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
+        return input is String && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
 
     /**
@@ -153,7 +153,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
         return "Validated String[value=$storedValue, validation=$checker]"
     }
 
-    companion object{
+    companion object {
         /**
          * Validated string based on a list of allowable strings
          *
@@ -164,7 +164,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
          * @since 0.2.6
          */
         @JvmStatic
-        fun fromList(strings: List<String>): ValidatedString{
+        fun fromList(strings: List<String>): ValidatedString {
             return ValidatedString(try{ strings[0] } catch (e: Exception) { throw IllegalStateException("List passed to ValidatedString can't be empty.") }, AllowableStrings({s -> strings.contains(s)}, { strings }))
         }
 
@@ -177,7 +177,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
          * @since 0.2.6
          */
         @JvmStatic
-        fun fromList(defaultValue: String, strings: List<String>): ValidatedString{
+        fun fromList(defaultValue: String, strings: List<String>): ValidatedString {
             if (!strings.contains(defaultValue)) throw IllegalStateException("List passed to ValidatedString doesn't contain the default value [$defaultValue].")
             if (strings.isEmpty()) throw IllegalStateException("List passed to ValidatedString can't be empty.")
             return ValidatedString(defaultValue, AllowableStrings({s -> strings.contains(s)}, { strings }))
@@ -193,7 +193,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
          * @since 0.2.6
          */
         @JvmStatic
-        fun fromList(defaultValue: String, strings: Supplier<List<String>>): ValidatedString{
+        fun fromList(defaultValue: String, strings: Supplier<List<String>>): ValidatedString {
             return ValidatedString(defaultValue, AllowableStrings({s -> strings.get().contains(s)}, strings))
         }
     }
@@ -210,21 +210,21 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
         override fun builder(): Builder {
             return this
         }
-        fun validator(validator: EntryValidator<String>): BuilderWithValidator{
-            return BuilderWithValidator(defaultValue,validator)
+        fun validator(validator: EntryValidator<String>): BuilderWithValidator {
+            return BuilderWithValidator(defaultValue, validator)
         }
-        fun withCorrector(): BuilderWithValidator{
-            return BuilderWithValidator(defaultValue,this.buildValidator())
+        fun withCorrector(): BuilderWithValidator {
+            return BuilderWithValidator(defaultValue, this.buildValidator())
         }
-        class BuilderWithValidator internal constructor(private val defaultValue: String, private val validator: EntryValidator<String>): EntryCorrector.AbstractBuilder<String,BuilderWithValidator>() {
+        class BuilderWithValidator internal constructor(private val defaultValue: String, private val validator: EntryValidator<String>): EntryCorrector.AbstractBuilder<String, BuilderWithValidator>() {
             override fun builder(): BuilderWithValidator {
                 return this
             }
-            fun corrector(corrector: EntryCorrector<String>): ValidatedString{
-                return ValidatedString(defaultValue, EntryChecker.Impl(validator,corrector))
+            fun corrector(corrector: EntryCorrector<String>): ValidatedString {
+                return ValidatedString(defaultValue, EntryChecker.Impl(validator, corrector))
             }
-            fun build(): ValidatedString{
-                return ValidatedString(defaultValue, EntryChecker.Impl(validator,this.buildCorrector()))
+            fun build(): ValidatedString {
+                return ValidatedString(defaultValue, EntryChecker.Impl(validator, this.buildCorrector()))
             }
         }
     }

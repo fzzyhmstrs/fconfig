@@ -62,16 +62,16 @@ class TomlOps: DynamicOps<TomlElement> {
     override fun createString(value: String): TomlElement {
         return try {
             TomlLiteral(NativeLocalTime(value))
-        } catch (e: Exception){
+        } catch (e: Exception) {
             try {
                 TomlLiteral(NativeLocalDate(value))
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 try {
                     TomlLiteral(NativeLocalDateTime(value))
-                } catch (e: Exception){
+                } catch (e: Exception) {
                     try {
                         TomlLiteral(NativeOffsetDateTime(value))
-                    } catch (e: Exception){
+                    } catch (e: Exception) {
                         TomlLiteral(value)
                     }
                 }
@@ -80,11 +80,11 @@ class TomlOps: DynamicOps<TomlElement> {
     }
 
     override fun remove(input: TomlElement, key: String): TomlElement {
-        if (input is TomlTable){
+        if (input is TomlTable) {
             val table = TomlTableBuilder(input.size)
-            for ((k, el) in input){
+            for ((k, el) in input) {
                 if (k == key) continue
-                table.element(k,el)
+                table.element(k, el)
             }
             return table.build()
         }
@@ -93,14 +93,14 @@ class TomlOps: DynamicOps<TomlElement> {
 
     override fun createList(input: Stream<TomlElement>): TomlElement {
         val array = TomlArrayBuilder()
-        for (el in input){
+        for (el in input) {
             array.element(el)
         }
         return array.build()
     }
 
     override fun getStream(input: TomlElement): DataResult<Stream<TomlElement>> {
-        if (input is TomlArray){
+        if (input is TomlArray) {
             return DataResult.success(input.stream().filter { it !is TomlNull })
         }
         return DataResult.error{ "Not a toml array: $input" }
@@ -108,14 +108,14 @@ class TomlOps: DynamicOps<TomlElement> {
 
     override fun createMap(map: Stream<Pair<TomlElement, TomlElement>>): TomlElement {
         val table = TomlTableBuilder()
-        for (pair in map){
-            table.element(pair.first.content,pair.second)
+        for (pair in map) {
+            table.element(pair.first.content, pair.second)
         }
         return table.build()
     }
 
     override fun getMapValues(input: TomlElement): DataResult<Stream<Pair<TomlElement, TomlElement>>> {
-        if(input is TomlTable){
+        if(input is TomlTable) {
             return DataResult.success(input.map { e -> Pair(TomlLiteral(e.key) as TomlElement, e.value) }.stream())
         }
         return DataResult.error{ "Not a toml table: $input" }
@@ -127,7 +127,7 @@ class TomlOps: DynamicOps<TomlElement> {
             table.elements(map.content)
             try {
                 table.element(key.content, value)
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 return DataResult.error{ "Not a valid map key: $key" }
             }
             return DataResult.success(table.build())
@@ -136,7 +136,7 @@ class TomlOps: DynamicOps<TomlElement> {
     }
 
     override fun mergeToList(list: TomlElement, value: TomlElement): DataResult<TomlElement> {
-        if (list is TomlArray){
+        if (list is TomlArray) {
             val array = TomlArrayBuilder(list.size+1)
             array.elements(list)
             array.element(value)
@@ -146,7 +146,7 @@ class TomlOps: DynamicOps<TomlElement> {
     }
 
     override fun mergeToList(list: TomlElement, values: MutableList<TomlElement>): DataResult<TomlElement> {
-        if(list is TomlArray){
+        if(list is TomlArray) {
             val array = TomlArrayBuilder(list.size + values.size)
             array.elements(list)
             array.elements(values)
@@ -156,32 +156,32 @@ class TomlOps: DynamicOps<TomlElement> {
     }
 
     override fun getStringValue(input: TomlElement): DataResult<String> {
-        if (input is TomlLiteral && input.type == TomlLiteral.Type.String){
+        if (input is TomlLiteral && input.type == TomlLiteral.Type.String) {
             return DataResult.success(input.toString())
         }
         return DataResult .error { "Not a string: $input" }
     }
 
     override fun getNumberValue(input: TomlElement): DataResult<Number> {
-        if (input is TomlLiteral){
-            return when (input.type){
+        if (input is TomlLiteral) {
+            return when (input.type) {
                 TomlLiteral.Type.Integer -> {
                     DataResult.success(input.toLong())
                 }
                 TomlLiteral.Type.Float -> {
                     DataResult.success(input.toDouble())
                 }
-                TomlLiteral.Type.Boolean ->{
+                TomlLiteral.Type.Boolean -> {
                     DataResult.success(if(input.toBoolean()) 1 else 0)
                 }
                 TomlLiteral.Type.String -> {
-                    try{
+                    try {
                         DataResult.success(java.lang.Long.parseLong(input.toString()))
-                    } catch (e: Exception){
+                    } catch (e: Exception) {
                         DataResult.error { "Not a number: $input" }
                     }
                 }
-                else ->{
+                else -> {
                     DataResult.error { "Not a number: $input" }
                 }
             }
@@ -190,25 +190,25 @@ class TomlOps: DynamicOps<TomlElement> {
     }
 
     override fun getBooleanValue(input: TomlElement): DataResult<Boolean> {
-        return try{
+        return try {
             DataResult.success((input as TomlLiteral).toBoolean())
-        } catch (e: Exception){
+        } catch (e: Exception) {
             DataResult.error { "Not a boolean: $input" }
         }
     }
 
     override fun <U : Any?> convertTo(outOps: DynamicOps<U>, input: TomlElement): U {
-        if(input is TomlTable){
-            return convertMap(outOps,input)
+        if(input is TomlTable) {
+            return convertMap(outOps, input)
         }
-        if (input is TomlArray){
-            return convertList(outOps,input)
+        if (input is TomlArray) {
+            return convertList(outOps, input)
         }
-        if (input is TomlNull){
+        if (input is TomlNull) {
             return outOps.empty()
         }
         val literal = input.asTomlLiteral()
-        when (literal.type){
+        when (literal.type) {
             TomlLiteral.Type.String -> {
                 return outOps.createString(literal.toString())
             }
@@ -217,11 +217,11 @@ class TomlOps: DynamicOps<TomlElement> {
             }
             TomlLiteral.Type.Integer -> {
                 val l = literal.toLong()
-                return if (l <= Byte.MAX_VALUE && l >= Byte.MIN_VALUE){
+                return if (l <= Byte.MAX_VALUE && l >= Byte.MIN_VALUE) {
                     outOps.createByte(l.toByte())
-                } else if (l <= Short.MAX_VALUE && l >= Short.MIN_VALUE ){
+                } else if (l <= Short.MAX_VALUE && l >= Short.MIN_VALUE ) {
                     outOps.createShort(l.toShort())
-                } else if (l <= Int.MAX_VALUE && l >= Int.MIN_VALUE ){
+                } else if (l <= Int.MAX_VALUE && l >= Int.MIN_VALUE ) {
                     outOps.createInt(l.toInt())
                 } else {
                     outOps.createLong(l)
@@ -229,7 +229,7 @@ class TomlOps: DynamicOps<TomlElement> {
             }
             TomlLiteral.Type.Float -> {
                 val d = literal.toDouble()
-                return if (d <= Float.MAX_VALUE && d >= -Float.MAX_VALUE){
+                return if (d <= Float.MAX_VALUE && d >= -Float.MAX_VALUE) {
                     outOps.createFloat(d.toFloat())
                 } else {
                     outOps.createDouble(d)

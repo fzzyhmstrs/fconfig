@@ -23,14 +23,14 @@ import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import java.util.*
 
-object ExampleTexts{
+object ExampleTexts {
 
     fun texts() {
         //FcText has wrappers for the standard Text methods, historically used for porting
         val standardText = FcText.literal("Normal text")
         val translateText = FcText.translatable("my.translatable.text")
-        val fallbackText = FcText.translatableWithFallback("my.translatable.text","My Fallback")
-        val stringifiedText = FcText.stringified("my.stringified.text", TagKey.of(RegistryKeys.ITEM,"arg_requiring_stringification".fcId()))
+        val fallbackText = FcText.translatableWithFallback("my.translatable.text", "My Fallback")
+        val stringifiedText = FcText.stringified("my.stringified.text", TagKey.of(RegistryKeys.ITEM, "arg_requiring_stringification".fcId()))
         val emptyText = FcText.empty()
         val appendedText = FcText.appended(standardText, fallbackText)
 
@@ -47,10 +47,10 @@ object ExampleTexts{
 
         // simple example class that implements Translatable
         class TranslatableExample: Translatable {
-            override fun translationKey(): String{
+            override fun translationKey(): String {
                 return "example.translatable.translation"
             }
-            override fun descriptionKey(): String{
+            override fun descriptionKey(): String {
                 return "example.translatable.translation.desc"
             }
         }

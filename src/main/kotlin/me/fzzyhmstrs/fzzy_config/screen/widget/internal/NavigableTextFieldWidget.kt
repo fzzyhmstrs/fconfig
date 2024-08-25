@@ -15,14 +15,14 @@ import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
 
-class NavigableTextFieldWidget(textRenderer: TextRenderer, width: Int, height: Int, text: Text) : TextFieldWidget(textRenderer,0,0, width, height, text) {
+class NavigableTextFieldWidget(textRenderer: TextRenderer, width: Int, height: Int, text: Text) : TextFieldWidget(textRenderer, 0, 0, width, height, text) {
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
          if (!this.isNarratable || !this.isFocused) {
             return false
         }
-        if (keyCode == GLFW.GLFW_KEY_LEFT && this.text.isEmpty()){
+        if (keyCode == GLFW.GLFW_KEY_LEFT && this.text.isEmpty()) {
             return false
-        } else if (keyCode == GLFW.GLFW_KEY_RIGHT && this.text.isEmpty()){
+        } else if (keyCode == GLFW.GLFW_KEY_RIGHT && this.text.isEmpty()) {
             return false
         }
         return super.keyPressed(keyCode, scanCode, modifiers)

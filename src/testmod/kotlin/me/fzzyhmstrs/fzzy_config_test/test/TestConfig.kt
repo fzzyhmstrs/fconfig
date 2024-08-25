@@ -16,7 +16,7 @@ import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig
 
 object TestConfig {
 
-    fun init(){
+    fun init() {
         println("I registered my config")
     }
 

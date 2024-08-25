@@ -44,60 +44,60 @@ object FC: ModInitializer {
     override fun onInitialize() {
         TestConfig.init()
         val expressionTestResults = AssertionResults()
-        assertConstExpression("3 + 5",8.0,expressionTestResults)
-        assertConstExpression("3 - 5",-2.0,expressionTestResults)
-        assertConstExpression("3 * 5",15.0,expressionTestResults)
-        assertConstExpression("3 / 5",3.0/5.0,expressionTestResults)
-        assertConstExpression("8 % 2",0.0,expressionTestResults)
-        assertConstExpression("3 + 5 + 3 + 5 + 3 + 5",24.0,expressionTestResults)
-        assertVarExpression("3 + x", mapOf('x' to 5.0),8.0,expressionTestResults)
-        assertVarExpression("3 - x", mapOf('x' to 5.0),-2.0,expressionTestResults)
-        assertVarExpression("3 * x", mapOf('x' to 5.0),15.0,expressionTestResults)
-        assertVarExpression("3 / x", mapOf('x' to 5.0),3.0/5.0,expressionTestResults)
-        assertVarExpression("8 % x", mapOf('x' to 3.0),8.0 % 3.0,expressionTestResults)
-        assertConstExpression("sqrt(4)",2.0,expressionTestResults)
-        assertConstExpression("ceil(4.5)",5.0,expressionTestResults)
-        assertConstExpression("floor(4.5)",4.0,expressionTestResults)
-        assertConstExpression("round(4.25)",4.0,expressionTestResults)
-        assertConstExpression("ln(4.5)",kotlin.math.ln(4.5),expressionTestResults)
-        assertConstExpression("log(4,4)",kotlin.math.log(4.0,4.0),expressionTestResults)
-        assertConstExpression("log10(5)",kotlin.math.log10(5.0),expressionTestResults)
-        assertConstExpression("log2(5)",kotlin.math.log2(5.0),expressionTestResults)
-        assertConstExpression("abs(-4.5)",4.5,expressionTestResults)
-        assertConstExpression("sin(4.5)",MathHelper.sin(4.5.toFloat()).toDouble(),expressionTestResults)
-        assertConstExpression("cos(4.5)",MathHelper.cos(4.5.toFloat()).toDouble(),expressionTestResults)
-        assertConstExpression("incr(4.268,0.1)",4.2,expressionTestResults)
+        assertConstExpression("3 + 5", 8.0, expressionTestResults)
+        assertConstExpression("3 - 5", -2.0, expressionTestResults)
+        assertConstExpression("3 * 5", 15.0, expressionTestResults)
+        assertConstExpression("3 / 5", 3.0/5.0, expressionTestResults)
+        assertConstExpression("8 % 2", 0.0, expressionTestResults)
+        assertConstExpression("3 + 5 + 3 + 5 + 3 + 5", 24.0, expressionTestResults)
+        assertVarExpression("3 + x", mapOf('x' to 5.0), 8.0, expressionTestResults)
+        assertVarExpression("3 - x", mapOf('x' to 5.0), -2.0, expressionTestResults)
+        assertVarExpression("3 * x", mapOf('x' to 5.0), 15.0, expressionTestResults)
+        assertVarExpression("3 / x", mapOf('x' to 5.0), 3.0/5.0, expressionTestResults)
+        assertVarExpression("8 % x", mapOf('x' to 3.0), 8.0 % 3.0, expressionTestResults)
+        assertConstExpression("sqrt(4)", 2.0, expressionTestResults)
+        assertConstExpression("ceil(4.5)", 5.0, expressionTestResults)
+        assertConstExpression("floor(4.5)", 4.0, expressionTestResults)
+        assertConstExpression("round(4.25)", 4.0, expressionTestResults)
+        assertConstExpression("ln(4.5)", kotlin.math.ln(4.5), expressionTestResults)
+        assertConstExpression("log(4, 4)", kotlin.math.log(4.0, 4.0), expressionTestResults)
+        assertConstExpression("log10(5)", kotlin.math.log10(5.0), expressionTestResults)
+        assertConstExpression("log2(5)", kotlin.math.log2(5.0), expressionTestResults)
+        assertConstExpression("abs(-4.5)", 4.5, expressionTestResults)
+        assertConstExpression("sin(4.5)", MathHelper.sin(4.5.toFloat()).toDouble(), expressionTestResults)
+        assertConstExpression("cos(4.5)", MathHelper.cos(4.5.toFloat()).toDouble(), expressionTestResults)
+        assertConstExpression("incr(4.268, 0.1)", 4.2, expressionTestResults)
         println(expressionTestResults)
     }
 
-    private fun assertConstExpression(exp: String, result: Double, results: AssertionResults){
+    private fun assertConstExpression(exp: String, result: Double, results: AssertionResults) {
         println("Expression Input: $exp")
         val e = Expression.parse(exp)
         println("Expression Parsed: $e")
-        this.assert(e.eval(mapOf()),result, results)
+        this.assert(e.eval(mapOf()), result, results)
     }
 
-    private fun assertVarExpression(exp: String, vars: Map<Char, Double>, result: Double, results: AssertionResults){
+    private fun assertVarExpression(exp: String, vars: Map<Char, Double>, result: Double, results: AssertionResults) {
         println("Expression Input: $exp")
         val e = Expression.parse(exp)
         println("Expression Parsed: $e")
-        this.assert(e.eval(vars),result, results)
+        this.assert(e.eval(vars), result, results)
     }
 
-    private fun assert(testVal: Any, assertionVal: Any, assertions: AssertionResults){
+    private fun assert(testVal: Any, assertionVal: Any, assertions: AssertionResults) {
         println("Assertion [$testVal] == [$assertionVal]: ${(testVal == assertionVal).also { assertions.inc(it) }}")
     }
 
-    private class AssertionResults(var fails: Int = 0, var tests: Int = 0){
+    private class AssertionResults(var fails: Int = 0, var tests: Int = 0) {
         override fun toString(): String {
             return "ASSERTIONS PASSED: ${tests - fails} out of $tests"
         }
-        fun inc(result: Boolean){
+        fun inc(result: Boolean) {
             tests++
             if(!result)
                 fails++
         }
-        fun addTo(other: AssertionResults){
+        fun addTo(other: AssertionResults) {
             other.tests += tests
             other.fails += fails
         }
@@ -109,21 +109,21 @@ object FCC: ClientModInitializer {
     var openDamnScreen = ""
 
     //val testEnum = ValidatedEnum(Selectable.SelectionType.FOCUSED)
-    //val testEnum2 = ValidatedEnum(Selectable.SelectionType.FOCUSED,ValidatedEnum.WidgetType.CYCLING)
-    val testInt = ValidatedInt(8,16,0)
-    val testInt2 = ValidatedInt(8,Int.MAX_VALUE,0,ValidatedNumber.WidgetType.TEXTBOX)
+    //val testEnum2 = ValidatedEnum(Selectable.SelectionType.FOCUSED, ValidatedEnum.WidgetType.CYCLING)
+    val testInt = ValidatedInt(8, 16, 0)
+    val testInt2 = ValidatedInt(8, Int.MAX_VALUE, 0, ValidatedNumber.WidgetType.TEXTBOX)
     val testString = ValidatedString.Builder("chickenfrog")
-        .both { s,_ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
+        .both { s, _ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
         .withCorrector()
-        .both { s,_ ->
-            if(s.contains("chicken")){
+        .both { s, _ ->
+            if(s.contains("chicken")) {
                 ValidationResult.success(s)
             } else {
-                if(s.contains("chicken", true)){
-                    val s2 = s.replace(Regex("(?i)chicken"),"chicken")
-                    ValidationResult.error(s2,"'chicken' needs to be lowercase in the string")
+                if(s.contains("chicken", true)) {
+                    val s2 = s.replace(Regex("(?i)chicken"), "chicken")
+                    ValidationResult.error(s2, "'chicken' needs to be lowercase in the string")
                 } else {
-                    ValidationResult.error(s,"String must contain the lowercase word 'chicken'")
+                    ValidationResult.error(s, "String must contain the lowercase word 'chicken'")
                 }
             }
         }
@@ -152,7 +152,7 @@ object FCC: ClientModInitializer {
             if (openDamnScreen == "please") {
                 client.setScreen(TestPopupScreen())
                 openDamnScreen = ""
-            } else if (openDamnScreen == "the_big_one"){
+            } else if (openDamnScreen == "the_big_one") {
                 ConfigApi.openScreen("fzzy_config_test")
                 openDamnScreen = ""
             }
@@ -160,7 +160,7 @@ object FCC: ClientModInitializer {
         TestConfigClient.init()
     }
 
-    private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>){
+    private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>) {
         dispatcher.register(
             ClientCommandManager.literal("test_screen_1")
                 .executes{ context ->
@@ -181,5 +181,5 @@ object FCC: ClientModInitializer {
 }
 
 fun String.fctId(): Identifier {
-    return Identifier(FC.MOD_ID,this)
+    return Identifier(FC.MOD_ID, this)
 }

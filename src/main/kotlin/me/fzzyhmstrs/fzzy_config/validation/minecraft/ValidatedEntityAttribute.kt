@@ -63,17 +63,17 @@ import java.util.function.Consumer
  * @since 0.3.1
  */
 @Suppress("MemberVisibilityCanBePrivate")
-open class ValidatedEntityAttribute private constructor(attributeId: Identifier, private val lockAttribute: Boolean, uuid: UUID, name: String, amount: Double, operation: Operation, private val lockOperation: Boolean, private val amountValidator: Entry<Double,*> = ValidatedDouble(amount)): ValidatedField<ValidatedEntityAttribute.EntityAttributeInstanceHolder>(
-    EntityAttributeInstanceHolder(attributeId,uuid, name, amount, operation)
+open class ValidatedEntityAttribute private constructor(attributeId: Identifier, private val lockAttribute: Boolean, uuid: UUID, name: String, amount: Double, operation: Operation, private val lockOperation: Boolean, private val amountValidator: Entry<Double, *> = ValidatedDouble(amount)): ValidatedField<ValidatedEntityAttribute.EntityAttributeInstanceHolder>(
+    EntityAttributeInstanceHolder(attributeId, uuid, name, amount, operation)
 ) {
 
     /**
      * adds the stored Attribute and its modifier to a passed modifier map. This is useful when dealing with methods such as [ItemStack.getAttributeModifiers]
-     * @param map [Multimap]&lt;[EntityAttribute],[EntityAttributeModifier]&gt; - the map to add the modifier pair to
+     * @param map [Multimap]&lt;[EntityAttribute], [EntityAttributeModifier]&gt; - the map to add the modifier pair to
      * @author fzzyhmstrs
      * @since 0.3.1
      */
-    fun addToMap(map: Multimap<EntityAttribute, EntityAttributeModifier>){
+    fun addToMap(map: Multimap<EntityAttribute, EntityAttributeModifier>) {
         storedValue.addToMap(map)
     }
 
@@ -83,7 +83,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
-    fun getModifier(): EntityAttributeModifier{
+    fun getModifier(): EntityAttributeModifier {
         return storedValue.createModifier()
     }
 
@@ -95,8 +95,8 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
-    fun updateModifier(new: EntityAttributeModifier){
-        validateAndSet(storedValue.copy(uuid = new.id, name = new.name, amount = amountValidator.correctEntry(new.value,EntryValidator.ValidationType.STRONG).get(), operation = if(lockOperation) storedValue.operation else new.operation))
+    fun updateModifier(new: EntityAttributeModifier) {
+        validateAndSet(storedValue.copy(uuid = new.id, name = new.name, amount = amountValidator.correctEntry(new.value, EntryValidator.ValidationType.STRONG).get(), operation = if(lockOperation) storedValue.operation else new.operation))
     }
     /**
      * updates this validation with a new double value
@@ -106,8 +106,8 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
-    fun updateModifierAmount(newAmount: Double){
-        validateAndSet(storedValue.copy(amount = amountValidator.correctEntry(newAmount,EntryValidator.ValidationType.STRONG).get()))
+    fun updateModifierAmount(newAmount: Double) {
+        validateAndSet(storedValue.copy(amount = amountValidator.correctEntry(newAmount, EntryValidator.ValidationType.STRONG).get()))
     }
 
     /**
@@ -159,11 +159,11 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<EntityAttributeInstanceHolder> {
-        return storedValue.deserializeEntry(toml, mutableListOf(),fieldName,ConfigApiImpl.IGNORE_NON_SYNC)
+        return storedValue.deserializeEntry(toml, mutableListOf(), fieldName, ConfigApiImpl.IGNORE_NON_SYNC)
     }
     @Internal
     override fun serialize(input: EntityAttributeInstanceHolder): ValidationResult<TomlElement> {
-        return ValidationResult.success(storedValue.serializeEntry(input, mutableListOf(),ConfigApiImpl.IGNORE_NON_SYNC))
+        return ValidationResult.success(storedValue.serializeEntry(input, mutableListOf(), ConfigApiImpl.IGNORE_NON_SYNC))
     }
     /**
      * creates a deep copy of this ValidatedEntityAttribute
@@ -176,17 +176,17 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
-        return input is EntityAttributeInstanceHolder && storedValue.validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
+        return input is EntityAttributeInstanceHolder && storedValue.validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
     @Internal
-    override fun toString(): String{
+    override fun toString(): String {
         return "Validated Entity Attribute[attribute=${storedValue.attributeId}, attribute_locked=$lockAttribute, modifier=$${getModifier()}, operation_locked=$lockOperation, validation=$amountValidator]"
     }
 
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<EntityAttributeInstanceHolder>): ClickableWidget {
-        return EntityAttributeButtonWidget(this, { this.getButtonText(storedValue.attributeId,storedValue.amount, storedValue.operation) },{ openEntityAttributePopup() })
+        return EntityAttributeButtonWidget(this, { this.getButtonText(storedValue.attributeId, storedValue.amount, storedValue.operation) }, { openEntityAttributePopup() })
     }
     @Environment(EnvType.CLIENT)
     private fun openEntityAttributePopup() {
@@ -195,11 +195,11 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         amountValidator.accept(storedValue.amount)
         val popup = PopupWidget.Builder(translation())
             .addDivider()
-            .addElement("text", SuppliedTextWidget({ getButtonText(storedValue.validator().get(),amountValidator.get(), operationValidator.get()) }, MinecraftClient.getInstance().textRenderer).alignCenter(), Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addElement("text", SuppliedTextWidget({ getButtonText(storedValue.validator().get(), amountValidator.get(), operationValidator.get()) }, MinecraftClient.getInstance().textRenderer).alignCenter(), Position.BELOW, Position.ALIGN_JUSTIFY)
             .addDivider()
-            .addElement("attribute", if(lockAttribute) TextWidget(0,0,110,20, attribute?.translationKey?.translate() ?: storedValue.attributeId.text(),MinecraftClient.getInstance().textRenderer).alignCenter() else storedValue.validator().widgetEntry(), Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addElement("attribute", if(lockAttribute) TextWidget(0, 0, 110, 20, attribute?.translationKey?.translate() ?: storedValue.attributeId.text(), MinecraftClient.getInstance().textRenderer).alignCenter() else storedValue.validator().widgetEntry(), Position.BELOW, Position.ALIGN_JUSTIFY)
             .addElement("amount", amountValidator.widgetEntry(), Position.BELOW, Position.ALIGN_JUSTIFY)
-            .addElement("operation", if(lockOperation) ButtonWidget.builder(storedValue.operation.name.lit()) { _ -> }.size(110,20).build().also { it.active = false } else operationValidator.widgetEntry(), Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addElement("operation", if(lockOperation) ButtonWidget.builder(storedValue.operation.name.lit()) { _ -> }.size(110, 20).build().also { it.active = false } else operationValidator.widgetEntry(), Position.BELOW, Position.ALIGN_JUSTIFY)
             .addDoneButton()
             .onClose{ this.setAndUpdate(storedValue.copy(
                 attributeId =  if(lockAttribute) storedValue.attributeId else storedValue.validator().get(),
@@ -210,22 +210,22 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         PopupWidget.push(popup)
     }
     @Environment(EnvType.CLIENT)
-    private fun getButtonText(inputAttribute: Identifier, inputAmount: Double, inputOperation: Operation): MutableText{
+    private fun getButtonText(inputAttribute: Identifier, inputAmount: Double, inputOperation: Operation): MutableText {
         val attribute = Registries.ATTRIBUTE.get(inputAttribute) ?: return "fc.validated_field.entity_attribute.error".translate()
-        val amount = when(inputOperation){
+        val amount = when(inputOperation) {
             Operation.ADDITION -> if (attribute == EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE) inputAmount * 10.0 else inputAmount
             Operation.MULTIPLY_BASE -> inputAmount * 100.0
             Operation.MULTIPLY_TOTAL -> inputAmount * 100.0
         }
-        return if (inputAmount > 0.0){
-            FcText.translatable("attribute.modifier.plus.${inputOperation.id}",ItemStack.MODIFIER_FORMAT.format(amount),FcText.translatable(attribute.translationKey)).formatted(Formatting.DARK_GREEN)
+        return if (inputAmount > 0.0) {
+            FcText.translatable("attribute.modifier.plus.${inputOperation.id}", ItemStack.MODIFIER_FORMAT.format(amount), FcText.translatable(attribute.translationKey)).formatted(Formatting.DARK_GREEN)
         } else {
-            FcText.translatable("attribute.modifier.take.${inputOperation.id}",ItemStack.MODIFIER_FORMAT.format(-amount),FcText.translatable(attribute.translationKey)).formatted(Formatting.RED)
+            FcText.translatable("attribute.modifier.take.${inputOperation.id}", ItemStack.MODIFIER_FORMAT.format(-amount), FcText.translatable(attribute.translationKey)).formatted(Formatting.RED)
         }
     }
 
     @Environment(EnvType.CLIENT)
-    private class EntityAttributeButtonWidget(private val entry: ValidatedEntityAttribute, private val textSupplier: Supplier<MutableText>, private val onPress: Consumer<ClickableWidget>): PressableWidget(0,0,110,20, textSupplier.get()){
+    private class EntityAttributeButtonWidget(private val entry: ValidatedEntityAttribute, private val textSupplier: Supplier<MutableText>, private val onPress: Consumer<ClickableWidget>): PressableWidget(0, 0, 110, 20, textSupplier.get()) {
 
         override fun getMessage(): Text {
             return textSupplier.get()
@@ -246,7 +246,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
-    class Builder @JvmOverloads constructor(private val attributeId: Identifier, private val lockAttribute: Boolean = false){
+    class Builder @JvmOverloads constructor(private val attributeId: Identifier, private val lockAttribute: Boolean = false) {
 
         @JvmOverloads
         constructor(attributeId: String, lockAttribute: Boolean = false): this(Identifier(attributeId), lockAttribute)
@@ -264,7 +264,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
          * @author fzzyhmstrs
          * @since 0.3.1
          */
-        fun uuid(uuid: String): Builder{
+        fun uuid(uuid: String): Builder {
             this.uuid = UUID.fromString(uuid)
             return this
         }
@@ -275,7 +275,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
          * @author fzzyhmstrs
          * @since 0.3.1
          */
-        fun uuid(uuid: UUID): Builder{
+        fun uuid(uuid: UUID): Builder {
             this.uuid = uuid
             return this
         }
@@ -286,23 +286,23 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
          * @author fzzyhmstrs
          * @since 0.3.1
          */
-        fun name(name: String): Builder{
+        fun name(name: String): Builder {
             this.name = name
             return this
         }
         @JvmOverloads
-        fun amount(amount: Double, min: Double = -Double.MAX_VALUE, max: Double = Double.MAX_VALUE): Builder{
+        fun amount(amount: Double, min: Double = -Double.MAX_VALUE, max: Double = Double.MAX_VALUE): Builder {
             this.amount = ValidatedDouble(amount, max, min)
             return this
         }
-        fun operation(operation: Operation, lockOperation: Boolean = false): Builder{
+        fun operation(operation: Operation, lockOperation: Boolean = false): Builder {
             this.operation = operation
             this.lockOperation = lockOperation
             return this
         }
 
-        fun build(): ValidatedEntityAttribute{
-            return ValidatedEntityAttribute(attributeId,lockAttribute,uuid?:UUID.nameUUIDFromBytes("$name+${operation.name}".toByteArray()),name,amount.get(),operation,lockOperation,amount)
+        fun build(): ValidatedEntityAttribute {
+            return ValidatedEntityAttribute(attributeId, lockAttribute, uuid?:UUID.nameUUIDFromBytes("$name+${operation.name}".toByteArray()), name, amount.get(), operation, lockOperation, amount)
         }
     }
 
@@ -318,20 +318,20 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
-    data class EntityAttributeInstanceHolder(val attributeId: Identifier, val uuid: UUID, val name: String, val amount: Double, val operation: Operation): EntryHandler<EntityAttributeInstanceHolder>{
+    data class EntityAttributeInstanceHolder(val attributeId: Identifier, val uuid: UUID, val name: String, val amount: Double, val operation: Operation): EntryHandler<EntityAttributeInstanceHolder> {
 
-        private val idValidator = ValidatedIdentifier.ofRegistry(attributeId,Registries.ATTRIBUTE)
+        private val idValidator = ValidatedIdentifier.ofRegistry(attributeId, Registries.ATTRIBUTE)
         @Internal
-        internal fun validator(): ValidatedIdentifier{
+        internal fun validator(): ValidatedIdentifier {
             return idValidator
         }
         @Internal
-        internal fun addToMap(map: Multimap<EntityAttribute, EntityAttributeModifier>){
-                Registries.ATTRIBUTE.get(attributeId)?.let { map.put(it, EntityAttributeModifier(uuid,name,amount,operation)) }
+        internal fun addToMap(map: Multimap<EntityAttribute, EntityAttributeModifier>) {
+                Registries.ATTRIBUTE.get(attributeId)?.let { map.put(it, EntityAttributeModifier(uuid, name, amount, operation)) }
         }
         @Internal
-        internal fun createModifier(): EntityAttributeModifier{
-            return EntityAttributeModifier(uuid,name,amount,operation)
+        internal fun createModifier(): EntityAttributeModifier {
+            return EntityAttributeModifier(uuid, name, amount, operation)
         }
 
         @Internal
@@ -342,9 +342,9 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         ): TomlElement {
             val table = TomlTableBuilder(2)
             val instance = input ?: this
-            table.element("id",idValidator.serializeEntry(instance.attributeId,errorBuilder, flags))
+            table.element("id", idValidator.serializeEntry(instance.attributeId, errorBuilder, flags))
             val toml = NbtCompound.CODEC.encodeStart(TomlOps.INSTANCE, instance.createModifier().toNbt())
-            toml.result().ifPresentOrElse({ table.element("modifier",it) }, {table.element("modifier",TomlNull)})
+            toml.result().ifPresentOrElse({ table.element("modifier", it) }, {table.element("modifier", TomlNull)})
             return table.build()
         }
         @Internal
@@ -356,13 +356,13 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         ): ValidationResult<EntityAttributeInstanceHolder> {
             val table = try {
                 toml.asTomlTable()
-            } catch (e: Exception){
-                return ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName], TomlElement not a TomlTable")
+            } catch (e: Exception) {
+                return ValidationResult.error(this, "Error deserializing EntityAttributeInstance [$fieldName], TomlElement not a TomlTable")
             }
-            val id = table["id"]?.let { idValidator.deserializeEntry(it,errorBuilder, fieldName, flags).takeIf { result -> result.isValid() }?.get() ?: return ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName], invalid identifier")} ?: return ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName], key 'id' is missing")
-            val modifierElement = table["modifier"] ?: return ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName], key 'modifier' is missing")
-            val modifierResult = NbtCompound.CODEC.parse(TomlOps.INSTANCE,modifierElement)
-            var finalResult = ValidationResult.error(this,"Error deserializing EntityAttributeInstance [$fieldName]: error deserializing modifier")
+            val id = table["id"]?.let { idValidator.deserializeEntry(it, errorBuilder, fieldName, flags).takeIf { result -> result.isValid() }?.get() ?: return ValidationResult.error(this, "Error deserializing EntityAttributeInstance [$fieldName], invalid identifier")} ?: return ValidationResult.error(this, "Error deserializing EntityAttributeInstance [$fieldName], key 'id' is missing")
+            val modifierElement = table["modifier"] ?: return ValidationResult.error(this, "Error deserializing EntityAttributeInstance [$fieldName], key 'modifier' is missing")
+            val modifierResult = NbtCompound.CODEC.parse(TomlOps.INSTANCE, modifierElement)
+            var finalResult = ValidationResult.error(this, "Error deserializing EntityAttributeInstance [$fieldName]: error deserializing modifier")
             modifierResult.result().ifPresent {
                 EntityAttributeModifier.fromNbt(it)?.let { mod ->
                     finalResult = ValidationResult.success(

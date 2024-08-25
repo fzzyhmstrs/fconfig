@@ -55,15 +55,15 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         return updatableEntries[key]
     }
 
-    fun pushUpdatableStates(){
-        for (updatable in updatableEntries.values){
+    fun pushUpdatableStates() {
+        for (updatable in updatableEntries.values) {
             updatable.pushState()
         }
     }
 
     override fun restoreCount(scope: String): Int {
         var count = 0
-        for ((key, updatable) in updatableEntries){
+        for ((key, updatable) in updatableEntries) {
             if(!key.startsWith(scope)) continue
             if(updatable.isDefault()) continue
             count++
@@ -72,7 +72,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
     }
 
     override fun restore(scope: String) {
-        for ((key, updatable) in updatableEntries){
+        for ((key, updatable) in updatableEntries) {
             if(!key.startsWith(scope)) continue
             updatable.restore()
         }
@@ -93,16 +93,16 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
     private fun acceptForward(forwardedUpdate: ConfigScreenManager.ForwardedUpdate) {
         val toml = try {
             Toml.parseToTomlTable(forwardedUpdate.update)
-        } catch (e:Exception){
+        } catch (e:Exception) {
             return
         }
         val element = toml["entry"] ?: return
-        forwardedUpdate.entry.deserializeEntry(element, mutableListOf(),forwardedUpdate.scope,1)
+        forwardedUpdate.entry.deserializeEntry(element, mutableListOf(), forwardedUpdate.scope, 1)
         forwardedUpdates.remove(forwardedUpdate)
         apply(false)
     }
 
-    private fun rejectForward(forwardedUpdate: ConfigScreenManager.ForwardedUpdate){
+    private fun rejectForward(forwardedUpdate: ConfigScreenManager.ForwardedUpdate) {
         forwardedUpdates.remove(forwardedUpdate)
     }
 
@@ -112,13 +112,13 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         //push updates from basic validation to the configs
         var clientRestart = false
         var serverRestart = false
-        for ((config,base,isClient) in configs) {
-            ConfigApiImpl.walk(config,config.getId().toTranslationKey(),1) { walkable,_,new,thing,prop,annotations,callback ->
+        for ((config, base, isClient) in configs) {
+            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { walkable, _, new, thing, prop, annotations, callback ->
                 if (!(thing is Updatable && thing is Entry<*, *>)) {
                     val update = getUpdate(new)
-                    if (update != null && update is Supplier<*>){
+                    if (update != null && update is Supplier<*>) {
                         if (ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)) {
-                            if (ConfigApiImpl.isNonSync(annotations) || isClient){
+                            if (ConfigApiImpl.isNonSync(annotations) || isClient) {
                                 clientRestart = true
                             } else {
                                 serverRestart = true
@@ -126,20 +126,20 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                         }
                         try {
                             prop.setter.call(walkable, update.get())
-                        } catch (e: Exception){
+                        } catch (e: Exception) {
                             FC.LOGGER.error("Error pushing update to simple property [$new]")
                             e.printStackTrace()
                         }
                     }
                 } else if (getUpdate(new) != null) {
                     if (ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)) {
-                        if (ConfigApiImpl.isNonSync(annotations) || isClient){
+                        if (ConfigApiImpl.isNonSync(annotations) || isClient) {
                             clientRestart = true
                         } else {
                             serverRestart = true
                         }
-                    } else if (thing is ValidatedAny<*>){
-                        if (thing.restartRequired()){
+                    } else if (thing is ValidatedAny<*>) {
+                        if (thing.restartRequired()) {
                             if (ConfigApiImpl.isNonSync(annotations) || isClient) {
                                 clientRestart = true
                             } else {
@@ -150,21 +150,21 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                 }
             }
         }
-        if (clientRestart){
+        if (clientRestart) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.client".translate())
         }
-        if (serverRestart){
+        if (serverRestart) {
             if (MinecraftClient.getInstance().isInSingleplayer)
                 MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.client".translate())
             else
                 MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.server".translate())
         }
         //save config updates locally
-        for (config in configs){
+        for (config in configs) {
             config.active.save()
         }
         var count = 0
-        for (config in configs){
+        for (config in configs) {
             if (!config.clientOnly)
                 count++
         }
@@ -173,15 +173,15 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             val updates = this.configs.filter { !it.clientOnly }.associate { it.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.active, this, mutableListOf()) }
             SyncedConfigRegistry.updateServer(updates, flush(), perms)
         } else {
-            ConfigApiImpl.printChangeHistory(flush(), configs.map { it.active }.toString(),MinecraftClient.getInstance().player)
+            ConfigApiImpl.printChangeHistory(flush(), configs.map { it.active }.toString(), MinecraftClient.getInstance().player)
         }
         if (!final)
             pushUpdatableStates()
     }
 
-    private class ForwardedEntryListWidget(forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, manager: ConfigUpdateManager): ElementListWidget<ForwardedEntryListWidget.ForwardEntry>(MinecraftClient.getInstance(), 190, 120, 0,0, 22), Widget {
+    private class ForwardedEntryListWidget(forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, manager: ConfigUpdateManager): ElementListWidget<ForwardedEntryListWidget.ForwardEntry>(MinecraftClient.getInstance(), 190, 120, 0, 0, 22), Widget {
 
-        init{
+        init {
             this.setRenderHorizontalShadows(false)
             this.setRenderBackground(false)
         }
@@ -261,9 +261,9 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                 hovered: Boolean,
                 tickDelta: Float
             ) {
-                if (isMouseOver(mouseX.toDouble(),mouseY.toDouble()))
+                if (isMouseOver(mouseX.toDouble(), mouseY.toDouble()))
                     parent.client.currentScreen?.setTooltip(tooltip.getLines(parent.client))
-                context.drawTextWithShadow(parent.client.textRenderer,name,x,y+5,Colors.WHITE)
+                context.drawTextWithShadow(parent.client.textRenderer, name, x, y+5, Colors.WHITE)
                 acceptForwardWidget.setPosition(x + 126, y)
                 acceptForwardWidget.render(context, mouseX, mouseY, tickDelta)
                 denyForwardWidget.setPosition(x + 150, y)
@@ -271,11 +271,11 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             }
 
             override fun children(): MutableList<out Element> {
-                return mutableListOf(acceptForwardWidget,denyForwardWidget)
+                return mutableListOf(acceptForwardWidget, denyForwardWidget)
             }
 
             override fun selectableChildren(): MutableList<out Selectable> {
-                return mutableListOf(acceptForwardWidget,denyForwardWidget)
+                return mutableListOf(acceptForwardWidget, denyForwardWidget)
             }
         }
     }

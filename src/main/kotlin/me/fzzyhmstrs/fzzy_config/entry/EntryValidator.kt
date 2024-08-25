@@ -67,11 +67,11 @@ fun interface EntryValidator<T> {
             return builder()
         }
         fun buildValidator(): EntryValidator<T> {
-            return EntryValidator{ i, t -> if(t == ValidationType.WEAK) ifWeak.validateEntry(i,t) else ifStrong.validateEntry(i,t) }
+            return EntryValidator{ i, t -> if(t == ValidationType.WEAK) ifWeak.validateEntry(i, t) else ifStrong.validateEntry(i, t) }
         }
     }
 
-    enum class ValidationType{
+    enum class ValidationType {
         WEAK,
         STRONG
     }

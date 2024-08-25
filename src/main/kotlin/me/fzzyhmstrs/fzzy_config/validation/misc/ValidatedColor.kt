@@ -91,7 +91,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
      * @since 0.2.0
      */
     @JvmOverloads
-    constructor(color: Color, transparent: Boolean = true): this(color.red,color.green,color.blue,color.alpha, transparent)
+    constructor(color: Color, transparent: Boolean = true): this(color.red, color.green, color.blue, color.alpha, transparent)
 
     private constructor(r: Int, g: Int, b: Int, a: Int, alphaMode: Boolean): super(ColorHolder(r, g, b, a, alphaMode))
 
@@ -103,7 +103,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     fun setFromHexString(s: String) {
         val colorInt = try {
             Integer.parseUnsignedInt(s, 16)
-        } catch (e: Exception){
+        } catch (e: Exception) {
             FC.LOGGER.warn("Validated Color can't accept input [$s], maintaining current color [${toHexString()}]")
             get().toInt()
         }
@@ -134,7 +134,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun r(): Int{
+    fun r(): Int {
         return get().r
     }
 
@@ -144,7 +144,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun g(): Int{
+    fun g(): Int {
         return get().g
     }
 
@@ -154,7 +154,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun b(): Int{
+    fun b(): Int {
         return get().b
     }
 
@@ -164,7 +164,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun a(): Int{
+    fun a(): Int {
         return get().a
     }
 
@@ -208,12 +208,12 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
-        return input is ColorHolder && validateEntry(input,EntryValidator.ValidationType.STRONG).isValid()
+        return input is ColorHolder && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
     @Internal
     @Environment(EnvType.CLIENT)
     override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): ClickableWidget {
-        return ColorButtonWidget({get().argb()},{this.toHexString().lit()},{openColorEditPopup()})
+        return ColorButtonWidget({get().argb()}, {this.toHexString().lit()}, {openColorEditPopup()})
     }
 
     /**
@@ -230,21 +230,21 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     /////////////////////////
 
     @Environment(EnvType.CLIENT)
-    private fun openColorEditPopup(){
+    private fun openColorEditPopup() {
         val textRenderer = MinecraftClient.getInstance().textRenderer
         val mutableColor = this.get().mutable(validatedString())
         val popup = PopupWidget.Builder(translation())
-            .addElement("r_name",TextWidget(12,20,"fc.validated_field.color.r".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("g_name",TextWidget(12,20,"fc.validated_field.color.g".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("b_name",TextWidget(12,20,"fc.validated_field.color.b".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("a_name",TextWidget(12,20,"fc.validated_field.color.a".translate(),textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("r_box",ValidationBackedNumberFieldWidget(45,20,{ mutableColor.r }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ r -> mutableColor.updateRGB(r,mutableColor.g,mutableColor.b)}),"r_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("g_box",ValidationBackedNumberFieldWidget(45,20,{ mutableColor.g }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ g -> mutableColor.updateRGB(mutableColor.r,g,mutableColor.b)}),"g_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("b_box",ValidationBackedNumberFieldWidget(45,20,{ mutableColor.b }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ b -> mutableColor.updateRGB(mutableColor.r,mutableColor.g,b)}),"b_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("a_box",if(get().transparent()) ValidationBackedNumberFieldWidget(45,20,{ mutableColor.a }, ChoiceValidator.any(),{d -> mutableColor.validate(d.toInt())},{ a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer,0,0,45,20,"255".lit()).also { it.setEditable(false) },"a_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("hl_map",HLMapWidget(mutableColor),"r_box",Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("s_slider",VerticalSliderWidget({mutableColor.s.toDouble()},0,0,20,68,FcText.empty(),{d -> mutableColor.updateHSL(mutableColor.h,d.toFloat(),mutableColor.l)}),"hl_map", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("hex_box",ValidationBackedTextFieldWidget(84, 20,{mutableColor.hex.get()}, ChoiceValidator.any(),mutableColor.hex,{s -> mutableColor.updateHex(s) }),"hl_map", Position.BELOW, Position.VERTICAL_TO_LEFT_EDGE)
+            .addElement("r_name", TextWidget(12, 20, "fc.validated_field.color.r".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("g_name", TextWidget(12, 20, "fc.validated_field.color.g".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("b_name", TextWidget(12, 20, "fc.validated_field.color.b".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("a_name", TextWidget(12, 20, "fc.validated_field.color.a".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("r_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.r }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { r -> mutableColor.updateRGB(r, mutableColor.g, mutableColor.b)}), "r_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("g_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.g }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { g -> mutableColor.updateRGB(mutableColor.r, g, mutableColor.b)}), "g_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("b_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.b }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { b -> mutableColor.updateRGB(mutableColor.r, mutableColor.g, b)}), "b_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer, 0, 0, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("hl_map", HLMapWidget(mutableColor), "r_box", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("s_slider", VerticalSliderWidget({mutableColor.s.toDouble()}, 0, 0, 20, 68, FcText.empty(), {d -> mutableColor.updateHSL(mutableColor.h, d.toFloat(), mutableColor.l)}), "hl_map", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("hex_box", ValidationBackedTextFieldWidget(84, 20, {mutableColor.hex.get()}, ChoiceValidator.any(), mutableColor.hex, {s -> mutableColor.updateHex(s) }), "hl_map", Position.BELOW, Position.VERTICAL_TO_LEFT_EDGE)
             .addDoneButton ({ this.setAndUpdate(mutableColor.createHolder()); PopupWidget.pop()})
             .onClose { this.setAndUpdate(mutableColor.createHolder()) }
             .noCloseOnClick()
@@ -267,60 +267,60 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          */
         @JvmStatic
         fun String.validatedColor(transparent: Boolean = true): ValidatedColor {
-            val str = this.replace("#","").replace("0x","")
+            val str = this.replace("#", "").replace("0x", "")
             val validatedString = validatedString(str, !transparent)
             val result = validatedString.validateEntry(str, EntryValidator.ValidationType.WEAK)
             if (result.isError())
                 throw IllegalStateException(result.getError())
             val colorInt = try {
                 Integer.parseUnsignedInt(str, 16)
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 throw IllegalStateException("Error parsing shorthand Expression [$this]")
             }
             return Color(colorInt, transparent).validated(transparent)
         }
 
         private fun validatedString(str: String, opaque: Boolean): ValidatedString {
-            fun isNotF(chr: Char): Boolean{
+            fun isNotF(chr: Char): Boolean {
                 return chr != 'f' && chr != 'F'
             }
-            fun toHexChar(chr: Char): Char{
-                val chk = Character.digit(chr,16)
+            fun toHexChar(chr: Char): Char {
+                val chk = Character.digit(chr, 16)
                 return if(chk == -1) '0' else chr
             }
-            fun transform(s: String): String{
+            fun transform(s: String): String {
                 var ss = ""
-                for (chr in s){
+                for (chr in s) {
                     ss += toHexChar(chr)
                 }
                 return ss
             }
             return ValidatedString.Builder(str)
-                .both { s,_ ->
+                .both { s, _ ->
                     if (s.length > 8)
-                        ValidationResult.error(s,"String too long for a valid color Integer")
+                        ValidationResult.error(s, "String too long for a valid color Integer")
                     else
-                        try{
+                        try {
                             Integer.parseUnsignedInt(s, 16)
                             ValidationResult.success(s)
-                        }catch (e: Exception){
-                            ValidationResult.error(s,"String not parsable as color Integer: ${e.localizedMessage}")
+                        }catch (e: Exception) {
+                            ValidationResult.error(s, "String not parsable as color Integer: ${e.localizedMessage}")
                         }
                 }
                 .withCorrector()
-                .both { s,_ ->
+                .both { s, _ ->
                     if(s.contains('#'))
-                        ValidationResult.error(s.replace("#",""), "'#' prefixes not allowed")
+                        ValidationResult.error(s.replace("#", ""), "'#' prefixes not allowed")
                     else if(s.contains("0x"))
-                        ValidationResult.error(s.replace("0x",""), "'0x' prefixes not allowed")
+                        ValidationResult.error(s.replace("0x", ""), "'0x' prefixes not allowed")
                     else if(s.length > 8)
-                        ValidationResult.error(s.substring(0,8), "Too long. 8 characters maximum")
+                        ValidationResult.error(s.substring(0, 8), "Too long. 8 characters maximum")
                     else if(s.length == 7 && isNotF(s[0]) && opaque)
-                        ValidationResult.error(s.replaceRange(0,1,if(s[0].isLowerCase())"f" else "F"), "Opaque colors only.")
+                        ValidationResult.error(s.replaceRange(0, 1, if(s[0].isLowerCase())"f" else "F"), "Opaque colors only.")
                     else if(s.length == 8 && (isNotF(s[0]) || isNotF(s[1])) && opaque)
-                        ValidationResult.error(s.replaceRange(0,2,"${if(s[0].isLowerCase())"f" else "F"}${if(s[1].isLowerCase())"f" else "F"}"), "Opaque colors only.")
+                        ValidationResult.error(s.replaceRange(0, 2, "${if(s[0].isLowerCase())"f" else "F"}${if(s[1].isLowerCase())"f" else "F"}"), "Opaque colors only.")
                     else
-                        transform(s).let { if(it == s) ValidationResult.success(it) else ValidationResult.error(it,"Invalid characters found in color string") }
+                        transform(s).let { if(it == s) ValidationResult.success(it) else ValidationResult.error(it, "Invalid characters found in color string") }
                     ValidationResult.success(s)
                 }
                 .build()
@@ -348,7 +348,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun transparent(): Boolean{
+        fun transparent(): Boolean {
             return alphaMode
         }
         /**
@@ -357,7 +357,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun opaque(): Boolean{
+        fun opaque(): Boolean {
             return !alphaMode
         }
 
@@ -367,7 +367,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun toHexString(): String{
+        fun toHexString(): String {
             return if(opaque()) String.format("%06X", toInt()) else String.format("%08X", toInt())
         }
 
@@ -377,7 +377,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun argb(): Int{
+        fun argb(): Int {
             return ((a and 0xFF) shl 24) or
                     ((r and 0xFF) shl 16) or
                     ((g and 0xFF) shl 8) or
@@ -399,8 +399,8 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun fromInt(i: Int): ColorHolder{
-            val components = Color(i,alphaMode)
+        fun fromInt(i: Int): ColorHolder {
+            val components = Color(i, alphaMode)
             return this.copy(r = components.red, g = components.green, b = components.green, a = components.alpha)
         }
 
@@ -412,8 +412,8 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @since 0.2.0
          */
         @JvmOverloads
-        fun mutable(hex: ValidatedString = validatedString(toHexString(),opaque())): MutableColor{
-            val mutable = MutableColor(hex,alphaMode)
+        fun mutable(hex: ValidatedString = validatedString(toHexString(), opaque())): MutableColor {
+            val mutable = MutableColor(hex, alphaMode)
             mutable.updateRGB(r, g, b)
             mutable.updateA(a)
             return mutable
@@ -425,8 +425,8 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun instance(): ValidatedColor{
-            return ValidatedColor(r,g,b,a,alphaMode)
+        fun instance(): ValidatedColor {
+            return ValidatedColor(r, g, b, a, alphaMode)
         }
         @Internal
         override fun serializeEntry(
@@ -440,7 +440,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                 toml.element("g", TomlLiteral(g), TomlComment("Green component, 0 to 255"))
                 toml.element("b", TomlLiteral(b), TomlComment("Blue component, 0 to 255"))
                 if (alphaMode) toml.element("a", TomlLiteral(a), TomlComment("Alpha component, 0 to 255"))
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 errorBuilder.add("Critical exception while serializing color: ${e.localizedMessage}")
             }
             return toml.build()
@@ -454,13 +454,13 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         ): ValidationResult<ColorHolder> {
             return try {
                 val table = toml.asTomlTable()
-                val tomlR = table["r"]?.asTomlLiteral()?.toInt() ?: return ValidationResult.error(this,"Error deserializing 'r' component of color [$fieldName], using previous value.")
-                val tomlG = table["g"]?.asTomlLiteral()?.toInt() ?: return ValidationResult.error(this,"Error deserializing 'g' component of color [$fieldName], using previous value.")
-                val tomlB = table["b"]?.asTomlLiteral()?.toInt() ?: return ValidationResult.error(this,"Error deserializing 'b' component of color [$fieldName], using previous value.")
+                val tomlR = table["r"]?.asTomlLiteral()?.toInt() ?: return ValidationResult.error(this, "Error deserializing 'r' component of color [$fieldName], using previous value.")
+                val tomlG = table["g"]?.asTomlLiteral()?.toInt() ?: return ValidationResult.error(this, "Error deserializing 'g' component of color [$fieldName], using previous value.")
+                val tomlB = table["b"]?.asTomlLiteral()?.toInt() ?: return ValidationResult.error(this, "Error deserializing 'b' component of color [$fieldName], using previous value.")
                 val tomlA = if(!alphaMode) 255 else table["a"]?.asTomlLiteral()?.toInt() ?: 255
 
                 ValidationResult.success(ColorHolder(tomlR, tomlG, tomlB, tomlA, this.alphaMode))
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 ValidationResult.error(this, "Critical error encountered deserializing color [$fieldName], using previous value.")
             }
         }
@@ -470,12 +470,12 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             if (!validator.test(input.r)) errors.add("Red component out of bounds: ${input.r} outside 0-255")
             if (!validator.test(input.g)) errors.add("Green component out of bounds: ${input.g} outside 0-255")
             if (!validator.test(input.b)) errors.add("Blue component out of bounds: ${input.b} outside 0-255")
-            if (input.alphaMode){
+            if (input.alphaMode) {
                 if (!validator.test(input.a)) errors.add("Alpha component out of bounds: ${input.a} outside 0-255")
             } else {
                 if (input.a != 255) errors.add("Non-transparent color with <255 Alpha")
             }
-            return if (errors.isNotEmpty()){
+            return if (errors.isNotEmpty()) {
                 ValidationResult.error(input, "Errors validating color: $errors")
             } else {
                 ValidationResult.success(input)
@@ -487,17 +487,17 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             if (!validator.test(input.r)) errors.add("Red component out of bounds: ${input.r} outside 0-255")
             if (!validator.test(input.g)) errors.add("Green component out of bounds: ${input.g} outside 0-255")
             if (!validator.test(input.b)) errors.add("Blue component out of bounds: ${input.b} outside 0-255")
-            if (input.alphaMode){
+            if (input.alphaMode) {
                 if (!validator.test(input.a)) errors.add("Alpha component out of bounds: ${input.a} outside 0-255")
             } else {
                 if (input.a != 255) errors.add("Non-transparent color with <255 Alpha")
             }
 
-            return if (errors.isNotEmpty()){
-                val newR = MathHelper.clamp(input.r,0,255)
-                val newG = MathHelper.clamp(input.g,0,255)
-                val newB = MathHelper.clamp(input.b,0,255)
-                val newA = if(input.alphaMode) MathHelper.clamp(input.r,0,255) else 255
+            return if (errors.isNotEmpty()) {
+                val newR = MathHelper.clamp(input.r, 0, 255)
+                val newG = MathHelper.clamp(input.g, 0, 255)
+                val newB = MathHelper.clamp(input.b, 0, 255)
+                val newA = if(input.alphaMode) MathHelper.clamp(input.r, 0, 255) else 255
                 val newColorHolder = ColorHolder(newR, newG, newB, newA, input.alphaMode)
                 ValidationResult.error(newColorHolder, "Errors validating color, corrected to $newColorHolder: $errors")
             } else {
@@ -506,7 +506,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         }
 
         override fun toString(): String {
-            return "[r=$r,g=$g,b=$b,a=$a]"
+            return "[r=$r, g=$g, b=$b, a=$a]"
         }
     }
 
@@ -535,7 +535,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @since 0.2.0
          */
         @Suppress("MemberVisibilityCanBePrivate")
-        fun argb(): Int{
+        fun argb(): Int {
             return ((a and 0xFF) shl 24) or
                     ((r and 0xFF) shl 16) or
                     ((g and 0xFF) shl 8) or
@@ -547,7 +547,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @return String - hex value of this color in string form, with optional prefix
          */
         @JvmOverloads
-        fun hexString(prefix: String = ""): String{
+        fun hexString(prefix: String = ""): String {
             return "$prefix${hex.get()}"
         }
 
@@ -563,7 +563,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             this.h = h
             this.s = s
             this.l = l
-            val rgb = Color.HSBtoRGB(h,s,l)
+            val rgb = Color.HSBtoRGB(h, s, l)
             val rr = rgb shr 16 and 0xFF
             val gg = rgb shr 8 and 0xFF
             val bb = rgb and 0xFF
@@ -584,7 +584,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             this.r = r
             this.g = g
             this.b = b
-            val hsl = Color.RGBtoHSB(r,g,b,null)
+            val hsl = Color.RGBtoHSB(r, g, b, null)
             this.h = hsl[0]
             this.s = hsl[1]
             this.l = hsl[2]
@@ -598,7 +598,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun updateA(a: Int){
+        fun updateA(a: Int) {
             this.a = a
             hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
         }
@@ -609,11 +609,11 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun updateHex(new: String){
+        fun updateHex(new: String) {
             hex.validateAndSet(new)
             val argb = try {
                 Integer.parseUnsignedInt(new, 16)
-            } catch (e: Exception){
+            } catch (e: Exception) {
                 argb()
             }
             val aa = argb shr 24 and 0xFF
@@ -624,14 +624,14 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             this.r = rr
             this.g = gg
             this.b = bb
-            val hsl = Color.RGBtoHSB(r,g,b,null)
+            val hsl = Color.RGBtoHSB(r, g, b, null)
             this.h = hsl[0]
             this.s = hsl[1]
             this.l = hsl[2]
         }
         @Internal
         fun validate(input: Int): ValidationResult<Int> {
-            return ValidationResult.predicated(input,validator.test(input),"Out of bounds [0-255]")
+            return ValidationResult.predicated(input, validator.test(input), "Out of bounds [0-255]")
         }
 
         /**
@@ -648,18 +648,18 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     //////////////////////////////////////////
 
     @Environment(EnvType.CLIENT)
-    private class ColorButtonWidget(private val colorSupplier: Supplier<Int>,titleSupplier: Supplier<Text>, pressAction: Consumer<ActiveButtonWidget>): DecoratedActiveButtonWidget(titleSupplier,110,20,"widget/decoration/frame".fcId(),{true},pressAction){
+    private class ColorButtonWidget(private val colorSupplier: Supplier<Int>, titleSupplier: Supplier<Text>, pressAction: Consumer<ActiveButtonWidget>): DecoratedActiveButtonWidget(titleSupplier, 110, 20, "widget/decoration/frame".fcId(), {true}, pressAction) {
         override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
             super.renderDecoration(context, x, y, delta)
             RenderSystem.enableBlend()
-            context.fill(x+2,y+2,x+14,y+14,colorSupplier.get())
+            context.fill(x+2, y+2, x+14, y+14, colorSupplier.get())
         }
     }
 
     @Environment(EnvType.CLIENT)
-    private class HLMapWidget(private val mutableColor: MutableColor): ClickableWidget(0,0,60,68,"fc.validated_field.color.hl".translate()) {
+    private class HLMapWidget(private val mutableColor: MutableColor): ClickableWidget(0, 0, 60, 68, "fc.validated_field.color.hl".translate()) {
 
-        companion object{
+        companion object {
             private val BORDER = "widget/validation/color/hsl_border".fcId()
             private val BORDER_HIGHLIGHTED = "widget/validation/color/hsl_border_highlighted".fcId()
             private val CENTER = "widget/validation/color/hsl_center".fcId()
@@ -696,8 +696,8 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                 RenderSystem.enableDepthTest()
                 context.drawGuiTexture(CENTER, x+4, y+4, 52, 60)
             }
-            val cX = x + 4 + MathHelper.clampedMap(mutableColor.l,0f,1f,0f,52f).toInt() - 2
-            val cY = y + 4 + MathHelper.clampedMap(mutableColor.h,0f,1f,0f,60f).toInt() - 2
+            val cX = x + 4 + MathHelper.clampedMap(mutableColor.l, 0f, 1f, 0f, 52f).toInt() - 2
+            val cY = y + 4 + MathHelper.clampedMap(mutableColor.h, 0f, 1f, 0f, 60f).toInt() - 2
             context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()
@@ -713,14 +713,14 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             updateHL(mouseX, mouseY)
         }
 
-        private fun updateHL(mouseX: Double,mouseY: Double){
-            val light = MathHelper.clamp((mouseX - (this.x + 4).toDouble())/52.0,0.0,1.0).toFloat()
-            val hue = MathHelper.clamp((mouseY - (this.y + 4).toDouble())/60.0,0.0,1.0).toFloat()
-            mutableColor.updateHSL(hue,mutableColor.s,light)
+        private fun updateHL(mouseX: Double, mouseY: Double) {
+            val light = MathHelper.clamp((mouseX - (this.x + 4).toDouble())/52.0, 0.0, 1.0).toFloat()
+            val hue = MathHelper.clamp((mouseY - (this.y + 4).toDouble())/60.0, 0.0, 1.0).toFloat()
+            mutableColor.updateHSL(hue, mutableColor.s, light)
         }
 
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            return when(keyCode){
+            return when(keyCode) {
                 GLFW.GLFW_KEY_LEFT -> {
                     incrementL(-horizontalInc)
                     true
@@ -741,13 +741,13 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             }
         }
 
-        private fun incrementH(amount: Float){
-            val hue = MathHelper.clamp(mutableColor.h+amount,0f,1f)
-            mutableColor.updateHSL(hue,mutableColor.s,mutableColor.l)
+        private fun incrementH(amount: Float) {
+            val hue = MathHelper.clamp(mutableColor.h+amount, 0f, 1f)
+            mutableColor.updateHSL(hue, mutableColor.s, mutableColor.l)
         }
-        private fun incrementL(amount: Float){
-            val light = MathHelper.clamp(mutableColor.l+amount,0f,1f)
-            mutableColor.updateHSL(mutableColor.h,mutableColor.s,light)
+        private fun incrementL(amount: Float) {
+            val light = MathHelper.clamp(mutableColor.l+amount, 0f, 1f)
+            mutableColor.updateHSL(mutableColor.h, mutableColor.s, light)
         }
 
         override fun onRelease(mouseX: Double, mouseY: Double) {
