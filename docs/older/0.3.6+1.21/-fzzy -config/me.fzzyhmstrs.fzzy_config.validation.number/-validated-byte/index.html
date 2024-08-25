@@ -1,0 +1,479 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ValidatedByte</title>
+    <link href="../../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../../images/fc_banner.png">
+<link href="../../../images/discord_banner.png">
+<link href="../../../images/discord_small_banner.png">
+<link href="../../../images/wiki_banner.png">
+<link href="../../../images/wiki_small_banner.png">
+<link href="../../../images/docs_banner.png">
+<link href="../../../images/docs_small_banner.png">
+<link href="../../../images/cf_banner.png">
+<link href="../../../images/modrinth_banner.png">
+<link href="../../../images/icon.png">
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.number/-validated-byte/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.3.6+1.21</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.7+1.21</a><a href="..\..\..\..\0.3.7+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.7+1.20.6</a><a href="..\..\..\..\0.3.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.7+1.20.1</a><a href="index.html">0.3.6+1.21</a><a href="..\..\..\..\0.3.6+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.6+1.20.6</a><a href="..\..\..\..\0.3.6+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.6+1.20.1</a><a href="..\..\..\..\0.3.4+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.4+1.21</a><a href="..\..\..\..\0.3.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.3+1.20.6</a><a href="..\..\..\..\0.3.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.3+1.20.1</a><a href="..\..\..\..\0.3.2+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.2+1.20.6</a><a href="..\..\..\..\0.3.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.2+1.20.1</a><a href="..\..\..\..\0.3.1+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.1+1.20.5</a><a href="..\..\..\..\0.3.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.1+1.20.1</a><a href="..\..\..\..\0.3.0+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.0+1.20.5</a><a href="..\..\..\..\0.3.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.3.0+1.20.1</a><a href="..\..\..\..\0.2.8+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.2.8+1.20.5</a><a href="..\..\..\..\0.2.8+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.2.8+1.20.1</a><a href="..\..\..\..\0.2.7+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.2.7+1.20.5</a><a href="..\..\..\..\0.2.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.2.7+1.20.1</a><a href="..\..\..\..\0.2.5+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.2.5+1.20.5</a><a href="..\..\..\..\0.2.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.2.4+1.20.1</a><a href="..\..\..\..\0.2.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.2.2+1.20.1</a><a href="..\..\..\..\0.2.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\-validated-byte\index.html">0.2.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://curseforge.com" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.validation.number/ValidatedByte///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Fzzy Config</a><span class="delimiter">/</span><a href="../index.html">me.fzzyhmstrs.fzzy_config.validation.number</a><span class="delimiter">/</span><span class="current">ValidatedByte</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Validated</span><wbr><span><span>Byte</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="index.html">ValidatedByte</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">maxValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">minValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="../-validated-number/-widget-type/index.html">ValidatedNumber.WidgetType</a><span class="token operator"> = </span>if(maxValue == Byte.MAX_VALUE || minValue == Byte.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER</span></span><span class="token punctuation">)</span> : <a href="../-validated-number/index.html">ValidatedNumber</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt; </span></div><p class="paragraph">A validated byte number. This field is a wrapper of bytes that is both a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">java.util.function.Supplier</a> and <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">java.util.function.Consumer</a> of type Byte</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.1.0</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>default</span><wbr><span><span>Value</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Byte. the default value of this wrapper</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>max</span><wbr><span><span>Value</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Byte. the maximum allowed value, inclusive</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>min</span><wbr><span><span>Value</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Byte. the minimum allowed value, inclusive</p></div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import me.fzzyhmstrs.fzzy_config.validation.number.*
+
+fun main() { 
+   //sampleStart 
+   //ValidatedByte. Defaults to 4, allowable range 8 to 0. Uses a Slider widget
+val validatedByte = ValidatedByte(4, 8, 0)
+
+//You can define the widget type of ValidatedByte, either a Slider or a "textbox"
+val textBoxByte = ValidatedByte(4, 8, 0, ValidatedNumber.WidgetType.TEXTBOX)
+
+//ValidatedByte built from a min and max. Uses the minimum value as the default. can use either a Slider or a "textbox" widget.
+val minMaxByte = ValidatedByte(-16, 16)
+
+//unbounded ValidatedByte. Can be any valid byte value. Widget forced to "textbox" style
+val unboundedByte = ValidatedByte(4)
+
+//validation-only Byte (unless your default happens to be 0)
+val emptyByte = ValidatedByte()
+
+//fields and sections have lang keys based on their "location" in the Config class graph.
+//Lange key composition is as follows
+//1. the namespace of the config id: (my_mod)
+//2. the path of the config id: (my_mod.my_config)
+//3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+//4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+val fieldLang = """
+{
+    "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+    "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+    "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+}
+""" 
+   //sampleEnd
+}</code></pre></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-1468836959%2FConstructors%2F769193423" anchor-label="ValidatedByte" id="-1468836959%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-byte.html"><span>Validated</span><wbr><span><span>Byte</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1468836959%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">minValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">maxValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="../-validated-number/-widget-type/index.html">ValidatedNumber.WidgetType</a><span class="token operator"> = </span>WidgetType.SLIDER</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">A validated byte number with a default selected from the min of the allowable range.</p></div><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">an unbounded validated byte number.</p></div><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">an unbounded validated byte number with a default of 0b</p></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">maxValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">minValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="../-validated-number/-widget-type/index.html">ValidatedNumber.WidgetType</a><span class="token operator"> = </span>if(maxValue == Byte.MAX_VALUE || minValue == Byte.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-1979747922%2FClasslikes%2F769193423" anchor-label="Restrict" id="-1979747922%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-restrict/index.html"><span><span>Restrict</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1979747922%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">annotation class </span><a href="-restrict/index.html">Restrict</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>min<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator"> = </span>Byte.MIN_VALUE<span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">val </span>max<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator"> = </span>Byte.MAX_VALUE</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Annotation-driven validation for Bytes</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-1863429917%2FFunctions%2F769193423" anchor-label="accept" id="-1863429917%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1863429917%2FFunctions%2F769193423"><span><span>accept</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1863429917%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="index.html#-1863429917%2FFunctions%2F769193423"><span class="token function">accept</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">updates the wrapped value. NOTE: this method will push updates to an UpdateManager, if any. For in-game updating consider <a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/validate-and-set.html">validateAndSet</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1437930548%2FFunctions%2F769193423" anchor-label="andThen" id="1437930548%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1437930548%2FFunctions%2F769193423"><span>and</span><wbr><span><span>Then</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1437930548%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#1437930548%2FFunctions%2F769193423"><span class="token function">andThen</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><span class="token keyword">in </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1537634225%2FFunctions%2F769193423" anchor-label="copyStoredValue" id="-1537634225%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/copy-stored-value.html"><span>copy</span><wbr><span>Stored</span><wbr><span><span>Value</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1537634225%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/copy-stored-value.html"><span class="token function">copyStoredValue</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="676480967%2FFunctions%2F769193423" anchor-label="description" id="676480967%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-validated-number/description.html"><span><span>description</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="676480967%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../-validated-number/description.html"><span class="token function">description</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">The translated <span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span> description from the <span data-unresolved-link="me.fzzyhmstrs.fzzy_config.validation.number/ValidatedNumber/descriptionKey/#/PointingToDeclaration/">descriptionKey</span>. Falls back to an empty string so no tooltip is rendered.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-686088273%2FFunctions%2F769193423" anchor-label="descriptionKey" id="-686088273%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/description-key.html"><span>description</span><wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-686088273%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/description-key.html"><span class="token function">descriptionKey</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">translation key of this Translatable's description. the "description" in-game, the descriptions Enchantment Descriptions adds to enchantment tooltips are a good example.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1132975886%2FFunctions%2F769193423" anchor-label="get" id="-1132975886%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/get.html"><span><span>get</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1132975886%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/get.html"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a></div><div class="brief "><p class="paragraph">supplies the wrapped value</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-861115532%2FFunctions%2F769193423" anchor-label="hasDescription" id="-861115532%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-validated-number/has-description.html"><span>has</span><wbr><span><span>Description</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-861115532%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../-validated-number/has-description.html"><span class="token function">hasDescription</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether this Translatable has a valid description</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1620980247%2FFunctions%2F769193423" anchor-label="hasTranslation" id="1620980247%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../me.fzzyhmstrs.fzzy_config.util/-translatable/has-translation.html"><span>has</span><wbr><span><span>Translation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1620980247%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../../me.fzzyhmstrs.fzzy_config.util/-translatable/has-translation.html"><span class="token function">hasTranslation</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Whether this Translatable has a valid translation</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1891952248%2FFunctions%2F769193423" anchor-label="instanceEntry" id="-1891952248%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="instance-entry.html"><span>instance</span><wbr><span><span>Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1891952248%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="instance-entry.html"><span class="token function">instanceEntry</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">ValidatedByte</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1877342164%2FFunctions%2F769193423" anchor-label="toList" id="1877342164%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1996048014%2FFunctions%2F769193423"><span>to</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1877342164%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html#-1996048014%2FFunctions%2F769193423"><span class="token function">toList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">vararg </span>elements<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.validation.collection/-validated-list/index.html">ValidatedList</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">wraps the provided values into a <a href="../../me.fzzyhmstrs.fzzy_config.validation.collection/-validated-list/index.html">ValidatedList</a> with this field as validation</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html#-2133116806%2FFunctions%2F769193423"><span class="token function">toList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">collection<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.validation.collection/-validated-list/index.html">ValidatedList</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">wraps the provided collection into a <a href="../../me.fzzyhmstrs.fzzy_config.validation.collection/-validated-list/index.html">ValidatedList</a> with this field as validation</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="483703520%2FFunctions%2F769193423" anchor-label="toSet" id="483703520%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1497519062%2FFunctions%2F769193423"><span>to</span><wbr><span><span>Set</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="483703520%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html#-1497519062%2FFunctions%2F769193423"><span class="token function">toSet</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">vararg </span>elements<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.validation.collection/-validated-set/index.html">ValidatedSet</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">wraps the provided values into a <a href="../../me.fzzyhmstrs.fzzy_config.validation.collection/-validated-set/index.html">ValidatedSet</a> with this field as validation</p></div><div class="symbol monospace"><span class="token keyword">fun </span><a href="index.html#-159314750%2FFunctions%2F769193423"><span class="token function">toSet</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">collection<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html">Collection</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.validation.collection/-validated-list/index.html">ValidatedList</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">wraps the provided collection into a <a href="../../me.fzzyhmstrs.fzzy_config.validation.collection/-validated-list/index.html">ValidatedList</a> with this field as validation</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1058049591%2FFunctions%2F769193423" anchor-label="toString" id="-1058049591%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-string.html"><span>to</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1058049591%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-string.html"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1632559382%2FFunctions%2F769193423" anchor-label="translation" id="1632559382%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/translation.html"><span><span>translation</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1632559382%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/translation.html"><span class="token function">translation</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">fallback<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span></div><div class="brief "><p class="paragraph">The translated <span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span> name from the <a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/translation-key.html">translationKey</a>. Falls back to the implementing classes Simple Name (non-translated)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1277485852%2FFunctions%2F769193423" anchor-label="translationKey" id="-1277485852%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/translation-key.html"><span>translation</span><wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1277485852%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/translation-key.html"><span class="token function">translationKey</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">translation key of this Translatable. the "name" in-game</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1072282378%2FFunctions%2F769193423" anchor-label="trySerialize" id="1072282378%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/try-serialize.html"><span>try</span><wbr><span><span>Serialize</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1072282378%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/try-serialize.html"><span class="token function">trySerialize</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">errorBuilder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">flags<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1708590551%2FFunctions%2F769193423" anchor-label="trySet" id="1708590551%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/try-set.html"><span>try</span><wbr><span><span>Set</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1708590551%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/try-set.html"><span class="token function">trySet</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-892868754%2FFunctions%2F769193423" anchor-label="update" id="-892868754%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-validated-short/index.html#-892868754%2FFunctions%2F769193423"><span><span>update</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-892868754%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="../-validated-short/index.html#-892868754%2FFunctions%2F769193423"><span class="token function">update</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">updateMessage<span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-410846180%2FFunctions%2F769193423" anchor-label="validateAndSet" id="-410846180%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-410846180%2FFunctions%2F769193423"><span>validate</span><wbr><span>And</span><wbr><span><span>Set</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-410846180%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-410846180%2FFunctions%2F769193423"><span class="token function">validateAndSet</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.util/-validation-result/index.html">ValidationResult</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">A setter method for the <span data-unresolved-link="me.fzzyhmstrs.fzzy_config.validation/ValidatedField/storedValue/#/PointingToDeclaration/">storedValue</span> that first validates the value being set and then stores the post-validation result.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="847201106%2FFunctions%2F769193423" anchor-label="widgetAndTooltipEntry" id="847201106%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#847201106%2FFunctions%2F769193423"><span>widget</span><wbr><span>And</span><wbr><span>Tooltip</span><wbr><span><span>Entry</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="847201106%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><span data-unresolved-link="net.fabricmc.api/Environment///PointingToDeclaration/"><span class="token annotation builtin">Environment</span></span><span class="token punctuation">(</span><span>value<span class="token operator"> = </span><span data-unresolved-link="net.fabricmc.api/EnvType.CLIENT///PointingToDeclaration/">EnvType.CLIENT</span></span><wbr><span class="token punctuation">)</span></div></div><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#847201106%2FFunctions%2F769193423"><span class="token function">widgetAndTooltipEntry</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">choicePredicate<span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.validation.misc/-choice-validator/index.html">ChoiceValidator</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt;</span><span class="token operator"> = </span>ChoiceValidator.any()</span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.client.gui.widget/ClickableWidget///PointingToDeclaration/">ClickableWidget</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
