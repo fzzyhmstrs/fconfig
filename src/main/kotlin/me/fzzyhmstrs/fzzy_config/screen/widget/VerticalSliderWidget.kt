@@ -76,7 +76,6 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
         if (wrappedValue.get() != value) {
             value = wrappedValue.get()
         }
-        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
         RenderSystem.enableBlend()
         RenderSystem.defaultBlendFunc()
         RenderSystem.enableDepthTest()

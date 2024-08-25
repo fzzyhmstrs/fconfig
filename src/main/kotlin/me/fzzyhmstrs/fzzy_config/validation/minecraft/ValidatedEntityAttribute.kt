@@ -239,7 +239,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
     private fun getButtonText(inputAttribute: Identifier, inputAmount: Double, inputOperation: Operation): MutableText {
         val attribute = Registries.ATTRIBUTE.get(inputAttribute) ?: return "fc.validated_field.entity_attribute.error".translate()
         val amount = when(inputOperation) {
-            Operation.ADD_VALUE -> if (attribute == EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE) inputAmount * 10.0 else inputAmount
+            Operation.ADD_VALUE -> if (attribute == EntityAttributes.KNOCKBACK_RESISTANCE) inputAmount * 10.0 else inputAmount
             Operation.ADD_MULTIPLIED_BASE -> inputAmount * 100.0
             Operation.ADD_MULTIPLIED_TOTAL -> inputAmount * 100.0
         }

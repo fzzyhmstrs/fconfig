@@ -109,7 +109,7 @@ class PopupWidget
     }
 
     fun applyBlur(delta: Float) {
-        MinecraftClient.getInstance().gameRenderer.renderBlur(delta)
+        MinecraftClient.getInstance().gameRenderer.renderBlur()
         MinecraftClient.getInstance().framebuffer.beginWrite(false)
     }
 

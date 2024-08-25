@@ -39,6 +39,7 @@ import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
