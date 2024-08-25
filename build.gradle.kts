@@ -248,7 +248,7 @@ tasks.withType<DokkaTask>().configureEach {
         version = currentVersion
     }
 
-    doLast {
+    /*doLast {
         // This folder contains the latest documentation with all
         // previous versions included, so it's ready to be published.
         // Make sure it's copied and not moved - you'll still need this
@@ -259,7 +259,7 @@ tasks.withType<DokkaTask>().configureEach {
         // remove previous versions bundled in it. They will not
         // be needed in future builds, it's just overhead.
         currentDocsDir.resolve("older").deleteRecursively()
-    }
+    }*/
 }
 
 
