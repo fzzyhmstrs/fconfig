@@ -49,11 +49,13 @@ import kotlin.reflect.typeOf
  * - {sin(...)} - sine (radians)
  * - {cos(...)} - cosine (radians)
  * - {incr(exp, incr)} - round incrementally: incr(0.913, 0.1) will return 0.90
+ * - {min(a, b)} - minimum of the two values
+ * - {max(a, b)} - maximum of the two values
  * - {mathHelper methods} - Expression will reflectively evaluate any valid [MathHelper] method that takes doubles and returns doubles
  * @see validated for use in configs
  * @sample me.fzzyhmstrs.fzzy_config.examples.ExampleMath.maths
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, min/max since 0.3.7
  */
 @Suppress("DEPRECATION")
 @FunctionalInterface
@@ -273,7 +275,21 @@ fun interface Expression {
                 if (reader.canRead())
                     parseExpression(reader, context, 1000, incr)
                 else
-                    incr }
+                    incr },
+            "min" to NamedExpression { reader, context, _ ->
+                val parentheses = parseParenthesesMultiple(reader, context, false)
+                val min = min(parentheses[0], parentheses[1])
+                if (reader.canRead())
+                    parseExpression(reader, context, 1000, min)
+                else
+                    min },
+            "max" to NamedExpression { reader, context, _ ->
+                val parentheses = parseParenthesesMultiple(reader, context, false)
+                val max = max(parentheses[0], parentheses[1])
+                if (reader.canRead())
+                    parseExpression(reader, context, 1000, max)
+                else
+                    max }
         )
 
         private fun parseExpression(reader: StringReader, context: String, order: Int, vararg inputs: Expression): Expression {
@@ -1894,6 +1910,196 @@ fun interface Expression {
             }
             override fun hashCode(): Int {
                 return 92821 * (92821 * (92821 * (c1.hashCode() + 17) + c2.hashCode()) + s1.hashCode()) + s2.hashCode()
+            }
+        }
+
+        private fun min(e1: Expression, e2: Expression): Expression {
+            return if(e1 is Const) {
+                if (e2 is Const) {
+                    ConstMin(e1.c(), e2.c(), e1.toString(), e2.toString())
+                } else {
+                    ConstFirstMin(e1.c(), e2, e1.toString())
+                }
+            } else if (e2 is Const) {
+                ConstSecondMin(e1, e2.c(), e2.toString())
+            } else {
+                ExpMin(e1, e2)
+            }
+        }
+        private class ExpMin(val e1: Expression, val e2: Expression): Expression {
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.min(e1.eval(vars), e2.eval(vars))
+            }
+            override fun toString(): String {
+                return "min($e1, $e2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpMin
+                if (e1 != other.e1) return false
+                if (e2 != other.e2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (e1.hashCode() + 18) + e2.hashCode()
+            }
+        }
+        private class ConstFirstMin(val c1: Double, val e2: Expression, val s1: String): Expression {
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.min(c1, e2.eval(vars))
+            }
+            override fun toString(): String {
+                return "min($s1, $e2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstFirstMin
+                if (c1 != other.c1) return false
+                if (e2 != other.e2) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (c1.hashCode() + 18) + e2.hashCode()) + s1.hashCode()
+            }
+        }
+        private class ConstSecondMin(val e1: Expression, val c2: Double, val s2: String): Expression {
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.min(e1.eval(vars), c2)
+            }
+            override fun toString(): String {
+                return "min($e1, $s2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstSecondMin
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (e1.hashCode() + 18) + c2.hashCode()) + s2.hashCode()
+            }
+        }
+        private class ConstMin(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression {
+            private val c3 = kotlin.math.min(c1, c2)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c3
+            }
+            override fun toString(): String {
+                return "min($s1, $s2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstMin
+                if (c1 != other.c1) return false
+                if (c2 != other.c2) return false
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (92821 * (c1.hashCode() + 18) + c2.hashCode()) + s1.hashCode()) + s2.hashCode()
+            }
+        }
+
+        private fun max(e1: Expression, e2: Expression): Expression {
+            return if(e1 is Const) {
+                if (e2 is Const) {
+                    ConstMax(e1.c(), e2.c(), e1.toString(), e2.toString())
+                } else {
+                    ConstFirstMax(e1.c(), e2, e1.toString())
+                }
+            } else if (e2 is Const) {
+                ConstSecondMax(e1, e2.c(), e2.toString())
+            } else {
+                ExpMax(e1, e2)
+            }
+        }
+        private class ExpMax(val e1: Expression, val e2: Expression): Expression {
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.max(e1.eval(vars), e2.eval(vars))
+            }
+            override fun toString(): String {
+                return "max($e1, $e2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ExpMax
+                if (e1 != other.e1) return false
+                if (e2 != other.e2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (e1.hashCode() + 19) + e2.hashCode()
+            }
+        }
+        private class ConstFirstMax(val c1: Double, val e2: Expression, val s1: String): Expression {
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.max(c1, e2.eval(vars))
+            }
+            override fun toString(): String {
+                return "max($s1, $e2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstFirstMax
+                if (c1 != other.c1) return false
+                if (e2 != other.e2) return false
+                if (s1 != other.s1) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (c1.hashCode() + 19) + e2.hashCode()) + s1.hashCode()
+            }
+        }
+        private class ConstSecondMax(val e1: Expression, val c2: Double, val s2: String): Expression {
+            override fun eval(vars: Map<Char, Double>): Double {
+                return kotlin.math.max(e1.eval(vars), c2)
+            }
+            override fun toString(): String {
+                return "max($e1, $s2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstSecondMax
+                if (e1 != other.e1) return false
+                if (c2 != other.c2) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (e1.hashCode() + 19) + c2.hashCode()) + s2.hashCode()
+            }
+        }
+        private class ConstMax(val c1: Double, val c2: Double, val s1: String, val s2: String): Expression {
+            private val c3 = kotlin.math.max(c1, c2)
+            override fun eval(vars: Map<Char, Double>): Double {
+                return c3
+            }
+            override fun toString(): String {
+                return "max($s1, $s2)"
+            }
+            override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+                other as ConstMax
+                if (c1 != other.c1) return false
+                if (c2 != other.c2) return false
+                if (s1 != other.s1) return false
+                if (s2 != other.s2) return false
+                return true
+            }
+            override fun hashCode(): Int {
+                return 92821 * (92821 * (92821 * (c1.hashCode() + 19) + c2.hashCode()) + s1.hashCode()) + s2.hashCode()
             }
         }
 

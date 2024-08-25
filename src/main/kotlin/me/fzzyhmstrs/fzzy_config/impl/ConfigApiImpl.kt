@@ -177,7 +177,7 @@ internal object ConfigApiImpl {
                 val classInstance = configClass()
                 val oldFilePair = getCompat(classInstance::class)
                 val oldFile = oldFilePair.first
-                if (oldFile != null) {
+                if (oldFile != null && oldFile.exists()) {
                     if (oldFilePair.second) {
                         val str = oldFile.readLines().joinToString("\n")
                         val errorBuilder = mutableListOf<String>()

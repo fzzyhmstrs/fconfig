@@ -123,6 +123,35 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         if(choices.isEmpty())
             throw IllegalStateException("ValidatedChoice can't have empty choice list")
     }
+
+    @Internal
+    companion object {
+
+        /**
+         * Helper method for creating Choice translations from the base key and the choice value string.
+         *
+         * For example, if the [ValidatedChoice] has three entries `"a"`, `"b"`, `"c"`, we can use this method to create lang keys like the following
+         *
+         * - Translation: `"my_mod.my_config.choiceField.a"`
+         * - Description: `"my_mod.my_config.choiceField.desc.a"`
+         * - With Suffix: `"my_mod.my_config.choiceField.a.suffix"`
+         *
+         * Which will be used to create a Translatable Text.
+         * @param suffix Optional string to add to the end of the created lang key.
+         * @return [BiFunction] [T], String, [MutableText] the composed BiFunction for providing to a [ValidatedChoice] constructor.
+         * @author fzzyhmstrs
+         * @since 0.3.7
+         */
+        @JvmOverloads
+        fun <T> translate(suffix: String = ""): BiFunction<T, String, MutableText> {
+            return if(suffix.isEmpty())
+                BiFunction { t, u -> FcText.translatable(u + "." + t.toString()) }
+            else
+                BiFunction { t, u -> FcText.translatable(u + "." + t.toString() + "." + suffix) }
+        }
+
+    }
+
     override fun copyStoredValue(): T {
         return storedValue
     }
