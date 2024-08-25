@@ -308,7 +308,7 @@ fun interface Expression {
                     parseExpression(reader, context, 1000, parentheses)
                 else
                     parentheses
-            }else if (reader.peek() == '^') {
+            } else if (reader.peek() == '^') {
                 if (1 > order) return inputs[0]
                 reader.read()
                 val expression1 = inputs[0]
@@ -317,7 +317,7 @@ fun interface Expression {
                     parseExpression(reader, context, 1000, pow(expression1, expression2))
                 else
                     pow(expression1, expression2)
-            }else if (reader.peek() == '*') {
+            } else if (reader.peek() == '*') {
                 if (2 > order) return inputs[0]
                 reader.read()
                 val expression1 = inputs[0]
@@ -443,7 +443,7 @@ fun interface Expression {
                 ConstParentheses(e1.c(), e1.toString())
             } else if (e1 is ConstParentheses) {
                 ConstParentheses(e1.c1, e1.s1)
-            }else if (e1 is ExpParentheses) {
+            } else if (e1 is ExpParentheses) {
                 ExpParentheses(e1.e1)
             } else {
                 ExpParentheses(e1)
