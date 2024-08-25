@@ -474,6 +474,9 @@ $dokka.location:me.fzzyhmstrs.fzzy_config.util/FcText/translatable/#kotlin.Strin
 $dokka.location:me.fzzyhmstrs.fzzy_config.util/FcText/translatableWithFallback/#kotlin.String#kotlin.String?#kotlin.Array[kotlin.Any]/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-fc-text/translatable-with-fallback.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.util/FcText/translate/kotlin.String#kotlin.Array[kotlin.Any]/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-fc-text/translate.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.util/FcText/translation/kotlin.Any?#kotlin.String/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-fc-text/translation.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.util/RenderUtil///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-render-util/index.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.util/RenderUtil/drawGuiTexture/net.minecraft.client.gui.DrawContext#net.minecraft.util.Identifier#kotlin.Int#kotlin.Int#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-render-util/draw-gui-texture.html
+$dokka.location:me.fzzyhmstrs.fzzy_config.util/RenderUtil/drawGuiTexture/net.minecraft.client.gui.DrawContext#net.minecraft.util.Identifier#kotlin.Int#kotlin.Int#kotlin.Int#kotlin.Int/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-render-util/draw-gui-texture.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.util/TomlOps.Companion///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-toml-ops/-companion/index.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.util/TomlOps.Companion/INSTANCE/#/PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-toml-ops/-companion/-i-n-s-t-a-n-c-e.html
 $dokka.location:me.fzzyhmstrs.fzzy_config.util/TomlOps///PointingToDeclaration/-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-toml-ops/index.html
