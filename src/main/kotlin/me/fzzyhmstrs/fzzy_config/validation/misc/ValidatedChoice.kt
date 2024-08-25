@@ -142,6 +142,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
          * @author fzzyhmstrs
          * @since 0.3.7
          */
+        @JvmStatic
         @JvmOverloads
         fun <T> translate(suffix: String = ""): BiFunction<T, String, MutableText> {
             return if(suffix.isEmpty())
