@@ -397,7 +397,7 @@ fun interface Expression {
                 when (c) {
                     '(' -> count2++
                     ')' -> count2--
-                    ', ' -> {
+                    ',' -> {
                         if (count2 == 0) {
                             str.add(toEat.substring(splitIndex, i))
                             splitIndex = i + 1
