@@ -26,7 +26,7 @@ import java.io.File
 import java.util.function.Supplier
 
 /**
- * API for management of config files.
+ * API for management of config files. If writing in Java, consider using [ConfigApiJava] where possible.
  *
  * Configs can de/serialized from File, string, or raw TomlElement. File read is performed with validation and correction.
  * @author fzzyhmstrs
