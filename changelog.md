@@ -1,9 +1,10 @@
 ### Additions
-* None.
+* Added `ConfigApiJava` which includes methods that may cause IDE issues if called by java code directly from ConfigApi.
+* Added `translate` helper method to `ValidatedChoice` for shortcutting common translation/description provider creation.
+* Added `min(a,b)` and `max(a,b)` to `Expression`
 
 ### Changes
-* `ValidatedChoice` now has the params `translationProvider` and `descriptionProvider`, BiFunctions that let you convert the choices base translation key and an instance of the choice into a Text instance. Useful for creating translations/Descriptions for strings or other choices that aren't `Translatable`.
-* `ValidatedList.toChoices` now lets the user define translation and widget behavior.
+* `ValidatedExpression` widget now includes max and min, and the widget buttons have descriptive tooltips.
 
 ### Fixes
-* Clean up code internally. No external change in behavior
+* Serializer will now ignore a `@ConvertFrom` file candidate if it is missing (already converted, or never existed), rather than tossing an exception into the log.
