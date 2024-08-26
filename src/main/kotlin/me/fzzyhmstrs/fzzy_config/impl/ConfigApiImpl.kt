@@ -19,6 +19,7 @@ import kotlinx.serialization.serializer
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_KEY
@@ -36,6 +37,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.number.*
+import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.entity.player.PlayerEntity
@@ -533,6 +535,22 @@ internal object ConfigApiImpl {
     }
 
     ////////////////// Utilities
+
+    internal fun <T: Any> generatePermissionsReport(player: PlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
+        val map: MutableMap<String, Boolean> = mutableMapOf()
+        walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _ ->
+            annotations.firstOrNull { it is WithCustomPerms }?.cast<WithCustomPerms>()?.let {
+                for (group in it.perms) {
+                    if (Permissions.check(player, group, it.fallback)) {
+                        map[key] = true
+                        break
+                    }
+                }
+                map.putIfAbsent(key, false)
+            }
+        }
+        return map
+    }
 
     internal fun makeDir(folder: String, subfolder: String): Pair<File, Boolean> {
         val dir = if (subfolder != "") {
