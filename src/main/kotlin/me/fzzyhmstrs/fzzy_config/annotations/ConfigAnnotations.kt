@@ -39,7 +39,7 @@ annotation class IgnoreVisibility
 annotation class ClientModifiable
 
 /**
- * Applies permission restrictions to a config setting. Overriden by [ClientModifiable]
+ * Applies permission restrictions to a config setting. Overridden by [ClientModifiable]
  *
  * Defines the Operator Permission Level needed to make modifications to a config entry. By default, all entries need Op Level 2, hence this default starts at 3.
  *
@@ -49,6 +49,18 @@ annotation class ClientModifiable
  */
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
 annotation class WithPerms(val opLevel: Int = 3)
+
+/**
+ * Applies custom permission restrictions to a config setting. Overridden by [ClientModifiable]
+ *
+ * Uses permissions from LuckPerms, or any permissions mod that integrates with `fabric-permissions-api`.
+ *
+ * @param perms Array&lt;String&gt; - permission groups allowed to access this setting. Groups need to be compatible with LuckPerms or similar.
+ * @author fzzyhmstrs
+ * @since 0.3.8
+ */
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+annotation class WithCustomPerms(val perms: Array<String>, val fallback: Int = 3)
 
 /**
  * Excludes an element of a [Config][me.fzzyhmstrs.fzzy_config.config.Config] from synchronization.
