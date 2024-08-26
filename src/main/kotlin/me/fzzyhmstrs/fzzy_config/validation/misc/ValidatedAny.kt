@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.annotations.IgnoreVisibility
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
@@ -40,7 +41,8 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Supplier
-import kotlin.reflect.full.createInstance
+import kotlin.reflect.KParameter
+import kotlin.reflect.jvm.javaConstructor
 
 /**
  * Validation for an arbitrary non-null POJO. It will create a "mini-config" popup with the same style of list as the main config and section screens.
@@ -99,7 +101,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
      */
     override fun copyStoredValue(): T {
         return try {
-            val new = storedValue::class.createInstance()
+            val new = createInstance()
             val toml = serialize(this.get()).get()
             val result = ConfigApi.deserializeFromToml(new, toml, mutableListOf())
             if (result.isError()) storedValue else result.get().config
@@ -124,13 +126,23 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
      * @suppress
      */
      override fun toString(): String {
-         return "Validated Walkable[value=${ConfigApi.serializeConfig(get(), mutableListOf(), 1).lines().joinToString(" ", transform = {s -> s.trim()})}, validation=per contained member validation]"
-     }
+        return "Validated Walkable[value=${
+            ConfigApi.serializeConfig(get(), mutableListOf(), 1).lines().joinToString(" ", transform = { s -> s.trim() })
+        }, validation=per contained member validation]"
+    }
+
+    private fun createInstance(): T {
+        val noArgsConstructor = storedValue::class.constructors.singleOrNull { it.parameters.all(KParameter::isOptional) }
+            ?: throw IllegalArgumentException("Class should have a single no-arg constructor: $this")
+        if (storedValue::class.annotations.firstOrNull { (it is IgnoreVisibility) }?.let { true } == true)
+            noArgsConstructor.javaConstructor?.trySetAccessible()
+        return noArgsConstructor.callBy(emptyMap())
+    }
 
     @Environment(EnvType.CLIENT)
     private fun openObjectPopup() {
         val newThing = copyStoredValue()
-        val newNewThing = try{ defaultValue::class.createInstance() } catch (e: Exception) { defaultValue }
+        val newNewThing = try{ createInstance() } catch (e: Exception) { defaultValue }
         val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
         val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 0, false)
         ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, callback ->
@@ -227,8 +239,8 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
 
         override fun apply(final: Boolean) {
             if (updateMap.isEmpty()) return
-            //push updates from basic validation to the configs
 
+            //push updates from basic validation to the configs
             ConfigApiImpl.walk(thing, key, 1) { walkable, _, new, thing, prop, _, _ ->
                 if (!(thing is Updatable && thing is Entry<*, *>)) {
                     val update = getUpdate(new)
