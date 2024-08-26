@@ -114,6 +114,10 @@ dependencies {
     implementation("blue.endless:jankson:$janksonVersion")
     include("blue.endless:jankson:$janksonVersion")
 
+    val fabricPermsVersion: String by project
+    modImplementation("me.lucko:fabric-permissions-api:$fabricPermsVersion")
+    include("me.lucko:fabric-permissions-api:$fabricPermsVersion")
+
     val modmenuVersion: String by project
     modCompileOnly("com.terraformersmc:modmenu:$modmenuVersion") {
         isTransitive = false
