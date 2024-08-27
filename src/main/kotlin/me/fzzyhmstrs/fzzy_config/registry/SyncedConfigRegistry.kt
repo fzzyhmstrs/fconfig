@@ -160,7 +160,6 @@ internal object SyncedConfigRegistry {
         ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.id){ server, serverPlayer, context, buf, sender ->
             val payload = ConfigUpdateC2SCustomPayload(buf)
             val permLevel = payload.playerPerm
-            TODO("Add new permission checking system into Screen Manager and this")
             val serializedConfigs = payload.updates
             if(!serverPlayer.hasPermissionLevel(permLevel)) {
                 FC.LOGGER.error("Player [${serverPlayer.name}] may have tried to cheat changes to the Server Config! Their perm level: ${getPlayerPermissionLevel(serverPlayer)}, perm level synced from client: $permLevel")
@@ -173,7 +172,13 @@ internal object SyncedConfigRegistry {
                 return@registerGlobalReceiver
             }
             for ((id, configString) in serializedConfigs) {
-                val config = syncedConfigs[id] ?: continue
+                val config = syncedConfigs[id]
+                if (config == null) {
+                    FC.LOGGER.error("Config $id wasn't found!, Skipping update")
+                    continue
+                }
+                TODO("Add new permission checking system into Screen Manager and this")
+                
                 val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
                 val restart = result.get().getBoolean(RESTART_KEY)
