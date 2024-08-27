@@ -335,25 +335,25 @@ internal class ConfigScreenManager(private val scope: String, private val config
             if (annotation is ClientModifiable)
                 return true
         }
-        for (annotation in configAnnotations) {
-            //4. whole-config WithCustomPerms
+        for (annotation in annotations) {
+            //4. per-setting WithCustomPerms
             if (annotation is WithCustomPerms) {
                 for (perm in annotation.perms) {
                     if(cachedPerms[id]?.get(perm) == true) return true
                 }
             }
-            //5. whole-config WithCustomPerms
+            //5. per-setting WithPerms
             if (annotation is WithPerms)
                 return playerPermLevel >= annotation.opLevel
         }
-        for (annotation in annotations) {
-            //6. per-setting WithCustomPerms
+        for (annotation in configAnnotations) {
+            //6. whole-config WithCustomPerms
             if (annotation is WithCustomPerms) {
                 for (perm in annotation.perms) {
                     if(cachedPerms[id]?.get(perm) == true) return true
                 }
             }
-            //7. per-setting WithPerms
+            //7. whole-config WithCustomPerms
             if (annotation is WithPerms)
                 return playerPermLevel >= annotation.opLevel
         }
