@@ -23,6 +23,7 @@ import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.metadata.CustomValue
 import net.minecraft.client.gui.screen.Screen
 import java.util.*
+import kotlin.collections.HashMap
 
 /**
  * Client registry for [Config] instances. Handles GUIs.
@@ -34,9 +35,11 @@ internal object ClientConfigRegistry {
 
     private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
     private val configScreenManagers: MutableMap<String, ConfigScreenManager> = mutableMapOf()
+    private val customPermissions: MutableMap<String, Map<String, Boolean>> = mutableMapOf()
     private var validScopes: MutableSet<String> = mutableSetOf() //configs are sorted into Managers by namespace
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
     private var hasScrapedMetadata = false
+
     @Environment(EnvType.CLIENT)
     internal fun getScreenScopes(): Set<String> {
         if (!hasScrapedMetadata) {
@@ -90,6 +93,16 @@ internal object ClientConfigRegistry {
                 clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
         }
         return manager.provideScreen(scope)
+    }
+
+    @Environment(EnvType.CLIENT)
+    internal fun getPerms(): Map<String, Map<String, Boolean>> {
+        return HashMap(customPermissions)
+    }
+
+    @Environment(EnvType.CLIENT)
+    internal fun updatePerms(id: String, perms: Map<String, Boolean>) {
+        customPermissions[id] = perms
     }
 
     @Environment(EnvType.CLIENT)

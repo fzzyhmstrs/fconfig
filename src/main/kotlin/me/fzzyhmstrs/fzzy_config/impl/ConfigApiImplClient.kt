@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import net.minecraft.client.MinecraftClient
 import net.minecraft.text.Text
 import java.util.*
+import kotlin.collections.HashMap
 
 internal object ConfigApiImplClient {
 
@@ -34,6 +35,14 @@ internal object ConfigApiImplClient {
             input
         else
             MinecraftClient.getInstance().textRenderer.trimToWidth(input.string, maxWidth - ellipsesWidth).trimEnd().lit().append(ellipses)
+    }
+
+    internal fun getPerms(): Map<String, Map<String, Boolean>> {
+        return HashMap(ClientConfigRegistry.getPerms())
+    }
+
+    internal fun updatePerms(id: String, perms: Map<String, Boolean>) {
+        ClientConfigRegistry.updatePerms(id, perms)
     }
 
     internal fun registerConfig(config: Config, baseConfig: Config) {
