@@ -41,6 +41,7 @@ import java.util.*
 internal object SyncedConfigRegistry {
 
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
+    private val quarantinedUpdates : MutableMap<String, QuarantinedUpdate)
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
         val buf = PacketByteBufs.create()
@@ -160,24 +161,34 @@ internal object SyncedConfigRegistry {
             val payload = ConfigUpdateC2SCustomPayload(buf)
             val permLevel = payload.playerPerm
             val serializedConfigs = payload.updates
-            if(!serverPlayer.hasPermissionLevel(permLevel)) {
-                FC.LOGGER.error("Player [${serverPlayer.name}] may have tried to cheat changes to the Server Config! Their perm level: ${getPlayerPermissionLevel(serverPlayer)}, perm level synced from client: $permLevel")
-                val changes = payload.changeHistory
-                ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), serverPlayer)
-                for (player in serverPlayer.server.playerManager.playerList) {
-                    if(player.hasPermissionLevel(2))
-                        player.sendMessageToClient("fc.networking.permission.cheat".translate(serverPlayer.name), false)
-                }
-                return@registerGlobalReceiver
-            }
+
             for ((id, configString) in serializedConfigs) {
                 val config = syncedConfigs[id]
                 if (config == null) {
                     FC.LOGGER.error("Config $id wasn't found!, Skipping update")
                     continue
                 }
-                TODO("Add new permission checking system into Screen Manager and this")
-                
+                TODO("Add new permission checking system into Screen Manager and sync")
+
+val validationResult r ConfigApiImpl.validatePermissions(context.player(), config, configString, getPlayerPermissionLevel(context.player()))
+
+if(validationResult.isError()) {
+                FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes to the Server Config! Summary of issues found: ${validationResult.getError()}")
+                FC.LOGGER.error("This update has not been applied, and has been moved to quarantine. Use the configure_update command to inspect and permit or deny the update.")
+                FC.LOGGER.warn("If no action is taken, the quarantined update will be flushed on the next server restart, and its changes will not be applied")
+
+                val changes = payload.changeHistory
+                ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
+
+                val quarantine = QuarantinedUpdate(context.player().uuid, changes, id, configString)
+                val quarantineId = id + TODO()
+
+                for (player in context.player().server.playerManager.playerList) {
+                    if(ConfigApiImpl.isConfigAdmin(player, config))
+                        player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
+                }
+                return@registerGlobalReceiver
+            }
                 val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
                 val restart = result.get().getBoolean(RESTART_KEY)
@@ -229,4 +240,6 @@ internal object SyncedConfigRegistry {
     internal fun registerConfig(config: Config) {
         syncedConfigs[config.getId().toTranslationKey()] = config
     }
+
+    private class QuarantinedUpdate(val playerUuid: UUID, changeHistory: String, configId: String, configString: String)
 }
