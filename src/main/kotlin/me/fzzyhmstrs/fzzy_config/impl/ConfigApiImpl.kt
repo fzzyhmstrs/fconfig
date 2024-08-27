@@ -528,25 +528,65 @@ internal object ConfigApiImpl {
 
     internal fun <T: Any> generatePermissionsReport(player: PlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
         val map: MutableMap<String, Boolean> = mutableMapOf()
+
         walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _ ->
             annotations.firstOrNull { it is WithCustomPerms }?.cast<WithCustomPerms>()?.let {
                 for (group in it.perms) {
-                    if (it.fallback >= 0) {
-                        if (Permissions.check(player, group, it.fallback)) {
-                            map[key] = true
-                            break
-                        }
-                    } else {
-                        if (Permissions.check(player, group)) {
-                            map[key] = true
-                            break
-                        }
+                    if (Permissions.check(player, group)) {
+                        map[key] = true
+                        break
                     }
+                }
+                if (it.fallback >= 0) {
+                    if (player.hasPermissionLevel(it.fallback))
+                        map[key] = true
                 }
                 map.putIfAbsent(key, false)
             }
         }
+
         return map
+    }
+
+    internal fun validatePermissions(player: PlayerEntity, id: String, config: Config, configString: String): ValidationResult<List<String>> {
+        val toml = try {
+            Toml.parseToTomlTable(configString)
+        } catch (e:Exception) {
+            return ValidationResult.error(listOf(), "Update for $id is corrupted or improperly formatted for parsing")
+        }
+        val list: MutableList<String> = mutableListOf()
+        val playerPermLevel = getPlayerPermissionLevel(player)
+
+        try {
+            walk(config, id, CHECK_NON_SYNC) { _, _, str, _, _, annotations, _ ->
+                if(toml.containsKey(str) {
+                    if(!hasNeededPermLevel(playerPermLevel, config, annotations) {
+                        list.add(str)
+                    }
+                }
+            }
+        } catch(e: Throwable) {
+            FC.LOGGER.error("Critical exception encountered while validating update permissions. Defaulting to rejection of the update")
+            e.printStackTrace()
+            return ValidationResult.error(listOf(e.getMessage))
+        }
+        return ValidationResult.predicated(list, list.isEmpty(), "Access Violations Found!")
+    }
+
+    fun isConfigAdmin(player, config) {
+        val annotation = config::class.annotations.firstOrNull{ it is AdminAccess }
+        if (annotation == null) {
+            return player.hasPermissionLevel(3)
+        }
+        for (
+    }
+
+    private fun getPlayerPermissionLevel(player: PlayerEntity): Int {
+        var i = 0
+        while(player.hasPermissionLevel(i)) {
+            i++
+        }
+        return i - 1
     }
 
     internal fun makeDir(folder: String, subfolder: String): Pair<File, Boolean> {
@@ -667,19 +707,7 @@ internal object ConfigApiImpl {
         }
     }
 
-    /////////////////////////////////
-
-    private fun ignoreNonSync(flags: Byte): Boolean {
-        return flags and 1.toByte() == 1.toByte()
-    }
-    private fun requiresRestart(flags: Byte): Boolean {
-        return flags and 2.toByte() == 2.toByte()
-    }
-    private fun ignoreVisibility(flags: Byte): Boolean {
-        return flags and 4.toByte() == 4.toByte()
-    }
-
-    internal fun hasNeededPermLevel(playerPermLevel: Int, config: Config, id: String, annotations: List<Annotation>): Boolean {
+    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, annotations: List<Annotation>): Boolean {
         // 1. NonSync wins over everything, even whole config annotations
         if (ConfigApiImpl.isNonSync(annotations)) return true
         val configAnnotations = config::class.annotations
@@ -693,40 +721,54 @@ internal object ConfigApiImpl {
             if (annotation is ClientModifiable)
                 return true
         }
-        for (annotation in configAnnotations) {
-            //4. whole-config WithCustomPerms
+        for (annotation in annotations) {
+            //4. per-setting WithCustomPerms
             if (annotation is WithCustomPerms) {
-                for (perm in annotation.perms) {
-                    if (annotation.fallback >= 0) {
-                        if (Permissions.check(player, perm, annotation.fallback)) {
-                            return true
-                        }
-                    } else if (Permissions.check(player, perm)) {
+               for (perm in annotation.perms) {
+                    if(Permissions.check(player, perm)) {
+                        return true
                     }
+                }
+                if (annotation.fallback >= 0) {
+                    return playerPermLevel >= annotation.fallback
+                }
             }
-        }
-            //5. whole-config WithPerms
+            //5. per-setting WithPerms
             if (annotation is WithPerms)
                 return playerPermLevel >= annotation.opLevel
         }
-        for (annotation in annotations) {
-            //6. per-setting WithCustomPerms
+        for (annotation in configAnnotations) {
+            //6. whole-config WithCustomPerms
             if (annotation is WithCustomPerms) {
-               for (perm in annotation.perms) {
-                    if (annotation.fallback >= 0) {
-                        if (Permissions.check(player, perm, annotation.fallback)) {
-                            return true
-                        }
-                    } else if (Permissions.check(player, perm)) {
+                for (perm in annotation.perms) {
+                    if(Permissions.check(player, perm)) {
+                        return true
                     }
+                }
+                if (annotation.fallback >= 0) {
+                    return playerPermLevel >= annotation.fallback
+                }
             }
-        }
-            //7. per-setting WithPerms
+            //7. whole-config WithPerms
             if (annotation is WithPerms)
                 return playerPermLevel >= annotation.opLevel
         }
         //8. fallback to default vanilla permission level
         return playerPermLevel >= config.defaultPermLevel()
+    }
+
+    ///////////////// Flags
+
+    private fun ignoreNonSync(flags: Byte): Boolean {
+        return flags and 1.toByte() == 1.toByte()
+    }
+
+    private fun requiresRestart(flags: Byte): Boolean {
+        return flags and 2.toByte() == 2.toByte()
+    }
+
+    private fun ignoreVisibility(flags: Byte): Boolean {
+        return flags and 4.toByte() == 4.toByte()
     }
 
     ///////////////// Printing
