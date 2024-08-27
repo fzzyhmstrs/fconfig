@@ -35,10 +35,10 @@ annotation class IgnoreVisibility
  * 1. [NonSync]
  * 2. [ClientModifiable] (Annotating config class itself)
  * 3. [ClientModifiable] (specific setting annotation)
- * 4. [WithCustomPerms] (Annotating config class itself)
- * 5. [WithPerms] (Annotating config class itself)
- * 6. [WithCustomPerms] (specific setting annotation)
- * 7. [WithPerms] (specific setting annotation)
+ * 4. [WithCustomPerms] (specific setting annotation)
+ * 5. [WithPerms] (specific setting annotation)
+ * 6. [WithCustomPerms] (Annotating config class itself)
+ * 7. [WithPerms] (Annotating config class itself)
  * 8. [Config.defaultPermLevel][me.fzzyhmstrs.fzzy_config.config.Config.defaultPermLevel]
  * @author fzzyhmstrs
  * @since 0.2.0
@@ -55,10 +55,10 @@ annotation class ClientModifiable
  * 1. [NonSync]
  * 2. [ClientModifiable] (Annotating config class itself)
  * 3. [ClientModifiable] (specific setting annotation)
- * 4. [WithCustomPerms] (Annotating config class itself)
- * 5. [WithPerms] (Annotating config class itself)
- * 6. [WithCustomPerms] (specific setting annotation)
- * 7. [WithPerms] (specific setting annotation)
+ * 4. [WithCustomPerms] (specific setting annotation)
+ * 5. [WithPerms] (specific setting annotation)
+ * 6. [WithCustomPerms] (Annotating config class itself)
+ * 7. [WithPerms] (Annotating config class itself)
  * 8. [Config.defaultPermLevel][me.fzzyhmstrs.fzzy_config.config.Config.defaultPermLevel]
  * @param opLevel the Operator Level required for modification. 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
  * @author fzzyhmstrs
@@ -68,7 +68,25 @@ annotation class ClientModifiable
 annotation class WithPerms(val opLevel: Int = 3)
 
 /**
- * Applies custom permission restrictions to a config setting. Overridden by [ClientModifiable]
+ * Paired with [WithCustomPerms]. Defines the permissions needed for "admin" access to the config.
+ *
+ * Admin access will mark that a player can handle access violations (potential cheating of a config update) and other server-level issues, and will be notified in-game if such an error occurs while they are online.
+ * 
+ * This annotation is outside of the chain of precedence of the others, it is solely responsible for determining admin access.
+ * 
+ * If [WithCustomPerms] is used in the config class, this should be paired with it; otherwise the system will consider any server admin or owner (level 3+ perms) as an admin. 
+ * @param perms Array&lt;String&gt; - permission groups allowed to access this setting. Groups need to be compatible with LuckPerms or similar.
+ * @param fallback Int - Default -1 = no custom fallback behavior; it will use the default permissions of the class. If provided, uses vanilla logic: 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
+ * @author fzzyhmstrs
+ * @since 0.4.0
+ */
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+annotation class AdminAccess(val perms: Array<String>, val fallback: Int = -1)
+
+/**
+ * Paired with [AdminAccess] Applies custom permission restrictions to a config setting. Overridden by [ClientModifiable]
+ *
+ * If this annotation is used in a Config, it should also have [AdminAccess] defined for the config class
  *
  * Uses permissions from LuckPerms, or any permissions mod that integrates with `fabric-permissions-api`.
  *
@@ -76,13 +94,13 @@ annotation class WithPerms(val opLevel: Int = 3)
  * 1. [NonSync]
  * 2. [ClientModifiable] (Annotating config class itself)
  * 3. [ClientModifiable] (specific setting annotation)
- * 4. [WithCustomPerms] (Annotating config class itself)
- * 5. [WithPerms] (Annotating config class itself)
- * 6. [WithCustomPerms] (specific setting annotation)
- * 7. [WithPerms] (specific setting annotation)
+ * 4. [WithCustomPerms] (specific setting annotation)
+ * 5. [WithPerms] (specific setting annotation)
+ * 6. [WithCustomPerms] (Annotating config class itself)
+ * 7. [WithPerms] (Annotating config class itself)
  * 8. [Config.defaultPermLevel][me.fzzyhmstrs.fzzy_config.config.Config.defaultPermLevel]
  * @param perms Array&lt;String&gt; - permission groups allowed to access this setting. Groups need to be compatible with LuckPerms or similar.
- * @param fallback Int - Default -1, no custom fallback behavior. Will use the default permissions of the class. If provided, uses vanilla logic: 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
+ * @param fallback Int - Default -1 = no custom fallback behavior; it will use the default permissions of the class. If provided, uses vanilla logic: 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
  * @author fzzyhmstrs
  * @since 0.3.8
  */
@@ -100,10 +118,10 @@ annotation class WithCustomPerms(val perms: Array<String>, val fallback: Int = -
  * 1. [NonSync]
  * 2. [ClientModifiable] (Annotating config class itself)
  * 3. [ClientModifiable] (specific setting annotation)
- * 4. [WithCustomPerms] (Annotating config class itself)
- * 5. [WithPerms] (Annotating config class itself)
- * 6. [WithCustomPerms] (specific setting annotation)
- * 7. [WithPerms] (specific setting annotation)
+ * 4. [WithCustomPerms] (specific setting annotation)
+ * 5. [WithPerms] (specific setting annotation)
+ * 6. [WithCustomPerms] (Annotating config class itself)
+ * 7. [WithPerms] (Annotating config class itself)
  * 8. [Config.defaultPermLevel][me.fzzyhmstrs.fzzy_config.config.Config.defaultPermLevel]
  * @author fzzyhmstrs
  * @since 0.2.0
