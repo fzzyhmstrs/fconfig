@@ -26,12 +26,20 @@ import kotlinx.serialization.SerialInfo
 annotation class IgnoreVisibility
 
 /**
- * Marks the annotated config entry as modifiable by any player, not just Ops. Has higher priority than [WithPerms]
+ * Marks the annotated config entry as modifiable by any player, not just Ops.
  *
  * Typically, the opposite of using [WithPerms]. Should be used with caution, as this will enable any player, moderator, admin, or otherwise to modify a server-synced config setting. By default, all settings need Op Level 2.
  *
  * Not applicable if [NonSync] is used, these are treated as ClientModifiable automatically because they don't affect the server.
- *
+ * Order of precedence:
+ * 1. [NonSync]
+ * 2. [ClientModifiable] (Annotating config class itself)
+ * 3. [ClientModifiable] (specific setting annotation)
+ * 4. [WithCustomPerms] (Annotating config class itself)
+ * 5. [WithPerms] (Annotating config class itself)
+ * 6. [WithCustomPerms] (specific setting annotation)
+ * 7. [WithPerms] (specific setting annotation)
+ * 8. [Config.defaultPermLevel][me.fzzyhmstrs.fzzy_config.config.Config.defaultPermLevel]
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -39,10 +47,19 @@ annotation class IgnoreVisibility
 annotation class ClientModifiable
 
 /**
- * Applies permission restrictions to a config setting. Overridden by [ClientModifiable]
+ * Applies permission restrictions to a config setting.
  *
  * Defines the Operator Permission Level needed to make modifications to a config entry. By default, all entries need Op Level 2, hence this default starts at 3.
  *
+ * Order of precedence:
+ * 1. [NonSync]
+ * 2. [ClientModifiable] (Annotating config class itself)
+ * 3. [ClientModifiable] (specific setting annotation)
+ * 4. [WithCustomPerms] (Annotating config class itself)
+ * 5. [WithPerms] (Annotating config class itself)
+ * 6. [WithCustomPerms] (specific setting annotation)
+ * 7. [WithPerms] (specific setting annotation)
+ * 8. [Config.defaultPermLevel][me.fzzyhmstrs.fzzy_config.config.Config.defaultPermLevel]
  * @param opLevel the Operator Level required for modification. 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
  * @author fzzyhmstrs
  * @since 0.2.0
@@ -55,12 +72,22 @@ annotation class WithPerms(val opLevel: Int = 3)
  *
  * Uses permissions from LuckPerms, or any permissions mod that integrates with `fabric-permissions-api`.
  *
+ * Order of precedence:
+ * 1. [NonSync]
+ * 2. [ClientModifiable] (Annotating config class itself)
+ * 3. [ClientModifiable] (specific setting annotation)
+ * 4. [WithCustomPerms] (Annotating config class itself)
+ * 5. [WithPerms] (Annotating config class itself)
+ * 6. [WithCustomPerms] (specific setting annotation)
+ * 7. [WithPerms] (specific setting annotation)
+ * 8. [Config.defaultPermLevel][me.fzzyhmstrs.fzzy_config.config.Config.defaultPermLevel]
  * @param perms Array&lt;String&gt; - permission groups allowed to access this setting. Groups need to be compatible with LuckPerms or similar.
+ * @param fallback Int - Default -1, no custom fallback behavior. Will use the default permissions of the class. If provided, uses vanilla logic: 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
  * @author fzzyhmstrs
  * @since 0.3.8
  */
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
-annotation class WithCustomPerms(val perms: Array<String>, val fallback: Int = 3)
+annotation class WithCustomPerms(val perms: Array<String>, val fallback: Int = -1)
 
 /**
  * Excludes an element of a [Config][me.fzzyhmstrs.fzzy_config.config.Config] from synchronization.
@@ -69,6 +96,15 @@ annotation class WithCustomPerms(val perms: Array<String>, val fallback: Int = 3
  *
  * NonSync elements will automatically act like [ClientModifiable], as they won't be synced anyway.
  *
+ * Order of precedence:
+ * 1. [NonSync]
+ * 2. [ClientModifiable] (Annotating config class itself)
+ * 3. [ClientModifiable] (specific setting annotation)
+ * 4. [WithCustomPerms] (Annotating config class itself)
+ * 5. [WithPerms] (Annotating config class itself)
+ * 6. [WithCustomPerms] (specific setting annotation)
+ * 7. [WithPerms] (specific setting annotation)
+ * 8. [Config.defaultPermLevel][me.fzzyhmstrs.fzzy_config.config.Config.defaultPermLevel]
  * @author fzzyhmstrs
  * @since 0.2.0
  */

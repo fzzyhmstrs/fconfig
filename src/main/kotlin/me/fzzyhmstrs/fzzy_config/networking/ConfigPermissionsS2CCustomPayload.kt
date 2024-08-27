@@ -11,24 +11,26 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import io.netty.buffer.ByteBuf
-import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.codec.PacketCodecs
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
 import net.minecraft.util.Identifier
 
-class ConfigPermissionsS2CCustomPayload(private val permissions: MutableMap<String, Boolean>): CustomPayload {
+class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: MutableMap<String, Boolean>): CustomPayload {
 
-    override fun getId(): CustomPayload.Id<out CustomPayload> {
+    override fun getId(): Id<out CustomPayload> {
         return type
     }
 
     companion object {
         val type: Id<ConfigPermissionsS2CCustomPayload> = Id(Identifier.of("fzzy_config:config_perms_s2c"))
-        val codec: PacketCodec<ByteBuf, ConfigPermissionsS2CCustomPayload> = PacketCodecs.map({ mutableMapOf() }, PacketCodecs.STRING, PacketCodecs.BOOL).xmap(
-            { m -> ConfigPermissionsS2CCustomPayload(m) },
-            { p -> p.permissions }
+        val codec: PacketCodec<ByteBuf, ConfigPermissionsS2CCustomPayload> = PacketCodec.tuple(
+            PacketCodecs.STRING,
+            ConfigPermissionsS2CCustomPayload::id,
+            PacketCodecs.map({ mutableMapOf() }, PacketCodecs.STRING, PacketCodecs.BOOL),
+            ConfigPermissionsS2CCustomPayload::permissions,
+            ::ConfigPermissionsS2CCustomPayload
         )
     }
 
