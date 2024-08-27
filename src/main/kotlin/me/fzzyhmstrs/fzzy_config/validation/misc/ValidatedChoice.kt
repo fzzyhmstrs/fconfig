@@ -367,8 +367,8 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             val newIndex = (choices.indexOf(entry.get()) + 1).takeIf { it < choices.size } ?: 0
             val newConst = choices[newIndex]
             message = entry.translationProvider.apply(newConst, entry.translationKey())
-            constructTooltip()
             entry.accept(newConst)
+            constructTooltip()
         }
 
     }
