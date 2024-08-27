@@ -257,7 +257,9 @@ internal object ConfigApiImpl {
         save(configClass.name, configClass.folder, configClass.subfolder, configClass)
     }
 
-    internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): TomlElement {
+    ///////////////// Serialize
+
+    internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): TomlTable {
         //used to build a TOML table piece by piece
         val toml = TomlTableBuilder()
         try {
@@ -330,7 +332,7 @@ internal object ConfigApiImpl {
         return Toml.encodeToString(serializeToToml(config, errorBuilder, flags))
     }
 
-    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): TomlElement where M: UpdateManager, M: BasicValidationProvider {
+    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): TomlTable where M: UpdateManager, M: BasicValidationProvider {
         val toml = TomlTableBuilder()
         try {
             walk(config, config.getId().toTranslationKey(), flags) { _, _, str, v, prop, annotations, _ ->
@@ -529,9 +531,16 @@ internal object ConfigApiImpl {
         walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _ ->
             annotations.firstOrNull { it is WithCustomPerms }?.cast<WithCustomPerms>()?.let {
                 for (group in it.perms) {
-                    if (Permissions.check(player, group, it.fallback)) {
-                        map[key] = true
-                        break
+                    if (it.fallback >= 0) {
+                        if (Permissions.check(player, group, it.fallback)) {
+                            map[key] = true
+                            break
+                        }
+                    } else {
+                        if (Permissions.check(player, group)) {
+                            map[key] = true
+                            break
+                        }
                     }
                 }
                 map.putIfAbsent(key, false)

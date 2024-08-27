@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
+import me.fzzyhmstrs.fzzy_config.annotations.WithCustomPerms
 import me.fzzyhmstrs.fzzy_config.annotations.WithPerms
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
@@ -23,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.isRequiresRestart
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
+import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigConfigEntry
@@ -72,6 +74,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private var copyBuffer: Any? = null
     private var cachedPermissionLevel = 0
+    private var cachedPerms:  Map<String, Map<String, Boolean>> = mapOf()
 
     init {
         val map: MutableMap<String, Set<Config>> = mutableMapOf()
@@ -82,6 +85,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
         manager = ConfigUpdateManager(configs, forwardedUpdates, ConfigApiImplClient.getPlayerPermissionLevel())
         cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
+        cachedPerms = ConfigApiImplClient.getPerms()
         prepareScreens()
     }
 
@@ -133,8 +137,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     internal fun openScreen(scope: String = this.scope) {
-        if(cachedPermissionLevel != ConfigApiImplClient.getPlayerPermissionLevel()) {
+        if(cachedPermissionLevel != ConfigApiImplClient.getPlayerPermissionLevel() || cachedPerms != ConfigApiImplClient.getPerms()) {
             cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
+            cachedPerms = ConfigApiImplClient.getPerms()
             manager.flush()
             prepareScreens()
         }
@@ -230,7 +235,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                 nameMap[new] = name
-                if(hasNeededPermLevel(playerPermLevel, defaultPermLevel, annotations)) {
+                if(hasNeededPermLevel(playerPermLevel, config, prefix, annotations)) {
                     thing.setUpdateManager(manager)
                     manager.setUpdatableEntry(thing)
                     if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
@@ -252,7 +257,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     basicValidation2.setEntryKey(new)
                     val name = basicValidation2.translation()
                     nameMap[new] = name
-                    if(hasNeededPermLevel(playerPermLevel, defaultPermLevel, annotations)) {
+                    if(hasNeededPermLevel(playerPermLevel, config, prefix, annotations)) {
                         basicValidation2.setUpdateManager(manager)
                         manager.setUpdatableEntry(basicValidation2)
                         if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
@@ -318,17 +323,44 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
     }
 
-    private fun hasNeededPermLevel(playerPermLevel: Int, defaultPerm: Int, annotations: List<Annotation>): Boolean {
+    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, id: String, annotations: List<Annotation>): Boolean {
+        // 1. NonSync wins over everything, even whole config annotations
         if (ConfigApiImpl.isNonSync(annotations)) return true
+        val configAnnotations = config::class.annotations
+        // 2. whole-config ClientModifiable
+        for (annotation in configAnnotations) {
+            if (annotation is ClientModifiable)
+                return true
+        }
+        // 3. per-setting ClientModifiable
         for (annotation in annotations) {
             if (annotation is ClientModifiable)
                 return true
         }
-        for (annotation in annotations) {
+        for (annotation in configAnnotations) {
+            //4. whole-config WithCustomPerms
+            if (annotation is WithCustomPerms) {
+                for (perm in annotation.perms) {
+                    if(cachedPerms[id]?.get(perm) == true) return true
+                }
+            }
+            //5. whole-config WithCustomPerms
             if (annotation is WithPerms)
                 return playerPermLevel >= annotation.opLevel
         }
-        return playerPermLevel >= defaultPerm
+        for (annotation in annotations) {
+            //6. per-setting WithCustomPerms
+            if (annotation is WithCustomPerms) {
+                for (perm in annotation.perms) {
+                    if(cachedPerms[id]?.get(perm) == true) return true
+                }
+            }
+            //7. per-setting WithPerms
+            if (annotation is WithPerms)
+                return playerPermLevel >= annotation.opLevel
+        }
+        //8. fallback to default vanilla permission level
+        return playerPermLevel >= config.defaultPermLevel()
     }
 
     //////////////////////////////////////
