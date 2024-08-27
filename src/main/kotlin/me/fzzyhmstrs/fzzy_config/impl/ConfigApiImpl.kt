@@ -679,7 +679,57 @@ internal object ConfigApiImpl {
         return flags and 4.toByte() == 4.toByte()
     }
 
-    ////////////////////////////////
+    internal fun hasNeededPermLevel(playerPermLevel: Int, config: Config, id: String, annotations: List<Annotation>): Boolean {
+        // 1. NonSync wins over everything, even whole config annotations
+        if (ConfigApiImpl.isNonSync(annotations)) return true
+        val configAnnotations = config::class.annotations
+        // 2. whole-config ClientModifiable
+        for (annotation in configAnnotations) {
+            if (annotation is ClientModifiable)
+                return true
+        }
+        // 3. per-setting ClientModifiable
+        for (annotation in annotations) {
+            if (annotation is ClientModifiable)
+                return true
+        }
+        for (annotation in configAnnotations) {
+            //4. whole-config WithCustomPerms
+            if (annotation is WithCustomPerms) {
+                for (perm in annotation.perms) {
+                    if (annotation.fallback >= 0) {
+                        if (Permissions.check(player, perm, annotation.fallback)) {
+                            return true
+                        }
+                    } else if (Permissions.check(player, perm)) {
+                    }
+            }
+        }
+            //5. whole-config WithPerms
+            if (annotation is WithPerms)
+                return playerPermLevel >= annotation.opLevel
+        }
+        for (annotation in annotations) {
+            //6. per-setting WithCustomPerms
+            if (annotation is WithCustomPerms) {
+               for (perm in annotation.perms) {
+                    if (annotation.fallback >= 0) {
+                        if (Permissions.check(player, perm, annotation.fallback)) {
+                            return true
+                        }
+                    } else if (Permissions.check(player, perm)) {
+                    }
+            }
+        }
+            //7. per-setting WithPerms
+            if (annotation is WithPerms)
+                return playerPermLevel >= annotation.opLevel
+        }
+        //8. fallback to default vanilla permission level
+        return playerPermLevel >= config.defaultPermLevel()
+    }
+
+    ///////////////// Printing
 
     internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null) {
         FC.LOGGER.info("$$$$$$$$$$$$$$$$$$$$$$$$$$")
