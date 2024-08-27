@@ -161,6 +161,8 @@ internal object SyncedConfigRegistry {
             val payload = ConfigUpdateC2SCustomPayload(buf)
             val permLevel = payload.playerPerm
             val serializedConfigs = payload.updates
+            val successfulUpdates: MutableMap<String, String> = mutableMapOf()
+            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
             for ((id, configString) in serializedConfigs) {
                 val config = syncedConfigs[id]
@@ -170,25 +172,26 @@ internal object SyncedConfigRegistry {
                 }
                 TODO("Add new permission checking system into Screen Manager and sync")
 
-val validationResult r ConfigApiImpl.validatePermissions(context.player(), config, configString, getPlayerPermissionLevel(context.player()))
+                val validationResult = r ConfigApiImpl.validatePermissions(context.player(), id, config, configString)
 
-if(validationResult.isError()) {
-                FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes to the Server Config! Summary of issues found: ${validationResult.getError()}")
-                FC.LOGGER.error("This update has not been applied, and has been moved to quarantine. Use the configure_update command to inspect and permit or deny the update.")
-                FC.LOGGER.warn("If no action is taken, the quarantined update will be flushed on the next server restart, and its changes will not be applied")
+                if(validationResult.isError()) {
 
-                val changes = payload.changeHistory
-                ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
+                    FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes to the Server Config! Problem settings found: ${validationResult.get().joinToString(" | ")}")
+                    FC.LOGGER.error("This update has not been applied, and has been moved to quarantine. Use the configure_update command to inspect and permit or deny the update.")
+                    FC.LOGGER.warn("If no action is taken, the quarantined update will be flushed on the next server restart, and its changes will not be applied")
 
-                val quarantine = QuarantinedUpdate(context.player().uuid, changes, id, configString)
-                val quarantineId = id + TODO()
+                    val changes = payload.changeHistory
+                    ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
 
-                for (player in context.player().server.playerManager.playerList) {
-                    if(ConfigApiImpl.isConfigAdmin(player, config))
-                        player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
+                    val quarantine = QuarantinedUpdate(context.player().uuid, changes, id, configString)
+                    val quarantineId = id + "@" + formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis), ZoneId.systemDefault()))
+
+                    for (player in context.player().server.playerManager.playerList) {
+                        if(ConfigApiImpl.isConfigAdmin(player, config))
+                            player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
+                    }
+                    return@registerGlobalReceiver
                 }
-                return@registerGlobalReceiver
-            }
                 val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
                 val restart = result.get().getBoolean(RESTART_KEY)
@@ -197,6 +200,7 @@ if(validationResult.isError()) {
                 if (restart) {
                     FC.LOGGER.error("The server has received a config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
                 }
+                successfulUpdates[id] = configString
             }
             for (player in serverPlayer.server.playerManager.playerList) {
                 if (player == serverPlayer) continue // don't push back to the player that just sent the update
@@ -223,14 +227,6 @@ if(validationResult.isError()) {
             newPayload.write(newBuf)
             ServerPlayNetworking.send(receivingPlayer, SettingForwardCustomPayload.id, newBuf)
         }
-    }
-
-    private fun getPlayerPermissionLevel(player: PlayerEntity): Int {
-        var i = 0
-        while(player.hasPermissionLevel(i)) {
-            i++
-        }
-        return i - 1
     }
 
     internal fun hasConfig(id: String): Boolean {
