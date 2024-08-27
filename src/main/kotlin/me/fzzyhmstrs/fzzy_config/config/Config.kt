@@ -72,7 +72,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
     }
 
     /**
-     * The default permission level of entries in this config. Users will need to have at least this permission level to modify entries for synced configs except for entries that are [me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable] or [me.fzzyhmstrs.fzzy_config.annotations.NonSync]
+     * The default vanilla permission level of entries in this config. Users will need to have at least this permission level to modify entries for synced configs except for entries that are [me.fzzyhmstrs.fzzy_config.annotations.ClientModifiable] or [me.fzzyhmstrs.fzzy_config.annotations.NonSync]
      *
      * Override specific setting permission levels with [me.fzzyhmstrs.fzzy_config.annotations.WithPerms]
      *

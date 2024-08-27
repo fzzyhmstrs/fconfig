@@ -77,6 +77,14 @@ internal object SyncedConfigRegistry {
                 }
             }
         }
+
+        //receives a permission report for a config for the client player.
+        ClientPlayNetworking.registerGlobalReceiver(ConfigPermissionsS2CCustomPayload.type) { payload, _ ->
+            val id = payload.id
+            val perms = payload.permissions
+            ConfigApiImplClient.updatePerms(id, perms)
+        }
+
         //receives a config update from the server after another client pushes changes to it.
         ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.id){ client, _, buf, _ ->
             val payload = ConfigUpdateS2CCustomPayload(buf)
@@ -95,6 +103,7 @@ internal object SyncedConfigRegistry {
                 }
             }
         }
+
         //receives an update forwarded from another player and passes it to the client registry for handling.
         ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.id){ _, _, buf, _ ->
             val payload = SettingForwardCustomPayload(buf)
@@ -104,6 +113,7 @@ internal object SyncedConfigRegistry {
             val summary = payload.summary
             ConfigApiImplClient.handleForwardedUpdate(update, sendingUuid, scope, summary)
         }
+
     }
 
     fun syncConfigs(handler: ServerPlayNetworkHandler) {
@@ -127,9 +137,10 @@ internal object SyncedConfigRegistry {
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, _ ->
             val players = server.playerManager.playerList
             for (player in players) {
+                if (!ServerPlayNetworking.canSend(player, ConfigSyncS2CCustomPayload.type)) continue
                 for ((id, config) in syncedConfigs) {
                     val syncErrors = mutableListOf<String>()
-                    val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
+                    val syncPayload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
                     if (syncErrors.isNotEmpty()) {
                         val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C datapack reload sync.")
                         syncError.writeError(syncErrors)
@@ -137,6 +148,10 @@ internal object SyncedConfigRegistry {
                     val buf = PacketByteBufs.create()
                     payload.write(buf)
                     ServerPlayNetworking.send(player, ConfigSyncS2CCustomPayload.id, buf)
+                    if (!ServerPlayNetworking.canSend(player, ConfigPermissionsS2CCustomPayload.type)) continue
+                    val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
+                    val permsPayload = ConfigPermissionsS2CCustomPayload(id, perms)
+                    ServerPlayNetworking.send(player, permsPayload)
                 }
             }
         }
@@ -145,6 +160,7 @@ internal object SyncedConfigRegistry {
         ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.id){ server, serverPlayer, context, buf, sender ->
             val payload = ConfigUpdateC2SCustomPayload(buf)
             val permLevel = payload.playerPerm
+            TODO("Add new permission checking system into Screen Manager and this")
             val serializedConfigs = payload.updates
             if(!serverPlayer.hasPermissionLevel(permLevel)) {
                 FC.LOGGER.error("Player [${serverPlayer.name}] may have tried to cheat changes to the Server Config! Their perm level: ${getPlayerPermissionLevel(serverPlayer)}, perm level synced from client: $permLevel")
@@ -177,6 +193,7 @@ internal object SyncedConfigRegistry {
             val changes = payload.changeHistory
             ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), serverPlayer)
         }
+
         //receives a forwarded client update and passes it along to the recipient
         ServerPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.id){ server, serverPlayer, context, buf, sender ->
             val payload = SettingForwardCustomPayload(buf)
