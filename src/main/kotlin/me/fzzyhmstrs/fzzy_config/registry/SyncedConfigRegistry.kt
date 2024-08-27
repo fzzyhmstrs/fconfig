@@ -177,7 +177,6 @@ internal object SyncedConfigRegistry {
         //deserializes the updates to server configs, then propagates the updates to other online clients
         ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
             val permLevel = payload.playerPerm
-            TODO("Add new permission checking system into Screen Manager and this")
             val serializedConfigs = payload.updates
             if(!context.player().hasPermissionLevel(permLevel)) {
                 FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes to the Server Config! Their perm level: ${getPlayerPermissionLevel(context.player())}, perm level synced from client: $permLevel")
@@ -190,7 +189,13 @@ internal object SyncedConfigRegistry {
                 return@registerGlobalReceiver
             }
             for ((id, configString) in serializedConfigs) {
-                val config = syncedConfigs[id] ?: continue
+                val config = syncedConfigs[id]
+                if (config == null) {
+                    FC.LOGGER.error("Config $id wasn't found!, Skipping update")
+                    continue
+                }
+                TODO("Add new permission checking system into Screen Manager and this")
+                
                 val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
                 val restart = result.get().getBoolean(RESTART_KEY)
