@@ -150,7 +150,8 @@ internal object SyncedConfigRegistry {
             }
         }
 
-        ServerPlayConnectionEvents.JOIN.register { handler, sender, _ ->
+        ServerPlayConnectionEvents.JOIN.register { handler, sender, server ->
+            if (server.isSinglePlayer()) return@register
             if (!ServerPlayNetworking.canSend(handler.player, ConfigPermissionsS2CCustomPayload.type)) return@register
             val player = handler.player
             for ((id, config) in syncedConfigs) {
@@ -198,32 +199,34 @@ internal object SyncedConfigRegistry {
                     continue
                 }
 
-                val validationResult = ConfigApiImpl.validatePermissions(context.player(), id, config, configString)
-
-                if(validationResult.isError()) {
-
-                    FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes onto the Server Config! Problem settings found: ${validationResult.get().joinToString(" | ")}")
-                    FC.LOGGER.error("This update has not been applied, and has been moved to quarantine. Use the configure_update command to inspect and permit or deny the update.")
-                    FC.LOGGER.warn("If no action is taken, the quarantined update will be flushed on the next server restart, and its changes will not be applied")
-
-                    val changes = payload.changeHistory
-                    ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
-
-                    val quarantine = QuarantinedUpdate(context.player().uuid, changes, id, configString)
-                    val quarantineId = id + " @" + context.player().name.string + " @" + formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.systemDefault()))
-                    quarantinedUpdates[quarantineId] = quarantine
-                    if (quarantinedUpdates.size > 128) {
-                        quarantinedUpdates.pollFirstEntry()
+                if (!server.isSinglePlayer()) {
+                    val validationResult = ConfigApiImpl.validatePermissions(context.player(), id, config, configString)
+    
+                    if(validationResult.isError()) {
+    
+                        FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes onto the Server Config! Problem settings found: ${validationResult.get().joinToString(" | ")}")
+                        FC.LOGGER.error("This update has not been applied, and has been moved to quarantine. Use the configure_update command to inspect and permit or deny the update.")
+                        FC.LOGGER.warn("If no action is taken, the quarantined update will be flushed on the next server restart, and its changes will not be applied")
+    
+                        val changes = payload.changeHistory
+                        ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
+    
+                        val quarantine = QuarantinedUpdate(context.player().uuid, changes, id, configString)
+                        val quarantineId = id + " @" + context.player().name.string + " @" + formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.systemDefault()))
+                        quarantinedUpdates[quarantineId] = quarantine
+                        if (quarantinedUpdates.size > 128) {
+                            quarantinedUpdates.pollFirstEntry()
+                        }
+    
+                        for (player in context.player().server.playerManager.playerList) {
+                            if(ConfigApiImpl.isConfigAdmin(player, config))
+                                player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
+                            player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" inspect")) }, false)
+                            player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" accept")) }, false)
+                            player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" reject")) }, false)
+                        }
+                        continue
                     }
-
-                    for (player in context.player().server.playerManager.playerList) {
-                        if(ConfigApiImpl.isConfigAdmin(player, config))
-                            player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
-                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" inspect")) }, false)
-                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" accept")) }, false)
-                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" reject")) }, false)
-                    }
-                    continue
                 }
                 val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
@@ -235,10 +238,12 @@ internal object SyncedConfigRegistry {
                 }
                 successfulUpdates[id] = configString
             }
-            for (player in context.player().server.playerManager.playerList) {
-                if (player == context.player()) continue // don't push back to the player that just sent the update
-                val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
-                ServerPlayNetworking.send(player, newPayload)
+            if (!server.isSinglePlayer()) {
+                for (player in context.player().server.playerManager.playerList) {
+                    if (player == context.player()) continue // don't push back to the player that just sent the update
+                    val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
+                    ServerPlayNetworking.send(player, newPayload)
+                }
             }
             val changes = payload.changeHistory
             ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
