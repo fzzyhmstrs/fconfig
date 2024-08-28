@@ -144,7 +144,7 @@ internal object SyncedConfigRegistry {
 
     internal fun registerAll() {
         ServerPlayConnectionEvents.JOIN.register { handler, sender, server ->
-            if (server.isSinglePlayer()) return@register
+            if (server.isSingleplayer) return@register
             if (!ServerPlayNetworking.canSend(handler.player, ConfigPermissionsS2CCustomPayload.type)) return@register
             val player = handler.player
             for ((id, config) in syncedConfigs) {
@@ -193,7 +193,7 @@ internal object SyncedConfigRegistry {
                     continue
                 }
 
-                if (!server.isSinglePlayer()) {
+                if (!context.server().isSingleplayer) {
                     val validationResult = ConfigApiImpl.validatePermissions(context.player(), id, config, configString)
 
                     if(validationResult.isError()) {
@@ -232,7 +232,7 @@ internal object SyncedConfigRegistry {
                 }
                 successfulUpdates[id] = configString
             }
-            if (!server.isSinglePlayer()) {
+            if (!context.server().isSingleplayer) {
                 for (player in context.player().server.playerManager.playerList) {
                     if (player == context.player()) continue // don't push back to the player that just sent the update
                     val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
@@ -284,20 +284,22 @@ internal object SyncedConfigRegistry {
         val quarantinedUpdate = quarantinedUpdates[id] ?: return
         val config = syncedConfigs[quarantinedUpdate.configId]
         val player = server.playerManager.getPlayer(uuid)
-        val errors = mutableListOf<String>()
+        if (config != null) {
+            val errors = mutableListOf<String>()
 
-        val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
-        val restart = result.get().getBoolean(RESTART_KEY)
-        result.writeError(errors)
-        result.get().config.save()
-        if (restart) {
-            FC.LOGGER.warn("The server accepted a quarantined config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
-        }
-        for (p in context.player().server.playerManager.playerList) {
-            if (p == player) continue // don't push back to the player that just sent the update
-            if (!ServerPlayNetworking.canSend(p, ConfigUpdateS2CCustomPayload.type)) continue
-            val newPayload = ConfigUpdateS2CCustomPayload(mapOf(quarantinedUpdate.id to quarantinedUpdate.configString))
-            ServerPlayNetworking.send(player, newPayload)
+            val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
+            val restart = result.get().getBoolean(RESTART_KEY)
+            result.writeError(errors)
+            result.get().config.save()
+            if (restart) {
+                FC.LOGGER.warn("The server accepted a quarantined config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
+            }
+            for (p in server.playerManager.playerList) {
+                if (p == player) continue // don't push back to the player that just sent the update
+                if (!ServerPlayNetworking.canSend(p, ConfigUpdateS2CCustomPayload.type)) continue
+                val newPayload = ConfigUpdateS2CCustomPayload(mapOf(quarantinedUpdate.id to quarantinedUpdate.configString))
+                ServerPlayNetworking.send(player, newPayload)
+            }
         }
         player?.let {
             for ((id, config) in syncedConfigs) {
