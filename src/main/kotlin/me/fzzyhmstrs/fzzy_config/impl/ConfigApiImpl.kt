@@ -538,7 +538,7 @@ internal object ConfigApiImpl {
 
     internal fun <T: Any> generatePermissionsReport(player: PlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
         val map: MutableMap<String, Boolean> = mutableMapOf()
-        
+
         walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _ ->
             annotations.firstOrNull { it is WithCustomPerms }?.cast<WithCustomPerms>()?.let {
                 for (group in it.perms) {
@@ -554,7 +554,7 @@ internal object ConfigApiImpl {
                 map.putIfAbsent(key, false)
             }
         }
-        
+
         return map
     }
 
@@ -566,11 +566,11 @@ internal object ConfigApiImpl {
         }
         val list: MutableList<String> = mutableListOf()
         val playerPermLevel = getPlayerPermissionLevel(player)
-        
+
         try {
-            walk(config, id, CHECK_NON_SYNC) { _, _, str, _, _, annotations, _ -> 
-                if(toml.containsKey(str) {
-                    if(!hasNeededPermLevel(playerPermLevel, config, annotations) {
+            walk(config, id, CHECK_NON_SYNC) { _, _, str, _, _, annotations, _ ->
+                if(toml.containsKey(str)) {
+                    if(!hasNeededPermLevel(player, playerPermLevel, config, annotations)) {
                         list.add(str)
                     }
                 }
@@ -578,17 +578,25 @@ internal object ConfigApiImpl {
         } catch(e: Throwable) {
             FC.LOGGER.error("Critical exception encountered while validating update permissions. Defaulting to rejection of the update")
             e.printStackTrace()
-            return ValidationResult.error(listOf(e.getMessage))
+            return ValidationResult.error(listOf(e.message ?: ""), "Critical exception encountered while validating update permissions. Defaulting to rejection of the update")
         }
         return ValidationResult.predicated(list, list.isEmpty(), "Access Violations Found!")
     }
 
-    fun isConfigAdmin(player, config) {
-        val annotation = config::class.annotations.firstOrNull{ it is AdminAccess }
+    fun isConfigAdmin(player: PlayerEntity, config: Config): Boolean {
+        val annotation = config::class.annotations.firstOrNull{ it is AdminAccess }?.cast<WithCustomPerms>()
         if (annotation == null) {
             return player.hasPermissionLevel(3)
         }
-        for (
+        for (perm in annotation.perms) {
+            if(Permissions.check(player, perm)) {
+                return true
+            }
+        }
+        if (annotation.fallback >= 0) {
+            return player.hasPermissionLevel(annotation.fallback)
+        }
+        return player.hasPermissionLevel(3)
     }
 
     private fun getPlayerPermissionLevel(player: PlayerEntity): Int {
@@ -727,8 +735,8 @@ internal object ConfigApiImpl {
             else -> return thing
         }
     }
-    
-    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, annotations: List<Annotation>): Boolean {
+
+    private fun hasNeededPermLevel(player: PlayerEntity, playerPermLevel: Int, config: Config, annotations: List<Annotation>): Boolean {
         // 1. NonSync wins over everything, even whole config annotations
         if (ConfigApiImpl.isNonSync(annotations)) return true
         val configAnnotations = config::class.annotations
