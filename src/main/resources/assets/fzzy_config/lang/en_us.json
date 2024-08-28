@@ -70,7 +70,18 @@
 "test.walkable.testChildDave.testChildBool": "Test Child Dave's Boolean",
 "test.walkable.testChildDave.testChildBool.desc": "Dave's favorite boolean. Please treat it well.",
 
-"fc.networking.permission.cheat": "Player [%1$s] may have tried cheating server config options! See the server logs for details.",
+"fc.networking.permission.cheat": "Player [%1$s] may have tried cheating in server config changes!",
+"fc.networking.restart": "Configs require a restart.",
+
+"fc.command.config": "§6§lConfig Affected:§r",
+"fc.command.player": "§6§lPlayer Responsible:§r",
+"fc.command.history": "§6§lChange History at the time of the incident:§r",
+"fc.command.accept": "[Accept Update]",
+"fc.command.accepted": "Update Accepted; senders permissions are being re-synced: %s",
+"fc.command.reject": "[Reject Update]",
+"fc.command.rejected": "Update Accepted: %s",
+"fc.command.inspect": "[Inspect Update]",
+"fc.command.error.no_id": "Quarantined update id not valid",
 
 "fc.config.generic.section" : "Config Section",
 "fc.config.generic.section.desc" : "This Config Section doesn't implement it's translation key. The screen doesn't know what to call it!",
