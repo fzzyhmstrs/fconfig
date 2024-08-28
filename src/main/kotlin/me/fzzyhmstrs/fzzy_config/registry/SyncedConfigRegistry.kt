@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.registry
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -22,6 +23,7 @@ import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateC2SCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.SettingForwardCustomPayload
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
@@ -33,8 +35,16 @@ import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.client.MinecraftClient
-import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.MinecraftServer
+import net.minecraft.text.ClickEvent
+import net.minecraft.text.Text
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * Synchronization registry for [Config] instances. Handles syncing configs, sending updates to and from clients, and forwarding settings between users
@@ -46,7 +56,7 @@ import java.util.*
 internal object SyncedConfigRegistry {
 
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
-    private val quarantinedUpdates : MutableMap<String, QuarantinedUpdate)
+    private val quarantinedUpdates : Object2ObjectLinkedOpenHashMap<String, QuarantinedUpdate> = Object2ObjectLinkedOpenHashMap()
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
         ClientPlayNetworking.send(SettingForwardCustomPayload(update, player, scope, summary))
@@ -174,38 +184,43 @@ internal object SyncedConfigRegistry {
         //receives an update from a permissible client, throwing a cheat warning to the logs and to online moderators if permissions don't match (and discarding the update)
         //deserializes the updates to server configs, then propagates the updates to other online clients
         ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
-            val permLevel = payload.playerPerm
             val serializedConfigs = payload.updates
             val successfulUpdates: MutableMap<String, String> = mutableMapOf()
             val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
-            
+
             for ((id, configString) in serializedConfigs) {
                 val config = syncedConfigs[id]
                 if (config == null) {
                     FC.LOGGER.error("Config $id wasn't found!, Skipping update")
                     continue
                 }
-                TODO("Add new permission checking system into Screen Manager and sync")
 
-                val validationResult = r ConfigApiImpl.validatePermissions(context.player(), id, config, configString)
+                val validationResult = ConfigApiImpl.validatePermissions(context.player(), id, config, configString)
 
                 if(validationResult.isError()) {
-                    
-                    FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes to the Server Config! Problem settings found: ${validationResult.get().joinToString(" | ")}")
+
+                    FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes onto the Server Config! Problem settings found: ${validationResult.get().joinToString(" | ")}")
                     FC.LOGGER.error("This update has not been applied, and has been moved to quarantine. Use the configure_update command to inspect and permit or deny the update.")
                     FC.LOGGER.warn("If no action is taken, the quarantined update will be flushed on the next server restart, and its changes will not be applied")
-                    
+
                     val changes = payload.changeHistory
                     ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
-    
+
                     val quarantine = QuarantinedUpdate(context.player().uuid, changes, id, configString)
-                    val quarantineId = id + "@" + formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis), ZoneId.systemDefault()))
-    
+                    val quarantineId = id + " @" + context.player().name.string + " @" + formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.systemDefault()))
+                    quarantinedUpdates[quarantineId] = quarantine
+                    if (quarantinedUpdates.size > 128) {
+                        quarantinedUpdates.pollFirstEntry()
+                    }
+
                     for (player in context.player().server.playerManager.playerList) {
                         if(ConfigApiImpl.isConfigAdmin(player, config))
                             player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
+                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" inspect")) }, false)
+                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" accept")) }, false)
+                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" reject")) }, false)
                     }
-                    return@registerGlobalReceiver
+                    continue
                 }
                 val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
@@ -213,7 +228,7 @@ internal object SyncedConfigRegistry {
                 result.writeError(errors)
                 result.get().config.save()
                 if (restart) {
-                    FC.LOGGER.error("The server has received a config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
+                    FC.LOGGER.warn("The server has received a config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
                 }
                 successfulUpdates[id] = configString
             }
@@ -238,6 +253,35 @@ internal object SyncedConfigRegistry {
         }
     }
 
+    internal fun quarantineList(): Set<String> {
+        return quarantinedUpdates.keys
+    }
+
+    internal fun inspectQuarantine(id: String, nameFinder: Function<UUID, Text?>, messageSender: Consumer<Text>) {
+        val quarantinedUpdate = quarantinedUpdates[id] ?: return
+        messageSender.accept("fc.command.config".translate())
+        messageSender.accept(quarantinedUpdate.configId.translate())
+        messageSender.accept("fc.command.player".translate())
+        messageSender.accept(quarantinedUpdate.playerUuid.toString().lit())
+        nameFinder.apply(quarantinedUpdate.playerUuid)?.let {
+            messageSender.accept(it)
+        }
+        messageSender.accept("fc.command.history".translate())
+        for (str in quarantinedUpdate.changeHistory) {
+            messageSender.accept(str.lit())
+        }
+        messageSender.accept("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" accept")) })
+        messageSender.accept("fc.command.reject".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" reject")) })
+    }
+
+    internal fun acceptQuarantine(id: String, server: MinecraftServer) {
+        val quarantinedUpdate = quarantinedUpdates[id] ?: return
+    }
+
+    internal fun rejectQuarantine(id: String, server: MinecraftServer) {
+        quarantinedUpdates.remove(id)
+    }
+
     internal fun hasConfig(id: String): Boolean {
         return syncedConfigs.containsKey(id)
     }
@@ -246,5 +290,5 @@ internal object SyncedConfigRegistry {
         syncedConfigs[config.getId().toTranslationKey()] = config
     }
 
-    private class QuarantinedUpdate(val playerUuid: UUID, changeHistory: String, configId: String, configString: String)
+    private class QuarantinedUpdate(val playerUuid: UUID, val changeHistory: List<String>, val configId: String, val configString: String)
 }

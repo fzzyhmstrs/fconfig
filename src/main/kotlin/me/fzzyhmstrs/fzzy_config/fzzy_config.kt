@@ -11,16 +11,24 @@
 package me.fzzyhmstrs.fzzy_config
 
 import com.mojang.brigadier.CommandDispatcher
+import com.nimbusds.openid.connect.sdk.assurance.claims.ISO3166_1Alpha2CountryCode.MC
+import me.fzzyhmstrs.fzzy_config.impl.QuarantinedUpdatesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
+import net.minecraft.command.argument.serialize.ConstantArgumentSerializer
+import net.minecraft.server.command.CommandManager
+import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
@@ -41,8 +49,63 @@ object FC: ModInitializer {
 
     override fun onInitialize() {
         SyncedConfigRegistry.registerAll()
+        CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
+            registerCommands(dispatcher)
+        }
+    }
+
+    private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>) {
+
+        ArgumentTypeRegistry.registerArgumentType(
+            Identifier.of(MOD_ID, "quarantined_updates"),
+            QuarantinedUpdatesArgumentType::class.java,
+            ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() }
+        )
+
+        dispatcher.register(
+            CommandManager.literal("configure_update")
+                .requires { source -> source.hasPermissionLevel(3) }
+                .then(CommandManager.argument("id", QuarantinedUpdatesArgumentType())
+                    .then(CommandManager.literal("inspect")
+                        .executes { context ->
+                            val id = QuarantinedUpdatesArgumentType.getQuarantineId(context, "id")
+                            if (id == null) {
+                                context.source.sendError("fc.command.error.no_id".translate())
+                                return@executes 0
+                            }
+                            SyncedConfigRegistry.inspectQuarantine(id, { uuid -> context.source.server.playerManager.getPlayer(uuid)?.name }, { message -> context.source.sendMessage(message) })
+                            1
+                        }
+                    )
+                    .then(CommandManager.literal("accept")
+                        .executes { context ->
+                            val id = QuarantinedUpdatesArgumentType.getQuarantineId(context, "id")
+                            if (id == null) {
+                                context.source.sendError("fc.command.error.no_id".translate())
+                                return@executes 0
+                            }
+                            SyncedConfigRegistry.acceptQuarantine(id, context.source.server)
+                            context.source.sendFeedback({ "fc.command.accepted".translate(id) }, true)
+                            1
+                        }
+                    )
+                    .then(CommandManager.literal("reject")
+                        .executes { context ->
+                            val id = QuarantinedUpdatesArgumentType.getQuarantineId(context, "id")
+                            if (id == null) {
+                                context.source.sendError("fc.command.error.no_id".translate())
+                                return@executes 0
+                            }
+                            SyncedConfigRegistry.rejectQuarantine(id, context.source.server)
+                            context.source.sendFeedback({ "fc.command.rejected".translate(id) }, true)
+                            1
+                        }
+                    )
+                )
+        )
     }
 }
+
 
 @Internal
 object FCC: ClientModInitializer {
