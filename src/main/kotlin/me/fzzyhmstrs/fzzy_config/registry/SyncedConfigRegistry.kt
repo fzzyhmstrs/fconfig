@@ -276,6 +276,31 @@ internal object SyncedConfigRegistry {
 
     internal fun acceptQuarantine(id: String, server: MinecraftServer) {
         val quarantinedUpdate = quarantinedUpdates[id] ?: return
+        val config = syncedConfigs[quarantinedUpdate.configId]
+        val player = server.playerManager.getPlayer(uuid)
+        val errors = mutableListOf<String>()
+        
+        val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
+        val restart = result.get().getBoolean(RESTART_KEY)
+        result.writeError(errors)
+        result.get().config.save()
+        if (restart) {
+            FC.LOGGER.warn("The server accepted a quarantined config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
+        }
+        for (p in context.player().server.playerManager.playerList) {
+            if (p == player) continue // don't push back to the player that just sent the update
+            if (!ServerPlayNetworking.canSend(p, ConfigUpdateS2CCustomPayload.type)) continue
+            val newPayload = ConfigUpdateS2CCustomPayload(mapOf(quarantinedUpdate.id to quarantinedUpdate.configString))
+            ServerPlayNetworking.send(player, newPayload)
+        }
+        player?.let {
+            for ((id, config) in syncedConfigs) {
+                val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
+                val payload = ConfigPermissionsS2CCustomPayload(id, perms)
+                ServerPlayNetworking.send(player, payload)
+            }
+        }
+        quarantinedUpdates.remove(id)
     }
 
     internal fun rejectQuarantine(id: String, server: MinecraftServer) {
