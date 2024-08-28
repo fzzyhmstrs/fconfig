@@ -49,18 +49,19 @@ object FC: ModInitializer {
 
     override fun onInitialize() {
         SyncedConfigRegistry.registerAll()
-        CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
-            registerCommands(dispatcher)
-        }
-    }
-
-    private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>) {
 
         ArgumentTypeRegistry.registerArgumentType(
             Identifier.of(MOD_ID, "quarantined_updates"),
             QuarantinedUpdatesArgumentType::class.java,
             ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() }
         )
+
+        CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
+            registerCommands(dispatcher)
+        }
+    }
+
+    private fun registerCommands(dispatcher: CommandDispatcher<ServerCommandSource>) {
 
         dispatcher.register(
             CommandManager.literal("configure_update")
