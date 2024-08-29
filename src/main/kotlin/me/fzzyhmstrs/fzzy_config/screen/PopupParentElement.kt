@@ -118,9 +118,9 @@ interface PopupParentElement: ParentElement, LastSelectable {
         return false
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
-        val popupWidget = activeWidget() ?: return super.mouseScrolled(mouseX, mouseY, verticalAmount)
-        return popupWidget.mouseScrolled(mouseX, mouseY, verticalAmount)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        val popupWidget = activeWidget() ?: return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+        return popupWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {

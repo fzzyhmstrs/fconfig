@@ -26,6 +26,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedEntityAttribute.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
@@ -50,7 +51,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.UUID
+import java.util.*
 import java.util.function.Consumer
 
 /**
@@ -96,7 +97,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @since 0.3.1
      */
     fun updateModifier(new: EntityAttributeModifier) {
-        validateAndSet(storedValue.copy(uuid = new.id, name = new.name, amount = amountValidator.correctEntry(new.value, EntryValidator.ValidationType.STRONG).get(), operation = if(lockOperation) storedValue.operation else new.operation))
+        validateAndSet(storedValue.copy(uuid = new.id, name = new.toNbt().getString("Name"), amount = amountValidator.correctEntry(new.value, EntryValidator.ValidationType.STRONG).get(), operation = if(lockOperation) storedValue.operation else new.operation))
     }
     /**
      * updates this validation with a new double value

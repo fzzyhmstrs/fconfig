@@ -12,8 +12,10 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
-import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.ClickableTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DirectionalLayoutWidget
@@ -25,9 +27,13 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.*
+import net.minecraft.client.gui.widget.ButtonWidget
+import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.TextWidget
+import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
@@ -116,6 +122,10 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     override fun initTabNavigation() {
         layout.refreshPositions()
         configList.position(width, layout)
+    }
+
+    override fun renderBackground(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+        this.renderBackgroundTexture(context)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {

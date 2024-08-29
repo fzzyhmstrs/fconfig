@@ -10,11 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import it.unimi.dsi.fastutil.ints.IntIterator
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.Divider
-import net.minecraft.util.math.MathHelper
 import kotlin.math.min
 
 /**

@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -55,7 +54,7 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         return System.currentTimeMillis() - lastChangedTime <= 350L
     }
 
-    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val testValue = wrappedValue.get()
         if (cachedWrappedValue != testValue) {
             this.storedValue = testValue
@@ -68,7 +67,7 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
                 cachedWrappedValue = storedValue
             }
         }
-        super.renderButton(context, mouseX, mouseY, delta)
+        super.renderWidget(context, mouseX, mouseY, delta)
         if(isValid) {
             if (ongoingChanges())
                 context.drawGuiTexture(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)

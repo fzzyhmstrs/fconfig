@@ -21,7 +21,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -676,7 +675,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             return message.copy()
         }
 
-        override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()

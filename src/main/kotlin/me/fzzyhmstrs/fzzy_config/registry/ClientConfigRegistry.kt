@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.registry
 
 import com.google.common.collect.HashMultimap
-import com.google.common.collect.Multimap
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet

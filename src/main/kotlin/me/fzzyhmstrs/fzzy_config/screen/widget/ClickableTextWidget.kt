@@ -72,7 +72,7 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
         return this.align(1.0f)
     }
 
-    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = message
         val i = getWidth()
         val j = textRenderer.getWidth(text)

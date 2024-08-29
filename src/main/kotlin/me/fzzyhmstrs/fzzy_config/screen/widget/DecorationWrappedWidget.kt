@@ -34,7 +34,7 @@ class DecorationWrappedWidget(private val child: ClickableWidget, private val de
         return decoration
     }
 
-    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         child.render(context, mouseX, mouseY, delta)
     }
 
@@ -48,8 +48,8 @@ class DecorationWrappedWidget(private val child: ClickableWidget, private val de
         return child.mouseReleased(mouseX, mouseY, button)
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
-        return child.mouseScrolled(mouseX, mouseY, verticalAmount)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        return child.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {

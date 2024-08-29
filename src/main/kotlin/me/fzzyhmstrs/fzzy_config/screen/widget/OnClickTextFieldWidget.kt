@@ -17,7 +17,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.input.KeyCodes
-import net.minecraft.entity.ai.pathing.NavigationType
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -37,13 +36,13 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
     init {
         setMaxLength(1000)
         this.text = textSupplier.get()
-        this.setCursorToStart()
+        this.setCursorToStart(false)
     }
 
-    override fun renderButton(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-        super.renderButton(context, mouseX, mouseY, delta)
+    override fun renderWidget(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
+        super.renderWidget(context, mouseX, mouseY, delta)
         this.text = textSupplier.get()
-        this.setCursorToStart()
+        this.setCursorToStart(false)
     }
 
     override fun onClick(mouseX: Double, mouseY: Double) {

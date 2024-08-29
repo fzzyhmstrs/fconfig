@@ -179,27 +179,12 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             pushUpdatableStates()
     }
 
-    private class ForwardedEntryListWidget(forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, manager: ConfigUpdateManager): ElementListWidget<ForwardedEntryListWidget.ForwardEntry>(MinecraftClient.getInstance(), 190, 120, 0, 0, 22), Widget {
+    private class ForwardedEntryListWidget(forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, manager: ConfigUpdateManager): ElementListWidget<ForwardedEntryListWidget.ForwardEntry>(MinecraftClient.getInstance(), 190, 120, 0, 22), Widget {
 
         init {
-            this.setRenderHorizontalShadows(false)
             this.setRenderBackground(false)
         }
 
-        override fun setX(x: Int) {
-            this.left = x
-            this.right = x + width
-        }
-        override fun setY(y: Int) {
-            this.top = y
-            this.bottom = y + 160
-        }
-        override fun getX(): Int {
-            return this.left
-        }
-        override fun getY(): Int {
-            return this.top
-        }
         override fun getWidth(): Int {
             return this.width
         }

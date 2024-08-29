@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget.Background
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -57,7 +58,7 @@ open class ActiveButtonWidget(
         return titleSupplier.get()
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = activeSupplier.get()
         if (background != null) {
             if (this.isSelected && active) {
@@ -70,7 +71,7 @@ open class ActiveButtonWidget(
             val i = if (active) 0xFFFFFF else 0xA0A0A0
             drawMessage(context, MinecraftClient.getInstance().textRenderer, i or (MathHelper.ceil(alpha * 255.0f) shl 24))
         } else {
-            super.render(context, mouseX, mouseY, delta)
+            super.renderWidget(context, mouseX, mouseY, delta)
         }
     }
 

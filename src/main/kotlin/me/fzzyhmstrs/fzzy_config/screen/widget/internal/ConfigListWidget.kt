@@ -18,8 +18,8 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -31,11 +31,11 @@ import java.util.*
 import java.util.function.Consumer
 
 @Environment(EnvType.CLIENT)
-internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, height: Int, private var contentHeight: Int, private val listHeaderHeight: Int, drawBackground: Boolean) :
-    ElementListWidget<BaseConfigEntry>(minecraftClient, width, height, listHeaderHeight, (height - (height - listHeaderHeight - contentHeight)), 24), LastSelectable, Widget, SuggestionWindowListener
+internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, contentHeight: Int, listHeaderHeight: Int, drawBackground: Boolean) :
+    ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, listHeaderHeight, 24), LastSelectable, Widget, SuggestionWindowListener
 {
 
-    constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient, parent.width, parent.height, parent.layout.height - parent.layout.headerHeight - parent.layout.footerHeight, parent.layout.headerHeight, drawBackground)
+    constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient, parent.width, parent.layout.height - parent.layout.headerHeight - parent.layout.footerHeight, parent.layout.headerHeight, drawBackground)
 
     private var visibleElements = 5
 
@@ -46,8 +46,8 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
     }
 
     init {
-        this.setRenderHorizontalShadows(drawBackground)
         this.setRenderBackground(drawBackground)
+        //this.setRenderHeader(true, 20)
     }
 
     private val wholeList: List<BaseConfigEntry> by lazy {
@@ -77,8 +77,8 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) ?: super.mouseClicked(mouseX, mouseY, button)
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
-        return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, amount) ?: super.mouseScrolled(mouseX, mouseY, amount)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double, verticalAmount: Double): Boolean {
+        return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, amount, verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, amount, verticalAmount)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
@@ -99,29 +99,6 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         return list.size
     }
 
-    override fun setX(x: Int) {
-        this.left = x
-        this.right = x + width
-    }
-    override fun setY(y: Int) {
-        this.top = y + listHeaderHeight
-        this.bottom = y + listHeaderHeight + contentHeight
-    }
-    override fun getX(): Int {
-        return this.left
-    }
-    override fun getY(): Int {
-        return this.top - listHeaderHeight
-    }
-    override fun getWidth(): Int {
-        return this.width
-    }
-    override fun getHeight(): Int {
-        return this.height
-    }
-    override fun getNavigationFocus(): ScreenRect {
-        return ScreenRect(this.left, this.top, this.width, this.contentHeight)
-    }
     override fun forEachChild(consumer: Consumer<ClickableWidget>) {
     }
 
@@ -129,8 +106,8 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         return 260
     }
 
-    fun position(width: Int, height: Int, y: Int, contentHeight: Int) {
-        this.setDimensions(width, height, contentHeight)
+    fun position(width: Int, height: Int, y: Int) {
+        this.setDimensions(width, height)
         setPosition(0, y)
         var count = 0
         for (i in 0 until this.entryCount) {
@@ -144,16 +121,8 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         visibleElements = count
     }
 
-    private fun setDimensions(width: Int, height: Int, contentHeight: Int) {
-        this.contentHeight = contentHeight
-        this.width = width
-        this.right = this.left + width
-        this.height = height
-        this.bottom = this.top + (height - (height - listHeaderHeight - contentHeight))
-    }
-
     fun position(width: Int, layout: ThreePartsLayoutWidget) {
-        this.position(width, layout.height, 0, (layout.height - layout.headerHeight - layout.footerHeight))
+        this.position(width, (layout.height - layout.headerHeight - layout.footerHeight), layout.headerHeight)
     }
 
     fun getScrollbarX(): Int {
@@ -161,7 +130,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
     }
 
     override fun getScrollbarPositionX(): Int {
-        return this.left + this.width / 2 + this.rowWidth / 2 + 10
+        return x + this.width / 2 + this.rowWidth / 2 + 10
     }
 
     fun getClient(): MinecraftClient {
@@ -188,8 +157,8 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         (focused as? SettingConfigEntry)?.pasteAction?.run() ?: (hoveredEntry as? SettingConfigEntry)?.pasteAction?.run()
     }
 
-    override fun appendNarrations(builder: NarrationMessageBuilder) {
-        super.appendNarrations(builder)
+    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
+        super.appendClickableNarrations(builder)
         builder.put(NarrationPart.USAGE, "")
     }
 

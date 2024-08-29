@@ -132,7 +132,10 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
         ClickableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
         companion object {
-            private val TEXTURE = Identifier("textures/gui/slider.png")
+            private val TEXTURE = Identifier("widget/slider")
+            private val HIGHLIGHTED_TEXTURE = Identifier("widget/slider_highlighted")
+            private val HANDLE_TEXTURE = Identifier("widget/slider_handle")
+            private val HANDLE_HIGHLIGHTED_TEXTURE = Identifier("widget/slider_handle_highlighted")
         }
 
         private fun split(range: Double): Double {
@@ -149,6 +152,20 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             }
         }
 
+        private fun getTexture(): Identifier {
+            return if (this.isFocused)
+                HIGHLIGHTED_TEXTURE
+            else
+                TEXTURE
+        }
+
+        private fun getHandleTexture(): Identifier {
+            return if (hovered || this.isFocused)
+                HANDLE_HIGHLIGHTED_TEXTURE
+            else
+                HANDLE_TEXTURE
+        }
+
         private var confirmActive = false
         private var cachedWrappedValue: T = wrappedValue.get()
         private var value: T = wrappedValue.get()
@@ -159,7 +176,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             return value != wrappedValue.get()
         }
 
-        override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             val testValue = wrappedValue.get()
             if (cachedWrappedValue != testValue) {
                 this.value = testValue
@@ -172,10 +189,9 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             RenderSystem.enableBlend()
             RenderSystem.defaultBlendFunc()
             RenderSystem.enableDepthTest()
-
+            context.drawGuiTexture(getTexture(), x, y, getWidth(), getHeight())
             val progress = MathHelper.getLerpProgress(value.toDouble(), minValue.toDouble(), maxValue.toDouble())
-            context.drawNineSlicedTexture(TEXTURE, x, y, getWidth(), getHeight(), 20, 4, 200, 20, 0, this.getYImage())
-            context.drawNineSlicedTexture(TEXTURE, x + (progress * (width - 8).toDouble()).toInt(), y, 8, 20, 20, 4, 200, 20, 0, this.getTextureV())
+            context.drawGuiTexture(getHandleTexture(), x + (progress * (width - 8).toDouble()).toInt(), y, 8, getHeight())
             context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             this.drawScrollableText(context, minecraftClient.textRenderer, 2, 0xFFFFFF or (MathHelper.ceil(alpha * 255.0f) shl 24))
         }

@@ -14,6 +14,7 @@ import com.llamalad7.mixinextras.sugar.Local;
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.PlayerManager;
+import net.minecraft.server.network.ConnectedClientData;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,7 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class PlayerManagerMixin {
 
     @Inject(method = "onPlayerConnect", at = @At(value = "INVOKE", target = "net/minecraft/server/network/ServerPlayNetworkHandler.sendPacket (Lnet/minecraft/network/packet/Packet;)V", ordinal = 0, shift = At.Shift.AFTER))
-    private void fzzy_config_syncConfigs(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci, @Local ServerPlayNetworkHandler serverPlayNetworkHandler) {
+    private void fzzy_config_syncConfigs(ClientConnection connection, ServerPlayerEntity player, ConnectedClientData clientData, CallbackInfo ci, @Local ServerPlayNetworkHandler serverPlayNetworkHandler) {
         SyncedConfigRegistry.INSTANCE.syncConfigs(serverPlayNetworkHandler);
     }
 

@@ -29,8 +29,10 @@ import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SectionConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager.ConfigScreenBuilder
-import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
+import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NoPermsButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ScreenOpenButtonWidget

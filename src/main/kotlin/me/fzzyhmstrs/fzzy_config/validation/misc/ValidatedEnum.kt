@@ -173,9 +173,9 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
             thisVal.descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
         }
 
-        override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activePredicate.test(thisVal)
-            super.renderButton(context, mouseX, mouseY, delta)
+            super.renderWidget(context, mouseX, mouseY, delta)
         }
 
         override fun getNarrationMessage(): MutableText {

@@ -21,7 +21,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -686,7 +685,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             }
         }
 
-        override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             val testValue = validatedIdentifier.get()
             if (cachedWrappedValue != testValue || needsUpdating) {
                 needsUpdating = false
@@ -698,7 +697,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 if (lastChangedTime != 0L && !ongoingChanges())
                     validatedIdentifier.accept(storedValue)
             }
-            super.renderButton(context, mouseX, mouseY, delta)
+            super.renderWidget(context, mouseX, mouseY, delta)
             if(isValid) {
                 if (ongoingChanges())
                     context.drawGuiTexture(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
@@ -728,8 +727,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             return if(bl) true else super.mouseClicked(mouseX, mouseY, button)
         }
 
-        override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
-            return window?.mouseScrolled(mouseX.toInt(), mouseY.toInt(), verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, verticalAmount)
+        override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+            return window?.mouseScrolled(mouseX.toInt(), mouseY.toInt(), verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
         }
 
         override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {

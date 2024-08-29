@@ -14,14 +14,12 @@ import com.google.common.collect.Lists
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.brigadier.suggestion.Suggestion
 import com.mojang.brigadier.suggestion.Suggestions
-import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.text
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
-import net.minecraft.util.Colors
 import net.minecraft.util.math.MathHelper
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer

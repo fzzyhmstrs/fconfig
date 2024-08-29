@@ -24,7 +24,6 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.gui.widget.Widget
@@ -35,7 +34,7 @@ import java.util.function.Function
 @Environment(EnvType.CLIENT)
 internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>>, entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, entryValidator: BiFunction<ListListWidget<T>, ListEntry<T>?, ChoiceValidator<T>>)
     :
-    ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0, 160, 22), Widget, SuggestionWindowListener {
+    ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0, 22), Widget, SuggestionWindowListener {
 
     fun getRawList(skip: ListEntry<T>? = null): List<T> {
         val list: MutableList<T> = mutableListOf()
@@ -58,7 +57,6 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     }
 
     init {
-        this.setRenderHorizontalShadows(false)
         this.setRenderBackground(false)
     }
 
@@ -68,26 +66,6 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         this.suggestionWindowElement = element
     }
 
-    override fun setX(x: Int) {
-        this.left = x
-        this.right = x + width
-    }
-    override fun setY(y: Int) {
-        this.top = y
-        this.bottom = y + 160
-    }
-    override fun getX(): Int {
-        return this.left
-    }
-    override fun getY(): Int {
-        return this.top
-    }
-    override fun getWidth(): Int {
-        return this.width
-    }
-    override fun getHeight(): Int {
-        return this.height
-    }
     override fun getNavigationFocus(): ScreenRect {
         return super<Widget>.getNavigationFocus()
     }
@@ -99,7 +77,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     }
 
     override fun getScrollbarPositionX(): Int {
-        return this.left + this.width / 2 + this.rowWidth / 2 + 6
+        return x + this.width / 2 + this.rowWidth / 2 + 6
     }
 
     private fun makeVisible(entry: ListEntry<T>) {
@@ -111,9 +89,9 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         return super.mouseClicked(mouseX, mouseY, button)
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double): Boolean {
-        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, amount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, amount) }.isPresent) return true
-        return super.mouseScrolled(mouseX, mouseY, amount)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, amount: Double, verticalAmount: Double): Boolean {
+        if (suggestionWindowElement?.mouseScrolled(mouseX, mouseY, amount, verticalAmount) ?: hoveredElement(mouseX, mouseY).filter { element: Element -> element.mouseScrolled(mouseX, mouseY, amount, verticalAmount) }.isPresent) return true
+        return super.mouseScrolled(mouseX, mouseY, amount, verticalAmount)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {

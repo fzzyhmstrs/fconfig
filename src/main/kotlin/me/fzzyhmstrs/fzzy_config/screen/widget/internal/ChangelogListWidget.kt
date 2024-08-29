@@ -25,27 +25,12 @@ import java.util.function.Consumer
 import java.util.function.Supplier
 
 @Environment(EnvType.CLIENT)
-internal class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<Int>) : AlwaysSelectedEntryListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), sWidth.get() - 16, 180, 0, 0, 11), Widget {
+internal class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<Int>) : AlwaysSelectedEntryListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), sWidth.get() - 16, 180, 0, 11), Widget {
 
     init {
-        this.setRenderHorizontalShadows(false)
         this.setRenderBackground(false)
     }
 
-    override fun setX(x: Int) {
-        this.left = x
-        this.right = x + width
-    }
-    override fun setY(y: Int) {
-        this.top = y
-        this.bottom = y + 160
-    }
-    override fun getX(): Int {
-        return this.left
-    }
-    override fun getY(): Int {
-        return this.top
-    }
     override fun getWidth(): Int {
         return sWidth.get() - 16
     }

@@ -27,9 +27,27 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.peanuuutz.tomlkt.*
+import net.peanuuutz.tomlkt.TomlArrayBuilder
+import net.peanuuutz.tomlkt.TomlElement
+import net.peanuuutz.tomlkt.asTomlArray
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
+import kotlin.collections.Collection
+import kotlin.collections.Map
+import kotlin.collections.MutableList
+import kotlin.collections.MutableMap
+import kotlin.collections.Set
+import kotlin.collections.associate
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.iterator
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.mapOf
+import kotlin.collections.mutableListOf
+import kotlin.collections.mutableMapOf
+import kotlin.collections.set
+import kotlin.collections.toMap
 
 /**
  * A validated Map of arbitrary (Validated) keys and values

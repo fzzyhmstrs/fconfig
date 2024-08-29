@@ -44,8 +44,8 @@ import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
 import java.util.function.Supplier
 import kotlin.experimental.and
-import kotlin.math.min
 import kotlin.experimental.or
+import kotlin.math.min
 import kotlin.reflect.*
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
