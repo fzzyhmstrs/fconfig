@@ -63,7 +63,7 @@ internal object ConfigApiImplClient {
 
     internal fun getPlayerPermissionLevel(): Int {
         val client = MinecraftClient.getInstance()
-        if(client.server != null && client?.server?.isRemote != true) return 4 // single player game, they can change whatever they want
+        if(client.server != null && client?.server?.isSingleplayer == true) return 4 // single player game, they can change whatever they want
         var i = 0
         while(client.player?.hasPermissionLevel(i) == true) {
             i++
