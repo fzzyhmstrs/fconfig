@@ -39,6 +39,7 @@ import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.api.EnvType
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import java.io.File
@@ -547,7 +548,7 @@ internal object ConfigApiImpl {
         return map
     }
 
-    internal fun validatePermissions(player: PlayerEntity, id: String, config: Config, configString: String): ValidationResult<List<String>> {
+    internal fun validatePermissions(player: ServerPlayerEntity, id: String, config: Config, configString: String): ValidationResult<List<String>> {
         val toml = try {
             Toml.parseToTomlTable(configString)
         } catch (e:Exception) {
@@ -714,7 +715,8 @@ internal object ConfigApiImpl {
         }
     }
 
-    private fun hasNeededPermLevel(player: PlayerEntity, playerPermLevel: Int, config: Config, annotations: List<Annotation>): Boolean {
+    private fun hasNeededPermLevel(player: ServerPlayerEntity, playerPermLevel: Int, config: Config, annotations: List<Annotation>): Boolean {
+        if (player.server.isSingleplayer) return true
         // 1. NonSync wins over everything, even whole config annotations
         if (ConfigApiImpl.isNonSync(annotations)) return true
         val configAnnotations = config::class.annotations
