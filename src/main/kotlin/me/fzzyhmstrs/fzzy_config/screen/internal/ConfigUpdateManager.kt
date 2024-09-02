@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -112,16 +113,20 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         //push updates from basic validation to the configs
         var clientRestart = false
         var serverRestart = false
+        val clientActions: MutableSet<Action> = mutableSetOf()
+        val serverActions: MutableSet<Action> = mutableSetOf()
         for ((config, base, isClient) in configs) {
+            val globalAnnotations = config::class.annotations
             ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { walkable, _, new, thing, prop, annotations, callback ->
                 if (!(thing is Updatable && thing is Entry<*, *>)) {
                     val update = getUpdate(new)
                     if (update != null && update is Supplier<*>) {
-                        if (ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)) {
+                        val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)
+                        if (action != null) {
                             if (ConfigApiImpl.isNonSync(annotations) || isClient) {
-                                clientRestart = true
+                                clientActions.add(action)
                             } else {
-                                serverRestart = true
+                                serverActions.add(action)
                             }
                         }
                         try {
@@ -132,32 +137,40 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                         }
                     }
                 } else if (getUpdate(new) != null) {
-                    if (ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)) {
+                    val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)
+                    if (action != null) {
                         if (ConfigApiImpl.isNonSync(annotations) || isClient) {
-                            clientRestart = true
+                            clientActions.add(action)
                         } else {
-                            serverRestart = true
+                            serverActions.add(action)
                         }
                     } else if (thing is ValidatedAny<*>) {
-                        if (thing.restartRequired()) {
+                        val anyActions = thing.actions()
+                        if (anyActions.isNotEmpty()) {
                             if (ConfigApiImpl.isNonSync(annotations) || isClient) {
-                                clientRestart = true
+                                clientActions.addAll(anyActions)
                             } else {
-                                serverRestart = true
+                                serverActions.addAll(anyActions)
                             }
                         }
                     }
                 }
             }
         }
-        if (clientRestart) {
-            MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.client".translate())
+        if (clientActions.isNotEmpty()) {
+            for (action in clientActions) {
+                MinecraftClient.getInstance().player?.sendMessage(action.clientUpdateMessage)
+            }
         }
-        if (serverRestart) {
+        if (serverActions.isNotEmpty()) {
             if (MinecraftClient.getInstance().isInSingleplayer)
-                MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.client".translate())
+                for (action in serverActions) {
+                    MinecraftClient.getInstance().player?.sendMessage(action.clientUpdateMessage)
+                }
             else
-                MinecraftClient.getInstance().player?.sendMessage("fc.config.restart.update.server".translate())
+                for (action in serverActions) {
+                    MinecraftClient.getInstance().player?.sendMessage(action.serverUpdateMessage)
+                }
         }
         //save config updates locally
         for (config in configs) {
