@@ -12,25 +12,27 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
-import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import org.lwjgl.glfw.GLFW
 
 @Environment(EnvType.CLIENT)
-internal open class ConfigConfigEntry(
+internal open class ValidatedAnyConfigEntry(
     name: Text,
     description: Text,
     actions: Set<Action>,
     parent: ConfigListWidget,
-    widget: ClickableWidget)
+    widget: ClickableWidget,
+    copyAction: Runnable?,
+    pasteAction: Runnable?,
+    rightClickAction: RightClickAction?)
     :
-    BaseConfigEntry(name, description, actions, parent, widget)
+    SettingConfigEntry(name, description, actions, parent, widget, copyAction, pasteAction, rightClickAction)
 {
     override fun restartText(action: Action): Text {
-        return action.configTooltip
+        return action.sectionTooltip
     }
-
 }
