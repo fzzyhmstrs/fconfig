@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.api.EnvType
@@ -22,14 +23,13 @@ import net.minecraft.text.Text
 internal open class SectionConfigEntry(
     name: Text,
     description: Text,
-    isRestartTriggering: Boolean,
+    actions: Set<Action>,
     parent: ConfigListWidget,
     widget: ClickableWidget)
     :
-    BaseConfigEntry(name, description, isRestartTriggering, parent, widget)
+    BaseConfigEntry(name, description, actions, parent, widget)
 {
-    override fun restartText(): MutableText {
-        return "fc.config.restart.warning.section".translate()
+    override fun restartText(action: Action): Text {
+        return action.sectionTooltip
     }
-
 }

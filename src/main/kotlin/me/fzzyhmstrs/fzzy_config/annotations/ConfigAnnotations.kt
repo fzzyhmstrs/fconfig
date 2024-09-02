@@ -12,6 +12,13 @@ package me.fzzyhmstrs.fzzy_config.annotations
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
+import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.text.Text
+import net.minecraft.util.Formatting
+import net.minecraft.util.Identifier
+import kotlin.reflect.KClass
 
 /**
  * A config marked with this annotation will attempt to ignore field visibility when de/serializing
@@ -95,10 +102,10 @@ annotation class WithCustomPerms(val perms: Array<String>, val fallback: Int = -
  * Paired with [WithCustomPerms]. Defines the permissions needed for "admin" access to the config.
  *
  * Admin access will mark that a player can handle access violations (potential cheating of a config update) and other server-level issues, and will be notified in-game if such an error occurs while they are online.
- * 
+ *
  * This annotation is outside of the chain of precedence of the others, it is solely responsible for determining admin access.
- * 
- * If [WithCustomPerms] is used in the config class, this should be paired with it; otherwise the system will consider any server admin or owner (level 3+ perms) as an admin. 
+ *
+ * If [WithCustomPerms] is used in the config class, this should be paired with it; otherwise the system will consider any server admin or owner (level 3+ perms) as an admin.
  * @param perms Array&lt;String&gt; - permission groups allowed to access this setting. Groups need to be compatible with LuckPerms or similar.
  * @param fallback Int - Default -1 = no custom fallback behavior; it will check for permission level of 3+. If provided, uses vanilla logic: 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
  * @author fzzyhmstrs
@@ -142,16 +149,136 @@ annotation class NonSync()
 annotation class Version(val version: Int)
 
 /**
- * Properties or fields marked with RequiresRestart will prompt the user that changes will require a restart of the server/client
+ * Properties or fields marked with [RequiresRestart] will prompt the user that changes will require a restart of the server/client
  *
  * Classes marked with RequiresRestart will prompt the user that changes will require a restart of the server/client if any of their containing properties/fields are changed
  *
- * On sync, if a property doesn't match synced data <-> loaded data, a screen will pop up prompting
+ * On local sync (loading into the world), if a property doesn't match between synced data and locally loaded data, a screen will pop up prompting a restart
  * @author fzzyhmstrs
  * @since 0.2.0
  */
+@Deprecated("Use RequiresInfo instead. If your setting or config doesn't require a full restart, consider one of the other Action options.", replaceWith = ReplaceWith("@RequiresInfo(ConfigInfo.RESTART)", "me.fzzyhmstrs.fzzy_config.config.ConfigInfo"))
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
 annotation class RequiresRestart
+
+/**
+ * Properties fields marked with [RequiresAction] will prompt the user that changes will require a certain action as defined by the [Action] enum selected
+ *
+ * Classes marked with [RequiresAction] will prompt the user that changes will require a certain action as defined by the [Action] enum selected, if any of their containing properties/fields are changed
+ *
+ * Actions have a priority based on their enum ordinal ([Action.RESTART] as the highest priority). If a property/field has an action of higher priority than the config class top level [RequiresAction], the settings action will take priority for that setting.
+ *
+ * On local sync (loading into the world), if a property doesn't match between synced data and locally loaded data, and a [Action.RESTART] is present in the changes, a screen will pop up prompting a restart
+ * @param action [Action] the action the user needs to take if this setting or a setting in this config is changed
+ * @author fzzyhmstrs
+ * @since 0.4.0
+ */
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+annotation class RequiresAction(val action: Action)
+
+/**
+ * Defines an action the user or server owner needs to take if a setting is changed. Actions are sorted in priority by their ordinal ([RESTART] is the highest priority action and so on).
+ *
+ * The priority of the action defines which action will be displayed if both a setting and a config have a defined action. Only the higher priority will be displayed on an individual setting entry.
+ * @author fzzyhmstrs
+ * @since 0.4.0
+ */
+enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val clientPrompt: Text, val clientUpdateMessage: Text, val serverUpdateMessage: Text, val settingTooltip: Text, val sectionTooltip: Text, val configTooltip: Text) {
+
+    /**
+     * Marks that a config or setting change will require a full restart if changed.
+     *
+     * Will prompt the user that a restart is required in the chat window
+     *
+     * Will prompt the server log that a restart is needed, and if a setting with this is found on client sync, a restart screen will pop up instead of game loading completing successfully.
+     */
+    RESTART(
+        true,
+        "widget/entry_error".fcId(),
+        "fc.config.restart.update".translate(),
+        "fc.config.restart.update.client".translate(),
+        "fc.config.restart.update.server".translate(),
+        "fc.config.restart.warning".translate().formatted(Formatting.RED),
+        "fc.config.restart.warning.section".translate().formatted(Formatting.RED),
+        "fc.config.restart.warning.config".translate().formatted(Formatting.RED)),
+
+    /**
+     * Marks that a config or setting change will require a user relog (disconnect -> reconnect from a server, leave -> reload single player world)
+     *
+     * Will prompt the user that a relog is needed in the chat window
+     */
+    RELOG(
+        false,
+        "widget/entry_error".fcId(),
+        "fc.config.relog.update".translate(),
+        "fc.config.relog.update.client".translate(),
+        "fc.config.relog.update.server".translate(),
+        "fc.config.relog.warning".translate().formatted(Formatting.RED),
+        "fc.config.relog.warning.section".translate().formatted(Formatting.RED),
+        "fc.config.relog.warning.config".translate().formatted(Formatting.RED)),
+
+    /**
+     * Marks that a config or setting change will need a data pack and resource pack reload to take effect (/reload and F3 + T)
+     *
+     * Will prompt the user that both resource types need to be reloaded
+     */
+    RELOAD_BOTH(
+        false,
+        "widget/entry_warning".fcId(),
+        "fc.config.reload_both.update".translate(),
+        "fc.config.reload_both.update.client".translate(),
+        "fc.config.reload_both.update.server".translate(),
+        "fc.config.reload_both.warning".translate().formatted(Formatting.GOLD),
+        "fc.config.reload_both.warning.section".translate().formatted(Formatting.GOLD),
+        "fc.config.reload_both.warning.config".translate().formatted(Formatting.GOLD)),
+
+    /**
+     * Marks that a config or setting change will need a data pack reload to take effect (/reload)
+     *
+     * Will prompt the user that data packs need to be reloaded
+     */
+    RELOAD_DATA(
+        false,
+        "widget/entry_warning".fcId(),
+        "fc.config.reload_data.update".translate(),
+        "fc.config.reload_data.update.client".translate(),
+        "fc.config.reload_data.update.server".translate(),
+        "fc.config.reload_data.warning".translate().formatted(Formatting.GOLD),
+        "fc.config.reload_data.warning.section".translate().formatted(Formatting.GOLD),
+        "fc.config.reload_data.warning.config".translate().formatted(Formatting.GOLD)),
+
+    /**
+     * Marks that a config or setting change will need a resource pack reload to take effect (F3 + T)
+     *
+     * Will prompt the user that resource packs need to be reloaded
+     */
+    RELOAD_RESOURCES(
+        false,
+        "widget/entry_warning".fcId(),
+        "fc.config.reload_resources.update".translate(),
+        "fc.config.reload_resources.update.client".translate(),
+        "fc.config.reload_resources.update.server".translate(),
+        "fc.config.reload_resources.warning".translate().formatted(Formatting.GOLD),
+        "fc.config.reload_resources.warning.section".translate().formatted(Formatting.GOLD),
+        "fc.config.reload_resources.warning.config".translate().formatted(Formatting.GOLD));
+
+
+    fun priorityOf(other: Action): Action {
+        return if (this == other) {
+            this
+        } else if(this.ordinal < other.ordinal) {
+            this
+        } else {
+            other
+        }
+    }
+
+    fun isPriority(other: Action): Boolean {
+        return priorityOf(other) == this
+    }
+}
+
+
 
 /**
  * Provides the path to an old config file used before updating to FzzyConfig. FzzyConfig will attempt to read the file and scrape as much data as possible from it into the new config class and format (TOML).

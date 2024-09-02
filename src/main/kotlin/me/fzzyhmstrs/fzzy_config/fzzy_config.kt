@@ -12,6 +12,8 @@ package me.fzzyhmstrs.fzzy_config
 
 import com.mojang.brigadier.CommandDispatcher
 import com.nimbusds.openid.connect.sdk.assurance.claims.ISO3166_1Alpha2CountryCode.MC
+import me.fzzyhmstrs.fzzy_config.impl.*
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.QuarantinedUpdatesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
@@ -112,6 +114,7 @@ object FC: ModInitializer {
 object FCC: ClientModInitializer {
 
     private var scopeToOpen = ""
+    private var openRestartScreen = false
 
     override fun onInitializeClient() {
         SyncedConfigRegistry.registerClient()
@@ -123,7 +126,14 @@ object FCC: ClientModInitializer {
                 ClientConfigRegistry.openScreen(scopeToOpen)
                 scopeToOpen = ""
             }
+            if (openRestartScreen) {
+                ConfigApiImplClient.openRestartScreen()
+            }
         }
+    }
+
+    fun openRestartScreen() {
+        this.openRestartScreen = true
     }
 
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>) {

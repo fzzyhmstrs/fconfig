@@ -58,4 +58,15 @@ class ConfigContext<T: Any>(val config: T) {
     fun getInt(key: String): Int {
         return contextFlags[key] as? Int ?: 0
     }
+
+    /**
+     * get a generic value from this context, or null if it doesn't exist as the specified type at the specified key
+     * @param [T] type to retrieve with the key
+     * @return Value stored with the context flag, or null
+     * @author fzzyhmstrs
+     * @since 0.4.0
+     */
+    fun <T> get(key: String): T? {
+        return contextFlags[key] as? T
+    }
 }
