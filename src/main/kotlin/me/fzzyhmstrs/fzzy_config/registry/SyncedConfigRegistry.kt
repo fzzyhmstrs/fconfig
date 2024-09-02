@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.registry
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_KEY
@@ -76,11 +77,11 @@ internal object SyncedConfigRegistry {
             if (syncedConfigs.containsKey(id)) {
                 val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                 val errors = mutableListOf<String>()
-                val result = ConfigApi.deserializeConfig(config, configString, errors, ConfigApiImpl.CHECK_RESTART) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
-                val restart = result.get().getBoolean(RESTART_KEY)
+                val result = ConfigApi.deserializeConfig(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
+                val actions = result.get().get<Set<Action>>(RESTART_KEY) ?: setOf()
                 result.writeError(errors)
                 result.get().config.save() //save config to the client
-                if (restart) {
+                if (actions.any { it.restartPrompt }) {
                     client.execute {
                         client.world?.disconnect()
                         client.disconnect()
@@ -105,12 +106,12 @@ internal object SyncedConfigRegistry {
                 if (syncedConfigs.containsKey(id)) {
                     val config = syncedConfigs[id] ?: return@registerGlobalReceiver
                     val errors = mutableListOf<String>()
-                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
-                    val restart = result.get().getBoolean(RESTART_KEY)
+                    val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS)
+                    val actions = result.get().get<Set<Action>>(RESTART_KEY) ?: setOf()
                     result.writeError(errors)
                     result.get().config.save()
-                    if (restart) {
-                        client.player?.sendMessage("fc.config.restart.update".translate())
+                    for (action in actions) {
+                        client.player?.sendMessage(action.clientPrompt)
                     }
                 }
             }
@@ -223,11 +224,11 @@ internal object SyncedConfigRegistry {
                     }
                 }
                 val errors = mutableListOf<String>()
-                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
-                val restart = result.get().getBoolean(RESTART_KEY)
+                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS)
+                val actions = result.get().get<Set<Action>>(RESTART_KEY) ?: setOf()
                 result.writeError(errors)
                 result.get().config.save()
-                if (restart) {
+                if (actions.any { it.restartPrompt }) {
                     FC.LOGGER.warn("The server has received a config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
                 }
                 successfulUpdates[id] = configString
@@ -287,11 +288,11 @@ internal object SyncedConfigRegistry {
         if (config != null) {
             val errors = mutableListOf<String>()
 
-            val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_RESTART)
-            val restart = result.get().getBoolean(RESTART_KEY)
+            val result = ConfigApiImpl.deserializeUpdate(config, quarantinedUpdate.configString, errors, ConfigApiImpl.CHECK_ACTIONS)
+            val actions = result.get().get<Set<Action>>(RESTART_KEY) ?: setOf()
             result.writeError(errors)
             result.get().config.save()
-            if (restart) {
+            if (actions.any { it.restartPrompt }) {
                 FC.LOGGER.warn("The server accepted a quarantined config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
             }
             for (p in server.playerManager.playerList) {
@@ -302,9 +303,9 @@ internal object SyncedConfigRegistry {
             }
         }
         player?.let {
-            for ((id, config) in syncedConfigs) {
-                val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
-                val payload = ConfigPermissionsS2CCustomPayload(id, perms)
+            for ((id2, config2) in syncedConfigs) {
+                val perms = ConfigApiImpl.generatePermissionsReport(player, config2, 0)
+                val payload = ConfigPermissionsS2CCustomPayload(id2, perms)
                 ServerPlayNetworking.send(player, payload)
             }
         }

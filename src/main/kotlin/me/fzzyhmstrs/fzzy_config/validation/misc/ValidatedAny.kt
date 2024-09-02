@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.annotations.IgnoreVisibility
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.Entry
@@ -19,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
+import me.fzzyhmstrs.fzzy_config.screen.entry.ValidatedAnyConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
@@ -144,16 +146,17 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         val newThing = copyStoredValue()
         val newNewThing = try{ createInstance() } catch (e: Exception) { defaultValue }
         val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
-        val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 160, 0, false)
-        ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, callback ->
-            val restart = ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)
+        val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 0, false)
+        val globalAnnotations = newThing::class.annotations
+        ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, _ ->
+            val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)?.let { setOf(it) } ?: setOf()
             if (thing is Updatable && thing is Entry<*, *>) {
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                 thing.setEntryKey(new)
                 thing.setUpdateManager(manager)
                 manager.setUpdatableEntry(thing)
-                entryList.add(SettingConfigEntry(name, thing.descLit(""), restart, entryList, thing.widgetEntry(), null, null, null))
+                entryList.add(SettingConfigEntry(name, thing.descLit(""), action, entryList, thing.widgetEntry(), null, null, null))
 
             } else if (thing is Walkable) {
                 val validation = ValidatedAny(thing)
@@ -161,7 +164,8 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                 validation.setUpdateManager(manager)
                 manager.setUpdatableEntry(validation)
                 val name = validation.translation()
-                entryList.add(SettingConfigEntry(name, validation.descLit(""), restart, entryList, validation.widgetEntry(), null, null, null))
+                val actions = ConfigApiImpl.getActions(thing, 1)
+                entryList.add(ValidatedAnyConfigEntry(name, validation.descLit(""), actions, entryList, validation.widgetEntry(), null, null, null))
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("${getEntryKey()}.")
@@ -175,7 +179,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                     basicValidation2.setUpdateManager(manager)
                     manager.setUpdatableEntry(basicValidation2)
                     val name = basicValidation2.translation()
-                    entryList.add(BaseConfigEntry(name, basicValidation2.descLit(""), restart, entryList, basicValidation2.widgetEntry()))
+                    entryList.add(BaseConfigEntry(name, basicValidation2.descLit(""), action, entryList, basicValidation2.widgetEntry()))
                 }
             }
         }
@@ -190,21 +194,8 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         PopupWidget.push(popup)
     }
 
-    fun restartRequired(): Boolean {
-        var restart = false
-        ConfigApiImpl.walk(storedValue, getEntryKey(), 1){_, _, _, thing, _, annotations, callback ->
-            if (ConfigApiImpl.isRequiresRestart(annotations) || ConfigApiImpl.isRequiresRestart(callback.walkable::class.annotations)) {
-                restart = true
-                callback.cancel()
-            }
-            if (thing is ValidatedAny<*>) {
-                if (thing.restartRequired()) {
-                    restart = true
-                    callback.cancel()
-                }
-            }
-        }
-        return restart
+    fun actions(): Set<Action> {
+        return ConfigApiImpl.getActions(storedValue, ConfigApiImpl.IGNORE_NON_SYNC)
     }
 
     @Environment(EnvType.CLIENT)
