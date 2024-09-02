@@ -11,12 +11,14 @@
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
@@ -29,20 +31,17 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.tooltip.WidgetTooltipPositioner
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
-import net.minecraft.text.MutableText
 import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
-import net.minecraft.util.Formatting
 
 @Environment(EnvType.CLIENT)
 internal open class BaseConfigEntry(
     val name: Text,
     protected val description: Text,
-    protected var isRestartTriggering: Boolean,
+    private var actions: Set<Action>,
     protected val parent: ConfigListWidget,
     protected val widget: ClickableWidget)
     :
@@ -60,10 +59,11 @@ internal open class BaseConfigEntry(
     init {
         if (widget is SuggestionWindowProvider)
             widget.addListener(parent)
+        actions = actions.toSortedSet { a1, a2 -> a1.ordinal.compareTo(a2.ordinal) }
     }
 
-    fun restartTriggering(bl: Boolean): BaseConfigEntry {
-        isRestartTriggering = bl
+    fun restartTriggering(actions: Set<Action>): BaseConfigEntry {
+        this.actions = actions.toSortedSet { a1, a2 -> a1.ordinal.compareTo(a2.ordinal) }
         return this
     }
 
@@ -96,10 +96,14 @@ internal open class BaseConfigEntry(
             y + entryHeight / 2 - parent.getClient().textRenderer.fontHeight / 2,
             Colors.WHITE
         )
-        if (isRestartTriggering) {
-            RenderSystem.enableBlend()
-            RenderSystem.enableDepthTest()
-            context.drawGuiTexture("widget/entry_error".fcId(), x - 24, y, 20, 20)
+        if (actions.isNotEmpty()) {
+            var offset = -24
+            for (action in actions) {
+                RenderSystem.enableBlend()
+                RenderSystem.enableDepthTest()
+                context.drawGuiTexture(action.sprite, x + offset, y, 20, 20)
+                offset -= 24
+            }
         }
         if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null) {
             //let widgets tooltip win
@@ -112,8 +116,10 @@ internal open class BaseConfigEntry(
 
     private fun createTooltip(): List<OrderedText> {
         val list: MutableList<OrderedText> = mutableListOf()
-        if(isRestartTriggering) {
-            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText().formatted(Formatting.RED), 170))
+        if(actions.isNotEmpty()) {
+            for (action in actions) {
+                list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 170))
+            }
             if (description.string != "")
                 list.add(FcText.empty().asOrderedText())
         }
@@ -122,18 +128,19 @@ internal open class BaseConfigEntry(
         }
         return list
     }
+
     private fun createTooltipString(): String {
         val builder = StringBuilder()
         for (tip in tooltip) {
-            tip.accept{ _, _, codepoint ->
+            tip.accept { _, _, codepoint ->
                 builder.appendCodePoint(codepoint)
                 true
             }
         }
         return builder.toString()
     }
-    open fun restartText(): MutableText {
-        return "fc.config.restart.warning".translate()
+    open fun restartText(action: Action): Text {
+        return action.settingTooltip
     }
 
     override fun children(): MutableList<out Element> {

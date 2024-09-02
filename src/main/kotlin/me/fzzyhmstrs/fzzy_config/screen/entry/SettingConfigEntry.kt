@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
@@ -22,14 +23,14 @@ import org.lwjgl.glfw.GLFW
 internal open class SettingConfigEntry(
     name: Text,
     description: Text,
-    isRestartTriggering: Boolean,
+    actions: Set<Action>,
     parent: ConfigListWidget,
     widget: ClickableWidget,
     val copyAction: Runnable?,
     val pasteAction: Runnable?,
     protected val rightClickAction: RightClickAction?)
     :
-    BaseConfigEntry(name, description, isRestartTriggering, parent, widget)
+    BaseConfigEntry(name, description, actions, parent, widget)
 {
     private var clickedWidget = false
 

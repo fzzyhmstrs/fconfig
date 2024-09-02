@@ -17,6 +17,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.serializer
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.FCC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.cast
@@ -61,7 +62,7 @@ internal object ConfigApiImpl {
 
     internal const val CHECK_NON_SYNC: Byte = 0
     internal const val IGNORE_NON_SYNC: Byte = 1
-    internal const val CHECK_RESTART: Byte = 2
+    internal const val CHECK_ACTIONS: Byte = 2
     internal const val IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
     internal const val IGNORE_VISIBILITY: Byte = 4
 
@@ -71,8 +72,10 @@ internal object ConfigApiImpl {
     }
     internal fun openRestartScreen() {
         if (isClient)
-            ConfigApiImplClient.openRestartScreen()
+            FCC.openRestartScreen()
     }
+
+    ///////////////////// Registration ///////////////////////////////////////////////////
 
     internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T {
         return when(registerType) {
@@ -112,6 +115,10 @@ internal object ConfigApiImpl {
     private fun <T: Config> registerAndLoadClient(configClass: () -> T): T {
         return registerClient(readOrCreateAndValidate(configClass), configClass)
     }
+
+    ///////////////// Flags //////////////////////////////////////////////////////////////
+
+    //////////////// Read, Create, Save //////////////////////////////////////////////////
 
     internal fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T {
         //wrap entire method in a try-catch. don't need to have config problems causing a hard crash, just fall back
@@ -257,7 +264,9 @@ internal object ConfigApiImpl {
         save(configClass.name, configClass.folder, configClass.subfolder, configClass)
     }
 
-    ///////////////// Serialize
+    ///////////////// END Read, Create, Save /////////////////////////////////////////////
+
+    ///////////////// Serialize //////////////////////////////////////////////////////////
 
     internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): TomlTable {
         //used to build a TOML table piece by piece
@@ -366,18 +375,20 @@ internal object ConfigApiImpl {
         return Toml.encodeToString(toml.build())
     }
 
-    ///////////////////////////////////////////////
+    ///////////////// END Serialize //////////////////////////////////////////////////////
+
+    ///////////////// Deserialize ////////////////////////////////////////////////////////
 
     internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
-        var restartNeeded = false
+        val restartNeeded: MutableSet<Action> = mutableSetOf()
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
-            return ValidationResult.error(ConfigContext(config).withFlag(RESTART_KEY, false), "Improper TOML format passed to deserializeFromToml")
+            return ValidationResult.error(ConfigContext(config).withFlag(RESTART_KEY, mutableSetOf<Action>()), "Improper TOML format passed to deserializeFromToml")
         }
         try {
-            val checkForRestart = requiresRestart(flags)
-            val globalIsRequiresRestart = isRequiresRestart(config::class)
+            val checkForRestart = checkActions(flags)
+            val globalIsRequiresRestart = getAction(config::class.annotations)
             val ignoreVisibility = isIgnoreVisibility(config::class) || ignoreVisibility(flags)
             val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
             val orderById = fields.withIndex().associate { it.value.name to it.index }
@@ -401,9 +412,10 @@ internal object ConfigApiImpl {
                     continue
                 }
                 if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
-                    val result = if(checkForRestart && propVal is Supplier<*> && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
+                    val action = requiredAction(prop.annotations, globalIsRequiresRestart)
+                    val result = if(checkForRestart && propVal is Supplier<*> && action != null) {
                         val before = propVal.get()
-                        propVal.deserializeEntry(tomlElement, errorBuilder, name, flags).also { r -> if(r.get() != before) restartNeeded = true }
+                        propVal.deserializeEntry(tomlElement, errorBuilder, name, flags).also { r -> if(r.get() != before) restartNeeded.add(action) }
                     } else {
                         propVal.deserializeEntry(tomlElement, errorBuilder, name, flags)
                     }
@@ -416,8 +428,9 @@ internal object ConfigApiImpl {
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, flags)
                         try {
-                            if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart))
-                                if (propVal != thing.get()) restartNeeded = true
+                            val action = requiredAction(prop.annotations, globalIsRequiresRestart)
+                            if(checkForRestart && action != null)
+                                if (propVal != thing.get()) restartNeeded.add(action)
                             if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                             prop.setter.call(config, thing.get())
                         } catch(e: Exception) {
@@ -425,9 +438,10 @@ internal object ConfigApiImpl {
                         }
                     } else {
                         try {
-                            if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
+                            val action = requiredAction(prop.annotations, globalIsRequiresRestart)
+                            if(checkForRestart && action != null) {
                                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
-                                prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop).also{ if (propVal != it) restartNeeded = true })
+                                prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop).also{ if (propVal != it) restartNeeded.add(action) })
                             } else {
                                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                                 prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop))
@@ -466,10 +480,10 @@ internal object ConfigApiImpl {
 
     private fun <T: Any> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
-        var restartNeeded = false
+        val restartNeeded: MutableSet<Action> = mutableSetOf()
         try {
-            val checkForRestart = requiresRestart(flags)
-            val globalIsRequiresRestart = isRequiresRestart(config::class)
+            val checkForRestart = checkActions(flags)
+            val globalIsRequiresRestart = getAction(config::class.annotations)
 
             if (toml !is TomlTable) {
                 errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
@@ -477,9 +491,10 @@ internal object ConfigApiImpl {
             }
             walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, str, v, prop, annotations, _ -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
-                    if(checkForRestart && v is Supplier<*> && (isRequiresRestart(prop) || globalIsRequiresRestart)) {
+                    val action = requiredAction(prop.annotations, globalIsRequiresRestart)
+                    if(checkForRestart && v is Supplier<*> && action != null) {
                         val before = v.get()
-                        v.deserializeEntry(it, errorBuilder, str, flags).also { r -> if(r.get() != before) restartNeeded = true }
+                        v.deserializeEntry(it, errorBuilder, str, flags).also { r -> if(r.get() != before) restartNeeded.add(action) }
                     } else {
                         v.deserializeEntry(it, errorBuilder, str, flags)
                     }
@@ -489,8 +504,9 @@ internal object ConfigApiImpl {
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(it, errorBuilder, str, flags)
                         try {
-                            if(checkForRestart && (isRequiresRestart(prop) || globalIsRequiresRestart))
-                                if (v != thing.get()) restartNeeded = true
+                            val action = requiredAction(prop.annotations, globalIsRequiresRestart)
+                            if(checkForRestart && action != null)
+                                if (v != thing.get()) restartNeeded.add(action)
                             prop.setter.call(config, thing.get()) //change?
                         } catch(e: Exception) {
                             errorBuilder.add("Error deserializing basic validation [$str]: ${e.localizedMessage}")
@@ -632,7 +648,9 @@ internal object ConfigApiImpl {
         }
     }
 
-    ///////////////////////////////////////
+    ///////////////// END Deserialize ////////////////////////////////////////////////////
+
+    ///////////////// Reflection /////////////////////////////////////////////////////////
 
     private fun isIgnoreVisibility(clazz: KClass<*>): Boolean {
         return clazz.annotations.firstOrNull { (it is IgnoreVisibility) }?.let { true } ?: false
@@ -643,14 +661,46 @@ internal object ConfigApiImpl {
     internal fun isNonSync(annotations: List<Annotation>): Boolean {
         return annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
     }
-    private fun isRequiresRestart(property: KProperty<*>): Boolean {
-        return isRequiresRestart(property.annotations)
+
+    private fun getAction(annotations: List<Annotation>): Action? {
+        return (annotations.firstOrNull { (it is RequiresAction) } as? RequiresAction ?: annotations.firstOrNull { (it is RequiresRestart) }?.let { RequiresAction(Action.RESTART) })?.action
     }
-    private fun isRequiresRestart(clazz: KClass<*>): Boolean {
-        return isRequiresRestart(clazz.annotations)
+
+    private fun requiredAction(settingAnnotations: List<Annotation>, classAction: Action?): Action? {
+        val settingAction = getAction(settingAnnotations)
+        if (settingAction == null && classAction == null) return null
+        if (settingAction == null) return classAction
+        if (classAction == null) return settingAction
+        return if (settingAction.isPriority(classAction)) {
+            settingAction
+        } else {
+            classAction
+        }
     }
-    internal fun isRequiresRestart(annotations: List<Annotation>): Boolean {
-        return annotations.firstOrNull { (it is RequiresRestart) }?.let { true } ?: false
+
+    internal fun getActions(thing: Any, flags: Byte): Set<Action> {
+        val classAction = getAction(thing::class.annotations)
+        val propActions: MutableSet<Action> = mutableSetOf()
+        walk(thing, "", flags) { _, _, _, _, _, annotations, _ ->
+            val action = requiredAction(annotations, classAction)
+            if (action != null) {
+                propActions.add(action)
+            }
+        }
+        return propActions
+    }
+
+    internal fun requiredAction(settingAnnotations: List<Annotation>, classAnnotations: List<Annotation>): Action? {
+        val settingAction = getAction(settingAnnotations)
+        val classAction = getAction(classAnnotations)
+        if (settingAction == null && classAction == null) return null
+        if (settingAction == null) return classAction
+        if (classAction == null) return settingAction
+        return if (settingAction.isPriority(classAction)) {
+            settingAction
+        } else {
+            classAction
+        }
     }
     internal fun tomlAnnotations(property: KAnnotatedElement): List<Annotation> {
         return property.annotations.map { mapJvmAnnotations(it) }.filter { it is TomlComment || it is TomlInline || it is TomlBlockArray || it is TomlMultilineString || it is TomlLiteralString || it is TomlInteger }
@@ -766,13 +816,15 @@ internal object ConfigApiImpl {
         return playerPermLevel >= config.defaultPermLevel()
     }
 
-    ///////////////// Flags
+    ///////////////// END Annotations ////////////////////////////////////////////////////
+
+    ///////////////// Flags //////////////////////////////////////////////////////////////
 
     private fun ignoreNonSync(flags: Byte): Boolean {
         return flags and 1.toByte() == 1.toByte()
     }
 
-    private fun requiresRestart(flags: Byte): Boolean {
+    private fun checkActions(flags: Byte): Boolean {
         return flags and 2.toByte() == 2.toByte()
     }
 
@@ -780,7 +832,9 @@ internal object ConfigApiImpl {
         return flags and 4.toByte() == 4.toByte()
     }
 
-    ///////////////// Printing
+    ///////////////// END Flags ///////////////////////////////////////////////////////////
+
+    ///////////////// Printing ////////////////////////////////////////////////////////////
 
     internal fun printChangeHistory(history: List<String>, id: String, player: PlayerEntity? = null) {
         FC.LOGGER.info("$$$$$$$$$$$$$$$$$$$$$$$$$$")
@@ -793,7 +847,9 @@ internal object ConfigApiImpl {
         FC.LOGGER.info("$$$$$$$$$$$$$$$$$$$$$$$$$$")
     }
 
-    /////////////////////////////////
+    ///////////////// END Printing ///////////////////////////////////////////////////////
+
+    ///////////////// Walking ////////////////////////////////////////////////////////////
 
     internal fun<W: Any> walk(walkable: W, prefix: String, flags: Byte, walkAction: WalkAction) {
         try {
