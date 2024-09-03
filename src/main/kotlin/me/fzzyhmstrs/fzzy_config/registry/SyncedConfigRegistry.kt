@@ -337,10 +337,12 @@ internal object SyncedConfigRegistry {
             }
         }
         player?.let {
-            for ((id2, config2) in syncedConfigs) {
-                val perms = ConfigApiImpl.generatePermissionsReport(player, config2, 0)
-                val payload = ConfigPermissionsS2CCustomPayload(id2, perms)
-                ServerPlayNetworking.send(player, payload)
+            if (ServerPlayNetworking.canSend(player, ConfigPermissionsS2CCustomPayload.type)) {
+                for ((id2, config2) in syncedConfigs) {
+                    val perms = ConfigApiImpl.generatePermissionsReport(player, config2, 0)
+                    val payload = ConfigPermissionsS2CCustomPayload(id2, perms)
+                    ServerPlayNetworking.send(player, payload)
+                }
             }
         }
         quarantinedUpdates.remove(id)
