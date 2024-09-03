@@ -61,10 +61,26 @@ internal object SyncedConfigRegistry {
     private val quarantinedUpdates : Object2ObjectLinkedOpenHashMap<String, QuarantinedUpdate> = Object2ObjectLinkedOpenHashMap()
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
+        if (!ClientPlayNetworking.canSend(SettingForwardCustomPayload.type)) {
+            MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error".translate())
+            FC.LOGGER.error("Can't forward setting; not connected to a server or server isn't accepting this type of data")
+            FC.LOGGER.error("Setting not sent:")
+            FC.LOGGER.warn(scope)
+            FC.LOGGER.warn(summary)
+            return
+        }
         ClientPlayNetworking.send(SettingForwardCustomPayload(update, player, scope, summary))
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
+        if (!ClientPlayNetworking.canSend(ConfigUpdateC2SCustomPayload.type)) {
+            FC.LOGGER.error("Can't send Config Update; not connected to a server or server isn't accepting this type of data")
+            FC.LOGGER.error("changes not sent:")
+            for (change in changeHistory) {
+                FC.LOGGER.warn(change)
+            }
+            return
+        }
         ClientPlayNetworking.send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
     }
 
