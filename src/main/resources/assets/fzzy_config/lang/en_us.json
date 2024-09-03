@@ -93,6 +93,7 @@
 "fc.config.back.desc" : "Return to %s",
 "fc.config.done.desc" : "Save config and close screen",
 "fc.config.forwarded": "Forwarded Settings",
+"fc.config.forwarded_error": "Failed to forward the setting(s). The server isn't accepting this type of data, please contact an admin for help.",
 "fc.config.restart": "Restart Required",
 "fc.config.restart.warning": "Changing this setting will require a restart!",
 "fc.config.restart.warning.section": "Some settings within this section will require a restart if changed!",
