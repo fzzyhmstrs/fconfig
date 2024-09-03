@@ -10,12 +10,12 @@
 
 package me.fzzyhmstrs.fzzy_config_test.test
 
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.annotations.WithCustomPerms
 import me.fzzyhmstrs.fzzy_config.annotations.RequiresAction
 import me.fzzyhmstrs.fzzy_config.annotations.RequiresRestart
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
-import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedMap
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedEntityAttribute
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
@@ -31,16 +31,16 @@ import net.minecraft.util.Identifier
 @RequiresRestart
 class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) {
 
-    @WithCustomPerms([TEST_PERMISSIONS_BAD])
+    @WithCustomPerms([TEST_PERMISSION_BAD])
     var bl1 = true
     var bl2 = ValidatedBoolean()
 
-    @ValidatedInt.Restrict(0,20)
+    @ValidatedInt.Restrict(0, 20)
     var int1 = 6
-    var int2 = ValidatedInt(6,10,1)
+    var int2 = ValidatedInt(6, 10, 1)
 
     @RequiresAction(Action.RELOG)
-    var mapDouble = ValidatedStringMap(mapOf("a" to 1.0),ValidatedString(), ValidatedDouble(1.0,1.0,0.0))
+    var mapDouble = ValidatedStringMap(mapOf("a" to 1.0), ValidatedString(), ValidatedDouble(1.0, 1.0, 0.0))
 
     var namespaceBlackList: ValidatedList<String> = ValidatedString.fromList(FabricLoader.getInstance().allMods.map{ it.metadata.id }).toList()
 
@@ -48,9 +48,9 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
 
     var exampleValidatedAttribute1 = ValidatedEntityAttribute.Builder("generic.max_health", true)
         // supply a UUID and name, otherwise generic ones will be used for you
-        .id(Identifier.of(FC.MOD_ID,"test_attribute_1"))
+        .id(Identifier.of(FC.MOD_ID, "test_attribute_1"))
         //set amount, and optionally provide a range restriction
-        .amount(1.0,0.0,8.0)
+        .amount(1.0, 0.0, 8.0)
         //set the operation for the modifier, and optionally lock the modifier to the operation chosen
         .operation(EntityAttributeModifier.Operation.ADD_VALUE, true)
         //build! gets you a ValidatedEntity Attribute
@@ -58,9 +58,9 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
 
     var exampleValidatedAttribute2 = ValidatedEntityAttribute.Builder("generic.max_health", false)
         // supply a UUID and name, otherwise generic ones will be used for you
-        .id(Identifier.of(FC.MOD_ID,"test_attribute_2"))
+        .id(Identifier.of(FC.MOD_ID, "test_attribute_2"))
         //set amount, and optionally provide a range restriction
-        .amount(0.1,0.0,1.0)
+        .amount(0.1, 0.0, 1.0)
         //set the operation for the modifier, and optionally lock the modifier to the operation chosen
         .operation(EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, false)
         //build! gets you a ValidatedEntity Attribute
