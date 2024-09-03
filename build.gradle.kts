@@ -64,9 +64,9 @@ repositories {
     }
 }
 
-sourceSets{
-    main{
-        kotlin{
+sourceSets {
+    main {
+        kotlin {
             val includeExamples: String by project
             if (includeExamples.toBooleanLenient() != true) {
                 exclude("me/fzzyhmstrs/fzzy_config/examples/**")

@@ -103,6 +103,8 @@ internal object ClientConfigRegistry {
     @Environment(EnvType.CLIENT)
     internal fun updatePerms(id: String, perms: Map<String, Boolean>) {
         customPermissions[id] = perms
+        println("received perms")
+        println(customPermissions)
     }
 
     @Environment(EnvType.CLIENT)
