@@ -47,6 +47,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
     var bl2 = ValidatedBoolean()
 
     var int1 = 6
+    @RequiresAction(Action.RELOAD_BOTH)
     var int2 = ValidatedInt(6,10,1)
 
     @WithPerms(5)
@@ -57,6 +58,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
     var section1 = TestSectionImpl()
     class TestSectionImpl: ConfigSection(){
         var float1 = 1f
+        @RequiresAction(Action.RELOG)
         var float2 = ValidatedFloat(3f,6f,1f,ValidatedNumber.WidgetType.TEXTBOX)
         var float3 = ValidatedFloat(3f,6f,1f)
         var string1 = "hello"
@@ -106,6 +108,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
     @TomlComment("Testing out a comment")
     var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
+    @RequiresAction(Action.RELOAD_RESOURCES)
     @NonSync
     @WithPerms(5)
     var list1 = listOf(1,3,5,7)
