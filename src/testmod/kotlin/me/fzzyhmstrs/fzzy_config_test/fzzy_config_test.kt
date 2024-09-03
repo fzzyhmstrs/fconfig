@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigClient
 import me.fzzyhmstrs.fzzy_config_test.test.TestPopupScreen
+import me.lucko.fabric.api.permissions.v0.PermissionCheckEvent
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -30,6 +31,7 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.gui.Selectable
 import net.minecraft.util.Identifier
+import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.util.math.MathHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -40,8 +42,13 @@ object FC: ModInitializer {
     const val MOD_ID = "fzzy_config_test"
     val LOGGER: Logger = LoggerFactory.getLogger("fzzy_config_test")
     val fcRandom = Random(System.currentTimeMillis())
+    const val TEST_PERMISSION_GOOD = "test.perm.good"
 
     override fun onInitialize() {
+        PermissionCheckEvent.EVENT.register { _, permission ->
+            if (permission == TEST_PERMISSION_GOOD) TriState.TRUE else TriState.DEFAULT
+        }
+
         TestConfig.init()
         val expressionTestResults = AssertionResults()
         assertConstExpression("3 + 5",8.0,expressionTestResults)
