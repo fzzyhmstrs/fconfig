@@ -98,7 +98,7 @@ internal open class BaseConfigEntry(
         )
         if (actions.isNotEmpty()) {
             var offset = -24
-            val offsetIncrement = if(actions.size == 1) 20 else min(20, (x - 24) / (actions.size - 1))
+            val offsetIncrement = if(actions.size == 1) 18 else min(18, (x - 24) / (actions.size - 1))
             for (action in actions) {
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
@@ -119,13 +119,13 @@ internal open class BaseConfigEntry(
         val list: MutableList<OrderedText> = mutableListOf()
         if(actions.isNotEmpty()) {
             for (action in actions) {
-                list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 170))
+                list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190))
             }
             if (description.string != "")
                 list.add(FcText.empty().asOrderedText())
         }
         if (description.string != "") {
-            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 170))
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
         return list
     }
