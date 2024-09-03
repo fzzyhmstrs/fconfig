@@ -161,7 +161,7 @@ internal object SyncedConfigRegistry {
         }
 
         ServerPlayConnectionEvents.JOIN.register { handler, sender, server ->
-            //if (server.isSingleplayer) return@register
+            if (server.isSingleplayer) return@register
             if (!ServerPlayNetworking.canSend(handler.player, ConfigPermissionsS2CCustomPayload.type)) return@register
             val player = handler.player
             for ((id, config) in syncedConfigs) {
