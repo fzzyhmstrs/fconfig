@@ -114,7 +114,7 @@
 "fc.config.reload_both.update.client": "You have made changes to configuration(s) that require reloading data packs (/reload) and resources (F3 + T).",
 "fc.config.reload_both.update.server": "You have made changes to configuration(s) that require reloading data packs (/reload) and resources (F3 + T). Connected clients have been automatically updated and notified that they need to reload resources; please follow up with players and/or staff members to schedule a reload.",
 "fc.config.reload_data.warning": "Changing this setting will require reloading data packs (/reload).",
-"fc.config.reload_data.warning.section": "Some settings within this section will reloading data packs (/reload) if changed.",
+"fc.config.reload_data.warning.section": "Some settings within this section will require reloading data packs (/reload) if changed.",
 "fc.config.reload_data.warning.config": "Some settings within this config will require reloading data packs (/reload) if changed.",
 "fc.config.reload_data.update": "You have received a configuration update that may require reloading data packs. Please prepare for a possible server reload.",
 "fc.config.reload_data.update.client": "You have made changes to configuration(s) that require reloading data packs (/reload).",

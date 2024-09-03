@@ -43,6 +43,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
     @ClientModifiable
     @WithPerms(5)
     var bl1 = true
+    @RequiresAction(Action.RELOAD_DATA)
     var bl2 = ValidatedBoolean()
 
     var int1 = 6
@@ -67,10 +68,10 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
                     ValidationResult.success(s)
                 } else {
                     if(s.contains("chicken", true)){
-                        val s2 = s.replace(Regex("(?i)chicken"),"chicken")
-                        ValidationResult.error(s2,"'chicken' needs to be lowercase in the string")
+                        val s2 = s.replace(Regex("(?i)chicken"), "chicken")
+                        ValidationResult.error(s2, "'chicken' needs to be lowercase in the string")
                     } else {
-                        ValidationResult.error(s,"String must contain the lowercase word 'chicken'")
+                        ValidationResult.error(s, "String must contain the lowercase word 'chicken'")
                     }
                 }
             }
@@ -80,6 +81,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
 
         var ingredient2 = ValidatedIngredient(setOf(Identifier.of("diamond_axe"),TagKey.of(RegistryKeys.ITEM,Identifier.of("barrels"))))
 
+        @RequiresAction(Action.RELOAD_DATA)
         var tag1 = ValidatedTagKey(ItemTags.PICKAXES)
 
         var object1 = ValidatedAny(TestAny())
