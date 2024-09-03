@@ -59,7 +59,7 @@ internal object SyncedConfigRegistry {
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
         if (!ClientPlayNetworking.canSend(SettingForwardCustomPayload.type)) {
-            MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error".translate())
+            MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
             FC.LOGGER.error("Can't forward setting; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("Setting not sent:")
             FC.LOGGER.warn(scope)
@@ -265,6 +265,7 @@ internal object SyncedConfigRegistry {
             if (!context.server().isSingleplayer) {
                 for (player in context.player().server.playerManager.playerList) {
                     if (player == context.player()) continue // don't push back to the player that just sent the update
+                    if (!ServerPlayNetworking.canSend(player, ConfigUpdateS2CCustomPayload.type)) continue
                     val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
                     ServerPlayNetworking.send(player, newPayload)
                 }
@@ -278,6 +279,10 @@ internal object SyncedConfigRegistry {
             val payload = SettingForwardCustomPayload(buf)
             val uuid = payload.player
             val receivingPlayer = serverPlayer.server.playerManager.getPlayer(uuid) ?: return@registerGlobalReceiver
+            if (!ServerPlayNetworking.canSend(receivingPlayer, SettingForwardCustomPayload.type)) {
+                serverPlayer.sendMessage("fc.config.forwarded_error.s2c".translate())
+                return
+            }
             val scope = payload.scope
             val update = payload.update
             val summary = payload.summary
