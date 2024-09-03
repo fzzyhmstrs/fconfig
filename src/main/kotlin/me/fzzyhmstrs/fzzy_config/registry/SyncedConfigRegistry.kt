@@ -289,8 +289,8 @@ internal object SyncedConfigRegistry {
             val uuid = payload.player
             val receivingPlayer = context.player().server.playerManager.getPlayer(uuid) ?: return@registerGlobalReceiver
             if (!ServerPlayNetworking.canSend(receivingPlayer, SettingForwardCustomPayload.type)) {
-                context.player.().sendMessage("fc.config.forwarded_error.s2c".translate())
-                return
+                context.player().sendMessage("fc.config.forwarded_error.s2c".translate())
+                return@registerGlobalReceiver
             }
             val scope = payload.scope
             val update = payload.update
