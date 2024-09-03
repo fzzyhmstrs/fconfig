@@ -10,6 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
+import me.fzzyhmstrs.fzzy_config.annotations.Action
+
 /**
  * Holds a config and any applicable secondary flags and their associated information
  * @param T any Non-null type
@@ -20,33 +22,24 @@ package me.fzzyhmstrs.fzzy_config.config
 class ConfigContext<T: Any>(val config: T) {
 
     companion object Keys {
-        val RESTART_KEY = "restart"
-        val VERSION_KEY = "version"
+        val ACTIONS = object: Key<Set<Action>> {}
+        val RESTART_RECORDS = object : Key<Set<String>> {}
+        val VERSIONS = object: Key<Int> {}
     }
 
-    private val contextFlags: MutableMap<String, Any> = mutableMapOf()
+    private val contextFlags: MutableMap<Key<*>, Any> = mutableMapOf()
 
     /**
      * Adds a flag-info pair into this context. Information should be a boolean or integer value
-     * @param flag the context flag
+     * @param key the context key
      * @param value the data value associated with the context flag
      * @return this context with the new flag stored
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun withFlag(flag: String, value: Any): ConfigContext<T> {
-        contextFlags[flag] = value
+    fun <C: Any> withContext(key: Key<C>, value: C): ConfigContext<T> {
+        contextFlags[key] = value
         return this
-    }
-
-    /**
-     * get a boolean value from this context, falling back to false if the flag doesn't exist
-     * @return Boolean value stored with the context flag, or false as fallback
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    fun getBoolean(key: String): Boolean {
-        return contextFlags[key] as? Boolean ?: false
     }
 
     /**
@@ -55,18 +48,31 @@ class ConfigContext<T: Any>(val config: T) {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun getInt(key: String): Int {
+    fun getInt(key: Key<Int>): Int {
         return contextFlags[key] as? Int ?: 0
     }
 
     /**
      * get a generic value from this context, or null if it doesn't exist as the specified type at the specified key
-     * @param [T] type to retrieve with the key
+     * @param [C] type to retrieve with the key
      * @return Value stored with the context flag, or null
      * @author fzzyhmstrs
      * @since 0.4.0
      */
-    fun <T> get(key: String): T? {
-        return contextFlags[key] as? T
+    fun <C: Any> get(key: Key<C>): C? {
+        return contextFlags[key] as? C
     }
+
+    /**
+     * get a generic value from this context, or null if it doesn't exist as the specified type at the specified key
+     * @param [C] type to retrieve with the key
+     * @return Value stored with the context flag, or null
+     * @author fzzyhmstrs
+     * @since 0.4.0
+     */
+    fun <C: Any> getOrDefault(key: Key<C>, fallback: C): C {
+        return contextFlags[key] as? C ?: fallback
+    }
+
+    interface Key<C: Any>
 }
