@@ -29,6 +29,7 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
+import me.fzzyhmstrs.fzzy_config_test.FC.TEST_PERMISSION_GOOD
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.registry.tag.TagKey
@@ -38,7 +39,7 @@ import java.awt.Color
 import java.util.function.BiFunction
 
 @Version(1)
-class TestConfigImpl2: Config(Identifier("fzzy_config_test", "test_config2")) {
+class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) {
 
     @ClientModifiable
     @WithPerms(5)
@@ -46,9 +47,11 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test", "test_config2")) {
     @RequiresAction(Action.RELOAD_DATA)
     var bl2 = ValidatedBoolean()
 
+    @WithCustomPerms(["my_perm.custom"])
     var int1 = 6
+    @WithCustomPerms([TEST_PERMISSION_GOOD])
     @RequiresAction(Action.RELOAD_BOTH)
-    var int2 = ValidatedInt(6,10,1)
+    var int2 = ValidatedInt(6, 10, 1)
 
     @WithPerms(5)
     var enum1 = TestEnum.ALPHA
@@ -59,8 +62,8 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test", "test_config2")) {
     class TestSectionImpl: ConfigSection() {
         var float1 = 1f
         @RequiresAction(Action.RELOG)
-        var float2 = ValidatedFloat(3f,6f,1f,ValidatedNumber.WidgetType.TEXTBOX)
-        var float3 = ValidatedFloat(3f,6f,1f)
+        var float2 = ValidatedFloat(3f, 6f, 1f, ValidatedNumber.WidgetType.TEXTBOX)
+        var float3 = ValidatedFloat(3f, 6f, 1f)
         var string1 = "hello"
         var string2 = ValidatedString.Builder("chickenfrog")
             .both { s, _ -> ValidationResult.predicated(s, s.contains("chicken"), "String must contain the lowercase word 'chicken'.") }
@@ -79,9 +82,9 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test", "test_config2")) {
             }
             .build()
 
-        var ingredient1 = ValidatedIngredient(Identifier("diamond_axe"))
+        var ingredient1 = ValidatedIngredient(Identifier.of("diamond_axe"))
 
-        var ingredient2 = ValidatedIngredient(setOf(Identifier("diamond_axe"), TagKey.of(RegistryKeys.ITEM, Identifier("barrels"))))
+        var ingredient2 = ValidatedIngredient(setOf(Identifier.of("diamond_axe"), TagKey.of(RegistryKeys.ITEM, Identifier.of("barrels"))))
 
         @RequiresAction(Action.RELOAD_DATA)
         var tag1 = ValidatedTagKey(ItemTags.PICKAXES)
@@ -123,7 +126,7 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test", "test_config2")) {
 
     var map1 = mapOf(1 to "a", 2 to "c")
 
-    var id1 = ValidatedIdentifier.ofList(Identifier("stick"), listOf(Identifier("stick"), Identifier("blaze_rod"), Identifier("coal"), Identifier("charcoal")))
+    var id1 = ValidatedIdentifier.ofList(Identifier.of("stick"), listOf(Identifier.of("stick"), Identifier.of("blaze_rod"), Identifier.of("coal"), Identifier.of("charcoal")))
 
     var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> ("$u.$t").translate() })
 }
