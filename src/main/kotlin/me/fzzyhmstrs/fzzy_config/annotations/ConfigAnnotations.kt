@@ -194,7 +194,7 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
      */
     RESTART(
         true,
-        "widget/entry_error".fcId(),
+        "widget/action_restart".fcId(),
         "fc.config.restart.update".translate(),
         "fc.config.restart.update.client".translate(),
         "fc.config.restart.update.server".translate(),
@@ -209,7 +209,7 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
      */
     RELOG(
         false,
-        "widget/entry_error".fcId(),
+        "widget/action_relog".fcId(),
         "fc.config.relog.update".translate(),
         "fc.config.relog.update.client".translate(),
         "fc.config.relog.update.server".translate(),
@@ -224,7 +224,7 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
      */
     RELOAD_BOTH(
         false,
-        "widget/entry_warning".fcId(),
+        "widget/action_reload_both".fcId(),
         "fc.config.reload_both.update".translate(),
         "fc.config.reload_both.update.client".translate(),
         "fc.config.reload_both.update.server".translate(),
@@ -239,7 +239,7 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
      */
     RELOAD_DATA(
         false,
-        "widget/entry_warning".fcId(),
+        "widget/action_reload_data".fcId(),
         "fc.config.reload_data.update".translate(),
         "fc.config.reload_data.update.client".translate(),
         "fc.config.reload_data.update.server".translate(),
@@ -254,7 +254,7 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
      */
     RELOAD_RESOURCES(
         false,
-        "widget/entry_warning".fcId(),
+        "widget/action_reload_resources".fcId(),
         "fc.config.reload_resources.update".translate(),
         "fc.config.reload_resources.update.client".translate(),
         "fc.config.reload_resources.update.server".translate(),
