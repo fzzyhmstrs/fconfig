@@ -43,10 +43,16 @@ object FC: ModInitializer {
     val LOGGER: Logger = LoggerFactory.getLogger("fzzy_config_test")
     val fcRandom = Random(System.currentTimeMillis())
     const val TEST_PERMISSION_GOOD = "test.perm.good"
+    const val TEST_PERMISSION_BAD = "test.perm.bad"
 
     override fun onInitialize() {
         PermissionCheckEvent.EVENT.register { _, permission ->
-            if (permission == TEST_PERMISSION_GOOD) TriState.TRUE else TriState.DEFAULT
+            if (permission == TEST_PERMISSION_GOOD)
+                TriState.TRUE
+            else if (permission == TEST_PERMISSION_BAD)
+                TriState.FALSE
+            else
+                TriState.DEFAULT
         }
 
         TestConfig.init()
@@ -67,13 +73,13 @@ object FC: ModInitializer {
         assertConstExpression("floor(4.5)", 4.0, expressionTestResults)
         assertConstExpression("round(4.25)", 4.0, expressionTestResults)
         assertConstExpression("ln(4.5)", kotlin.math.ln(4.5), expressionTestResults)
-        assertConstExpression("log(4, 4)", kotlin.math.log(4.0, 4.0), expressionTestResults)
+        assertConstExpression("log(4,4)", kotlin.math.log(4.0,4.0), expressionTestResults)
         assertConstExpression("log10(5)", kotlin.math.log10(5.0), expressionTestResults)
         assertConstExpression("log2(5)", kotlin.math.log2(5.0), expressionTestResults)
-        assertConstExpression("abs(-4.5)", 4.5, expressionTestResults)
+        assertConstExpression("abs(-4.5)", 4.5,expressionTestResults)
         assertConstExpression("sin(4.5)", MathHelper.sin(4.5.toFloat()).toDouble(), expressionTestResults)
         assertConstExpression("cos(4.5)", MathHelper.cos(4.5.toFloat()).toDouble(), expressionTestResults)
-        assertConstExpression("incr(4.268, 0.1)", 4.2, expressionTestResults)
+        assertConstExpression("incr(4.268,0.1)", 4.2,expressionTestResults)
         println(expressionTestResults)
     }
 
@@ -116,7 +122,7 @@ object FCC: ClientModInitializer {
     var openDamnScreen = ""
 
     //val testEnum = ValidatedEnum(Selectable.SelectionType.FOCUSED)
-    //val testEnum2 = ValidatedEnum(Selectable.SelectionType.FOCUSED, ValidatedEnum.WidgetType.CYCLING)
+    //val testEnum2 = ValidatedEnum(Selectable.SelectionType.FOCUSED,ValidatedEnum.WidgetType.CYCLING)
     val testInt = ValidatedInt(8, 16, 0)
     val testInt2 = ValidatedInt(8, Int.MAX_VALUE, 0, ValidatedNumber.WidgetType.TEXTBOX)
     val testString = ValidatedString.Builder("chickenfrog")
