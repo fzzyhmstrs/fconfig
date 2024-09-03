@@ -23,8 +23,9 @@ import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_KEY
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.VERSION_KEY
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.VERSIONS
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
@@ -65,6 +66,8 @@ internal object ConfigApiImpl {
     internal const val CHECK_ACTIONS: Byte = 2
     internal const val IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
     internal const val IGNORE_VISIBILITY: Byte = 4
+    internal const val RECORD_RESTARTS: Byte = 8
+    internal const val CHECK_ACTIONS_AND_RECORD_RESTARTS: Byte = 10
 
     internal fun openScreen(scope: String) {
         if (isClient)
@@ -137,7 +140,7 @@ internal object ConfigApiImpl {
                 val classInstance = configClass()
                 val classVersion = getVersion(classInstance::class)
                 val readConfigResult = deserializeConfig(classInstance, str, fErrorsIn)
-                val readVersion = readConfigResult.get().getInt(VERSION_KEY)
+                val readVersion = readConfigResult.get().getInt(VERSIONS)
                 val readConfig = readConfigResult.get().config
                 val needsUpdating = classVersion > readVersion
                 if (readConfigResult.isError()) {
@@ -382,14 +385,17 @@ internal object ConfigApiImpl {
     internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
         val restartNeeded: MutableSet<Action> = mutableSetOf()
+        val restartRecords: MutableSet<String> = mutableSetOf()
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
-            return ValidationResult.error(ConfigContext(config).withFlag(RESTART_KEY, mutableSetOf<Action>()), "Improper TOML format passed to deserializeFromToml")
+            return ValidationResult.error(ConfigContext(config).withContext(ACTIONS, mutableSetOf<Action>()), "Improper TOML format passed to deserializeFromToml")
         }
         try {
-            val checkForRestart = checkActions(flags)
-            val globalIsRequiresRestart = getAction(config::class.annotations)
+            val checkActions = checkActions(flags)
+            val recordRestarts = if (!checkActions) false else recordRestarts(flags)
+            val globalAction = getAction(config::class.annotations)
             val ignoreVisibility = isIgnoreVisibility(config::class) || ignoreVisibility(flags)
+
             val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             for (prop in config.javaClass.kotlin.memberProperties.filter {
@@ -412,10 +418,17 @@ internal object ConfigApiImpl {
                     continue
                 }
                 if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
-                    val action = requiredAction(prop.annotations, globalIsRequiresRestart)
-                    val result = if(checkForRestart && propVal is Supplier<*> && action != null) {
+                    val action = requiredAction(prop.annotations, globalAction)
+                    val result = if(checkActions && propVal is Supplier<*> && action != null) {
                         val before = propVal.get()
-                        propVal.deserializeEntry(tomlElement, errorBuilder, name, flags).also { r -> if(r.get() != before) restartNeeded.add(action) }
+                        propVal.deserializeEntry(tomlElement, errorBuilder, name, flags).also { r ->
+                            if(r.get() != before) {
+                                restartNeeded.add(action)
+                                if(recordRestarts && action.restartPrompt) {
+                                    restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
+                                }
+                            }
+                        }
                     } else {
                         propVal.deserializeEntry(tomlElement, errorBuilder, name, flags)
                     }
@@ -428,9 +441,14 @@ internal object ConfigApiImpl {
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, flags)
                         try {
-                            val action = requiredAction(prop.annotations, globalIsRequiresRestart)
-                            if(checkForRestart && action != null)
-                                if (propVal != thing.get()) restartNeeded.add(action)
+                            val action = requiredAction(prop.annotations, globalAction)
+                            if(checkActions && action != null)
+                                if (propVal != thing.get()) {
+                                    restartNeeded.add(action)
+                                    if(recordRestarts && action.restartPrompt) {
+                                        restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
+                                    }
+                                }
                             if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                             prop.setter.call(config, thing.get())
                         } catch(e: Exception) {
@@ -438,10 +456,17 @@ internal object ConfigApiImpl {
                         }
                     } else {
                         try {
-                            val action = requiredAction(prop.annotations, globalIsRequiresRestart)
-                            if(checkForRestart && action != null) {
+                            val action = requiredAction(prop.annotations, globalAction)
+                            if(checkActions && action != null) {
                                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
-                                prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop).also{ if (propVal != it) restartNeeded.add(action) })
+                                prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop).also{
+                                    if (propVal != it) {
+                                        restartNeeded.add(action)
+                                        if(recordRestarts && action.restartPrompt) {
+                                            restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
+                                        }
+                                    }
+                                })
                             } else {
                                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                                 prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop))
@@ -456,7 +481,7 @@ internal object ConfigApiImpl {
         } catch (e: Exception) {
             errorBuilder.add("Critical error encountered while deserializing")
         }
-        return ValidationResult.predicated(ConfigContext(config).withFlag(RESTART_KEY, restartNeeded), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
+        return ValidationResult.predicated(ConfigContext(config).withContext(ACTIONS, restartNeeded).withContext(RESTART_RECORDS, restartRecords), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
     }
 
     internal fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
@@ -474,16 +499,18 @@ internal object ConfigApiImpl {
         } else {
             -1 //error state, pass back non-valid version number
         }
-        return deserializeFromToml(config, toml, errorBuilder, flags).let { it.wrap(it.get().withFlag(VERSION_KEY ,version)) }
+        return deserializeFromToml(config, toml, errorBuilder, flags).let { it.wrap(it.get().withContext(VERSIONS ,version)) }
     }
 
 
     private fun <T: Any> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
-        val restartNeeded: MutableSet<Action> = mutableSetOf()
+        val actionsNeeded: MutableSet<Action> = mutableSetOf()
+        val restartRecords: MutableSet<String> = mutableSetOf()
         try {
-            val checkForRestart = checkActions(flags)
-            val globalIsRequiresRestart = getAction(config::class.annotations)
+            val checkActions = checkActions(flags)
+            val recordRestarts = if (!checkActions) false else recordRestarts(flags)
+            val globalAction = getAction(config::class.annotations)
 
             if (toml !is TomlTable) {
                 errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
@@ -491,10 +518,17 @@ internal object ConfigApiImpl {
             }
             walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, str, v, prop, annotations, _ -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
-                    val action = requiredAction(prop.annotations, globalIsRequiresRestart)
-                    if(checkForRestart && v is Supplier<*> && action != null) {
+                    val action = requiredAction(prop.annotations, globalAction)
+                    if(checkActions && v is Supplier<*> && action != null) {
                         val before = v.get()
-                        v.deserializeEntry(it, errorBuilder, str, flags).also { r -> if(r.get() != before) restartNeeded.add(action) }
+                        v.deserializeEntry(it, errorBuilder, str, flags).also { r ->
+                            if(r.get() != before) {
+                                actionsNeeded.add(action)
+                                if(recordRestarts && action.restartPrompt) {
+                                    restartRecords.add(str)
+                                }
+                            }
+                        }
                     } else {
                         v.deserializeEntry(it, errorBuilder, str, flags)
                     }
@@ -504,9 +538,14 @@ internal object ConfigApiImpl {
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(it, errorBuilder, str, flags)
                         try {
-                            val action = requiredAction(prop.annotations, globalIsRequiresRestart)
-                            if(checkForRestart && action != null)
-                                if (v != thing.get()) restartNeeded.add(action)
+                            val action = requiredAction(prop.annotations, globalAction)
+                            if(checkActions && action != null)
+                                if (v != thing.get()) {
+                                    actionsNeeded.add(action)
+                                    if(recordRestarts && action.restartPrompt) {
+                                        restartRecords.add(str)
+                                    }
+                                }
                             prop.setter.call(config, thing.get()) //change?
                         } catch(e: Exception) {
                             errorBuilder.add("Error deserializing basic validation [$str]: ${e.localizedMessage}")
@@ -518,7 +557,7 @@ internal object ConfigApiImpl {
         } catch(e: Exception) {
             errorBuilder.add("Critical error encountered while deserializing update")
         }
-        return ValidationResult.predicated(ConfigContext(config).withFlag(RESTART_KEY, restartNeeded), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
+        return ValidationResult.predicated(ConfigContext(config).withContext(ACTIONS, actionsNeeded).withContext(RESTART_RECORDS, restartRecords), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
     }
 
     internal fun <T: Any> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
@@ -830,6 +869,10 @@ internal object ConfigApiImpl {
 
     private fun ignoreVisibility(flags: Byte): Boolean {
         return flags and 4.toByte() == 4.toByte()
+    }
+
+    private fun recordRestarts(flags: Byte): Boolean {
+        return flags and 8.toByte() == 8.toByte()
     }
 
     ///////////////// END Flags ///////////////////////////////////////////////////////////
