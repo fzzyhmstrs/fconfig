@@ -329,10 +329,10 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>): Boolean {
         val client = MinecraftClient.getInstance()
-        if(client.server != null && client?.server?.isSingleplayer == true) return true //single player, they can do what they want!!
+        if(client.isInSingleplayer) return true //single player, they can do what they want!!
         // 1. NonSync wins over everything, even whole config annotations
         if (ConfigApiImpl.isNonSync(annotations)) return true
-        
+
         val configAnnotations = config::class.annotations
         // 2. whole-config ClientModifiable
         for (annotation in configAnnotations) {
@@ -345,8 +345,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 return true
         }
 
-        if (!client.isConnectedToServer()) return false
-        
+        //not in a game, can't send packets so can't know your permissions for realz
+        if (client.world == null || client.networkHandler == null) return false
+
         for (annotation in annotations) {
             //4. per-setting WithCustomPerms
             if (annotation is WithCustomPerms) {
