@@ -12,7 +12,6 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.annotations.Action
-import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
@@ -102,11 +101,12 @@ internal open class BaseConfigEntry(
         )
         if (actions.isNotEmpty()) {
             var offset = -24
+            val offsetIncrement = if(actions.size == 1) 20 else min(20, (x - 24) / (actions.size - 1))
             for (action in actions) {
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
                 context.drawGuiTexture(action.sprite, x + offset, y, 20, 20)
-                offset -= 24
+                offset -= offsetIncrement
             }
         }
         if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null) {
