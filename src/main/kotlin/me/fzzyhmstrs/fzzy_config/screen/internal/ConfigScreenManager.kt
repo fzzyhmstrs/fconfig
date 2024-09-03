@@ -81,6 +81,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
         manager = ConfigUpdateManager(configs, forwardedUpdates, ConfigApiImplClient.getPlayerPermissionLevel())
         cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
         cachedPerms = ConfigApiImplClient.getPerms()
+        println(cachedPerms)
+        println(cachedPerms)
         prepareScreens()
     }
 
@@ -238,7 +240,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val fieldName = new.substringAfterLast('.')
                 val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
                 nameMap[new] = name
-                if(hasNeededPermLevel(playerPermLevel, config, prefix, annotations)) {
+                if(hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations)) {
                     thing.setUpdateManager(manager)
                     manager.setUpdatableEntry(thing)
                     if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
@@ -260,7 +262,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     basicValidation2.setEntryKey(new)
                     val name = basicValidation2.translation()
                     nameMap[new] = name
-                    if(hasNeededPermLevel(playerPermLevel, config, prefix, annotations)) {
+                    if(hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations)) {
                         basicValidation2.setUpdateManager(manager)
                         manager.setUpdatableEntry(basicValidation2)
                         if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
@@ -327,9 +329,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
     }
 
-    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, id: String, annotations: List<Annotation>): Boolean {
-        val client = MinecraftClient.getInstance()
-        if(client.server != null && client?.server?.isSingleplayer == true) return true //single player, they can do what they want!!
+    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>): Boolean {
+        //val client = MinecraftClient.getInstance()
+        //if(client.server != null && client?.server?.isSingleplayer == true) return true //single player, they can do what they want!!
         // 1. NonSync wins over everything, even whole config annotations
         if (ConfigApiImpl.isNonSync(annotations)) return true
         val configAnnotations = config::class.annotations
@@ -346,8 +348,13 @@ internal class ConfigScreenManager(private val scope: String, private val config
         for (annotation in annotations) {
             //4. per-setting WithCustomPerms
             if (annotation is WithCustomPerms) {
-                for (perm in annotation.perms) {
-                    if(cachedPerms[id]?.get(perm) == true) return true
+                if(cachedPerms[configId]?.get(id) == true) {
+                    return true
+                }
+                return if (annotation.fallback >= 0) {
+                    playerPermLevel >= annotation.fallback
+                } else {
+                    false
                 }
             }
             //5. per-setting WithPerms
@@ -357,8 +364,13 @@ internal class ConfigScreenManager(private val scope: String, private val config
         for (annotation in configAnnotations) {
             //6. whole-config WithCustomPerms
             if (annotation is WithCustomPerms) {
-                for (perm in annotation.perms) {
-                    if(cachedPerms[id]?.get(perm) == true) return true
+                if(cachedPerms[configId]?.get(id) == true) {
+                    return true
+                }
+                return if (annotation.fallback >= 0) {
+                    playerPermLevel >= annotation.fallback
+                } else {
+                    false
                 }
             }
             //7. whole-config WithCustomPerms

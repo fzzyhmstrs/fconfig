@@ -21,7 +21,7 @@ object TestConfigClient {
     }
 
     var testConfig = ConfigApi.registerAndLoadConfig({ TestConfigImpl() }, RegisterType.CLIENT)
-    var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.CLIENT)
+    var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
     var testConfig3 = ConfigApi.registerAndLoadConfig({ TestConfigImpl3() }, RegisterType.CLIENT)
 
     var javaConfig = ConfigApi.registerAndLoadConfig({ JavaTestConfig() }, RegisterType.CLIENT)
