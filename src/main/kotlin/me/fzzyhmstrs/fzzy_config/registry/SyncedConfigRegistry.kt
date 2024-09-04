@@ -12,7 +12,6 @@ package me.fzzyhmstrs.fzzy_config.registry
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
@@ -199,6 +198,7 @@ internal object SyncedConfigRegistry {
                 }
             }
         }
+
         //receives an update from a permissible client, throwing a cheat warning to the logs and to online moderators if permissions don't match (and discarding the update)
         //deserializes the updates to server configs, then propagates the updates to other online clients
         ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.id){ server, serverPlayer, context, buf, sender ->
@@ -215,7 +215,7 @@ internal object SyncedConfigRegistry {
                     continue
                 }
 
-                if (!context.server().isSingleplayer) {
+                if (!context.player().server.isSingleplayer) {
                     val validationResult = ConfigApiImpl.validatePermissions(context.player(), id, config, configString)
 
                     if(validationResult.isError()) {
@@ -262,7 +262,7 @@ internal object SyncedConfigRegistry {
                 }
                 successfulUpdates[id] = configString
             }
-            if (!context.server().isSingleplayer) {
+            if (!context.player().server.isSingleplayer) {
                 for (player in context.player().server.playerManager.playerList) {
                     if (player == context.player()) continue // don't push back to the player that just sent the update
                     if (!ServerPlayNetworking.canSend(player, ConfigUpdateS2CCustomPayload.type)) continue
