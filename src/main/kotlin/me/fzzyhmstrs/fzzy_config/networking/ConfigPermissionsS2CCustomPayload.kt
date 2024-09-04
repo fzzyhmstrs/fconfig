@@ -24,7 +24,7 @@ class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: Mutable
     }
 
     companion object {
-        val type: Id<ConfigPermissionsS2CCustomPayload> = Id(Identifier.of("fzzy_config:config_perms_s2c"))
+        val type: Id<ConfigPermissionsS2CCustomPayload> = Id(Identifier("fzzy_config:config_perms_s2c"))
         val codec: PacketCodec<ByteBuf, ConfigPermissionsS2CCustomPayload> = PacketCodec.tuple(
             PacketCodecs.STRING,
             ConfigPermissionsS2CCustomPayload::id,
