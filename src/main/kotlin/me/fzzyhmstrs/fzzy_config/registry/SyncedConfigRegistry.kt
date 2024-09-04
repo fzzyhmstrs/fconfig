@@ -222,7 +222,7 @@ internal object SyncedConfigRegistry {
                     continue
                 }
 
-                if (!context.server().isSingleplayer) {
+                if (!context.player().server.isSingleplayer) {
                     val validationResult = ConfigApiImpl.validatePermissions(context.player(), id, config, configString)
 
                     if(validationResult.isError()) {
@@ -269,7 +269,7 @@ internal object SyncedConfigRegistry {
                 }
                 successfulUpdates[id] = configString
             }
-            if (!context.server().isSingleplayer) {
+            if (!context.player().server.isSingleplayer) {
                 for (player in context.player().server.playerManager.playerList) {
                     if (player == context.player()) continue // don't push back to the player that just sent the update
                     if (!ServerPlayNetworking.canSend(player, ConfigUpdateS2CCustomPayload.type)) continue
