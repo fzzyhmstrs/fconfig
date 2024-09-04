@@ -10,28 +10,20 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
-import io.netty.buffer.ByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.codec.PacketCodecs
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.network.packet.CustomPayload.Id
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
-class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: MutableMap<String, Boolean>): CustomPayload {
+class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: MutableMap<String, Boolean>) {
 
-    override fun getId(): Id<out CustomPayload> {
-        return type
+    constructor(buf: PacketByteBuf): this(buf.readString(), buf.readMap({i -> mutableMapOf()}, { b -> b.readString() }, { b -> b.readBoolean() }))
+
+    fun write(buf: PacketByteBuf) {
+        buf.writeString(id)
+        buf.writeMap(mutableMapOf<String, Boolean>(), { b, v -> b.writeString(v)}, { b, v -> b.writeBoolean(v) })
     }
 
     companion object {
-        val type: Id<ConfigPermissionsS2CCustomPayload> = Id(Identifier("fzzy_config:config_perms_s2c"))
-        val codec: PacketCodec<ByteBuf, ConfigPermissionsS2CCustomPayload> = PacketCodec.tuple(
-            PacketCodecs.STRING,
-            ConfigPermissionsS2CCustomPayload::id,
-            PacketCodecs.map({ mutableMapOf() }, PacketCodecs.STRING, PacketCodecs.BOOL),
-            ConfigPermissionsS2CCustomPayload::permissions,
-            ::ConfigPermissionsS2CCustomPayload
-        )
+        val id = Identifier("fzzy_config:config_perms_s2c")
     }
 
 }
