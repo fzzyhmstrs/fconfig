@@ -43,4 +43,6 @@ abstract class XplatUtils {
     abstract fun configName(): String //ConfigScreenManager
 
     abstract fun customScopes(): List<String> //ClientConfigRegistry
+
+    abstract fun hasPermission(player: ServerPlayerEntity, permission: String): Boolean //COnfigApiImpl, elsewhere??
 }
