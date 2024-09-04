@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.registry
 
-import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -23,7 +22,6 @@ import me.fzzyhmstrs.fzzy_config.networking.ConfigSyncS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateC2SCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.networking.SettingForwardCustomPayload
-import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -34,6 +32,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.client.MinecraftClient
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
 import java.time.Instant
@@ -54,10 +53,18 @@ import java.util.function.Function
 internal object SyncedConfigRegistry {
 
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
-    private val quarantinedUpdates : Object2ObjectLinkedOpenHashMap<String, QuarantinedUpdate> = Object2ObjectLinkedOpenHashMap()
+    private val quarantinedUpdates : LinkedHashMap<String, QuarantinedUpdate> = LimitedHashMap()
+
+    private class LimitedHashMap<K, V> : LinkedHashMap<K, V>() {
+
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<K, V>?): Boolean {
+            return this.size > 128
+        }
+
+    }
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
-        if (!ClientPlayNetworking.canSend(SettingForwardCustomPayload.type)) {
+        if (!ClientPlayNetworking.canSend(SettingForwardCustomPayload.id)) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
             FC.LOGGER.error("Can't forward setting; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("Setting not sent:")
@@ -65,11 +72,15 @@ internal object SyncedConfigRegistry {
             FC.LOGGER.warn(summary)
             return
         }
-        ClientPlayNetworking.send(SettingForwardCustomPayload(update, player, scope, summary))
+        val buf = PacketByteBufs.create()
+        val payload = SettingForwardCustomPayload(update, player, scope, summary)
+        payload.write(buf)
+
+        ClientPlayNetworking.send(SettingForwardCustomPayload.id, buf)
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
-        if (!ClientPlayNetworking.canSend(ConfigUpdateC2SCustomPayload.type)) {
+        if (!ClientPlayNetworking.canSend(ConfigUpdateC2SCustomPayload.id)) {
             FC.LOGGER.error("Can't send Config Update; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("changes not sent:")
             for (change in changeHistory) {
@@ -77,7 +88,11 @@ internal object SyncedConfigRegistry {
             }
             return
         }
-        ClientPlayNetworking.send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
+        val buf = PacketByteBufs.create()
+        val payload = ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm)
+        payload.write(buf)
+
+        ClientPlayNetworking.send(ConfigUpdateC2SCustomPayload.id, buf)
     }
 
     internal fun registerClient() {
@@ -112,7 +127,9 @@ internal object SyncedConfigRegistry {
         }
 
         //receives a permission report for a config for the client player.
-        ClientPlayNetworking.registerGlobalReceiver(ConfigPermissionsS2CCustomPayload.type) { payload, _ ->
+        ClientPlayNetworking.registerGlobalReceiver(ConfigPermissionsS2CCustomPayload.id) { _, _, buf, _ ->
+            val payload = ConfigPermissionsS2CCustomPayload(buf)
+
             val id = payload.id
             val perms = payload.permissions
             ConfigApiImplClient.updatePerms(id, perms)
@@ -166,12 +183,14 @@ internal object SyncedConfigRegistry {
     internal fun registerAll() {
         ServerPlayConnectionEvents.JOIN.register { handler, sender, server ->
             if (server.isSingleplayer) return@register
-            if (!ServerPlayNetworking.canSend(handler.player, ConfigPermissionsS2CCustomPayload.type)) return@register
+            if (!ServerPlayNetworking.canSend(handler.player, ConfigPermissionsS2CCustomPayload.id)) return@register
             val player = handler.player
             for ((id, config) in syncedConfigs) {
                 val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
+                val buf = PacketByteBufs.create()
                 val payload = ConfigPermissionsS2CCustomPayload(id, perms)
-                sender.sendPacket(payload)
+                payload.write(buf)
+                sender.sendPacket(ConfigPermissionsS2CCustomPayload.id, buf)
             }
         }
 
@@ -180,7 +199,7 @@ internal object SyncedConfigRegistry {
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, _ ->
             val players = server.playerManager.playerList
             for (player in players) {
-                if (!ServerPlayNetworking.canSend(player, ConfigSyncS2CCustomPayload.type)) continue
+                if (!ServerPlayNetworking.canSend(player, ConfigSyncS2CCustomPayload.id)) continue
                 for ((id, config) in syncedConfigs) {
                     val syncErrors = mutableListOf<String>()
                     val syncPayload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
@@ -189,12 +208,14 @@ internal object SyncedConfigRegistry {
                         syncError.writeError(syncErrors)
                     }
                     val buf = PacketByteBufs.create()
-                    payload.write(buf)
+                    syncPayload.write(buf)
                     ServerPlayNetworking.send(player, ConfigSyncS2CCustomPayload.id, buf)
-                    if (!ServerPlayNetworking.canSend(player, ConfigPermissionsS2CCustomPayload.type)) continue
+                    if (!ServerPlayNetworking.canSend(player, ConfigPermissionsS2CCustomPayload.id)) continue
                     val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
+                    val buf2 = PacketByteBufs.create()
                     val permsPayload = ConfigPermissionsS2CCustomPayload(id, perms)
-                    ServerPlayNetworking.send(player, permsPayload)
+                    permsPayload.write(buf2)
+                    ServerPlayNetworking.send(player, ConfigPermissionsS2CCustomPayload.id, buf2)
                 }
             }
         }
@@ -215,28 +236,25 @@ internal object SyncedConfigRegistry {
                     continue
                 }
 
-                if (!context.player().server.isSingleplayer) {
-                    val validationResult = ConfigApiImpl.validatePermissions(context.player(), id, config, configString)
+                if (!serverPlayer.server.isSingleplayer) {
+                    val validationResult = ConfigApiImpl.validatePermissions(serverPlayer, id, config, configString)
 
                     if(validationResult.isError()) {
 
-                        FC.LOGGER.error("Player [${context.player().name}] may have tried to cheat changes onto the Server Config! Problem settings found: ${validationResult.get().joinToString(" | ")}")
+                        FC.LOGGER.error("Player [${serverPlayer.name}] may have tried to cheat changes onto the Server Config! Problem settings found: ${validationResult.get().joinToString(" | ")}")
                         FC.LOGGER.error("This update has not been applied, and has been moved to quarantine. Use the configure_update command to inspect and permit or deny the update.")
                         FC.LOGGER.warn("If no action is taken, the quarantined update will be flushed on the next server restart, and its changes will not be applied")
 
                         val changes = payload.changeHistory
-                        ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), context.player())
+                        ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), serverPlayer)
 
-                        val quarantine = QuarantinedUpdate(context.player().uuid, changes, id, configString)
-                        val quarantineId = id + " @" + context.player().name.string + " @" + formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.systemDefault()))
+                        val quarantine = QuarantinedUpdate(serverPlayer.uuid, changes, id, configString)
+                        val quarantineId = id + " @" + serverPlayer.name.string + " @" + formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.systemDefault()))
                         quarantinedUpdates[quarantineId] = quarantine
-                        if (quarantinedUpdates.size > 128) {
-                            quarantinedUpdates.pollFirstEntry()
-                        }
 
-                        for (player in context.player().server.playerManager.playerList) {
+                        for (player in serverPlayer.server.playerManager.playerList) {
                             if(ConfigApiImpl.isConfigAdmin(player, config))
-                                player.sendMessageToClient("fc.networking.permission.cheat".translate(context.player().name), false)
+                                player.sendMessageToClient("fc.networking.permission.cheat".translate(serverPlayer.name), false)
                             player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" inspect")) }, false)
                             player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" accept")) }, false)
                             player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" reject")) }, false)
@@ -262,12 +280,14 @@ internal object SyncedConfigRegistry {
                 }
                 successfulUpdates[id] = configString
             }
-            if (!context.player().server.isSingleplayer) {
-                for (player in context.player().server.playerManager.playerList) {
-                    if (player == context.player()) continue // don't push back to the player that just sent the update
-                    if (!ServerPlayNetworking.canSend(player, ConfigUpdateS2CCustomPayload.type)) continue
+            if (!serverPlayer.server.isSingleplayer) {
+                for (player in serverPlayer.server.playerManager.playerList) {
+                    if (player == serverPlayer) continue // don't push back to the player that just sent the update
+                    if (!ServerPlayNetworking.canSend(player, ConfigUpdateS2CCustomPayload.id)) continue
+                    val buf = PacketByteBufs.create()
                     val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
-                    ServerPlayNetworking.send(player, newPayload)
+                    newPayload.write(buf)
+                    ServerPlayNetworking.send(player, ConfigUpdateS2CCustomPayload.id, buf)
                 }
             }
             val changes = payload.changeHistory
@@ -279,15 +299,14 @@ internal object SyncedConfigRegistry {
             val payload = SettingForwardCustomPayload(buf)
             val uuid = payload.player
             val receivingPlayer = serverPlayer.server.playerManager.getPlayer(uuid) ?: return@registerGlobalReceiver
-            if (!ServerPlayNetworking.canSend(receivingPlayer, SettingForwardCustomPayload.type)) {
+            if (!ServerPlayNetworking.canSend(receivingPlayer, SettingForwardCustomPayload.id)) {
                 serverPlayer.sendMessage("fc.config.forwarded_error.s2c".translate())
                 return@registerGlobalReceiver
             }
             val scope = payload.scope
             val update = payload.update
             val summary = payload.summary
-            val sendingPlayer = serverPlayer
-            val newPayload = SettingForwardCustomPayload(update, sendingPlayer.uuid, scope, summary)
+            val newPayload = SettingForwardCustomPayload(update, serverPlayer.uuid, scope, summary)
             val newBuf = PacketByteBufs.create()
             newPayload.write(newBuf)
             ServerPlayNetworking.send(receivingPlayer, SettingForwardCustomPayload.id, newBuf)
@@ -318,7 +337,7 @@ internal object SyncedConfigRegistry {
     internal fun acceptQuarantine(id: String, server: MinecraftServer) {
         val quarantinedUpdate = quarantinedUpdates[id] ?: return
         val config = syncedConfigs[quarantinedUpdate.configId]
-        val player = server.playerManager.getPlayer(uuid)
+        val player = server.playerManager.getPlayer(quarantinedUpdate.playerUuid)
         if (config != null) {
             val errors = mutableListOf<String>()
 
@@ -331,17 +350,21 @@ internal object SyncedConfigRegistry {
             }
             for (p in server.playerManager.playerList) {
                 if (p == player) continue // don't push back to the player that just sent the update
-                if (!ServerPlayNetworking.canSend(p, ConfigUpdateS2CCustomPayload.type)) continue
-                val newPayload = ConfigUpdateS2CCustomPayload(mapOf(quarantinedUpdate.id to quarantinedUpdate.configString))
-                ServerPlayNetworking.send(player, newPayload)
+                if (!ServerPlayNetworking.canSend(p, ConfigUpdateS2CCustomPayload.id)) continue
+                val buf = PacketByteBufs.create()
+                val newPayload = ConfigUpdateS2CCustomPayload(mapOf(quarantinedUpdate.configId to quarantinedUpdate.configString))
+                newPayload.write(buf)
+                ServerPlayNetworking.send(player, ConfigUpdateS2CCustomPayload.id, buf)
             }
         }
         player?.let {
-            if (ServerPlayNetworking.canSend(player, ConfigPermissionsS2CCustomPayload.type)) {
+            if (ServerPlayNetworking.canSend(player, ConfigPermissionsS2CCustomPayload.id)) {
                 for ((id2, config2) in syncedConfigs) {
                     val perms = ConfigApiImpl.generatePermissionsReport(player, config2, 0)
+                    val buf = PacketByteBufs.create()
                     val payload = ConfigPermissionsS2CCustomPayload(id2, perms)
-                    ServerPlayNetworking.send(player, payload)
+                    payload.write(buf)
+                    ServerPlayNetworking.send(player, ConfigPermissionsS2CCustomPayload.id, buf)
                 }
             }
         }

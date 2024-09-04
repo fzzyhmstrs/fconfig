@@ -34,6 +34,7 @@ import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
 import org.joml.Vector2i
 import org.joml.Vector2ic
+import kotlin.math.min
 
 @Environment(EnvType.CLIENT)
 internal open class BaseConfigEntry(
