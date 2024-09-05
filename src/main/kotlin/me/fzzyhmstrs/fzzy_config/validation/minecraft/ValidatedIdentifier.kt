@@ -28,8 +28,6 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Compan
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofRegistry
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofTag
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -159,7 +157,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         return input is Identifier && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {
         return OnClickTextFieldWidget({ this.get().toString() }, { it, isKb, key, code, mods ->
             val textField = PopupIdentifierTextFieldWidget(170, 20, choicePredicate, this)
@@ -613,7 +611,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         }
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private class PopupIdentifierTextFieldWidget(
         width: Int,
         height: Int,

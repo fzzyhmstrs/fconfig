@@ -16,12 +16,9 @@ import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.command.CommandSource
 import java.util.concurrent.CompletableFuture
 
-@Environment(EnvType.CLIENT)
 internal class QuarantinedUpdatesArgumentType: ArgumentType<String> {
 
     override fun parse(reader: StringReader): String {

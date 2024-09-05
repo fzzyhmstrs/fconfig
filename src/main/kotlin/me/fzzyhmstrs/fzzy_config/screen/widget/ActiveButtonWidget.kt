@@ -34,7 +34,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Environment(EnvType.CLIENT)
+//client
 open class ActiveButtonWidget(
     private val titleSupplier: Supplier<Text>,
     width: Int,

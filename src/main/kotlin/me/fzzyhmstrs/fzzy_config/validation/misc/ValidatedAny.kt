@@ -36,8 +36,6 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.contextualize
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
@@ -119,7 +117,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return DecoratedActiveButtonWidget("fc.validated_field.object".translate(), 110, 20, "widget/decoration/object".fcId(), { true }, { openObjectPopup() })
     }
@@ -141,7 +139,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         return noArgsConstructor.callBy(emptyMap())
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private fun openObjectPopup() {
         val newThing = copyStoredValue()
         val newNewThing = try{ createInstance() } catch (e: Exception) { defaultValue }
@@ -198,7 +196,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         return ConfigApiImpl.getActions(storedValue, ConfigApiImpl.IGNORE_NON_SYNC)
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private class ValidatedObjectUpdateManager<T: Any>(private val thing: T, private val key: String): BaseUpdateManager() {
 
         private val updatableEntries: MutableMap<String, Updatable> = mutableMapOf()
