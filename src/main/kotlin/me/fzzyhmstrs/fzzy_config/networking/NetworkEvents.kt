@@ -68,7 +68,7 @@ internal object NetworkEvents {
         ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
             SyncedConfigRegistry.receiveConfigUpdate(
                 payload.updates,
-                context.server(),
+                context.player().server,
                 context.player(),
                 payload.changeHistory,
                 { player, id -> ServerPlayNetworking.canSend(player, id) },
