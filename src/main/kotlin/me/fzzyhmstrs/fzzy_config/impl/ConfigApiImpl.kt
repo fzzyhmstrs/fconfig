@@ -32,14 +32,12 @@ import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.updates.BasicValidationProvider
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.number.*
-import me.lucko.fabric.api.permissions.v0.Permissions
-import net.fabricmc.api.EnvType
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.MathHelper
@@ -58,7 +56,7 @@ import kotlin.reflect.jvm.javaField
 internal object ConfigApiImpl {
 
     private val isClient by lazy {
-        FabricLoader.getInstance().environmentType == EnvType.CLIENT
+        PlatformUtils.isClient()
     }
 
     internal const val CHECK_NON_SYNC: Byte = 0
@@ -587,7 +585,7 @@ internal object ConfigApiImpl {
         walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _ ->
             annotations.firstOrNull { it is WithCustomPerms }?.cast<WithCustomPerms>()?.let {
                 for (group in it.perms) {
-                    if (Permissions.check(player, group)) {
+                    if (PlatformUtils.hasPermission(player, group)) {
                         map[key] = true
                         break
                     }
@@ -634,7 +632,7 @@ internal object ConfigApiImpl {
             return player.hasPermissionLevel(3)
         }
         for (perm in annotation.perms) {
-            if(Permissions.check(player, perm)) {
+            if(PlatformUtils.hasPermission(player, perm)) {
                 return true
             }
         }
@@ -654,12 +652,12 @@ internal object ConfigApiImpl {
 
     internal fun makeDir(folder: String, subfolder: String): Pair<File, Boolean> {
         val dir = if (subfolder != "") {
-            File(File(FabricLoader.getInstance().configDir.toFile(), folder), subfolder)
+            File(File(PlatformUtils.configDir(), folder), subfolder)
         } else {
             if (folder != "") {
-                File(FabricLoader.getInstance().configDir.toFile(), folder)
+                File(PlatformUtils.configDir(), folder)
             } else {
-                FabricLoader.getInstance().configDir.toFile()
+                PlatformUtils.configDir()
             }
         }
         if (!dir.exists() && !dir.mkdirs()) {
@@ -823,7 +821,7 @@ internal object ConfigApiImpl {
             //4. per-setting WithCustomPerms
             if (annotation is WithCustomPerms) {
                for (perm in annotation.perms) {
-                    if(Permissions.check(player, perm)) {
+                    if(PlatformUtils.hasPermission(player, perm)) {
                         return true
                     }
                 }
@@ -839,7 +837,7 @@ internal object ConfigApiImpl {
             //6. whole-config WithCustomPerms
             if (annotation is WithCustomPerms) {
                 for (perm in annotation.perms) {
-                    if(Permissions.check(player, perm)) {
+                    if(PlatformUtils.hasPermission(player, perm)) {
                         return true
                     }
                 }
