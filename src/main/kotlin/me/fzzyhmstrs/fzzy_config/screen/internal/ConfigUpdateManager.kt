@@ -16,7 +16,7 @@ import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
-import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
@@ -184,7 +184,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         if (count > 0) {
             //send updates to the server for distribution and saving there
             val updates = this.configs.filter { !it.clientOnly }.associate { it.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.active, this, mutableListOf()) }
-            SyncedConfigRegistry.updateServer(updates, flush(), perms)
+            NetworkEventsClient.updateServer(updates, flush(), perms)
         } else {
             ConfigApiImpl.printChangeHistory(flush(), configs.map { it.active }.toString(), MinecraftClient.getInstance().player)
         }

@@ -54,7 +54,7 @@
       "update_checker": false
     },
     "catalogue": {
-      "configFactory": "me.fzzyhmstrs.fzzy_config.impl.ConfigCatalogueCompat"
+      "configFactory": "me.fzzyhmstrs.fzzy_config.util.PlatformUtils"
     }
   }
 }

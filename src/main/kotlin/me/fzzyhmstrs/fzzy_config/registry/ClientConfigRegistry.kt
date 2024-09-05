@@ -12,17 +12,24 @@ package me.fzzyhmstrs.fzzy_config.registry
 
 import com.google.common.collect.HashMultimap
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import net.fabricmc.loader.api.FabricLoader
-import net.fabricmc.loader.api.metadata.CustomValue
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.text.Text
 import java.util.*
-import kotlin.collections.HashMap
+import java.util.function.Consumer
 
 /**
  * Client registry for [Config] instances. Handles GUIs.
@@ -40,17 +47,59 @@ internal object ClientConfigRegistry {
     private var hasScrapedMetadata = false
 
     @Environment(EnvType.CLIENT)
+    fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
+        if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
+            val config = SyncedConfigRegistry.syncedConfigs()[id] ?: return
+            val errors = mutableListOf<String>()
+            val result = ConfigApi.deserializeConfig(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
+            val actions = result.get().getOrDefault(ACTIONS, setOf())
+            result.writeError(errors)
+            result.get().config.save() //save config to the client
+            if (actions.any { it.restartPrompt }) {
+                MinecraftClient.getInstance().execute {
+                    val records = result.get().get(RESTART_RECORDS)
+                    if (!records.isNullOrEmpty()) {
+                        FC.LOGGER.info("Client prompted for a restart due to received config updates")
+                        FC.LOGGER.info("Restart-prompting updates:")
+                        for (record in records) {
+                            FC.LOGGER.info(record)
+                        }
+                    }
+                    disconnector.accept(FcText.translatable("fc.networking.restart"))
+                    ConfigApiImpl.openRestartScreen()
+                }
+            }
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
+    fun receivePerms(id: String, perms: Map<String, Boolean>) {
+        updatePerms(id, perms)
+    }
+
+    @Environment(EnvType.CLIENT)
+    fun receiveUpdate(serializedConfigs: Map<String, String>, player: PlayerEntity) {
+        for ((id, configString) in serializedConfigs) {
+            if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
+                val config = SyncedConfigRegistry.syncedConfigs()[id] ?: return
+                val errors = mutableListOf<String>()
+                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS)
+                val actions = result.get().getOrDefault(ACTIONS, setOf())
+                result.writeError(errors)
+                result.get().config.save()
+                for (action in actions) {
+                    player.sendMessage(action.clientPrompt)
+                }
+            }
+        }
+    }
+
+    @Environment(EnvType.CLIENT)
     internal fun getScreenScopes(): Set<String> {
         if (!hasScrapedMetadata) {
             val set = mutableSetOf(*validScopes.toTypedArray())
-            for (container in FabricLoader.getInstance().allMods) {
-                val customValue = container.metadata.getCustomValue("fzzy_config") ?: continue
-                if (customValue.type != CustomValue.CvType.ARRAY) continue
-                val arrayValue = customValue.asArray
-                for (thing in arrayValue) {
-                    if (thing.type != CustomValue.CvType.STRING) continue
-                    set.add(thing.asString)
-                }
+            for (scope in PlatformUtils.customScopes()) {
+                set.add(scope)
             }
             hasScrapedMetadata = true
             return set.toSet()

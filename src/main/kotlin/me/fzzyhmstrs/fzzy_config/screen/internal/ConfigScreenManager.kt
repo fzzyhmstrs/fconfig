@@ -20,7 +20,7 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
-import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SectionConfigEntry
@@ -39,12 +39,12 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
-import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
@@ -192,7 +192,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val functionMap: MutableMap<String, SortedMap<Int, Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>> = mutableMapOf()
         val nameMap: MutableMap<String, Text> = mutableMapOf()
         val actionMap: MutableMap<String, MutableSet<Action>> = mutableMapOf()
-        nameMap[scope] = FabricLoader.getInstance().getModContainer(this.scope)?.get()?.metadata?.name?.lit() ?: "Config Root".lit()
+        nameMap[scope] = PlatformUtils.configName(this.scope, "Config Root").lit()
         for ((i, config) in configs.withIndex()) {
             functionMap.computeIfAbsent(scope) { sortedMapOf()}[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(config.active.translation(), config.active.description(), config.active.getId().toTranslationKey()))
             walkConfig(config, functionMap, nameMap, actionMap, if(config.clientOnly) 4 else playerPermLevel)
@@ -498,7 +498,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val id = playerListEntry.profile.id
         val key = entry.getEntryKey()
         val summary = entry.get().toString()
-        SyncedConfigRegistry.forwardSetting(update, id, key, summary)
+        NetworkEventsClient.forwardSetting(update, id, key, summary)
     }
 
     ///////////////////////////////////////

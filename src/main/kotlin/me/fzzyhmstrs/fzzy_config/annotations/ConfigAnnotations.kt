@@ -12,13 +12,12 @@ package me.fzzyhmstrs.fzzy_config.annotations
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
+import me.fzzyhmstrs.fzzy_config.annotations.Action.RESTART
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
-import kotlin.reflect.KClass
 
 /**
  * A config marked with this annotation will attempt to ignore field visibility when de/serializing
