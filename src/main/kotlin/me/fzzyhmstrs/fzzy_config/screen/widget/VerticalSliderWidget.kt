@@ -14,8 +14,6 @@ import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.navigation.GuiNavigationType
@@ -44,7 +42,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Environment(EnvType.CLIENT)
+//client
 class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y: Int, width: Int, height: Int, message: Text, private val valueApplier: Consumer<Double>)
     :
     ClickableWidget(x, y, width, height, message)

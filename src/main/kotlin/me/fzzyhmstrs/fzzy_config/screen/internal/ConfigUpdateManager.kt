@@ -26,8 +26,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -43,7 +41,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-@Environment(EnvType.CLIENT)
+//client
 internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private val forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, private val perms: Int): BaseUpdateManager() {
 
     private val updatableEntries: MutableMap<String, Updatable> = mutableMapOf()

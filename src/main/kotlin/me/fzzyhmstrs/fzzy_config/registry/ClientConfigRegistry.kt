@@ -22,8 +22,6 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
@@ -36,7 +34,7 @@ import java.util.function.Consumer
  *
  * This is not a "true" registry in the Minecraft since; as such there are not the typical helper methods like get(), getId(), etc. This registry's scope is much narrower, handling synchronization and updates of Configs.
  */
-@Environment(EnvType.CLIENT)
+//client
 internal object ClientConfigRegistry {
 
     private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
@@ -46,8 +44,8 @@ internal object ClientConfigRegistry {
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
     private var hasScrapedMetadata = false
 
-    @Environment(EnvType.CLIENT)
-    fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
+    //client
+    internal fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
             val config = SyncedConfigRegistry.syncedConfigs()[id] ?: return
             val errors = mutableListOf<String>()
@@ -72,13 +70,13 @@ internal object ClientConfigRegistry {
         }
     }
 
-    @Environment(EnvType.CLIENT)
-    fun receivePerms(id: String, perms: Map<String, Boolean>) {
+    //client
+    internal fun receivePerms(id: String, perms: Map<String, Boolean>) {
         updatePerms(id, perms)
     }
 
-    @Environment(EnvType.CLIENT)
-    fun receiveUpdate(serializedConfigs: Map<String, String>, player: PlayerEntity) {
+    //client
+    internal fun receiveUpdate(serializedConfigs: Map<String, String>, player: PlayerEntity) {
         for ((id, configString) in serializedConfigs) {
             if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
                 val config = SyncedConfigRegistry.syncedConfigs()[id] ?: return
@@ -94,7 +92,7 @@ internal object ClientConfigRegistry {
         }
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     internal fun getScreenScopes(): Set<String> {
         if (!hasScrapedMetadata) {
             val set = mutableSetOf(*validScopes.toTypedArray())
@@ -108,12 +106,12 @@ internal object ClientConfigRegistry {
         }
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     internal fun getSubScreenScopes(parentScope: String): Set<String> {
         return validSubScopes.get(parentScope)
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     internal fun openScreen(scope: String) {
         val namespaceScope = getValidScope(scope)
         if (namespaceScope == null) {
@@ -128,7 +126,7 @@ internal object ClientConfigRegistry {
         manager.openScreen(scope)
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     internal fun provideScreen(scope: String): Screen? {
         val namespaceScope = getValidScope(scope)
         if (namespaceScope == null) {
@@ -143,19 +141,19 @@ internal object ClientConfigRegistry {
         return manager.provideScreen(scope)
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     internal fun getPerms(): Map<String, Map<String, Boolean>> {
         return HashMap(customPermissions)
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     internal fun updatePerms(id: String, perms: Map<String, Boolean>) {
         customPermissions[id] = perms
         println("received perms")
         println(customPermissions)
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     internal fun handleForwardedUpdate(update: String, player: UUID, scope: String, summary: String) {
         val namespaceScope = getValidScope(scope)
         if (namespaceScope == null) {
@@ -170,7 +168,7 @@ internal object ClientConfigRegistry {
         manager.receiveForwardedUpdate(update, player, scope, summary)
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private fun getValidScope(scope: String): String? {
         if(validScopes.contains(scope)) return scope
         var validScopeTry = scope.substringBeforeLast('.')
@@ -181,7 +179,7 @@ internal object ClientConfigRegistry {
         return if(validScopes.contains(validScopeTry)) validScopeTry else null
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     internal fun registerConfig(config: Config, baseConfig: Config) {
         validScopes.add(config.getId().namespace)
         validSubScopes.put(config.getId().namespace, config.getId().path)

@@ -11,8 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
@@ -35,7 +33,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Environment(EnvType.CLIENT)
+//client
 class TextlessActionWidget(
     private val activeIcon: Identifier,
     private val inactiveIcon: Identifier,

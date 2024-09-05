@@ -12,8 +12,6 @@ package me.fzzyhmstrs.fzzy_config.screen
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -41,7 +39,7 @@ import java.util.*
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Environment(EnvType.CLIENT)
+//client
 open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
 
     override val popupWidgets: LinkedList<PopupWidget> = LinkedList()

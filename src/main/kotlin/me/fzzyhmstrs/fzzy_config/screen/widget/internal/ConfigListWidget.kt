@@ -15,8 +15,6 @@ import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -30,9 +28,9 @@ import net.minecraft.client.search.SuffixArray
 import java.util.*
 import java.util.function.Consumer
 
-@Environment(EnvType.CLIENT)
-internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, contentHeight: Int, listHeaderHeight: Int, drawBackground: Boolean) :
-    ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, listHeaderHeight, 24), LastSelectable, Widget, SuggestionWindowListener
+//client
+internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, contentHeight: Int, headerHeight: Int, private val drawBackground: Boolean) :
+    ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable, SuggestionWindowListener
 {
 
     constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient, parent.width, parent.layout.height - parent.layout.headerHeight - parent.layout.footerHeight, parent.layout.headerHeight, drawBackground)

@@ -15,15 +15,13 @@ import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DirectionalLayoutWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
 import net.minecraft.client.gui.widget.*
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 
-@Environment(EnvType.CLIENT)
+//client
 internal class RestartScreen: PopupWidgetScreen(FcText.empty()) {
 
     private val layout = ThreePartsLayoutWidget(this)

@@ -11,8 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.TextFieldWidget
@@ -28,7 +26,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Environment(EnvType.CLIENT)
+//client
 class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: OnInteractAction)
     :
     TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, 110, 20, FcText.empty())

@@ -12,12 +12,10 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 
-@Environment(EnvType.CLIENT)
+//client
 internal open class SectionConfigEntry(
     name: Text,
     description: Text,

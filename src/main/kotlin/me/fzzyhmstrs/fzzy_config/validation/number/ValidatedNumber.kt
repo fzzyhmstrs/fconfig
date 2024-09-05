@@ -22,8 +22,6 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.SLIDER
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -67,7 +65,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     protected abstract fun convert(input: Double): ValidationResult<T>
 
     @ApiStatus.Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType) {
             SLIDER -> {
@@ -128,7 +126,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         TEXTBOX
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
         ClickableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
         companion object {
@@ -276,7 +274,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     protected class ConfirmButtonTextFieldWidget<T: Number>(
         wrappedValue: Supplier<T>,
         choiceValidator: ChoiceValidator<T>,

@@ -19,8 +19,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.Tooltip
@@ -45,7 +43,7 @@ import java.util.function.Supplier
  * @since 0.2.0
  */
 @Suppress("LeakingThis")
-@Environment(EnvType.CLIENT)
+//client
 open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int, private val wrappedValue: Supplier<T>, private val choiceValidator: ChoiceValidator<T>, private val validationProvider: Function<Double, ValidationResult<T>>, private val applier: Consumer<T> = Consumer { _ ->}):
     TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.empty())
 {

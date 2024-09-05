@@ -43,8 +43,6 @@ import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ButtonWidget
@@ -59,7 +57,7 @@ import java.util.function.Function
 import kotlin.math.max
 import kotlin.math.min
 
-@Environment(EnvType.CLIENT)
+//client
 internal class ConfigScreenManager(private val scope: String, private val configs: List<ConfigSet>) {
 
     private val configMap: Map<String, Set<Config>>

@@ -23,8 +23,6 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.WidgetType
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -179,7 +177,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         return handler.validateEntry(input, type).also(choices.contains(input), "[$input] not a valid choice: [$choices]")
     }
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType) {
             WidgetType.POPUP -> {
@@ -237,7 +235,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         CYCLING
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private class ChoicePopupButtonWidget<T>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0, 0, 110, 20, FcText.empty()) {
 
         private val choices = entry.choices.filter {
@@ -303,7 +301,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         }
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val entry: ValidatedChoice<T>, private val valueApplier: Consumer<T>): PressableWidget(0, 0, width, 20, entry.translationProvider.apply(thisVal, entry.translationKey())) {
 
         init {
@@ -328,7 +326,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         }
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0, 0, 110, 20, entry.translationProvider.apply(entry.get(), entry.translationKey())) {
 
         private val choices = entry.choices.filter {

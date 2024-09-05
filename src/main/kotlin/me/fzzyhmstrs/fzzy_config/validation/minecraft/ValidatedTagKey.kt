@@ -23,8 +23,6 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
@@ -120,7 +118,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     }
 
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     private fun popupTagPopup(b: ClickableWidget, isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>>) {
         val entryValidator = EntryValidator<String>{s, _ -> Identifier.tryParse(s)?.let { validator.validateEntry(it, EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: ValidationResult.error(s, "invalid Identifier")}
         val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.registry, Identifier(e))) }

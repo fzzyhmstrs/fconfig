@@ -24,8 +24,6 @@ import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -43,7 +41,7 @@ import net.minecraft.util.Formatting
 import org.lwjgl.glfw.GLFW
 import java.util.function.Function
 
-@Environment(EnvType.CLIENT)
+//client
 internal class ConfigScreen(title: Text, private val scope: String, private val manager: UpdateManager, entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen, ClickableWidget>>) : PopupWidgetScreen(title) {
 
     private var parent: Screen? = null
