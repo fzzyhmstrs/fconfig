@@ -36,6 +36,7 @@ import net.minecraft.client.gui.widget.MultilineTextWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.data.server.tag.TagProvider
 import net.minecraft.item.Item
+import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.recipe.Ingredient
 import net.minecraft.registry.Registries
