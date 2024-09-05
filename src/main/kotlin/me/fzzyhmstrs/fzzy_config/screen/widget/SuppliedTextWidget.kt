@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.google.common.base.Supplier
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.screen.ScreenTexts
@@ -21,7 +20,6 @@ import net.minecraft.text.OrderedText
 import net.minecraft.text.StringVisitable
 import net.minecraft.text.Text
 import net.minecraft.util.Language
-import net.minecraft.util.math.MathHelper
 import kotlin.math.max
 import kotlin.math.roundToInt
 
