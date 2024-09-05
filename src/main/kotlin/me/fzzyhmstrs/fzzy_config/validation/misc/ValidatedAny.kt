@@ -146,7 +146,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         val newThing = copyStoredValue()
         val newNewThing = try{ createInstance() } catch (e: Exception) { defaultValue }
         val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
-        val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 0, false)
+        val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 160, 0, false)
         val globalAnnotations = newThing::class.annotations
         ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, _ ->
             val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)?.let { setOf(it) } ?: setOf()

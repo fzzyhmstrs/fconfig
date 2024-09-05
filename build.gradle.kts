@@ -115,7 +115,9 @@ dependencies {
     include("blue.endless:jankson:$janksonVersion")
 
     val fabricPermsVersion: String by project
-    modImplementation("me.lucko:fabric-permissions-api:$fabricPermsVersion")
+    modImplementation("me.lucko:fabric-permissions-api:$fabricPermsVersion"){
+        exclude("net.fabricmc.fabric-api")
+    }
     include("me.lucko:fabric-permissions-api:$fabricPermsVersion")
 
     val modmenuVersion: String by project
