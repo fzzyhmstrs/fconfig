@@ -64,6 +64,10 @@ internal object SyncedConfigRegistry {
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
     private val quarantinedUpdates : Object2ObjectLinkedOpenHashMap<String, QuarantinedUpdate> = Object2ObjectLinkedOpenHashMap()
 
+    internal fun syncedConfigs(): Map<String, Config> {
+        return syncedConfigs
+    }
+
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
         if (!ClientPlayNetworking.canSend(SettingForwardCustomPayload.type)) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
