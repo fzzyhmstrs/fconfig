@@ -17,8 +17,6 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -37,7 +35,7 @@ import org.joml.Vector2i
 import org.joml.Vector2ic
 import kotlin.math.min
 
-@Environment(EnvType.CLIENT)
+//client
 internal open class BaseConfigEntry(
     val name: Text,
     protected val description: Text,

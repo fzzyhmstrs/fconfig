@@ -16,12 +16,10 @@ import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.command.CommandSource
 import java.util.concurrent.CompletableFuture
 
-@Environment(EnvType.CLIENT)
+//client
 internal class ValidScopesArgumentType: ArgumentType<String> {
     override fun parse(reader: StringReader): String {
         return reader.readUnquotedString()

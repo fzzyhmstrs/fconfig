@@ -25,8 +25,6 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient.IngredientProvider
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Selectable
@@ -244,7 +242,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         return input is IngredientProvider
     }
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<IngredientProvider>): ClickableWidget {
         return DecoratedActiveButtonWidget("fc.validated_field.ingredient.edit".translate(), 110, 20, "widget/decoration/ingredient".fcId(), { true }, { openIngredientPopup(it) })
     }
@@ -256,7 +254,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
          return "Validated Ingredient[value=$storedValue, validation={$itemValidator, $tagValidator, $listItemValidator, $listTagValidator}]"
      }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private fun openIngredientPopup(b: ClickableWidget) {
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
@@ -279,7 +277,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         PopupWidget.push(popupNew)
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private fun fromLists(): IngredientProvider {
         if (listItemValidator.isEmpty() && listTagValidator.isEmpty())
             return ListProvider(setOf(), setOf())

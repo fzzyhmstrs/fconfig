@@ -17,9 +17,6 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.*
-import me.fzzyhmstrs.fzzy_config.networking.ConfigSyncS2CCustomPayload
-import me.fzzyhmstrs.fzzy_config.networking.ConfigUpdateS2CCustomPayload
-import me.fzzyhmstrs.fzzy_config.networking.SettingForwardCustomPayload
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -67,7 +64,7 @@ internal object SyncedConfigRegistry {
         return syncedConfigs
     }
 
-    fun onConfigure(canSender: Predicate<CustomPayload.Id<*>>, sender: Consumer<CustomPayload>) {
+    internal fun onConfigure(canSender: Predicate<CustomPayload.Id<*>>, sender: Consumer<CustomPayload>) {
         if (!canSender.test(ConfigSyncS2CCustomPayload.type))
         for ((id, config) in syncedConfigs) {
             val syncErrors = mutableListOf<String>()
@@ -80,7 +77,7 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    fun onJoin(player: ServerPlayerEntity, server: MinecraftServer, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun onJoin(player: ServerPlayerEntity, server: MinecraftServer, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
         if (server.isSingleplayer) return
         if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.type)) return
         for ((id, config) in syncedConfigs) {
@@ -90,7 +87,7 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
         for (player in players) {
             if (!canSender.test(player, ConfigSyncS2CCustomPayload.type)) continue
             for ((id, config) in syncedConfigs) {
@@ -109,7 +106,7 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayerEntity, changes: List<String>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayerEntity, changes: List<String>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
         val successfulUpdates: MutableMap<String, String> = mutableMapOf()
         val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
@@ -177,7 +174,7 @@ internal object SyncedConfigRegistry {
         ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), serverPlayer)
     }
 
-    fun receiveSettingForward(uuid: UUID, player: ServerPlayerEntity, scope: String, update: String, summary: String, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun receiveSettingForward(uuid: UUID, player: ServerPlayerEntity, scope: String, update: String, summary: String, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
         val receivingPlayer = player.server.playerManager.getPlayer(uuid) ?: return
         if (!canSender.test(receivingPlayer, SettingForwardCustomPayload.type)) {
             player.sendMessage("fc.config.forwarded_error.s2c".translate())

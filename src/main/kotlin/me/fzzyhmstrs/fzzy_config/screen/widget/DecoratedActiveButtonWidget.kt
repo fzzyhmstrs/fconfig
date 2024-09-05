@@ -11,8 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.screen.entry.Decorated
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import java.util.function.Consumer
@@ -31,7 +29,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Environment(EnvType.CLIENT)
+//client
 open class DecoratedActiveButtonWidget(
     titleSupplier: Supplier<Text>,
     width: Int,

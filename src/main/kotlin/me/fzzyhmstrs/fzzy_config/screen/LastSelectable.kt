@@ -10,8 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.screen
 
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.Element
 
 /**
@@ -20,7 +18,7 @@ import net.minecraft.client.gui.Element
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Environment(EnvType.CLIENT)
+//client
 interface LastSelectable {
     var lastSelected: Element?
     fun pushLast()

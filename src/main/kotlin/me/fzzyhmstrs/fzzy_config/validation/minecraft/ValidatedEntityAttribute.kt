@@ -29,8 +29,6 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ButtonWidget
@@ -183,11 +181,11 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
     }
 
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<EntityAttributeInstanceHolder>): ClickableWidget {
         return EntityAttributeButtonWidget(this, { this.getButtonText(storedValue.attributeId, storedValue.amount, storedValue.operation) }, { openEntityAttributePopup() })
     }
-    @Environment(EnvType.CLIENT)
+    //client
     private fun openEntityAttributePopup() {
         val attribute = Registries.ATTRIBUTE.get(storedValue.attributeId)
         val operationValidator = ValidatedEnum(storedValue.operation, ValidatedEnum.WidgetType.CYCLING)
@@ -208,7 +206,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
             .build()
         PopupWidget.push(popup)
     }
-    @Environment(EnvType.CLIENT)
+    //client
     private fun getButtonText(inputAttribute: Identifier, inputAmount: Double, inputOperation: Operation): MutableText {
         val attribute = Registries.ATTRIBUTE.get(inputAttribute) ?: return "fc.validated_field.entity_attribute.error".translate()
         val amount = when(inputOperation) {
@@ -223,7 +221,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         }
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private class EntityAttributeButtonWidget(private val entry: ValidatedEntityAttribute, private val textSupplier: Supplier<MutableText>, private val onPress: Consumer<ClickableWidget>): PressableWidget(0, 0, 110, 20, textSupplier.get()) {
 
         override fun getMessage(): Text {

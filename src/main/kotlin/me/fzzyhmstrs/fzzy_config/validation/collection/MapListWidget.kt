@@ -17,8 +17,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -34,7 +32,7 @@ import java.util.function.Consumer
 import java.util.function.Function
 import me.fzzyhmstrs.fzzy_config.entry.Entry as Entry1
 
-@Environment(EnvType.CLIENT)
+//client
 internal class MapListWidget<K, V>(
     entryMap: Map<Entry1<K, *>, Entry1<V, *>>,
     keySupplier: Entry1<K, *>,

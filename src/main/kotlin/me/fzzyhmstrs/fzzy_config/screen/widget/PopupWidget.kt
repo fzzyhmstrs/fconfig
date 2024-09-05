@@ -21,8 +21,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.pos.*
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.navigation.GuiNavigation
@@ -54,7 +52,7 @@ import kotlin.math.min
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Environment(EnvType.CLIENT)
+//client
 class PopupWidget
     private constructor(
         private var message: Text,
@@ -291,7 +289,7 @@ class PopupWidget
      * @since 0.2.0
      */
     @Suppress("DEPRECATION", "UNUSED")
-    @Environment(EnvType.CLIENT)
+    //client
     class Builder @JvmOverloads constructor(private val title: Text, spacingW: Int = 4, spacingH: Int = spacingW) {
 
         private var width: Int = MinecraftClient.getInstance().textRenderer.getWidth(title) + 16
@@ -787,7 +785,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        @Environment(EnvType.CLIENT)
+        //client
         companion object Positioners {
             /**
              * Positions a Popup dimention at an absolute location
@@ -873,7 +871,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        @Environment(EnvType.CLIENT)
+        //client
         sealed interface Position {
             fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
 
@@ -989,10 +987,10 @@ class PopupWidget
             }
         }
 
-        @Environment(EnvType.CLIENT)
+        //client
         sealed interface PositionAlignment: Position
 
-        @Environment(EnvType.CLIENT)
+        //client
         enum class PositionRelativePos: Position {
             @Deprecated("Use Positions Impl values")
             BELOW {
@@ -1014,7 +1012,7 @@ class PopupWidget
             }
         }
 
-        @Environment(EnvType.CLIENT)
+        //client
         enum class PositionRelativeAlignment: PositionAlignment {
             @Deprecated("Use Positions Impl values")
             HORIZONTAL_TO_TOP_EDGE {
@@ -1054,7 +1052,7 @@ class PopupWidget
             }
         }
 
-        @Environment(EnvType.CLIENT)
+        //client
         enum class PositionGlobalAlignment: PositionAlignment {
             @Deprecated("Use Positions Impl values")
             ALIGN_LEFT {
@@ -1096,7 +1094,7 @@ class PopupWidget
 
         @Internal
         @Suppress("UNUSED")
-        @Environment(EnvType.CLIENT)
+        //client
         class PositionedElement<T>(val element: T, var x: Pos, var y: Pos, val alignment: PositionGlobalAlignment) where T: Widget {
             private fun upDown(): IntRange {
                 return IntRange(getTop(), getBottom())
@@ -1135,7 +1133,7 @@ class PopupWidget
         }
 
         @Internal
-        @Environment(EnvType.CLIENT)
+        //client
         data class PosSet(val x: Pos, val y: Pos, val w: Pos, val h: Pos, val spacingW: Int, val spacingH: Int)
     }
 }
