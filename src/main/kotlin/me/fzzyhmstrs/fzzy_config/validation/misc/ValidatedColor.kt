@@ -27,8 +27,6 @@ import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.ColorHolder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -212,7 +210,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         return input is ColorHolder && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): ClickableWidget {
         return ColorButtonWidget({get().argb()}, {this.toHexString().lit()}, {openColorEditPopup()})
     }
@@ -230,7 +228,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
 
     /////////////////////////
 
-    @Environment(EnvType.CLIENT)
+    //client
     private fun openColorEditPopup() {
         val textRenderer = MinecraftClient.getInstance().textRenderer
         val mutableColor = this.get().mutable(validatedString())
@@ -648,7 +646,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
 
     //////////////////////////////////////////
 
-    @Environment(EnvType.CLIENT)
+    //client
     private class ColorButtonWidget(private val colorSupplier: Supplier<Int>, titleSupplier: Supplier<Text>, pressAction: Consumer<ActiveButtonWidget>): DecoratedActiveButtonWidget(titleSupplier, 110, 20, "widget/decoration/frame".fcId(), {true}, pressAction) {
         override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
             super.renderDecoration(context, x, y, delta)
@@ -657,7 +655,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         }
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private class HLMapWidget(private val mutableColor: MutableColor): ClickableWidget(0, 0, 60, 68, "fc.validated_field.color.hl".translate()) {
 
         companion object {

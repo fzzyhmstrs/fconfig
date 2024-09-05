@@ -14,8 +14,6 @@ import com.google.common.collect.Lists
 import com.mojang.blaze3d.systems.RenderSystem
 import com.mojang.brigadier.suggestion.Suggestion
 import com.mojang.brigadier.suggestion.Suggestions
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
@@ -26,7 +24,7 @@ import java.util.function.Consumer
 import kotlin.math.max
 import kotlin.math.min
 
-@Environment(EnvType.CLIENT)
+//client
 internal class SuggestionWindow(
     private val suggestions: List<Suggestion>,
     private val x: Int,

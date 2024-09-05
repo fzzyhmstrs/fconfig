@@ -12,12 +12,10 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
 
-@Environment(EnvType.CLIENT)
+//client
 interface Decorated {
     fun decorationId(): Identifier
     fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {

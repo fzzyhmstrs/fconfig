@@ -18,8 +18,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -32,7 +30,7 @@ import net.minecraft.util.Identifier
 import java.util.function.Supplier
 import kotlin.math.max
 
-@Environment(EnvType.CLIENT)
+//client
 internal class ChangesWidget(private val scope: String, private val widthSupplier: Supplier<Int>, private val manager: UpdateManager): PressableWidget(0, 0, 80, 20, "fc.button.changes".translate()) {
 
     companion object {
