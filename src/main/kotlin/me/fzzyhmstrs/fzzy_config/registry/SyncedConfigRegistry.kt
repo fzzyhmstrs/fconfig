@@ -68,6 +68,10 @@ internal object SyncedConfigRegistry {
 
     }
 
+    internal fun syncedConfigs(): Map<String, Config> {
+        return syncedConfigs
+    }
+
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
         if (!ClientPlayNetworking.canSend(SettingForwardCustomPayload.id)) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
