@@ -45,7 +45,9 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaConstructor
 
 /**
- * Validation for an arbitrary non-null POJO. It will create a "mini-config" popup with the same style of list as the main config and section screens.
+ * Validation for an arbitrary non-null POJO (Plain Old Java Object). It will create a "mini-config" popup with the same style of list as the main config and section screens. Each field within the object will be validated just like a config, either automatically or purposefully if ValidatedFeilds are used.
+ *
+ * The object passed follows the same rules as that of a config or config section. Non-final fields/properties that are public unless annotated with [IgnoreVisibility]
  *
  * This Validation is useful for "blocks" of config, such as Entity Stats or Tool Materials, that you want to break out.
  *
