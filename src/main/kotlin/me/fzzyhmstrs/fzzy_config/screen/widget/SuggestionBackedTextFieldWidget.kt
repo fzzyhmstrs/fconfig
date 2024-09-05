@@ -16,8 +16,6 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.DrawContext
 import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
@@ -37,7 +35,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Environment(EnvType.CLIENT)
+//client
 class SuggestionBackedTextFieldWidget(
     width: Int,
     height: Int,

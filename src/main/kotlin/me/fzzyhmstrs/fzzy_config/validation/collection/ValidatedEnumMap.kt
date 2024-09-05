@@ -25,8 +25,6 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedEnumMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -151,13 +149,13 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
     }
 
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
         return DecoratedActiveButtonWidget(TextureIds.MAP_LANG, 110, 20, TextureIds.DECO_MAP, {true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")
-    @Environment(EnvType.CLIENT)
+    //client
     private fun openMapEditPopup(b: ActiveButtonWidget) {
         try {
             val map = storedValue.map {

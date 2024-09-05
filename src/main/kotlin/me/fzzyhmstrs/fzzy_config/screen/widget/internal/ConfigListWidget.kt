@@ -15,8 +15,6 @@ import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -26,7 +24,7 @@ import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.search.SuffixArray
 import java.util.*
 
-@Environment(EnvType.CLIENT)
+//client
 internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, contentHeight: Int, headerHeight: Int, private val drawBackground: Boolean) :
     ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable, SuggestionWindowListener
 {

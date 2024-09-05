@@ -27,8 +27,6 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
@@ -155,13 +153,13 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     }
 
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): ClickableWidget {
         return DecoratedActiveButtonWidget("fc.validated_field.set".translate(), 110, 20, TextureIds.DECO_LIST, {true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")
-    @Environment(EnvType.CLIENT)
+    //client
     private fun openListEditPopup(b: ActiveButtonWidget) {
         try {
             val list = storedValue.map {

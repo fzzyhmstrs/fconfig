@@ -20,8 +20,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
@@ -137,7 +135,7 @@ open class ValidatedExpression @JvmOverloads constructor(
         return ValidatedExpression(copyStoredValue(), validVars, validator)
     }
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
         return ExpressionButtonWidget(this, choicePredicate)
     }
@@ -149,7 +147,7 @@ open class ValidatedExpression @JvmOverloads constructor(
         return "Validated Expression[value=$parsedExpression, vars=$validVars, validation=$validator]"
     }
 
-    @Environment(EnvType.CLIENT)
+    //client
     private class ExpressionButtonWidget(private val entry: ValidatedExpression, private val choiceValidator: ChoiceValidator<String>): PressableWidget(0, 0, 110, 20, entry.get().lit()) {
 
         override fun getMessage(): Text {

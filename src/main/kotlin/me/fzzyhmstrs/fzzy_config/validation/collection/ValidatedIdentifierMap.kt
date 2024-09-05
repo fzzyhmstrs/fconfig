@@ -24,8 +24,6 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedIdentifierMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
@@ -77,13 +75,13 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
     }
 
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<Identifier, V>>): ClickableWidget {
         return DecoratedActiveButtonWidget(TextureIds.MAP_LANG, 110, 20, TextureIds.DECO_MAP, {true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")
-    @Environment(EnvType.CLIENT)
+    //client
     private fun openMapEditPopup(b: ActiveButtonWidget) {
         try {
             val map = storedValue.map {

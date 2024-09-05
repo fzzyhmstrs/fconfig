@@ -24,30 +24,15 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
-import kotlin.collections.Collection
-import kotlin.collections.Map
-import kotlin.collections.MutableList
-import kotlin.collections.MutableMap
-import kotlin.collections.Set
-import kotlin.collections.associate
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.iterator
-import kotlin.collections.listOf
-import kotlin.collections.map
-import kotlin.collections.mapOf
-import kotlin.collections.mutableListOf
-import kotlin.collections.mutableMapOf
 import kotlin.collections.set
-import kotlin.collections.toMap
 
 /**
  * A validated Map of arbitrary (Validated) keys and values
@@ -95,13 +80,13 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
     }
 
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
         return DecoratedActiveButtonWidget("fc.validated_field.map".translate(), 110, 20, TextureIds.DECO_MAP, {true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
     }
 
     @Suppress("UNCHECKED_CAST")
-    @Environment(EnvType.CLIENT)
+    //client
     private fun openMapEditPopup(b: ActiveButtonWidget) {
         try {
             val map = storedValue.map {

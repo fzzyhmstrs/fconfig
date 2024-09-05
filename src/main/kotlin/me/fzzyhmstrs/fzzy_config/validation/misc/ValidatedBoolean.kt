@@ -15,8 +15,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
@@ -73,7 +71,7 @@ open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defa
         return input is Boolean
     }
     @Internal
-    @Environment(EnvType.CLIENT)
+    //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Boolean>): ClickableWidget {
         return ActiveButtonWidget(
             {if(get()) "fc.validated_field.boolean.true".translate() else "fc.validated_field.boolean.false".translate()},
