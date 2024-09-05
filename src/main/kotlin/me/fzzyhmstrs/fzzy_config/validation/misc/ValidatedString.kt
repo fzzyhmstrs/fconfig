@@ -73,7 +73,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
      * An unbounded validated string value
      *
      * Any string value will be permissible, so this ValidatedField will primarily validate de/serialization.
-     * @param defaultValue String, the efault string for this setting
+     * @param defaultValue String, the default string for this setting
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -193,6 +193,21 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
         @JvmStatic
         fun fromList(defaultValue: String, strings: Supplier<List<String>>): ValidatedString {
             return ValidatedString(defaultValue, AllowableStrings({s -> strings.get().contains(s)}, strings))
+        }
+
+        /**
+         * Validated string based on a collection of allowable strings
+         *
+         * Default value will be the first string in the collection.
+         * @param strings vararg String - the collection of allowable string values. Can be empty; will return a blank validation in this case that has no default and accepts any valid string.
+         * @author fzzyhmstrs
+         * @since 0.4.0
+         */
+        @JvmStatic
+        fun fromValues(vararg strings: String): ValidatedString {
+            if (strings.isEmpty()) return ValidatedString()
+            val list = strings.toList()
+            return fromList(list)
         }
     }
 
