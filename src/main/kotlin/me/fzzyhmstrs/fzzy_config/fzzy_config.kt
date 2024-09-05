@@ -11,8 +11,6 @@
 package me.fzzyhmstrs.fzzy_config
 
 import com.mojang.brigadier.CommandDispatcher
-import com.nimbusds.openid.connect.sdk.assurance.claims.ISO3166_1Alpha2CountryCode.MC
-import me.fzzyhmstrs.fzzy_config.impl.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.QuarantinedUpdatesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
