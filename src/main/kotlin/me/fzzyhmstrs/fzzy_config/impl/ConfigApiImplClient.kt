@@ -18,7 +18,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import net.minecraft.client.MinecraftClient
 import net.minecraft.text.Text
 import java.util.*
-import kotlin.collections.HashMap
 
 internal object ConfigApiImplClient {
 

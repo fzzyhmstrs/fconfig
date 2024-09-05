@@ -17,7 +17,6 @@ import me.fzzyhmstrs.fzzy_config.entry.EntrySuggester
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.command.CommandSource
-import net.minecraft.util.Identifier
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.Predicate
