@@ -36,7 +36,9 @@ import net.fabricmc.fabric.api.networking.v1.ServerConfigurationNetworking
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.client.MinecraftClient
+import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
 import java.time.Instant
@@ -44,8 +46,11 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.function.BiConsumer
+import java.util.function.BiPredicate
 import java.util.function.Consumer
 import java.util.function.Function
+import java.util.function.Predicate
 
 /**
  * Synchronization registry for [Config] instances. Handles syncing configs, sending updates to and from clients, and forwarding settings between users
@@ -296,6 +301,125 @@ internal object SyncedConfigRegistry {
         }
     }
 
+    fun onConfigure(canSender: Predicate<CustomPayload.Id<*>>, sender: Consumer<CustomPayload>) {
+        if (!canSender.test(ConfigSyncS2CCustomPayload.type))
+        for ((id, config) in syncedConfigs) {
+            val syncErrors = mutableListOf<String>()
+            val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
+            if (syncErrors.isNotEmpty()) {
+                val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C configuration stage sync.")
+                syncError.writeError(syncErrors)
+            }
+            sender.accept(payload)
+        }
+    }
+
+    fun onJoin(player: ServerPlayerEntity, server: MinecraftServer, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+        if (server.isSingleplayer) return
+        if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.type)) return
+        for ((id, config) in syncedConfigs) {
+            val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
+            val payload = ConfigPermissionsS2CCustomPayload(id, perms)
+            sender.accept(player, payload)
+        }
+    }
+
+    fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+        for (player in players) {
+            if (!canSender.test(player, ConfigSyncS2CCustomPayload.type)) continue
+            for ((id, config) in syncedConfigs) {
+                val syncErrors = mutableListOf<String>()
+                val syncPayload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
+                if (syncErrors.isNotEmpty()) {
+                    val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C datapack reload sync.")
+                    syncError.writeError(syncErrors)
+                }
+                sender.accept(player, syncPayload)
+                if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.type)) continue
+                val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
+                val permsPayload = ConfigPermissionsS2CCustomPayload(id, perms)
+                sender.accept(player, permsPayload)
+            }
+        }
+    }
+
+    fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayerEntity, changes: List<String>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+        val successfulUpdates: MutableMap<String, String> = mutableMapOf()
+        val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
+
+        for ((id, configString) in serializedConfigs) {
+            val config = syncedConfigs[id]
+            if (config == null) {
+                FC.LOGGER.error("Config $id wasn't found!, Skipping update")
+                continue
+            }
+
+            if (!server.isSingleplayer) {
+                val validationResult = ConfigApiImpl.validatePermissions(serverPlayer, id, config, configString)
+
+                if(validationResult.isError()) {
+
+                    FC.LOGGER.error("Player [${serverPlayer.name}] may have tried to cheat changes onto the Server Config! Problem settings found: ${validationResult.get().joinToString(" | ")}")
+                    FC.LOGGER.error("This update has not been applied, and has been moved to quarantine. Use the configure_update command to inspect and permit or deny the update.")
+                    FC.LOGGER.warn("If no action is taken, the quarantined update will be flushed on the next server restart, and its changes will not be applied")
+
+                    ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), serverPlayer)
+
+                    val quarantine = QuarantinedUpdate(serverPlayer.uuid, changes, id, configString)
+                    val quarantineId = id + " @" + serverPlayer.name.string + " @" + formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.systemDefault()))
+                    quarantinedUpdates[quarantineId] = quarantine
+                    if (quarantinedUpdates.size > 128) {
+                        quarantinedUpdates.pollFirstEntry()
+                    }
+
+                    for (player in server.playerManager.playerList) {
+                        if(ConfigApiImpl.isConfigAdmin(player, config))
+                            player.sendMessageToClient("fc.networking.permission.cheat".translate(serverPlayer.name), false)
+                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" inspect")) }, false)
+                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" accept")) }, false)
+                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" reject")) }, false)
+                    }
+                    continue
+                }
+            }
+            val errors = mutableListOf<String>()
+            val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS)
+            val actions = result.get().getOrDefault(ACTIONS, setOf())
+            result.writeError(errors)
+            result.get().config.save()
+            if (actions.any { it.restartPrompt }) {
+                FC.LOGGER.warn("The server has received a config update that may require a restart. Connected clients have been automatically updated and notified of the potential for restart.")
+                val records = result.get().get(RESTART_RECORDS)
+                if (!records.isNullOrEmpty()) {
+                    FC.LOGGER.info("Server prompted for a restart due to received config changes")
+                    FC.LOGGER.info("Restart-prompting changes:")
+                    for (record in records) {
+                        FC.LOGGER.info(record)
+                    }
+                }
+            }
+            successfulUpdates[id] = configString
+        }
+        if (!server.isSingleplayer) {
+            for (player in serverPlayer.server.playerManager.playerList) {
+                if (player == serverPlayer) continue // don't push back to the player that just sent the update
+                if (!canSender.test(player, ConfigUpdateS2CCustomPayload.type)) continue
+                val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
+                sender.accept(player, newPayload)
+            }
+        }
+        ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), serverPlayer)
+    }
+
+    fun receiveSettingForward(uuid: UUID, player: ServerPlayerEntity, scope: String, update: String, summary: String, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+        val receivingPlayer = player.server.playerManager.getPlayer(uuid) ?: return
+        if (!canSender.test(receivingPlayer, SettingForwardCustomPayload.type)) {
+            player.sendMessage("fc.config.forwarded_error.s2c".translate())
+            return
+        }
+        sender.accept(receivingPlayer, SettingForwardCustomPayload(update, player.uuid, scope, summary))
+    }
+
     internal fun quarantineList(): Set<String> {
         return quarantinedUpdates.keys
     }
@@ -362,5 +486,5 @@ internal object SyncedConfigRegistry {
         syncedConfigs[config.getId().toTranslationKey()] = config
     }
 
-    private class QuarantinedUpdate(val playerUuid: UUID, val changeHistory: List<String>, val configId: String, val configString: String)
+    internal class QuarantinedUpdate(val playerUuid: UUID, val changeHistory: List<String>, val configId: String, val configString: String)
 }
