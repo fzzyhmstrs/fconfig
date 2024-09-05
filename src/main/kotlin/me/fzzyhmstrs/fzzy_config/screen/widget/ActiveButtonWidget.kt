@@ -13,8 +13,6 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget.Background
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
