@@ -30,7 +30,7 @@ inline fun<reified T> Any?.nullCast(): T? {
 }
 
 internal fun String.fcId(): Identifier {
-    return Identifier.of(FC.MOD_ID, this)
+    return Identifier(FC.MOD_ID, this)
 }
 
 @Internal
