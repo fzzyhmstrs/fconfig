@@ -13,13 +13,17 @@ package me.fzzyhmstrs.fzzy_config.networking
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
-class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: MutableMap<String, Boolean>) {
+class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: MutableMap<String, Boolean>): FzzyPayload {
 
     constructor(buf: PacketByteBuf): this(buf.readString(), buf.readMap({i -> mutableMapOf()}, { b -> b.readString() }, { b -> b.readBoolean() }))
 
-    fun write(buf: PacketByteBuf) {
+    override fun write(buf: PacketByteBuf) {
         buf.writeString(id)
         buf.writeMap(mutableMapOf<String, Boolean>(), { b, v -> b.writeString(v)}, { b, v -> b.writeBoolean(v) })
+    }
+
+    override fun getId(): Identifier {
+        return Companion.id
     }
 
     companion object {

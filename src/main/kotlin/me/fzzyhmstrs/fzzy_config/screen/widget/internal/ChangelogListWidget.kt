@@ -51,7 +51,7 @@ internal class ChangelogListWidget(changelog: List<String>, private val sWidth: 
         return this.height
     }
     override fun getNavigationFocus(): ScreenRect {
-        return super<Widget>.getNavigationFocus()
+        return super.getNavigationFocus()
     }
     override fun forEachChild(consumer: Consumer<ClickableWidget>) {
     }

@@ -10,16 +10,22 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
+import me.fzzyhmstrs.fzzy_config.networking.ConfigPermissionsS2CCustomPayload.Companion
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
-internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>) {
+internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>): FzzyPayload {
 
     constructor(buf: PacketByteBuf): this(readMap(buf))
 
-    fun write(buf: PacketByteBuf) {
+    override fun write(buf: PacketByteBuf) {
         writeMap(buf)
     }
+
+    override fun getId(): Identifier {
+        return Companion.id
+    }
+
     private fun writeMap(buf: PacketByteBuf) {
         buf.writeVarInt(updates.size)
         for ((id, serializedConfig) in updates) {
