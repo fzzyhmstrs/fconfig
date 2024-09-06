@@ -3,7 +3,7 @@
   "id": "${id}",
   "version": "${version}",
   "name": "Fzzy Config",
-  "description": "Confuration engine with automatic GUI generation, client-server syncing, powerful validation and error handling, and much more.",
+  "description": "Configuration engine with automatic GUI generation, client-server syncing, powerful validation and error handling, and much more.",
   "authors": [
     "fzzyhmstrs"
   ],
