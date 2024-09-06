@@ -28,6 +28,8 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
@@ -57,11 +59,14 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     /**
      * Converts this ValidatedSet into [ValidatedChoice] wrapping this set as the valid choice options
      * @return [ValidatedChoice] with options based on this set's contents
+     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
+     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
+     * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, added optional params 0.4.0
      */
-    fun toChoices(): ValidatedChoice<T> {
-        return ValidatedChoice(defaultValue.toList(), entryHandler)
+    fun toChoices(widgetType: WidgetType = WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoice<T> {
+        return ValidatedChoice(defaultValue.toList(), entryHandler, translationProvider, descriptionProvider, widgetType)
     }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Set<T>> {
