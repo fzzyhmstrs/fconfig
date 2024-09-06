@@ -10,10 +10,13 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.networking.v1.*
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 
@@ -30,18 +33,22 @@ internal object NetworkEvents {
         ServerPlayNetworking.send(playerEntity, payload.getId(), buf)
     }
 
-    fun registerServer() {
-
-        ServerConfigurationConnectionEvents.CONFIGURE.register { handler, _ ->
-            SyncedConfigRegistry.onConfigure(
-                { id -> ServerConfigurationNetworking.canSend(handler, id) },
-                { payload ->
-                    val buf = PacketByteBufs.create()
-                    payload.write(buf)
-                    ServerConfigurationNetworking.send(handler, payload.getId(), buf)
-                }
-            )
+    fun syncConfigs(handler: ServerPlayNetworkHandler) {
+        for ((id, config) in SyncedConfigRegistry.syncedConfigs()) {
+            val syncErrors = mutableListOf<String>()
+            val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
+            if (syncErrors.isNotEmpty()) {
+                val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C configuration stage sync.")
+                syncError.writeError(syncErrors)
+            }
+            val buf = PacketByteBufs.create()
+            payload.write(buf)
+            ServerPlayNetworking.send(handler.player, ConfigSyncS2CCustomPayload.id, buf)
         }
+    }
+
+
+    fun registerServer() {
 
         ServerPlayConnectionEvents.JOIN.register { handler, sender, server ->
             SyncedConfigRegistry.onJoin(

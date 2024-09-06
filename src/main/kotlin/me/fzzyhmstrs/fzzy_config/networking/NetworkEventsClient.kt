@@ -22,7 +22,6 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.client.MinecraftClient
@@ -86,7 +85,7 @@ internal object NetworkEventsClient {
         }
 
 
-        ClientConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.id) { client, _, buf, _ ->
+        ClientPlayNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.id) { client, _, buf, _ ->
             val payload = ConfigSyncS2CCustomPayload(buf)
             ClientConfigRegistry.receiveSync(
                 payload.id,

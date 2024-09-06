@@ -23,8 +23,7 @@ import java.util.function.Consumer
 import java.util.function.Supplier
 
 //client
-internal class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<Int>) : AlwaysSelectedEntryListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), sWidth.get() - 16, 180, 0, 11) {
-
+internal class ChangelogListWidget(changelog: List<String>, private val sWidth: Supplier<Int>) : AlwaysSelectedEntryListWidget<ChangelogListWidget.Entry>(MinecraftClient.getInstance(), sWidth.get() - 16, 180, 0, 0, 11), Widget {
     init {
         this.setRenderHorizontalShadows(false)
         this.setRenderBackground(false)
@@ -51,7 +50,7 @@ internal class ChangelogListWidget(changelog: List<String>, private val sWidth: 
         return this.height
     }
     override fun getNavigationFocus(): ScreenRect {
-        return super.getNavigationFocus()
+        return super<Widget>.getNavigationFocus()
     }
     override fun forEachChild(consumer: Consumer<ClickableWidget>) {
     }
