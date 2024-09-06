@@ -50,6 +50,9 @@ internal open class BaseConfigEntry(
     private val tooltip: List<OrderedText> by lazy {
         createTooltip()
     }
+    private val fullTooltip: List<OrderedText> by lazy {
+        createFullTooltip()
+    }
     private val tooltipString: String by lazy {
         createTooltipString()
     }
@@ -97,11 +100,14 @@ internal open class BaseConfigEntry(
         )
         if (actions.isNotEmpty()) {
             var offset = -24
-            val offsetIncrement = if(actions.size == 1) 18 else min(18, (x - 24) / (actions.size - 1))
+            val offsetIncrement = if(actions.size == 1) 19 else min(19, (x - 24) / (actions.size - 1))
             for (action in actions) {
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
                 context.drawGuiTexture(action.sprite, x + offset, y, 20, 20)
+                if (isMouseOverAction(offset, offsetIncrement, mouseX, mouseY, x, y)) {
+                    MinecraftClient.getInstance().currentScreen?.setTooltip(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190), HoveredTooltipPositioner.INSTANCE, this.isFocused)
+                }
                 offset -= offsetIncrement
             }
         }
@@ -109,22 +115,34 @@ internal open class BaseConfigEntry(
             //let widgets tooltip win
         } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty()) {
             MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, HoveredTooltipPositioner.INSTANCE, this.isFocused)
-        } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && tooltip.isNotEmpty()) {
-            MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
+        } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && fullTooltip.isNotEmpty()) {
+            MinecraftClient.getInstance().currentScreen?.setTooltip(fullTooltip, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
         }
+    }
+
+    private fun isMouseOverAction(offset: Int, offsetIncrement: Int, mouseX: Int, mouseY: Int, x: Int, y: Int): Boolean {
+        return mouseY >= y && mouseY < (y + 20) && mouseX >= (x + offset) && mouseX < (x + offset + offsetIncrement)
     }
 
     private fun createTooltip(): List<OrderedText> {
         val list: MutableList<OrderedText> = mutableListOf()
+        if (description.string != "") {
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
+        }
+        return list
+    }
+
+    private fun createFullTooltip(): List<OrderedText> {
+        val list: MutableList<OrderedText> = mutableListOf()
+        if (description.string != "") {
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
+        }
         if(actions.isNotEmpty()) {
+            if (description.string != "")
+                list.add(FcText.empty().asOrderedText())
             for (action in actions) {
                 list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190))
             }
-            if (description.string != "")
-                list.add(FcText.empty().asOrderedText())
-        }
-        if (description.string != "") {
-            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
         return list
     }
