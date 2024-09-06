@@ -20,18 +20,12 @@ import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.minecraft.client.MinecraftClient
-import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
-import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -50,7 +44,7 @@ import java.util.function.Function
 internal object SyncedConfigRegistry {
 
     private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
-    private val quarantinedUpdates : LinkedHashMap<String, QuarantinedUpdate> = LimitedHashMap()
+    private val quarantinedUpdates : LimitedHashMap<String, QuarantinedUpdate> = LimitedHashMap()
 
     private class LimitedHashMap<K, V> : LinkedHashMap<K, V>() {
 
@@ -64,8 +58,8 @@ internal object SyncedConfigRegistry {
         return syncedConfigs
     }
 
-    internal fun onConfigure(canSender: Predicate<CustomPayload.Id<*>>, sender: Consumer<CustomPayload>) {
-        if (!canSender.test(ConfigSyncS2CCustomPayload.type))
+    internal fun onConfigure(canSender: Predicate<Identifier>, sender: Consumer<FzzyPayload>) {
+        if (!canSender.test(ConfigSyncS2CCustomPayload.id))
         for ((id, config) in syncedConfigs) {
             val syncErrors = mutableListOf<String>()
             val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
@@ -77,9 +71,9 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    internal fun onJoin(player: ServerPlayerEntity, server: MinecraftServer, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun onJoin(player: ServerPlayerEntity, server: MinecraftServer, canSender: BiPredicate<ServerPlayerEntity, Identifier>, sender: BiConsumer<ServerPlayerEntity, FzzyPayload>) {
         if (server.isSingleplayer) return
-        if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.type)) return
+        if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.id)) return
         for ((id, config) in syncedConfigs) {
             val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
             val payload = ConfigPermissionsS2CCustomPayload(id, perms)
@@ -87,9 +81,9 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    internal fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, Identifier>, sender: BiConsumer<ServerPlayerEntity, FzzyPayload>) {
         for (player in players) {
-            if (!canSender.test(player, ConfigSyncS2CCustomPayload.type)) continue
+            if (!canSender.test(player, ConfigSyncS2CCustomPayload.id)) continue
             for ((id, config) in syncedConfigs) {
                 val syncErrors = mutableListOf<String>()
                 val syncPayload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
@@ -98,7 +92,7 @@ internal object SyncedConfigRegistry {
                     syncError.writeError(syncErrors)
                 }
                 sender.accept(player, syncPayload)
-                if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.type)) continue
+                if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.id)) continue
                 val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
                 val permsPayload = ConfigPermissionsS2CCustomPayload(id, perms)
                 sender.accept(player, permsPayload)
@@ -106,7 +100,7 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    internal fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayerEntity, changes: List<String>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayerEntity, changes: List<String>, canSender: BiPredicate<ServerPlayerEntity, Identifier>, sender: BiConsumer<ServerPlayerEntity, FzzyPayload>) {
         val successfulUpdates: MutableMap<String, String> = mutableMapOf()
         val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
@@ -131,9 +125,6 @@ internal object SyncedConfigRegistry {
                     val quarantine = QuarantinedUpdate(serverPlayer.uuid, changes, id, configString)
                     val quarantineId = id + " @" + serverPlayer.name.string + " @" + formatter.format(LocalDateTime.ofInstant(Instant.ofEpochMilli(System.currentTimeMillis()), ZoneId.systemDefault()))
                     quarantinedUpdates[quarantineId] = quarantine
-                    if (quarantinedUpdates.size > 128) {
-                        quarantinedUpdates.pollFirstEntry()
-                    }
 
                     for (player in server.playerManager.playerList) {
                         if(ConfigApiImpl.isConfigAdmin(player, config))
@@ -166,7 +157,7 @@ internal object SyncedConfigRegistry {
         if (!server.isSingleplayer) {
             for (player in serverPlayer.server.playerManager.playerList) {
                 if (player == serverPlayer) continue // don't push back to the player that just sent the update
-                if (!canSender.test(player, ConfigUpdateS2CCustomPayload.type)) continue
+                if (!canSender.test(player, ConfigUpdateS2CCustomPayload.id)) continue
                 val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
                 sender.accept(player, newPayload)
             }
@@ -174,9 +165,9 @@ internal object SyncedConfigRegistry {
         ConfigApiImpl.printChangeHistory(changes, serializedConfigs.keys.toString(), serverPlayer)
     }
 
-    internal fun receiveSettingForward(uuid: UUID, player: ServerPlayerEntity, scope: String, update: String, summary: String, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun receiveSettingForward(uuid: UUID, player: ServerPlayerEntity, scope: String, update: String, summary: String, canSender: BiPredicate<ServerPlayerEntity, Identifier>, sender: BiConsumer<ServerPlayerEntity, FzzyPayload>) {
         val receivingPlayer = player.server.playerManager.getPlayer(uuid) ?: return
-        if (!canSender.test(receivingPlayer, SettingForwardCustomPayload.type)) {
+        if (!canSender.test(receivingPlayer, SettingForwardCustomPayload.id)) {
             player.sendMessage("fc.config.forwarded_error.s2c".translate())
             return
         }
@@ -220,13 +211,13 @@ internal object SyncedConfigRegistry {
             }
             for (p in server.playerManager.playerList) {
                 if (p == player) continue // don't push back to the player that just sent the update
-                if (!NetworkEvents.canSend(p, ConfigUpdateS2CCustomPayload.type)) continue
+                if (!NetworkEvents.canSend(p, ConfigUpdateS2CCustomPayload.id)) continue
                 val newPayload = ConfigUpdateS2CCustomPayload(mapOf(quarantinedUpdate.configId to quarantinedUpdate.configString))
                 NetworkEvents.send(p, newPayload)
             }
         }
         player?.let {
-            if (NetworkEvents.canSend(player, ConfigPermissionsS2CCustomPayload.type)) {
+            if (NetworkEvents.canSend(player, ConfigPermissionsS2CCustomPayload.id)) {
                 for ((id2, config2) in syncedConfigs) {
                     val perms = ConfigApiImpl.generatePermissionsReport(player, config2, 0)
                     val buf = PacketByteBufs.create()

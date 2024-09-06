@@ -10,17 +10,22 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
+import me.fzzyhmstrs.fzzy_config.networking.ConfigPermissionsS2CCustomPayload.Companion
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
-internal class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, val changeHistory: List<String>, val playerPerm: Int) {
+internal class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, val changeHistory: List<String>, val playerPerm: Int): FzzyPayload {
 
     constructor(buf: PacketByteBuf): this(readMap(buf), readList(buf), buf.readByte().toInt())
 
-    fun write(buf: PacketByteBuf) {
+    override fun write(buf: PacketByteBuf) {
         writeMap(buf)
         writeList(buf)
         buf.writeByte(playerPerm)
+    }
+
+    override fun getId(): Identifier {
+        return Companion.id
     }
 
     private fun writeMap(buf: PacketByteBuf) {

@@ -189,7 +189,6 @@ internal open class BaseConfigEntry(
     }
 
 
-    @Environment(value = EnvType.CLIENT)
     class FocusedTooltipPositioner(private val widget: ScreenRect) : TooltipPositioner {
         override fun getPosition(
             screenWidth: Int,

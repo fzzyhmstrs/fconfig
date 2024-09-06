@@ -40,6 +40,7 @@ import net.minecraft.entity.attribute.EntityAttribute
 import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.entity.attribute.EntityAttributeModifier.Operation
 import net.minecraft.entity.attribute.EntityAttributes
+import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NbtCompound
 import net.minecraft.registry.Registries
 import net.minecraft.text.MutableText
