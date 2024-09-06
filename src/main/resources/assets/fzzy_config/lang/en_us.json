@@ -90,7 +90,7 @@
 "fc.config.right_click": "Actions",
 "fc.config.restore.confirm.desc": "Pressing Confirm will reset this setting to its default. Continue?",
 "fc.config.back": "Back",
-"fc.config.back.desc" : "Return to %s",
+"fc.config.back.desc" : "Return to %s\n(Hold shift to exit fully)",
 "fc.config.done.desc" : "Save config and close screen",
 "fc.config.forwarded": "Forwarded Settings",
 "fc.config.forwarded_error.c2s": "Failed to forward the setting(s). The server isn't accepting this type of data, please contact an admin for help.",
@@ -173,5 +173,5 @@
 "fc.button.info.click": "§o[Right Click]§r - Opens a context menu, if applicable.",
 "fc.button.info.click_kb": "§o[Shift + F10]§r - Opens a context menu, if applicable.",
 "fc.button.info.click_kb2": "§o[Context Menu Key]§r - Opens a context menu, if applicable.",
-"fc.button.info.alert": "§o[!]§r - Settings marked with a ! require a restart if changed."
+"fc.button.info.alert": "§o[!]§r - Settings marked with an icon require an action if changed."
 }
