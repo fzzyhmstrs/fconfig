@@ -35,6 +35,9 @@
       }
     ]
   },
+  "mixins": [
+    "fzzy_config.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=0.15.7",
     "fabric": "*",
