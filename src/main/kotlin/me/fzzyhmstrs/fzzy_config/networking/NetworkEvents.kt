@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.Packet
+import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket
 import net.minecraft.server.network.ServerPlayerConfigurationTask
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
@@ -92,7 +93,7 @@ internal object NetworkEvents {
             override fun sendPacket(sender: Consumer<Packet<*>>) {
                 SyncedConfigRegistry.onConfigure(
                     { _ -> true },
-                    { payload -> sender.accept(payload.toVanillaClientbound()) }
+                    { payload -> sender.accept(CustomPayloadS2CPacket(payload)) }
                 )
                 event.listener.onTaskFinished(key)
             }
