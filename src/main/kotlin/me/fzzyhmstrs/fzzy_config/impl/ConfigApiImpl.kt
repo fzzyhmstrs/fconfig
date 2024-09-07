@@ -42,6 +42,7 @@ import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
+import org.apache.logging.log4j.core.jmx.Server
 import java.io.File
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
@@ -627,7 +628,7 @@ internal object ConfigApiImpl {
         return ValidationResult.predicated(list, list.isEmpty(), "Access Violations Found!")
     }
 
-    fun isConfigAdmin(player: PlayerEntity, config: Config): Boolean {
+    fun isConfigAdmin(player: ServerPlayerEntity, config: Config): Boolean {
         val annotation = config::class.annotations.firstOrNull{ it is AdminAccess }?.cast<WithCustomPerms>()
         if (annotation == null) {
             return player.hasPermissionLevel(3)
