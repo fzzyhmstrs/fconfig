@@ -16,7 +16,7 @@ import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.net.URI
 
 plugins {
-    id("dev.architectury.loom")
+    id("dev.architectury.loom").version("1.6-SNAPSHOT")
     val kotlinVersion: String by System.getProperties()
     kotlin("jvm").version(kotlinVersion)
     kotlin("plugin.serialization") version "1.9.22"
