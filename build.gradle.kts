@@ -12,31 +12,16 @@ import com.matthewprenger.cursegradle.CurseArtifact
 import com.matthewprenger.cursegradle.CurseProject
 import com.matthewprenger.cursegradle.CurseRelation
 import com.matthewprenger.cursegradle.Options
-import net.fabricmc.loom.task.RemapJarTask
-import org.gradle.jvm.tasks.Jar
-import org.jetbrains.dokka.base.DokkaBase
-import org.jetbrains.dokka.base.DokkaBaseConfiguration
-import org.jetbrains.dokka.gradle.DokkaTask
-import org.jetbrains.dokka.versioning.VersioningConfiguration
-import org.jetbrains.dokka.versioning.VersioningPlugin
 import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.net.URI
 
 plugins {
-    id("fabric-loom")
+    id("dev.architectury.loom")
     val kotlinVersion: String by System.getProperties()
     kotlin("jvm").version(kotlinVersion)
     kotlin("plugin.serialization") version "1.9.22"
     id("com.modrinth.minotaur") version "2.+"
-    id("org.jetbrains.dokka") version "1.9.20"
     id("com.matthewprenger.cursegradle") version "1.4.0"
-}
-
-buildscript {
-    dependencies {
-        classpath("org.jetbrains.dokka:dokka-base:1.9.20")
-        classpath("org.jetbrains.dokka:versioning-plugin:1.9.20")
-    }
 }
 
 base {
@@ -51,8 +36,6 @@ val mavenGroup: String by project
 group = mavenGroup
 println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
 
-
-
 repositories {
     mavenCentral()
     mavenLocal()
@@ -62,35 +45,11 @@ repositories {
             includeGroup ("com.terraformersmc")
         }
     }
-}
-
-sourceSets {
-    main {
-        kotlin {
-            val includeExamples: String by project
-            if (includeExamples.toBooleanLenient() != true) {
-                exclude("me/fzzyhmstrs/fzzy_config/examples/**")
-            }
-            val testMode: String by project
-            if (testMode.toBooleanLenient() != true) {
-                exclude("me/fzzyhmstrs/fzzy_config/test/**")
-            }
-        }
+    maven {
+        url = URI("https://maven.neoforged.net/releases")
     }
-    create("testmod") {
-        compileClasspath += sourceSets.main.get().compileClasspath
-        runtimeClasspath += sourceSets.main.get().runtimeClasspath
-    }
-}
-
-val testmodImplementation by configurations.getting {
-    extendsFrom(configurations.implementation.get())
-}
-
-idea {
-    module {
-        testSources.from(sourceSets["testmod"].java.srcDirs)
-        testSources.from(sourceSets["testmod"].kotlin.srcDirs)
+    maven {
+        url = URI("https://thedarkcolour.github.io/KotlinForForge/")
     }
 }
 
@@ -100,52 +59,25 @@ dependencies {
     val yarnMappings: String by project
     mappings("net.fabricmc:yarn:$yarnMappings:v2")
     val loaderVersion: String by project
-    modImplementation("net.fabricmc:fabric-loader:$loaderVersion")
-    val fabricVersion: String by project
-    modImplementation("net.fabricmc.fabric-api:fabric-api:$fabricVersion")
-    val fabricKotlinVersion: String by project
-    modImplementation("net.fabricmc:fabric-language-kotlin:$fabricKotlinVersion")
+    neoForge("net.neoforged:neoforge:$loaderVersion")
+
+
+    val kotlinForForgeVersion: String by project
+    modImplementation("thedarkcolour:kotlinforforge-neoforge:$kotlinForForgeVersion")
 
     val tomlktVersion: String by project
-    implementation("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
+    implementation("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
     include("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
 
     val janksonVersion: String by project
     implementation("blue.endless:jankson:$janksonVersion")
     include("blue.endless:jankson:$janksonVersion")
 
-    val fabricPermsVersion: String by project
-    modImplementation("me.lucko:fabric-permissions-api:$fabricPermsVersion")
-    include("me.lucko:fabric-permissions-api:$fabricPermsVersion")
-
-    val modmenuVersion: String by project
-    modCompileOnly("com.terraformersmc:modmenu:$modmenuVersion") {
-        isTransitive = false
-    }
-    /*modLocalRuntime("com.terraformersmc:modmenu:$modmenuVersion") {
-        isTransitive = false
-    }*/
-
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-
-    testmodImplementation(sourceSets.main.get().output)
-
-    dokkaPlugin("me.fzzyhmstrs:internal-skip-plugin:1.0-SNAPSHOT")
-    dokkaPlugin("org.jetbrains.dokka:versioning-plugin:1.9.20")
-}
-
-loom {
-    runs {
-        create("testmodClient") {
-            client()
-            name = "Testmod Client"
-            source(sourceSets["testmod"])
-        }
-    }
 }
 
 tasks {
-    val javaVersion = JavaVersion.VERSION_17
+    val javaVersion = JavaVersion.VERSION_21
     withType<JavaCompile> {
         options.encoding = "UTF-8"
         sourceCompatibility = javaVersion.toString()
@@ -162,14 +94,25 @@ tasks {
     }
     jar {
         exclude("me/fzzyhmstrs/fzzy_config/examples/**")
-        from("LICENSE") { rename { "${it}_${base.archivesName.get()}" } }
+        from("LICENSE") { rename { "${base.archivesName.get()}_${it}" } }
     }
     jar {
         from( "credits.txt") { rename { "${base.archivesName.get()}_${it}" } }
     }
     processResources {
+        val loaderVersion: String by project
+        val kotlinForForgeVersion: String by project
         inputs.property("version", project.version)
-        filesMatching("fabric.mod.json") { expand(mutableMapOf("version" to project.version)) }
+        inputs.property("id", base.archivesName.get())
+        inputs.property("loaderVersion", loaderVersion)
+        inputs.property("kotlinForForgeVersion", kotlinForForgeVersion)
+        filesMatching("META-INF/neoforge.mods.toml") {
+            expand(mutableMapOf(
+                "version" to project.version,
+                "id" to base.archivesName.get(),
+                "loaderVersion" to loaderVersion,
+                "kotlinForForgeVersion" to kotlinForForgeVersion
+            )) }
     }
     java {
         toolchain { languageVersion.set(JavaLanguageVersion.of(javaVersion.toString())) }
@@ -179,67 +122,6 @@ tasks {
     }
     modrinth.get().group = "upload"
     modrinthSyncBody.get().group = "upload"
-}
-
-val testmodJar =  tasks.register("testmodJar", Jar::class) {
-    from(sourceSets["testmod"].output)
-    destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
-    archiveClassifier = "testmod"
-}
-
-val remapTestmodJar =  tasks.register("remapTestmodJar", RemapJarTask::class) {
-    dependsOn(testmodJar.get())
-    input.set(testmodJar.get().archiveFile)
-    archiveClassifier = "testmod"
-    addNestedDependencies = false
-    //destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
-}
-
-tasks.build {
-    dependsOn(remapTestmodJar.get())
-}
-
-tasks.withType<DokkaTask>().configureEach {
-
-    inputs.dir(file("dokka"))
-
-    val docVersionsDir = projectDir.resolve("build/dokka/version")
-    // The version for which you are currently generating docs
-    val currentVersion = project.version.toString()
-
-    // Set the output to a folder with all other versions
-    // as you'll need the current version for future builds
-    val currentDocsDir = docVersionsDir.resolve(currentVersion)
-    outputDirectory.set(currentDocsDir)
-    dokkaSourceSets.configureEach {
-        perPackageOption {
-            matchingRegex.set("me.fzzyhmstrs.fzzy_config.examples|me.fzzyhmstrs.fzzy_config.impl|me.fzzyhmstrs.fzzy_config.test|me.fzzyhmstrs.fzzy_config.updates|me.fzzyhmstrs.fzzy_config")
-            suppress.set(true)
-        }
-        includes.from(project.files(), "dokka/module.md")
-    }
-    pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
-        moduleName = "Fzzy Config"
-        customAssets = listOf(
-            file("dokka/assets/fc_banner.png"),
-            file("dokka/assets/discord_banner.png"),
-            file("dokka/assets/discord_small_banner.png"),
-            file("dokka/assets/wiki_banner.png"),
-            file("dokka/assets/wiki_small_banner.png"),
-            file("dokka/assets/docs_banner.png"),
-            file("dokka/assets/docs_small_banner.png"),
-            file("dokka/assets/cf_banner.png"),
-            file("dokka/assets/modrinth_banner.png"),
-            file("src/main/resources/assets/fzzy_config/icon.png"))
-        customStyleSheets = listOf(file("dokka/style.css"), file("dokka/logo-styles.css"))
-        templatesDir = file("dokka")
-        footerMessage = "(c) 2024 fzzyhmstrs"
-    }
-
-    pluginConfiguration<VersioningPlugin, VersioningConfiguration> {
-        olderVersionsDir = docVersionsDir
-        version = currentVersion
-    }
 }
 
 
@@ -255,14 +137,13 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
         versionName.set("${base.archivesName.get()}-$modVersion")
         versionType.set(releaseType)
         uploadFile.set(tasks.remapJar.get())
-        additionalFiles.add(File(tasks.remapSourcesJar.get().archiveFile.get().asFile.toString().replace(".jar", "-sources.jar")))
-        gameVersions.addAll(mcVersions.split(", "))
-        loaders.addAll("fabric", "quilt")
+        additionalFiles.add(tasks.remapSourcesJar.get().archiveFile)
+        gameVersions.addAll(mcVersions.split(","))
+        loaders.addAll("neoforge")
         detectLoaders.set(false)
         changelog.set(log.readText())
         dependencies {
-            required.project("fabric-api")
-            required.project("fabric-language-kotlin")
+            required.project("kotlin-for-forge")
         }
         debugMode.set(uploadDebugMode.toBooleanLenient() ?: true)
     }
@@ -280,22 +161,22 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             changelog = log
             changelogType = "markdown"
             this.releaseType = releaseType
-            for (ver in mcVersions.split(", ")) {
+            for (ver in mcVersions.split(",")) {
                 addGameVersion(ver)
             }
-            addGameVersion("Fabric")
-            addGameVersion("Quilt")
+            addGameVersion("NeoForge")
             mainArtifact(tasks.remapJar.get().archiveFile.get(), closureOf<CurseArtifact> {
                 displayName = "${base.archivesName.get()}-$modVersion"
                 relations(closureOf<CurseRelation> {
-                    this.requiredDependency("fabric-api")
-                    this.requiredDependency("fabric-language-kotlin")
+                    this.requiredDependency("kotlin-for-forge")
                 })
             })
-            addArtifact(File(tasks.remapSourcesJar.get().archiveFile.get().asFile.toString().replace(".jar", "-sources.jar")))
+            addArtifact(tasks.remapSourcesJar.get().archiveFile, closureOf<CurseArtifact> {
+                changelogType = "markdown"
+                changelog = "Source files for ${base.archivesName.get()}-$modVersion"
+            })
             relations(closureOf<CurseRelation> {
-                this.requiredDependency("fabric-api")
-                this.requiredDependency("fabric-language-kotlin")
+                this.requiredDependency("kotlin-for-forge")
             })
         })
         options(closureOf<Options> {
