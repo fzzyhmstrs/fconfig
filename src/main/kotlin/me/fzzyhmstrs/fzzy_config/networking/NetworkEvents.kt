@@ -87,15 +87,17 @@ internal object NetworkEvents {
 
     fun registerConfigurations(event: RegisterConfigurationTasksEvent) {
         event.register(object: ServerPlayerConfigurationTask {
+            private val key = ServerPlayerConfigurationTask.Key(ConfigSyncS2CCustomPayload.type.id)
             override fun sendPacket(sender: Consumer<Packet<*>>) {
                 SyncedConfigRegistry.onConfigure(
                     { _ -> true },
                     { payload -> sender.accept(payload.toVanillaClientbound()) }
                 )
+                event.listener.onTaskFinished(key)
             }
 
             override fun getKey(): ServerPlayerConfigurationTask.Key {
-                return ServerPlayerConfigurationTask.Key(ConfigSyncS2CCustomPayload.type.id)
+                return key
             }
 
         })

@@ -13,14 +13,17 @@ package me.fzzyhmstrs.fzzy_config.util
 import com.mojang.brigadier.CommandDispatcher
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.impl.QuarantinedUpdatesArgumentType
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import net.minecraft.command.argument.ArgumentTypes
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.neoforged.api.distmarker.Dist
+import net.neoforged.bus.api.IEventBus
 import net.neoforged.fml.ModList
 import net.neoforged.fml.loading.FMLEnvironment
 import net.neoforged.fml.loading.FMLPaths
@@ -49,12 +52,13 @@ internal object PlatformUtils {
     fun customScopes(): List<String> {
         val list: MutableList<String> = mutableListOf()
         for (container in ModList.get().mods) {
-            val customValue = container.modProperties.get("fzzy_config")
-            val test = container.modProperties.get("fzzy_test")
-            println(test)
-            println(test?.javaClass)
-            if (customValue !is String) continue
-            list.add(customValue)
+            val customValue = container.modProperties["fzzy_config"]
+            if (customValue is String) {
+                list.add(customValue)
+            } else if (customValue is List<*>) {
+                val values = customValue.nullCast<List<String>>() ?: continue
+                list.addAll(values)
+            }
         }
         return list
     } //ClientConfigRegistry
@@ -64,10 +68,11 @@ internal object PlatformUtils {
         return PermissionAPI.getPermission(player, node) == true
     } //COnfigApiImpl, elsewhere??
 
-    fun registerCommands() {
+    fun registerCommands(bus: IEventBus) {
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> registerCommands(event) }
         val commandArgumentTypes = DeferredRegister.create(RegistryKeys.COMMAND_ARGUMENT_TYPE, FC.MOD_ID)
-        commandArgumentTypes.register("quarantined_updates", Supplier { ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() }  })
+        commandArgumentTypes.register(bus)
+        commandArgumentTypes.register("quarantined_updates", Supplier { ArgumentTypes.registerByClass(QuarantinedUpdatesArgumentType::class.java, ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() })  })
     }
 
     private fun registerCommands(event: RegisterCommandsEvent) {
