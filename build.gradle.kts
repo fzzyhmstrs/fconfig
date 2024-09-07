@@ -24,13 +24,6 @@ plugins {
     id("com.matthewprenger.cursegradle") version "1.4.0"
 }
 
-buildscript {
-    dependencies {
-        classpath("org.jetbrains.dokka:dokka-base:1.9.20")
-        classpath("org.jetbrains.dokka:versioning-plugin:1.9.20")
-    }
-}
-
 base {
     val archivesBaseName: String by project
     archivesName.set(archivesBaseName)
