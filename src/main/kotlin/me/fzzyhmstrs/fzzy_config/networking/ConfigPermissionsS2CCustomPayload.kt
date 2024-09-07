@@ -22,6 +22,10 @@ class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: Mutable
         buf.writeMap(mutableMapOf<String, Boolean>(), { b, v -> b.writeString(v)}, { b, v -> b.writeBoolean(v) })
     }
 
+    override fun id(): Identifier {
+        return Companion.id
+    }
+
     override fun getId(): Identifier {
         return Companion.id
     }

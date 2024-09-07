@@ -22,31 +22,29 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
-import net.neoforged.fml.ModList
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent
-import net.neoforged.neoforge.client.event.ClientTickEvent
+import net.minecraft.util.Identifier
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
-import net.neoforged.neoforge.client.gui.IConfigScreenFactory
 import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.event.TickEvent
 import net.neoforged.neoforge.network.PacketDistributor
+import net.neoforged.neoforge.network.handling.ConfigurationPayloadContext
 import net.neoforged.neoforge.network.handling.IPayloadContext
 import net.neoforged.neoforge.network.registration.NetworkRegistry
 import java.util.*
-import java.util.function.Supplier
 
 internal object NetworkEventsClient {
 
-    fun canSend(id: CustomPayload.Id<*>): Boolean {
+    fun canSend(id: Identifier): Boolean {
         val handler = MinecraftClient.getInstance().networkHandler ?: return false
-        return NetworkRegistry.hasChannel(handler, id.id())
+        return NetworkRegistry.getInstance().isConnected(handler, id)
     }
 
     fun send(payload: CustomPayload) {
-        PacketDistributor.sendToServer(payload)
+        PacketDistributor.SERVER.noArg().send(payload)
     }
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
-        if (!canSend(SettingForwardCustomPayload.type)) {
+        if (!canSend(SettingForwardCustomPayload.id)) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
             FC.LOGGER.error("Can't forward setting; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("Setting not sent:")
@@ -58,7 +56,7 @@ internal object NetworkEventsClient {
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
-        if (!canSend(ConfigUpdateC2SCustomPayload.type)) {
+        if (!canSend(ConfigUpdateC2SCustomPayload.id)) {
             FC.LOGGER.error("Can't send Config Update; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("changes not sent:")
             for (change in changeHistory) {
@@ -69,18 +67,19 @@ internal object NetworkEventsClient {
         send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
     }
 
-    fun handleConfigurationConfigSync(payload: ConfigSyncS2CCustomPayload, context: IPayloadContext) {
+    fun handleConfigurationConfigSync(payload: ConfigSyncS2CCustomPayload, context: ConfigurationPayloadContext) {
         ClientConfigRegistry.receiveSync(
             payload.id,
             payload.serializedConfig
-        ) { text -> context.disconnect(text) }
+        ) { _ -> context.channelHandlerContext.disconnect() }
     }
 
     fun handleReloadConfigSync(payload: ConfigSyncS2CCustomPayload, context: IPayloadContext) {
+        val player = context.player().orElse(null) ?: return
         ClientConfigRegistry.receiveReloadSync(
             payload.id,
             payload.serializedConfig,
-            context.player()
+            player
         )
     }
 
@@ -89,14 +88,16 @@ internal object NetworkEventsClient {
     }
 
     fun handleUpdate(payload: ConfigUpdateS2CCustomPayload, context: IPayloadContext) {
-        ClientConfigRegistry.receiveUpdate(payload.updates, context.player())
+        val player = context.player().orElse(null) ?: return
+        ClientConfigRegistry.receiveUpdate(payload.updates, player)
     }
 
     fun handleSettingForward(payload: SettingForwardCustomPayload, context: IPayloadContext) {
         ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
     }
 
-    private fun handleTick(event: ClientTickEvent.Post) {
+    fun handleTick(event: TickEvent.ClientTickEvent) {
+        if (event.phase == TickEvent.Phase.START) return
         FCC.withScope { scopeToOpen ->
             if (scopeToOpen != "") {
                 ClientConfigRegistry.openScreen(scopeToOpen)
@@ -110,22 +111,8 @@ internal object NetworkEventsClient {
         }
     }
 
-    private fun registerConfigs(event: ClientPlayerNetworkEvent.LoggingIn) {
-        ModList.get().forEachModInOrder { modContainer ->
-            val id = modContainer.modId
-            if (ClientConfigRegistry.getScreenScopes().contains(id)) {
-                if (modContainer.getCustomExtension(IConfigScreenFactory::class.java).isEmpty) {
-                    modContainer.registerExtensionPoint(IConfigScreenFactory::class.java, Supplier {
-                        IConfigScreenFactory { _, screen -> ClientConfigRegistry.provideScreen(id) ?: screen }
-                    })
-                }
-            }
-        }
-    }
-
     fun registerClient() {
         NeoForge.EVENT_BUS.addListener(this::registerCommands)
-        NeoForge.EVENT_BUS.addListener(this::registerConfigs)
         NeoForge.EVENT_BUS.addListener(this::handleTick)
     }
 

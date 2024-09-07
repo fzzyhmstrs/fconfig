@@ -20,7 +20,6 @@ import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
@@ -220,7 +219,6 @@ internal object SyncedConfigRegistry {
             if (NetworkEvents.canSend(player, ConfigPermissionsS2CCustomPayload.id)) {
                 for ((id2, config2) in syncedConfigs) {
                     val perms = ConfigApiImpl.generatePermissionsReport(player, config2, 0)
-                    val buf = PacketByteBufs.create()
                     val payload = ConfigPermissionsS2CCustomPayload(id2, perms)
                     NetworkEvents.send(player, payload)
                 }

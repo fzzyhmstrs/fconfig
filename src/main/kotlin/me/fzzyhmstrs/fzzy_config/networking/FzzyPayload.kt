@@ -10,10 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
-import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
 
-interface FzzyPayload {
-    fun write(buf: PacketByteBuf)
+interface FzzyPayload: CustomPayload {
     fun getId(): Identifier
 }
