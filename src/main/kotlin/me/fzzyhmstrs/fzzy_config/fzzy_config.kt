@@ -43,7 +43,7 @@ class FzzyConfigNeoForge(bus: IEventBus) {
         NeoForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
         bus.addListener(NetworkEvents::registerPayloads)
         bus.addListener(NetworkEvents::registerConfigurations)
-        PlatformUtils.registerCommands()
+        PlatformUtils.registerCommands(bus)
     }
 }
 

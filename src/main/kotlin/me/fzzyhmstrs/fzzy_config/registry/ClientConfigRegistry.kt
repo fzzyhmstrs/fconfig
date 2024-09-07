@@ -175,8 +175,6 @@ internal object ClientConfigRegistry {
     //client
     internal fun updatePerms(id: String, perms: Map<String, Boolean>) {
         customPermissions[id] = perms
-        println("received perms")
-        println(customPermissions)
     }
 
     //client
