@@ -20,21 +20,24 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import net.neoforged.neoforge.event.OnDatapackSyncEvent
 import net.neoforged.neoforge.network.PacketDistributor
-import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
+import net.neoforged.neoforge.network.configuration.ICustomConfigurationTask
+import net.neoforged.neoforge.network.event.OnGameConfigurationEvent
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent
 import net.neoforged.neoforge.network.handling.IPayloadContext
+import net.neoforged.neoforge.network.handling.IPlayPayloadHandler
+import net.neoforged.neoforge.network.registration.IDirectionAwarePayloadHandlerBuilder
 import net.neoforged.neoforge.network.registration.NetworkRegistry
 import java.util.function.Consumer
 
 
 internal object NetworkEvents {
 
-    fun canSend(playerEntity: ServerPlayerEntity, id: CustomPayload.Id<*>): Boolean {
-        return NetworkRegistry.hasChannel(playerEntity.networkHandler, id.id())
+    fun canSend(playerEntity: ServerPlayerEntity, id: Identifier): Boolean {
+        return NetworkRegistry.getInstance().isConnected(playerEntity.networkHandler, id)
     }
 
     fun send(playerEntity: ServerPlayerEntity, payload: CustomPayload) {
-        PacketDistributor.sendToPlayer(playerEntity, payload)
+        PacketDistributor.PLAYER.with(playerEntity).send(payload)
     }
 
     private fun handleUpdate(payload: ConfigUpdateC2SCustomPayload, context: IPayloadContext) {
@@ -49,12 +52,8 @@ internal object NetworkEvents {
 
     }
 
-    private fun handleSettingForwardBidirectional(payload: SettingForwardCustomPayload, context: IPayloadContext) {
-        if (context.flow().isServerbound) {
-            this.handleSettingForward(payload, context)
-        } else {
-            NetworkEventsClient.handleSettingForward(payload, context)
-        }
+    private fun handleSettingForwardBidirectional(builder: IDirectionAwarePayloadHandlerBuilder<SettingForwardCustomPayload, IPlayPayloadHandler<SettingForwardCustomPayload>>) {
+        builder.server(this::handleSettingForward).client(NetworkEventsClient::handleSettingForward)
     }
 
     private fun handleSettingForward(payload: SettingForwardCustomPayload, context: IPayloadContext) {
@@ -87,13 +86,13 @@ internal object NetworkEvents {
         }
     }
 
-    fun registerConfigurations(event: RegisterConfigurationTasksEvent) {
-        event.register(object: ServerPlayerConfigurationTask {
-            private val key = ServerPlayerConfigurationTask.Key(ConfigSyncS2CCustomPayload.type.id)
-            override fun sendPacket(sender: Consumer<Packet<*>>) {
+    fun registerConfigurations(event: OnGameConfigurationEvent) {
+        event.register(object: ICustomConfigurationTask {
+            private val key = ServerPlayerConfigurationTask.Key(ConfigSyncS2CCustomPayload.id)
+            override fun run(consumer: Consumer<CustomPayload>) {
                 SyncedConfigRegistry.onConfigure(
                     { _ -> true },
-                    { payload -> sender.accept(CustomPayloadS2CPacket(payload)) }
+                    { payload -> consumer.accept(payload) }
                 )
                 event.listener.onTaskFinished(key)
             }
@@ -105,20 +104,20 @@ internal object NetworkEvents {
         })
     }
 
-    fun registerPayloads(event: RegisterPayloadHandlersEvent) {
+    fun registerPayloads(event: RegisterPayloadHandlerEvent) {
         val registrar = event.registrar("fzzy_config").optional()
 
-        registrar.configurationToClient(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec, NetworkEventsClient::handleConfigurationConfigSync)
+        registrar.configuration(ConfigSyncS2CCustomPayload.id, ::ConfigSyncS2CCustomPayload, NetworkEventsClient::handleConfigurationConfigSync)
 
-        registrar.playToClient(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec, NetworkEventsClient::handleReloadConfigSync)
+        registrar.play(ConfigSyncS2CCustomPayload.id, ::ConfigSyncS2CCustomPayload, NetworkEventsClient::handleReloadConfigSync)
 
-        registrar.playToClient(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec, NetworkEventsClient::handlePermsUpdate)
+        registrar.play(ConfigPermissionsS2CCustomPayload.id, ::ConfigPermissionsS2CCustomPayload, NetworkEventsClient::handlePermsUpdate)
 
-        registrar.playToClient(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec, NetworkEventsClient::handleUpdate)
+        registrar.play(ConfigUpdateS2CCustomPayload.id, ::ConfigUpdateS2CCustomPayload, NetworkEventsClient::handleUpdate)
 
-        registrar.playToClient(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec, this::handleUpdate)
+        registrar.play(ConfigUpdateC2SCustomPayload.id, ::ConfigUpdateC2SCustomPayload, this::handleUpdate)
 
-        registrar.playBidirectional(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec, this::handleSettingForwardBidirectional)
+        registrar.play(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, this::handleSettingForwardBidirectional)
 
         //PayloadTypeRegistry.configurationC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         //PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)

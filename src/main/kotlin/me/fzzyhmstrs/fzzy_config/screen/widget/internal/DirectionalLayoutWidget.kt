@@ -10,8 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.widget.GridWidget
 import net.minecraft.client.gui.widget.LayoutWidget
 import net.minecraft.client.gui.widget.Positioner
@@ -93,7 +91,6 @@ class DirectionalLayoutWidget (x: Int, y: Int, private val axis: DisplayAxis): L
         }
     }
 
-    @Environment(value = EnvType.CLIENT)
     enum class DisplayAxis {
         HORIZONTAL,
         VERTICAL;

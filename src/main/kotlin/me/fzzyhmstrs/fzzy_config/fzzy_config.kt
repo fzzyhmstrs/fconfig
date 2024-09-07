@@ -16,8 +16,12 @@ import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import net.minecraft.util.Identifier
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
+import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.fml.common.Mod
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
 import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.event.TickEvent
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -55,10 +59,11 @@ object FC {
 
 }
 
-@Mod(value = "fzzy_config", dist = [Dist.CLIENT])
-class FzzyConfigNeoForgeClient() {
+@Mod(value = "fzzy_config")
+class FzzyConfigNeoForgeClient(bus: IEventBus, dist: Dist) {
     init {
-        NetworkEventsClient.registerClient()
+        if (dist == Dist.CLIENT)
+            NetworkEventsClient.registerClient()
     }
 }
 
