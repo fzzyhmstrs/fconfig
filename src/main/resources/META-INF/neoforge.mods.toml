@@ -1,0 +1,35 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+issueTrackerURL = "https://github.com/fzzyhmstrs/fconfig/issues"
+license = "TDL-M (https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified)"
+
+[[mods]]
+modId = "fzzy_config"
+version = "${version}"
+displayName = "Fzzy Config"
+authors = "fzzyhmstrs"
+description = '''
+Configuration engine with automatic GUI generation, client-server syncing, powerful validation and error handling, and much more.
+'''
+logoFile = "icon.png"
+
+[[dependencies.fzzy_config]]
+modId = "neoforge"
+type = "REQUIRED"
+versionRange = "[21.0.0-beta,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.fzzy_config]]
+modId = "minecraft"
+type = "REQUIRED"
+versionRange = "[1.21,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.fzzy_config]]
+modId = "kotlinforforge"
+type = "REQUIRED"
+versionRange = "[5.3.0,)"
+ordering = "NONE"
+side = "BOTH"
