@@ -13,7 +13,7 @@
     "sources": "https://github.com/fzzyhmstrs/fconfig"
   },
   "license": "Timefall Development Licence - Modified 1.3",
-  "icon": "assets/fzzy_config/icon.png",
+  "icon": "icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
