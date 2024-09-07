@@ -31,7 +31,7 @@ base {
 
 val log: File = file("changelog.md")
 val modVersion: String by project
-version = modVersion
+version = "$modVersion+1.20.4+neoforge"
 val mavenGroup: String by project
 group = mavenGroup
 println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
@@ -77,7 +77,7 @@ dependencies {
 }
 
 tasks {
-    val javaVersion = JavaVersion.VERSION_21
+    val javaVersion = JavaVersion.VERSION_17
     withType<JavaCompile> {
         options.encoding = "UTF-8"
         sourceCompatibility = javaVersion.toString()
@@ -100,13 +100,14 @@ tasks {
         from( "credits.txt") { rename { "${base.archivesName.get()}_${it}" } }
     }
     processResources {
+        val modVersion: String by project
         val loaderVersion: String by project
         val kotlinForForgeVersion: String by project
         inputs.property("version", project.version)
         inputs.property("id", base.archivesName.get())
         inputs.property("loaderVersion", loaderVersion)
         inputs.property("kotlinForForgeVersion", kotlinForForgeVersion)
-        filesMatching("META-INF/neoforge.mods.toml") {
+        filesMatching("META-INF/mods.toml") {
             expand(mutableMapOf(
                 "version" to project.version,
                 "id" to base.archivesName.get(),
