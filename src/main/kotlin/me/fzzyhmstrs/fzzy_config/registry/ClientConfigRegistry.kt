@@ -71,6 +71,32 @@ internal object ClientConfigRegistry {
         }
     }
 
+    internal fun receiveReloadSync(id: String, configString: String, player: PlayerEntity) {
+        if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
+            val config = SyncedConfigRegistry.syncedConfigs()[id] ?: return
+            val errors = mutableListOf<String>()
+            val result = ConfigApi.deserializeConfig(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
+            val actions = result.get().getOrDefault(ACTIONS, setOf())
+            result.writeError(errors)
+            result.get().config.save() //save config to the client
+            if (actions.any { it.restartPrompt }) {
+                MinecraftClient.getInstance().execute {
+                    val records = result.get().get(RESTART_RECORDS)
+                    if (!records.isNullOrEmpty()) {
+                        FC.LOGGER.info("Client prompted for a restart due to received config updates")
+                        FC.LOGGER.info("Restart-prompting updates:")
+                        for (record in records) {
+                            FC.LOGGER.info(record)
+                        }
+                    }
+                }
+            }
+            for (action in actions) {
+                player.sendMessage(action.clientPrompt)
+            }
+        }
+    }
+
     //client
     internal fun receivePerms(id: String, perms: Map<String, Boolean>) {
         updatePerms(id, perms)

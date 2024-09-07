@@ -18,19 +18,35 @@ import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.client.MinecraftClient
+import net.minecraft.network.packet.CustomPayload
+import net.minecraft.server.command.CommandManager
+import net.minecraft.server.command.ServerCommandSource
+import net.neoforged.fml.ModList
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent
+import net.neoforged.neoforge.client.event.ClientTickEvent
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory
+import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.network.PacketDistributor
+import net.neoforged.neoforge.network.handling.IPayloadContext
+import net.neoforged.neoforge.network.registration.NetworkRegistry
 import java.util.*
+import java.util.function.Supplier
 
 internal object NetworkEventsClient {
 
+    fun canSend(id: CustomPayload.Id<*>): Boolean {
+        val handler = MinecraftClient.getInstance().networkHandler ?: return false
+        return NetworkRegistry.hasChannel(handler, id.id())
+    }
+
+    fun send(payload: CustomPayload) {
+        PacketDistributor.sendToServer(payload)
+    }
+
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
-        if (!ClientPlayNetworking.canSend(SettingForwardCustomPayload.id)) {
+        if (!canSend(SettingForwardCustomPayload.type)) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
             FC.LOGGER.error("Can't forward setting; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("Setting not sent:")
@@ -38,14 +54,11 @@ internal object NetworkEventsClient {
             FC.LOGGER.warn(summary)
             return
         }
-        val payload = SettingForwardCustomPayload(update, player, scope, summary)
-        val buf = PacketByteBufs.create()
-        payload.write(buf)
-        ClientPlayNetworking.send(payload.getId(), buf)
+        send(SettingForwardCustomPayload(update, player, scope, summary))
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
-        if (!ClientPlayNetworking.canSend(ConfigUpdateC2SCustomPayload.id)) {
+        if (!canSend(ConfigUpdateC2SCustomPayload.type)) {
             FC.LOGGER.error("Can't send Config Update; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("changes not sent:")
             for (change in changeHistory) {
@@ -53,69 +66,84 @@ internal object NetworkEventsClient {
             }
             return
         }
-        val payload = ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm)
-        val buf = PacketByteBufs.create()
-        payload.write(buf)
-        ClientPlayNetworking.send(payload.getId(), buf)
+        send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
+    }
+
+    fun handleConfigurationConfigSync(payload: ConfigSyncS2CCustomPayload, context: IPayloadContext) {
+        ClientConfigRegistry.receiveSync(
+            payload.id,
+            payload.serializedConfig
+        ) { text -> context.disconnect(text) }
+    }
+
+    fun handleReloadConfigSync(payload: ConfigSyncS2CCustomPayload, context: IPayloadContext) {
+        ClientConfigRegistry.receiveReloadSync(
+            payload.id,
+            payload.serializedConfig,
+            context.player()
+        )
+    }
+
+    fun handlePermsUpdate(payload: ConfigPermissionsS2CCustomPayload, context: IPayloadContext) {
+        ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
+    }
+
+    fun handleUpdate(payload: ConfigUpdateS2CCustomPayload, context: IPayloadContext) {
+        ClientConfigRegistry.receiveUpdate(payload.updates, context.player())
+    }
+
+    fun handleSettingForward(payload: SettingForwardCustomPayload, context: IPayloadContext) {
+        ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
+    }
+
+    private fun handleTick(event: ClientTickEvent.Post) {
+        FCC.withScope { scopeToOpen ->
+            if (scopeToOpen != "") {
+                ClientConfigRegistry.openScreen(scopeToOpen)
+            }
+        }
+
+        FCC.withRestart { openRestartScreen ->
+            if (openRestartScreen) {
+                ConfigApiImplClient.openRestartScreen()
+            }
+        }
+    }
+
+    private fun registerConfigs(event: ClientPlayerNetworkEvent.LoggingIn) {
+        ModList.get().forEachModInOrder { modContainer ->
+            val id = modContainer.modId
+            if (ClientConfigRegistry.getScreenScopes().contains(id)) {
+                if (modContainer.getCustomExtension(IConfigScreenFactory::class.java).isEmpty) {
+                    modContainer.registerExtensionPoint(IConfigScreenFactory::class.java, Supplier {
+                        IConfigScreenFactory { _, screen -> ClientConfigRegistry.provideScreen(id) ?: screen }
+                    })
+                }
+            }
+        }
     }
 
     fun registerClient() {
-
-        ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
-            registerClientCommands(dispatcher)
-        }
-
-        ClientTickEvents.START_CLIENT_TICK.register { _ ->
-            FCC.withScope { scopeToOpen ->
-                if (scopeToOpen != "") {
-                    ClientConfigRegistry.openScreen(scopeToOpen)
-                }
-            }
-
-            FCC.withRestart { openRestartScreen ->
-                if (openRestartScreen) {
-                    ConfigApiImplClient.openRestartScreen()
-                }
-            }
-        }
-
-        ClientPlayNetworking.registerGlobalReceiver(ConfigPermissionsS2CCustomPayload.id) { _, _, buf, _ ->
-            val payload = ConfigPermissionsS2CCustomPayload(buf)
-            ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
-        }
-
-
-        ClientPlayNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.id) { client, _, buf, _ ->
-            val payload = ConfigSyncS2CCustomPayload(buf)
-            ClientConfigRegistry.receiveSync(
-                payload.id,
-                payload.serializedConfig
-            ) { _ -> client.world?.disconnect(); client.disconnect() }
-        }
-
-        ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.id) { client, _, buf, _ ->
-            val player = client.player ?: return@registerGlobalReceiver
-            val payload = ConfigUpdateS2CCustomPayload(buf)
-            ClientConfigRegistry.receiveUpdate(payload.updates, player)
-        }
-
-        ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.id) { _, _, buf, _ ->
-            val payload = SettingForwardCustomPayload(buf)
-            ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
-        }
+        NeoForge.EVENT_BUS.addListener(this::registerCommands)
+        NeoForge.EVENT_BUS.addListener(this::registerConfigs)
+        NeoForge.EVENT_BUS.addListener(this::handleTick)
     }
 
-    private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>) {
+    private fun registerCommands(event: RegisterClientCommandsEvent) {
+        registerClientCommands(event.dispatcher)
+    }
+
+    private fun registerClientCommands(dispatcher: CommandDispatcher<ServerCommandSource>) {
         dispatcher.register(
-            ClientCommandManager.literal("configure")
-                .then(ClientCommandManager.argument("base_scope", ValidScopesArgumentType())
+            CommandManager.literal("configure")
+                .then(CommandManager.argument("base_scope", ValidScopesArgumentType())
                     .executes{ context ->
                         val scope = ValidScopesArgumentType.getValidScope(context, "base_scope")
                         FCC.openScopedScreen(scope ?: "")
                         1
                     }
                     .then(
-                        ClientCommandManager.argument("sub_scope", ValidSubScopesArgumentType())
+                        CommandManager.argument("sub_scope", ValidSubScopesArgumentType())
                         .executes{ context ->
                             val scope = ValidScopesArgumentType.getValidScope(context, "base_scope")
                             val subScope = ValidSubScopesArgumentType.getValidSubScope(context, "sub_scope")

@@ -10,102 +10,123 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
-import net.fabricmc.fabric.api.networking.v1.*
-import net.minecraft.server.network.ServerPlayNetworkHandler
+import net.minecraft.network.packet.CustomPayload
+import net.minecraft.network.packet.Packet
+import net.minecraft.server.network.ServerPlayerConfigurationTask
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
+import net.neoforged.neoforge.event.OnDatapackSyncEvent
+import net.neoforged.neoforge.network.PacketDistributor
+import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
+import net.neoforged.neoforge.network.handling.IPayloadContext
+import net.neoforged.neoforge.network.registration.NetworkRegistry
+import java.util.function.Consumer
 
 
 internal object NetworkEvents {
 
-    fun canSend(playerEntity: ServerPlayerEntity, id: Identifier): Boolean {
-        return ServerPlayNetworking.canSend(playerEntity, id)
+    fun canSend(playerEntity: ServerPlayerEntity, id: CustomPayload.Id<*>): Boolean {
+        return NetworkRegistry.hasChannel(playerEntity.networkHandler, id.id())
     }
 
-    fun send(playerEntity: ServerPlayerEntity, payload: FzzyPayload) {
-        val buf = PacketByteBufs.create()
-        payload.write(buf)
-        ServerPlayNetworking.send(playerEntity, payload.getId(), buf)
+    fun send(playerEntity: ServerPlayerEntity, payload: CustomPayload) {
+        PacketDistributor.sendToPlayer(playerEntity, payload)
     }
 
-    fun syncConfigs(handler: ServerPlayNetworkHandler) {
-        for ((id, config) in SyncedConfigRegistry.syncedConfigs()) {
-            val syncErrors = mutableListOf<String>()
-            val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
-            if (syncErrors.isNotEmpty()) {
-                val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C configuration stage sync.")
-                syncError.writeError(syncErrors)
-            }
-            val buf = PacketByteBufs.create()
-            payload.write(buf)
-            ServerPlayNetworking.send(handler.player, ConfigSyncS2CCustomPayload.id, buf)
+    private fun handleUpdate(payload: ConfigUpdateC2SCustomPayload, context: IPayloadContext) {
+        SyncedConfigRegistry.receiveConfigUpdate(
+            payload.updates,
+            context.player().cast<ServerPlayerEntity>().server,
+            context.player().cast(),
+            payload.changeHistory,
+            { player, id -> canSend(player, id) },
+            { player, pl -> send(player, pl) }
+        )
+
+    }
+
+    private fun handleSettingForwardBidirectional(payload: SettingForwardCustomPayload, context: IPayloadContext) {
+        if (context.flow().isServerbound) {
+            this.handleSettingForward(payload, context)
+        } else {
+            NetworkEventsClient.handleSettingForward(payload, context)
         }
     }
 
+    private fun handleSettingForward(payload: SettingForwardCustomPayload, context: IPayloadContext) {
+        SyncedConfigRegistry.receiveSettingForward(
+            payload.player,
+            context.player().cast(),
+            payload.scope,
+            payload.update,
+            payload.summary,
+            { player, id -> canSend(player, id) },
+            { player, pl -> send(player, pl) }
+        )
+    }
 
-    fun registerServer() {
-
-        ServerPlayConnectionEvents.JOIN.register { handler, sender, server ->
-            SyncedConfigRegistry.onJoin(
-                handler.player,
-                server,
-                { player, id -> ServerPlayNetworking.canSend(player, id) },
-                { _, payload ->
-                    val buf = PacketByteBufs.create()
-                    payload.write(buf)
-                    sender.sendPacket(payload.getId(), buf)
-                }
-            )
-        }
-
-        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, _ ->
+    fun registerDataSync(event: OnDatapackSyncEvent) {
+        val serverPlayer = event.player
+        if (serverPlayer == null) {
             SyncedConfigRegistry.onEndDataReload(
-                server.playerManager.playerList,
-                { player, id -> ServerPlayNetworking.canSend(player, id) },
-                { player, payload ->
-                    val buf = PacketByteBufs.create()
-                    payload.write(buf)
-                    ServerPlayNetworking.send(player, payload.getId(), buf)
-                }
+                event.relevantPlayers.toList(),
+                { player, id -> canSend(player, id) },
+                { player, payload -> send(player, payload) }
             )
-        }
-
-        ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.id) { server, serverPlayer, _, buf, _ ->
-            val payload = ConfigUpdateC2SCustomPayload(buf)
-            SyncedConfigRegistry.receiveConfigUpdate(
-                payload.updates,
-                server,
+        } else {
+            SyncedConfigRegistry.onJoin(
                 serverPlayer,
-                payload.changeHistory,
-                { player, id -> ServerPlayNetworking.canSend(player, id) },
-                { player, pl ->
-                    val b = PacketByteBufs.create()
-                    pl.write(b)
-                    ServerPlayNetworking.send(player, pl.getId(), b)
-                }
+                serverPlayer.server,
+                { player, id -> this.canSend(player, id) },
+                { player, payload -> this.send(player, payload) }
             )
         }
+    }
 
-        ServerPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.id) { _, serverPlayer, _, buf, _ ->
-            val payload = SettingForwardCustomPayload(buf)
-            SyncedConfigRegistry.receiveSettingForward(
-                payload.player,
-                serverPlayer,
-                payload.scope,
-                payload.update,
-                payload.summary,
-                { player, id -> ServerPlayNetworking.canSend(player, id) },
-                { player, pl ->
-                    val b = PacketByteBufs.create()
-                    pl.write(b)
-                    ServerPlayNetworking.send(player, pl.getId(), b)
-                }
-            )
-        }
+    fun registerConfigurations(event: RegisterConfigurationTasksEvent) {
+        event.register(object: ServerPlayerConfigurationTask {
+            override fun sendPacket(sender: Consumer<Packet<*>>) {
+                SyncedConfigRegistry.onConfigure(
+                    { _ -> true },
+                    { payload -> sender.accept(payload.toVanillaClientbound()) }
+                )
+            }
+
+            override fun getKey(): ServerPlayerConfigurationTask.Key {
+                return ServerPlayerConfigurationTask.Key(ConfigSyncS2CCustomPayload.type.id)
+            }
+
+        })
+    }
+
+    fun registerPayloads(event: RegisterPayloadHandlersEvent) {
+        val registrar = event.registrar("fzzy_config").optional()
+
+        registrar.configurationToClient(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec, NetworkEventsClient::handleConfigurationConfigSync)
+
+        registrar.playToClient(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec, NetworkEventsClient::handleReloadConfigSync)
+
+        registrar.playToClient(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec, NetworkEventsClient::handlePermsUpdate)
+
+        registrar.playToClient(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec, NetworkEventsClient::handleUpdate)
+
+        registrar.playToClient(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec, this::handleUpdate)
+
+        registrar.playBidirectional(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec, this::handleSettingForwardBidirectional)
+
+        //PayloadTypeRegistry.configurationC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        //PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        //PayloadTypeRegistry.playS2C().register(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec)
+        //PayloadTypeRegistry.playC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        //PayloadTypeRegistry.playS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        //PayloadTypeRegistry.playC2S().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
+        //PayloadTypeRegistry.playS2C().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
+        //PayloadTypeRegistry.playC2S().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
+        //PayloadTypeRegistry.playS2C().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
+        //PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
+        //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
     }
 }

@@ -13,9 +13,11 @@ package me.fzzyhmstrs.fzzy_config
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEvents
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
-import net.fabricmc.api.ClientModInitializer
-import net.fabricmc.api.ModInitializer
 import net.minecraft.util.Identifier
+import net.neoforged.api.distmarker.Dist
+import net.neoforged.bus.api.IEventBus
+import net.neoforged.fml.common.Mod
+import net.neoforged.neoforge.common.NeoForge
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -33,27 +35,39 @@ internal fun String.fcId(): Identifier {
     return Identifier(FC.MOD_ID, this)
 }
 
-@Internal
-object FC: ModInitializer {
-    internal const val MOD_ID = "fzzy_config"
-    internal val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
 
-    override fun onInitialize() {
-        NetworkEvents.registerServer()
+
+@Mod(value = "fzzy_config")
+class FzzyConfigNeoForge(bus: IEventBus) {
+    init {
+        NeoForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
+        bus.addListener(NetworkEvents::registerPayloads)
+        bus.addListener(NetworkEvents::registerConfigurations)
         PlatformUtils.registerCommands()
     }
 }
 
 
 @Internal
-object FCC: ClientModInitializer {
+object FC {
+    internal const val MOD_ID = "fzzy_config"
+    internal val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
+
+}
+
+@Mod(value = "fzzy_config", dist = [Dist.CLIENT])
+class FzzyConfigNeoForgeClient() {
+    init {
+        NetworkEventsClient.registerClient()
+    }
+}
+
+
+@Internal
+object FCC {
 
     private var scopeToOpen = ""
     private var openRestartScreen = false
-
-    override fun onInitializeClient() {
-        NetworkEventsClient.registerClient()
-    }
 
     fun openScopedScreen(scope: String) {
         this.scopeToOpen = scope
