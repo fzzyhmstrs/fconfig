@@ -77,8 +77,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
         manager = ConfigUpdateManager(configs, forwardedUpdates, ConfigApiImplClient.getPlayerPermissionLevel())
         cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
         cachedPerms = ConfigApiImplClient.getPerms()
-        println(cachedPerms)
-        println(cachedPerms)
         prepareScreens()
     }
 
