@@ -13,20 +13,17 @@ Configuration engine with automatic GUI generation, client-server syncing, power
 '''
 logoFile = "icon.png"
 
-[modproperties.fzzy_config]
-fzzy_test = ["value","value2"]
-
 [[dependencies.fzzy_config]]
 modId = "neoforge"
 type = "REQUIRED"
-versionRange = "[21.0.0-beta,)"
+versionRange = "[20.6.0-beta,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.fzzy_config]]
 modId = "minecraft"
 type = "REQUIRED"
-versionRange = "[1.21,)"
+versionRange = "[1.20.5,)"
 ordering = "NONE"
 side = "BOTH"
 
