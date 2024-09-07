@@ -2,3 +2,8 @@ BackupCup of "https://www.curseforge.com/members/backupcup/projects" and "https:
 * entry_ok.png
 * entry_error.png
 * ingredient.png
+* action_reload_both.png
+* action_reload_data.png
+* action_reload_resources.png
+* action_relog.png
+* action_restart.png
