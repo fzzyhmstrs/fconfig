@@ -584,7 +584,7 @@ internal object ConfigApiImpl {
 
     ////////////////// Utilities
 
-    internal fun <T: Any> generatePermissionsReport(player: PlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
+    internal fun <T: Any> generatePermissionsReport(player: ServerPlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
         val map: MutableMap<String, Boolean> = mutableMapOf()
 
         walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _ ->

@@ -74,10 +74,10 @@ dependencies {
 
 
     val kotlinForForgeVersion: String by project
-    modImplementation("thedarkcolour:kotlinforforge:$kotlinForForgeVersion")
+    modImplementation("thedarkcolour:kotlinforforge-neoforge:$kotlinForForgeVersion")
 
     val tomlktVersion: String by project
-    implementation("net.peanuuutz.tomlkt:tomlkt:$tomlktVersion")
+    implementation("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
     include("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
 
     val janksonVersion: String by project
