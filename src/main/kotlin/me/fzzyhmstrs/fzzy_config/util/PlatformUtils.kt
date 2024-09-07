@@ -13,17 +13,14 @@ package me.fzzyhmstrs.fzzy_config.util
 import com.mojang.brigadier.CommandDispatcher
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.impl.QuarantinedUpdatesArgumentType
-import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.command.argument.serialize.ConstantArgumentSerializer
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
 import net.neoforged.api.distmarker.Dist
-import net.neoforged.fml.ModContainer
 import net.neoforged.fml.ModList
 import net.neoforged.fml.loading.FMLEnvironment
 import net.neoforged.fml.loading.FMLPaths
@@ -32,7 +29,6 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent
 import net.neoforged.neoforge.registries.DeferredRegister
 import net.neoforged.neoforge.server.permission.PermissionAPI
 import java.io.File
-import java.util.function.BiFunction
 import java.util.function.Supplier
 
 internal object PlatformUtils {
@@ -69,9 +65,9 @@ internal object PlatformUtils {
     } //COnfigApiImpl, elsewhere??
 
     fun registerCommands() {
-        NeoForge.EVENT_BUS.addListener(this::registerCommands)
-        val COMMAND_ARGUMENT_TYPES = DeferredRegister.create(RegistryKeys.COMMAND_ARGUMENT_TYPE, FC.MOD_ID)
-        COMMAND_ARGUMENT_TYPES.register("quarantined_updates", Supplier { ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() }  })
+        NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> registerCommands(event) }
+        val commandArgumentTypes = DeferredRegister.create(RegistryKeys.COMMAND_ARGUMENT_TYPE, FC.MOD_ID)
+        commandArgumentTypes.register("quarantined_updates", Supplier { ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() }  })
     }
 
     private fun registerCommands(event: RegisterCommandsEvent) {

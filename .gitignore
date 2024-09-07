@@ -39,5 +39,4 @@ bin/
 # fabric
 
 run/
-docs/
 /.kotlin/
