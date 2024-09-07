@@ -13,9 +13,6 @@ Configuration engine with automatic GUI generation, client-server syncing, power
 '''
 logoFile = "icon.png"
 
-[modproperties.fzzy_config]
-fzzy_test = ["value","value2"]
-
 [[dependencies.fzzy_config]]
 modId = "neoforge"
 type = "REQUIRED"
