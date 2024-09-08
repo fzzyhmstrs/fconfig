@@ -1,4 +1,5 @@
 ### Additions
+* **Port to NeoForge! This is an initial port, please notify me of any problems you run into in my issue tracker or discord**
 * Added `@WithCustomPerms` and `@AdminLevel` for definition of user permissions using LuckPerms/Forge Permissions API "Node" style permissions
   * Added new update quarantine. If an update is suspect, Fzzy Config will quarantine it instead of applying it or outright deleting it. Admins will be notified and have the opportunity to inspect it with a new `/configure_update` command, accepting or denying the update as needed.
 * Added new `@RequiresAction` annotation that supplants the functionality of the now-deprecated RequiresRestart
