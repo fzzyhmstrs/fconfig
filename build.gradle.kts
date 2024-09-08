@@ -241,7 +241,7 @@ tasks.withType<DokkaTask>().configureEach {
             file("dokka/assets/docs_small_banner.png"),
             file("dokka/assets/cf_banner.png"),
             file("dokka/assets/modrinth_banner.png"),
-            file("src/main/resources/assets/fzzy_config/icon.png"))
+            file("src/main/resources/icon.png"))
         customStyleSheets = listOf(file("dokka/style.css"),file("dokka/logo-styles.css"))
         templatesDir = file("dokka")
         footerMessage = "(c) 2024 fzzyhmstrs"
