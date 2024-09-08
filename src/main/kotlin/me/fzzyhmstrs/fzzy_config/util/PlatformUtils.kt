@@ -22,22 +22,22 @@ import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
-import net.neoforged.api.distmarker.Dist
-import net.neoforged.bus.api.IEventBus
-import net.neoforged.fml.ModList
-import net.neoforged.fml.loading.FMLEnvironment
-import net.neoforged.fml.loading.FMLPaths
-import net.neoforged.neoforge.common.NeoForge
-import net.neoforged.neoforge.event.RegisterCommandsEvent
-import net.neoforged.neoforge.registries.DeferredRegister
-import net.neoforged.neoforge.server.permission.PermissionAPI
+import net.minecraftforge.api.distmarker.Dist
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.event.RegisterCommandsEvent
+import net.minecraftforge.eventbus.api.IEventBus
+import net.minecraftforge.fml.ModList
+import net.minecraftforge.fml.loading.FMLPaths
+import net.minecraftforge.forgespi.Environment
+import net.minecraftforge.registries.DeferredRegister
+import net.minecraftforge.server.permission.PermissionAPI
 import java.io.File
 import java.util.function.Supplier
 
 internal object PlatformUtils {
 
     fun isClient(): Boolean {
-        return FMLEnvironment.dist == Dist.CLIENT
+        return Environment.get().dist == Dist.CLIENT
     }
 
     fun configDir(): File {
@@ -69,7 +69,7 @@ internal object PlatformUtils {
     } //COnfigApiImpl, elsewhere??
 
     fun registerCommands(bus: IEventBus) {
-        NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> registerCommands(event) }
+        MinecraftForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> registerCommands(event) }
         val commandArgumentTypes = DeferredRegister.create(RegistryKeys.COMMAND_ARGUMENT_TYPE, FC.MOD_ID)
         commandArgumentTypes.register(bus)
         commandArgumentTypes.register("quarantined_updates", Supplier { ArgumentTypes.registerByClass(QuarantinedUpdatesArgumentType::class.java, ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() })  })

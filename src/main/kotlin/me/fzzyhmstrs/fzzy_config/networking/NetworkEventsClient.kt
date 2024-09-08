@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import com.mojang.brigadier.CommandDispatcher
+import io.netty.buffer.Unpooled
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.FCC
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
@@ -19,28 +20,29 @@ import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.packet.Packet
+import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.Identifier
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
-import net.neoforged.neoforge.common.NeoForge
-import net.neoforged.neoforge.event.TickEvent
-import net.neoforged.neoforge.network.PacketDistributor
-import net.neoforged.neoforge.network.handling.ConfigurationPayloadContext
-import net.neoforged.neoforge.network.handling.IPayloadContext
-import net.neoforged.neoforge.network.registration.NetworkRegistry
+import net.minecraftforge.client.event.RegisterClientCommandsEvent
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.event.TickEvent
+import net.minecraftforge.network.NetworkEvent
+import net.minecraftforge.network.PacketDistributor
 import java.util.*
+import java.util.function.Supplier
 
 internal object NetworkEventsClient {
 
     fun canSend(id: Identifier): Boolean {
         val handler = MinecraftClient.getInstance().networkHandler ?: return false
-        return NetworkRegistry.getInstance().isConnected(handler, id)
+        return handler.isConnectionOpen
     }
 
-    fun send(payload: CustomPayload) {
-        PacketDistributor.SERVER.noArg().send(payload)
+    fun send(packet: Packet<*>) {
+        PacketDistributor.SERVER.noArg().send(packet)
     }
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
@@ -52,7 +54,10 @@ internal object NetworkEventsClient {
             FC.LOGGER.warn(summary)
             return
         }
-        send(SettingForwardCustomPayload(update, player, scope, summary))
+        val payload = SettingForwardCustomPayload(update, player, scope, summary)
+        val buf = PacketByteBuf(Unpooled.buffer())
+        payload.write(buf)
+        send(CustomPayloadC2SPacket(payload.getId(), buf))
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
@@ -64,35 +69,50 @@ internal object NetworkEventsClient {
             }
             return
         }
-        send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
+        val payload = ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm)
+        val buf = PacketByteBuf(Unpooled.buffer())
+        payload.write(buf)
+        send(CustomPayloadC2SPacket(payload.getId(), buf))
     }
 
-    fun handleConfigurationConfigSync(payload: ConfigSyncS2CCustomPayload, context: ConfigurationPayloadContext) {
+    fun handleConfigurationConfigSync(payload: ConfigSyncS2CCustomPayload, context: Supplier<NetworkEvent.Context>) {
         ClientConfigRegistry.receiveSync(
             payload.id,
             payload.serializedConfig
-        ) { _ -> context.channelHandlerContext.disconnect() }
+        ) { text -> context.get().networkManager.disconnect(text) }
+        context.get().packetHandled = true
     }
 
-    fun handleReloadConfigSync(payload: ConfigSyncS2CCustomPayload, context: IPayloadContext) {
-        val player = context.player().orElse(null) ?: return
+    fun handleReloadConfigSync(payload: ConfigReloadSyncS2CCustomPayload, context: Supplier<NetworkEvent.Context>) {
+        val player = MinecraftClient.getInstance().player
+        if (player == null) {
+            context.get().packetHandled = true
+            return
+        }
         ClientConfigRegistry.receiveReloadSync(
             payload.id,
             payload.serializedConfig,
             player
         )
+        context.get().packetHandled = true
     }
 
-    fun handlePermsUpdate(payload: ConfigPermissionsS2CCustomPayload, context: IPayloadContext) {
+    fun handlePermsUpdate(payload: ConfigPermissionsS2CCustomPayload, context: Supplier<NetworkEvent.Context>) {
         ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
+        context.get().packetHandled = true
     }
 
-    fun handleUpdate(payload: ConfigUpdateS2CCustomPayload, context: IPayloadContext) {
-        val player = context.player().orElse(null) ?: return
+    fun handleUpdate(payload: ConfigUpdateS2CCustomPayload, context: Supplier<NetworkEvent.Context>) {
+        val player = MinecraftClient.getInstance().player
+        if (player == null) {
+            context.get().packetHandled = true
+            return
+        }
         ClientConfigRegistry.receiveUpdate(payload.updates, player)
+        context.get().packetHandled = true
     }
 
-    fun handleSettingForward(payload: SettingForwardCustomPayload, context: IPayloadContext) {
+    fun handleSettingForward(payload: SettingForwardCustomPayload, context: Supplier<NetworkEvent.Context>) {
         ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
     }
 
@@ -112,8 +132,8 @@ internal object NetworkEventsClient {
     }
 
     fun registerClient() {
-        NeoForge.EVENT_BUS.addListener(this::registerCommands)
-        NeoForge.EVENT_BUS.addListener(this::handleTick)
+        MinecraftForge.EVENT_BUS.addListener(this::registerCommands)
+        MinecraftForge.EVENT_BUS.addListener(this::handleTick)
     }
 
     private fun registerCommands(event: RegisterClientCommandsEvent) {

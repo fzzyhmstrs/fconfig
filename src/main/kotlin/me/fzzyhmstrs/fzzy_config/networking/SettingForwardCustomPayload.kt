@@ -26,10 +26,6 @@ internal class SettingForwardCustomPayload(val update: String, val player: UUID,
         buf.writeString(summary)
     }
 
-    override fun id(): Identifier {
-        return Companion.id
-    }
-
     override fun getId(): Identifier {
         return Companion.id
     }

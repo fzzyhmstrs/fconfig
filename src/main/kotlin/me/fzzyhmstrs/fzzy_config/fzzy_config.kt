@@ -14,14 +14,10 @@ import me.fzzyhmstrs.fzzy_config.networking.NetworkEvents
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import net.minecraft.util.Identifier
-import net.neoforged.api.distmarker.Dist
-import net.neoforged.bus.api.IEventBus
-import net.neoforged.bus.api.SubscribeEvent
-import net.neoforged.fml.common.Mod
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent
-import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
-import net.neoforged.neoforge.common.NeoForge
-import net.neoforged.neoforge.event.TickEvent
+import net.minecraftforge.api.distmarker.Dist
+import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.eventbus.api.IEventBus
+import net.minecraftforge.fml.common.Mod
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -44,8 +40,8 @@ internal fun String.fcId(): Identifier {
 @Mod(value = "fzzy_config")
 class FzzyConfigNeoForge(bus: IEventBus) {
     init {
-        NeoForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
-        bus.addListener(NetworkEvents::registerPayloads)
+        MinecraftForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
+        NetworkEvents.registerPayloads()
         bus.addListener(NetworkEvents::registerConfigurations)
         PlatformUtils.registerCommands(bus)
     }

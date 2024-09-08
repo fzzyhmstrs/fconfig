@@ -10,114 +10,204 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
+import io.netty.buffer.Unpooled
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.Packet
-import net.minecraft.network.packet.s2c.common.CustomPayloadS2CPacket
-import net.minecraft.server.network.ServerPlayerConfigurationTask
+import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
-import net.neoforged.neoforge.event.OnDatapackSyncEvent
-import net.neoforged.neoforge.network.PacketDistributor
-import net.neoforged.neoforge.network.configuration.ICustomConfigurationTask
-import net.neoforged.neoforge.network.event.OnGameConfigurationEvent
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlerEvent
-import net.neoforged.neoforge.network.handling.IPayloadContext
-import net.neoforged.neoforge.network.handling.IPlayPayloadHandler
-import net.neoforged.neoforge.network.registration.IDirectionAwarePayloadHandlerBuilder
-import net.neoforged.neoforge.network.registration.NetworkRegistry
-import java.util.function.Consumer
+import net.minecraftforge.event.OnDatapackSyncEvent
+import net.minecraftforge.network.NetworkDirection
+import net.minecraftforge.network.NetworkEvent
+import net.minecraftforge.network.NetworkRegistry
+import net.minecraftforge.network.PacketDistributor
+import java.util.function.Supplier
 
 
 internal object NetworkEvents {
 
+    @Suppress("UNUSED_PARAMETER")
     fun canSend(playerEntity: ServerPlayerEntity, id: Identifier): Boolean {
-        return NetworkRegistry.getInstance().isConnected(playerEntity.networkHandler, id)
+        return playerEntity.networkHandler.isConnectionOpen
     }
 
-    fun send(playerEntity: ServerPlayerEntity, payload: CustomPayload) {
-        PacketDistributor.PLAYER.with(playerEntity).send(payload)
+    fun send(playerEntity: ServerPlayerEntity, packet: Packet<*>) {
+        PacketDistributor.PLAYER.with { playerEntity }.send(packet)
     }
 
-    private fun handleUpdate(payload: ConfigUpdateC2SCustomPayload, context: IPayloadContext) {
+    private fun handleUpdate(payload: ConfigUpdateC2SCustomPayload, context: Supplier<NetworkEvent.Context>) {
+        val serverPlayer = context.get().sender
+        if (serverPlayer == null) {
+            context.get().packetHandled = true
+            return
+        }
         SyncedConfigRegistry.receiveConfigUpdate(
             payload.updates,
-            context.player().cast<ServerPlayerEntity>().server,
-            context.player().cast(),
+            serverPlayer.server,
+            serverPlayer,
             payload.changeHistory,
             { player, id -> canSend(player, id) },
-            { player, pl -> send(player, pl) }
+            { player, pl ->
+                val buf = PacketByteBuf(Unpooled.buffer())
+                pl.write(buf)
+                send(player, CustomPayloadS2CPacket(pl.getId(), buf))
+            }
         )
-
+        context.get().packetHandled = true
     }
 
-    private fun handleSettingForwardBidirectional(builder: IDirectionAwarePayloadHandlerBuilder<SettingForwardCustomPayload, IPlayPayloadHandler<SettingForwardCustomPayload>>) {
-        builder.server(this::handleSettingForward).client(NetworkEventsClient::handleSettingForward)
+    private fun handleSettingForwardBidirectional(payload: SettingForwardCustomPayload, context: Supplier<NetworkEvent.Context>) {
+        if (context.get().direction == NetworkDirection.PLAY_TO_CLIENT) {
+            NetworkEventsClient.handleSettingForward(payload, context)
+        } else {
+            this.handleSettingForward(payload, context)
+        }
+        context.get().packetHandled = true
     }
 
-    private fun handleSettingForward(payload: SettingForwardCustomPayload, context: IPayloadContext) {
+    private fun handleSettingForward(payload: SettingForwardCustomPayload, context: Supplier<NetworkEvent.Context>) {
+        val serverPlayer = context.get().sender
+        if (serverPlayer == null) {
+            context.get().packetHandled = true
+            return
+        }
         SyncedConfigRegistry.receiveSettingForward(
             payload.player,
-            context.player().cast(),
+            serverPlayer,
             payload.scope,
             payload.update,
             payload.summary,
             { player, id -> canSend(player, id) },
-            { player, pl -> send(player, pl) }
+            { player, pl ->
+                val buf = PacketByteBuf(Unpooled.buffer())
+                pl.write(buf)
+                send(player, CustomPayloadS2CPacket(pl.getId(), buf))
+            }
         )
+        context.get().packetHandled = true
     }
 
     fun registerDataSync(event: OnDatapackSyncEvent) {
         val serverPlayer = event.player
         if (serverPlayer == null) {
             SyncedConfigRegistry.onEndDataReload(
-                event.relevantPlayers.toList(),
+                event.players,
                 { player, id -> canSend(player, id) },
-                { player, payload -> send(player, payload) }
+                { player, payload ->
+                    val buf = PacketByteBuf(Unpooled.buffer())
+                    payload.write(buf)
+                    send(player, CustomPayloadS2CPacket(buf))
+                }
             )
         } else {
             SyncedConfigRegistry.onJoin(
                 serverPlayer,
                 serverPlayer.server,
                 { player, id -> this.canSend(player, id) },
-                { player, payload -> this.send(player, payload) }
+                { player, payload ->
+                    val buf = PacketByteBuf(Unpooled.buffer())
+                    payload.write(buf)
+                    send(player, CustomPayloadS2CPacket(payload.getId(), buf))
+                }
             )
         }
     }
 
-    fun registerConfigurations(event: OnGameConfigurationEvent) {
-        event.register(object: ICustomConfigurationTask {
-            private val key = ServerPlayerConfigurationTask.Key(ConfigSyncS2CCustomPayload.id)
-            override fun run(consumer: Consumer<CustomPayload>) {
-                SyncedConfigRegistry.onConfigure(
-                    { _ -> true },
-                    { payload -> consumer.accept(payload) }
-                )
-                event.listener.onTaskFinished(key)
+    fun registerConfigurations(event: NetworkEvent.GatherLoginPayloadsEvent) {
+        SyncedConfigRegistry.onConfigure(
+            { _ -> true },
+            { payload ->
+                val buf = PacketByteBuf(Unpooled.buffer())
+                payload.write(buf)
+                event.add(buf, ConfigSyncS2CCustomPayload.id, "Fzzy Config login config sync", false)
             }
-
-            override fun getKey(): ServerPlayerConfigurationTask.Key {
-                return key
-            }
-
-        })
+        )
     }
 
-    fun registerPayloads(event: RegisterPayloadHandlerEvent) {
-        val registrar = event.registrar("fzzy_config").optional()
+    private var configIndex = 0
+    private var reloadIndex = 0
+    private var permissionIndex = 0
+    private var updateS2CIndex = 0
+    private var updateC2SIndex = 0
+    private var forwardIndex = 0
 
-        registrar.configuration(ConfigSyncS2CCustomPayload.id, ::ConfigSyncS2CCustomPayload, NetworkEventsClient::handleConfigurationConfigSync)
 
-        registrar.play(ConfigSyncS2CCustomPayload.id, ::ConfigSyncS2CCustomPayload, NetworkEventsClient::handleReloadConfigSync)
+    fun registerPayloads() {
 
-        registrar.play(ConfigPermissionsS2CCustomPayload.id, ::ConfigPermissionsS2CCustomPayload, NetworkEventsClient::handlePermsUpdate)
+        val configNetworkVersion = "1.0"
+        val configChannel = NetworkRegistry.newSimpleChannel(ConfigSyncS2CCustomPayload.id, { configNetworkVersion }, {serverVersion -> serverVersion == configNetworkVersion}, { clientVersion -> clientVersion == configNetworkVersion })
+        @Suppress("INACCESSIBLE_TYPE")
+        configChannel.registerMessage(
+            configIndex++,
+            ConfigSyncS2CCustomPayload::class.java,
+            { payload: ConfigSyncS2CCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
+            { buf: PacketByteBuf -> ConfigSyncS2CCustomPayload(buf) },
+            NetworkEventsClient::handleConfigurationConfigSync)
 
-        registrar.play(ConfigUpdateS2CCustomPayload.id, ::ConfigUpdateS2CCustomPayload, NetworkEventsClient::handleUpdate)
 
-        registrar.play(ConfigUpdateC2SCustomPayload.id, ::ConfigUpdateC2SCustomPayload, this::handleUpdate)
+        //registrar.configuration(ConfigSyncS2CCustomPayload.id, ::ConfigSyncS2CCustomPayload, NetworkEventsClient::handleConfigurationConfigSync)
 
-        registrar.play(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, this::handleSettingForwardBidirectional)
+        val reloadNetworkVersion = "1.0"
+        val reloadChannel = NetworkRegistry.newSimpleChannel(ConfigReloadSyncS2CCustomPayload.id, { reloadNetworkVersion }, {serverVersion -> serverVersion == reloadNetworkVersion}, { clientVersion -> clientVersion == reloadNetworkVersion })
+        @Suppress("INACCESSIBLE_TYPE")
+        reloadChannel.registerMessage(
+            reloadIndex++,
+            ConfigReloadSyncS2CCustomPayload::class.java,
+            { payload: ConfigReloadSyncS2CCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
+            { buf: PacketByteBuf -> ConfigReloadSyncS2CCustomPayload(buf) },
+            NetworkEventsClient::handleReloadConfigSync)
+
+        //registrar.play(ConfigReloadSyncS2CCustomPayload.id, ::ConfigSyncS2CCustomPayload, NetworkEventsClient::handleReloadConfigSync)
+
+        val permNetworkVersion = "1.0"
+        val permChannel = NetworkRegistry.newSimpleChannel(ConfigPermissionsS2CCustomPayload.id, { permNetworkVersion }, {serverVersion -> serverVersion == permNetworkVersion}, { clientVersion -> clientVersion == permNetworkVersion })
+        @Suppress("INACCESSIBLE_TYPE")
+        permChannel.registerMessage(
+            permissionIndex++,
+            ConfigPermissionsS2CCustomPayload::class.java,
+            { payload: ConfigPermissionsS2CCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
+            { buf: PacketByteBuf -> ConfigPermissionsS2CCustomPayload(buf) },
+            NetworkEventsClient::handlePermsUpdate)
+
+        //registrar.play(ConfigPermissionsS2CCustomPayload.id, ::ConfigPermissionsS2CCustomPayload, NetworkEventsClient::handlePermsUpdate)
+
+        val updateS2CNetworkVersion = "1.0"
+        val updateS2CChannel = NetworkRegistry.newSimpleChannel(ConfigUpdateS2CCustomPayload.id, { updateS2CNetworkVersion }, {serverVersion -> serverVersion == updateS2CNetworkVersion}, { clientVersion -> clientVersion == updateS2CNetworkVersion })
+        @Suppress("INACCESSIBLE_TYPE")
+        updateS2CChannel.registerMessage(
+            updateS2CIndex++,
+            ConfigUpdateS2CCustomPayload::class.java,
+            { payload: ConfigUpdateS2CCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
+            { buf: PacketByteBuf -> ConfigUpdateS2CCustomPayload(buf) },
+            NetworkEventsClient::handleUpdate)
+
+        //registrar.play(ConfigUpdateS2CCustomPayload.id, ::ConfigUpdateS2CCustomPayload, NetworkEventsClient::handleUpdate)
+
+        val updateC2SNetworkVersion = "1.0"
+        val updateC2SChannel = NetworkRegistry.newSimpleChannel(ConfigUpdateC2SCustomPayload.id, { updateC2SNetworkVersion }, {serverVersion -> serverVersion == updateC2SNetworkVersion}, { clientVersion -> clientVersion == updateC2SNetworkVersion })
+        @Suppress("INACCESSIBLE_TYPE")
+        updateC2SChannel.registerMessage(
+            updateC2SIndex++,
+            ConfigUpdateC2SCustomPayload::class.java,
+            { payload: ConfigUpdateC2SCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
+            { buf: PacketByteBuf -> ConfigUpdateC2SCustomPayload(buf) },
+            this::handleUpdate)
+
+        //registrar.play(ConfigUpdateC2SCustomPayload.id, ::ConfigUpdateC2SCustomPayload, this::handleUpdate)
+
+        val forwardNetworkVersion = "1.0"
+        val forwardChannel = NetworkRegistry.newSimpleChannel(SettingForwardCustomPayload.id, { forwardNetworkVersion }, {serverVersion -> serverVersion == forwardNetworkVersion}, { clientVersion -> clientVersion == forwardNetworkVersion })
+        @Suppress("INACCESSIBLE_TYPE")
+        forwardChannel.registerMessage(
+            forwardIndex++,
+            SettingForwardCustomPayload::class.java,
+            { payload: SettingForwardCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
+            { buf: PacketByteBuf -> SettingForwardCustomPayload(buf) },
+            this::handleSettingForwardBidirectional)
+
+        //registrar.play(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, this::handleSettingForwardBidirectional)
 
         //PayloadTypeRegistry.configurationC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         //PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
