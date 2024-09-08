@@ -20,7 +20,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 
 /**
- * A config marked with this annotation will attempt to ignore field visibility when de/serializing
+ * A config marked with this annotation will attempt to ignore field visibility when de/serialization
  *
  * This can also be used to widen the access for Sections or other inner classes like classes wrapped by a [ValidatedAny][me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny]
  *

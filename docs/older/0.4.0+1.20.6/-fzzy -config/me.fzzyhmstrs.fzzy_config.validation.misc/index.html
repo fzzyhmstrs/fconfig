@@ -1,0 +1,249 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>me.fzzyhmstrs.fzzy_config.validation.misc</title>
+    <link href="../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../images/fc_banner.png">
+<link href="../../images/discord_banner.png">
+<link href="../../images/discord_small_banner.png">
+<link href="../../images/wiki_banner.png">
+<link href="../../images/wiki_small_banner.png">
+<link href="../../images/docs_banner.png">
+<link href="../../images/docs_small_banner.png">
+<link href="../../images/cf_banner.png">
+<link href="../../images/modrinth_banner.png">
+<link href="../../images/icon.png">
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.4.0+1.20.6</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.4.0+24w34a</a><a href="..\..\..\0.4.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.4.0+1.21</a><a href="index.html">0.4.0+1.20.6</a><a href="..\..\..\0.4.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.4.0+1.20.4</a><a href="..\..\..\0.4.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.4.0+1.20.1</a><a href="..\..\..\0.3.7+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.7+1.21</a><a href="..\..\..\0.3.7+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.7+1.20.6</a><a href="..\..\..\0.3.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.7+1.20.1</a><a href="..\..\..\0.3.6+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.6+1.21</a><a href="..\..\..\0.3.6+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.6+1.20.6</a><a href="..\..\..\0.3.6+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.6+1.20.1</a><a href="..\..\..\0.3.4+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.4+1.21</a><a href="..\..\..\0.3.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.3+1.20.6</a><a href="..\..\..\0.3.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.3+1.20.1</a><a href="..\..\..\0.3.2+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.2+1.20.6</a><a href="..\..\..\0.3.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.2+1.20.1</a><a href="..\..\..\0.3.1+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.1+1.20.5</a><a href="..\..\..\0.3.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.1+1.20.1</a><a href="..\..\..\0.3.0+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.0+1.20.5</a><a href="..\..\..\0.3.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.3.0+1.20.1</a><a href="..\..\..\0.2.8+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.8+1.20.5</a><a href="..\..\..\0.2.8+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.8+1.20.1</a><a href="..\..\..\0.2.7+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.7+1.20.5</a><a href="..\..\..\0.2.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.7+1.20.1</a><a href="..\..\..\0.2.5+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.5+1.20.5</a><a href="..\..\..\0.2.5+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.5+1.20.1</a><a href="..\..\..\0.2.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.4+1.20.1</a><a href="..\..\..\0.2.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.2+1.20.1</a><a href="..\..\..\0.2.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.1+1.20.1</a><a href="..\..\..\0.2.0+1.20.5-rc2\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.0+1.20.5-rc2</a><a href="..\..\..\0.2.0+1.20.5-rc1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.0+1.20.5-rc1</a><a href="..\..\..\0.2.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.misc\index.html">0.2.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://curseforge.com" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.validation.misc////PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../index.html">Fzzy Config</a><span class="delimiter">/</span><span class="current">me.fzzyhmstrs.fzzy_config.validation.misc</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-929248468%2FClasslikes%2F769193423" anchor-label="ChoiceValidator" id="-929248468%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-choice-validator/index.html"><span>Choice</span><wbr><span><span>Validator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-929248468%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-choice-validator/index.html">ChoiceValidator</a><span class="token operator">&lt;</span><a href="-choice-validator/index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">predicate<span class="token operator">: </span><a href="-choice-validator/-values-predicate/index.html">ChoiceValidator.ValuesPredicate</a><span class="token operator">&lt;</span><a href="-choice-validator/index.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="../me.fzzyhmstrs.fzzy_config.entry/-entry-validator/index.html">EntryValidator</a><span class="token operator">&lt;</span><a href="-choice-validator/index.html">T</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">a validated set of choices.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1796888551%2FClasslikes%2F769193423" anchor-label="ValidatedAny" id="1796888551%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-any/index.html"><span>Validated</span><wbr><span><span>Any</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1796888551%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-any/index.html">ValidatedAny</a><span class="token operator">&lt;</span><a href="-validated-any/index.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="-validated-any/index.html">T</a></span></span><span class="token punctuation">)</span> : <a href="../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="-validated-any/index.html">T</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">Validation for an arbitrary non-null POJO (Plain Old Java Object). It will create a "mini-config" popup with the same style of list as the main config and section screens. Each field within the object will be validated just like a config, either automatically or purposefully if ValidatedFeilds are used.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-187285461%2FClasslikes%2F769193423" anchor-label="ValidatedBoolean" id="-187285461%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-boolean/index.html"><span>Validated</span><wbr><span><span>Boolean</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-187285461%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-boolean/index.html">ValidatedBoolean</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span> : <a href="../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">a validated boolean value</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1593530958%2FClasslikes%2F769193423" anchor-label="ValidatedChoice" id="1593530958%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-choice/index.html"><span>Validated</span><wbr><span><span>Choice</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1593530958%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-choice/index.html">ValidatedChoice</a><span class="token operator">&lt;</span><a href="-validated-choice/index.html">T</a><span class="token operator">&gt;</span>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="-validated-choice/index.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">choices<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="-validated-choice/index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">handler<span class="token operator">: </span><a href="../me.fzzyhmstrs.fzzy_config.entry/-entry-handler/index.html">EntryHandler</a><span class="token operator">&lt;</span><a href="-validated-choice/index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">translationProvider<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/BiFunction.html">BiFunction</a><span class="token operator">&lt;</span><a href="-validated-choice/index.html">T</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span data-unresolved-link="net.minecraft.text/MutableText///PointingToDeclaration/">MutableText</span><span class="token operator">&gt;</span><span class="token operator"> = </span>BiFunction { t, _ -&gt; t.transLit(t.toString()) }<span class="token punctuation">, </span></span><span class="parameter ">descriptionProvider<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/BiFunction.html">BiFunction</a><span class="token operator">&lt;</span><a href="-validated-choice/index.html">T</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span><span class="token operator">&gt;</span><span class="token operator"> = </span>BiFunction { t, _ -&gt; t.descLit("") }<span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="-validated-choice/-widget-type/index.html">ValidatedChoice.WidgetType</a><span class="token operator"> = </span>WidgetType.POPUP</span></span><span class="token punctuation">)</span> : <a href="../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="-validated-choice/index.html">T</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A validated set of choices of any type</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2082072016%2FClasslikes%2F769193423" anchor-label="ValidatedColor" id="2082072016%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-color/index.html"><span>Validated</span><wbr><span><span>Color</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2082072016%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-color/index.html">ValidatedColor</a> : <a href="../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="-validated-color/-color-holder/index.html">ValidatedColor.ColorHolder</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A validated color value</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1472315794%2FClasslikes%2F769193423" anchor-label="ValidatedEnum" id="-1472315794%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-enum/index.html"><span>Validated</span><wbr><span><span>Enum</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1472315794%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-enum/index.html">ValidatedEnum</a><span class="token operator">&lt;</span><a href="-validated-enum/index.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="-validated-enum/index.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="-validated-enum/-widget-type/index.html">ValidatedEnum.WidgetType</a><span class="token operator"> = </span>WidgetType.POPUP</span></span><span class="token punctuation">)</span> : <a href="../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="-validated-enum/index.html">T</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A validated Enum Class</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1122739657%2FClasslikes%2F769193423" anchor-label="ValidatedExpression" id="-1122739657%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-expression/index.html"><span>Validated</span><wbr><span><span>Expression</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1122739657%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-expression/index.html">ValidatedExpression</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">validVars<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-char/index.html">Char</a><span class="token operator">&gt;</span><span class="token operator"> = </span>setOf()<span class="token punctuation">, </span></span><span class="parameter ">validator<span class="token operator">: </span><a href="../me.fzzyhmstrs.fzzy_config.entry/-entry-validator/index.html">EntryValidator</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator"> = </span>object: EntryValidator&lt;String&gt; {
+        override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult&lt;String&gt; {
+            return Expression.tryTest(input, validVars).wrap(input)
+        }
+        override fun toString(): String {
+            return "Dummy test with valid variable chars"
+        }
+    }</span></span><span class="token punctuation">)</span> : <a href="../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt; </span>, <a href="../me.fzzyhmstrs.fzzy_config.util/-expression/index.html">Expression</a></div><div class="brief "><p class="paragraph">A validated math expression</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1413614114%2FClasslikes%2F769193423" anchor-label="ValidatedString" id="-1413614114%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-string/index.html"><span>Validated</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1413614114%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-string/index.html">ValidatedString</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">checker<span class="token operator">: </span><a href="../me.fzzyhmstrs.fzzy_config.entry/-entry-checker/index.html">EntryChecker</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A validated string value</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
