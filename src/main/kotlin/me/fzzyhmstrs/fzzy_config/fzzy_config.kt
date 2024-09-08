@@ -56,9 +56,9 @@ object FC {
 }
 
 @Mod(value = "fzzy_config")
-class FzzyConfigNeoForgeClient(bus: IEventBus, dist: Dist) {
+class FzzyConfigNeoForgeClient() {
     init {
-        if (dist == Dist.CLIENT)
+        if (PlatformUtils.isClient())
             NetworkEventsClient.registerClient()
     }
 }
