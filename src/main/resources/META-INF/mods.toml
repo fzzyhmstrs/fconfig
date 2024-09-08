@@ -14,22 +14,22 @@ Configuration engine with automatic GUI generation, client-server syncing, power
 logoFile = "icon.png"
 
 [[dependencies.fzzy_config]]
-modId = "neoforge"
-type = "REQUIRED"
-versionRange = "[20.6.0-beta,)"
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.fzzy_config]]
 modId = "minecraft"
-type = "REQUIRED"
-versionRange = "[1.20.5,)"
+mandatory = true
+versionRange = "[1.20.1]"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.fzzy_config]]
 modId = "kotlinforforge"
-type = "REQUIRED"
-versionRange = "[5.3.0,)"
+mandatory = true
+versionRange = "[4.11.0,4.99.0]"
 ordering = "NONE"
 side = "BOTH"

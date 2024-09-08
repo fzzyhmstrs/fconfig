@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.registry
 
+import io.netty.buffer.Unpooled
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -20,6 +21,8 @@ import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import net.minecraft.network.PacketByteBuf
+import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket
 import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
@@ -212,7 +215,9 @@ internal object SyncedConfigRegistry {
                 if (p == player) continue // don't push back to the player that just sent the update
                 if (!NetworkEvents.canSend(p, ConfigUpdateS2CCustomPayload.id)) continue
                 val newPayload = ConfigUpdateS2CCustomPayload(mapOf(quarantinedUpdate.configId to quarantinedUpdate.configString))
-                NetworkEvents.send(p, newPayload)
+                val buf = PacketByteBuf(Unpooled.buffer())
+                newPayload.write(buf)
+                NetworkEvents.send(p, CustomPayloadS2CPacket(newPayload.getId(), buf))
             }
         }
         player?.let {
@@ -220,7 +225,9 @@ internal object SyncedConfigRegistry {
                 for ((id2, config2) in syncedConfigs) {
                     val perms = ConfigApiImpl.generatePermissionsReport(player, config2, 0)
                     val payload = ConfigPermissionsS2CCustomPayload(id2, perms)
-                    NetworkEvents.send(player, payload)
+                    val buf = PacketByteBuf(Unpooled.buffer())
+                    payload.write(buf)
+                    NetworkEvents.send(player, CustomPayloadS2CPacket(payload.getId(), buf))
                 }
             }
         }
