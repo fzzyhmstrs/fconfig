@@ -167,14 +167,14 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             }
             addGameVersion("NeoForge")
             mainArtifact(tasks.remapJar.get().archiveFile.get(), closureOf<CurseArtifact> {
-                displayName = "${base.archivesName.get()}-$modVersion"
+                displayName = "${base.archivesName.get()}-${project.version}"
                 relations(closureOf<CurseRelation> {
                     this.requiredDependency("kotlin-for-forge")
                 })
             })
             addArtifact(tasks.remapSourcesJar.get().archiveFile, closureOf<CurseArtifact> {
                 changelogType = "markdown"
-                changelog = "Source files for ${base.archivesName.get()}-$modVersion"
+                changelog = "Source files for ${base.archivesName.get()}-${project.version}"
             })
             relations(closureOf<CurseRelation> {
                 this.requiredDependency("kotlin-for-forge")
