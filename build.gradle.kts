@@ -134,8 +134,8 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
 
         token.set(System.getenv("MODRINTH_TOKEN"))
         projectId.set("fzzy-config")
-        versionNumber.set(modVersion)
-        versionName.set("${base.archivesName.get()}-$modVersion")
+        versionNumber.set("${project.version}")
+        versionName.set("${base.archivesName.get()}-${project.version}")
         versionType.set(releaseType)
         uploadFile.set(tasks.remapJar.get())
         additionalFiles.add(tasks.remapSourcesJar.get().archiveFile)
