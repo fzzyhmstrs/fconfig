@@ -140,7 +140,7 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
         uploadFile.set(tasks.remapJar.get())
         additionalFiles.add(tasks.remapSourcesJar.get().archiveFile)
         gameVersions.addAll(mcVersions.split(","))
-        loaders.addAll("neoforge")
+        loaders.addAll("neoforge", "forge")
         detectLoaders.set(false)
         changelog.set(log.readText())
         dependencies {
@@ -166,6 +166,7 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
                 addGameVersion(ver)
             }
             addGameVersion("NeoForge")
+            addGameVersion("Forge")
             mainArtifact(tasks.remapJar.get().archiveFile.get(), closureOf<CurseArtifact> {
                 displayName = "${base.archivesName.get()}-$modVersion"
                 relations(closureOf<CurseRelation> {
