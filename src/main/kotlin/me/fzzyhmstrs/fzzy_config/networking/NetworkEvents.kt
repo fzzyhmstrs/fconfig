@@ -65,30 +65,30 @@ internal object NetworkEvents {
             payload.scope,
             payload.update,
             payload.summary,
-            { player, id -> ServerPlayNetworking.canSend(player, id) },
-            { player, pl -> ServerPlayNetworking.send(player, pl) }
+            { _, id -> context.canReply(id) },
+            { _, pl -> context.reply(pl) }
         )
     }
 
     fun registerServer() {
 
         //PayloadTypeRegistry.configurationC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        //PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         //PayloadTypeRegistry.playS2C().register(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec)
-        ConfigApi.network().registerS2C(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec, NetworkEventsClient::receivePerms)
+        ConfigApi.network().registerS2C(ConfigPermissionsS2CCustomPayload.id, ::ConfigPermissionsS2CCustomPayload, NetworkEventsClient::receivePerms)
         //PayloadTypeRegistry.playC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         //PayloadTypeRegistry.playS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        ConfigApi.network().registerS2C(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec, NetworkEventsClient::receiveSync)
+        ConfigApi.network().registerS2C(ConfigSyncS2CCustomPayload.id, ::ConfigSyncS2CCustomPayload, NetworkEventsClient::receiveSync)
         //PayloadTypeRegistry.playC2S().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
         //PayloadTypeRegistry.playS2C().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
-        ConfigApi.network().registerS2C(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec, NetworkEventsClient::receiveUpdate)
+        ConfigApi.network().registerS2C(ConfigUpdateS2CCustomPayload.id, ::ConfigUpdateS2CCustomPayload, NetworkEventsClient::receiveUpdate)
         //PayloadTypeRegistry.playC2S().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
-        ConfigApi.network().registerC2S(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec, this::receiveUpdate)
+        ConfigApi.network().registerC2S(ConfigUpdateC2SCustomPayload.id, ::ConfigUpdateC2SCustomPayload, this::receiveUpdate)
         //PayloadTypeRegistry.playS2C().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
         //PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
-        ConfigApi.network().registerC2S(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec, this::receiveForward)
+        ConfigApi.network().registerC2S(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, this::receiveForward)
         //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
-        ConfigApi.network().registerS2C(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec, NetworkEventsClient::receiveForward)
+        ConfigApi.network().registerS2C(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, NetworkEventsClient::receiveForward)
 
         ServerPlayConnectionEvents.JOIN.register { handler, sender, server ->
             SyncedConfigRegistry.onJoin(

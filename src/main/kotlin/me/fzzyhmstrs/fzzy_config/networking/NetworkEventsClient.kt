@@ -32,7 +32,7 @@ import java.util.*
 internal object NetworkEventsClient {
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
-        if (!ConfigApi.network().canSend(SettingForwardCustomPayload.type.id, null)) {
+        if (!ConfigApi.network().canSend(SettingForwardCustomPayload.id, null)) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
             FC.LOGGER.error("Can't forward setting; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("Setting not sent:")
@@ -43,12 +43,11 @@ internal object NetworkEventsClient {
         val payload = SettingForwardCustomPayload(update, player, scope, summary)
         val buf = PacketByteBufs.create()
         payload.write(buf)
-        ClientPlayNetworking.send(payload.getId(), buf)
         ConfigApi.network().send(SettingForwardCustomPayload(update, player, scope, summary), null)
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
-        if (!ConfigApi.network().canSend(ConfigUpdateC2SCustomPayload.type.id, null)) {
+        if (!ConfigApi.network().canSend(ConfigUpdateC2SCustomPayload.id, null)) {
             FC.LOGGER.error("Can't send Config Update; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("changes not sent:")
             for (change in changeHistory) {

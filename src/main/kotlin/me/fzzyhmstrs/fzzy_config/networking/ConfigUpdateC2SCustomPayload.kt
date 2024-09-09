@@ -24,6 +24,10 @@ internal class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, va
         buf.writeByte(playerPerm)
     }
 
+    override fun id(): Identifier {
+        return Companion.id
+    }
+
     override fun getId(): Identifier {
         return Companion.id
     }

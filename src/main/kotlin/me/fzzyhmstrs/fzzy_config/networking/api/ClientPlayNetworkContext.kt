@@ -11,8 +11,10 @@
 package me.fzzyhmstrs.fzzy_config.networking.api
 
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import net.fabricmc.fabric.api.networking.v1.PacketSender
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.network.ClientPlayNetworkHandler
 import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.network.NetworkPhase
 import net.minecraft.network.NetworkSide
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.text.Text
@@ -23,7 +25,7 @@ import net.minecraft.util.Identifier
  * @author fzzyhmstrs
  * @since 0.4.1
  */
-class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context): NetworkContext<ClientPlayerEntity> {
+class ClientPlayNetworkContext(private val client: MinecraftClient, private val handler: ClientPlayNetworkHandler, private val sender: PacketSender): NetworkContext<ClientPlayerEntity> {
 
     /**
      * Executes a task on the main thread. This should be used for anything interacting with game state outside the network loop
@@ -32,7 +34,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        context.client().execute(runnable)
+        MinecraftClient.getInstance().execute(runnable)
     }
 
     /**
@@ -42,7 +44,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun disconnect(reason: Text) {
-        context.responseSender().disconnect(reason)
+        client.world?.disconnect(); client.disconnect()
     }
 
     /**
@@ -63,7 +65,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun reply(payload: CustomPayload) {
-        context.responseSender().sendPacket(payload)
+        sender.sendPacket(payload)
     }
 
     /**
@@ -73,16 +75,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun player(): ClientPlayerEntity {
-        return context.player()
-    }
-
-    /**
-     * The current network phase. Always PLAY at the moment.
-     * @author fzzyhmstrs
-     * @since 0.4.1
-     */
-    override fun networkPhase(): NetworkPhase {
-        return NetworkPhase.PLAY
+        return client.player!!
     }
 
     /**
