@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config
 
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEvents
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
+import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import net.minecraft.util.Identifier
 import net.neoforged.api.distmarker.Dist
@@ -46,6 +47,7 @@ class FzzyConfigNeoForge(bus: IEventBus) {
     init {
         NeoForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
         bus.addListener(NetworkEvents::registerPayloads)
+        bus.addListener(NetworkApiImpl::onRegister)
         bus.addListener(NetworkEvents::registerConfigurations)
         PlatformUtils.registerCommands(bus)
     }

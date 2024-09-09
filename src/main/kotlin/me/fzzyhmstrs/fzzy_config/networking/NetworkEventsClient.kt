@@ -13,16 +13,19 @@ package me.fzzyhmstrs.fzzy_config.networking
 import com.mojang.brigadier.CommandDispatcher
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.FCC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
-import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.Identifier
+import net.neoforged.fml.ModList
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent
+import net.neoforged.neoforge.client.event.ClientTickEvent
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.TickEvent
@@ -39,10 +42,6 @@ internal object NetworkEventsClient {
         return NetworkRegistry.getInstance().isConnected(handler, id)
     }
 
-    fun send(payload: CustomPayload) {
-        PacketDistributor.SERVER.noArg().send(payload)
-    }
-
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
         if (!canSend(SettingForwardCustomPayload.id)) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
@@ -52,7 +51,7 @@ internal object NetworkEventsClient {
             FC.LOGGER.warn(summary)
             return
         }
-        send(SettingForwardCustomPayload(update, player, scope, summary))
+        ConfigApi.network().send(SettingForwardCustomPayload(update, player, scope, summary), null)
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
@@ -64,7 +63,7 @@ internal object NetworkEventsClient {
             }
             return
         }
-        send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
+        ConfigApi.network().send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm), null)
     }
 
     fun handleConfigurationConfigSync(payload: ConfigSyncS2CCustomPayload, context: ConfigurationPayloadContext) {
