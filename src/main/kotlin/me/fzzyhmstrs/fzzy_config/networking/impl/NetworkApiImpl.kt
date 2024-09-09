@@ -58,9 +58,10 @@ object NetworkApiImpl: NetworkApi {
             function,
             { payload, contextSuppler ->
                 if (PlatformUtils.isClient()) {
-                        val newContext = ClientPlayNetworkContext(contextSuppler.get())
-                        handler.handle(payload, newContext)
-                    }
+                    val newContext = ClientPlayNetworkContext(contextSuppler.get())
+                    handler.handle(payload, newContext)
+                    contextSuppler.get().packetHandled = true
+                }
             })
         channelMap[id] = channel
     }
@@ -76,10 +77,9 @@ object NetworkApiImpl: NetworkApi {
             { payload: T, buf: PacketByteBuf -> payload.write(buf) },
             function,
             { payload, contextSuppler ->
-                if (PlatformUtils.isClient()) {
-                    val newContext = ServerPlayNetworkContext(contextSuppler.get())
-                    handler.handle(payload, newContext)
-                }
+                val newContext = ServerPlayNetworkContext(contextSuppler.get())
+                handler.handle(payload, newContext)
+                contextSuppler.get().packetHandled = true
             })
         channelMap[id] = channel
     }

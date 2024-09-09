@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.FCC
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
+import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
@@ -73,6 +74,25 @@ internal object NetworkEventsClient {
         val buf = PacketByteBuf(Unpooled.buffer())
         payload.write(buf)
         send(CustomPayloadC2SPacket(payload.getId(), buf))
+    }
+
+    fun receiveSync(payload: ConfigSyncS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receiveSync(
+            payload.id,
+            payload.serializedConfig
+        ) { text -> context.disconnect(text) }
+    }
+
+    fun receivePerms(payload: ConfigPermissionsS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
+    }
+
+    fun receiveUpdate(payload: ConfigUpdateS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receiveUpdate(payload.updates, context.player())
+    }
+
+    fun receiveForward(payload: SettingForwardCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
     }
 
     fun handleConfigurationConfigSync(payload: ConfigSyncS2CCustomPayload, context: Supplier<NetworkEvent.Context>) {

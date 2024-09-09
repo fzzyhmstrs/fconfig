@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.networking
 import io.netty.buffer.Unpooled
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.networking.api.ServerPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.Packet
@@ -90,6 +91,29 @@ internal object NetworkEvents {
         context.get().packetHandled = true
     }
 
+    private fun receiveUpdate(payload: ConfigUpdateC2SCustomPayload, context: ServerPlayNetworkContext) {
+        SyncedConfigRegistry.receiveConfigUpdate(
+            payload.updates,
+            context.player().server,
+            context.player(),
+            payload.changeHistory,
+            { _, id -> context.canReply(id) },
+            { _, pl -> context.reply(pl) }
+        )
+    }
+
+    private fun receiveForward(payload: SettingForwardCustomPayload, context: ServerPlayNetworkContext) {
+        SyncedConfigRegistry.receiveSettingForward(
+            payload.player,
+            context.player(),
+            payload.scope,
+            payload.update,
+            payload.summary,
+            { _, id -> context.canReply(id) },
+            { _, pl -> context.reply(pl) }
+        )
+    }
+
     fun registerDataSync(event: OnDatapackSyncEvent) {
         val serverPlayer = event.player
         if (serverPlayer == null) {
@@ -150,19 +174,5 @@ internal object NetworkEvents {
         //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
         ConfigApi.network().registerS2C(SettingForwardCustomPayload.id, SettingForwardCustomPayload::class.java,
             ::SettingForwardCustomPayload, NetworkEventsClient::receiveForward)
-
-        //registrar.play(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, this::handleSettingForwardBidirectional)
-
-        //PayloadTypeRegistry.configurationC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        //PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playS2C().register(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playC2S().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playS2C().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playC2S().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
-        //PayloadTypeRegistry.playS2C().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
-        //PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
-        //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
     }
 }
