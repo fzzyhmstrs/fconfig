@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.StringArgumentType
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.impl.QuarantinedUpdatesArgumentType
 import me.fzzyhmstrs.fzzy_config.nullCast
@@ -70,9 +71,9 @@ internal object PlatformUtils {
 
     fun registerCommands(bus: IEventBus) {
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> registerCommands(event) }
-        val commandArgumentTypes = DeferredRegister.create(RegistryKeys.COMMAND_ARGUMENT_TYPE, FC.MOD_ID)
-        commandArgumentTypes.register(bus)
-        commandArgumentTypes.register("quarantined_updates", Supplier { ArgumentTypes.registerByClass(QuarantinedUpdatesArgumentType::class.java, ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() })  })
+        //val commandArgumentTypes = DeferredRegister.create(RegistryKeys.COMMAND_ARGUMENT_TYPE, FC.MOD_ID)
+        //commandArgumentTypes.register(bus)
+        //commandArgumentTypes.register("quarantined_updates", Supplier { ArgumentTypes.registerByClass(QuarantinedUpdatesArgumentType::class.java, ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() })  })
     }
 
     private fun registerCommands(event: RegisterCommandsEvent) {
@@ -84,11 +85,18 @@ internal object PlatformUtils {
         dispatcher.register(
             CommandManager.literal("configure_update")
                 .requires { source -> source.hasPermissionLevel(3) }
-                .then(CommandManager.argument("id", QuarantinedUpdatesArgumentType())
+                .then(CommandManager.argument("id", StringArgumentType.string())
+                    .then(
+                        CommandManager.literal("list")
+                        .executes { context ->
+                            SyncedConfigRegistry.listQuarantines { message -> context.source.sendMessage(message) }
+                            1
+                        }
+                    )
                     .then(
                         CommandManager.literal("inspect")
                         .executes { context ->
-                            val id = QuarantinedUpdatesArgumentType.getQuarantineId(context, "id")
+                            val id = StringArgumentType.getString(context, "id")
                             if (id == null) {
                                 context.source.sendError("fc.command.error.no_id".translate())
                                 return@executes 0
@@ -100,7 +108,7 @@ internal object PlatformUtils {
                     .then(
                         CommandManager.literal("accept")
                         .executes { context ->
-                            val id = QuarantinedUpdatesArgumentType.getQuarantineId(context, "id")
+                            val id = StringArgumentType.getString(context, "id")
                             if (id == null) {
                                 context.source.sendError("fc.command.error.no_id".translate())
                                 return@executes 0
@@ -113,7 +121,7 @@ internal object PlatformUtils {
                     .then(
                         CommandManager.literal("reject")
                         .executes { context ->
-                            val id = QuarantinedUpdatesArgumentType.getQuarantineId(context, "id")
+                            val id = StringArgumentType.getString(context, "id")
                             if (id == null) {
                                 context.source.sendError("fc.command.error.no_id".translate())
                                 return@executes 0
