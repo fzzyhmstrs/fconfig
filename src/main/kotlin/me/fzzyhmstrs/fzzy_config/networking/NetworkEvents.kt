@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import io.netty.buffer.Unpooled
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.minecraft.network.PacketByteBuf
@@ -126,86 +127,29 @@ internal object NetworkEvents {
         )
     }
 
-    private var configIndex = 0
-    private var reloadIndex = 0
-    private var permissionIndex = 0
-    private var updateS2CIndex = 0
-    private var updateC2SIndex = 0
-    private var forwardIndex = 0
-
 
     fun registerPayloads() {
 
-        val configNetworkVersion = "1.0"
-        val configChannel = NetworkRegistry.newSimpleChannel(ConfigSyncS2CCustomPayload.id, { configNetworkVersion }, {serverVersion -> serverVersion == configNetworkVersion}, { clientVersion -> clientVersion == configNetworkVersion })
-        @Suppress("INACCESSIBLE_TYPE")
-        configChannel.registerMessage(
-            configIndex++,
-            ConfigSyncS2CCustomPayload::class.java,
-            { payload: ConfigSyncS2CCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
-            { buf: PacketByteBuf -> ConfigSyncS2CCustomPayload(buf) },
-            NetworkEventsClient::handleConfigurationConfigSync)
-
-
-        //registrar.configuration(ConfigSyncS2CCustomPayload.id, ::ConfigSyncS2CCustomPayload, NetworkEventsClient::handleConfigurationConfigSync)
-
-        val reloadNetworkVersion = "1.0"
-        val reloadChannel = NetworkRegistry.newSimpleChannel(ConfigReloadSyncS2CCustomPayload.id, { reloadNetworkVersion }, {serverVersion -> serverVersion == reloadNetworkVersion}, { clientVersion -> clientVersion == reloadNetworkVersion })
-        @Suppress("INACCESSIBLE_TYPE")
-        reloadChannel.registerMessage(
-            reloadIndex++,
-            ConfigReloadSyncS2CCustomPayload::class.java,
-            { payload: ConfigReloadSyncS2CCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
-            { buf: PacketByteBuf -> ConfigReloadSyncS2CCustomPayload(buf) },
-            NetworkEventsClient::handleReloadConfigSync)
-
-        //registrar.play(ConfigReloadSyncS2CCustomPayload.id, ::ConfigSyncS2CCustomPayload, NetworkEventsClient::handleReloadConfigSync)
-
-        val permNetworkVersion = "1.0"
-        val permChannel = NetworkRegistry.newSimpleChannel(ConfigPermissionsS2CCustomPayload.id, { permNetworkVersion }, {serverVersion -> serverVersion == permNetworkVersion}, { clientVersion -> clientVersion == permNetworkVersion })
-        @Suppress("INACCESSIBLE_TYPE")
-        permChannel.registerMessage(
-            permissionIndex++,
-            ConfigPermissionsS2CCustomPayload::class.java,
-            { payload: ConfigPermissionsS2CCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
-            { buf: PacketByteBuf -> ConfigPermissionsS2CCustomPayload(buf) },
-            NetworkEventsClient::handlePermsUpdate)
-
-        //registrar.play(ConfigPermissionsS2CCustomPayload.id, ::ConfigPermissionsS2CCustomPayload, NetworkEventsClient::handlePermsUpdate)
-
-        val updateS2CNetworkVersion = "1.0"
-        val updateS2CChannel = NetworkRegistry.newSimpleChannel(ConfigUpdateS2CCustomPayload.id, { updateS2CNetworkVersion }, {serverVersion -> serverVersion == updateS2CNetworkVersion}, { clientVersion -> clientVersion == updateS2CNetworkVersion })
-        @Suppress("INACCESSIBLE_TYPE")
-        updateS2CChannel.registerMessage(
-            updateS2CIndex++,
-            ConfigUpdateS2CCustomPayload::class.java,
-            { payload: ConfigUpdateS2CCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
-            { buf: PacketByteBuf -> ConfigUpdateS2CCustomPayload(buf) },
-            NetworkEventsClient::handleUpdate)
-
-        //registrar.play(ConfigUpdateS2CCustomPayload.id, ::ConfigUpdateS2CCustomPayload, NetworkEventsClient::handleUpdate)
-
-        val updateC2SNetworkVersion = "1.0"
-        val updateC2SChannel = NetworkRegistry.newSimpleChannel(ConfigUpdateC2SCustomPayload.id, { updateC2SNetworkVersion }, {serverVersion -> serverVersion == updateC2SNetworkVersion}, { clientVersion -> clientVersion == updateC2SNetworkVersion })
-        @Suppress("INACCESSIBLE_TYPE")
-        updateC2SChannel.registerMessage(
-            updateC2SIndex++,
-            ConfigUpdateC2SCustomPayload::class.java,
-            { payload: ConfigUpdateC2SCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
-            { buf: PacketByteBuf -> ConfigUpdateC2SCustomPayload(buf) },
-            this::handleUpdate)
-
-        //registrar.play(ConfigUpdateC2SCustomPayload.id, ::ConfigUpdateC2SCustomPayload, this::handleUpdate)
-
-        val forwardNetworkVersion = "1.0"
-        val forwardChannel = NetworkRegistry.newSimpleChannel(SettingForwardCustomPayload.id, { forwardNetworkVersion }, {serverVersion -> serverVersion == forwardNetworkVersion}, { clientVersion -> clientVersion == forwardNetworkVersion })
-        @Suppress("INACCESSIBLE_TYPE")
-        forwardChannel.registerMessage(
-            forwardIndex++,
-            SettingForwardCustomPayload::class.java,
-            { payload: SettingForwardCustomPayload, buf: PacketByteBuf -> payload.write(buf) },
-            { buf: PacketByteBuf -> SettingForwardCustomPayload(buf) },
-            this::handleSettingForwardBidirectional)
+        ConfigApi.network().registerS2C(ConfigPermissionsS2CCustomPayload.id, ConfigPermissionsS2CCustomPayload::class.java,
+            ::ConfigPermissionsS2CCustomPayload, NetworkEventsClient::receivePerms)
+        //PayloadTypeRegistry.playC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        //PayloadTypeRegistry.playS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        ConfigApi.network().registerS2C(ConfigSyncS2CCustomPayload.id, ConfigSyncS2CCustomPayload::class.java,
+            ::ConfigSyncS2CCustomPayload, NetworkEventsClient::receiveSync)
+        //PayloadTypeRegistry.playC2S().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
+        //PayloadTypeRegistry.playS2C().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
+        ConfigApi.network().registerS2C(ConfigUpdateS2CCustomPayload.id, ConfigUpdateS2CCustomPayload::class.java,
+            ::ConfigUpdateS2CCustomPayload, NetworkEventsClient::receiveUpdate)
+        //PayloadTypeRegistry.playC2S().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
+        ConfigApi.network().registerC2S(ConfigUpdateC2SCustomPayload.id, ConfigUpdateC2SCustomPayload::class.java,
+            ::ConfigUpdateC2SCustomPayload, this::receiveUpdate)
+        //PayloadTypeRegistry.playS2C().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
+        //PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
+        ConfigApi.network().registerC2S(SettingForwardCustomPayload.id, SettingForwardCustomPayload::class.java,
+            ::SettingForwardCustomPayload, this::receiveForward)
+        //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
+        ConfigApi.network().registerS2C(SettingForwardCustomPayload.id, SettingForwardCustomPayload::class.java,
+            ::SettingForwardCustomPayload, NetworkEventsClient::receiveForward)
 
         //registrar.play(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, this::handleSettingForwardBidirectional)
 
