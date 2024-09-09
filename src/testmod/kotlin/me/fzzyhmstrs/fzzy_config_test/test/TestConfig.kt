@@ -16,9 +16,10 @@ import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig
 
 object TestConfig {
 
-    fun init(){
+    fun init() {
         println("I registered my config")
     }
 
+    var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
     var testConfig4 = ConfigApi.registerAndLoadConfig({ TestConfigImpl4() }, RegisterType.BOTH)
 }
