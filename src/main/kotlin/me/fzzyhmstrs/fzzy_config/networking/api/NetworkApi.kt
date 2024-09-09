@@ -10,11 +10,15 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.api
 
+import io.netty.buffer.Unpooled
+import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
+import java.util.function.Function
 
 /**
  * API for multiloader abstraction of simple play-phase networking
@@ -22,6 +26,10 @@ import net.minecraft.util.Identifier
  * @since 0.4.1
  */
 interface NetworkApi {
+
+    fun buf(): PacketByteBuf {
+        return PacketByteBuf(Unpooled.buffer())
+    }
 
     /**
      * Checks whether a certain channel can be used for sending a packet. Works in both networking directions.
@@ -44,7 +52,7 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    fun send(payload: CustomPayload, playerEntity: PlayerEntity?)
+    fun send(payload: FzzyPayload, playerEntity: PlayerEntity?)
 
     /**
      * registers a clientbound (S2C) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
@@ -55,7 +63,7 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    fun <T: CustomPayload> registerS2C(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: S2CPayloadHandler<T>)
+    fun <T: FzzyPayload> registerS2C(id: Identifier, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>)
     /**
      * registers a serverbound (C2S) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
      * @param T the payload type to register
@@ -65,5 +73,5 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    fun <T: CustomPayload> registerC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>)
+    fun <T: FzzyPayload> registerC2S(id: Identifier, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>)
 }
