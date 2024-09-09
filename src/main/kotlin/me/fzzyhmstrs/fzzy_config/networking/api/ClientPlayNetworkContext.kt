@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.networking.api
 import me.fzzyhmstrs.fzzy_config.cast
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.network.NetworkPhase
 import net.minecraft.network.NetworkSide
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.text.Text
@@ -45,7 +44,7 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @since 0.4.1
      */
     override fun disconnect(reason: Text) {
-        context.disconnect(reason)
+        context.replyHandler().disconnect(reason)
     }
 
     /**
@@ -57,7 +56,7 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      */
     override fun canReply(id: Identifier): Boolean {
         val handler = MinecraftClient.getInstance().networkHandler ?: return false
-        return NetworkRegistry.hasChannel(handler, id)
+        return NetworkRegistry.getInstance().isConnected(handler, id)
     }
 
     /**
@@ -67,7 +66,7 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @since 0.4.1
      */
     override fun reply(payload: CustomPayload) {
-        context.reply(payload)
+        context.replyHandler().send(payload)
     }
 
     /**
@@ -78,15 +77,6 @@ class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      */
     override fun player(): ClientPlayerEntity {
         return context.player().cast<ClientPlayerEntity>()
-    }
-
-    /**
-     * The current network phase. Always PLAY at the moment.
-     * @author fzzyhmstrs
-     * @since 0.4.1
-     */
-    override fun networkPhase(): NetworkPhase {
-        return NetworkPhase.PLAY
     }
 
     /**

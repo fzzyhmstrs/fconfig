@@ -23,13 +23,9 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.Identifier
-import net.neoforged.fml.ModList
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent
-import net.neoforged.neoforge.client.event.ClientTickEvent
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.TickEvent
-import net.neoforged.neoforge.network.PacketDistributor
 import net.neoforged.neoforge.network.handling.ConfigurationPayloadContext
 import net.neoforged.neoforge.network.handling.IPayloadContext
 import net.neoforged.neoforge.network.registration.NetworkRegistry
