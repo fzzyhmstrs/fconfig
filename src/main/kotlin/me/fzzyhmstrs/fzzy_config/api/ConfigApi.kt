@@ -20,6 +20,8 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.networking.api.NetworkApi
+import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.peanuuutz.tomlkt.*
 import java.io.File
@@ -342,6 +344,10 @@ object ConfigApi {
     @Suppress("MemberVisibilityCanBePrivate")
     fun makeDir(folder: String, subfolder: String): Pair<File, Boolean> {
         return ConfigApiImpl.makeDir(folder, subfolder)
+    }
+
+    fun network(): NetworkApi {
+        return NetworkApiImpl
     }
 
 }
