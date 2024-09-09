@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.util
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.impl.QuarantinedUpdatesArgumentType
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
