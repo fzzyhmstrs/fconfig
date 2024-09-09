@@ -11,24 +11,20 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.CommandDispatcher
-import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.impl.QuarantinedUpdatesArgumentType
+import com.mojang.brigadier.arguments.StringArgumentType
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.api.EnvType
-import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.api.metadata.CustomValue
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.command.argument.serialize.ConstantArgumentSerializer
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
-import net.minecraft.util.Identifier
 import java.io.File
 import java.util.function.BiFunction
 
@@ -70,11 +66,11 @@ internal object PlatformUtils {
     }
 
     fun registerCommands() {
-        ArgumentTypeRegistry.registerArgumentType(
+        /*ArgumentTypeRegistry.registerArgumentType(
             Identifier.of(FC.MOD_ID, "quarantined_updates"),
             QuarantinedUpdatesArgumentType::class.java,
             ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() }
-        )
+        )*/
 
         CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
             registerCommands(dispatcher)
@@ -86,11 +82,11 @@ internal object PlatformUtils {
         dispatcher.register(
             CommandManager.literal("configure_update")
                 .requires { source -> source.hasPermissionLevel(3) }
-                .then(CommandManager.argument("id", QuarantinedUpdatesArgumentType())
+                .then(CommandManager.argument("id", StringArgumentType.string())
                     .then(
                         CommandManager.literal("inspect")
                         .executes { context ->
-                            val id = QuarantinedUpdatesArgumentType.getQuarantineId(context, "id")
+                            val id = StringArgumentType.getString(context, "id")
                             if (id == null) {
                                 context.source.sendError("fc.command.error.no_id".translate())
                                 return@executes 0
@@ -102,7 +98,7 @@ internal object PlatformUtils {
                     .then(
                         CommandManager.literal("accept")
                         .executes { context ->
-                            val id = QuarantinedUpdatesArgumentType.getQuarantineId(context, "id")
+                            val id = StringArgumentType.getString(context, "id")
                             if (id == null) {
                                 context.source.sendError("fc.command.error.no_id".translate())
                                 return@executes 0
@@ -115,7 +111,7 @@ internal object PlatformUtils {
                     .then(
                         CommandManager.literal("reject")
                         .executes { context ->
-                            val id = QuarantinedUpdatesArgumentType.getQuarantineId(context, "id")
+                            val id = StringArgumentType.getString(context, "id")
                             if (id == null) {
                                 context.source.sendError("fc.command.error.no_id".translate())
                                 return@executes 0
