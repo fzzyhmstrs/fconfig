@@ -6,4 +6,4 @@
 * The `configure_update` command now uses a string argument to avoid needing to serialize a custom argument. Fzzy config should work with vanilla clients again.
 
 ### Fixes
-* Fixed forge 1.20.1 not actually initializing properly
+* None
