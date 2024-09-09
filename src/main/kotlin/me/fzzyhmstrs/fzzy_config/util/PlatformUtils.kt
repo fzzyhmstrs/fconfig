@@ -63,14 +63,14 @@ internal object PlatformUtils {
         return PermissionAPI.getPermission(player, node) == true
     } //COnfigApiImpl, elsewhere??
 
-    fun registerCommands(bus: IEventBus) {
+    fun registerCommands() {
         MinecraftForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> registerCommands(event) }
         //val commandArgumentTypes = DeferredRegister.create(RegistryKeys.COMMAND_ARGUMENT_TYPE, FC.MOD_ID)
         //commandArgumentTypes.register(bus)
         //commandArgumentTypes.register("quarantined_updates", Supplier { ArgumentTypes.registerByClass(QuarantinedUpdatesArgumentType::class.java, ConstantArgumentSerializer.of { _ -> QuarantinedUpdatesArgumentType() })  })
     }
 
-    private fun registerCommands(event: RegisterCommandsEvent) {
+    internal fun registerCommands(event: RegisterCommandsEvent) {
         registerCommands(event.dispatcher)
     }
 

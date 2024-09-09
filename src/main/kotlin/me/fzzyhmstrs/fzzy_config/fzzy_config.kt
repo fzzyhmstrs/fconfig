@@ -16,8 +16,10 @@ import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import net.minecraft.util.Identifier
 import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.event.RegisterCommandsEvent
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.fml.common.Mod
+import net.minecraftforge.network.NetworkEvent
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -38,14 +40,21 @@ internal fun String.fcId(): Identifier {
 
 
 @Mod(value = "fzzy_config")
-class FzzyConfigNeoForge(bus: IEventBus) {
+class FzzyConfigForge() {
     init {
         MinecraftForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
         NetworkEvents.registerPayloads()
-        bus.addListener(NetworkEvents::registerConfigurations)
-        PlatformUtils.registerCommands(bus)
+        PlatformUtils.registerCommands()
+
+        if (PlatformUtils.isClient())
+            NetworkEventsClient.registerClient()
+    }
+
+    fun registerLoginPayloads(event: NetworkEvent.GatherLoginPayloadsEvent) {
+        NetworkEvents.registerConfigurations(event)
     }
 }
+
 
 
 @Internal
@@ -53,14 +62,6 @@ object FC {
     internal const val MOD_ID = "fzzy_config"
     internal val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
 
-}
-
-@Mod(value = "fzzy_config")
-class FzzyConfigNeoForgeClient() {
-    init {
-        if (PlatformUtils.isClient())
-            NetworkEventsClient.registerClient()
-    }
 }
 
 

@@ -119,23 +119,15 @@ internal object NetworkEvents {
         if (serverPlayer == null) {
             SyncedConfigRegistry.onEndDataReload(
                 event.players,
-                { player, id -> canSend(player, id) },
-                { player, payload ->
-                    val buf = PacketByteBuf(Unpooled.buffer())
-                    payload.write(buf)
-                    send(player, CustomPayloadS2CPacket(buf))
-                }
+                { player, id -> ConfigApi.network().canSend(id, player) },
+                { player, payload -> ConfigApi.network().send(payload, player) }
             )
         } else {
             SyncedConfigRegistry.onJoin(
                 serverPlayer,
                 serverPlayer.server,
-                { player, id -> this.canSend(player, id) },
-                { player, payload ->
-                    val buf = PacketByteBuf(Unpooled.buffer())
-                    payload.write(buf)
-                    send(player, CustomPayloadS2CPacket(payload.getId(), buf))
-                }
+                { player, id -> ConfigApi.network().canSend(id, player) },
+                { player, payload -> ConfigApi.network().send(payload, player) }
             )
         }
     }

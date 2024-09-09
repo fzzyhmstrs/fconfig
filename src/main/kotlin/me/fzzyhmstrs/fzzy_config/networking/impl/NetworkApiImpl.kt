@@ -49,7 +49,7 @@ object NetworkApiImpl: NetworkApi {
     override fun <T : FzzyPayload> registerS2C(id: Identifier, clazz: Class<T>, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>) {
         val version = "1.0"
         val index = indexMap.computeIfAbsent(id) { _ -> AtomicInteger(0) }
-        val channel = NetworkRegistry.newSimpleChannel(id, { version }, { serverVersion -> serverVersion == version}, { clientVersion -> clientVersion == version })
+        val channel = channelMap.computeIfAbsent(id) { i -> NetworkRegistry.newSimpleChannel(i, { version }, { serverVersion -> serverVersion == version}, { clientVersion -> clientVersion == version }) }
         @Suppress("INACCESSIBLE_TYPE")
         channel.registerMessage(
             index.incrementAndGet(),
@@ -63,13 +63,12 @@ object NetworkApiImpl: NetworkApi {
                     contextSuppler.get().packetHandled = true
                 }
             })
-        channelMap[id] = channel
     }
 
     override fun <T : FzzyPayload> registerC2S(id: Identifier, clazz: Class<T>, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>) {
         val version = "1.0"
         val index = indexMap.computeIfAbsent(id) { _ -> AtomicInteger(0) }
-        val channel = NetworkRegistry.newSimpleChannel(id, { version }, { serverVersion -> serverVersion == version}, { clientVersion -> clientVersion == version })
+        val channel = channelMap.computeIfAbsent(id) { i -> NetworkRegistry.newSimpleChannel(i, { version }, { serverVersion -> serverVersion == version}, { clientVersion -> clientVersion == version }) }
         @Suppress("INACCESSIBLE_TYPE")
         channel.registerMessage(
             index.incrementAndGet(),
@@ -81,7 +80,6 @@ object NetworkApiImpl: NetworkApi {
                 handler.handle(payload, newContext)
                 contextSuppler.get().packetHandled = true
             })
-        channelMap[id] = channel
     }
 
 }
