@@ -11,20 +11,19 @@
 package me.fzzyhmstrs.fzzy_config.networking.api
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.minecraft.network.NetworkPhase
+import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
 import net.minecraft.network.NetworkSide
-import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraftforge.network.NetworkEvent
 
 /**
  * A server-side network context, used to handle C2S payloads
  * @author fzzyhmstrs
  * @since 0.4.1
  */
-class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context): NetworkContext<ServerPlayerEntity> {
+class ServerPlayNetworkContext(private val context: NetworkEvent.Context): NetworkContext<ServerPlayerEntity> {
 
     /**
      * Executes a task on the main thread. This should be used for anything interacting with game state outside the network loop
@@ -33,7 +32,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        context.player().server.execute(runnable)
+        player().server.execute(runnable)
     }
 
     /**
@@ -43,7 +42,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     override fun disconnect(reason: Text) {
-        context.responseSender().disconnect(reason)
+        context.networkManager.disconnect(reason)
     }
 
     /**
@@ -54,7 +53,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     override fun canReply(id: Identifier): Boolean {
-        return ServerPlayNetworking.canSend(player(), id)
+        return player().networkHandler.isConnectionOpen
     }
 
     /**
@@ -63,19 +62,19 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun reply(payload: CustomPayload) {
-        context.responseSender().sendPacket(payload)
+    override fun reply(payload: FzzyPayload) {
+        ConfigApi.network().send(payload, player())
     }
 
     /**
      * Sends a payload to all players on the server. By default, skips the player that sent the inbound packet
-     * @param payload [CustomPayload] the payload to send to the player list
+     * @param payload [FzzyPayload] the payload to send to the player list
      * @param skipCurrentPlayer Boolean, default true - whether to skip the player that sent the inbound payload.
      * @author fzzyhmstrs
      * @since 0.4.1
      */
     @JvmOverloads
-    fun sendToAllPlayers(payload: CustomPayload, skipCurrentPlayer: Boolean = true) {
+    fun sendToAllPlayers(payload: FzzyPayload, skipCurrentPlayer: Boolean = true) {
         for (player in player().server.playerManager.playerList) {
             if (skipCurrentPlayer && player == player()) continue
             ConfigApi.network().send(payload, player)
@@ -89,16 +88,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     override fun player(): ServerPlayerEntity {
-        return context.player()
-    }
-
-    /**
-     * The current network phase. Always PLAY at the moment.
-     * @author fzzyhmstrs
-     * @since 0.4.1
-     */
-    override fun networkPhase(): NetworkPhase {
-        return NetworkPhase.PLAY
+        return context.sender!!
     }
 
     /**

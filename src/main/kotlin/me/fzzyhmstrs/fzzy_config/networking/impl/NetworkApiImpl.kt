@@ -10,54 +10,78 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.impl
 
-import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
+import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.networking.api.*
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.fabricmc.fabric.impl.networking.PayloadTypeRegistryImpl
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.network.RegistryByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.packet.CustomPayload
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
+import net.minecraftforge.network.NetworkRegistry
+import net.minecraftforge.network.PacketDistributor
+import net.minecraftforge.network.simple.SimpleChannel
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Function
 
 object NetworkApiImpl: NetworkApi {
 
     override fun canSend(id: Identifier, playerEntity: PlayerEntity?): Boolean {
         return if (playerEntity is ServerPlayerEntity) {
-            ServerPlayNetworking.canSend(playerEntity, id)
+            playerEntity.networkHandler.isConnectionOpen
         } else {
-            ClientPlayNetworking.canSend(id)
+            NetworkEventsClient.canSend(id)
         }
     }
 
-    override fun send(payload: CustomPayload, playerEntity: PlayerEntity?) {
+    override fun send(payload: FzzyPayload, playerEntity: PlayerEntity?) {
         if (playerEntity is ServerPlayerEntity) {
-            ServerPlayNetworking.send(playerEntity, payload)
+            channelMap[payload.getId()]?.send(PacketDistributor.PLAYER.with { playerEntity }, payload)
         } else {
-            ClientPlayNetworking.send(payload)
+            channelMap[payload.getId()]?.send(PacketDistributor.SERVER.noArg(), payload)
         }
     }
 
-    override fun <T : CustomPayload> registerS2C(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: S2CPayloadHandler<T>) {
-        PayloadTypeRegistry.playS2C().register(id, codec)
-        if (PlatformUtils.isClient()) {
-            ClientPlayNetworking.registerGlobalReceiver(id) { payload, context ->
-                val newContext = ClientPlayNetworkContext(context)
-                handler.handle(payload, newContext)
-            }
-        }
+    private val channelMap: MutableMap<Identifier, SimpleChannel> = mutableMapOf()
+
+    private val indexMap: MutableMap<Identifier, AtomicInteger> = mutableMapOf()
+
+    override fun <T : FzzyPayload> registerS2C(id: Identifier, clazz: Class<T>, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>) {
+        val version = "1.0"
+        val index = indexMap.computeIfAbsent(id) { _ -> AtomicInteger(0) }
+        val channel = NetworkRegistry.newSimpleChannel(id, { version }, { serverVersion -> serverVersion == version}, { clientVersion -> clientVersion == version })
+        @Suppress("INACCESSIBLE_TYPE")
+        channel.registerMessage(
+            index.incrementAndGet(),
+            clazz,
+            { payload: T, buf: PacketByteBuf -> payload.write(buf) },
+            function,
+            { payload, contextSuppler ->
+                if (PlatformUtils.isClient()) {
+                        val newContext = ClientPlayNetworkContext(contextSuppler.get())
+                        handler.handle(payload, newContext)
+                    }
+            })
+        channelMap[id] = channel
     }
 
-    override fun <T : CustomPayload> registerC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>) {
-        PayloadTypeRegistry.playC2S().register(id, codec)
-        ServerPlayNetworking.registerGlobalReceiver(id)  { payload, context ->
-            val newContext = ServerPlayNetworkContext(context)
-            handler.handle(payload, newContext)
-        }
+    override fun <T : FzzyPayload> registerC2S(id: Identifier, clazz: Class<T>, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>) {
+        val version = "1.0"
+        val index = indexMap.computeIfAbsent(id) { _ -> AtomicInteger(0) }
+        val channel = NetworkRegistry.newSimpleChannel(id, { version }, { serverVersion -> serverVersion == version}, { clientVersion -> clientVersion == version })
+        @Suppress("INACCESSIBLE_TYPE")
+        channel.registerMessage(
+            index.incrementAndGet(),
+            clazz,
+            { payload: T, buf: PacketByteBuf -> payload.write(buf) },
+            function,
+            { payload, contextSuppler ->
+                if (PlatformUtils.isClient()) {
+                    val newContext = ServerPlayNetworkContext(contextSuppler.get())
+                    handler.handle(payload, newContext)
+                }
+            })
+        channelMap[id] = channel
     }
 
 }

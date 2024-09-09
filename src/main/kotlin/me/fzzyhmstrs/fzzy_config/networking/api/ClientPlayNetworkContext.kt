@@ -10,20 +10,22 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.api
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
+import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
-import net.minecraft.network.NetworkPhase
 import net.minecraft.network.NetworkSide
-import net.minecraft.network.packet.CustomPayload
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraftforge.network.NetworkEvent
 
 /**
  * A client-side network context, used to handle S2C payloads
  * @author fzzyhmstrs
  * @since 0.4.1
  */
-class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context): NetworkContext<ClientPlayerEntity> {
+class ClientPlayNetworkContext(private val context: NetworkEvent.Context): NetworkContext<ClientPlayerEntity> {
 
     /**
      * Executes a task on the main thread. This should be used for anything interacting with game state outside the network loop
@@ -32,7 +34,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        context.client().execute(runnable)
+        MinecraftClient.getInstance().execute(runnable)
     }
 
     /**
@@ -42,7 +44,8 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun disconnect(reason: Text) {
-        context.responseSender().disconnect(reason)
+        MinecraftClient.getInstance().world?.disconnect()
+        context.networkManager.disconnect(reason)
     }
 
     /**
@@ -53,7 +56,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun canReply(id: Identifier): Boolean {
-        return ClientPlayNetworking.canSend(id)
+        return NetworkEventsClient.canSend(id)
     }
 
     /**
@@ -62,8 +65,8 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun reply(payload: CustomPayload) {
-        context.responseSender().sendPacket(payload)
+    override fun reply(payload: FzzyPayload) {
+        ConfigApi.network().send(payload, MinecraftClient.getInstance().player)
     }
 
     /**
@@ -73,16 +76,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun player(): ClientPlayerEntity {
-        return context.player()
-    }
-
-    /**
-     * The current network phase. Always PLAY at the moment.
-     * @author fzzyhmstrs
-     * @since 0.4.1
-     */
-    override fun networkPhase(): NetworkPhase {
-        return NetworkPhase.PLAY
+        return MinecraftClient.getInstance().player!!
     }
 
     /**
