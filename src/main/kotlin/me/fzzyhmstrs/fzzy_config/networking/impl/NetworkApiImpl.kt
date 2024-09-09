@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.impl
 
-import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
 import me.fzzyhmstrs.fzzy_config.networking.api.*
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
@@ -18,7 +18,6 @@ import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketByteBuf
-import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import java.util.function.Function
@@ -37,19 +36,19 @@ object NetworkApiImpl: NetworkApi {
         }
     }
 
-    override fun send(payload: CustomPayload, playerEntity: PlayerEntity?) {
+    override fun send(payload: FzzyPayload, playerEntity: PlayerEntity?) {
         if (playerEntity is ServerPlayerEntity) {
             val buf = buf()
             payload.write(buf)
-            ServerPlayNetworking.send(playerEntity, payload.id(), buf)
+            ServerPlayNetworking.send(playerEntity, payload.getId(), buf)
         } else {
             val buf = buf()
             payload.write(buf)
-            ClientPlayNetworking.send(payload.id(), buf)
+            ClientPlayNetworking.send(payload.getId(), buf)
         }
     }
 
-    override fun <T : CustomPayload> registerS2C(id: Identifier, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>) {
+    override fun <T : FzzyPayload> registerS2C(id: Identifier, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>) {
         if (PlatformUtils.isClient()) {
             ClientPlayNetworking.registerGlobalReceiver(id) { c, h, b, ps ->
                 val newContext = ClientPlayNetworkContext(c, h, ps)
@@ -58,7 +57,7 @@ object NetworkApiImpl: NetworkApi {
         }
     }
 
-    override fun <T : CustomPayload> registerC2S(id:Identifier, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>) {
+    override fun <T : FzzyPayload> registerC2S(id:Identifier, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>) {
         ServerPlayNetworking.registerGlobalReceiver(id)  { _, p, h, b, ps ->
             val newContext = ServerPlayNetworkContext(p, h, ps)
             handler.handle(function.apply(b), newContext)

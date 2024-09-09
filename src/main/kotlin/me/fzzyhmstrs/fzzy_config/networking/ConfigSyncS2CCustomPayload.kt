@@ -22,10 +22,6 @@ internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: 
         buf.writeString(serializedConfig)
     }
 
-    override fun id(): Identifier {
-        return Companion.id
-    }
-
     override fun getId(): Identifier {
         return Companion.id
     }

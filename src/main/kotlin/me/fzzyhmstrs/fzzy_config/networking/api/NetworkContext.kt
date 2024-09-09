@@ -10,9 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.api
 
+import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.NetworkSide
-import net.minecraft.network.packet.CustomPayload
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
@@ -20,7 +20,7 @@ interface NetworkContext<T: PlayerEntity> {
     fun execute(runnable: Runnable)
     fun disconnect(reason: Text)
     fun canReply(id: Identifier): Boolean
-    fun reply(payload: CustomPayload)
+    fun reply(payload: FzzyPayload)
     fun player(): T
     fun networkSide(): NetworkSide
 }

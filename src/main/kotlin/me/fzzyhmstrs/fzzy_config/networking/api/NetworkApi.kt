@@ -10,9 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.api
 
+import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketByteBuf
-import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
 import java.util.function.Function
 
@@ -51,7 +51,7 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    fun send(payload: CustomPayload, playerEntity: PlayerEntity?)
+    fun send(payload: FzzyPayload, playerEntity: PlayerEntity?)
 
     /**
      * registers a clientbound (S2C) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
@@ -62,7 +62,7 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    fun <T: CustomPayload> registerS2C(id: Identifier, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>)
+    fun <T: FzzyPayload> registerS2C(id: Identifier, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>)
     /**
      * registers a serverbound (C2S) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
      * @param T the payload type to register
@@ -72,5 +72,5 @@ interface NetworkApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    fun <T: CustomPayload> registerC2S(id: Identifier, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>)
+    fun <T: FzzyPayload> registerC2S(id: Identifier, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>)
 }

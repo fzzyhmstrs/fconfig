@@ -11,10 +11,10 @@
 package me.fzzyhmstrs.fzzy_config.networking.api
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
 import net.fabricmc.fabric.api.networking.v1.PacketSender
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.NetworkSide
-import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
@@ -64,8 +64,10 @@ class ServerPlayNetworkContext(private val player: ServerPlayerEntity, private v
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-    override fun reply(payload: CustomPayload) {
-        sender.sendPacket(payload)
+    override fun reply(payload: FzzyPayload) {
+        val buf = ConfigApi.network().buf()
+        payload.write(buf)
+        sender.sendPacket(payload.getId(), buf)
     }
 
     /**
@@ -76,7 +78,7 @@ class ServerPlayNetworkContext(private val player: ServerPlayerEntity, private v
      * @since 0.4.1
      */
     @JvmOverloads
-    fun sendToAllPlayers(payload: CustomPayload, skipCurrentPlayer: Boolean = true) {
+    fun sendToAllPlayers(payload: FzzyPayload, skipCurrentPlayer: Boolean = true) {
         for (player in player().server.playerManager.playerList) {
             if (skipCurrentPlayer && player == player()) continue
             ConfigApi.network().send(payload, player)
