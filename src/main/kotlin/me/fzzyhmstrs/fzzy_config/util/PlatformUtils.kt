@@ -12,13 +12,9 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import net.minecraft.command.argument.ArgumentTypes
-import net.minecraft.command.argument.serialize.ConstantArgumentSerializer
-import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.server.network.ServerPlayerEntity
@@ -32,7 +28,6 @@ import net.minecraftforge.forgespi.Environment
 import net.minecraftforge.registries.DeferredRegister
 import net.minecraftforge.server.permission.PermissionAPI
 import java.io.File
-import java.util.function.Supplier
 
 internal object PlatformUtils {
 
