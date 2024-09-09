@@ -180,6 +180,12 @@ internal object SyncedConfigRegistry {
         return quarantinedUpdates.keys
     }
 
+    internal fun listQuarantines(messageSender: Consumer<Text>) {
+        for (q in quarantineList()) {
+            messageSender.accept(q.lit())
+        }
+    }
+
     internal fun inspectQuarantine(id: String, nameFinder: Function<UUID, Text?>, messageSender: Consumer<Text>) {
         val quarantinedUpdate = quarantinedUpdates[id] ?: return
         messageSender.accept("fc.command.config".translate())
