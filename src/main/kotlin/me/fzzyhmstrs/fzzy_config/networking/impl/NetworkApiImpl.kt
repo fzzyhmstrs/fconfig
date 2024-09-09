@@ -14,17 +14,20 @@ import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.networking.api.*
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.fabricmc.fabric.impl.networking.PayloadTypeRegistryImpl
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.network.RegistryByteBuf
-import net.minecraft.network.codec.PacketCodec
+import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
+import java.util.function.Function
 
 object NetworkApiImpl: NetworkApi {
+
+    override fun buf(): PacketByteBuf {
+        return PacketByteBufs.create()
+    }
 
     override fun canSend(id: Identifier, playerEntity: PlayerEntity?): Boolean {
         return if (playerEntity is ServerPlayerEntity) {
@@ -36,27 +39,29 @@ object NetworkApiImpl: NetworkApi {
 
     override fun send(payload: CustomPayload, playerEntity: PlayerEntity?) {
         if (playerEntity is ServerPlayerEntity) {
-            ServerPlayNetworking.send(playerEntity, payload)
+            val buf = buf()
+            payload.write(buf)
+            ServerPlayNetworking.send(playerEntity, payload.id(), buf)
         } else {
-            ClientPlayNetworking.send(payload)
+            val buf = buf()
+            payload.write(buf)
+            ClientPlayNetworking.send(payload.id(), buf)
         }
     }
 
-    override fun <T : CustomPayload> registerS2C(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: S2CPayloadHandler<T>) {
-        PayloadTypeRegistry.playS2C().register(id, codec)
+    override fun <T : CustomPayload> registerS2C(id: Identifier, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>) {
         if (PlatformUtils.isClient()) {
-            ClientPlayNetworking.registerGlobalReceiver(id) { payload, context ->
-                val newContext = ClientPlayNetworkContext(context)
-                handler.handle(payload, newContext)
+            ClientPlayNetworking.registerGlobalReceiver(id) { c, h, b, ps ->
+                val newContext = ClientPlayNetworkContext(c, h, ps)
+                handler.handle(function.apply(b), newContext)
             }
         }
     }
 
-    override fun <T : CustomPayload> registerC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>) {
-        PayloadTypeRegistry.playC2S().register(id, codec)
-        ServerPlayNetworking.registerGlobalReceiver(id)  { payload, context ->
-            val newContext = ServerPlayNetworkContext(context)
-            handler.handle(payload, newContext)
+    override fun <T : CustomPayload> registerC2S(id:Identifier, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>) {
+        ServerPlayNetworking.registerGlobalReceiver(id)  { _, p, h, b, ps ->
+            val newContext = ServerPlayNetworkContext(p, h, ps)
+            handler.handle(function.apply(b), newContext)
         }
     }
 

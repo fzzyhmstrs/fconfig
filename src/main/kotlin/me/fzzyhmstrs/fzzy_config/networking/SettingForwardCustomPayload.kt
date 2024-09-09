@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
-import me.fzzyhmstrs.fzzy_config.networking.ConfigPermissionsS2CCustomPayload.Companion
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 import java.util.*
@@ -24,6 +23,10 @@ internal class SettingForwardCustomPayload(val update: String, val player: UUID,
         buf.writeUuid(player)
         buf.writeString(scope)
         buf.writeString(summary)
+    }
+
+    override fun id(): Identifier {
+        return Companion.id
     }
 
     override fun getId(): Identifier {

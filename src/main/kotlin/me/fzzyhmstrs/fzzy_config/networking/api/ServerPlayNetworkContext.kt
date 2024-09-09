@@ -11,10 +11,11 @@
 package me.fzzyhmstrs.fzzy_config.networking.api
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import net.fabricmc.fabric.api.networking.v1.PacketSender
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.minecraft.network.NetworkPhase
 import net.minecraft.network.NetworkSide
 import net.minecraft.network.packet.CustomPayload
+import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -24,7 +25,7 @@ import net.minecraft.util.Identifier
  * @author fzzyhmstrs
  * @since 0.4.1
  */
-class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context): NetworkContext<ServerPlayerEntity> {
+class ServerPlayNetworkContext(private val player: ServerPlayerEntity, private val handler: ServerPlayNetworkHandler, private val sender: PacketSender): NetworkContext<ServerPlayerEntity> {
 
     /**
      * Executes a task on the main thread. This should be used for anything interacting with game state outside the network loop
@@ -33,7 +34,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        context.player().server.execute(runnable)
+        player.server.execute(runnable)
     }
 
     /**
@@ -43,7 +44,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     override fun disconnect(reason: Text) {
-        context.responseSender().disconnect(reason)
+        handler.disconnect(reason)
     }
 
     /**
@@ -64,7 +65,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     override fun reply(payload: CustomPayload) {
-        context.responseSender().sendPacket(payload)
+        sender.sendPacket(payload)
     }
 
     /**
@@ -89,16 +90,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     override fun player(): ServerPlayerEntity {
-        return context.player()
-    }
-
-    /**
-     * The current network phase. Always PLAY at the moment.
-     * @author fzzyhmstrs
-     * @since 0.4.1
-     */
-    override fun networkPhase(): NetworkPhase {
-        return NetworkPhase.PLAY
+        return player
     }
 
     /**

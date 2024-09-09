@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.networking.api
 
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.network.NetworkPhase
 import net.minecraft.network.NetworkSide
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.text.Text
@@ -23,6 +22,5 @@ interface NetworkContext<T: PlayerEntity> {
     fun canReply(id: Identifier): Boolean
     fun reply(payload: CustomPayload)
     fun player(): T
-    fun networkPhase(): NetworkPhase
     fun networkSide(): NetworkSide
 }

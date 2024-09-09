@@ -22,6 +22,10 @@ internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>): F
         writeMap(buf)
     }
 
+    override fun id(): Identifier {
+        return Companion.id
+    }
+
     override fun getId(): Identifier {
         return Companion.id
     }
