@@ -13,9 +13,11 @@ package me.fzzyhmstrs.fzzy_config.networking
 import com.mojang.brigadier.CommandDispatcher
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.FCC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
+import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -30,7 +32,7 @@ import java.util.*
 internal object NetworkEventsClient {
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
-        if (!ClientPlayNetworking.canSend(SettingForwardCustomPayload.id)) {
+        if (!ConfigApi.network().canSend(SettingForwardCustomPayload.type.id, null)) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
             FC.LOGGER.error("Can't forward setting; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("Setting not sent:")
@@ -42,10 +44,11 @@ internal object NetworkEventsClient {
         val buf = PacketByteBufs.create()
         payload.write(buf)
         ClientPlayNetworking.send(payload.getId(), buf)
+        ConfigApi.network().send(SettingForwardCustomPayload(update, player, scope, summary), null)
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
-        if (!ClientPlayNetworking.canSend(ConfigUpdateC2SCustomPayload.id)) {
+        if (!ConfigApi.network().canSend(ConfigUpdateC2SCustomPayload.type.id, null)) {
             FC.LOGGER.error("Can't send Config Update; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("changes not sent:")
             for (change in changeHistory) {
@@ -57,6 +60,26 @@ internal object NetworkEventsClient {
         val buf = PacketByteBufs.create()
         payload.write(buf)
         ClientPlayNetworking.send(payload.getId(), buf)
+        ConfigApi.network().send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm), null)
+    }
+
+    fun receiveSync(payload: ConfigSyncS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receiveSync(
+            payload.id,
+            payload.serializedConfig
+        ) { text -> context.disconnect(text) }
+    }
+
+    fun receivePerms(payload: ConfigPermissionsS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
+    }
+
+    fun receiveUpdate(payload: ConfigUpdateS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receiveUpdate(payload.updates, context.player())
+    }
+
+    fun receiveForward(payload: SettingForwardCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
     }
 
     fun registerClient() {
@@ -79,10 +102,9 @@ internal object NetworkEventsClient {
             }
         }
 
-        ClientPlayNetworking.registerGlobalReceiver(ConfigPermissionsS2CCustomPayload.id) { _, _, buf, _ ->
-            val payload = ConfigPermissionsS2CCustomPayload(buf)
+        /*ClientPlayNetworking.registerGlobalReceiver(ConfigPermissionsS2CCustomPayload.type) { payload, _ ->
             ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
-        }
+        }*/
 
 
         ClientPlayNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.id) { client, _, buf, _ ->
@@ -93,16 +115,13 @@ internal object NetworkEventsClient {
             ) { _ -> client.world?.disconnect(); client.disconnect() }
         }
 
-        ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.id) { client, _, buf, _ ->
-            val player = client.player ?: return@registerGlobalReceiver
-            val payload = ConfigUpdateS2CCustomPayload(buf)
-            ClientConfigRegistry.receiveUpdate(payload.updates, player)
-        }
+        /*ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.type) { payload, context ->
+            ClientConfigRegistry.receiveUpdate(payload.updates, context.player())
+        }*/
 
-        ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.id) { _, _, buf, _ ->
-            val payload = SettingForwardCustomPayload(buf)
+        /*ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type) { payload, _ ->
             ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
-        }
+        }*/
     }
 
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>) {
