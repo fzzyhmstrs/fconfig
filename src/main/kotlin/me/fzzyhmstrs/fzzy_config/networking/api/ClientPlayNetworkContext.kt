@@ -10,20 +10,23 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.api
 
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
+import me.fzzyhmstrs.fzzy_config.cast
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.network.NetworkPhase
 import net.minecraft.network.NetworkSide
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.neoforged.neoforge.network.handling.IPayloadContext
+import net.neoforged.neoforge.network.registration.NetworkRegistry
 
 /**
  * A client-side network context, used to handle S2C payloads
  * @author fzzyhmstrs
  * @since 0.4.1
  */
-class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context): NetworkContext<ClientPlayerEntity> {
+class ClientPlayNetworkContext(private val context: IPayloadContext): NetworkContext<ClientPlayerEntity> {
 
     /**
      * Executes a task on the main thread. This should be used for anything interacting with game state outside the network loop
@@ -32,7 +35,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        context.client().execute(runnable)
+        MinecraftClient.getInstance().execute(runnable)
     }
 
     /**
@@ -42,7 +45,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun disconnect(reason: Text) {
-        context.responseSender().disconnect(reason)
+        context.disconnect(reason)
     }
 
     /**
@@ -53,7 +56,8 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun canReply(id: Identifier): Boolean {
-        return ClientPlayNetworking.canSend(id)
+        val handler = MinecraftClient.getInstance().networkHandler ?: return false
+        return NetworkRegistry.hasChannel(handler, id)
     }
 
     /**
@@ -63,7 +67,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun reply(payload: CustomPayload) {
-        context.responseSender().sendPacket(payload)
+        context.reply(payload)
     }
 
     /**
@@ -73,7 +77,7 @@ class ClientPlayNetworkContext(private val context: ClientPlayNetworking.Context
      * @since 0.4.1
      */
     override fun player(): ClientPlayerEntity {
-        return context.player()
+        return context.player().cast<ClientPlayerEntity>()
     }
 
     /**

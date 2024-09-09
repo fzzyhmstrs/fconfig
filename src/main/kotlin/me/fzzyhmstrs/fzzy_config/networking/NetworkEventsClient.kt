@@ -13,22 +13,22 @@ package me.fzzyhmstrs.fzzy_config.networking
 import com.mojang.brigadier.CommandDispatcher
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.FCC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
-import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.util.Identifier
 import net.neoforged.fml.ModList
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent
 import net.neoforged.neoforge.client.event.ClientTickEvent
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory
 import net.neoforged.neoforge.common.NeoForge
-import net.neoforged.neoforge.network.PacketDistributor
 import net.neoforged.neoforge.network.handling.IPayloadContext
 import net.neoforged.neoforge.network.registration.NetworkRegistry
 import java.util.*
@@ -36,17 +36,13 @@ import java.util.function.Supplier
 
 internal object NetworkEventsClient {
 
-    fun canSend(id: CustomPayload.Id<*>): Boolean {
+    fun canSend(id: Identifier): Boolean {
         val handler = MinecraftClient.getInstance().networkHandler ?: return false
-        return NetworkRegistry.hasChannel(handler, id.id())
-    }
-
-    fun send(payload: CustomPayload) {
-        PacketDistributor.sendToServer(payload)
+        return NetworkRegistry.hasChannel(handler, id)
     }
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
-        if (!canSend(SettingForwardCustomPayload.type)) {
+        if (!canSend(SettingForwardCustomPayload.type.id)) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
             FC.LOGGER.error("Can't forward setting; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("Setting not sent:")
@@ -54,11 +50,11 @@ internal object NetworkEventsClient {
             FC.LOGGER.warn(summary)
             return
         }
-        send(SettingForwardCustomPayload(update, player, scope, summary))
+        ConfigApi.network().send(SettingForwardCustomPayload(update, player, scope, summary), null)
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
-        if (!canSend(ConfigUpdateC2SCustomPayload.type)) {
+        if (!canSend(ConfigUpdateC2SCustomPayload.type.id)) {
             FC.LOGGER.error("Can't send Config Update; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("changes not sent:")
             for (change in changeHistory) {
@@ -66,7 +62,7 @@ internal object NetworkEventsClient {
             }
             return
         }
-        send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
+        ConfigApi.network().send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm), null)
     }
 
     fun handleConfigurationConfigSync(payload: ConfigSyncS2CCustomPayload, context: IPayloadContext) {
