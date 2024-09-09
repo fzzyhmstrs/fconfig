@@ -48,7 +48,7 @@ object NetworkApiImpl: NetworkApi {
         }
     }
 
-    override fun <T : FzzyPayload> registerS2C(id: Identifier, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>) {
+    override fun <T : FzzyPayload> registerS2C(id: Identifier, clazz: Class<T>, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>) {
         if (PlatformUtils.isClient()) {
             ClientPlayNetworking.registerGlobalReceiver(id) { c, h, b, ps ->
                 val newContext = ClientPlayNetworkContext(c, h, ps)
@@ -57,7 +57,7 @@ object NetworkApiImpl: NetworkApi {
         }
     }
 
-    override fun <T : FzzyPayload> registerC2S(id:Identifier, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>) {
+    override fun <T : FzzyPayload> registerC2S(id: Identifier, clazz: Class<T>, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>) {
         ServerPlayNetworking.registerGlobalReceiver(id)  { _, p, h, b, ps ->
             val newContext = ServerPlayNetworkContext(p, h, ps)
             handler.handle(function.apply(b), newContext)
