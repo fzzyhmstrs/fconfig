@@ -13,9 +13,11 @@ package me.fzzyhmstrs.fzzy_config.networking
 import com.mojang.brigadier.CommandDispatcher
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.FCC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
+import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
@@ -23,14 +25,13 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.minecraft.client.MinecraftClient
 import java.util.*
 
 internal object NetworkEventsClient {
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
-        if (!ClientPlayNetworking.canSend(SettingForwardCustomPayload.type)) {
+        if (!ConfigApi.network().canSend(SettingForwardCustomPayload.type.id, null)) {
             MinecraftClient.getInstance().player?.sendMessage("fc.config.forwarded_error.c2s".translate())
             FC.LOGGER.error("Can't forward setting; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("Setting not sent:")
@@ -38,11 +39,11 @@ internal object NetworkEventsClient {
             FC.LOGGER.warn(summary)
             return
         }
-        ClientPlayNetworking.send(SettingForwardCustomPayload(update, player, scope, summary))
+        ConfigApi.network().send(SettingForwardCustomPayload(update, player, scope, summary), null)
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
-        if (!ClientPlayNetworking.canSend(ConfigUpdateC2SCustomPayload.type)) {
+        if (!ConfigApi.network().canSend(ConfigUpdateC2SCustomPayload.type.id, null)) {
             FC.LOGGER.error("Can't send Config Update; not connected to a server or server isn't accepting this type of data")
             FC.LOGGER.error("changes not sent:")
             for (change in changeHistory) {
@@ -50,7 +51,26 @@ internal object NetworkEventsClient {
             }
             return
         }
-        ClientPlayNetworking.send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm))
+        ConfigApi.network().send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm), null)
+    }
+
+    fun receiveSync(payload: ConfigSyncS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receiveSync(
+            payload.id,
+            payload.serializedConfig
+        ) { text -> context.disconnect(text) }
+    }
+
+    fun receivePerms(payload: ConfigPermissionsS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
+    }
+
+    fun receiveUpdate(payload: ConfigUpdateS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receiveUpdate(payload.updates, context.player())
+    }
+
+    fun receiveForward(payload: SettingForwardCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
     }
 
     fun registerClient() {
@@ -73,9 +93,9 @@ internal object NetworkEventsClient {
             }
         }
 
-        ClientPlayNetworking.registerGlobalReceiver(ConfigPermissionsS2CCustomPayload.type) { payload, _ ->
+        /*ClientPlayNetworking.registerGlobalReceiver(ConfigPermissionsS2CCustomPayload.type) { payload, _ ->
             ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
-        }
+        }*/
 
 
         ClientConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.type) { payload, handler ->
@@ -85,13 +105,13 @@ internal object NetworkEventsClient {
             ) { text -> handler.responseSender().disconnect(text) }
         }
 
-        ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.type) { payload, context ->
+        /*ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.type) { payload, context ->
             ClientConfigRegistry.receiveUpdate(payload.updates, context.player())
-        }
+        }*/
 
-        ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type) { payload, _ ->
+        /*ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type) { payload, _ ->
             ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
-        }
+        }*/
     }
 
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>) {

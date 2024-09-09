@@ -10,6 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.networking.api.ServerPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.networking.v1.*
@@ -27,19 +29,48 @@ internal object NetworkEvents {
         ServerPlayNetworking.send(playerEntity, payload)
     }
 
+    private fun receiveUpdate(payload: ConfigUpdateC2SCustomPayload, context: ServerPlayNetworkContext) {
+        SyncedConfigRegistry.receiveConfigUpdate(
+            payload.updates,
+            context.player().server,
+            context.player(),
+            payload.changeHistory,
+            { _, id -> context.canReply(id.id) },
+            { _, pl -> context.reply(pl) }
+        )
+    }
+
+    private fun receiveForward(payload: SettingForwardCustomPayload, context: ServerPlayNetworkContext) {
+        SyncedConfigRegistry.receiveSettingForward(
+            payload.player,
+            context.player(),
+            payload.scope,
+            payload.update,
+            payload.summary,
+            { player, id -> ServerPlayNetworking.canSend(player, id) },
+            { player, pl -> ServerPlayNetworking.send(player, pl) }
+        )
+    }
+
     fun registerServer() {
 
         //PayloadTypeRegistry.configurationC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec)
+        //PayloadTypeRegistry.playS2C().register(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec)
+        ConfigApi.network().registerS2C(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec, NetworkEventsClient::receivePerms)
         //PayloadTypeRegistry.playC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        //PayloadTypeRegistry.playS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
+        ConfigApi.network().registerS2C(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec, NetworkEventsClient::receiveSync)
         //PayloadTypeRegistry.playC2S().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
-        PayloadTypeRegistry.playC2S().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
+        //PayloadTypeRegistry.playS2C().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
+        ConfigApi.network().registerS2C(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec, NetworkEventsClient::receiveUpdate)
+        //PayloadTypeRegistry.playC2S().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
+        ConfigApi.network().registerC2S(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec, this::receiveUpdate)
         //PayloadTypeRegistry.playS2C().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
-        PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
-        PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
+        //PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
+        ConfigApi.network().registerC2S(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec, this::receiveForward)
+        //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
+        ConfigApi.network().registerS2C(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec, NetworkEventsClient::receiveForward)
 
         ServerConfigurationConnectionEvents.CONFIGURE.register { handler, _ ->
             SyncedConfigRegistry.onConfigure(
@@ -52,20 +83,20 @@ internal object NetworkEvents {
             SyncedConfigRegistry.onJoin(
                 handler.player,
                 server,
-                { player, id -> ServerPlayNetworking.canSend(player, id) },
-                { _, payload -> sender.sendPacket(payload) }
+                { player, id -> ConfigApi.network().canSend(id.id, player) },
+                { player, payload -> ConfigApi.network().send(payload, player) }
             )
         }
 
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register { server, _, _ ->
             SyncedConfigRegistry.onEndDataReload(
                 server.playerManager.playerList,
-                { player, id -> ServerPlayNetworking.canSend(player, id) },
-                { player, payload -> ServerPlayNetworking.send(player, payload) }
+                { player, id -> ConfigApi.network().canSend(id.id, player) },
+                { player, payload -> ConfigApi.network().send(payload, player) }
             )
         }
 
-        ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
+        /*ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
             SyncedConfigRegistry.receiveConfigUpdate(
                 payload.updates,
                 context.server(),
@@ -74,18 +105,10 @@ internal object NetworkEvents {
                 { player, id -> ServerPlayNetworking.canSend(player, id) },
                 { player, pl -> ServerPlayNetworking.send(player, pl) }
             )
-        }
+        }*/
 
-        ServerPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type){ payload, context ->
-            SyncedConfigRegistry.receiveSettingForward(
-                payload.player,
-                context.player(),
-                payload.scope,
-                payload.update,
-                payload.summary,
-                { player, id -> ServerPlayNetworking.canSend(player, id) },
-                { player, pl -> ServerPlayNetworking.send(player, pl) }
-            )
-        }
+        /*ServerPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type){ payload, context ->
+
+        }*/
     }
 }
