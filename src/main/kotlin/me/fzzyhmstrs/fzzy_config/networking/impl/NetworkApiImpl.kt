@@ -69,7 +69,6 @@ object NetworkApiImpl: NetworkApi {
     private data class S2CRegistration<T : CustomPayload>(val id: CustomPayload.Id<T>, val codec: PacketCodec<in RegistryByteBuf, T>, val handler: S2CPayloadHandler<T>) {
         fun apply(registrar: PayloadRegistrar) {
             registrar.playToClient(id, codec) { payload, context ->
-                println("I'm getting called!")
                 if (PlatformUtils.isClient()) {
                     val newContext = ClientPlayNetworkContext(context)
                     handler.handle(payload, newContext)
