@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket
@@ -117,6 +118,10 @@ internal object NetworkEventsClient {
         context.get().packetHandled = true
     }
 
+    fun handleFcPermsUpdate(payload: ConfigPermissionsS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
+    }
+
     fun handlePermsUpdate(payload: ConfigPermissionsS2CCustomPayload, context: Supplier<NetworkEvent.Context>) {
         ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
         context.get().packetHandled = true
@@ -151,9 +156,28 @@ internal object NetworkEventsClient {
         }
     }
 
+    private var initialized = false
+
+    private fun registerConfigs(event: ScreenEvent.Init.Pre) {
+        if (event.screen !is TitleScreen || initialized) return
+        ModList.get().forEachModInOrder { modContainer ->
+            val id = modContainer.modId
+            if (ClientConfigRegistry.getScreenScopes().contains(id)) {
+                if (modContainer.getCustomExtension(ConfigScreenFactory::class.java).isEmpty) {
+                    modContainer.registerExtensionPoint(ConfigScreenFactory::class.java, Supplier {
+                        ConfigScreenFactory { _, screen -> ClientConfigRegistry.provideScreen(id) ?: screen }
+                    })
+                }
+            }
+        }
+        initialized = true
+    }
+
     fun registerClient() {
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands)
         MinecraftForge.EVENT_BUS.addListener(this::handleTick)
+        MinecraftForge.EVENT_BUS.addListener(this::registerConfigs)
+
     }
 
     private fun registerCommands(event: RegisterClientCommandsEvent) {
