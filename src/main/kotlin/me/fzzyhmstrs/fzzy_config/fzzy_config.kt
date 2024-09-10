@@ -43,13 +43,15 @@ internal fun String.fcId(): Identifier {
 
 
 @Mod(value = "fzzy_config")
-class FzzyConfigNeoForge(bus: IEventBus) {
+class FzzyConfigNeoForge(bus: IEventBus, dist: Dist) {
     init {
         NeoForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
         bus.addListener(NetworkEvents::registerPayloads)
         bus.addListener(NetworkApiImpl::onRegister)
         bus.addListener(NetworkEvents::registerConfigurations)
         PlatformUtils.registerCommands(bus)
+        if (dist == Dist.CLIENT)
+            NetworkEventsClient.registerClient()
     }
 }
 
@@ -58,16 +60,16 @@ class FzzyConfigNeoForge(bus: IEventBus) {
 object FC {
     internal const val MOD_ID = "fzzy_config"
     internal val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
-
 }
 
-@Mod(value = "fzzy_config")
+/*@Mod(value = "fzzy_config")
 class FzzyConfigNeoForgeClient(bus: IEventBus, dist: Dist) {
     init {
+        println("I'm initializing client")
         if (dist == Dist.CLIENT)
             NetworkEventsClient.registerClient()
     }
-}
+}*/
 
 
 @Internal

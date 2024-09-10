@@ -68,7 +68,7 @@ object NetworkApiImpl: NetworkApi {
 
     private data class S2CRegistration<T : CustomPayload>(val id: Identifier, val function: Function<PacketByteBuf, T>, val handler: S2CPayloadHandler<T>) {
         fun apply(registrar: IPayloadRegistrar) {
-            registrar.play(id, function as PacketByteBuf.PacketReader<T>) { payload, context ->
+            registrar.play(id, { b -> function.apply(b) }) { payload, context ->
                 if (PlatformUtils.isClient()) {
                     val newContext = ClientPlayNetworkContext(context)
                     handler.handle(payload, newContext)
@@ -79,7 +79,7 @@ object NetworkApiImpl: NetworkApi {
 
     private data class C2SRegistration<T : CustomPayload>(val id: Identifier, val function: Function<PacketByteBuf, T>, val handler: C2SPayloadHandler<T>) {
         fun apply(registrar: IPayloadRegistrar) {
-            registrar.play(id, function as PacketByteBuf.PacketReader<T>) { payload, context ->
+            registrar.play(id, { b -> function.apply(b) }) { payload, context ->
                 val newContext = ServerPlayNetworkContext(context)
                 handler.handle(payload, newContext)
             }
