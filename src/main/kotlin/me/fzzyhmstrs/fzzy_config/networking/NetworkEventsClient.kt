@@ -17,9 +17,11 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
+import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.Identifier
@@ -27,6 +29,7 @@ import net.neoforged.fml.ModList
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent
 import net.neoforged.neoforge.client.event.ClientTickEvent
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
+import net.neoforged.neoforge.client.event.ScreenEvent
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.network.handling.IPayloadContext
@@ -80,6 +83,10 @@ internal object NetworkEventsClient {
         )
     }
 
+    fun handleFcPermsUpdate(payload: ConfigPermissionsS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
+    }
+
     fun handlePermsUpdate(payload: ConfigPermissionsS2CCustomPayload, context: IPayloadContext) {
         ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
     }
@@ -106,7 +113,10 @@ internal object NetworkEventsClient {
         }
     }
 
-    private fun registerConfigs(event: ClientPlayerNetworkEvent.LoggingIn) {
+    private var initialized = false
+
+    private fun registerConfigs(event: ScreenEvent.Init.Pre) {
+        if (event.screen !is TitleScreen || initialized) return
         ModList.get().forEachModInOrder { modContainer ->
             val id = modContainer.modId
             if (ClientConfigRegistry.getScreenScopes().contains(id)) {
@@ -117,6 +127,7 @@ internal object NetworkEventsClient {
                 }
             }
         }
+        initialized = true
     }
 
     fun registerClient() {
