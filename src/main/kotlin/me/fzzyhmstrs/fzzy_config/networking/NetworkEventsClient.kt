@@ -17,19 +17,26 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
+import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.Identifier
+import net.neoforged.fml.ModList
+import net.neoforged.neoforge.client.ConfigScreenHandler.ConfigScreenFactory
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingIn
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent
+import net.neoforged.neoforge.client.event.ScreenEvent
 import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.TickEvent
 import net.neoforged.neoforge.network.handling.ConfigurationPayloadContext
 import net.neoforged.neoforge.network.handling.IPayloadContext
 import net.neoforged.neoforge.network.registration.NetworkRegistry
 import java.util.*
+import java.util.function.Supplier
 
 internal object NetworkEventsClient {
 
@@ -78,6 +85,10 @@ internal object NetworkEventsClient {
         )
     }
 
+    fun handleFcPermsUpdate(payload: ConfigPermissionsS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
+    }
+
     fun handlePermsUpdate(payload: ConfigPermissionsS2CCustomPayload, context: IPayloadContext) {
         ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
     }
@@ -106,9 +117,27 @@ internal object NetworkEventsClient {
         }
     }
 
+    private var initialized = false
+
+    private fun registerConfigs(event: ScreenEvent.Init.Pre) {
+        if (event.screen !is TitleScreen || initialized) return
+        ModList.get().forEachModInOrder { modContainer ->
+            val id = modContainer.modId
+            if (ClientConfigRegistry.getScreenScopes().contains(id)) {
+                if (modContainer.getCustomExtension(ConfigScreenFactory::class.java).isEmpty) {
+                    modContainer.registerExtensionPoint(ConfigScreenFactory::class.java, Supplier {
+                        ConfigScreenFactory { _, screen -> ClientConfigRegistry.provideScreen(id) ?: screen }
+                    })
+                }
+            }
+        }
+        initialized = true
+    }
+
     fun registerClient() {
         NeoForge.EVENT_BUS.addListener(this::registerCommands)
         NeoForge.EVENT_BUS.addListener(this::handleTick)
+        NeoForge.EVENT_BUS.addListener(this::registerConfigs)
     }
 
     private fun registerCommands(event: RegisterClientCommandsEvent) {
