@@ -169,7 +169,27 @@ object FcText {
             literal(this.toString())
     }
     /**
+     * Translates anything. If the thing is [Translatable], it will use the built in translation, otherwise it will use the fallback literally
+     * @param fallbackSupplier Supplier&lt;String&gt; - the fallback text supplier, used literally, not as a translation key
+     * @return [MutableText] translation based on the receivers translation, or the fallback
+     * @author fzzyhmstrs
+     * @since 0.4.2
+     */
+    fun Any?.transSupplied(fallbackSupplier: Supplier<String>): MutableText {
+        return if(this is Translatable) {
+            this.translation().takeIf { this.hasTranslation() } ?: literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
+        } else {
+            val fallback = fallbackSupplier.get()
+            if (fallback != "") 
+                literal(fallback).formatted(Formatting.ITALIC)
+            else
+                empty()
+        }
+    }
+    /**
      * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built in description, otherwise it will translate the fallback key
+     * @param fallback String - translation key of the fallback text
+     * @return [Text] description based on the receivers translation, or the fallback
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -181,6 +201,8 @@ object FcText {
     }
     /**
      * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built-in description, otherwise it will use the fallback literally
+     * @param literalFallback String - the fallback text, used literally, not as a translation key
+     * @return [Text] description based on the receivers description translation, or the fallback
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -191,5 +213,24 @@ object FcText {
             literal(literalFallback).formatted(Formatting.ITALIC)
         else
             empty()
+    }
+
+    /**
+     * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built-in description, otherwise it will use the fallback literally
+     * @param fallbackSupplier Supplier&lt;String&gt; - the fallback text supplier, used literally, not as a translation key
+     * @return [MutableText] description based on the receivers description translation, or the fallback
+     * @author fzzyhmstrs
+     * @since 0.4.2
+     */
+    fun Any?.descSupplied(fallbackSupplier: Supplier<String>): MutableText {
+        return if(this is Translatable) {
+            this.description().takeIf { this.hasDescription() } ?: literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
+        } else {
+            val fallback = fallbackSupplier.get()
+            if (fallback != "") 
+                literal(fallback).formatted(Formatting.ITALIC)
+            else
+                empty()
+        }
     }
 }
