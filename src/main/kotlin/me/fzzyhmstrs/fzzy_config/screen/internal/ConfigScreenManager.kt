@@ -237,7 +237,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val fieldName = new.substringAfterLast('.')
                 val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
-                val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations)
+                val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly)
                 if(perms.success) {
                     thing.setUpdateManager(manager)
                     manager.setUpdatableEntry(thing)
@@ -264,7 +264,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     val fieldName = new.substringAfterLast('.')
                     val name = ConfigApiImplClient.getTranslation(basicValidation2, fieldName, annotations, globalAnnotations)
                     nameMap[new] = name
-                    val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations)
+                    val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly)
                     if(perms.success) {
                         basicValidation2.setUpdateManager(manager)
                         manager.setUpdatableEntry(basicValidation2)
@@ -317,9 +317,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
     }
 
-    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>): PermResult {
+    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean): PermResult {
         val client = MinecraftClient.getInstance()
-        if(client.isInSingleplayer) return PermResult.SUCCESS //single player, they can do what they want!!
+        if(client.isInSingleplayer || clientOnly) return PermResult.SUCCESS //single player or client config, they can do what they want!!
         // 1. NonSync wins over everything, even whole config annotations
         if (ConfigApiImpl.isNonSync(annotations)) return PermResult.SUCCESS
 
