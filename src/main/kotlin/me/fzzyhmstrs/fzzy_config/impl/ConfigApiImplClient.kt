@@ -15,7 +15,10 @@ import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import net.minecraft.client.MinecraftClient
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import java.util.*
 
@@ -68,5 +71,59 @@ internal object ConfigApiImplClient {
             i++
         }
         return i - 1
+    }
+
+    internal fun getTranslation(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): MutableText {
+        for (annotation in annotations) {
+            if (annotation is Translation) {
+                val key = "${annotation.prefix}.$fieldName"
+                if (I18n.hasTranslation(key)) return key.translate()
+                break
+            }
+        }
+        for (annotation in globalAnnotations) {
+            if (annotation is Translation) {
+                val key = "${annotation.prefix}.$fieldName"
+                if (I18n.hasTranslation(key)) return key.translate()
+                break
+            }
+        }
+        return thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+    }
+
+    internal fun getDescription(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): MutableText {
+        for (annotation in annotations) {
+            if (annotation is Translation) {
+                val key = "${annotation.prefix}.$fieldName.desc"
+                if (I18n.hasTranslation(key)) return key.translate()
+                break
+            }
+        }
+        for (annotation in globalAnnotations) {
+            if (annotation is Translation) {
+                val key = "${annotation.prefix}.$fieldName.desc"
+                if (I18n.hasTranslation(key)) return key.translate()
+                break
+            }
+        }
+        return thing.descLit(getComments(annotations))
+    }
+
+    private fun getComments(annotations: List<Annotation>): String {
+        var comment = ""
+        for (annotation in annotations) {
+            if (annotation is TomlComment) {
+                if (comment.isNotEmpty())
+                    comment += ". "
+                comment += annotation.text
+            } else if(annotation is Comment) {
+                if (comment.isNotEmpty())
+                    comment += ". "
+                comment += annotation.value
+            }
+        }
+        if (comment.isNotEmpty())
+            comment += "."
+        return comment
     }
 }
