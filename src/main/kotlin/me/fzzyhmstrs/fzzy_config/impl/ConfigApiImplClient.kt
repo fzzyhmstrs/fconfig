@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import net.minecraft.client.MinecraftClient
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import java.lang.StringBuilder
 import java.util.*
 
 internal object ConfigApiImplClient {
@@ -76,6 +77,9 @@ internal object ConfigApiImplClient {
     internal fun getTranslation(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): MutableText {
         for (annotation in annotations) {
             if (annotation is Translation) {
+                if (annotation.negate) {
+                    return thing.transSupplied { fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
+                }
                 val key = "${annotation.prefix}.$fieldName"
                 if (I18n.hasTranslation(key)) return key.translate()
                 break
@@ -88,12 +92,15 @@ internal object ConfigApiImplClient {
                 break
             }
         }
-        return thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+        return thing.transSupplied { fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
     }
 
     internal fun getDescription(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): MutableText {
         for (annotation in annotations) {
             if (annotation is Translation) {
+                if (annotation.negate) {
+                    return thing.descSupplied { getComments(annotations) }
+                }
                 val key = "${annotation.prefix}.$fieldName.desc"
                 if (I18n.hasTranslation(key)) return key.translate()
                 break
@@ -106,24 +113,26 @@ internal object ConfigApiImplClient {
                 break
             }
         }
-        return thing.descLit(getComments(annotations))
+        return thing.descSupplied { getComments(annotations) }
     }
 
+    private val spacer = ". "
+    
     private fun getComments(annotations: List<Annotation>): String {
-        var comment = ""
+        var comment = StringBuilder()
         for (annotation in annotations) {
             if (annotation is TomlComment) {
                 if (comment.isNotEmpty())
-                    comment += ". "
-                comment += annotation.text
+                    comment.append(spacer)
+                comment.append(annotation.text)
             } else if(annotation is Comment) {
                 if (comment.isNotEmpty())
-                    comment += ". "
-                comment += annotation.value
+                    comment.append(spacer)
+                comment.append(annotation.value)
             }
         }
         if (comment.isNotEmpty())
-            comment += "."
-        return comment
+            comment.append(".")
+        return comment.toString()
     }
 }
