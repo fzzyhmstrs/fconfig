@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ValidatedAnyConfigEntry
@@ -152,20 +153,21 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)?.let { setOf(it) } ?: setOf()
             if (thing is Updatable && thing is Entry<*, *>) {
                 val fieldName = new.substringAfterLast('.')
-                val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 thing.setEntryKey(new)
                 thing.setUpdateManager(manager)
                 manager.setUpdatableEntry(thing)
-                entryList.add(SettingConfigEntry(name, thing.descLit(""), action, entryList, thing.widgetEntry(), null, null, null))
+                entryList.add(SettingConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry(), null, null, null))
 
             } else if (thing is Walkable) {
                 val validation = ValidatedAny(thing)
                 validation.setEntryKey(new)
                 validation.setUpdateManager(manager)
                 manager.setUpdatableEntry(validation)
-                val name = validation.translation()
+                val fieldName = new.substringAfterLast('.')
+                val name = ConfigApiImplClient.getTranslation(validation, fieldName, annotations, globalAnnotations)
                 val actions = ConfigApiImpl.getActions(thing, 1)
-                entryList.add(ValidatedAnyConfigEntry(name, validation.descLit(""), actions, entryList, validation.widgetEntry(), null, null, null))
+                entryList.add(ValidatedAnyConfigEntry(name, ConfigApiImplClient.getDescription(validation, fieldName, annotations, globalAnnotations), actions, entryList, validation.widgetEntry(), null, null, null))
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("${getEntryKey()}.")
@@ -178,8 +180,9 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                     basicValidation2.setEntryKey(new)
                     basicValidation2.setUpdateManager(manager)
                     manager.setUpdatableEntry(basicValidation2)
-                    val name = basicValidation2.translation()
-                    entryList.add(BaseConfigEntry(name, basicValidation2.descLit(""), action, entryList, basicValidation2.widgetEntry()))
+                    val fieldName = new.substringAfterLast('.')
+                    val name = ConfigApiImplClient.getTranslation(basicValidation2, fieldName, annotations, globalAnnotations)
+                    entryList.add(BaseConfigEntry(name, ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action, entryList, basicValidation2.widgetEntry()))
                 }
             }
         }
