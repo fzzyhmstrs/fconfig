@@ -49,6 +49,7 @@ import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.MultilineTextWidget
 import net.minecraft.client.network.PlayerListEntry
+import net.minecraft.client.resource.language.I18n
 import net.minecraft.command.CommandSource
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlComment
@@ -220,9 +221,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
             if(thing is ConfigSection) {
 
                 val fieldName = new.substringAfterLast('.')
-                val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
-                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, sectionOpenEntryBuilder(name, thing.descLit(getComments(annotations)), action?.let { setOf(it) } ?: setOf(), new))
+                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, sectionOpenEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), new))
                 index++
             } else if (thing is Updatable && thing is Entry<*, *>) {
                 val totalActions = action?.let { mutableSetOf(it) } ?: mutableSetOf()
@@ -234,17 +235,21 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     }
                 }
                 val fieldName = new.substringAfterLast('.')
-                val name = thing.transLit(fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
-                if(hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations)) {
+                val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations)
+                if(perms.success) {
                     thing.setUpdateManager(manager)
                     manager.setUpdatableEntry(thing)
                     if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
-                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, forwardableEntryBuilder(name, thing.descLit(getComments(annotations)), totalActions, thing))
+                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, forwardableEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
                     else
-                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, thing.descLit(getComments(annotations)), totalActions, thing))
-                } else
+                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
+                } else if (perms == PermLevel.OUT_OF_GAME) {
                     functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
+                } else {
+                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
+                }
                 index++
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
@@ -256,39 +261,26 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 if (basicValidation2 != null) {
                     basicValidation2.trySet(thing)
                     basicValidation2.setEntryKey(new)
-                    val name = basicValidation2.translation()
+                    val fieldName = new.substringAfterLast('.')
+                    val name = ConfigApiImplClient.getTranslation(basicValidation2, fieldName, annotations, globalAnnotations)
                     nameMap[new] = name
-                    if(hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations)) {
+                    val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations)
+                    if(perms.success) {
                         basicValidation2.setUpdateManager(manager)
                         manager.setUpdatableEntry(basicValidation2)
                         if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
-                            functionMap.computeIfAbsent(old) { sortedMapOf() } [index] = Pair(new, forwardableEntryBuilder(name, basicValidation2.descLit(getComments(annotations)), action?.let { setOf(it) } ?: setOf(), basicValidation2))
+                            functionMap.computeIfAbsent(old) { sortedMapOf() } [index] = Pair(new, forwardableEntryBuilder(name, ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), basicValidation2))
                         else
-                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, basicValidation2.descLit(getComments(annotations)), action?.let { setOf(it) } ?: setOf(), basicValidation2))
-                    } else
+                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), basicValidation2))
+                    } else if (perms == PermResult.OUT_OF_GAME) {
                         functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
+                    } else {
+                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
+                    }
                 }
                 index++
             }
         }
-    }
-
-    private fun getComments(annotations: List<Annotation>): String {
-        var comment = ""
-        for (annotation in annotations) {
-            if (annotation is TomlComment) {
-                if (comment.isNotEmpty())
-                    comment += ". "
-                comment += annotation.text
-            } else if(annotation is Comment) {
-                if (comment.isNotEmpty())
-                    comment += ". "
-                comment += annotation.value
-            }
-        }
-        if (comment.isNotEmpty())
-            comment += "."
-        return comment
     }
 
     private fun buildScopeButtons(nameMap: Map<String, Text>): Map<String, Function<ConfigScreen, ClickableWidget>> {
@@ -325,61 +317,83 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
     }
 
-    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>): Boolean {
+    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>): PermResult {
         val client = MinecraftClient.getInstance()
-        if(client.isInSingleplayer) return true //single player, they can do what they want!!
+        if(client.isInSingleplayer) return PermResult.SUCCESS //single player, they can do what they want!!
         // 1. NonSync wins over everything, even whole config annotations
-        if (ConfigApiImpl.isNonSync(annotations)) return true
+        if (ConfigApiImpl.isNonSync(annotations)) return PermResult.SUCCESS
 
         val configAnnotations = config::class.annotations
         // 2. whole-config ClientModifiable
         for (annotation in configAnnotations) {
             if (annotation is ClientModifiable)
-                return true
+                return PermResult.SUCCESS
         }
         // 3. per-setting ClientModifiable
         for (annotation in annotations) {
             if (annotation is ClientModifiable)
-                return true
+                return PermResult.SUCCESS
         }
 
         //not in a game, can't send packets so can't know your permissions for realz
-        if (client.world == null || client.networkHandler == null) return false
+        if (client.world == null || client.networkHandler == null) return PermResult.OUT_OF_GAME
 
         for (annotation in annotations) {
             //4. per-setting WithCustomPerms
             if (annotation is WithCustomPerms) {
                 if(cachedPerms[configId]?.get(id) == true) {
-                    return true
+                    return PermResult.SUCCESS
                 }
                 return if (annotation.fallback >= 0) {
-                    playerPermLevel >= annotation.fallback
+                    if (playerPermLevel >= annotation.fallback) {
+                        PermResult.SUCCESS
+                    } else {
+                        PermResult.FAILURE
+                    }
                 } else {
-                    false
+                    PermResult.FAILURE
                 }
             }
             //5. per-setting WithPerms
-            if (annotation is WithPerms)
-                return playerPermLevel >= annotation.opLevel
+            if (annotation is WithPerms) {
+                return if (playerPermLevel >= annotation.opLevel) {
+                    PermResult.SUCCESS
+                } else {
+                    PermResult.FAILURE
+                }
+            }
         }
         for (annotation in configAnnotations) {
             //6. whole-config WithCustomPerms
             if (annotation is WithCustomPerms) {
                 if(cachedPerms[configId]?.get(id) == true) {
-                    return true
+                    return PermResult.SUCCESS
                 }
                 return if (annotation.fallback >= 0) {
-                    playerPermLevel >= annotation.fallback
+                    if (playerPermLevel >= annotation.fallback) {
+                        PermResult.SUCCESS
+                    } else {
+                        PermResult.FAILURE
+                    }
                 } else {
-                    false
+                    PermResult.FAILURE
                 }
             }
             //7. whole-config WithCustomPerms
-            if (annotation is WithPerms)
-                return playerPermLevel >= annotation.opLevel
+            if (annotation is WithPerms) {
+                return if (playerPermLevel >= annotation.opLevel) {
+                    PermResult.SUCCESS
+                } else {
+                    PermResult.FAILURE
+                }
+            }
         }
         //8. fallback to default vanilla permission level
-        return playerPermLevel >= config.defaultPermLevel()
+        return if (playerPermLevel >= config.defaultPermLevel()) {
+            PermResult.SUCCESS
+        } else {
+            PermResult.FAILURE
+        }
     }
 
     //////////////////////////////////////
@@ -499,6 +513,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     ///////////////////////////////////////
 
+    private enum class PermResult(val success: Boolean) {
+        SUCCESS(true),
+        OUT_OF_GAME(false),
+        FAILURE(false)
+    }
+    
     internal fun interface ConfigScreenBuilder {
         fun build(): ConfigScreen
     }
