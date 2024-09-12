@@ -83,6 +83,7 @@ object FcText {
 
     /**
      * Extension function for converting Identifiers into Texts in a kotlin style
+     * @receiver [Identifier] to convert to text
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -91,6 +92,7 @@ object FcText {
     }
     /**
      * Extension function for converting UUIDs into Texts in a kotlin style
+     * @receiver [UUID] to convert to text
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -99,6 +101,7 @@ object FcText {
     }
     /**
      * Extension function for converting Dates into Texts in a kotlin style
+     * @receiver [Date] to convert to text
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -107,6 +110,7 @@ object FcText {
     }
     /**
      * Extension function for converting Messages into Texts in a kotlin style
+     * @receiver [Message] to convert to text
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -118,6 +122,7 @@ object FcText {
     }
     /**
      * Extension function for converting ChunkPos into Texts in a kotlin style
+     * @receiver [ChunkPos] to convert to text
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -127,6 +132,7 @@ object FcText {
 
     /**
      * Extension function converts a string into a literal Text representing it
+     * @receiver String - will be interpreted literally
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -135,6 +141,8 @@ object FcText {
     }
     /**
      * Extension function uses the receiver String as a translation key to convert it into Text
+     * @receiver String - should be a translation key
+     * @param args vararg Anything - the arguments to use in the translation. Should be valid translatable argument types (Primitive, string, or other Text instance)
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -144,6 +152,9 @@ object FcText {
 
     /**
      * Translates anything. If the thing is [Translatable], it will use the built-in translation, otherwise it will translate the fallback key
+     * @receiver Anything, null or not. [Translatable] will provide its translation.
+     * @param fallback String - translation key for the fallback translation
+     * @return [MutableText] translation based on the receivers translation, or the fallback translation
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -155,6 +166,9 @@ object FcText {
     }
     /**
      * Translates anything. If the thing is [Translatable], it will use the built in translation, otherwise it will use the fallback literally
+     * @receiver Anything, null or not. [Translatable] will provide its translation.
+     * @param literalFallback String - the fallback text, used literally, not as a translation key
+     * @return [MutableText] translation based on the receivers translation, or the fallback
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -168,6 +182,7 @@ object FcText {
     }
     /**
      * Translates anything. If the thing is [Translatable], it will use the built in translation, otherwise it will use the fallback literally
+     * @receiver Anything, null or not. [Translatable] will provide its translation.
      * @param fallbackSupplier Supplier&lt;String&gt; - the fallback text supplier, used literally, not as a translation key
      * @return [MutableText] translation based on the receivers translation, or the fallback
      * @author fzzyhmstrs
@@ -186,8 +201,9 @@ object FcText {
     }
     /**
      * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built in description, otherwise it will translate the fallback key
-     * @param fallback String - translation key of the fallback text
-     * @return [Text] description based on the receivers translation, or the fallback
+     * @receiver Anything, null or not. [Translatable] will provide its description.
+     * @param fallback String - translation key for the fallback description
+     * @return [Text] description based on the receivers description translation, or the fallback translation
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -199,6 +215,7 @@ object FcText {
     }
     /**
      * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built-in description, otherwise it will use the fallback literally
+     * @receiver Anything, null or not. [Translatable] will provide its description.
      * @param literalFallback String - the fallback text, used literally, not as a translation key
      * @return [Text] description based on the receivers description translation, or the fallback
      * @author fzzyhmstrs
@@ -215,6 +232,7 @@ object FcText {
 
     /**
      * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built-in description, otherwise it will use the fallback literally
+     * @receiver Anything, null or not. [Translatable] will provide its description.
      * @param fallbackSupplier Supplier&lt;String&gt; - the fallback text supplier, used literally, not as a translation key
      * @return [MutableText] description based on the receivers description translation, or the fallback
      * @author fzzyhmstrs
