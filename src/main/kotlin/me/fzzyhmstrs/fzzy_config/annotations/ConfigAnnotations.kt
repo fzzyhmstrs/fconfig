@@ -314,3 +314,18 @@ annotation class ConvertFrom (val fileName: String, val folder: String = "", val
 @Repeatable
 @Target(AnnotationTarget.CLASS)
 annotation class TomlHeaderComment(val text: String)
+
+
+/**
+ * Defines a custom translation key prefix for the annotated members, or all members of the annotated class.
+ *
+ * This is used to define "standard" translations that can be reused regardless of the relative position in a config tree
+ *
+ * For example, in a typical config, if you have a repeating element `my_mod.config.element1`, `my_mod.config.element2`, `my_mod.config.element3`, and so on, you would have to write corresponding lang for each subelement of each element. Tedious. With this annotation, you can define a custom prefix for the field or property (or all fields/properties within the annotated class), and all annotated instances will refer to the common translation.
+ * - From: `"my_mod.config.element1.subElement1": "Element 1"`, `"my_mod.config.element2.subElement1": "Element 1"` etc.
+ * - To:  `"my_mod.config.prefix.element1": "Element 1"` for all element instances
+ * @param prefix String - the translation key prefix. Will be appended with `".elementName"`. `"my.prefix"` annotated on a field called `myElement` will yield a translation key `"my.prefix.myElement"`
+ * @param negate Boolean - if true, will turn off any applicable class-wide `@Translation` annotation. [prefix] won't matter in this case at all.
+ */
+@Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
+annotation class Translation(val prefix: String, val negate: Boolean = false)
