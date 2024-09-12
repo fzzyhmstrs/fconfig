@@ -244,7 +244,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     else
                         functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
                 } else if (perms == PermLevel.OUT_OF_GAME) {
-                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
+                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), totalActions))
                 } else {
                     functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
                 }
@@ -271,7 +271,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                         else
                             functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), basicValidation2))
                     } else if (perms == PermResult.OUT_OF_GAME) {
-                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
+                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
                     } else {
                         functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
                     }
@@ -426,6 +426,10 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     private fun noPermsEntryBuilder(name: Text, desc: Text, actions: Set<Action>): Function<ConfigListWidget, BaseConfigEntry> {
         return Function { parent -> BaseConfigEntry(name, desc, actions, parent, NoPermsButtonWidget()) }
+    }
+
+    private fun outOfGameEntryBuilder(name: Text, desc: Text, actions: Set<Action>): Function<ConfigListWidget, BaseConfigEntry> {
+        return Function { parent -> BaseConfigEntry(name, desc, actions, parent, NoPermsButtonWidget("fc.button.outOfGame".translate())) }
     }
 
     private fun sectionOpenEntryBuilder(name: Text, desc: Text, actions: Set<Action>, scope: String): Function<ConfigListWidget, BaseConfigEntry> {
