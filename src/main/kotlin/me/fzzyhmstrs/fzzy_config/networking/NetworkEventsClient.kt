@@ -143,6 +143,33 @@ internal object NetworkEventsClient {
                         }
                     )
                 )
+            ClientCommandManager.literal("fzzy_config_restart")
+                .executes{ context ->
+                    MinecraftClient.getInstance().scheduleStop()
+                    1
+                }
+            ClientCommandManager.literal("fzzy_config_leave_game")
+                .executes{ context ->
+                    val c = MinecraftClient.getInstance()
+                    val sp = c.isInSingleplayer
+                    val serverInfo = c.currentServerEntry
+                    c.world?.disconnect()
+                    c.disconnect()
+                    val titleScreen = TitleScreen()
+                    if (sp) {
+                        c.setScreen(titleScreen)
+                    } else if (serverInfo != null && serverInfo.isRealm) {
+                        c.setScreen(RealmsMainScreen(titleScreen))
+                    } else {
+                        c.setScreen(MultiplayerScreen(titleScreen))
+                    }
+                    1
+                }
+            ClientCommandManager.literal("fzzy_config_reload_resources")
+                .executes{ context ->
+                    TODO()
+                    1
+                }
         )
     }
 }
