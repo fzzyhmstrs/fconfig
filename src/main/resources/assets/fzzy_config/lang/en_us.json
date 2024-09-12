@@ -148,6 +148,8 @@
 "fc.button.alert.inactive": "No forwarded settings",
 "fc.button.noPerms": "Can't Edit",
 "fc.button.noPerms.desc": "You don't have the proper permissions to edit this entry.",
+"fc.button.outOfGame": "Not in Game",
+"fc.button.outOfGame.desc": "Join a game or connect to a server to edit this entry",
 "fc.button.navigate": "Navigate to %s",
 "fc.button.changes": "Changes...",
 "fc.button.changes.title": "Manage Changes",
