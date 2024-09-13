@@ -131,6 +131,7 @@
 "fc.config.reload_resources.update.client": "You have made changes to configuration(s) that require reloading resources (F3 + T).",
 "fc.config.reload_resources.update.client.prompt": "[Reload Resource Packs]",
 "fc.config.reload_resources.update.server": "You have made changes to configuration(s) that require clients to reload resources (F3 + T). Connected clients have been automatically updated and notified; please follow up with players if there are any questions.",
+"fc.config.prompt.hover": "Click to execute command",
 
 "fc.button.accept": "Accept",
 "fc.button.deny": "Deny",

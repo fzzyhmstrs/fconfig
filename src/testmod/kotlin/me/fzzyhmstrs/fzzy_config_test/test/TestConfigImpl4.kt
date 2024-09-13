@@ -10,10 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config_test.test
 
-import me.fzzyhmstrs.fzzy_config.annotations.Action
-import me.fzzyhmstrs.fzzy_config.annotations.WithCustomPerms
-import me.fzzyhmstrs.fzzy_config.annotations.RequiresAction
-import me.fzzyhmstrs.fzzy_config.annotations.RequiresRestart
+import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
@@ -33,6 +30,7 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
 
     @WithCustomPerms([TEST_PERMISSION_BAD])
     var bl1 = true
+    @Translation("test.prefix")
     var bl2 = ValidatedBoolean()
 
     @ValidatedInt.Restrict(0, 20)
