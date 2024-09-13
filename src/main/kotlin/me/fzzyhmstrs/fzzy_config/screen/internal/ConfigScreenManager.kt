@@ -245,7 +245,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                         functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, forwardableEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
                     else
                         functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
-                } else if (perms == PermLevel.OUT_OF_GAME) {
+                } else if (perms == PermResult.OUT_OF_GAME) {
                     functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), totalActions))
                 } else {
                     functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
@@ -431,7 +431,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun outOfGameEntryBuilder(name: Text, desc: Text, actions: Set<Action>): Function<ConfigListWidget, BaseConfigEntry> {
-        return Function { parent -> BaseConfigEntry(name, desc, actions, parent, NoPermsButtonWidget("fc.button.outOfGame".translate())) }
+        return Function { parent -> BaseConfigEntry(name, desc, actions, parent, NoPermsButtonWidget("fc.button.outOfGame".translate(), "fc.button.outOfGame.desc".translate())) }
     }
 
     private fun sectionOpenEntryBuilder(name: Text, desc: Text, actions: Set<Action>, scope: String): Function<ConfigListWidget, BaseConfigEntry> {
@@ -522,7 +522,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         OUT_OF_GAME(false),
         FAILURE(false)
     }
-    
+
     internal fun interface ConfigScreenBuilder {
         fun build(): ConfigScreen
     }
