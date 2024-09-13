@@ -178,7 +178,11 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         if (count > 0) {
             //send updates to the server for distribution and saving there
             val updates = this.configs.filter { !it.clientOnly }.associate { it.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.active, this, mutableListOf()) }
-            NetworkEventsClient.updateServer(updates, flush(), perms)
+            if (updates.isNotEmpty()) {
+                NetworkEventsClient.updateServer(updates, flush(), perms)
+            } else {
+                ConfigApiImpl.printChangeHistory(flush(), configs.map { it.active }.toString(), MinecraftClient.getInstance().player)
+            }
         } else {
             ConfigApiImpl.printChangeHistory(flush(), configs.map { it.active }.toString(), MinecraftClient.getInstance().player)
         }
