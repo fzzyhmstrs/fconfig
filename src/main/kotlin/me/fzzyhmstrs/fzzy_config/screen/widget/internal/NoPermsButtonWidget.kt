@@ -22,11 +22,11 @@ import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 
 //client
-internal class NoPermsButtonWidget(private val title: MutableText = FcText.translatable("fc.button.noPerms")) : PressableWidget(0, 0, 110, 20, FcText.empty()), Decorated {
+internal class NoPermsButtonWidget(private val title: MutableText = FcText.translatable("fc.button.noPerms"), private val tooltipMessage: MutableText = FcText.translatable("fc.button.noPerms.desc")) : PressableWidget(0, 0, 110, 20, FcText.empty()), Decorated {
 
     init {
         this.active = false
-    }    
+    }
 
     override fun getNarrationMessage(): MutableText {
         return this.message.copy()
