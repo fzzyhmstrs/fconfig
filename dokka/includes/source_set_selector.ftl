@@ -5,11 +5,11 @@
             </a>
         </div>
         <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
-            <a class="modrinth-section" href="https://modrinth.com" rel="nofollow">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
             </a>
         </div>
         <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
-            <a class="cf-section" href="https://curseforge.com" rel="nofollow">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
             </a>
         </div>
         <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
