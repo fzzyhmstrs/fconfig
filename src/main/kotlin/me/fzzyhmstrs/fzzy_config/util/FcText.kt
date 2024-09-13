@@ -19,6 +19,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.ChunkPos
 import java.util.*
+import java.util.function.Supplier
 
 /**
  * Various text utilities and wrappers for making kotlin minecraft modding more text-expressive
@@ -195,7 +196,7 @@ object FcText {
             this.translation().takeIf { this.hasTranslation() } ?: literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
         } else {
             val fallback = fallbackSupplier.get()
-            if (fallback != "") 
+            if (fallback != "")
                 literal(fallback).formatted(Formatting.ITALIC)
             else
                 empty()
@@ -245,7 +246,7 @@ object FcText {
             this.description().takeIf { this.hasDescription() } ?: literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
         } else {
             val fallback = fallbackSupplier.get()
-            if (fallback != "") 
+            if (fallback != "")
                 literal(fallback).formatted(Formatting.ITALIC)
             else
                 empty()

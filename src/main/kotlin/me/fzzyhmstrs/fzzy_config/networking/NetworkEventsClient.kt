@@ -27,6 +27,9 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.TitleScreen
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
+import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 import java.util.*
 
 internal object NetworkEventsClient {
@@ -142,11 +145,15 @@ internal object NetworkEventsClient {
                         }
                     )
                 )
+        )
+        dispatcher.register(
             ClientCommandManager.literal("fzzy_config_restart")
                 .executes{ context ->
                     MinecraftClient.getInstance().scheduleStop()
                     1
                 }
+        )
+        dispatcher.register(
             ClientCommandManager.literal("fzzy_config_leave_game")
                 .executes{ context ->
                     val c = MinecraftClient.getInstance()
@@ -164,9 +171,11 @@ internal object NetworkEventsClient {
                     }
                     1
                 }
+        )
+        dispatcher.register(
             ClientCommandManager.literal("fzzy_config_reload_resources")
                 .executes{ context ->
-                    TODO()
+                    MinecraftClient.getInstance().reloadResources()
                     1
                 }
         )
