@@ -11,6 +11,9 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
+import me.fzzyhmstrs.fzzy_config.util.FcText.colored
+import net.minecraft.text.ClickEvent
+import net.minecraft.text.HoverEvent
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -249,5 +252,73 @@ object FcText {
             else
                 empty()
         }
+    }
+
+    /**
+     * Adds a Run Command click action to a [MutableText]
+     * @param command String representation of the command *with* preceding `/`
+     * @return The mutable text styled with a Run Command click event
+     * @author fzzyhmstrs
+     * @since 0.4.2
+     */
+    fun MutableText.command(command: String): MutableText {
+        return this.styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, command)) }
+    }
+
+    /**
+     * Adds a Show Text hover action (a tooltip) to a [MutableText]
+     * @param tooltip [Text] - the tooltip message to show on hover
+     * @return The mutable text styled with a tooltip
+     * @author fzzyhmstrs
+     * @since 0.4.2
+     */
+    fun MutableText.tooltip(tooltip: Text): MutableText {
+        return this.styled { s -> s.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, tooltip)) }
+    }
+
+    /**
+     * Underlines the receiver text
+     * @return this text with underline applied
+     * @author fzzyhmstrs
+     * @since 0.4.2
+     */
+    fun MutableText.underline(): MutableText {
+        return this.formatted(Formatting.UNDERLINE)
+    }
+    /**
+     * Bolds the receiver text
+     * @return this text with bolding applied
+     * @author fzzyhmstrs
+     * @since 0.4.2
+     */
+    fun MutableText.bold(): MutableText {
+        return this.formatted(Formatting.BOLD)
+    }
+    /**
+     * Italicizes the receiver text
+     * @return this text with italics applied
+     * @author fzzyhmstrs
+     * @since 0.4.2
+     */
+    fun MutableText.italic(): MutableText {
+        return this.formatted(Formatting.ITALIC)
+    }
+    /**
+     * Strikes through the receiver text
+     * @return this text with strikethrough applied
+     * @author fzzyhmstrs
+     * @since 0.4.2
+     */
+    fun MutableText.strikethrough(): MutableText {
+        return this.formatted(Formatting.STRIKETHROUGH)
+    }
+    /**
+     * Applies an RGB color to the receiver text
+     * @return this text with the specified color applied
+     * @author fzzyhmstrs
+     * @since 0.4.2
+     */
+    fun MutableText.colored(color: Int): MutableText {
+        return this.styled { s -> s.withColor(color) }
     }
 }

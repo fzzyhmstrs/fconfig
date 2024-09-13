@@ -14,8 +14,11 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 import me.fzzyhmstrs.fzzy_config.annotations.Action.RESTART
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.util.FcText.command
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.tooltip
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.FcText.underline
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
@@ -196,9 +199,7 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         true,
         "widget/action_restart".fcId(),
         "fc.config.restart.update".translate(),
-        "fc.config.restart.update.client".translate().append(" ".lit()).append("fc.config.restart.update.client.prompt".translate().styled { s -> s.withClickEvent(
-            net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.RUN_COMMAND, "/fzzy_config_restart")
-        ) }),
+        "fc.config.restart.update.client".translate().append(" ".lit()).append("fc.config.restart.update.client.prompt".translate().command("/fzzy_config_restart").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
         "fc.config.restart.update.server".translate(),
         "fc.config.restart.warning".translate().formatted(Formatting.RED),
         "fc.config.restart.warning.section".translate().formatted(Formatting.RED),
@@ -213,9 +214,7 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         false,
         "widget/action_relog".fcId(),
         "fc.config.relog.update".translate(),
-        "fc.config.relog.update.client".translate().append(" ".lit()).append("fc.config.relog.update.client.prompt".translate().styled { s -> s.withClickEvent(
-            net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.RUN_COMMAND, "/fzzy_config_leave_game")
-        ) }),
+        "fc.config.relog.update.client".translate().append(" ".lit()).append("fc.config.relog.update.client.prompt".translate().tooltip("fc.config.prompt.hover".translate()).command("/fzzy_config_leave_game").underline().formatted(Formatting.GOLD)),
         "fc.config.relog.update.server".translate(),
         "fc.config.relog.warning".translate().formatted(Formatting.RED),
         "fc.config.relog.warning.section".translate().formatted(Formatting.RED),
@@ -230,17 +229,8 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         false,
         "widget/action_reload_both".fcId(),
         "fc.config.reload_both.update".translate(),
-        "fc.config.reload_both.update.client".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().styled { s -> s.withClickEvent(
-            net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.RUN_COMMAND, "/reload")
-        ) }).append(" ".lit()).append("fc.config.reload_resources.update.client.prompt".translate().styled { s -> s.withClickEvent(
-            net.minecraft.text.ClickEvent(
-                net.minecraft.text.ClickEvent.Action.RUN_COMMAND,
-                "/fzzy_config_reload_resources"
-            )
-        ) }),
-        "fc.config.reload_both.update.server".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().styled { s -> s.withClickEvent(
-            net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.RUN_COMMAND, "/reload")
-        ) }),
+        "fc.config.reload_both.update.client".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command( "/reload").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)).append(" ".lit()).append("fc.config.reload_resources.update.client.prompt".translate().command("/fzzy_config_reload_resources").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
+        "fc.config.reload_both.update.server".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command( "/reload").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
         "fc.config.reload_both.warning".translate().formatted(Formatting.GOLD),
         "fc.config.reload_both.warning.section".translate().formatted(Formatting.GOLD),
         "fc.config.reload_both.warning.config".translate().formatted(Formatting.GOLD)),
@@ -254,12 +244,8 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         false,
         "widget/action_reload_data".fcId(),
         "fc.config.reload_data.update".translate(),
-        "fc.config.reload_data.update.client".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().styled { s -> s.withClickEvent(
-            net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.RUN_COMMAND, "/reload")
-        ) }),
-        "fc.config.reload_data.update.server".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().styled { s -> s.withClickEvent(
-            net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.RUN_COMMAND, "/reload")
-        ) }),
+        "fc.config.reload_data.update.client".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command("/reload").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
+        "fc.config.reload_data.update.server".translate().append(" ".lit()).append("fc.config.reload_data.update.prompt".translate().command("/reload").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
         "fc.config.reload_data.warning".translate().formatted(Formatting.GOLD),
         "fc.config.reload_data.warning.section".translate().formatted(Formatting.GOLD),
         "fc.config.reload_data.warning.config".translate().formatted(Formatting.GOLD)),
@@ -273,9 +259,7 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         false,
         "widget/action_reload_resources".fcId(),
         "fc.config.reload_resources.update".translate(),
-        "fc.config.reload_resources.update.client".translate().append(" ".lit()).append("fc.config.reload_resources.update.client.prompt".translate().styled { s -> s.withClickEvent(
-            net.minecraft.text.ClickEvent(net.minecraft.text.ClickEvent.Action.RUN_COMMAND, "/fzzy_config_reload_resources")
-        ) }),
+        "fc.config.reload_resources.update.client".translate().append(" ".lit()).append("fc.config.reload_resources.update.client.prompt".translate().command("/fzzy_config_reload_resources").tooltip("fc.config.prompt.hover".translate()).underline().formatted(Formatting.GOLD)),
         "fc.config.reload_resources.update.server".translate(),
         "fc.config.reload_resources.warning".translate().formatted(Formatting.GOLD),
         "fc.config.reload_resources.warning.section".translate().formatted(Formatting.GOLD),
