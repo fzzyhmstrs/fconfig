@@ -35,5 +35,8 @@
   "fzzy_config_test.test_config2.choice1.5" : "Five",
   "fzzy_config_test.test_config2.choice1.desc.5" : "Uncommon rarity",
   "fzzy_config_test.test_config2.choice1.10" : "Ten",
-  "fzzy_config_test.test_config2.choice1.desc.10" : "Common rarity"
+  "fzzy_config_test.test_config2.choice1.desc.10" : "Common rarity",
+
+  "test.prefix.bl2" : "Test Boolean Translation",
+  "test.prefix.bl2.desc" : "Test Boolean Translation Description"
 }
