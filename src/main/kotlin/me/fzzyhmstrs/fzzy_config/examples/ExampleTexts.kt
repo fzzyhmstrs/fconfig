@@ -10,17 +10,23 @@
 
 package me.fzzyhmstrs.fzzy_config.examples
 
+import com.mojang.brigadier.LiteralMessage
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.bold
+import me.fzzyhmstrs.fzzy_config.util.FcText.command
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.text
+import me.fzzyhmstrs.fzzy_config.util.FcText.tooltip
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.FcText.underline
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.ChunkPos
 import java.util.*
 
 object ExampleTexts {
@@ -37,9 +43,9 @@ object ExampleTexts {
         //several extension functions for converting common MC and Java objects into text
         val idText = Identifier("stick").text()
         val uuidText = UUID.fromString("732bf411-5bb5-4f5d-8ef0-feb45d6032ee").text()
-        //val dateText = TODO()
-        //val messageText = TODO()
-        //val chunkPosText = TODO()
+        val dateText = Date().text()
+        val messageText = LiteralMessage("Example Message").text()
+        val chunkPosText = ChunkPos(4, 4).text()
 
         //string extension functions for simple text-ification of string literals
         val stringLit = "My Cool String".lit()
@@ -68,7 +74,8 @@ object ExampleTexts {
         //describes anything, first checking if the thing is Translatable and using that description if found, otherwise it provides the fallback string literally
         val anyDescLit = myTranslatableThing.descLit("Fallback Description")
 
-
+        //easily add common styling and context actions with extensions
+        val myCoolText = "text.with.context".translate().bold().underline().tooltip("text.with.context.tooltip".translate()).command("/gamemode creative")
     }
 
 
