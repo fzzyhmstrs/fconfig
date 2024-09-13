@@ -10,16 +10,21 @@
 
 package me.fzzyhmstrs.fzzy_config.impl
 
+import me.fzzyhmstrs.fzzy_config.annotations.Comment
+import me.fzzyhmstrs.fzzy_config.annotations.Translation
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
-import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
-import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
+import me.fzzyhmstrs.fzzy_config.util.FcText.descSupplied
+import me.fzzyhmstrs.fzzy_config.util.FcText.transSupplied
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.peanuuutz.tomlkt.TomlComment
 import java.lang.StringBuilder
 import java.util.*
 
@@ -117,7 +122,7 @@ internal object ConfigApiImplClient {
     }
 
     private val spacer = ". "
-    
+
     private fun getComments(annotations: List<Annotation>): String {
         var comment = StringBuilder()
         for (annotation in annotations) {
