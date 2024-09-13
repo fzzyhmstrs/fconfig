@@ -25,3 +25,4 @@
 ### Fixes
 * Config screens properly understand when you are not in a game, or when the config is client-only. Configs accessed outside a game should more accurately display the settings you have access to
 * Documentation mod links point to the mod pages now instead of the Modrinth/CF homepage.
+* Fixed missing docs and `@JvmStatic` for `ConfigApi#network`
