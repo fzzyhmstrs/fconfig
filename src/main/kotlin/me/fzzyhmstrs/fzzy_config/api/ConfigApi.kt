@@ -346,6 +346,12 @@ object ConfigApi {
         return ConfigApiImpl.makeDir(folder, subfolder)
     }
 
+    /**
+     * Provides an instance of the [NetworkApi] for usage of the built-in cross-loader networking API
+     * @author fzzyhmstrs
+     * @since 0.4.1
+     */
+     @JvmStatic
     fun network(): NetworkApi {
         return NetworkApiImpl
     }
