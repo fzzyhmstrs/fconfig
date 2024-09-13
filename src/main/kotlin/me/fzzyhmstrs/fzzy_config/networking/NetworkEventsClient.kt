@@ -139,14 +139,14 @@ internal object NetworkEventsClient {
         )
         dispatcher.register(
             ClientCommandManager.literal("fzzy_config_restart")
-                .executes{ context ->
+                .executes{ _ ->
                     MinecraftClient.getInstance().scheduleStop()
                     1
                 }
         )
         dispatcher.register(
             ClientCommandManager.literal("fzzy_config_leave_game")
-                .executes{ context ->
+                .executes{ _ ->
                     val c = MinecraftClient.getInstance()
                     val sp = c.isInSingleplayer
                     val serverInfo = c.currentServerEntry
@@ -165,7 +165,7 @@ internal object NetworkEventsClient {
         )
         dispatcher.register(
             ClientCommandManager.literal("fzzy_config_reload_resources")
-                .executes{ context ->
+                .executes{ _ ->
                     MinecraftClient.getInstance().reloadResources()
                     1
                 }
