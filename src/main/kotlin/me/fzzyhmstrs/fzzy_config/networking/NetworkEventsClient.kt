@@ -21,6 +21,8 @@ import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
+import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
@@ -159,12 +161,16 @@ internal object NetworkEventsClient {
                         }
                     )
                 )
-            ClientCommandManager.literal("fzzy_config_restart")
+        )
+        dispatcher.register(
+            CommandManager.literal("fzzy_config_restart")
                 .executes{ context ->
                     MinecraftClient.getInstance().scheduleStop()
                     1
                 }
-            ClientCommandManager.literal("fzzy_config_leave_game")
+        )
+        dispatcher.register(
+            CommandManager.literal("fzzy_config_leave_game")
                 .executes{ context ->
                     val c = MinecraftClient.getInstance()
                     val sp = c.isInSingleplayer
@@ -181,9 +187,11 @@ internal object NetworkEventsClient {
                     }
                     1
                 }
-            ClientCommandManager.literal("fzzy_config_reload_resources")
+        )
+        dispatcher.register(
+            CommandManager.literal("fzzy_config_reload_resources")
                 .executes{ context ->
-                    TODO()
+                    MinecraftClient.getInstance().reloadResources()
                     1
                 }
         )
