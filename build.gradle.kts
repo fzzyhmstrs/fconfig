@@ -45,11 +45,12 @@ base {
 }
 
 val log: File = file("changelog.md")
+val minecraftVersion: String by project
 val modVersion: String by project
-version = modVersion
+version = "$modVersion+$minecraftVersion"
 val mavenGroup: String by project
 group = mavenGroup
-println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
+println("## Changelog for FzzyConfig $version \n\n" + log.readText())
 
 
 
@@ -95,7 +96,6 @@ idea {
 }
 
 dependencies {
-    val minecraftVersion: String by project
     minecraft("com.mojang:minecraft:$minecraftVersion")
     val yarnMappings: String by project
     mappings("net.fabricmc:yarn:$yarnMappings:v2")
@@ -275,8 +275,8 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
 
         token.set(System.getenv("MODRINTH_TOKEN"))
         projectId.set("fzzy-config")
-        versionNumber.set(modVersion)
-        versionName.set("${base.archivesName.get()}-$modVersion")
+        versionNumber.set("${project.version}")
+        versionName.set("${base.archivesName.get()}-${project.version}")
         versionType.set(releaseType)
         uploadFile.set(tasks.remapJar.get())
         additionalFiles.add(tasks.remapSourcesJar.get().archiveFile)
@@ -310,7 +310,7 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             addGameVersion("Fabric")
             addGameVersion("Quilt")
             mainArtifact(tasks.remapJar.get().archiveFile.get(), closureOf<CurseArtifact> {
-                displayName = "${base.archivesName.get()}-$modVersion"
+                displayName = "${base.archivesName.get()}-${project.version}"
                 relations(closureOf<CurseRelation>{
                     this.requiredDependency("fabric-api")
                     this.requiredDependency("fabric-language-kotlin")
@@ -318,7 +318,7 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             })
             addArtifact(tasks.remapSourcesJar.get().archiveFile, closureOf<CurseArtifact> {
                 changelogType = "markdown"
-                changelog = "Source files for ${base.archivesName.get()}-$modVersion"
+                changelog = "Source files for ${base.archivesName.get()}-${project.version}"
             })
             relations(closureOf<CurseRelation>{
                 this.requiredDependency("fabric-api")
