@@ -34,7 +34,7 @@ val modVersion: String by project
 version = "$modVersion+1.20.1+forge"
 val mavenGroup: String by project
 group = mavenGroup
-println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
+println("## Changelog for FzzyConfig $version \n\n" + log.readText())
 
 repositories {
     mavenCentral()
