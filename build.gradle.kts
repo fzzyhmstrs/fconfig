@@ -30,11 +30,12 @@ base {
 }
 
 val log: File = file("changelog.md")
+val minecraftVersion: String by project
 val modVersion: String by project
-version = modVersion
+version = "$modVersion+$minecraftVersion+neoforge"
 val mavenGroup: String by project
 group = mavenGroup
-println("## Changelog for FzzyConfig $modVersion \n\n" + log.readText())
+println("## Changelog for FzzyConfig $version \n\n" + log.readText())
 
 repositories {
     mavenCentral()
