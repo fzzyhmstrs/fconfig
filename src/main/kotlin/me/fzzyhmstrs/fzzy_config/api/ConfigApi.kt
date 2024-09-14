@@ -371,7 +371,6 @@ object ConfigApi {
      * @author fzzyhmstrs
      * @since 0.4.1
      */
-     @JvmStatic
     fun network(): NetworkApi {
         return NetworkApiImpl
     }
