@@ -1,0 +1,303 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ConfigApi</title>
+    <link href="../../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../../images/fc_banner.png">
+<link href="../../../images/discord_banner.png">
+<link href="../../../images/discord_small_banner.png">
+<link href="../../../images/wiki_banner.png">
+<link href="../../../images/wiki_small_banner.png">
+<link href="../../../images/docs_banner.png">
+<link href="../../../images/docs_small_banner.png">
+<link href="../../../images/cf_banner.png">
+<link href="../../../images/modrinth_banner.png">
+<link href="../../../images/icon.png">
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.api/-config-api/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.4.2+1.20.4</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.2+24w34a</a><a href="..\..\..\..\0.4.2+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.2+1.21</a><a href="..\..\..\..\0.4.2+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.2+1.20.6</a><a href="index.html">0.4.2+1.20.4</a><a href="..\..\..\..\0.4.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.2+1.20.1</a><a href="..\..\..\..\0.4.1+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.1+24w34a</a><a href="..\..\..\..\0.4.1+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.1+1.21</a><a href="..\..\..\..\0.4.1+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.1+1.20.6</a><a href="..\..\..\..\0.4.1+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.1+1.20.4</a><a href="..\..\..\..\0.4.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.1+1.20.1</a><a href="..\..\..\..\0.4.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.0+1.21</a><a href="..\..\..\..\0.4.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.0+1.20.6</a><a href="..\..\..\..\0.4.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.0+1.20.4</a><a href="..\..\..\..\0.4.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.4.0+1.20.1</a><a href="..\..\..\..\0.3.7+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.7+1.21</a><a href="..\..\..\..\0.3.7+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.7+1.20.6</a><a href="..\..\..\..\0.3.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.7+1.20.1</a><a href="..\..\..\..\0.3.6+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.6+1.21</a><a href="..\..\..\..\0.3.6+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.6+1.20.6</a><a href="..\..\..\..\0.3.6+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.6+1.20.1</a><a href="..\..\..\..\0.3.4+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.4+1.21</a><a href="..\..\..\..\0.3.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.3+1.20.6</a><a href="..\..\..\..\0.3.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.3+1.20.1</a><a href="..\..\..\..\0.3.2+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.2+1.20.6</a><a href="..\..\..\..\0.3.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.2+1.20.1</a><a href="..\..\..\..\0.3.1+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.1+1.20.5</a><a href="..\..\..\..\0.3.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.1+1.20.1</a><a href="..\..\..\..\0.3.0+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.0+1.20.5</a><a href="..\..\..\..\0.3.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.3.0+1.20.1</a><a href="..\..\..\..\0.2.8+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.8+1.20.5</a><a href="..\..\..\..\0.2.8+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.8+1.20.1</a><a href="..\..\..\..\0.2.7+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.7+1.20.5</a><a href="..\..\..\..\0.2.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.7+1.20.1</a><a href="..\..\..\..\0.2.5+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.5+1.20.5</a><a href="..\..\..\..\0.2.5+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.5+1.20.1</a><a href="..\..\..\..\0.2.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.4+1.20.1</a><a href="..\..\..\..\0.2.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.2+1.20.1</a><a href="..\..\..\..\0.2.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.1+1.20.1</a><a href="..\..\..\..\0.2.0+1.20.5-rc2\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.0+1.20.5-rc2</a><a href="..\..\..\..\0.2.0+1.20.5-rc1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.0+1.20.5-rc1</a><a href="..\..\..\..\0.2.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\index.html">0.2.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.api/ConfigApi///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Fzzy Config</a><span class="delimiter">/</span><a href="../index.html">me.fzzyhmstrs.fzzy_config.api</a><span class="delimiter">/</span><span class="current">ConfigApi</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Config</span><wbr><span><span>Api</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">ConfigApi</a></div><p class="paragraph">API for management of config files. If writing in Java, consider using <a href="../-config-api-java/index.html">ConfigApiJava</a> where possible.</p><p class="paragraph">Configs can de/serialized from File, string, or raw TomlElement. File read is performed with validation and correction.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.1.0</p></span></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-10187891%2FFunctions%2F769193423" anchor-label="deserializeConfig" id="-10187891%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="deserialize-config.html"><span>deserialize</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-10187891%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="deserialize-config.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="deserialize-config.html"><span class="token function">deserializeConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="deserialize-config.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">string<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">errorBuilder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">flags<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator"> = </span><span class="token constant">1</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.util/-validation-result/index.html">ValidationResult</a><span class="token operator">&lt;</span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config-context/index.html">ConfigContext</a><span class="token operator">&lt;</span><a href="deserialize-config.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Deserializes a config from a string.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="692962918%2FFunctions%2F769193423" anchor-label="deserializeFromToml" id="692962918%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="deserialize-from-toml.html"><span>deserialize</span><wbr><span>From</span><wbr><span><span>Toml</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="692962918%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="deserialize-from-toml.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="deserialize-from-toml.html"><span class="token function">deserializeFromToml</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="deserialize-from-toml.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">toml<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">errorBuilder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">flags<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator"> = </span><span class="token constant">1</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.util/-validation-result/index.html">ValidationResult</a><span class="token operator">&lt;</span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config-context/index.html">ConfigContext</a><span class="token operator">&lt;</span><a href="deserialize-from-toml.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Deserializes a config class from a TomlElement</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="939770689%2FFunctions%2F769193423" anchor-label="makeDir" id="939770689%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="make-dir.html"><span>make</span><wbr><span><span>Dir</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="939770689%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><a href="make-dir.html"><span class="token function">makeDir</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">folder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">subfolder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-pair/index.html">Pair</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/java/io/File.html">File</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Creates a config directory keyed off the standard Fabric Config Directory</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-998131943%2FFunctions%2F769193423" anchor-label="network" id="-998131943%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="network.html"><span><span>network</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-998131943%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><a href="network.html"><span class="token function">network</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.networking.api/-network-api/index.html">NetworkApi</a></div><div class="brief "><p class="paragraph">Provides an instance of the <a href="../../me.fzzyhmstrs.fzzy_config.networking.api/-network-api/index.html">NetworkApi</a> for usage of the built-in cross-loader networking API</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="768857351%2FFunctions%2F769193423" anchor-label="openScreen" id="768857351%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="open-screen.html"><span>open</span><wbr><span><span>Screen</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="768857351%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="open-screen.html"><span class="token function">openScreen</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">scope<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Opens a config GUI. Does nothing on the server (But is not marked with @Environment, allowing for safe inclusion anywhere in code)</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1198997450%2FFunctions%2F769193423" anchor-label="readOrCreateAndValidate" id="1198997450%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="read-or-create-and-validate.html"><span>read</span><wbr><span>Or</span><wbr><span>Create</span><wbr><span>And</span><wbr><span><span>Validate</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1198997450%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="read-or-create-and-validate.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="read-or-create-and-validate.html"><span class="token function">readOrCreateAndValidate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configClass<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="read-or-create-and-validate.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="read-or-create-and-validate.html">T</a></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="read-or-create-and-validate.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="read-or-create-and-validate.html"><span class="token function">readOrCreateAndValidate</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configClass<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="read-or-create-and-validate.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="read-or-create-and-validate.html">T</a></div><div class="brief "><p class="paragraph">overload of <a href="read-or-create-and-validate.html">readOrCreateAndValidate</a> that automatically applies the name, folder, and subfolder from the config itself. Automatically adds ".toml" to the name for reading and writing.</p></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="read-or-create-and-validate.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="read-or-create-and-validate.html"><span class="token function"><strike>readOrCreateAndValidate</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">folder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span><span class="token punctuation">, </span></span><span class="parameter ">subfolder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span><span class="token punctuation">, </span></span><span class="parameter ">configClass<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="read-or-create-and-validate.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="read-or-create-and-validate.html">T</a></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="read-or-create-and-validate.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="read-or-create-and-validate.html"><span class="token function"><strike>readOrCreateAndValidate</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">folder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span><span class="token punctuation">, </span></span><span class="parameter ">subfolder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span><span class="token punctuation">, </span></span><span class="parameter ">configClass<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="read-or-create-and-validate.html">T</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="read-or-create-and-validate.html">T</a></div><div class="brief "><p class="paragraph">Reads a config from File or Creates a new config class; writes out any corrections, updates, or new content to File. Automatically adds ".toml" to the name for reading and writing.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1071924691%2FFunctions%2F769193423" anchor-label="registerAndLoadConfig" id="-1071924691%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="register-and-load-config.html"><span>register</span><wbr><span>And</span><wbr><span>Load</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1071924691%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="register-and-load-config.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="register-and-load-config.html"><span class="token function">registerAndLoadConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configClass<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="register-and-load-config.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">registerType<span class="token operator">: </span><a href="../-register-type/index.html">RegisterType</a><span class="token operator"> = </span>RegisterType.BOTH</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="register-and-load-config.html">T</a></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="register-and-load-config.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="register-and-load-config.html"><span class="token function">registerAndLoadConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configClass<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="register-and-load-config.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">registerType<span class="token operator">: </span><a href="../-register-type/index.html">RegisterType</a><span class="token operator"> = </span>RegisterType.BOTH</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="register-and-load-config.html">T</a></div><div class="brief "><p class="paragraph">Creates and registers a Config. Use this over <a href="register-config.html">registerConfig</a> and <a href="read-or-create-and-validate.html">readOrCreateAndValidate</a> if possible.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-385763457%2FFunctions%2F769193423" anchor-label="registerConfig" id="-385763457%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="register-config.html"><span>register</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-385763457%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="register-config.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="register-config.html"><span class="token function"><strike>registerConfig</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="register-config.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">configClass<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="register-config.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">registerType<span class="token operator">: </span><a href="../-register-type/index.html">RegisterType</a><span class="token operator"> = </span>RegisterType.BOTH</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="register-config.html">T</a></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="register-config.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="register-config.html"><span class="token function"><strike>registerConfig</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="register-config.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">configClass<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="register-config.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">registerType<span class="token operator">: </span><a href="../-register-type/index.html">RegisterType</a><span class="token operator"> = </span>RegisterType.BOTH</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="register-config.html">T</a></div><div class="brief "><p class="paragraph">Registers a <a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a> to registries. Does NOT load or validate it from file. Use this if you have custom initialization to perform, otherwise use <a href="register-and-load-config.html">registerAndLoadConfig</a> for full initialization functionality.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-872894664%2FFunctions%2F769193423" anchor-label="save" id="-872894664%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="save.html"><span><span>save</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-872894664%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="save.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="save.html"><span class="token function">save</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">configClass<span class="token operator">: </span><a href="save.html">T</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Overload of <a href="save-manual.html">saveManual</a> that automatically fills in name, folder, and subfolder from the config itself.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="330605581%2FFunctions%2F769193423" anchor-label="saveManual" id="330605581%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="save-manual.html"><span>save</span><wbr><span><span>Manual</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="330605581%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="save-manual.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="save-manual.html"><span class="token function"><strike>saveManual</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">folder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span><span class="token punctuation">, </span></span><span class="parameter ">subfolder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span><span class="token punctuation">, </span></span><span class="parameter ">configClass<span class="token operator">: </span><a href="save-manual.html">T</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Saves a config to file without reading or updating.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1882105383%2FFunctions%2F769193423" anchor-label="serializeConfig" id="1882105383%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="serialize-config.html"><span>serialize</span><wbr><span><span>Config</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1882105383%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="serialize-config.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="serialize-config.html"><span class="token function">serializeConfig</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="serialize-config.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">errorBuilder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">flags<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator"> = </span><span class="token constant">1</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Serializes a config class to a string.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-739474604%2FFunctions%2F769193423" anchor-label="serializeToToml" id="-739474604%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="serialize-to-toml.html"><span>serialize</span><wbr><span>To</span><wbr><span><span>Toml</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-739474604%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="serialize-to-toml.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="serialize-to-toml.html"><span class="token function">serializeToToml</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="serialize-to-toml.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">errorBuilder<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">flags<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator"> = </span><span class="token constant">1</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div><div class="brief "><p class="paragraph">Serialize a config class to a TomlElement</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
