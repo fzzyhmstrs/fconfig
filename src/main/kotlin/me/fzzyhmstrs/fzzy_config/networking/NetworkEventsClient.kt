@@ -158,13 +158,13 @@ internal object NetworkEventsClient {
                 .executes{ _ ->
                     val c = MinecraftClient.getInstance()
                     val sp = c.isInSingleplayer
-                    val serverInfo = c.currentServerEntry
+                    val realm = c.isConnectedToRealms
                     c.world?.disconnect()
                     c.disconnect()
                     val titleScreen = TitleScreen()
                     if (sp) {
                         c.setScreen(titleScreen)
-                    } else if (serverInfo != null && serverInfo.isRealm) {
+                    } else if (realm) {
                         c.setScreen(RealmsMainScreen(titleScreen))
                     } else {
                         c.setScreen(MultiplayerScreen(titleScreen))
