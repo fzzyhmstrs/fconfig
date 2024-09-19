@@ -25,6 +25,10 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.networking.api.NetworkApi
+import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
+import me.fzzyhmstrs.fzzy_config.util.PlatformApi
+import me.fzzyhmstrs.fzzy_config.util.PlatformApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.peanuuutz.tomlkt.*
 import java.io.File
@@ -97,6 +101,26 @@ object ConfigApiJava {
      */
     fun openScreen(scope: String) {
         ConfigApiImpl.openScreen(scope)
+    }
+
+    /**
+     * Provides an instance of the [NetworkApi] for usage of the built-in cross-loader networking API
+     * @author fzzyhmstrs
+     * @since 0.4.4
+     */
+    @JvmStatic
+    fun network(): NetworkApi {
+        return NetworkApiImpl
+    }
+
+    /**
+     * Provides an instance of the [PlatformApi] for usage of the built-in cross-loader utilities
+     * @author fzzyhmstrs
+     * @since 0.4.4
+     */
+    @JvmStatic
+    fun platform(): PlatformApi {
+        return PlatformApiImpl
     }
 
 }
