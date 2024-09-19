@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -217,7 +218,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
             val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)
             if (action != null) actionMap[new] = mutableSetOf(action)
             if(thing is ConfigSection) {
-
                 val fieldName = new.substringAfterLast('.')
                 val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
@@ -225,7 +225,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 index++
             } else if (thing is Updatable && thing is Entry<*, *>) {
                 val totalActions = action?.let { mutableSetOf(it) } ?: mutableSetOf()
-                if (thing is ValidatedAny<*>) {
+                if (thing is EntryParent) {
                     val anyActions = thing.actions()
                     if (anyActions.isNotEmpty()) {
                         totalActions.addAll(anyActions)
