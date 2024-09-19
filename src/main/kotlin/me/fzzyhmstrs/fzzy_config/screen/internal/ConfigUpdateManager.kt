@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
@@ -109,13 +110,12 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
     override fun apply(final: Boolean) {
         if (updateMap.isEmpty()) return
         //push updates from basic validation to the configs
-        var clientRestart = false
-        var serverRestart = false
         val clientActions: MutableSet<Action> = mutableSetOf()
         val serverActions: MutableSet<Action> = mutableSetOf()
-        for ((config, base, isClient) in configs) {
+        for ((config, _, isClient) in configs) {
+            var fireOnUpdate = false
             val globalAnnotations = config::class.annotations
-            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { walkable, _, new, thing, prop, annotations, callback ->
+            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { walkable, _, new, thing, prop, annotations, _ ->
                 if (!(thing is Updatable && thing is Entry<*, *>)) {
                     val update = getUpdate(new)
                     if (update != null && update is Supplier<*>) {
@@ -133,6 +133,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                             FC.LOGGER.error("Error pushing update to simple property [$new]")
                             e.printStackTrace()
                         }
+                        fireOnUpdate = true
                     }
                 } else if (getUpdate(new) != null) {
                     val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)
@@ -142,7 +143,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                         } else {
                             serverActions.add(action)
                         }
-                    } else if (thing is ValidatedAny<*>) {
+                    } else if (thing is EntryParent) {
                         val anyActions = thing.actions()
                         if (anyActions.isNotEmpty()) {
                             if (ConfigApiImpl.isNonSync(annotations) || isClient) {
@@ -152,7 +153,11 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                             }
                         }
                     }
+                    fireOnUpdate = true
                 }
+            }
+            if (fireOnUpdate) {
+                config.onUpdateClient()
             }
         }
         if (clientActions.isNotEmpty()) {
