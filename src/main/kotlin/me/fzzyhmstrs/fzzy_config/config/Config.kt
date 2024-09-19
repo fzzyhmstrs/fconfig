@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.config
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
+import net.minecraft.client.MinecraftClient
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 
 /**
@@ -95,6 +97,10 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      */
     open fun update(deserializedVersion: Int) {}
 
+    open fun onUpdateClient(){}
+
+    open fun onUpdateServer(playerEntity: ServerPlayerEntity){}
+
     /**
      * @suppress
      */
@@ -113,5 +119,4 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
     override fun descriptionKey(): String {
         return getId().toTranslationKey("", ".desc")
     }
-
 }
