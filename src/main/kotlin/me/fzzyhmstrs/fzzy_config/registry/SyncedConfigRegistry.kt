@@ -148,6 +148,7 @@ internal object SyncedConfigRegistry {
                 }
             }
             successfulUpdates[id] = configString
+            config.onUpdateServer(serverPlayer)
         }
         if (!server.isSingleplayer) {
             for (player in serverPlayer.server.playerManager.playerList) {
