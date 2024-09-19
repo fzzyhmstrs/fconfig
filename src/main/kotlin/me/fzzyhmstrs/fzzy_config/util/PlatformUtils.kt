@@ -38,6 +38,14 @@ internal object PlatformUtils {
         return FabricLoader.getInstance().configDir.toFile()
     }
 
+    fun gameDir(): File {
+        return FabricLoader.getInstance().gameDir.toFile()
+    }
+
+    fun isModLoaded(mod: String): Boolean {
+        return FabricLoader.getInstance().isModLoaded(mod)
+    }
+
     fun configName(scope: String, fallback: String): String {
         return FabricLoader.getInstance().getModContainer(scope)?.get()?.metadata?.name ?: fallback
     } //ConfigScreenManager
