@@ -317,6 +317,7 @@ tasks.register("uploadAll") {
     group = "upload"
     dependsOn(tasks.modrinth.get())
     dependsOn(tasks.curseforge.get())
+    dependsOn(tasks.publish.get())
 }
 
 publishing {
