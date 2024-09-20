@@ -219,7 +219,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, callback ->
             val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)
             if (action != null) actionMap[new] = mutableSetOf(action)
-            if(thing is ConfigSection) {
+            if (thing is ConfigSection) {
                 val fieldName = new.substringAfterLast('.')
                 val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
@@ -250,6 +250,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 } else {
                     functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
                 }
+                index++
+            } else if (thing is ConfigAction) {
+                val fieldName = new.substringAfterLast('.')
+                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
+                nameMap[new] = name
+                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, configActionEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), thing))
                 index++
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
@@ -439,7 +445,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun configOpenEntryBuilder(name: Text, desc: Text, scope: String): Function<ConfigListWidget, BaseConfigEntry> {
-        return Function { parent -> ConfigConfigEntry(name, desc, setOf(), parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) }) }
+        return Function { parent -> ConfigConfigEntry(name, desc, setOf(), parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) }) }       
+    }
+
+    private fun configActionEntryBuilder(name: Text, desc: Text, entry: T): Function<ConfigListWidget, BaseConfigEntry> {
+        return Function { parent -> BaseConfigEntry(name, desc, setOf(), parent, entry.widgetEntry(), { }, { }, { _, _, _ -> }) }       
     }
 
     /////////////////////////////
