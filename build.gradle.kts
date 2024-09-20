@@ -30,6 +30,7 @@ plugins {
     id("com.modrinth.minotaur") version "2.+"
     id("org.jetbrains.dokka") version "1.9.20"
     id("com.matthewprenger.cursegradle") version "1.4.0"
+    `maven-publish`
 }
 
 buildscript {
@@ -338,4 +339,50 @@ tasks.register("uploadAll") {
     group = "upload"
     dependsOn(tasks.modrinth.get())
     dependsOn(tasks.curseforge.get())
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("fzzyConfig") {
+            from(components["java"])
+
+            pom {
+                name.set("Fzzy Config")
+                description.set("Configuration engine with automatic GUI generation, client-server syncing, powerful validation and error handling, and much more.")
+                inceptionYear.set("2024")
+                licenses {
+                    license {
+                        name.set("TDL-M")
+                        url.set("https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified")
+                        distribution.set("repo")
+                        comments.set(" Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M). See license url for full license details.")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/fzzyhmstrs/fconfig")
+                }
+                issueManagement {
+                    system.set("Github")
+                    url.set("https://github.com/fzzyhmstrs/fconfig/issues")
+                }
+                developers {
+                    developer {
+                        name.set("Fzzyhmstrs")
+                        url.set("https://github.com/fzzyhmstrs")
+                    }
+                }
+            }
+        }
+    }
+
+    repositories {
+        maven {
+            name = "FzzyMaven"
+            url = uri("https://maven.fzzyhmstrs.me")
+            credentials {
+                username = System.getProperty("fzzyMavenUsername")
+                password = System.getProperty("fzzyMavenPassword")
+            }
+        }
+    }
 }
