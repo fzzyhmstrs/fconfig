@@ -12,9 +12,42 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import java.io.File
 
+/**
+ * API for abstraction of simple ModLoader requests
+ * @author fzzyhmstrs
+ * @since 0.4.4
+ */
 interface PlatformApi {
+
+    /**
+     * Whether the game includes a logical client or not. This will be true both for singleplayer games and the client side of a multiplayer game.
+     * @return true if a logical client is present (so you can access client code like MinecraftClient), false if the environment is a dedicated server.
+     * @author fzzyhmstrs
+     * @since 0.4.4
+     */
     fun isClient(): Boolean
+
+    /**
+     * The config directory
+     * @return [File] respresenting the standard config directory inside the game folder.
+     * @author fzzyhmstrs
+     * @since 0.4.4
+     */
     fun configDir(): File
+
+    /**
+     * The root game directory
+     * @return [File] representing the path of the root game directory.
+     * @author fzzyhmstrs
+     * @since 0.4.4
+     */
     fun gameDir(): File
+
+    /**
+     * Returns whether another mod is loaded based on their registered mod_id.
+     * @return true if the mod is present, false otherwise
+     * @author fzzyhmstrs
+     * @since 0.4.4
+     */
     fun isModLoaded(mod: String): Boolean
 }
