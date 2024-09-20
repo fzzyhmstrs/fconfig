@@ -5,7 +5,15 @@ Add the following to your build script to depend on Fzzy Config:
 
 #### Repositories section
 ``` Kotlin
-// kotlin
+// build.gradle.kts
+
+//version 0.4.3 or higher:
+maven {
+    name = "FzzyMaven"
+    url = uri("https://maven.fzzyhmstrs.me/")
+}
+
+//version 0.4.2 or lower:
 maven {
     name = "Modrinth"
     url = uri("https://api.modrinth.com/maven")
@@ -14,8 +22,16 @@ maven {
     }
 }
 ```
-``` java
-// java
+``` groovy
+// build.gradle
+
+//version 0.4.3 or higher
+maven {
+    name = "FzzyMaven"
+    url = "https://maven.fzzyhmstrs.me/"
+}
+
+//version 0.4.2 or lower
 maven {
     name = "Modrinth"
     url = "https://api.modrinth.com/maven"
@@ -26,13 +42,28 @@ maven {
 ```
 
 #### Dependencies section:
+Version names will be in the form `x.x.x+[mc_version]`, e.g. `0.4.3+1.21`. For (Neo)Forge builds, add `+neoforge` for 1.20.4+ and `+forge` for 1.20.1.
+
+Either CurseForge, Modrinth, or the [Maven itself](https://maven.fzzyhmstrs.me/me/fzzyhmstrs/fzzy_config/) can be used to see the current version listings.
+
 ``` kotlin
-// kotlin
+// build.gradle.kts
+
+//version 0.4.3 or higher
+val fzzyConfigVersion: String by project //define this in your gradle.properties file
+modImplementation("me.fzzyhmstrs:fzzy_config:$fzzyConfigVersion") //NOTE: underscore, not hyphen!
+
+//version 0.4.2 or lower
 val fzzyConfigVersion: String by project //define this in your gradle.properties file
 modImplementation("maven.modrinth:fzzy-config:$fzzyConfigVersion")
 ```
 ``` java
-// java
+// build.gradle
+
+//version 0.4.3 or higher
+modImplementation "me.fzzyhmstrs:fzzy_config:${project.fzzyConfigVersion}" //NOTE: underscore, not hyphen!
+
+//version 0.4.2 or lower
 modImplementation "maven.modrinth:fzzy-config:${project.fzzyConfigVersion}"
 ```
 
