@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.annotations.IgnoreVisibility
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
@@ -160,6 +161,10 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                 manager.setUpdatableEntry(thing)
                 entryList.add(SettingConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry(), null, null, null))
 
+            } else if (thing is ConfigAction) {
+                val fieldName = new.substringAfterLast('.')
+                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
+                entryList.add(BaseConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry()))
             } else if (thing is Walkable) {
                 val validation = ValidatedAny(thing)
                 validation.setEntryKey(new)
