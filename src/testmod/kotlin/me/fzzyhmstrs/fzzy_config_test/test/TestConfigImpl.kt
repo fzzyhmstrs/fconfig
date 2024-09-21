@@ -13,7 +13,10 @@ package me.fzzyhmstrs.fzzy_config_test.test
 import me.fzzyhmstrs.fzzy_config.annotations.RequiresRestart
 import me.fzzyhmstrs.fzzy_config.annotations.Version
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
@@ -28,6 +31,7 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import net.minecraft.registry.tag.ItemTags
+import net.minecraft.text.ClickEvent
 import net.minecraft.util.Identifier
 import java.awt.Color
 
@@ -78,6 +82,8 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
         var object1 = ValidatedAny(TestAny())
 
         class TestAny {
+            var testAction = ConfigAction.Builder().title("Open Docs...".lit()).build(ClickEvent(ClickEvent.Action.OPEN_URL, "https://fzzyhmstrs.github.io/fconfig/"))
+            var testAction2 = ConfigAction.Builder().title("Open Wiki...".lit()).decoration(TextureIds.DECO_BOOK).build(ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/fzzyhmstrs/fconfig/wiki/"))
             var testInt = 1
             var testValidated = ValidatedFloat(3f,6f,1f)
             var testValidated2 = listOf(1,3,5,7).validated()

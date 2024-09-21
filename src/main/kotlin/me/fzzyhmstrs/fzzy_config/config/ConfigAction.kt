@@ -10,47 +10,57 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
-import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
-import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.contextualize
-import me.fzzyhmstrs.fzzy_config.util.Walkable
-import net.peanuuutz.tomlkt.TomlElement
+import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.ConfirmLinkScreen
+import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.text.ClickEvent
+import net.minecraft.text.MutableText
+import net.minecraft.text.Text
+import net.minecraft.util.Identifier
+import net.minecraft.util.StringHelper
+import net.minecraft.util.Util
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.lang.Runnable
+import java.io.File
+import java.net.URISyntaxException
 import java.util.function.Consumer
 import java.util.function.Supplier
 
 /**
  * Builds a button that will appear in a Config GUI, to perform some arbitrary, possible non-config-related action
- * 
+ *
  * This could be used to link to a wiki, open another non-fzzy-config config, open a non-config screen, open a patchouli guide, run a command, and so on.
  * @param titleSupplier Supplier&lt;Text&gt; - supplies a name for the button widget. Will be checked every frame, so the button name will dynamically update as needed.
  * @param activeSupplier Supplier&lt;Boolean&gt; - supplies an active state; whether the button is insactive ("greyed out" and unclickable) or active (functioning normally)
  * @param pressAction [Runnable] - the action to execute on clicking the button
  * @param background [Identifier], nullable - if non-null, will provide a custom background for the widget rendering.
- * @param decoration [Identifier[, nullable - if non-null, will render a "decoration" next to the widget. These are the typically white/wireframe icons shown next to certain settings like lists.
+ * @param decoration [Identifier], nullable - if non-null, will render a "decoration" next to the widget. These are the typically white/wireframe icons shown next to certain settings like lists.
  * @author fzzyhmstrs
  * @since 0.4.4
  */
 class ConfigAction @JvmOverloads constructor(
-    private val titleSupplier: Supplier<Text>, 
-    private val activeSupplier: Supplier<Boolean>, 
-    private val pressAction: Runnable, 
-    private val background: Identifier? = null,
-    private val decoration: Identifier? = null)
+    private val titleSupplier: Supplier<Text>,
+    private val activeSupplier: Supplier<Boolean>,
+    private val pressAction: Runnable,
+    private val decoration: Identifier,
+    private val description: Text? = null,
+    private val background: Identifier? = null)
 :
-    EntryWidget<Any>
+    EntryWidget<Any>,
+    Translatable
 {
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<Any>): ClickableWidget {
-        return if (decoration == null) 
-            ActiveButtonWidget(titleSupplier, 110, 20, activeSupplier, Consumer { _ -> pressAction.run() }, background)
-        else
-            DecoratedActiveButtonWidget(titleSupplier, 110, 20, decoration, activeSupplier, Consumer { _ -> pressAction.run() }, background)
+        return DecoratedActiveButtonWidget(titleSupplier, 110, 20, decoration, activeSupplier, Consumer { _ -> pressAction.run() }, background)
     }
 
     /**
@@ -61,7 +71,7 @@ class ConfigAction @JvmOverloads constructor(
     class Builder {
         private var titleSupplier: Supplier<Text> = Supplier { FcText.empty() }
         private var activeSupplier: Supplier<Boolean> = Supplier { true }
-        private var pressAction: Runnable = Runnable { }
+        private var desc: Text? = null
         private var background: Identifier? = null
         private var decoration: Identifier? = null
 
@@ -110,18 +120,25 @@ class ConfigAction @JvmOverloads constructor(
          */
         fun background(id: Identifier): Builder {
             this.background = id
+            return this
         }
 
         /**
          * Defines a decoration texture id. This will be drawn to the left of the button widget in the config screen. Decorations are typically 20x20 at the most
          * @param id [Identifier] decoration sprite id
-         * @see me.fzzyhmstrs.screen.widget.TextureIds
+         * @see me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
          * @return this builder
          * @author fzzyhmstrs
          * @since 0.4.4
          */
         fun decoration(id: Identifier): Builder {
             this.decoration = id
+            return this
+        }
+
+        fun desc(desc: Text): Builder {
+            this.desc = desc
+            return this
         }
 
         /**
@@ -132,18 +149,103 @@ class ConfigAction @JvmOverloads constructor(
          * @since 0.4.4
          */
         fun build(action: Runnable): ConfigAction {
-            return ClickAction(titleSupplier, activeSupplier, action, background, decoration)
+            return ConfigAction(titleSupplier, activeSupplier, action, decoration ?: TextureIds.DECO_BUTTON_CLICK, desc, background)
         }
 
         /**
          * Builds the [ConfigAction] with the supplied ClickEvent as the on-click event
-         * @param event [ClickEvent] - event to run when the button is clicked
+         * @param clickEvent [ClickEvent] - event to run when the button is clicked
          * @return [ConfigAction]
          * @author fzzyhmstrs
          * @since 0.4.4
          */
-        fun build(event: ClickEvent): ConfigAction{
-            TODO()
+        fun build(clickEvent: ClickEvent): ConfigAction {
+            val runnable = Runnable {
+                val client = MinecraftClient.getInstance()
+                if (clickEvent.action == ClickEvent.Action.OPEN_URL) {
+                    if (!client.options.chatLinks.value) {
+                        return@Runnable
+                    }
+
+                    try {
+                        val uRI = Util.validateUri(clickEvent.value)
+                        if (client.options.chatLinksPrompt.value) {
+                            val screen = client.currentScreen
+                            client.setScreen(ConfirmLinkScreen({ confirmed: Boolean ->
+                                if (confirmed) {
+                                    Util.getOperatingSystem().open(uRI)
+                                }
+                                client.setScreen(screen)
+                            }, clickEvent.value, false))
+                        } else {
+                            Util.getOperatingSystem().open(uRI)
+                        }
+                    } catch (var4: URISyntaxException) {
+                        FC.LOGGER.error("Can't open url for {}", clickEvent, var4)
+                    }
+                } else if (clickEvent.action == ClickEvent.Action.OPEN_FILE) {
+                    Util.getOperatingSystem().open(File(clickEvent.value))
+                } else if (clickEvent.action == ClickEvent.Action.SUGGEST_COMMAND) {
+                    FC.LOGGER.error("Can't suggest a command from a config action")
+                } else if (clickEvent.action == ClickEvent.Action.RUN_COMMAND) {
+                    val string = StringHelper.stripInvalidChars(clickEvent.value)
+                    if (string.startsWith("/")) {
+                        if (client.player?.networkHandler?.sendCommand(string.substring(1)) != true) {
+                            FC.LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", string)
+                        }
+                    } else {
+                        FC.LOGGER.error("Failed to run command without '/' prefix from click event: '{}'", string)
+                    }
+                } else if (clickEvent.action == ClickEvent.Action.COPY_TO_CLIPBOARD) {
+                    client.keyboard.clipboard = clickEvent.value
+                } else {
+                    FC.LOGGER.error("Don't know how to handle {}", clickEvent)
+                }
+            }
+            val action = clickEvent.action
+            val value = clickEvent.value
+            if (desc == null && action != null) {
+                desc = when(action) {
+                    ClickEvent.Action.OPEN_URL -> "fc.button.click.open_url".translate(value)
+                    ClickEvent.Action.OPEN_FILE -> "fc.button.click.open_file".translate(value)
+                    ClickEvent.Action.RUN_COMMAND -> "fc.button.click.run_command".translate(value)
+                    ClickEvent.Action.SUGGEST_COMMAND -> null
+                    ClickEvent.Action.CHANGE_PAGE -> null
+                    ClickEvent.Action.COPY_TO_CLIPBOARD -> "fc.button.click.copy_to_clipboard".translate(value)
+
+                }
+            }
+            if (decoration == null  && action != null) {
+                decoration = when(action) {
+                    ClickEvent.Action.OPEN_URL -> TextureIds.DECO_LINK
+                    ClickEvent.Action.OPEN_FILE -> TextureIds.DECO_FOLDER
+                    ClickEvent.Action.RUN_COMMAND -> TextureIds.DECO_COMMAND
+                    ClickEvent.Action.SUGGEST_COMMAND -> TextureIds.DECO_BUTTON_CLICK
+                    ClickEvent.Action.CHANGE_PAGE -> TextureIds.DECO_BUTTON_CLICK
+                    ClickEvent.Action.COPY_TO_CLIPBOARD -> TextureIds.DECO_BUTTON_CLICK
+                }
+            }
+            return ConfigAction(titleSupplier, activeSupplier, runnable, decoration ?: TextureIds.DECO_BUTTON_CLICK, desc, background)
         }
+    }
+
+    override fun translationKey(): String {
+        return ""
+    }
+
+    override fun hasTranslation(): Boolean {
+        return false
+    }
+
+    override fun descriptionKey(): String {
+        return ""
+    }
+
+    override fun hasDescription(): Boolean {
+        return description != null
+    }
+
+    override fun description(fallback: String?): MutableText {
+        return description?.copy() ?: FcText.literal(fallback ?: "")
     }
 }
