@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
@@ -445,11 +446,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun configOpenEntryBuilder(name: Text, desc: Text, scope: String): Function<ConfigListWidget, BaseConfigEntry> {
-        return Function { parent -> ConfigConfigEntry(name, desc, setOf(), parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) }) }       
+        return Function { parent -> ConfigConfigEntry(name, desc, setOf(), parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) }) }
     }
 
-    private fun configActionEntryBuilder(name: Text, desc: Text, entry: T): Function<ConfigListWidget, BaseConfigEntry> {
-        return Function { parent -> BaseConfigEntry(name, desc, setOf(), parent, entry.widgetEntry(), { }, { }, { _, _, _ -> }) }       
+    private fun configActionEntryBuilder(name: Text, desc: Text, actions: Set<Action>, entry: ConfigAction): Function<ConfigListWidget, BaseConfigEntry> {
+        return Function { parent -> BaseConfigEntry(name, desc, actions, parent, entry.widgetEntry()) }
     }
 
     /////////////////////////////

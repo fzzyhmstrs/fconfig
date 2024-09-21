@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
-import me.fzzyhmstrs.fzzy_config.util.FcText.colored
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.MutableText
@@ -164,7 +163,11 @@ object FcText {
      */
     fun Any?.translation(fallback: String): MutableText {
         return if(this is Translatable)
-            this.translation().takeIf { this.hasTranslation() } ?: translatable(fallback).formatted(Formatting.ITALIC)
+            if (this.hasTranslation()) {
+                this.translation()
+            } else {
+                translatable(fallback).formatted(Formatting.ITALIC)
+            }
         else
             translatable(fallback).formatted(Formatting.ITALIC)
     }
@@ -178,7 +181,11 @@ object FcText {
      */
     fun Any?.transLit(literalFallback: String = ""): MutableText {
         return if(this is Translatable)
-            this.translation().takeIf { this.hasTranslation() } ?: literal(literalFallback).formatted(Formatting.ITALIC)
+            if (this.hasTranslation()) {
+                this.translation()
+            } else {
+                literal(literalFallback).formatted(Formatting.ITALIC)
+            }
         else if (literalFallback != "")
             literal(literalFallback).formatted(Formatting.ITALIC)
         else
@@ -194,7 +201,11 @@ object FcText {
      */
     fun Any?.transSupplied(fallbackSupplier: Supplier<String>): MutableText {
         return if(this is Translatable) {
-            this.translation().takeIf { this.hasTranslation() } ?: literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
+            if (this.hasTranslation()) {
+                this.translation()
+            } else {
+                literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
+            }
         } else {
             val fallback = fallbackSupplier.get()
             if (fallback != "")
@@ -213,7 +224,11 @@ object FcText {
      */
     fun Any?.description(fallback: String): Text {
         return if(this is Translatable)
-            this.description().takeIf { this.hasDescription() } ?: translatable(fallback).formatted(Formatting.ITALIC)
+            if (this.hasDescription()) {
+                this.description()
+            } else {
+                translatable(fallback).formatted(Formatting.ITALIC)
+            }
         else
             translatable(fallback).formatted(Formatting.ITALIC)
     }
@@ -227,7 +242,11 @@ object FcText {
      */
     fun Any?.descLit(literalFallback: String = ""): Text {
         return if(this is Translatable) {
-            this.description().takeIf { this.hasDescription() } ?: literal(literalFallback).formatted(Formatting.ITALIC)
+            if (this.hasDescription()) {
+                this.description()
+            } else {
+                literal(literalFallback).formatted(Formatting.ITALIC)
+            }
         } else if(literalFallback != "")
             literal(literalFallback).formatted(Formatting.ITALIC)
         else
@@ -244,7 +263,11 @@ object FcText {
      */
     fun Any?.descSupplied(fallbackSupplier: Supplier<String>): MutableText {
         return if(this is Translatable) {
-            this.description().takeIf { this.hasDescription() } ?: literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
+            if (this.hasDescription()) {
+                this.description()
+            } else {
+                literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
+            }
         } else {
             val fallback = fallbackSupplier.get()
             if (fallback != "")
