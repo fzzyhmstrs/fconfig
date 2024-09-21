@@ -180,5 +180,9 @@
 "fc.button.info.click": "§o[Right Click]§r - Opens a context menu, if applicable.",
 "fc.button.info.click_kb": "§o[Shift + F10]§r - Opens a context menu, if applicable.",
 "fc.button.info.click_kb2": "§o[Context Menu Key]§r - Opens a context menu, if applicable.",
-"fc.button.info.alert": "§o[!]§r - Settings marked with an icon require an action if changed."
+"fc.button.info.alert": "§o[!]§r - Settings marked with an icon require an action if changed.",
+"fc.button.click.open_url": "Opens a link to %s",
+"fc.button.click.open_file": "Opens a file: %s",
+"fc.button.click.run_command": "runs command \"%s\"",
+"fc.button.click.copy_to_clipboard": "copies \"%s\" to your clipboard"
 }
