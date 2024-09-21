@@ -80,6 +80,7 @@ Fzzy Config is a powerful configuration engine for Minecraft Mods that meets you
 * Screens are fully keyboard-navigable and narratable out of the box.
 * No need for screen builders or registration.
 * ModMenu and Catalogue automatically integrated.
+* Add _Action Buttons_ to open a wiki site, run a command, and so on.
 
 ### Synchronization 
 * Automatic server-client sync
