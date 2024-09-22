@@ -308,6 +308,7 @@ internal object ConfigApiImpl {
                 //get the actual [thing] from the property
                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 val propVal = prop.get(config)
+                if (propVal is ConfigAction) continue
                 //if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 //things name
                 val name = prop.name
@@ -320,7 +321,7 @@ internal object ConfigApiImpl {
                         TomlNull
                     }
                     //fallback is to use by-type TOML serialization
-                } else if (propVal != null && propVal !is ConfigAction) {
+                } else if (propVal != null) {
                     val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
                     if (basicValidation != null) {
                         basicValidation.trySerialize(propVal, errorBuilder, flags) ?: TomlNull
@@ -581,7 +582,7 @@ internal object ConfigApiImpl {
         return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
     }
 
-    internal fun deserializeEntry(entry: Entry<*, *>, string: String, scope: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<*> {
+    internal fun <T> deserializeEntry(entry: Entry<T, *>, string: String, scope: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<out T?> {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception) {
