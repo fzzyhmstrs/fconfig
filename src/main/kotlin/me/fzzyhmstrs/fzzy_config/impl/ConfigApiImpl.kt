@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
@@ -319,7 +320,7 @@ internal object ConfigApiImpl {
                         TomlNull
                     }
                     //fallback is to use by-type TOML serialization
-                } else if (propVal != null) {
+                } else if (propVal != null && propVal !is ConfigAction) {
                     val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
                     if (basicValidation != null) {
                         basicValidation.trySerialize(propVal, errorBuilder, flags) ?: TomlNull
@@ -416,6 +417,7 @@ internal object ConfigApiImpl {
                 if (prop !is KMutableProperty<*>) continue
                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 val propVal = prop.get(config)
+                if (propVal is ConfigAction) continue
                 val name = prop.name
                 val tomlElement = if (toml.containsKey(name)) {
                     toml[name]
