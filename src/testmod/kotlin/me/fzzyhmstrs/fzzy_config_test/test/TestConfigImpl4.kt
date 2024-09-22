@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedEntityAttribute
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
@@ -23,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config_test.FC
 import me.fzzyhmstrs.fzzy_config_test.FC.TEST_PERMISSION_BAD
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.entity.attribute.EntityAttributeModifier
+import net.minecraft.registry.RegistryKeys
 import net.minecraft.util.Identifier
 
 @RequiresRestart
@@ -43,6 +45,8 @@ class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
     var namespaceBlackList: ValidatedList<String> = ValidatedString.fromList(FabricLoader.getInstance().allMods.map{ it.metadata.id }).toList()
 
     var testString = ValidatedString.fromList(FabricLoader.getInstance().allMods.map{ it.metadata.id })
+
+    var testDynamicIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.BIOME)
 
     var exampleValidatedAttribute1 = ValidatedEntityAttribute.Builder("generic.max_health", true)
         // supply a UUID and name, otherwise generic ones will be used for you
