@@ -31,7 +31,7 @@ import java.util.function.Supplier
  * @param cache Boolean that determines if [get] calls are cached. This can improve performance on high volume calls where the data doesn't change in the background (like Registries, once populated).
  * @see me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
  * @author fzzyhmstrs
- * @since 0.2.0, added cache flag 0.4.4
+ * @since 0.2.0, added cache flag 0.5.0
  */
 class AllowableIdentifiers @JvmOverloads constructor(
     private val predicate: Predicate<Identifier>,
@@ -58,10 +58,10 @@ class AllowableIdentifiers @JvmOverloads constructor(
     }
 
     /**
-     * Supplies the allowable identifier list. As of 0.4.4, can be set to pull a memoized (cached) value.
+     * Supplies the allowable identifier list. As of 0.5.0, can be set to pull a memoized (cached) value.
      * @return List<Identifier> - taken from the Supplier
      * @author fzzyhmstrs
-     * @since 0.2.0, added caching 0.4.4
+     * @since 0.2.0, added caching 0.5.0
      */
     fun get(): List<Identifier> {
         return if(cache) {

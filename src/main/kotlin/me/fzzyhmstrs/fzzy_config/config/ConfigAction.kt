@@ -45,7 +45,7 @@ import java.util.function.Supplier
  * @param background [Identifier], nullable - if non-null, will provide a custom background for the widget rendering.
  * @param decoration [Identifier], nullable - if non-null, will render a "decoration" next to the widget. These are the typically white/wireframe icons shown next to certain settings like lists.
  * @author fzzyhmstrs
- * @since 0.4.4
+ * @since 0.5.0
  */
 class ConfigAction @JvmOverloads constructor(
     private val titleSupplier: Supplier<Text>,
@@ -66,7 +66,7 @@ class ConfigAction @JvmOverloads constructor(
     /**
      * Builds a [ConfigAction]
      * @author fzzyhmstrs
-     * @since 0.4.4
+     * @since 0.5.0
      */
     class Builder {
         private var titleSupplier: Supplier<Text> = Supplier { FcText.empty() }
@@ -80,7 +80,7 @@ class ConfigAction @JvmOverloads constructor(
          * @param title [Text] the button widget title
          * @return this builder
          * @author fzzyhmstrs
-         * @since 0.4.4
+         * @since 0.5.0
          */
         fun title(title: Text): Builder {
             this.titleSupplier = Supplier { title }
@@ -92,7 +92,7 @@ class ConfigAction @JvmOverloads constructor(
          * @param titleSupplier Supplier&lt;[Text]&gt; the button widget title supplier
          * @return this builder
          * @author fzzyhmstrs
-         * @since 0.4.4
+         * @since 0.5.0
          */
         fun title(titleSupplier: Supplier<Text>): Builder {
             this.titleSupplier = titleSupplier
@@ -104,7 +104,7 @@ class ConfigAction @JvmOverloads constructor(
          * @param activeSupplier Supplier&lt;Boolean&gt; provides the buttons current active state.
          * @return this builder
          * @author fzzyhmstrs
-         * @since 0.4.4
+         * @since 0.5.0
          */
         fun active(activeSupplier: Supplier<Boolean>): Builder {
             this.activeSupplier = activeSupplier
@@ -116,7 +116,7 @@ class ConfigAction @JvmOverloads constructor(
          * @param id [Identifier] the background sprite id
          * @return this builder
          * @author fzzyhmstrs
-         * @since 0.4.4
+         * @since 0.5.0
          */
         fun background(id: Identifier): Builder {
             this.background = id
@@ -129,7 +129,7 @@ class ConfigAction @JvmOverloads constructor(
          * @see me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
          * @return this builder
          * @author fzzyhmstrs
-         * @since 0.4.4
+         * @since 0.5.0
          */
         fun decoration(id: Identifier): Builder {
             this.decoration = id
@@ -146,7 +146,7 @@ class ConfigAction @JvmOverloads constructor(
          * @param action [Runnable] - event to run when the button is clicked
          * @return [ConfigAction]
          * @author fzzyhmstrs
-         * @since 0.4.4
+         * @since 0.5.0
          */
         fun build(action: Runnable): ConfigAction {
             return ConfigAction(titleSupplier, activeSupplier, action, decoration ?: TextureIds.DECO_BUTTON_CLICK, desc, background)
@@ -157,7 +157,7 @@ class ConfigAction @JvmOverloads constructor(
          * @param clickEvent [ClickEvent] - event to run when the button is clicked
          * @return [ConfigAction]
          * @author fzzyhmstrs
-         * @since 0.4.4
+         * @since 0.5.0
          */
         fun build(clickEvent: ClickEvent): ConfigAction {
             val runnable = Runnable {
