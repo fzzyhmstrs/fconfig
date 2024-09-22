@@ -39,6 +39,8 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.registry.BuiltinRegistries
+import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
@@ -59,6 +61,16 @@ internal object ConfigApiImpl {
 
     private val isClient by lazy {
         PlatformUtils.isClient()
+    }
+
+    private var wrapperLookup: WrapperLookup? = null
+
+    internal fun invalidateLookup() {
+        this.wrapperLookup = null
+    }
+
+    internal fun getWrapperLookup(): WrapperLookup {
+        return wrapperLookup ?: BuiltinRegistries.createWrapperLookup().also { wrapperLookup = it }
     }
 
     internal const val CHECK_NON_SYNC: Byte = 0
