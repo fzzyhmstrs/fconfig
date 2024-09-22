@@ -96,7 +96,7 @@ object ConfigApiJava {
     /**
      * Provides an instance of the [NetworkApi] for usage of the built-in cross-loader networking API
      * @author fzzyhmstrs
-     * @since 0.4.4
+     * @since 0.5.0
      */
     @JvmStatic
     fun network(): NetworkApi {
@@ -106,7 +106,7 @@ object ConfigApiJava {
     /**
      * Provides an instance of the [PlatformApi] for usage of the built-in cross-loader utilities
      * @author fzzyhmstrs
-     * @since 0.4.4
+     * @since 0.5.0
      */
     @JvmStatic
     fun platform(): PlatformApi {

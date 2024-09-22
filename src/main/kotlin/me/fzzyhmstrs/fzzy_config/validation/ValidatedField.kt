@@ -10,8 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config.validation
 
+import com.mojang.serialization.Codec
+import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -20,11 +23,13 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.Function
 
 /**
  * Validated Field Collection - serialization is indistinguishable from their wrapped values, but deserialized into a validated wrapper
@@ -40,7 +45,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @since 0.1.0
  */
 @Suppress("DeprecatedCallableAddReplaceWith")
-abstract class ValidatedField<T>(protected var storedValue: T, protected val defaultValue: T = storedValue):
+abstract class ValidatedField<T>(protected open var storedValue: T, protected var defaultValue: T = storedValue):
     Entry<T, ValidatedField<T>>,
     Updatable,
     Translatable
@@ -127,6 +132,10 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
 
     open fun copyStoredValue(): T {
         return get()
+    }
+
+    protected fun updateDefault(newDefault: T) {
+        this.defaultValue = newDefault
     }
 
     /**
@@ -225,7 +234,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         try {
             @Suppress("UNCHECKED_CAST")
             setAndUpdate(input as T)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             //
         }
     }
@@ -244,6 +253,16 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
      */
     override fun get(): T {
         return storedValue
+    }
+
+    /**
+     * Provides this validations default value
+     * @return the default value
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun getDefault(): T {
+        return defaultValue
     }
 
     @Internal
@@ -321,5 +340,85 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
      */
     fun toSet(collection: Collection<T>): ValidatedList<T> {
         return ValidatedList(collection.toList(), this)
+    }
+
+    /**
+     * Maps this validation to a new convertible type. The default value will be applied from this delegates current storedValue
+     *
+     * The field will be internally managed by this validation as a delegate, so the serialization will take the form of this validation, the widget will be from this, and so on.
+     * @param N the new type to map to
+     * @param to [Function]&lt;T, [N]&gt; - maps values from this delegate into the new type
+     * @param from [Function]&lt;[N], T&gt; - maps values of the new type back into the type of this delegate
+     * @return ValidatedMapped&lt;[N]&gt; - A Mapped validation that provides and receives the new type with this as a delegate
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun <N> map(to: Function<T, out N>, from: Function<in N, T>): ValidatedField<N> {
+        return ValidatedMapped(this, to, from)
+    }
+
+    /**
+     * Maps this validation to a new convertible type.
+     *
+     * The field will be internally managed by this validation as a delegate, so the serialization will take the form of this validation, the widget will be from this, and so on.
+     * @param N the new type to map to
+     * @param defaultValue [N] - the default value of the new type
+     * @param to [Function]&lt;T, [N]&gt; - maps values from this delegate into the new type
+     * @param from [Function]&lt;[N], T&gt; - maps values of the new type back into the type of this delegate
+     * @return ValidatedMapped&lt;[N]&gt; - A Mapped validation that provides and receives the new type with this as a delegate
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun <N> map(defaultValue: N, to: Function<T, out N>, from: Function<in N, T>): ValidatedField<N> {
+        this.updateDefault(from.apply(defaultValue))
+        this.set(from.apply(defaultValue))
+        return  ValidatedMapped(this, to, from, defaultValue)
+    }
+
+    /**
+     * Maps this validation to a new convertible type.
+     *
+     * The field will be internally managed by this validation as a delegate, so the serialization will take the form of this validation, the widget will be from this, and so on.
+     * @param N the new type to map to
+     * @param to [Function]&lt;T, [N]&gt; - maps values from this delegate into the new type
+     * @param from [Function]&lt;[N], T&gt; - maps values of the new type back into the type of this delegate
+     * @param defaultValue [T] - the default value of this delegates type. Mapped to type [N] with [to]
+     * @return ValidatedMapped&lt;[N]&gt; - A Mapped validation that provides and receives the new type with this as a delegate
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun <N> map(to: Function<T, out N>, from: Function<in N, T>, defaultValue: T): ValidatedField<N> {
+        this.updateDefault(defaultValue)
+        this.set(defaultValue)
+        return ValidatedMapped(this, to, from, to.apply(defaultValue))
+    }
+
+    /**
+     * Provides a [Codec] representing the value type of this validation, backed by the validators within, as applicable
+     *
+     * So, for example, if you have a double with a validity range 0.0 to 1.0, this will de/serialize the double using the Codec, and enforce the valid range.
+     * @return [Codec]&lt;[T]&gt; - Codec of type T backed by this validation.
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun codec(): Codec<T> {
+        return Codec.STRING.flatXmap(
+            { str ->
+                val errors: MutableList<String> = mutableListOf()
+                val result = ConfigApiImpl.deserializeEntry(this.instanceEntry(), str, "Field Codec", errors, ConfigApiImpl.IGNORE_NON_SYNC)
+                if(result.isError())
+                    DataResult.error { "Deserialization failed: ${result.getError()}, with errors: $errors" }
+                else
+                    DataResult.success(result.get())
+            },
+            { t ->
+                val errors: MutableList<String> = mutableListOf()
+                val result = ConfigApiImpl.serializeEntry(this, errors, ConfigApiImpl.CHECK_NON_SYNC)
+                if(errors.isNotEmpty())
+                    DataResult.error { "Serialization failed with errors: $errors" }
+                else
+                    DataResult.success(result)
+            }
+        )
     }
 }
