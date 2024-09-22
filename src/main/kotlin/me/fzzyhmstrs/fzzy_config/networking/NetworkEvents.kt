@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.api.ServerPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -113,6 +114,7 @@ internal object NetworkEvents {
                     ServerPlayNetworking.send(player, payload.getId(), buf)
                 }
             )
+            ConfigApiImpl.invalidateLookup()
         }
 
         /*ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
