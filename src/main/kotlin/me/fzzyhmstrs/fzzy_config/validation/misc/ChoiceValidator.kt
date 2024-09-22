@@ -24,13 +24,13 @@ import java.util.function.Predicate
  * @author fzzyhmstrs
  * since 0.2.0
  */
-open class ChoiceValidator<T>(private val  predicate: ValuesPredicate<T>): EntryValidator<T> {
+open class ChoiceValidator<T>(private val predicate: ValuesPredicate<T>): EntryValidator<T> {
 
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         return ValidationResult.predicated(input, predicate.test(input), "Value not allowed")
     }
 
-    fun<N> convert(disallowedConverter: Function<T, N>?, allowableConverter: Function<T, N>?): ChoiceValidator<N> {
+    fun<N> convert(disallowedConverter: Function<in T, N>?, allowableConverter: Function<in T, N>?): ChoiceValidator<N> {
         return ChoiceValidator(predicate.convert(disallowedConverter, allowableConverter))
     }
 
@@ -44,7 +44,7 @@ open class ChoiceValidator<T>(private val  predicate: ValuesPredicate<T>): Entry
                 }
             } else allowableValues?.contains(t) ?: true
         }
-        fun<N> convert(disallowedConverter: Function<T, N>?, allowableConverter: Function<T, N>?): ValuesPredicate<N> {
+        fun<N> convert(disallowedConverter: Function<in T, N>?, allowableConverter: Function<in T, N>?): ValuesPredicate<N> {
             return if(disallowedValues == null) {
                 if(allowableValues == null) {
                     ValuesPredicate(null, null)

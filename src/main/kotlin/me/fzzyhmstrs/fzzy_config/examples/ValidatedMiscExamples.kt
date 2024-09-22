@@ -15,14 +15,18 @@ import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
+import net.minecraft.item.Items
+import net.minecraft.item.SwordItem
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
 import java.awt.Color
+import java.util.function.Function
 
 object ValidatedMiscExamples {
 
@@ -270,5 +274,24 @@ object ValidatedMiscExamples {
             "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
         }
         """
+    }
+
+    fun registries() {
+        //example simple validation of items. Any item in the Registries.ITEM registry will be valid.
+        //Type: ValidatedField<Item>
+        var validatedItem = ValidatedRegistryType.of(Registries.ITEM)
+
+        //in a more complex example, we can filter down. Maybe only swords from your mod (we'll pretend your mod is minecraft for this example)
+        //Type: ValidatedField<Item>
+        var validatedItemComplex = ValidatedRegistryType.of(Items.WOODEN_SWORD, Registries.ITEM) { id, re -> id.namespace == "minecraft" && re.value() is SwordItem }
+
+        //Since we know all the outputs will be swords, we could map it down to provide SwordItem outputs
+        //Type: ValidatedField<SwordItem>
+        var validatedItemSword = ValidatedRegistryType.of(Items.WOODEN_SWORD, Registries.ITEM) { id, re ->
+            id.namespace == "minecraft" && re.value() is SwordItem
+        }.map(
+            { item -> item as SwordItem },
+            Function.identity()
+        )
     }
 }
