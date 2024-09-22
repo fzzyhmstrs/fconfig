@@ -34,7 +34,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
-import net.minecraft.network.packet.CustomPayload.Id
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
@@ -305,7 +304,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param tag the tag of allowable values to choose from
          * @return [ValidatedIdentifier] wrapping the provided default and tag
          * @author fzzyhmstrs
-         * @since 0.2.0, added non-caching 0.4.4
+         * @since 0.2.0, added non-caching 0.5.0
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
@@ -326,7 +325,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param tag the tag of allowable values to choose from
          * @return [ValidatedIdentifier] wrapping the provided tag
          * @author fzzyhmstrs
-         * @since 0.2.0, added non-caching 0.4.4
+         * @since 0.2.0, added non-caching 0.5.0
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
@@ -347,7 +346,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param registry the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided default and registry
          * @author fzzyhmstrs
-         * @since 0.2.0, added caching 0.4.4
+         * @since 0.2.0, added caching 0.5.0
          */
         @JvmStatic
         fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>): ValidatedIdentifier {
@@ -363,7 +362,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param predicate Predicate<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided default and predicated registry
          * @author fzzyhmstrs
-         * @since 0.2.0, added caching 0.4.4
+         * @since 0.2.0, added caching 0.5.0
          */
         @JvmStatic
         fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
@@ -385,7 +384,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param predicate Predicate<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided default and predicated registry
          * @author fzzyhmstrs
-         * @since 0.4.4
+         * @since 0.5.0
          */
         @JvmStatic
         fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
@@ -407,7 +406,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param registry the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0, added caching 0.4.4
+         * @since 0.2.0, added caching 0.5.0
          */
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
@@ -422,10 +421,34 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          *
          * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
          * @param registry the registry whose ids are valid for this identifier
-         * @param predicate [BiPredicate]<RegistryEntry> tests an allowable subset of the registry
+         * @param predicate [Predicate]<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided predicated registry
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added caching 0.5.0
+         */
+        @JvmStatic
+        @Deprecated("Only use for validation in a list or map")
+        fun <T> ofRegistry(registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
+            return ValidatedIdentifier(Identifier.of("minecraft:air"),
+                AllowableIdentifiers(
+                    { id -> registry.containsId(id) && predicate.test((registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
+                    { registry.ids.filter { id -> predicate.test((registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
+                    true
+                )
+            )
+        }
+
+        /**
+         * Builds a ValidatedIdentifier based on an allowable registry of values, filtered by the provided predicate
+         *
+         * Uses "minecraft:air" as the default value
+         *
+         * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
+         * @param registry the registry whose ids are valid for this identifier
+         * @param predicate [BiPredicate]&lt;Identifier, RegistryEntry&gt; tests an allowable subset of the registry
+         * @return [ValidatedIdentifier] wrapping the provided predicated registry
+         * @author fzzyhmstrs
+         * @since 0.2.0, added caching 0.5.0
          */
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
@@ -450,7 +473,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @throws IllegalStateException if the registry can't be found based on the provided key
          * @author fzzyhmstrs
-         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
+         * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
@@ -478,7 +501,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param predicate [Predicate]<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
+         * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
@@ -507,7 +530,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param predicate [Predicate]<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
-         * @since 0.4.4
+         * @since 0.5.0
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
@@ -536,7 +559,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
+         * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
@@ -553,7 +576,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param predicate [BiPredicate]<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
+         * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
@@ -585,7 +608,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
+         * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
@@ -613,7 +636,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param predicate [Predicate]<Identifier> tests an allowable subset of the TagKeys
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
+         * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
@@ -639,7 +662,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
+         * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
@@ -666,7 +689,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param predicate [Predicate]<Identifier> tests an allowable subset of the TagKeys
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
+         * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
