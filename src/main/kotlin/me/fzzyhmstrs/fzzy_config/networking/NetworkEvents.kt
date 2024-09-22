@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.api.ServerPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
@@ -94,6 +95,7 @@ internal object NetworkEvents {
                 { player, id -> ConfigApi.network().canSend(id.id, player) },
                 { player, payload -> ConfigApi.network().send(payload, player) }
             )
+            ConfigApiImpl.invalidateLookup()
         }
 
         /*ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
