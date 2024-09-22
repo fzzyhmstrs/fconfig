@@ -10,8 +10,10 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
+import com.google.common.base.Suppliers
 import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
@@ -33,9 +35,11 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraft.network.packet.CustomPayload.Id
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.RegistryWrapper
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Formatting
@@ -57,7 +61,9 @@ import java.util.function.*
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.identifiers
  * @see ofTag
  * @see ofRegistry
+ * @see ofRegistryTags
  * @see ofList
+ * @see ofSuppliedList
 
  * @author fzzyhmstrs
  * @since 0.1.2
@@ -294,11 +300,13 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
         /**
          * Builds a ValidatedIdentifier based on an allowable tag of values
+         *
+         * Allowable identifiers in this validation will NOT be cached. Tag contents can change over time in a game thanks to reloads.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param tag the tag of allowable values to choose from
          * @return [ValidatedIdentifier] wrapping the provided default and tag
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added non-caching 0.4.4
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
@@ -307,17 +315,19 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { listOf() }))
             val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
-            return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier))
+            return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false))
         }
 
         /**
          * Builds a ValidatedIdentifier based on an allowable tag of values
          *
          * Uses "minecraft:air" as the default value.
+         *
+         * Allowable identifiers in this validation will NOT be cached. Tag contents can change over time in a game thanks to reloads.
          * @param tag the tag of allowable values to choose from
          * @return [ValidatedIdentifier] wrapping the provided tag
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added non-caching 0.4.4
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
@@ -327,36 +337,64 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
             val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
-            return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier))
+            return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false))
         }
+
         /**
          * Builds a ValidatedIdentifier based on an allowable registry of values
+         *
+         * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param registry the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided default and registry
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added caching 0.4.4
          */
         @JvmStatic
         fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>): ValidatedIdentifier {
-            return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ id -> registry.containsId(id) }, { registry.ids.toList() }))
+            return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ id -> registry.containsId(id) }, { registry.ids.toList() }, true))
         }
 
         /**
          * Builds a ValidatedIdentifier based on an allowable registry of values, filtered by the provided predicate
+         *
+         * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param registry the registry whose ids are valid for this identifier
          * @param predicate Predicate<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided default and predicated registry
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added caching 0.4.4
          */
         @JvmStatic
         fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
             return ValidatedIdentifier(defaultValue,
                 AllowableIdentifiers(
                     { id -> registry.containsId(id) && predicate.test ((registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
-                    { registry.ids.filter { id -> predicate.test ((registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } }
+                    { registry.ids.filter { id -> predicate.test ((registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
+                    true
+                )
+            )
+        }
+
+        /**
+         * Builds a ValidatedIdentifier based on an allowable registry of values, filtered by the provided predicate
+         *
+         * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
+         * @param defaultValue the default value of the ValidatedIdentifier
+         * @param registry the registry whose ids are valid for this identifier
+         * @param predicate Predicate<RegistryEntry> tests an allowable subset of the registry
+         * @return [ValidatedIdentifier] wrapping the provided default and predicated registry
+         * @author fzzyhmstrs
+         * @since 0.4.4
+         */
+        @JvmStatic
+        fun <T> ofRegistry(defaultValue: Identifier, registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
+            return ValidatedIdentifier(defaultValue,
+                AllowableIdentifiers(
+                    { id -> registry.containsId(id) && predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
+                    { registry.ids.filter { id -> predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
+                    true
                 )
             )
         }
@@ -365,21 +403,25 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable registry of values
          *
          * Uses "minecraft:air" as the default value
+         *
+         * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
          * @param registry the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added caching 0.4.4
          */
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistry(registry: Registry<T>): ValidatedIdentifier {
-            return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ id -> registry.containsId(id) }, { registry.ids.toList() }))
+            return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ id -> registry.containsId(id) }, { registry.ids.toList() }, true))
         }
 
         /**
          * Builds a ValidatedIdentifier based on an allowable registry of values, filtered by the provided predicate
          *
          * Uses "minecraft:air" as the default value
+         *
+         * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
          * @param registry the registry whose ids are valid for this identifier
          * @param predicate [BiPredicate]<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided predicated registry
@@ -392,29 +434,44 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             return ValidatedIdentifier(Identifier.of("minecraft:air"),
                 AllowableIdentifiers(
                     { id -> registry.containsId(id) && predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
-                    { registry.ids.filter { id -> predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } }
+                    { registry.ids.filter { id -> predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
+                    true
                 )
             )
         }
+
         /**
-         * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
+         * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey. This can find both static and dynamic registries
          *
          * Uses "minecraft:air" as the default value
+         *
+         * Allowable identifiers in this validation will be cached after their first polling if the registry is a static; dynamic registry validation will NOT be cached as those registries can change while in game.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided registry
+         * @throws IllegalStateException if the registry can't be found based on the provided key
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            return ofRegistry(defaultValue, registry)
+
+            if (maybeRegistry.isPresent) {
+                val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                return ofRegistry(defaultValue, registry)
+            } else {
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
+                val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                val predicate2: Predicate<Identifier> = Predicate { id -> registry2.streamKeys().anyMatch { key -> key.value == id }}
+                val supplier2: Supplier<List<Identifier>> = Supplier { registry2.streamKeys().map { it.value }.toList() }
+                return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false))
+            }
         }
+
         /**
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
          * @param defaultValue the default value of the ValidatedIdentifier
@@ -422,17 +479,57 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param predicate [Predicate]<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            return ofRegistry(defaultValue, registry, predicate)
+            if (maybeRegistry.isPresent) {
+                val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                return ofRegistry(defaultValue, registry, predicate)
+            } else {
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
+                val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                val predicate2: Predicate<Identifier> = Predicate {
+                    id -> registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test((registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
+                }
+                val supplier2: Supplier<List<Identifier>> = Supplier { registry2.streamKeys().map { it.value }.toList() }
+                return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false))
+            }
         }
+
+        /**
+         * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
+         * @param defaultValue the default value of the ValidatedIdentifier
+         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
+         * @param predicate [Predicate]<RegistryEntry> tests an allowable subset of the registry
+         * @return [ValidatedIdentifier] wrapping the provided registry
+         * @author fzzyhmstrs
+         * @since 0.4.4
+         */
+        @JvmStatic
+        @Suppress("UNCHECKED_CAST")
+        @Deprecated("Only use for validation in a list or map")
+        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            if (maybeRegistry.isPresent) {
+                val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                return ofRegistry(defaultValue, registry, predicate)
+            } else {
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
+                val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                val predicate2: Predicate<Identifier> = Predicate {
+                        id -> registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test(id, (registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
+                }
+                val supplier2: Supplier<List<Identifier>> = Supplier { registry2.streamKeys().map { it.value }.toList() }
+                return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false))
+            }
+        }
+
         /**
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
          *
@@ -440,18 +537,15 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            @Suppress("DEPRECATION")
-            return ofRegistry(registry)
+            return ofRegistryKey(Identifier.of("minecraft:air"), key)
         }
+
         /**
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
          *
@@ -460,17 +554,28 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param predicate [BiPredicate]<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
          */
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            @Suppress("DEPRECATION")
-            return ofRegistry(registry, predicate)
+            if (maybeRegistry.isPresent) {
+                val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                return ofRegistry(registry, predicate)
+            } else {
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
+                val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                val predicate2: Predicate<Identifier> = Predicate {
+                        id -> registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test(id, (registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
+                }
+                val supplier2: Supplier<List<Identifier>> = Supplier {
+                    registry2.streamKeys().filter{ predicate.test(it.value, (registry2.getOptional(it).takeIf { opt ->  opt.isPresent } ?: return@filter false).get()) }.map { it.value }.toList()
+                }
+                return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers(predicate2, supplier2, false))
+            }
         }
 
         /**
@@ -480,14 +585,26 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param T the TagKey type
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
+         * @author fzzyhmstrs
+         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
          */
         fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.tag.id }.toList() }
-            val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
-            return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
+            if (maybeRegistry.isPresent) {
+                //memoize to cache the predicate test get also
+                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.toList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
+            } else {
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
+                //no memoization, this registry is dynamic
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.toList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
+            }
         }
+
         /**
          * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey, and predicated by the provided predicate
          *
@@ -496,14 +613,52 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @param predicate [Predicate]<Identifier> tests an allowable subset of the TagKeys
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
+         * @author fzzyhmstrs
+         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
          */
         fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
-            val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
-            return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
+            if (maybeRegistry.isPresent) {
+                //memoize to cache the predicate test get also
+                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
+            } else {
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
+                //no memoization, this registry is dynamic
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
+            }
         }
+
+        /**
+         * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey
+         * @param T the TagKey type
+         * @param default [TagKey] the default TagKey value to get an identifier from
+         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
+         * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
+         * @author fzzyhmstrs
+         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
+         */
+        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
+            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            if (maybeRegistry.isPresent) {
+                //memoize to cache the predicate test get also
+                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.toList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                return ValidatedIdentifier(default.id, ids)
+            } else {
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
+                //no memoization, this registry is dynamic
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.toList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                return ValidatedIdentifier(default.id, ids)
+            }
+        }
+
         /**
          * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey, and predicated by the provided predicate
          * @param T the TagKey type
@@ -511,28 +666,26 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @param predicate [Predicate]<Identifier> tests an allowable subset of the TagKeys
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
+         * @author fzzyhmstrs
+         * @since 0.2.0, added dynamic registry lookup and caching 0.4.4
          */
         fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
-            val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
-            return ValidatedIdentifier(default.id, ids)
+            if (maybeRegistry.isPresent) {
+                //memoize to cache the predicate test get also
+                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                return ValidatedIdentifier(default.id, ids)
+            } else {
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
+                //no memoization, this registry is dynamic
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                return ValidatedIdentifier(default.id, ids)
+            }
         }
-        /**
-         * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey
-         * @param T the TagKey type
-         * @param default [TagKey] the default TagKey value to get an identifier from
-         * @param key [RegistryKey] for the registry whose ids are valid for this identifier
-         * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
-         */
-        fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry.get().streamTags().map { it.tag.id }.toList() }
-            val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier)
-            return ValidatedIdentifier(default.id, ids)
-        }
+
         /**
          * Builds a ValidatedIdentifier based on an allowable list of values
          *
@@ -569,6 +722,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             val validator = strong(allowableIds)
             return ValidatedIdentifier(Identifier.of("minecraft:air"), allowableIds, validator)
         }
+
         /**
          * Builds a ValidatedIdentifier based on an allowable list of values
          *
@@ -584,6 +738,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             val allowableIds = AllowableIdentifiers({ id -> listSupplier.get().contains(id) }, listSupplier)
             return ValidatedIdentifier(defaultValue, allowableIds)
         }
+
         /**
          * Builds a ValidatedIdentifier based on an allowable list of values
          *
