@@ -30,6 +30,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.MultilineTextWidget
@@ -263,12 +264,12 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             .addDivider()
             .addElement("items_label", TextWidget(110, 13, "fc.validated_field.ingredient.items".translate(), textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
             .addElement("items", listItemValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("items_clear", ButtonWidget.Builder("fc.validated_field.ingredient.clear".translate()){ _ -> listItemValidator.validateAndSet(setOf()) }.size(60, 20).build(), "items", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("items_clear", ButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listItemValidator.validateAndSet(setOf()) }.size(60, 20).build(), "items", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("items_textbox", SuppliedTextWidget({ listItemValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listItemValidator.get().joinToString("\n").lit() }, "items", Position.ALIGN_JUSTIFY, Position.BELOW)
             .addDivider()
             .addElement("tags_label", TextWidget(110, 13, "fc.validated_field.ingredient.tags".translate(), textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
             .addElement("tags", listTagValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("tags_clear", ButtonWidget.Builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60, 20).build(), "tags", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("tags_clear", ButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60, 20).build(), "tags", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() }, "tags", Position.ALIGN_JUSTIFY, Position.BELOW)
             .addDoneButton()
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })

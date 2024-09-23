@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import net.minecraft.client.gui.DrawContext
@@ -44,7 +45,7 @@ class TextlessActionWidget(
     private val activeSupplier: Supplier<Boolean>,
     private val pressAction: Consumer<TextlessActionWidget>)
     :
-    PressableWidget(0, 0, 20, 20, FcText.empty())
+    CustomPressableWidget(0, 0, 20, 20, FcText.empty())
 {
 
     private fun getTex(): Identifier {
