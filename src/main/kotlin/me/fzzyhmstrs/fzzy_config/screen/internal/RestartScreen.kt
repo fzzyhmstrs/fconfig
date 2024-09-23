@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DirectionalLayoutWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate

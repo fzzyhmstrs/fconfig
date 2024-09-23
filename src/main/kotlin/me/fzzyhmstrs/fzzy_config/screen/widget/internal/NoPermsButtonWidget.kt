@@ -17,12 +17,13 @@ import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 
 //client
-internal class NoPermsButtonWidget(private val title: MutableText = FcText.translatable("fc.button.noPerms"), private val tooltipMessage: MutableText = FcText.translatable("fc.button.noPerms.desc")) : PressableWidget(0, 0, 110, 20, FcText.empty()), Decorated {
+internal class NoPermsButtonWidget(private val title: MutableText = FcText.translatable("fc.button.noPerms"), private val tooltipMessage: MutableText = FcText.translatable("fc.button.noPerms.desc")) : CustomPressableWidget(0, 0, 110, 20, FcText.empty()), Decorated {
 
     init {
         this.active = false
@@ -35,6 +36,10 @@ internal class NoPermsButtonWidget(private val title: MutableText = FcText.trans
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
         builder.put(NarrationPart.TITLE, this.narrationMessage)
         //builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+    }
+
+    override fun getTooltip(): Tooltip? {
+        return Tooltip.of(tooltipMessage)
     }
 
     override fun drawScrollableText(context: DrawContext?, textRenderer: TextRenderer?, xMargin: Int, color: Int) {
