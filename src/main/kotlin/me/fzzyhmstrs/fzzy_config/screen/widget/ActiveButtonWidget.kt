@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -43,7 +44,7 @@ open class ActiveButtonWidget(
     private val pressAction: Consumer<ActiveButtonWidget>,
     private val background: Identifier? = null)
     :
-    PressableWidget(0, 0, width, height, titleSupplier.get()) {
+    CustomPressableWidget(0, 0, width, height, titleSupplier.get()) {
 
     constructor(title: Text,
                 width: Int,
