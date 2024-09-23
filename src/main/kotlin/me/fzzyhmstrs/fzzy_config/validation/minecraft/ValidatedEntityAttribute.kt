@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.text
@@ -224,7 +225,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
     }
 
     //client
-    private class EntityAttributeButtonWidget(private val entry: ValidatedEntityAttribute, private val textSupplier: Supplier<MutableText>, private val onPress: Consumer<ClickableWidget>): PressableWidget(0, 0, 110, 20, textSupplier.get()) {
+    private class EntityAttributeButtonWidget(private val entry: ValidatedEntityAttribute, private val textSupplier: Supplier<MutableText>, private val onPress: Consumer<ClickableWidget>): CustomPressableWidget(0, 0, 110, 20, textSupplier.get()) {
 
         override fun getMessage(): Text {
             return textSupplier.get()

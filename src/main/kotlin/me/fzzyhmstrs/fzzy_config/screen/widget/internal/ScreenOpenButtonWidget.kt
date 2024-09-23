@@ -23,7 +23,7 @@ import net.minecraft.util.Identifier
 import java.util.function.Consumer
 
 //client
-internal class ScreenOpenButtonWidget(private val buttonTitle: Text, private val pressAction: Consumer<ScreenOpenButtonWidget>) : PressableWidget(0, 0, 110, 20, FcText.empty()), Decorated {
+internal class ScreenOpenButtonWidget(private val buttonTitle: Text, private val pressAction: Consumer<ScreenOpenButtonWidget>) : CustomPressableWidget(0, 0, 110, 20, FcText.empty()), Decorated {
 
     override fun getNarrationMessage(): MutableText {
         return this.message.copy()
