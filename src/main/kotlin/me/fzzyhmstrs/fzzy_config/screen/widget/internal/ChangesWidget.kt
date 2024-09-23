@@ -22,7 +22,6 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.MultilineTextWidget
-import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
@@ -30,7 +29,7 @@ import java.util.function.Supplier
 import kotlin.math.max
 
 //client
-internal class ChangesWidget(private val scope: String, private val widthSupplier: Supplier<Int>, private val manager: UpdateManager): PressableWidget(0, 0, 80, 20, "fc.button.changes".translate()) {
+internal class ChangesWidget(private val scope: String, private val widthSupplier: Supplier<Int>, private val manager: UpdateManager): CustomPressableWidget(0, 0, 80, 20, "fc.button.changes".translate()) {
 
     companion object {
         private val changesTex: Identifier = "widget/changes".fcId()

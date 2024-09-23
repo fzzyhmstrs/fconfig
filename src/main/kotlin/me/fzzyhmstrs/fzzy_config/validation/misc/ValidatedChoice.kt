@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -236,7 +237,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     }
 
     //client
-    private class ChoicePopupButtonWidget<T>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0, 0, 110, 20, FcText.empty()) {
+    private class ChoicePopupButtonWidget<T>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
 
         private val choices = entry.choices.filter {
             choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
@@ -302,7 +303,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     }
 
     //client
-    private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val entry: ValidatedChoice<T>, private val valueApplier: Consumer<T>): PressableWidget(0, 0, width, 20, entry.translationProvider.apply(thisVal, entry.translationKey())) {
+    private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val entry: ValidatedChoice<T>, private val valueApplier: Consumer<T>): CustomPressableWidget(0, 0, width, 20, entry.translationProvider.apply(thisVal, entry.translationKey())) {
 
         init {
             entry.descriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
@@ -327,7 +328,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     }
 
     //client
-    private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): PressableWidget(0, 0, 110, 20, entry.translationProvider.apply(entry.get(), entry.translationKey())) {
+    private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, entry.translationProvider.apply(entry.get(), entry.translationKey())) {
 
         private val choices = entry.choices.filter {
             choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
