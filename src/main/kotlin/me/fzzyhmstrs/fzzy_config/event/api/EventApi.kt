@@ -18,6 +18,19 @@ package me.fzzyhmstrs.fzzy_config.event.api
 interface EventApi {
 
     /**
+     * Registers a listener to the global `onSyncClient` event. This will be fired on the logical client when a client side config is synced to the client.
+     *
+     * This occurs when the player logs in or datapacks are reloaded.
+     *
+     * This should only perform client logic.
+     * @param listener [OnSyncClientListener] callback that is fired when any config is synced on the client side. This can be used to inspect other configs, not just your own.
+     * @see [me.fzzyhmstrs.fzzy_config.config.Config.onSyncClient] A direct-implementation option for inspecting your own config on sync.
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun onSyncClient(listener: OnSyncClientListener)
+    
+    /**
      * Registers a listener to the global `onChangedClient` event. This will be fired on the logical client when a client side config is updated in-game.
      *
      * Typically this is when the user closes the config screen, but also occurs after a connected client recieves a S2C update.
