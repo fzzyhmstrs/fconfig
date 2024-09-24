@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
+import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -155,7 +156,18 @@ internal object SyncedConfigRegistry {
                 }
             }
             successfulUpdates[id] = configString
-            config.onUpdateServer(serverPlayer)
+            try {
+                config.onUpdateServer(serverPlayer)
+            } catch (e: Throwable) {
+                FC.LOGGER.error("Error encountered with onUpdateServer method of config $id!")
+                e.printStackTrace()
+            }
+            try {
+                EventApiImpl.fireOnChangedServer(config.getId(), config, serverPlayer)
+            } catch (e: Throwable) {
+                FC.LOGGER.error("Error encountered while running onUpdateServer event for config $id!")
+                e.printStackTrace()
+            }
         }
         if (!server.isSingleplayer) {
             for (player in serverPlayer.server.playerManager.playerList) {
