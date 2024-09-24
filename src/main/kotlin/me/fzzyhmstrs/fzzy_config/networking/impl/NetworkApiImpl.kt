@@ -24,7 +24,7 @@ import net.neoforged.neoforge.network.registration.IPayloadRegistrar
 import net.neoforged.neoforge.network.registration.NetworkRegistry
 import java.util.function.Function
 
-object NetworkApiImpl: NetworkApi {
+internal object NetworkApiImpl: NetworkApi {
 
     override fun canSend(id: Identifier, playerEntity: PlayerEntity?): Boolean {
         return if (playerEntity is ServerPlayerEntity) {
