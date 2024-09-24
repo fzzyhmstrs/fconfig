@@ -22,7 +22,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import java.util.function.Function
 
-object NetworkApiImpl: NetworkApi {
+internal object NetworkApiImpl: NetworkApi {
 
     override fun buf(): PacketByteBuf {
         return PacketByteBufs.create()
