@@ -98,7 +98,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
     open fun update(deserializedVersion: Int){}
 
     /**
-     * Runs on the logical client after an updated config is prepared for saving and syncing. Typically this is when the user closes the config screen, but also occurs after a connect client recieves a S2C update.
+     * Runs on the logical client after an updated config is prepared for saving and syncing. Typically this is when the user closes the config screen, but also occurs after a connected client recieves a S2C update.
      *
      * This should only perform client logic, and it is good practice to insulate client-only code by putting a method reference to a dedicated client-only class in this call.
      * @see onUpdateServer
