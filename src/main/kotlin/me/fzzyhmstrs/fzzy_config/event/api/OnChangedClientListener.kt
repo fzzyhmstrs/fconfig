@@ -26,6 +26,7 @@ fun interface OnChangedClientListener {
     /**
      * Called by the `onChangedClient` event when the client side of a config is changed.
      * @param id [Identifier] the registered id attached to the config instance.
+     * @param config [Config] the config instance. This should only be read, or changes only made to transient fields/methods. Making updates to settings here will NOT be captured by the syncronization system.
      * @author fzzyhmstrs
      * @since 0.5.0
      */
