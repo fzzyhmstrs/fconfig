@@ -33,6 +33,17 @@ class ValidatedMapped<N, T> @JvmOverloads constructor(private val delegate: Vali
             delegate.accept(from.apply(value))
         }
 
+    override fun withListener(listener: Consumer<ValidatedField<N>>): ValidatedField<N> {
+        delegate.withListener { _ -> listener.accept(this) }
+        return this
+    }
+        
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun getUpdateManager(): UpdateManager? {
+        return delegate.getUpdateManager()
+    }
+        
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun setUpdateManager(manager: UpdateManager) {
@@ -41,10 +52,16 @@ class ValidatedMapped<N, T> @JvmOverloads constructor(private val delegate: Vali
 
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun getEntryKey(): String {
+        return delegate.getEntryKey()
+    }
+    
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun setEntryKey(key: String) {
         delegate.setEntryKey(key)
     }
-
+    
     /**
      * Gets the wrapped result value from the mapped delegate
      * @return N. The result being wrapped and passed by this ValidationResult.
