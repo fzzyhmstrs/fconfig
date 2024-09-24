@@ -12,7 +12,7 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import java.io.File
 
-object PlatformApiImpl: PlatformApi {
+internal object PlatformApiImpl: PlatformApi {
 
     override fun isClient(): Boolean {
         return PlatformUtils.isClient()
