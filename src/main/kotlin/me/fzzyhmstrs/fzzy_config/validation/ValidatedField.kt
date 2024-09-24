@@ -54,6 +54,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     private var pushedValue: T? = null
     private var updateKey = ""
     private var updateManager: UpdateManager? = null
+    private var listener: Consumer<ValidatedField<T>>? = null
 
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
@@ -268,6 +269,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     @Internal
     protected open fun set(input: T) {
         storedValue = input
+        listener?.accept(this)
     }
 
     /**
