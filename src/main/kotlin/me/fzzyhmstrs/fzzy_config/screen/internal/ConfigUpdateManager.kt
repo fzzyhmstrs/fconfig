@@ -153,7 +153,18 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                 }
             }
             if (fireOnUpdate) {
-                config.onUpdateClient()
+                try {
+                    config.onUpdateClient()
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Error encountered while running `onUpdateClient` for config ${config.getId()}!")
+                    e.printStackTrace()
+                }
+                try {
+                    EventApiImpl.fireOnChangedClient(config.getId(), config)
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Error encountered while running `onUpdateClient` for config ${config.getId()}!")
+                    e.printStackTrace()
+                }
             }
         }
         if (clientActions.isNotEmpty()) {
