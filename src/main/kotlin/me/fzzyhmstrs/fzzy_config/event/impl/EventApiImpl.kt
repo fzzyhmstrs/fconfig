@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.event.api
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.event.api.*
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Identifier
 
 internal object EventApiImpl: EventApi {
 
@@ -28,13 +29,13 @@ internal object EventApiImpl: EventApi {
         onChangedServerListeners.add(listener)
     }
 
-    internal fun fireOnChangedClient(id: String, config: Config) {
+    internal fun fireOnChangedClient(id: Identifier, config: Config) {
         for (listener in onChangedClientListeners) {
             listener.onChanged(id, config)
         }
     }
 
-    internal fun fireOnChangedServer(id: String, config: Config, player: ServerPlayerEntity) {
+    internal fun fireOnChangedServer(id: Identifier, config: Config, player: ServerPlayerEntity) {
         for (listener in onChangedServerListeners) {
             listener.onChanged(id, config, player)
         }
