@@ -98,7 +98,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
     open fun update(deserializedVersion: Int) {}
 
     /**
-     * Runs on the logical client after an updated config is synced from the server. This occurs when the player is logging in and when datapacks are reloaded. This is distinct from [onChangedClient], which fires when _chnages_ are made to a config in-game, which are also synced. This is the initial sync of the entire config state.
+     * Runs on the logical client after a config is synced from the server. This occurs when the player is logging in and when datapacks are reloaded. This is distinct from [onUpdateClient], which fires when _changes_ are made to a config in-game, which are also synced. This is the initial sync of the entire config state.
      *
      * This should only perform client logic, and it is good practice to insulate client-only code by putting a method reference to a dedicated client-only class in this call.
      * @see onUpdateClient
@@ -106,9 +106,19 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @since 0.5.0
      */
     open fun onSyncClient(){}
-    
+
     /**
-     * Runs on the logical client after the config is updated. Typically this is when the user closes the config screen or applies changes, but also occurs after a connected client recieves a S2C update. This is distinct from [onSyncClient], which fires when the entire config state is synced on login/reload. This handles chnages made in-game.
+     * Runs on the logical server as  config is about to be synced to a client. This occurs when the player is logging in and when datapacks are reloaded. This is distinct from [onUpdateServer], which fires when _changes_ are made to a config in-game, which are also synced. This is the initial sync of the entire config state.
+     *
+     * This should only perform client logic, and it is good practice to insulate client-only code by putting a method reference to a dedicated client-only class in this call.
+     * @see onUpdateServer
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    open fun onSyncServer(){}
+
+    /**
+     * Runs on the logical client after the config is updated. Typically, this is when the user closes the config screen or applies changes, but also occurs after a connected client recieves a S2C update. This is distinct from [onSyncClient], which fires when the entire config state is synced on login/reload. This handles chnages made in-game.
      *
      * This should only perform client logic, and it is good practice to insulate client-only code by putting a method reference to a dedicated client-only class in this call.
      * @see onUpdateServer
@@ -118,7 +128,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
     open fun onUpdateClient(){}
 
     /**
-     * Runs on the logical server after an updated config is prepared for saving. Typically this will be after a config update is received from a connected client, and that update passes permission checks.
+     * Runs on the logical server after an updated config is prepared for saving. Typically, this will be after a config update is received from a connected client, and that update passes permission checks.
      *
      * Client-only code shouldn't be run here.
      * @param playerEntity [ServerPlayerEntity] - the player that provided the update.

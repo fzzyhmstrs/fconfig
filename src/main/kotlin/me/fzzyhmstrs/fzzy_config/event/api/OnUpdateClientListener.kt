@@ -14,21 +14,21 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import net.minecraft.util.Identifier
 
 /**
- * Listener for on-sync events on the client side. Will be fired for any and all updated configs, allowing inspection of other configs. For use in your own configs, consider directly implementing [Config.onSyncClient][me.fzzyhmstrs.fzzy_config.config.Config.onSyncClient]
+ * Listener for on-changed events on the client side. Will be fired for any and all updated configs, allowing inspection of other configs. For use in your own configs, consider directly implementing [Config.onUpdateClient][me.fzzyhmstrs.fzzy_config.config.Config.onUpdateClient]
  *
- * Register with [EventApi.onSyncClient][me.fzzyhmstrs.fzzy_config.event.api.EventApi.onSyncClient]
+ * Register with [EventApi.onUpdateClient][me.fzzyhmstrs.fzzy_config.event.api.EventApi.onUpdateClient]
  * @author fzzyhmstrs
  * @since 0.5.0
  */
 @FunctionalInterface
-fun interface OnSyncClientListener {
+fun interface OnUpdateClientListener {
 
     /**
-     * Called by the `onSyncClient` event when the client side of a config is synced. NOTE: Only called if a restart prompt is not created (so if the game state will continue into game).
+     * Called by the `onChangedClient` event when the client side of a config is changed.
      * @param id [Identifier] the registered id attached to the config instance.
      * @param config [Config] the config instance. This should only be read, or changes only made to transient fields/methods. Making updates to settings here will NOT be captured by the syncronization system.
      * @author fzzyhmstrs
      * @since 0.5.0
      */
-    fun onSync(id: Identifier, config: Config)
+    fun onChanged(id: Identifier, config: Config)
 }
