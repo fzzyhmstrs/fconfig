@@ -56,6 +56,11 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     private var updateManager: UpdateManager? = null
     private var listener: Consumer<ValidatedField<T>>? = null
 
+    open fun withListener(listener: Consumer<ValidatedField<T>>): ValidatedField<T> {
+        this.listener = listener
+        return this
+    }
+    
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun getUpdateManager(): UpdateManager? {
