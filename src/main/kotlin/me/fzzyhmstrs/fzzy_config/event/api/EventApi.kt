@@ -10,16 +10,10 @@
 
 package me.fzzyhmstrs.fzzy_config.event.api
 
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.network.RegistryByteBuf
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.packet.CustomPayload
-import net.minecraft.util.Identifier
-
 /**
- * API for multiloader abstraction of simple play-phase networking
+ * API for registration of config events
  * @author fzzyhmstrs
- * @since 0.4.1
+ * @since 0.5.0
  */
 interface EventApi {
 
