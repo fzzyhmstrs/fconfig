@@ -15,19 +15,19 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 
 /**
- * Listener for on-changed events on the server side. WIll be fired for any and all updated configs, allowing inspection of other configs. For use in your own configs, consider directly implmeenting [Config.onChangedServer][me.fzzyhmstrs.fzzy_config.config.Config.onChangedServer]
+ * Listener for on-changed events on the server side. Will be fired for any and all updated configs, allowing inspection of other configs. For use in your own configs, consider directly implementing [Config.onUpdateServer][me.fzzyhmstrs.fzzy_config.config.Config.onUpdateServer]
  *
- * Register with [EventApi.onChangedServer][me.fzzyhmstrs.fzzy_config.event.api.EventApi.onChangedServer]
+ * Register with [EventApi.onUpdateServer][me.fzzyhmstrs.fzzy_config.event.api.EventApi.onUpdateServer]
  * @author fzzyhmstrs
  * @since 0.5.0
  */
 @FunctionalInterface
-fun interface OnChangedServerListener {
+fun interface OnUpdateServerListener {
 
     /**
      * Called by the `onChangedServer` event when the server side of a config is changed.
      * @param id [Identifier] the registered id attached to the config instance.
-     * @param config [Config] the config instance. This should only be read, or changes only made to transient fields/methods. Making updates to settings here will NOT be captured by the syncronization system.
+     * @param config [Config] the config instance. This should only be read, or changes only made to transient fields/methods. Making updates to settings here will NOT be captured by the synchronization system.
      * @param player [ServerPlayerEntity] the player that sent the update to the server
      * @author fzzyhmstrs
      * @since 0.5.0

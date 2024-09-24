@@ -29,6 +29,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.Consumer
 import java.util.function.Function
 
 /**
@@ -56,11 +57,17 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     private var updateManager: UpdateManager? = null
     private var listener: Consumer<ValidatedField<T>>? = null
 
-    open fun withListener(listener: Consumer<ValidatedField<T>>): ValidatedField<T> {
+    /**
+     * Attaches a listener to this field. This listener will be called any time the field is written to ("set"). `accept`, `validateAndSet`, `setAndUpdate` and so on will all call the listener.
+     * @param listener [Consumer]&lt;ValidatedField&lt;[T]&gt;&gt; called whenever the field changes. This should, generally speaking, not try to further modify the fields state unless there is a method to prevent infinite recursion.
+     * @see withListener for an extension function that "passes through"
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    open fun addListener(listener: Consumer<ValidatedField<T>>) {
         this.listener = listener
-        return this
     }
-    
+
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun getUpdateManager(): UpdateManager? {
@@ -136,11 +143,19 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return updated
     }
 
+    /**
+     * Copies the stored value and returns it.
+     *
+     * In the default implementation, the value isn't actually copied; there is no way to copy in a generic fashion. Many subclasses of ValidatedField do truly make copies in varying levels of deep and shallow.
+     * @return [T] copied value instance
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
     open fun copyStoredValue(): T {
         return get()
     }
 
-    protected fun updateDefault(newDefault: T) {
+    private fun updateDefault(newDefault: T) {
         this.defaultValue = newDefault
     }
 
@@ -168,6 +183,16 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return ValidationResult.success(get())
     }
 
+    /**
+     * deserializes the fields stored value from TomlElement. This should not set the fields stored value, or interact with the field at all except to get the stored value for error reporting. [deserializeEntry] handles that.
+     *
+     * Any of the built-in validations can be used for inspiration and help in parsing Toml Elements or using ValidationResult.
+     * @param toml [TomlElement] element to deserialize from.
+     * @param fieldName String representation of the field name in the config, for error reporting
+     * @return [ValidationResult]&lt;[T]&gt; - result of the deserialization. If there is a problem, report a `ValidationResult.error`, using the fields current stored value, and the fieldName as relevant to the error message.
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
     abstract fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T>
 
     /**
@@ -191,6 +216,13 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         }
     }
 
+    /**
+     * Serializes the provided input to a [TomlElement]
+     * @param input [T] the value to serialize. This may not be the stored value, if this validation is being used as a parser for something else.
+     * @return [ValidationResult]&lt;[TomlElement]&gt; - the resulting TomlElement, or a [TomlNull][net.peanuuutz.tomlkt.TomlNull] along with an error message if there is a problem.
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
     abstract fun serialize(input: T): ValidationResult<TomlElement>
 
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
@@ -427,5 +459,22 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
                     DataResult.success(result)
             }
         )
+    }
+
+    companion object {
+
+        /**
+         * Attaches a listener to the receiver field. This listener will be called any time the field is written to ("set"). `accept`, `validateAndSet`, `setAndUpdate` and so on will all call the listener.
+         * @param [F] the subtype of [ValidatedField]
+         * @param listener [Consumer]&lt;[F]&gt; called whenever the field changes. This should, generally speaking, not try to further modify the fields state unless there is a method to prevent infinite recursion.
+         * @return [F] the receiver is passed through
+         * @author fzzyhmstrs
+         * @since 0.5.0
+         */
+        fun<T, F: ValidatedField<T>> F.withListener(listener: Consumer<F>): F {
+            @Suppress("UNCHECKED_CAST") //ok since Consumers type will be erased anyway, and the listener will always be provided with the receiver itself (F)
+            this.addListener(listener as Consumer<ValidatedField<T>>)
+            return this
+        }
     }
 }
