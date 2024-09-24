@@ -52,9 +52,9 @@ internal object ClientConfigRegistry {
             val result = ConfigApi.deserializeConfig(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
             val actions = result.get().getOrDefault(ACTIONS, setOf())
             result.writeError(errors)
-            result.get().config.save() //save config to the client
-            if (actions.any { it.restartPrompt }) {
-                MinecraftClient.getInstance().execute {
+            MinecraftClient.getInstance().execute {
+                result.get().config.save()//save config to the client
+                if (actions.any { it.restartPrompt }) {
                     val records = result.get().get(RESTART_RECORDS)
                     if (!records.isNullOrEmpty()) {
                         FC.LOGGER.info("Client prompted for a restart due to received config updates")
@@ -65,6 +65,19 @@ internal object ClientConfigRegistry {
                     }
                     disconnector.accept(FcText.translatable("fc.networking.restart"))
                     ConfigApiImpl.openRestartScreen()
+                } else {
+                    try {
+                        config.onSyncClient()
+                    } catch (e: Throwable) {
+                        FC.LOGGER.error("Error encountered with onSyncClient method of config $id!")
+                        e.printStackTrace()
+                    }
+                    try {
+                        EventApiImpl.fireOnSyncClient(result.get().config.getId(), result.get().config)
+                    } catch (e: Throwable) {
+                        FC.LOGGER.error("Error encountered while running onSyncClient event for config $id!")
+                        e.printStackTrace()
+                    }
                 }
             }
         }
@@ -110,9 +123,23 @@ internal object ClientConfigRegistry {
                 val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS)
                 val actions = result.get().getOrDefault(ACTIONS, setOf())
                 result.writeError(errors)
-                result.get().config.save()
-                for (action in actions) {
-                    player.sendMessage(action.clientPrompt)
+                MinecraftClient.getInstance().execute {
+                    result.get().config.save()
+                    for (action in actions) {
+                        player.sendMessage(action.clientPrompt)
+                    }
+                    try {
+                        config.onUpdateClient()
+                    } catch (e: Throwable) {
+                        FC.LOGGER.error("Error encountered with onUpdateClient method of config $id while receiving an update from the server!")
+                        e.printStackTrace()
+                    }
+                    try {
+                        EventApiImpl.fireOnChangedClient(result.get().config.getId(), result.get().config)
+                    } catch (e: Throwable) {
+                        FC.LOGGER.error("Error encountered while running onUpdateClient event for config $id while receiving an update from the server!")
+                        e.printStackTrace()
+                    }
                 }
             }
         }
