@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
+import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
@@ -26,7 +27,6 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -164,7 +164,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                     e.printStackTrace()
                 }
                 try {
-                    EventApiImpl.fireOnChangedClient(config.getId(), config)
+                    EventApiImpl.fireOnUpdateClient(config.getId(), config)
                 } catch (e: Throwable) {
                     FC.LOGGER.error("Error encountered while running `onUpdateClient` for config ${config.getId()}!")
                     e.printStackTrace()
