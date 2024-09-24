@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.withListener
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedEntityAttribute
@@ -34,20 +35,38 @@ import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.HoverEvent
 import net.minecraft.util.Identifier
 
 @RequiresRestart
 class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
 
+    override fun onUpdateClient() {
+        MinecraftClient.getInstance().debugHud.toggleDebugHud()
+    }
+
+    override fun onSyncClient() {
+        println("I ran a sync method!!")
+    }
+
+    override fun onSyncServer() {
+        println("I synced on the server :>")
+    }
+
+    override fun onUpdateServer(playerEntity: ServerPlayerEntity) {
+        println("Boo?")
+        playerEntity.sendMessage("BOO".lit())
+    }
+
     @WithCustomPerms([TEST_PERMISSION_BAD])
     var bl1 = true
     @Translation("test.prefix")
-    var bl2 = ValidatedBoolean()
+    var bl2 = ValidatedBoolean().withListener { blah -> if (blah.get()) println("Blah was set to true") else println("Blah was set to false") }
 
     @ValidatedInt.Restrict(0, 20)
     var int1 = 6
-    var int2 = ValidatedInt(6, 10, 1)
+    var int2 = ValidatedInt(6, 10, 1).also { it.addListener { i2 -> println(i2.get()) } }
 
     @RequiresAction(Action.RELOG)
     var mapDouble = ValidatedStringMap(mapOf("a" to 1.0), ValidatedString(), ValidatedDouble(1.0, 1.0, 0.0))
