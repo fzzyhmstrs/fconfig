@@ -17,9 +17,15 @@ import net.minecraft.util.Identifier
 
 internal object EventApiImpl: EventApi {
 
+    private val onSyncClientListeners: MutableList<OnChangedClientListener> = mutableListOf()
     private val onChangedClientListeners: MutableList<OnChangedClientListener> = mutableListOf()
-
     private val onChangedServerListeners: MutableList<OnChangedServerListener> = mutableListOf()
+
+    /////////////////////
+
+    override fun onSyncClient(listener: OnSyncClientListener) {
+        onSyncClientListeners.add(listener)
+    }
     
     override fun onChangedClient(listener: OnChangedClientListener) {
         onChangedClientListeners.add(listener)
@@ -29,6 +35,14 @@ internal object EventApiImpl: EventApi {
         onChangedServerListeners.add(listener)
     }
 
+    /////////////////////
+
+    internal fun fireOnSyncClient(id: Identifier, config: Config) {
+        for (listener in onSyncClientListeners) {
+            listener.onSync(id, config)
+        }
+    }
+    
     internal fun fireOnChangedClient(id: Identifier, config: Config) {
         for (listener in onChangedClientListeners) {
             listener.onChanged(id, config)
