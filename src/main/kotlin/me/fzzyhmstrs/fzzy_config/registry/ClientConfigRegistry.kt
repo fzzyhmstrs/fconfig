@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
+import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
@@ -136,7 +137,7 @@ internal object ClientConfigRegistry {
                         e.printStackTrace()
                     }
                     try {
-                        EventApiImpl.fireOnChangedClient(result.get().config.getId(), result.get().config)
+                        EventApiImpl.fireOnUpdateClient(result.get().config.getId(), result.get().config)
                     } catch (e: Throwable) {
                         FC.LOGGER.error("Error encountered while running onUpdateClient event for config $id while receiving an update from the server!")
                         e.printStackTrace()

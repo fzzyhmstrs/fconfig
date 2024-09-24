@@ -8,7 +8,7 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.event.api
+package me.fzzyhmstrs.fzzy_config.event.impl
 
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.event.api.*
@@ -17,22 +17,27 @@ import net.minecraft.util.Identifier
 
 internal object EventApiImpl: EventApi {
 
-    private val onSyncClientListeners: MutableList<OnChangedClientListener> = mutableListOf()
-    private val onChangedClientListeners: MutableList<OnChangedClientListener> = mutableListOf()
-    private val onChangedServerListeners: MutableList<OnChangedServerListener> = mutableListOf()
+    private val onSyncClientListeners: MutableList<OnSyncClientListener> = mutableListOf()
+    private val onSyncServerListeners: MutableList<OnSyncServerListener> = mutableListOf()
+    private val onUpdateClientListeners: MutableList<OnUpdateClientListener> = mutableListOf()
+    private val onUpdateServerListeners: MutableList<OnUpdateServerListener> = mutableListOf()
 
     /////////////////////
 
     override fun onSyncClient(listener: OnSyncClientListener) {
         onSyncClientListeners.add(listener)
     }
-    
-    override fun onChangedClient(listener: OnChangedClientListener) {
-        onChangedClientListeners.add(listener)
+
+    override fun onSyncServer(listener: OnSyncServerListener) {
+        onSyncServerListeners.add(listener)
     }
 
-    override fun onChangedServer(listener: OnChangedServerListener) {
-        onChangedServerListeners.add(listener)
+    override fun onUpdateClient(listener: OnUpdateClientListener) {
+        onUpdateClientListeners.add(listener)
+    }
+
+    override fun onUpdateServer(listener: OnUpdateServerListener) {
+        onUpdateServerListeners.add(listener)
     }
 
     /////////////////////
@@ -42,15 +47,21 @@ internal object EventApiImpl: EventApi {
             listener.onSync(id, config)
         }
     }
-    
-    internal fun fireOnChangedClient(id: Identifier, config: Config) {
-        for (listener in onChangedClientListeners) {
+
+    internal fun fireOnSyncServer(id: Identifier, config: Config) {
+        for (listener in onSyncServerListeners) {
+            listener.onSync(id, config)
+        }
+    }
+
+    internal fun fireOnUpdateClient(id: Identifier, config: Config) {
+        for (listener in onUpdateClientListeners) {
             listener.onChanged(id, config)
         }
     }
 
-    internal fun fireOnChangedServer(id: Identifier, config: Config, player: ServerPlayerEntity) {
-        for (listener in onChangedServerListeners) {
+    internal fun fireOnUpdateServer(id: Identifier, config: Config, player: ServerPlayerEntity) {
+        for (listener in onUpdateServerListeners) {
             listener.onChanged(id, config, player)
         }
     }
