@@ -24,7 +24,7 @@ import net.minecraftforge.network.simple.SimpleChannel
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Function
 
-object NetworkApiImpl: NetworkApi {
+internal object NetworkApiImpl: NetworkApi {
 
     override fun canSend(id: Identifier, playerEntity: PlayerEntity?): Boolean {
         return if (playerEntity is ServerPlayerEntity) {
