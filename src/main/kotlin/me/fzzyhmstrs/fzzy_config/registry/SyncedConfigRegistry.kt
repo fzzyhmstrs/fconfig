@@ -153,17 +153,19 @@ internal object SyncedConfigRegistry {
                 }
             }
             successfulUpdates[id] = configString
-            try {
-                config.onUpdateServer(serverPlayer)
-            } catch (e: Throwable) {
-                FC.LOGGER.error("Error encountered with onUpdateServer method of config $id!")
-                e.printStackTrace()
-            }
-            try {
-                EventApiImpl.fireOnChangedServer(config.getId(), config, serverPlayer)
-            } catch (e: Throwable) {
-                FC.LOGGER.error("Error encountered while running onUpdateServer event for config $id!")
-                e.printStackTrace()
+            server.execute {
+                try {
+                    config.onUpdateServer(serverPlayer)
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Error encountered with onUpdateServer method of config $id!")
+                    e.printStackTrace()
+                }
+                try {
+                    EventApiImpl.fireOnChangedServer(config.getId(), config, serverPlayer)
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Error encountered while running onUpdateServer event for config $id!")
+                    e.printStackTrace()
+                }
             }
         }
         if (!server.isSingleplayer) {
