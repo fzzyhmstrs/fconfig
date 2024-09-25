@@ -431,8 +431,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         fun <T> ofRegistry(registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
             return ValidatedIdentifier(Identifier("minecraft:air"),
                 AllowableIdentifiers(
-                    { id -> registry.containsId(id) && predicate.test((registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
-                    { registry.ids.filter { id -> predicate.test((registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
+                    { id -> registry.containsId(id) && predicate.test(if (!registry.containsId(id)) return@AllowableIdentifiers false else registry.getEntry(registry.get(id))) },
+                    { registry.ids.filter { id -> predicate.test (if (!registry.containsId(id)) return@filter false else registry.getEntry(registry.get(id))) } },
                     true
                 )
             )

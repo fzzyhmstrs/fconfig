@@ -25,7 +25,6 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallba
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.TitleScreen
@@ -62,7 +61,6 @@ internal object NetworkEventsClient {
         val payload = ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm)
         val buf = PacketByteBufs.create()
         payload.write(buf)
-        ClientPlayNetworking.send(payload.getId(), buf)
         ConfigApi.network().send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm), null)
     }
 
