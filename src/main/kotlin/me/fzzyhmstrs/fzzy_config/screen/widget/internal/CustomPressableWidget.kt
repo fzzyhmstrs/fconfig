@@ -66,9 +66,9 @@ abstract class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, me
 
     private companion object {
         private val TEXTURES: ButtonTextures = ButtonTextures(
-            Identifier.ofVanilla("widget/button"),
-            Identifier.ofVanilla("widget/button_disabled"),
-            Identifier.ofVanilla("widget/button_highlighted")
+            Identifier("widget/button"),
+            Identifier("widget/button_disabled"),
+            Identifier("widget/button_highlighted")
         )
     }
 }

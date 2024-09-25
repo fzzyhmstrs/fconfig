@@ -10,9 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
+import com.google.common.collect.Sets
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -21,7 +21,6 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ConfirmLinkScreen
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.MutableText
@@ -31,6 +30,7 @@ import net.minecraft.util.StringHelper
 import net.minecraft.util.Util
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.io.File
+import java.net.URI
 import java.net.URISyntaxException
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -168,7 +168,11 @@ class ConfigAction @JvmOverloads constructor(
                     }
 
                     try {
-                        val uRI = Util.validateUri(clickEvent.value)
+                        val uRI = URI(clickEvent.value)
+                        val string = uRI.scheme ?: throw URISyntaxException(clickEvent.value, "Missing protocol")
+                        if (!Sets.newHashSet("http", "https").contains(string.lowercase())) {
+                            throw URISyntaxException(clickEvent.value, "Unsupported protocol: " + string.lowercase())
+                        }
                         if (client.options.chatLinksPrompt.value) {
                             val screen = client.currentScreen
                             client.setScreen(ConfirmLinkScreen({ confirmed: Boolean ->
