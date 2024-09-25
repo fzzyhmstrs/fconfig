@@ -430,7 +430,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistry(registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
-            return ValidatedIdentifier(Identifier.of("minecraft:air"),
+            return ValidatedIdentifier(Identifier("minecraft:air"),
                 AllowableIdentifiers(
                     { id -> registry.containsId(id) && predicate.test((registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
                     { registry.ids.filter { id -> predicate.test((registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
@@ -622,7 +622,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
-                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.id }.toList() }
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.toList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
                 return ValidatedIdentifier(Identifier("c:dummy"), ids)
             }
@@ -650,7 +650,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
-                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.id }.filter(predicate).toList() }
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
                 return ValidatedIdentifier(Identifier("c:dummy"), ids)
             }
@@ -676,7 +676,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
-                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.id }.toList() }
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.toList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
                 return ValidatedIdentifier(default.id, ids)
             }
@@ -703,7 +703,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
-                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.id }.filter(predicate).toList() }
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
                 return ValidatedIdentifier(default.id, ids)
             }
