@@ -13,8 +13,10 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -216,8 +218,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, callback ->
             val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)
             if (action != null) actionMap[new] = mutableSetOf(action)
-            if(thing is ConfigSection) {
-
+            if (thing is ConfigSection) {
                 val fieldName = new.substringAfterLast('.')
                 val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
@@ -225,7 +226,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 index++
             } else if (thing is Updatable && thing is Entry<*, *>) {
                 val totalActions = action?.let { mutableSetOf(it) } ?: mutableSetOf()
-                if (thing is ValidatedAny<*>) {
+                if (thing is EntryParent) {
                     val anyActions = thing.actions()
                     if (anyActions.isNotEmpty()) {
                         totalActions.addAll(anyActions)
@@ -248,6 +249,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 } else {
                     functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
                 }
+                index++
+            } else if (thing is ConfigAction) {
+                val fieldName = new.substringAfterLast('.')
+                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
+                nameMap[new] = name
+                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, configActionEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), thing))
                 index++
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
@@ -438,6 +445,10 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     private fun configOpenEntryBuilder(name: Text, desc: Text, scope: String): Function<ConfigListWidget, BaseConfigEntry> {
         return Function { parent -> ConfigConfigEntry(name, desc, setOf(), parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) }) }
+    }
+
+    private fun configActionEntryBuilder(name: Text, desc: Text, actions: Set<Action>, entry: ConfigAction): Function<ConfigListWidget, BaseConfigEntry> {
+        return Function { parent -> BaseConfigEntry(name, desc, actions, parent, entry.widgetEntry()) }
     }
 
     /////////////////////////////

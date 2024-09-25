@@ -28,11 +28,24 @@ import java.util.function.Supplier
  * NOTE: Expectation is that the predicate and supplier are based on matching sets of information; someone in theory could use the suppliers information to predicate an input, and the predicate could be used on a theoretical "parent" dataset of identifiers to derive the same contents as the supplier. Behavior may be undefined if this isn't the case.
  * @param predicate Predicate&lt;Identifier&gt; - tests a candidate Identifier to see if it is allowable
  * @param supplier Supplier&lt;List&lt;Identifier&gt;&gt; - supplies all allowable identifiers in the form of a list. As typical with suppliers, it is not required but beneficial that the supplier provide a new list on each call
+ * @param cache Boolean that determines if [get] calls are cached. This can improve performance on high volume calls where the data doesn't change in the background (like Registries, once populated).
  * @see me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, added cache flag 0.5.0
  */
-class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private val supplier: Supplier<List<Identifier>>): EntryValidator<Identifier>, EntrySuggester<Identifier> {
+class AllowableIdentifiers @JvmOverloads constructor(
+    private val predicate: Predicate<Identifier>,
+    private val supplier: Supplier<List<Identifier>>,
+    private val cache: Boolean = false)
+    :
+    EntryValidator<Identifier>,
+    EntrySuggester<Identifier>
+{
+
+    private val cached by lazy {
+        supplier.get()
+    }
+
     /**
      * Test the provided Identifier vs. the predicate
      * @param identifier Identifier to test
@@ -43,14 +56,19 @@ class AllowableIdentifiers(private val predicate: Predicate<Identifier>, private
     fun test(identifier: Identifier): Boolean {
         return predicate.test(identifier)
     }
+
     /**
-     * Supplies the allowable identifier list
+     * Supplies the allowable identifier list. As of 0.5.0, can be set to pull a memoized (cached) value.
      * @return List<Identifier> - taken from the Supplier
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, added caching 0.5.0
      */
     fun get(): List<Identifier> {
-        return supplier.get()
+        return if(cache) {
+            cached
+        } else {
+            supplier.get()
+        }
     }
     /**
      * Returns Suggestions based on the allowable identifier list and a choice validator

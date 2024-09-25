@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
+import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -51,7 +52,7 @@ internal object SyncedConfigRegistry {
     }
 
     internal fun onConfigure(canSender: Predicate<CustomPayload.Id<*>>, sender: Consumer<CustomPayload>) {
-        if (!canSender.test(ConfigSyncS2CCustomPayload.type))
+        if (!canSender.test(ConfigSyncS2CCustomPayload.type)) return
         for ((id, config) in syncedConfigs) {
             val syncErrors = mutableListOf<String>()
             val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
@@ -60,6 +61,18 @@ internal object SyncedConfigRegistry {
                 syncError.writeError(syncErrors)
             }
             sender.accept(payload)
+            try {
+                config.onSyncServer()
+            } catch (e: Throwable) {
+                FC.LOGGER.error("Error encountered with login onSyncServer method of config $id!")
+                e.printStackTrace()
+            }
+            try {
+                EventApiImpl.fireOnSyncServer(config.getId(), config)
+            } catch (e: Throwable) {
+                FC.LOGGER.error("Error encountered while running login onSyncServer event for config $id!")
+                e.printStackTrace()
+            }
         }
     }
 
@@ -88,6 +101,18 @@ internal object SyncedConfigRegistry {
                 val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
                 val permsPayload = ConfigPermissionsS2CCustomPayload(id, perms)
                 sender.accept(player, permsPayload)
+                try {
+                    config.onSyncServer()
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Error encountered with reload onSyncServer method of config $id, for player $player!")
+                    e.printStackTrace()
+                }
+                try {
+                    EventApiImpl.fireOnSyncServer(config.getId(), config)
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Error encountered while running reload onSyncServer event for config $id, for player $player!")
+                    e.printStackTrace()
+                }
             }
         }
     }
@@ -148,6 +173,20 @@ internal object SyncedConfigRegistry {
                 }
             }
             successfulUpdates[id] = configString
+            server.execute {
+                try {
+                    config.onUpdateServer(serverPlayer)
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Error encountered with onUpdateServer method of config $id!")
+                    e.printStackTrace()
+                }
+                try {
+                    EventApiImpl.fireOnUpdateServer(config.getId(), config, serverPlayer)
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Error encountered while running onUpdateServer event for config $id!")
+                    e.printStackTrace()
+                }
+            }
         }
         if (!server.isSingleplayer) {
             for (player in serverPlayer.server.playerManager.playerList) {

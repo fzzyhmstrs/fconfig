@@ -24,7 +24,13 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi.saveManual
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.event.api.EventApi
+import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.networking.api.NetworkApi
+import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
+import me.fzzyhmstrs.fzzy_config.util.PlatformApi
+import me.fzzyhmstrs.fzzy_config.util.PlatformApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.peanuuutz.tomlkt.*
 import java.io.File
@@ -97,6 +103,36 @@ object ConfigApiJava {
      */
     fun openScreen(scope: String) {
         ConfigApiImpl.openScreen(scope)
+    }
+
+    /**
+     * Provides an instance of the [NetworkApi] for usage of the built-in cross-loader networking API
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    @JvmStatic
+    fun network(): NetworkApi {
+        return NetworkApiImpl
+    }
+
+    /**
+     * Provides an instance of the [PlatformApi] for usage of the built-in cross-loader utilities
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    @JvmStatic
+    fun platform(): PlatformApi {
+        return PlatformApiImpl
+    }
+
+    /**
+     * Provides an instance of the [EventApi] for registering to config events
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    @JvmStatic
+    fun event(): EventApi {
+        return EventApiImpl
     }
 
 }

@@ -10,8 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config.validation
 
+import com.mojang.serialization.Codec
+import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -20,11 +23,14 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * Validated Field Collection - serialization is indistinguishable from their wrapped values, but deserialized into a validated wrapper
@@ -40,7 +46,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @since 0.1.0
  */
 @Suppress("DeprecatedCallableAddReplaceWith")
-abstract class ValidatedField<T>(protected var storedValue: T, protected val defaultValue: T = storedValue):
+abstract class ValidatedField<T>(protected open var storedValue: T, protected var defaultValue: T = storedValue):
     Entry<T, ValidatedField<T>>,
     Updatable,
     Translatable
@@ -49,6 +55,18 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
     private var pushedValue: T? = null
     private var updateKey = ""
     private var updateManager: UpdateManager? = null
+    private var listener: Consumer<ValidatedField<T>>? = null
+
+    /**
+     * Attaches a listener to this field. This listener will be called any time the field is written to ("set"). `accept`, `validateAndSet`, `setAndUpdate` and so on will all call the listener.
+     * @param listener [Consumer]&lt;ValidatedField&lt;[T]&gt;&gt; called whenever the field changes. This should, generally speaking, not try to further modify the fields state unless there is a method to prevent infinite recursion.
+     * @see withListener for an extension function that "passes through"
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    open fun addListener(listener: Consumer<ValidatedField<T>>) {
+        this.listener = listener
+    }
 
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
@@ -125,8 +143,20 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         return updated
     }
 
+    /**
+     * Copies the stored value and returns it.
+     *
+     * In the default implementation, the value isn't actually copied; there is no way to copy in a generic fashion. Many subclasses of ValidatedField do truly make copies in varying levels of deep and shallow.
+     * @return [T] copied value instance
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
     open fun copyStoredValue(): T {
         return get()
+    }
+
+    private fun updateDefault(newDefault: T) {
+        this.defaultValue = newDefault
     }
 
     /**
@@ -153,6 +183,16 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         return ValidationResult.success(get())
     }
 
+    /**
+     * deserializes the fields stored value from TomlElement. This should not set the fields stored value, or interact with the field at all except to get the stored value for error reporting. [deserializeEntry] handles that.
+     *
+     * Any of the built-in validations can be used for inspiration and help in parsing Toml Elements or using ValidationResult.
+     * @param toml [TomlElement] element to deserialize from.
+     * @param fieldName String representation of the field name in the config, for error reporting
+     * @return [ValidationResult]&lt;[T]&gt; - result of the deserialization. If there is a problem, report a `ValidationResult.error`, using the fields current stored value, and the fieldName as relevant to the error message.
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
     abstract fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T>
 
     /**
@@ -176,6 +216,13 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         }
     }
 
+    /**
+     * Serializes the provided input to a [TomlElement]
+     * @param input [T] the value to serialize. This may not be the stored value, if this validation is being used as a parser for something else.
+     * @return [ValidationResult]&lt;[TomlElement]&gt; - the resulting TomlElement, or a [TomlNull][net.peanuuutz.tomlkt.TomlNull] along with an error message if there is a problem.
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
     abstract fun serialize(input: T): ValidationResult<TomlElement>
 
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
@@ -225,7 +272,7 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         try {
             @Suppress("UNCHECKED_CAST")
             setAndUpdate(input as T)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             //
         }
     }
@@ -246,9 +293,20 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
         return storedValue
     }
 
+    /**
+     * Provides this validations default value
+     * @return the default value
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun getDefault(): T {
+        return defaultValue
+    }
+
     @Internal
     protected open fun set(input: T) {
         storedValue = input
+        listener?.accept(this)
     }
 
     /**
@@ -321,5 +379,102 @@ abstract class ValidatedField<T>(protected var storedValue: T, protected val def
      */
     fun toSet(collection: Collection<T>): ValidatedList<T> {
         return ValidatedList(collection.toList(), this)
+    }
+
+    /**
+     * Maps this validation to a new convertible type. The default value will be applied from this delegates current storedValue
+     *
+     * The field will be internally managed by this validation as a delegate, so the serialization will take the form of this validation, the widget will be from this, and so on.
+     * @param N the new type to map to
+     * @param to [Function]&lt;T, [N]&gt; - maps values from this delegate into the new type
+     * @param from [Function]&lt;[N], T&gt; - maps values of the new type back into the type of this delegate
+     * @return ValidatedMapped&lt;[N]&gt; - A Mapped validation that provides and receives the new type with this as a delegate
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun <N> map(to: Function<T, out N>, from: Function<in N, T>): ValidatedField<N> {
+        return ValidatedMapped(this, to, from)
+    }
+
+    /**
+     * Maps this validation to a new convertible type.
+     *
+     * The field will be internally managed by this validation as a delegate, so the serialization will take the form of this validation, the widget will be from this, and so on.
+     * @param N the new type to map to
+     * @param defaultValue [N] - the default value of the new type
+     * @param to [Function]&lt;T, [N]&gt; - maps values from this delegate into the new type
+     * @param from [Function]&lt;[N], T&gt; - maps values of the new type back into the type of this delegate
+     * @return ValidatedMapped&lt;[N]&gt; - A Mapped validation that provides and receives the new type with this as a delegate
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun <N> map(defaultValue: N, to: Function<T, out N>, from: Function<in N, T>): ValidatedField<N> {
+        this.updateDefault(from.apply(defaultValue))
+        this.set(from.apply(defaultValue))
+        return  ValidatedMapped(this, to, from, defaultValue)
+    }
+
+    /**
+     * Maps this validation to a new convertible type.
+     *
+     * The field will be internally managed by this validation as a delegate, so the serialization will take the form of this validation, the widget will be from this, and so on.
+     * @param N the new type to map to
+     * @param to [Function]&lt;T, [N]&gt; - maps values from this delegate into the new type
+     * @param from [Function]&lt;[N], T&gt; - maps values of the new type back into the type of this delegate
+     * @param defaultValue [T] - the default value of this delegates type. Mapped to type [N] with [to]
+     * @return ValidatedMapped&lt;[N]&gt; - A Mapped validation that provides and receives the new type with this as a delegate
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun <N> map(to: Function<T, out N>, from: Function<in N, T>, defaultValue: T): ValidatedField<N> {
+        this.updateDefault(defaultValue)
+        this.set(defaultValue)
+        return ValidatedMapped(this, to, from, to.apply(defaultValue))
+    }
+
+    /**
+     * Provides a [Codec] representing the value type of this validation, backed by the validators within, as applicable
+     *
+     * So, for example, if you have a double with a validity range 0.0 to 1.0, this will de/serialize the double using the Codec, and enforce the valid range.
+     * @return [Codec]&lt;[T]&gt; - Codec of type T backed by this validation.
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun codec(): Codec<T> {
+        return Codec.STRING.flatXmap(
+            { str ->
+                val errors: MutableList<String> = mutableListOf()
+                val result = ConfigApiImpl.deserializeEntry(this.instanceEntry(), str, "Field Codec", errors, ConfigApiImpl.IGNORE_NON_SYNC)
+                if(result.isError())
+                    DataResult.error { "Deserialization failed: ${result.getError()}, with errors: $errors" }
+                else
+                    DataResult.success(result.get())
+            },
+            { t ->
+                val errors: MutableList<String> = mutableListOf()
+                val result = ConfigApiImpl.serializeEntry(this, errors, ConfigApiImpl.CHECK_NON_SYNC)
+                if(errors.isNotEmpty())
+                    DataResult.error { "Serialization failed with errors: $errors" }
+                else
+                    DataResult.success(result)
+            }
+        )
+    }
+
+    companion object {
+
+        /**
+         * Attaches a listener to the receiver field. This listener will be called any time the field is written to ("set"). `accept`, `validateAndSet`, `setAndUpdate` and so on will all call the listener.
+         * @param [F] the subtype of [ValidatedField]
+         * @param listener [Consumer]&lt;[F]&gt; called whenever the field changes. This should, generally speaking, not try to further modify the fields state unless there is a method to prevent infinite recursion.
+         * @return [F] the receiver is passed through
+         * @author fzzyhmstrs
+         * @since 0.5.0
+         */
+        fun<T, F: ValidatedField<T>> F.withListener(listener: Consumer<F>): F {
+            @Suppress("UNCHECKED_CAST") //ok since Consumers type will be erased anyway, and the listener will always be provided with the receiver itself (F)
+            this.addListener(listener as Consumer<ValidatedField<T>>)
+            return this
+        }
     }
 }

@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
@@ -39,6 +40,8 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.registry.BuiltinRegistries
+import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
@@ -57,6 +60,16 @@ internal object ConfigApiImpl {
 
     private val isClient by lazy {
         PlatformUtils.isClient()
+    }
+
+    private var wrapperLookup: WrapperLookup? = null
+
+    internal fun invalidateLookup() {
+        this.wrapperLookup = null
+    }
+
+    internal fun getWrapperLookup(): WrapperLookup {
+        return wrapperLookup ?: BuiltinRegistries.createWrapperLookup().also { wrapperLookup = it }
     }
 
     internal const val CHECK_NON_SYNC: Byte = 0
@@ -300,6 +313,7 @@ internal object ConfigApiImpl {
                 //get the actual [thing] from the property
                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 val propVal = prop.get(config)
+                if (propVal is ConfigAction) continue
                 //if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 //things name
                 val name = prop.name
@@ -409,6 +423,7 @@ internal object ConfigApiImpl {
                 if (prop !is KMutableProperty<*>) continue
                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 val propVal = prop.get(config)
+                if (propVal is ConfigAction) continue
                 val name = prop.name
                 val tomlElement = if (toml.containsKey(name)) {
                     toml[name]
@@ -572,7 +587,7 @@ internal object ConfigApiImpl {
         return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
     }
 
-    internal fun deserializeEntry(entry: Entry<*, *>, string: String, scope: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<*> {
+    internal fun <T> deserializeEntry(entry: Entry<T, *>, string: String, scope: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<out T?> {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e:Exception) {

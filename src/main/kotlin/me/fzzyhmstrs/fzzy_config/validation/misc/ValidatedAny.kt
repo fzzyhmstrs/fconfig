@@ -14,7 +14,9 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.annotations.IgnoreVisibility
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -59,7 +61,7 @@ import kotlin.reflect.jvm.javaConstructor
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue) {
+open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent {
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return ConfigApi.deserializeFromToml(storedValue, toml, mutableListOf()).contextualize()
@@ -159,6 +161,10 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                 manager.setUpdatableEntry(thing)
                 entryList.add(SettingConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry(), null, null, null))
 
+            } else if (thing is ConfigAction) {
+                val fieldName = new.substringAfterLast('.')
+                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
+                entryList.add(BaseConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry()))
             } else if (thing is Walkable) {
                 val validation = ValidatedAny(thing)
                 validation.setEntryKey(new)
@@ -197,7 +203,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         PopupWidget.push(popup)
     }
 
-    fun actions(): Set<Action> {
+    override fun actions(): Set<Action> {
         return ConfigApiImpl.getActions(storedValue, ConfigApiImpl.IGNORE_NON_SYNC)
     }
 
