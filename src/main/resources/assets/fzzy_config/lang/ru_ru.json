@@ -167,5 +167,9 @@
     "fc.button.info.click": "§o[Right Click]§r — Открывает контекстное меню, если это применимо.",
     "fc.button.info.click_kb": "§o[Shift + F10]§r — Открывает контекстное меню, если это применимо.",
     "fc.button.info.click_kb2": "§o[Context Menu Key]§r — Открывает контекстное меню, если это применимо.",
-    "fc.button.info.alert": "§o[!]§r - Настройки, помеченные иконкой в случае изменения требуют действия."
+    "fc.button.info.alert": "§o[!]§r - Настройки, помеченные иконкой в случае изменения требуют действия.",
+    "fc.button.click.open_url": "Открывает ссылку на %s",
+    "fc.button.click.open_file": "Открывает файл: %s",
+    "fc.button.click.run_command": "Запускает команду \"%s\"",
+    "fc.button.click.copy_to_clipboard": "Копирует \"%s\" в ваш буфер обмена"
 }
