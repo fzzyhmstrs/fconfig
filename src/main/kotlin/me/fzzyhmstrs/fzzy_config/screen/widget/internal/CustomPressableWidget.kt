@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
+import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -28,15 +29,17 @@ abstract class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, me
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val minecraftClient = MinecraftClient.getInstance()
+        context.setShaderColor(1.0f, 1.0f, 1.0f, this.alpha)
+        RenderSystem.enableBlend()
+        RenderSystem.enableDepthTest()
         context.drawGuiTexture(
-            RenderLayer::getGuiTextured,
             TEXTURES[active, this.isSelected],
             this.x,
             this.y,
             this.getWidth(),
-            this.getHeight(),
-            ColorHelper.getWhite(this.alpha)
+            this.getHeight()
         )
+        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
         val i = if (this.active) 16777215 else 10526880
         this.drawMessage(context, minecraftClient.textRenderer, i or (MathHelper.ceil(this.alpha * 255.0f) shl 24))
     }
