@@ -17,3 +17,4 @@
 ### Fixes
 * `ValidatedIdentifier` can now bind to dynamic registries using the `ofRegistryKey` initializer methods.
 * Fix syncing on login not working.
+* Fixed updates on client-only configs sometimes blasting the log with the full config contents.
