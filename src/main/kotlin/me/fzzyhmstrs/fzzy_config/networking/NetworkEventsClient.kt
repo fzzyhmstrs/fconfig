@@ -61,7 +61,6 @@ internal object NetworkEventsClient {
         val payload = ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm)
         val buf = PacketByteBufs.create()
         payload.write(buf)
-        ClientPlayNetworking.send(payload.getId(), buf)
         ConfigApi.network().send(ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm), null)
     }
 

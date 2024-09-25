@@ -13,12 +13,14 @@ package me.fzzyhmstrs.fzzy_config.config
 import com.google.common.collect.Sets
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
+import net.minecraft.SharedConstants
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ConfirmLinkScreen
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -26,7 +28,6 @@ import net.minecraft.text.ClickEvent
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.util.StringHelper
 import net.minecraft.util.Util
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.io.File
@@ -53,7 +54,7 @@ class ConfigAction @JvmOverloads constructor(
     private val pressAction: Runnable,
     private val decoration: Identifier,
     private val description: Text? = null,
-    private val background: Identifier? = null)
+    private val background: ActiveButtonWidget.Background? = null)
 :
     EntryWidget<Any>,
     Translatable
@@ -72,7 +73,7 @@ class ConfigAction @JvmOverloads constructor(
         private var titleSupplier: Supplier<Text> = Supplier { FcText.empty() }
         private var activeSupplier: Supplier<Boolean> = Supplier { true }
         private var desc: Text? = null
-        private var background: Identifier? = null
+        private var background: ActiveButtonWidget.Background? = null
         private var decoration: Identifier? = null
 
         /**
@@ -113,13 +114,13 @@ class ConfigAction @JvmOverloads constructor(
 
         /**
          * Sets a custom background for the button widget, which will appear when the button is selected and active
-         * @param id [Identifier] the background sprite id
+         * @param background [ActiveButtonWidget.Background] the background sprite id and padding
          * @return this builder
          * @author fzzyhmstrs
          * @since 0.5.0
          */
-        fun background(id: Identifier): Builder {
-            this.background = id
+        fun background(background: ActiveButtonWidget.Background): Builder {
+            this.background = background
             return this
         }
 
@@ -192,7 +193,7 @@ class ConfigAction @JvmOverloads constructor(
                 } else if (clickEvent.action == ClickEvent.Action.SUGGEST_COMMAND) {
                     FC.LOGGER.error("Can't suggest a command from a config action")
                 } else if (clickEvent.action == ClickEvent.Action.RUN_COMMAND) {
-                    val string = StringHelper.stripInvalidChars(clickEvent.value)
+                    val string = SharedConstants.stripInvalidChars(clickEvent.value)
                     if (string.startsWith("/")) {
                         if (client.player?.networkHandler?.sendCommand(string.substring(1)) != true) {
                             FC.LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", string)
