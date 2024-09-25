@@ -34,6 +34,7 @@ import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.util.Colors
+import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.Toml
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Supplier
@@ -108,6 +109,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         //push updates from basic validation to the configs
         val clientActions: MutableSet<Action> = mutableSetOf()
         val serverActions: MutableSet<Action> = mutableSetOf()
+        val updatedConfigs: MutableSet<Identifier> = mutableSetOf()
         for ((config, _, isClient) in configs) {
             var fireOnUpdate = false
             val globalAnnotations = config::class.annotations
@@ -153,16 +155,17 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                 }
             }
             if (fireOnUpdate) {
+                updatedConfigs.add(config.getId())
                 try {
                     config.onUpdateClient()
                 } catch (e: Throwable) {
-                    FC.LOGGER.error("Error encountered while running `onUpdateClient` for config ${config.getId()}!")
+                    FC.LOGGER.error("Error encountered while calling `onUpdateClient` for config ${config.getId()}!")
                     e.printStackTrace()
                 }
                 try {
                     EventApiImpl.fireOnUpdateClient(config.getId(), config)
                 } catch (e: Throwable) {
-                    FC.LOGGER.error("Error encountered while running `onUpdateClient` for config ${config.getId()}!")
+                    FC.LOGGER.error("Error encountered while running `onUpdateClient` event for config ${config.getId()}!")
                     e.printStackTrace()
                 }
             }
@@ -188,19 +191,19 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         }
         var count = 0
         for (config in configs) {
-            if (!config.clientOnly)
+            if (!config.clientOnly && updatedConfigs.contains(config.active.getId()))
                 count++
         }
         if (count > 0) {
             //send updates to the server for distribution and saving there
-            val updates = this.configs.filter { !it.clientOnly }.associate { it.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.active, this, mutableListOf()) }
+            val updates = this.configs.filter { !it.clientOnly && updatedConfigs.contains(it.active.getId()) }.associate { it.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.active, this, mutableListOf()) }
             if (updates.isNotEmpty()) {
                 NetworkEventsClient.updateServer(updates, flush(), perms)
             } else {
-                ConfigApiImpl.printChangeHistory(flush(), configs.map { it.active }.toString(), MinecraftClient.getInstance().player)
+                ConfigApiImpl.printChangeHistory(flush(), updatedConfigs.toString(), MinecraftClient.getInstance().player)
             }
         } else {
-            ConfigApiImpl.printChangeHistory(flush(), configs.map { it.active }.toString(), MinecraftClient.getInstance().player)
+            ConfigApiImpl.printChangeHistory(flush(), updatedConfigs.toString(), MinecraftClient.getInstance().player)
         }
         if (!final)
             pushUpdatableStates()
