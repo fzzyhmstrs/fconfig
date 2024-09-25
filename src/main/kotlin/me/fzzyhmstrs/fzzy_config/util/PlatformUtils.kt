@@ -39,11 +39,11 @@ internal object PlatformUtils {
     }
 
     fun gameDir(): File {
-        return FabricLoader.getInstance().gameDir.toFile()
+        return FMLPaths.GAMEDIR.get().toFile()
     }
 
     fun isModLoaded(mod: String): Boolean {
-        return FabricLoader.getInstance().isModLoaded(mod)
+        return ModList.get().isLoaded(mod)
     }
 
     fun configName(scope: String, fallback: String): String {
