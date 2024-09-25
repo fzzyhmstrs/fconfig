@@ -14,34 +14,43 @@ import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.ButtonTextures
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.KeyCodes
-import net.minecraft.client.render.RenderLayer
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 
 abstract class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message) {
 
     abstract fun onPress()
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val minecraftClient = MinecraftClient.getInstance()
         context.setShaderColor(1.0f, 1.0f, 1.0f, this.alpha)
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawGuiTexture(
-            TEXTURES[active, this.isSelected],
+        context.drawNineSlicedTexture(
+            WIDGETS_TEXTURE,
             this.x,
             this.y,
             this.getWidth(),
-            this.getHeight()
+            this.getHeight(), 20, 4, 200, 20, 0,
+            this.getTextureY()
         )
         context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
         val i = if (this.active) 16777215 else 10526880
         this.drawMessage(context, minecraftClient.textRenderer, i or (MathHelper.ceil(this.alpha * 255.0f) shl 24))
+    }
+
+    private fun getTextureY(): Int {
+        var i = 1
+        if (!this.active) {
+            i = 0
+        } else if (this.isSelected) {
+            i = 2
+        }
+
+        return 46 + i * 20
     }
 
     open fun drawMessage(context: DrawContext?, textRenderer: TextRenderer?, color: Int) {
@@ -62,13 +71,5 @@ abstract class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, me
         } else {
             return false
         }
-    }
-
-    private companion object {
-        private val TEXTURES: ButtonTextures = ButtonTextures(
-            Identifier("widget/button"),
-            Identifier("widget/button_disabled"),
-            Identifier("widget/button_highlighted")
-        )
     }
 }

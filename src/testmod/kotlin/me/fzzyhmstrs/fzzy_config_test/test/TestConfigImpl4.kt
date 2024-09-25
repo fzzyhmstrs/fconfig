@@ -43,7 +43,7 @@ import net.minecraft.util.Identifier
 class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
 
     override fun onUpdateClient() {
-        MinecraftClient.getInstance().debugHud.toggleDebugHud()
+        MinecraftClient.getInstance().options.debugEnabled = !MinecraftClient.getInstance().options.debugEnabled
     }
 
     override fun onSyncClient() {
