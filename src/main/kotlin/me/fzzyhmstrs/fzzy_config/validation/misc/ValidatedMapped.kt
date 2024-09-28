@@ -105,7 +105,7 @@ class ValidatedMapped<N, T> @JvmOverloads constructor(private val delegate: Vali
     }
 
     override fun instanceEntry(): ValidatedField<N> {
-        return this
+        return ValidatedMapped(delegate.instanceEntry(), to, from, defaultValue)
     }
 
     override fun correctEntry(input: N, type: EntryValidator.ValidationType): ValidationResult<N> {
