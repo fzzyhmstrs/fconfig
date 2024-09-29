@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config_test.test
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig
+import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig2
 
 object TestConfigClient {
 
@@ -24,4 +25,5 @@ object TestConfigClient {
     var testConfig3 = ConfigApi.registerAndLoadConfig({ TestConfigImpl3() }, RegisterType.CLIENT)
 
     var javaConfig = ConfigApi.registerAndLoadConfig({ JavaTestConfig() }, RegisterType.CLIENT)
+    var javaConfig2 = ConfigApi.registerAndLoadConfig({ JavaTestConfig2() }, RegisterType.CLIENT)
 }
