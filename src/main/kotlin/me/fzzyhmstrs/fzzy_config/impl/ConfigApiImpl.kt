@@ -300,13 +300,12 @@ internal object ConfigApiImpl {
             }
             val ignoreVisibility = isIgnoreVisibility(config::class) || ignoreVisibility(flags)
             //java fields are ordered in declared order, apparently not so for Kotlin properties. use these first to get ordering. skip Transient
-            val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
+            val fields = config::class.java.fields.filter { !isTransient(it.modifiers) }
             //generate an index map, so I can order the properties based on name
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             //kotlin member properties filtered by [field map contains it && if NonSync matters, it isn't NonSync]. NonSync does not matter by default
             for (prop in config.javaClass.kotlin.memberProperties.filter {
-                orderById.containsKey(it.name)
-                && if (ignoreNonSync(flags)) true else !isNonSync(it)
+                if (ignoreNonSync(flags)) true else !isNonSync(it)
                 && if(ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
             }.sortedBy { orderById[it.name] }) {
                 //has to be a public mutable property. private and protected and val another way to have serialization ignore
@@ -414,11 +413,10 @@ internal object ConfigApiImpl {
             val globalAction = getAction(config::class.annotations)
             val ignoreVisibility = isIgnoreVisibility(config::class) || ignoreVisibility(flags)
 
-            val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }
+            val fields = config::class.java.fields.filter { !isTransient(it.modifiers) }
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             for (prop in config.javaClass.kotlin.memberProperties.filter {
-                orderById.containsKey(it.name)
-                && if (ignoreNonSync(flags)) true else !isNonSync(it)
+                if (ignoreNonSync(flags)) true else !isNonSync(it)
                 && if(ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
             }.sortedBy { orderById[it.name] }) {
                 if (prop !is KMutableProperty<*>) continue
