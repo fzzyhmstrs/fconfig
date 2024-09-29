@@ -33,10 +33,14 @@ import net.minecraft.client.sound.SoundManager
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.Util
 import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
@@ -44,6 +48,10 @@ import kotlin.math.max
 import kotlin.math.min
 
 sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, protected val maxValue: T, protected val widgetType: WidgetType): ValidatedField<T>(defaultValue) where T: Number, T:Comparable<T> {
+
+    init {
+        if (minValue >= maxValue) throw IllegalStateException("Min value $minValue can't be >= Max value $maxValue")
+    }
 
     @Internal
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
@@ -128,12 +136,17 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     //client
     protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
-        ClickableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
+        ClickableWidget(0, 0, 110, 20, DECIMAL_FORMAT.format(wrappedValue.get()).lit()) {
         companion object {
             private val TEXTURE = Identifier("widget/slider")
             private val HIGHLIGHTED_TEXTURE = Identifier("widget/slider_highlighted")
             private val HANDLE_TEXTURE = Identifier("widget/slider_handle")
             private val HANDLE_HIGHLIGHTED_TEXTURE = Identifier("widget/slider_handle_highlighted")
+            private val DECIMAL_FORMAT: DecimalFormat = Util.make(
+                DecimalFormat("#.##")
+            ) { format: DecimalFormat ->
+                format.decimalFormatSymbols = DecimalFormatSymbols.getInstance(Locale.ROOT)
+            }
         }
 
         private fun split(range: Double): Double {
@@ -179,7 +192,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             if (cachedWrappedValue != testValue) {
                 this.value = testValue
                 cachedWrappedValue = testValue
-                this.message = this.value.toString().lit()
+                this.message = DECIMAL_FORMAT.format(this.value).lit()
             }
             this.confirmActive = isChanged() && isValid
             val minecraftClient = MinecraftClient.getInstance()
@@ -249,7 +262,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         private fun setValue(value: Double) {
             this.value = converter.apply(value)
-            this.message = this.value.toString().lit()
+            this.message = DECIMAL_FORMAT.format(this.value).lit()
         }
 
         override fun onClick(mouseX: Double, mouseY: Double) {

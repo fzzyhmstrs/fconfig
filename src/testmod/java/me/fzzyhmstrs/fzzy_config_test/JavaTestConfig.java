@@ -10,11 +10,20 @@
 
 package me.fzzyhmstrs.fzzy_config_test;
 
+import me.fzzyhmstrs.fzzy_config.annotations.TomlHeaderComment;
+import me.fzzyhmstrs.fzzy_config.annotations.Translation;
 import me.fzzyhmstrs.fzzy_config.config.Config;
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble;
 import net.minecraft.util.Identifier;
 
+import java.util.function.Supplier;
+
+@TomlHeaderComment(text = "goes here")
+@Translation(prefix = "java.prefix")
 public class JavaTestConfig extends Config {
+
+    public JavaTestConfig(Identifier id) {super(id, "test");}
+
     public JavaTestConfig() {
         super(new Identifier("fzzy_config_test", "java_config"), "test");
     }
