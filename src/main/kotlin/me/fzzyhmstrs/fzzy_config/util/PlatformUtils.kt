@@ -18,11 +18,15 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.api.EnvType
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.api.metadata.CustomValue
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.resource.ResourceType
+import net.minecraft.resource.SynchronousResourceReloader
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import java.io.File
@@ -71,6 +75,16 @@ internal object PlatformUtils {
     @JvmStatic
     fun createConfigFactoryProvider(): Map<String, BiFunction<Screen, ModContainer, Screen?>> {
         return ClientConfigRegistry.getScreenScopes().associateWith { scope -> BiFunction { _: Screen, _: ModContainer -> ClientConfigRegistry.provideScreen(scope) } }
+    }
+
+    fun registerClientReloadListener(listener: SynchronousResourceReloader) {
+        if (listener !is IdentifiableResourceReloadListener) throw IllegalStateException("Fabric reload listeners need to extend IdentifiableResourceReloadListener. See SimpleSynchronousResourceReloadListener.")
+        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(listener)
+    }
+
+    fun registerServerReloadListener(listener: SynchronousResourceReloader) {
+        if (listener !is IdentifiableResourceReloadListener) throw IllegalStateException("Fabric reload listeners need to extend IdentifiableResourceReloadListener. See SimpleSynchronousResourceReloadListener.")
+        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(listener)
     }
 
     fun registerCommands() {

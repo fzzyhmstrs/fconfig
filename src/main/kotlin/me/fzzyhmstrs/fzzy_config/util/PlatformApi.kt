@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import net.minecraft.resource.SynchronousResourceReloader
 import java.io.File
 
 /**
@@ -29,7 +30,7 @@ interface PlatformApi {
 
     /**
      * The config directory
-     * @return [File] respresenting the standard config directory inside the game folder.
+     * @return [File] representing the standard config directory inside the game folder.
      * @author fzzyhmstrs
      * @since 0.5.0
      */
@@ -50,4 +51,20 @@ interface PlatformApi {
      * @since 0.5.0
      */
     fun isModLoaded(mod: String): Boolean
+
+    /**
+     * Registers a reload listener to the client resource reload (assets)
+     * @param reloader [SynchronousResourceReloader] listener to register. On Fabric, this needs to implement [IdentifiableResourceReloadListener][net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun registerClientReloader(reloader: SynchronousResourceReloader)
+
+    /**
+     * Registers a reload listener to the server resource reload (data)
+     * @param reloader [SynchronousResourceReloader] listener to register. On Fabric, this needs to implement [IdentifiableResourceReloadListener][net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun registerServerReloader(reloader: SynchronousResourceReloader)
 }

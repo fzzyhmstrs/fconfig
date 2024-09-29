@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import net.minecraft.resource.SynchronousResourceReloader
 import java.io.File
 
 internal object PlatformApiImpl: PlatformApi {
@@ -28,5 +29,13 @@ internal object PlatformApiImpl: PlatformApi {
 
     override fun isModLoaded(mod: String): Boolean {
         return PlatformUtils.isModLoaded(mod)
+    }
+
+    override fun registerClientReloader(reloader: SynchronousResourceReloader) {
+        PlatformUtils.registerClientReloadListener(reloader)
+    }
+
+    override fun registerServerReloader(reloader: SynchronousResourceReloader) {
+        PlatformUtils.registerServerReloadListener(reloader)
     }
 }
