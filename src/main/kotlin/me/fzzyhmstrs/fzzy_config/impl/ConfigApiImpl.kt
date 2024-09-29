@@ -360,7 +360,7 @@ internal object ConfigApiImpl {
     private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): TomlTable where M: UpdateManager, M: BasicValidationProvider {
         val toml = TomlTableBuilder()
         try {
-            walk(config, config.getId().toTranslationKey(), flags) { _, _, str, v, prop, annotations, _ ->
+            walk(config, config.getId().toTranslationKey(), flags) { _, _, str, v, prop, annotations, _, _ ->
                 if(manager.hasUpdate(str)) {
                     if(v is EntrySerializer<*>) {
                         toml.element(str, v.serializeEntry(null, errorBuilder, flags))
@@ -529,7 +529,7 @@ internal object ConfigApiImpl {
                 errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
                 return ValidationResult.error(ConfigContext(config), "Improper TOML format passed to deserializeDirtyFromToml")
             }
-            walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, str, v, prop, annotations, _ -> toml[str]?.let {
+            walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, str, v, prop, annotations, _, _ -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
                     val action = requiredAction(prop.annotations, globalAction)
                     if(checkActions && v is Supplier<*> && action != null) {
@@ -597,7 +597,7 @@ internal object ConfigApiImpl {
     internal fun <T: Any> generatePermissionsReport(player: ServerPlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
         val map: MutableMap<String, Boolean> = mutableMapOf()
 
-        walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _ ->
+        walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _, _ ->
             annotations.firstOrNull { it is WithCustomPerms }?.cast<WithCustomPerms>()?.let {
                 for (group in it.perms) {
                     if (PlatformUtils.hasPermission(player, group)) {
@@ -626,7 +626,7 @@ internal object ConfigApiImpl {
         val playerPermLevel = getPlayerPermissionLevel(player)
 
         try {
-            walk(config, id, CHECK_NON_SYNC) { _, _, str, _, _, annotations, _ ->
+            walk(config, id, CHECK_NON_SYNC) { _, _, str, _, _, annotations, _, _ ->
                 if(toml.containsKey(str)) {
                     if(!hasNeededPermLevel(player, playerPermLevel, config, annotations)) {
                         list.add(str)
@@ -733,7 +733,7 @@ internal object ConfigApiImpl {
     internal fun getActions(thing: Any, flags: Byte): Set<Action> {
         val classAction = getAction(thing::class.annotations)
         val propActions: MutableSet<Action> = mutableSetOf()
-        walk(thing, "", flags) { _, _, _, _, _, annotations, _ ->
+        walk(thing, "", flags) { _, _, _, _, _, annotations, _, _ ->
             val action = requiredAction(annotations, classAction)
             if (action != null) {
                 propActions.add(action)
@@ -916,6 +916,7 @@ internal object ConfigApiImpl {
             }.withIndex().associate {
                 it.value.name to it.index
             }
+            val globalAnnotations = walkable::class.annotations
             val walkCallback = WalkCallback(walkable)
             for (property in walkable.javaClass.kotlin.memberProperties
                 .filter {
@@ -936,10 +937,13 @@ internal object ConfigApiImpl {
                         propVal,
                         property as KMutableProperty<*>,
                         property.annotations,
+                        globalAnnotations,
                         walkCallback
                     )
                     if (walkCallback.isCancelled())
                         break
+                    if (walkCallback.isContinued())
+                        continue
                     if (propVal is Walkable) {
                         val newFlags = if (ignoreVisibility) flags or IGNORE_VISIBILITY else flags
                         walk(propVal, newPrefix, newFlags, walkAction)
@@ -967,6 +971,7 @@ internal object ConfigApiImpl {
                         && (if (ignoreNonSync(flags)) true else !isNonSync(it))
                         && if (ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
             }.associateBy { it.name }
+            val globalAnnotations = walkable::class.annotations
             val callback = WalkCallback(walkable)
             val propTry = props[target]
             if (propTry != null) {
@@ -979,6 +984,7 @@ internal object ConfigApiImpl {
                         propVal,
                         propTry as KMutableProperty<*>,
                         propTry.annotations,
+                        globalAnnotations,
                         callback
                     )
                 } catch (e: Exception) {
@@ -1011,16 +1017,32 @@ internal object ConfigApiImpl {
     }
 
     internal fun interface WalkAction {
-        fun act(walkable: Any, oldPrefix: String, newPrefix: String, element: Any?, elementProp: KMutableProperty<*>, annotations: List<Annotation>, walkCallback: WalkCallback)
+        fun act(walkable: Any,
+                oldPrefix: String,
+                newPrefix: String,
+                element: Any?,
+                elementProp: KMutableProperty<*>,
+                annotations: List<Annotation>,
+                globalAnnotations: List<Annotation>,
+                walkCallback: WalkCallback)
     }
 
     internal class WalkCallback (val walkable: Any) {
         private var cancelled = false
+        private var continued = false
         fun isCancelled(): Boolean {
             return cancelled
         }
         fun cancel() {
             this.cancelled = true
+        }
+        fun isContinued(): Boolean {
+            val bl = continued
+            continued = false
+            return bl
+        }
+        fun cont() {
+            continued = true
         }
     }
 }
