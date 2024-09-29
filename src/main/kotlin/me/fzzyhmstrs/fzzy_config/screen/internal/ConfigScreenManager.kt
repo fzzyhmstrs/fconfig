@@ -42,6 +42,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
+import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
@@ -53,6 +54,7 @@ import net.minecraft.client.gui.widget.MultilineTextWidget
 import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.client.resource.language.I18n
 import net.minecraft.command.CommandSource
+import net.minecraft.resource.DefaultResourcePackBuilder.callback
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlComment
 import java.util.*
@@ -90,7 +92,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     internal fun receiveForwardedUpdate(update: String, player: UUID, scope: String, summary: String) {
         var entry: Entry<*, *>? = null
         for ((config, _, _) in configs) {
-            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, new, thing, _, _, callback ->
+            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, new, thing, _, _, _, callback ->
                 if (new == scope) {
                     if(thing is Entry<*, *>) {
                         entry = thing
@@ -216,8 +218,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         var index = 0
         val prefix = config.getId().toTranslationKey()
-        val globalAnnotations = config::class.annotations
-        ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, callback ->
+        ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
             val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)
             if (action != null) actionMap[new] = mutableSetOf(action)
             if (thing is ConfigSection) {
@@ -233,6 +234,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     if (anyActions.isNotEmpty()) {
                         totalActions.addAll(anyActions)
                         actionMap.computeIfAbsent(new) { mutableSetOf() }.addAll(anyActions)
+                    }
+                    if (thing is Walkable) {
+                        callback.cont()
                     }
                 }
                 val fieldName = new.substringAfterLast('.')
@@ -261,7 +265,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("$prefix.")
-                ConfigApiImpl.drill(baseConfig, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _ ->
+                ConfigApiImpl.drill(baseConfig, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
                     basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
                 }
                 val basicValidation2 = basicValidation
