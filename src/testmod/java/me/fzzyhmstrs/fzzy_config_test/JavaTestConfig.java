@@ -10,9 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config_test;
 
-import me.fzzyhmstrs.fzzy_config.annotations.Comment;
 import me.fzzyhmstrs.fzzy_config.annotations.TomlHeaderComment;
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi;
+import me.fzzyhmstrs.fzzy_config.annotations.Translation;
 import me.fzzyhmstrs.fzzy_config.config.Config;
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable;
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble;
@@ -22,10 +21,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Supplier;
 
 @TomlHeaderComment(text = "goes here")
+@Translation(prefix = "java.prefix")
 public class JavaTestConfig extends Config {
 
+    public JavaTestConfig(Identifier id) {super(id, "test");}
+
     public JavaTestConfig() {
-        super(Identifier.of("fzzy_config_test","java_config"),"test");
+        super(Identifier.of("fzzy_config_test","java_config"), "test");
     }
 
     public int anInt = 4;
