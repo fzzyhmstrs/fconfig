@@ -116,8 +116,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         val updatedConfigs: MutableSet<Identifier> = mutableSetOf()
         for ((config, _, isClient) in configs) {
             var fireOnUpdate = false
-            val globalAnnotations = config::class.annotations
-            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { walkable, _, new, thing, prop, annotations, _ ->
+            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { walkable, _, new, thing, prop, annotations, globalAnnotations, _ ->
                 if (!(thing is Updatable && thing is Entry<*, *>)) {
                     val update = getUpdate(new)
                     if (update != null && update is Supplier<*>) {
