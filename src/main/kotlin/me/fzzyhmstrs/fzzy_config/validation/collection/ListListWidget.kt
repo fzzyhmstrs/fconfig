@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.theme.ThemeKeys
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
@@ -28,7 +29,7 @@ import java.util.function.Function
 //client
 internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>>, entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, entryValidator: BiFunction<ListListWidget<T>, ListEntry<T>?, ChoiceValidator<T>>)
     :
-    ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0, 22), SuggestionWindowListener {
+    ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), ThemeKeys.WIDGET_LIST_WIDTH.provideConfig() + 40, 160, 0, 22), SuggestionWindowListener {
 
     fun getRawList(skip: ListEntry<T>? = null): List<T> {
         val list: MutableList<T> = mutableListOf()
@@ -64,7 +65,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     }
 
     override fun getRowWidth(): Int {
-        return 134 //16 padding, 20 slider width and padding
+        return ThemeKeys.WIDGET_LIST_WIDTH.provideConfig() + 24 //16 padding, 20 slider width and padding
     }
 
     override fun getScrollbarX(): Int {
@@ -101,7 +102,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
 
         private var clickedWidget: Element? = null
 
-        private val entryWidget = entry.widgetAndTooltipEntry(validator.apply(parent, this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
+        private val entryWidget = entry.widgetAndTooltipEntry(validator.apply(parent, this)).also {  it.width = ThemeKeys.WIDGET_LIST_WIDTH.provideConfig(); if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val deleteWidget = TextlessActionWidget(
             TextureIds.DELETE,
             TextureIds.DELETE_INACTIVE,
@@ -110,7 +111,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             TextureIds.DELETE_LANG,
             { true },
             { parent.children().let { list ->
-                list.indexOf(this).takeIf { i -> i >=0 && i<list.size }?.let {
+                list.indexOf(this).takeIf { i -> i >= 0 && i<list.size }?.let {
                         i -> list.removeAt(i)
                 }
             } })
@@ -153,7 +154,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         ) {
             entryWidget.setPosition(x, y)
             entryWidget.render(context, mouseX, mouseY, tickDelta)
-            deleteWidget.setPosition(x+114, y)
+            deleteWidget.setPosition(x + ThemeKeys.WIDGET_LIST_WIDTH.provideConfig() + 4, y)
             deleteWidget.render(context, mouseX, mouseY, tickDelta)
         }
     }
@@ -194,7 +195,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             hovered: Boolean,
             tickDelta: Float
         ) {
-            addWidget.setPosition(x+114, y)
+            addWidget.setPosition(x + ThemeKeys.WIDGET_LIST_WIDTH.provideConfig() + 4, y)
             addWidget.render(context, mouseX, mouseY, tickDelta)
         }
     }

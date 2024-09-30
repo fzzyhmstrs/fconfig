@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.ClickableTextWidget
@@ -20,6 +21,8 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
+import me.fzzyhmstrs.fzzy_config.theme.ThemeKeys
+import me.fzzyhmstrs.fzzy_config.theme.impl.ThemeApiImpl
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -65,6 +68,11 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         this.client?.setScreen(parent)
     }
 
+    override fun removed() {
+        super.removed()
+        ThemeApiImpl.removeConfigScreen(scope)
+    }
+
     private fun shiftClose() {
         val p = this.parent
         if(p is ConfigScreen) {
@@ -79,19 +87,26 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
 
     override fun init() {
         super.init()
+        ThemeApiImpl.addConfigScreen(scope)
         initHeader()
         initFooter()
         initBody()
         initTabNavigation()
     }
     private fun initHeader() {
-        val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
+        val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2)) { positioner ->
+            when (ThemeKeys.HEADER_ALIGNMENT.provideConfig()) {
+                PopupWidget.Builder.PositionGlobalAlignment.ALIGN_LEFT -> positioner.alignLeft().marginLeft(8)
+                PopupWidget.Builder.PositionGlobalAlignment.ALIGN_RIGHT -> positioner.alignRight().marginRight(8)
+                else -> positioner.alignHorizontalCenter()
+            }
+        }
+
         for (scopeButton in parentScopesButtons) {
             directionalLayoutWidget.add(scopeButton.apply(this))
             directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(" > ".lit()), 20, " > ".lit(), this.textRenderer))
         }
         directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(this.title), 20, this.title, this.textRenderer))
-
     }
     private fun initBody() {
         this.addDrawableChild(configList)
@@ -101,7 +116,13 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         configList.scrollAmount = 0.0
     }
     private fun initFooter() {
-        val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
+        val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8)) { positioner ->
+            when (ThemeKeys.FOOTER_ALIGNMENT.provideConfig()) {
+                PopupWidget.Builder.PositionGlobalAlignment.ALIGN_LEFT -> positioner.alignLeft().marginLeft(8)
+                PopupWidget.Builder.PositionGlobalAlignment.ALIGN_RIGHT -> positioner.alignRight().marginRight(8)
+                else -> positioner.alignHorizontalCenter()
+            }
+        }
         //info button
         directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar

@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
+import com.mojang.serialization.Codec
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
@@ -33,6 +34,7 @@ import net.minecraft.client.gui.widget.*
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.StringIdentifiable
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
@@ -1057,42 +1059,50 @@ class PopupWidget
         }
 
         //client
-        enum class PositionGlobalAlignment: PositionAlignment {
+        enum class PositionGlobalAlignment(private val str: String): PositionAlignment, StringIdentifiable {
             @Deprecated("Use Positions Impl values")
-            ALIGN_LEFT {
+            ALIGN_LEFT("left") {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                     return Pair(RelPos(globalSet.x), prevY)
                 }
             },
             @Deprecated("Use Positions Impl values")
-            ALIGN_RIGHT {
+            ALIGN_RIGHT("right") {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                     return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
                 }
             },
             @Deprecated("Use Positions Impl values")
-            ALIGN_CENTER {
+            ALIGN_CENTER("center") {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                     return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
                 }
             },
             @Deprecated("Use Positions Impl values")
-            ALIGN_JUSTIFY {
+            ALIGN_JUSTIFY("justify") {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                     return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
                 }
             },
             @Deprecated("Use Positions Impl values")
-            ALIGN_LEFT_AND_JUSTIFY {
+            ALIGN_LEFT_AND_JUSTIFY("left_justify") {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                     return Pair(RelPos(globalSet.x), prevY)
                 }
             },
             @Deprecated("Use Positions Impl values")
-            ALIGN_RIGHT_AND_JUSTIFY {
+            ALIGN_RIGHT_AND_JUSTIFY("right_justify") {
                 override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                     return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
                 }
+            };
+
+            override fun asString(): String {
+                return str
+            }
+
+            companion object {
+                val CODEC: Codec<PositionGlobalAlignment> = StringIdentifiable.createCodec { PositionGlobalAlignment.entries.toTypedArray() }
             }
         }
 

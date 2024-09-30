@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.theme.ThemeKeys
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
@@ -108,8 +109,8 @@ internal class MapListWidget<K, V>(
 
         private var clickedWidget: Element? = null
 
-        private val keyWidget = key.widgetAndTooltipEntry(keyValidator.apply(parent, this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
-        private val valueWidget = value.widgetAndTooltipEntry(ChoiceValidator.any()).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
+        private val keyWidget = key.widgetAndTooltipEntry(keyValidator.apply(parent, this)).also { it.width = ThemeKeys.WIDGET_MAP_KEY_WIDTH.provideConfig(); if (it is SuggestionWindowProvider) it.addListener(parent) }
+        private val valueWidget = value.widgetAndTooltipEntry(ChoiceValidator.any()).also { it.width = ThemeKeys.WIDGET_MAP_VALUE_WIDTH.provideConfig(); if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val deleteWidget = TextlessActionWidget(
             TextureIds.DELETE,
             TextureIds.DELETE_INACTIVE,
@@ -161,7 +162,7 @@ internal class MapListWidget<K, V>(
         ) {
             keyWidget.setPosition(x, y)
             keyWidget.render(context, mouseX, mouseY, tickDelta)
-            context.drawTextWithShadow(parent.client.textRenderer, TextureIds.MAP_ARROW, x + 115, y + 5, Colors.WHITE)
+            context.drawTextWithShadow(parent.client.textRenderer, TextureIds.MAP_ARROW, x + ThemeKeys.WIDGET_MAP_KEY_WIDTH.provideConfig() + 15, y + 5, Colors.WHITE)
             valueWidget.setPosition(x+124, y)
             valueWidget.render(context, mouseX, mouseY, tickDelta)
             deleteWidget.setPosition(x+238, y)

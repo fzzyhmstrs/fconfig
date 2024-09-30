@@ -10,11 +10,14 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.theme.ThemeKeys
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -99,7 +102,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
     }
 
     override fun getRowWidth(): Int {
-        return 260
+        return ThemeKeys.LIST_ROW_WIDTH.provideConfig()
     }
 
     override fun position(width: Int, height: Int, y: Int) {
@@ -117,7 +120,11 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
     }
 
     public override fun getScrollbarX(): Int {
-        return super.getScrollbarX()
+        return when(ConfigApi.theme().provide(ThemeKeys.CONFIG_STACK, ThemeKeys.LIST_ALIGNMENT)) {
+            PopupWidget.Builder.PositionGlobalAlignment.ALIGN_LEFT -> x + 2 + rowWidth
+            PopupWidget.Builder.PositionGlobalAlignment.ALIGN_RIGHT -> x + width - 2
+            else -> super.getScrollbarX()
+        }
     }
 
     override fun isSelectButton(button: Int): Boolean {
@@ -161,4 +168,11 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         super.appendNarrations(builder, entry)
     }
 
+    override fun getRowLeft(): Int {
+        return when(ConfigApi.theme().provide(ThemeKeys.CONFIG_STACK, ThemeKeys.LIST_ALIGNMENT)) {
+            PopupWidget.Builder.PositionGlobalAlignment.ALIGN_LEFT -> x + 10
+            PopupWidget.Builder.PositionGlobalAlignment.ALIGN_RIGHT -> x + width - 10 - rowWidth
+            else -> super.getRowLeft()
+        }
+    }
 }
