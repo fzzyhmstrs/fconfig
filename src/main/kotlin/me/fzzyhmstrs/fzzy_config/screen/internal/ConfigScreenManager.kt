@@ -193,7 +193,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val actionMap: MutableMap<String, MutableSet<Action>> = mutableMapOf()
         nameMap[scope] = PlatformUtils.configName(this.scope, "Config Root").lit()
         for ((i, config) in configs.withIndex()) {
-            functionMap.computeIfAbsent(scope) { sortedMapOf()}[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(config.active.translation(), config.active.description(), config.active.getId().toTranslationKey()))
+            functionMap.computeIfAbsent(scope) { sortedMapOf() }[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(ConfigApiImplClient.getTranslation(config.active, "", config.active::class.annotations, listOf(), config.active::class.java.simpleName), ConfigApiImplClient.getDescription(config.active, "", config.active::class.annotations, listOf()), config.active.getId().toTranslationKey()))
             walkConfig(config, functionMap, nameMap, actionMap, if(config.clientOnly) 4 else playerPermLevel)
             //walkBasicValues(config.base, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
         }
@@ -212,7 +212,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val baseConfig: Config = set.base
         val defaultPermLevel = config.defaultPermLevel()
         //putting the config buttons themselves, in the base scope. ex: "my_mod"
-        nameMap[config.getId().toTranslationKey()] = config.transLit(config::class.java.simpleName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+        nameMap[config.getId().toTranslationKey()] = ConfigApiImplClient.getTranslation(config, "", config::class.annotations, listOf(), config::class.java.simpleName) //config.transLit(config::class.java.simpleName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         var index = 0
         val prefix = config.getId().toTranslationKey()
