@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
+import me.fzzyhmstrs.fzzy_config.theme.ThemeKeys
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -77,6 +78,8 @@ internal object NetworkEventsClient {
     }
 
     fun registerClient() {
+
+        ThemeKeys.init()
 
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             registerClientCommands(dispatcher)
