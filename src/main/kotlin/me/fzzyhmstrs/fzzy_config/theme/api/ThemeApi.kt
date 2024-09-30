@@ -16,9 +16,17 @@ import net.minecraft.util.Identifier
 
 interface ThemeApi {
 
+    fun registerConfigThemes(id: Identifier, vararg themeId: Identifier)
+
+    fun registerConfigThemes(scope: String, vararg themeId: Identifier)
+
     fun pushTheme(themeStack: Identifier, themeId: Identifier)
 
     fun popTheme(themeStack: Identifier)
+
+    fun addThemes(themeStack: Identifier, vararg themeId: Identifier)
+
+    fun removeThemes(themeStack: Identifier, vararg themeId: Identifier)
 
     fun <T: Any> provide(themeStack: Identifier, key: ThemeKey<T>): T
 

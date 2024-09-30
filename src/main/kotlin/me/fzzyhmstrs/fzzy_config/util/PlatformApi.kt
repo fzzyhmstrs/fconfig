@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import net.minecraft.resource.SynchronousResourceReloader
+import net.minecraft.util.Identifier
 import java.io.File
 
 /**
@@ -58,7 +59,7 @@ interface PlatformApi {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun registerClientReloader(reloader: SynchronousResourceReloader)
+    fun registerClientReloader(id: Identifier, reloader: SynchronousResourceReloader)
 
     /**
      * Registers a reload listener to the server resource reload (data)
@@ -66,5 +67,5 @@ interface PlatformApi {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun registerServerReloader(reloader: SynchronousResourceReloader)
+    fun registerServerReloader(id: Identifier, reloader: SynchronousResourceReloader)
 }

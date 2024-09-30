@@ -24,6 +24,8 @@ import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.api.NetworkApi
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
+import me.fzzyhmstrs.fzzy_config.theme.api.ThemeApi
+import me.fzzyhmstrs.fzzy_config.theme.impl.ThemeApiImpl
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.PlatformApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -397,6 +399,16 @@ object ConfigApi {
     @JvmStatic
     fun event(): EventApi {
         return EventApiImpl
+    }
+
+    /**
+     * Provides an instance of the [ThemeApi] for registering to config events
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    @JvmStatic
+    fun theme(): ThemeApi {
+        return ThemeApiImpl
     }
 
 }

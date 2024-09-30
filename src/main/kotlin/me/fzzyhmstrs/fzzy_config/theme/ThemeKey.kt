@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.theme
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap
+import me.fzzyhmstrs.fzzy_config.theme.impl.ThemeApiImpl
 import net.minecraft.util.Identifier
 
 class ThemeKey<T: Any> private constructor(private val id: Identifier, private val codec: Codec<T>, private val default: T) {
@@ -23,6 +24,14 @@ class ThemeKey<T: Any> private constructor(private val id: Identifier, private v
 
     fun provideDefault(): T {
         return default
+    }
+
+    fun provideFrom(stackId: Identifier): T {
+        return ThemeApiImpl.provide(stackId, this)
+    }
+
+    fun provideConfig(): T {
+        return ThemeApiImpl.provide(ThemeKeys.CONFIG_STACK, this)
     }
 
     internal companion object {

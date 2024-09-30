@@ -20,15 +20,18 @@ import net.fabricmc.api.EnvType
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper
+import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.api.metadata.CustomValue
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.resource.ResourceManager
 import net.minecraft.resource.ResourceType
 import net.minecraft.resource.SynchronousResourceReloader
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.util.Identifier
 import java.io.File
 import java.util.function.BiFunction
 
@@ -77,14 +80,40 @@ internal object PlatformUtils {
         return ClientConfigRegistry.getScreenScopes().associateWith { scope -> BiFunction { _: Screen, _: ModContainer -> ClientConfigRegistry.provideScreen(scope) } }
     }
 
-    fun registerClientReloadListener(listener: SynchronousResourceReloader) {
-        if (listener !is IdentifiableResourceReloadListener) throw IllegalStateException("Fabric reload listeners need to extend IdentifiableResourceReloadListener. See SimpleSynchronousResourceReloadListener.")
-        ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(listener)
+    fun registerClientReloadListener(id: Identifier, listener: SynchronousResourceReloader) {
+        if (listener !is IdentifiableResourceReloadListener) {
+            ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(object: SimpleSynchronousResourceReloadListener {
+
+                override fun reload(manager: ResourceManager?) {
+                    listener.reload(manager)
+                }
+
+                override fun getFabricId(): Identifier {
+                    return id
+                }
+
+            })
+        } else {
+            ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(listener)
+        }
     }
 
-    fun registerServerReloadListener(listener: SynchronousResourceReloader) {
-        if (listener !is IdentifiableResourceReloadListener) throw IllegalStateException("Fabric reload listeners need to extend IdentifiableResourceReloadListener. See SimpleSynchronousResourceReloadListener.")
-        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(listener)
+    fun registerServerReloadListener(id: Identifier, listener: SynchronousResourceReloader) {
+        if (listener !is IdentifiableResourceReloadListener) {
+            ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(object: SimpleSynchronousResourceReloadListener {
+
+                override fun reload(manager: ResourceManager?) {
+                    listener.reload(manager)
+                }
+
+                override fun getFabricId(): Identifier {
+                    return id
+                }
+
+            })
+        } else {
+            ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(listener)
+        }
     }
 
     fun registerCommands() {
