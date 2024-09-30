@@ -40,6 +40,7 @@
   "test.prefix.bl2" : "Test Boolean Translation",
   "test.prefix.bl2.desc" : "Test Boolean Translation Description",
 
+  "java.prefix" : "Java Config (Translated)",
   "java.prefix.anInt" : "Class-Translated Int",
   "java.prefix.aBoolean" : "Class-Translated Boolean",
   "java.prefix.validatedDouble" : "Translated Val. Double"
