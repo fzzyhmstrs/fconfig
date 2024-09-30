@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": {
+    "fzzy_config:slider_handle": "fzzy_config_test:widget/slider_handle",
+    "fzzy_config:slider_handle_highlighted": "fzzy_config_test:widget/slider_handle_highlighted",
+    "fzzy_config:widget_width": 150,
+    "fzzy_config:widget_list_width": 60,
+    "fzzy_config:list_alignment": "left",
+    "fzzy_config:header_alignment": "left",
+    "fzzy_config:footer_alignment": "left",
+    "fzzy_config:list_row_width": 320
+  }
+}

@@ -56,6 +56,8 @@ class TestConfigImpl3: Config(Identifier.of("fzzy_config_test","test_config3")) 
     @RequiresRestart
     private var int2 = ValidatedInt(6, 10, 1)
 
+    private var intList = ValidatedInt(1, 10, 0).toList(1, 3, 5, 7)
+
     /*
     {
       "bl1": false,

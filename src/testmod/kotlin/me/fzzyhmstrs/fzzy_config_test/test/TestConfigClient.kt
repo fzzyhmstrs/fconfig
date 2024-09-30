@@ -14,6 +14,8 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig
 import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig2
+import net.minecraft.util.Identifier
+import java.io.ObjectInputFilter.Config
 
 object TestConfigClient {
 
@@ -26,4 +28,8 @@ object TestConfigClient {
 
     var javaConfig = ConfigApi.registerAndLoadConfig({ JavaTestConfig() }, RegisterType.CLIENT)
     var javaConfig2 = ConfigApi.registerAndLoadConfig({ JavaTestConfig2() }, RegisterType.CLIENT)
+
+    init {
+        ConfigApi.theme().registerConfigThemes(testConfig3.getId(), Identifier.of("fzzy_config_test", "test_theme"))
+    }
 }
