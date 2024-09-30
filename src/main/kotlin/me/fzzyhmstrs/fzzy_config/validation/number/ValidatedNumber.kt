@@ -11,8 +11,10 @@
 package me.fzzyhmstrs.fzzy_config.validation.number
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
+import me.fzzyhmstrs.fzzy_config.theme.ThemeKeys
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -139,13 +141,10 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     //client
     protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
         ClickableWidget(0, 0, 110, 20, DECIMAL_FORMAT.format(wrappedValue.get()).lit()) {
-        companion object {
-            private val TEXTURE = Identifier.of("widget/slider")
-            private val HIGHLIGHTED_TEXTURE = Identifier.of("widget/slider_highlighted")
-            private val HANDLE_TEXTURE = Identifier.of("widget/slider_handle")
-            private val HANDLE_HIGHLIGHTED_TEXTURE = Identifier.of("widget/slider_handle_highlighted")
+
+            companion object {
             private val DECIMAL_FORMAT: DecimalFormat = Util.make(
-                DecimalFormat("#.##")
+                DecimalFormat(ThemeKeys.NUMBER_DECIMAL_FORMAT.provideConfig())
             ) { format: DecimalFormat ->
                 format.decimalFormatSymbols = DecimalFormatSymbols.getInstance(Locale.ROOT)
             }
@@ -165,11 +164,28 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             }
         }
 
+        private val originalWidth = width
+        private val originalHeight = height
         private var confirmActive = false
         private var cachedWrappedValue: T = wrappedValue.get()
         private var value: T = wrappedValue.get()
-        private val increment = max((maxValue.toDouble() - minValue.toDouble())/ 102.0, min(1.0, split(maxValue.toDouble() - minValue.toDouble())))
+        private val increment: Double
+            get() {
+                return max((maxValue.toDouble() - minValue.toDouble())/ (getWidth() - 8.0), min(1.0, split(maxValue.toDouble() - minValue.toDouble())))
+            }
         private var isValid = validator.validateEntry(wrappedValue.get(), EntryValidator.ValidationType.STRONG).isValid()
+
+        /*override fun getWidth(): Int {
+            if (originalWidth != width)
+                return super.getWidth()
+            return ThemeKeys.WIDGET_WIDTH.provideConfig()
+        }
+
+        override fun getHeight(): Int {
+            if (originalHeight != height)
+                return super.getHeight()
+            return ThemeKeys.WIDGET_HEIGHT.provideConfig()
+        }*/
 
         private fun isChanged(): Boolean {
             return value != wrappedValue.get()
@@ -177,16 +193,16 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         private fun getTexture(): Identifier {
             return if (this.isFocused)
-                HIGHLIGHTED_TEXTURE
+                ThemeKeys.SLIDER_BACKGROUND_HIGHLIGHTED.provideConfig()
             else
-                TEXTURE
+                ThemeKeys.SLIDER_BACKGROUND.provideConfig()
         }
 
         private fun getHandleTexture(): Identifier {
             return if (hovered || this.isFocused)
-                HANDLE_HIGHLIGHTED_TEXTURE
+                ThemeKeys.SLIDER_HANDLE_HIGHLIGHTED.provideConfig()
             else
-                HANDLE_TEXTURE
+                ThemeKeys.SLIDER_HANDLE.provideConfig()
         }
 
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -203,7 +219,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             RenderSystem.enableDepthTest()
             context.drawGuiTexture(getTexture(), x, y, getWidth(), getHeight(), ColorHelper.getWhite(alpha))
             val progress = MathHelper.getLerpProgress(value.toDouble(), minValue.toDouble(), maxValue.toDouble())
-            context.drawGuiTexture(getHandleTexture(), x + (progress * (width - 8).toDouble()).toInt(), y, 8, getHeight())
+            context.drawGuiTexture(getHandleTexture(), x + (progress * (getWidth() - 8).toDouble()).toInt(), y, 8, getHeight())
             this.drawScrollableText(context, minecraftClient.textRenderer, 2, 0xFFFFFF or (MathHelper.ceil(alpha * 255.0f) shl 24))
         }
 
@@ -247,7 +263,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         private fun setValueFromMouse(mouseX: Double) {
-            this.setValue(MathHelper.clampedMap((mouseX - (x + 4).toDouble()) / (width - 8).toDouble(), 0.0, 1.0, minValue.toDouble(), maxValue.toDouble()))
+            this.setValue(MathHelper.clampedMap((mouseX - (x + 4).toDouble()) / (getWidth() - 8).toDouble(), 0.0, 1.0, minValue.toDouble(), maxValue.toDouble()))
         }
 
         private fun setValue(value: Double) {
@@ -284,5 +300,5 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         validationProvider: Function<Double, ValidationResult<T>>,
         valueApplier: Consumer<T>)
         :
-        ValidationBackedNumberFieldWidget<T>(110, 20, wrappedValue, choiceValidator, validationProvider, valueApplier)
+        ValidationBackedNumberFieldWidget<T>(ThemeKeys.WIDGET_WIDTH.provideConfig(), ConfigApi.theme().provide(ThemeKeys.CONFIG_STACK, ThemeKeys.WIDGET_HEIGHT), wrappedValue, choiceValidator, validationProvider, valueApplier)
 }
