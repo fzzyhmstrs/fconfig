@@ -35,7 +35,7 @@ internal class SettingForwardCustomPayload(val update: String, val player: UUID,
     }
 
     companion object {
-        val id = "fzzy_config:setting_forward".fcId()
+        val id = "setting_forward".fcId()
 
     }
 }

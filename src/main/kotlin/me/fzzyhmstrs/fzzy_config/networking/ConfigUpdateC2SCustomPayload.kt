@@ -47,7 +47,7 @@ internal class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, va
     }
 
     companion object {
-        val id = "fzzy_config:config_update_c2s".fcId()
+        val id = "config_update_c2s".fcId()
 
         private fun readList(buf: PacketByteBuf): List<String> {
             val size = buf.readVarInt()
