@@ -79,25 +79,25 @@ internal object ConfigApiImplClient {
         return i - 1
     }
 
-    internal fun getTranslation(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): MutableText {
+    internal fun getTranslation(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String = fieldName): MutableText {
         for (annotation in annotations) {
             if (annotation is Translation) {
                 if (annotation.negate) {
-                    return thing.transSupplied { fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
+                    return thing.transSupplied { fallback.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
                 }
-                val key = "${annotation.prefix}.$fieldName"
+                val key = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName" else annotation.prefix
                 if (I18n.hasTranslation(key)) return key.translate()
                 break
             }
         }
         for (annotation in globalAnnotations) {
             if (annotation is Translation) {
-                val key = "${annotation.prefix}.$fieldName"
+                val key = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName" else annotation.prefix
                 if (I18n.hasTranslation(key)) return key.translate()
                 break
             }
         }
-        return thing.transSupplied { fieldName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
+        return thing.transSupplied { fallback.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
     }
 
     internal fun getDescription(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): MutableText {
@@ -106,14 +106,14 @@ internal object ConfigApiImplClient {
                 if (annotation.negate) {
                     return thing.descSupplied { getComments(annotations) }
                 }
-                val key = "${annotation.prefix}.$fieldName.desc"
+                val key = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.desc" else "${annotation.prefix}.desc"
                 if (I18n.hasTranslation(key)) return key.translate()
                 break
             }
         }
         for (annotation in globalAnnotations) {
             if (annotation is Translation) {
-                val key = "${annotation.prefix}.$fieldName.desc"
+                val key = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.desc" else "${annotation.prefix}.desc"
                 if (I18n.hasTranslation(key)) return key.translate()
                 break
             }

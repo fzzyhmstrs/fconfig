@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
+import me.fzzyhmstrs.fzzy_config.fcId
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
@@ -36,7 +37,7 @@ internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>): C
     }
 
     companion object {
-        val type: Id<ConfigUpdateS2CCustomPayload> = Id(Identifier.of("fzzy_config:config_update_s2c"))
+        val type: Id<ConfigUpdateS2CCustomPayload> = Id("config_update_s2c".fcId())
         val codec: PacketCodec<PacketByteBuf, ConfigUpdateS2CCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> ConfigUpdateS2CCustomPayload(b)})
 
         private fun readMap(buf: PacketByteBuf): Map<String, String> {

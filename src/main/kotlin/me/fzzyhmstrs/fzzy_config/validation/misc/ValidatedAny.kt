@@ -150,8 +150,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         val newNewThing = try{ createInstance() } catch (e: Exception) { defaultValue }
         val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
         val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 0, false)
-        val globalAnnotations = newThing::class.annotations
-        ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, _ ->
+        ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, globalAnnotations, _ ->
             val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)?.let { setOf(it) } ?: setOf()
             if (thing is Updatable && thing is Entry<*, *>) {
                 val fieldName = new.substringAfterLast('.')
@@ -177,7 +176,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("${getEntryKey()}.")
-                ConfigApiImpl.drill(newNewThing, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _ ->
+                ConfigApiImpl.drill(newNewThing, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
                     basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
                 }
                 val basicValidation2 = basicValidation
@@ -241,7 +240,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             if (updateMap.isEmpty()) return
 
             //push updates from basic validation to the configs
-            ConfigApiImpl.walk(thing, key, 1) { walkable, _, new, thing, prop, _, _ ->
+            ConfigApiImpl.walk(thing, key, 1) { walkable, _, new, thing, prop, _, _, _ ->
                 if (!(thing is Updatable && thing is Entry<*, *>)) {
                     val update = getUpdate(new)
                     if (update != null && update is Supplier<*>) {

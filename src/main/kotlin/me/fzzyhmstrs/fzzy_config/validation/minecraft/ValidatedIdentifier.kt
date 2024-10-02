@@ -14,12 +14,14 @@ import com.google.common.base.Suppliers
 import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.nsId
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -93,7 +95,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    constructor(defaultValue: String): this(Identifier.of(defaultValue), AllowableIdentifiers.ANY)
+    constructor(defaultValue: String): this(defaultValue.simpleId(), AllowableIdentifiers.ANY)
 
     /**
      * An unbounded validated identifier constructed from namespace and path strings
@@ -104,7 +106,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    constructor(defaultNamespace: String, defaultPath: String): this(Identifier.of(defaultNamespace, defaultPath), AllowableIdentifiers.ANY)
+    constructor(defaultNamespace: String, defaultPath: String): this(defaultNamespace.nsId(defaultPath), AllowableIdentifiers.ANY)
 
     /**
      * An unbounded validated identifier with a dummy default value
@@ -113,7 +115,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    constructor(): this(Identifier.of("c:/c"), AllowableIdentifiers.ANY)
+    constructor(): this("c:/c".simpleId(), AllowableIdentifiers.ANY)
 
     /**
      * Creates a deep copy of the stored value and returns it
@@ -122,7 +124,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
      * @since 0.2.0
      */
     override fun copyStoredValue(): Identifier {
-        return Identifier.of(storedValue.toString())
+        return storedValue.toString().simpleId()
     }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Identifier> {
@@ -333,10 +335,10 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofTag(tag: TagKey<T>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.getOrEmpty(tag.registry().value)
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
-            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ false }, { listOf() }))
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ false }, { listOf() }))
+            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ false }, { listOf() }))
             val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
-            return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false))
+            return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false))
         }
 
         /**
@@ -412,7 +414,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistry(registry: Registry<T>): ValidatedIdentifier {
-            return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers({ id -> registry.containsId(id) }, { registry.ids.toList() }, true))
+            return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ id -> registry.containsId(id) }, { registry.ids.toList() }, true))
         }
 
         /**
@@ -430,7 +432,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistry(registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
-            return ValidatedIdentifier(Identifier.of("minecraft:air"),
+            return ValidatedIdentifier("minecraft:air".simpleId(),
                 AllowableIdentifiers(
                     { id -> registry.containsId(id) && predicate.test((registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
                     { registry.ids.filter { id -> predicate.test((registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
@@ -454,7 +456,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistry(registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
-            return ValidatedIdentifier(Identifier.of("minecraft:air"),
+            return ValidatedIdentifier("minecraft:air".simpleId(),
                 AllowableIdentifiers(
                     { id -> registry.containsId(id) && predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@AllowableIdentifiers false).get()) },
                     { registry.ids.filter { id -> predicate.test (id, (registry.getEntry(id).takeIf { it.isPresent } ?: return@filter false).get()) } },
@@ -566,7 +568,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>): ValidatedIdentifier {
-            return ofRegistryKey(Identifier.of("minecraft:air"), key)
+            return ofRegistryKey("minecraft:air".simpleId(), key)
         }
 
         /**
@@ -597,7 +599,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 val supplier2: Supplier<List<Identifier>> = Supplier {
                     registry2.streamKeys().filter{ predicate.test(it.value, (registry2.getOptional(it).takeIf { opt ->  opt.isPresent } ?: return@filter false).get()) }.map { it.value }.toList()
                 }
-                return ValidatedIdentifier(Identifier.of("minecraft:air"), AllowableIdentifiers(predicate2, supplier2, false))
+                return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers(predicate2, supplier2, false))
             }
         }
 
@@ -617,14 +619,14 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 //memoize to cache the predicate test get also
                 val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.toList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
-                return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
+                return ValidatedIdentifier("c:dummy".simpleId(), ids)
             } else {
                 val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
                 val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.toList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
-                return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
+                return ValidatedIdentifier("c:dummy".simpleId(), ids)
             }
         }
 
@@ -645,14 +647,14 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 //memoize to cache the predicate test get also
                 val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
-                return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
+                return ValidatedIdentifier("c:dummy".simpleId(), ids)
             } else {
                 val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
                 val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
-                return ValidatedIdentifier(Identifier.of("c:dummy"), ids)
+                return ValidatedIdentifier("c:dummy".simpleId(), ids)
             }
         }
 
@@ -743,7 +745,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         fun ofList(list: List<Identifier>): ValidatedIdentifier {
             val allowableIds = AllowableIdentifiers({ id -> list.contains(id) }, list.supply())
             val validator = strong(allowableIds)
-            return ValidatedIdentifier(Identifier.of("minecraft:air"), allowableIds, validator)
+            return ValidatedIdentifier("minecraft:air".simpleId(), allowableIds, validator)
         }
 
         /**
@@ -776,7 +778,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         fun ofSuppliedList(listSupplier: Supplier<List<Identifier>>): ValidatedIdentifier {
             val allowableIds = AllowableIdentifiers({ id -> listSupplier.get().contains(id) }, listSupplier)
-            return ValidatedIdentifier(Identifier.of("minecraft:air"), allowableIds)
+            return ValidatedIdentifier("minecraft:air".simpleId(), allowableIds)
         }
 
         /**
@@ -936,7 +938,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         private fun addSuggestionWindow(suggestions: Suggestions) {
             val applier: Consumer<String> = Consumer { s ->
                 try {
-                    validatedIdentifier.accept(Identifier.of(s))
+                    validatedIdentifier.accept(s.simpleId())
                     needsUpdating = true
                 } catch (e: Exception) {
                     //
