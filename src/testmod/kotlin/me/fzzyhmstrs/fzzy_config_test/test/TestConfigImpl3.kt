@@ -19,7 +19,11 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
+import net.minecraft.block.Blocks
 import net.minecraft.client.MinecraftClient
+import net.minecraft.entity.EntityType
+import net.minecraft.fluid.Fluids
+import net.minecraft.item.Items
 import net.minecraft.text.ClickEvent
 import net.minecraft.util.Identifier
 
@@ -55,6 +59,14 @@ class TestConfigImpl3: Config(Identifier("fzzy_config_test","test_config3")) {
     }
     @RequiresRestart
     private var int2 = ValidatedInt(6, 10, 1)
+
+    private var itemTest = Items.EGG
+
+    private var blockTest = Blocks.AMETHYST_BLOCK
+
+    private var entityTest = EntityType.EGG
+
+    private var fluidTest = Fluids.LAVA
 
     /*
     {
