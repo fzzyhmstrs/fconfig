@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
+import me.fzzyhmstrs.fzzy_config.fcId
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
@@ -31,6 +32,6 @@ internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: 
     }
 
     companion object {
-        val id = Identifier("fzzy_config:config_sync_s2c")
+        val id = "config_sync_s2c".fcId()
     }
 }

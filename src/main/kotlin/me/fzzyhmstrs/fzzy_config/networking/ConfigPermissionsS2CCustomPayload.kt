@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
+import me.fzzyhmstrs.fzzy_config.fcId
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
@@ -31,7 +32,7 @@ class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: Mutable
     }
 
     companion object {
-        val id = Identifier("fzzy_config:config_perms_s2c")
+        val id = "config_perms_s2c".fcId()
     }
 
 }
