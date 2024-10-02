@@ -36,6 +36,14 @@ internal fun String.fcId(): Identifier {
     return Identifier.of(FC.MOD_ID, this)
 }
 
+internal fun String.simpleId(): Identifier {
+    return Identifier.of(this)
+}
+
+internal fun String.nsId(path: String): Identifier {
+    return Identifier.of(this, path)
+}
+
 
 
 @Mod(value = "fzzy_config")
