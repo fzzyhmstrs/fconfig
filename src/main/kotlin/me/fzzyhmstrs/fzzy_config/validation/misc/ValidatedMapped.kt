@@ -11,11 +11,13 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
@@ -34,21 +36,15 @@ class ValidatedMapped<N, T> @JvmOverloads constructor(private val delegate: Vali
             delegate.accept(from.apply(value))
         }
 
-
      override fun addListener(listener: Consumer<ValidatedField<N>>) {
         delegate.addListener { _ -> listener.accept(this) }
     }
 
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun getUpdateManager(): UpdateManager? {
-        return delegate.getUpdateManager()
-    }
-
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun setUpdateManager(manager: UpdateManager) {
-        delegate.setUpdateManager(manager)
+        val newManager = ForwardingUpdateManager(manager)
+        delegate.setUpdateManager(newManager)
     }
 
     @Internal
@@ -93,11 +89,12 @@ class ValidatedMapped<N, T> @JvmOverloads constructor(private val delegate: Vali
         replaceWith = ReplaceWith("serializeEntry(input: T)")
     )
     override fun serializeEntry(input: N?, errorBuilder: MutableList<String>, flags: Byte): TomlElement {
+        println(input)
         return if(input == null) {
             delegate.serializeEntry(null, errorBuilder, flags)
         } else {
             delegate.serializeEntry(from.apply(input), errorBuilder, flags)
-        }
+        }.also { println(it) }
     }
 
     override fun serialize(input: N): ValidationResult<TomlElement> {
@@ -127,5 +124,64 @@ class ValidatedMapped<N, T> @JvmOverloads constructor(private val delegate: Vali
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<N>): ClickableWidget {
         return delegate.widgetEntry(choicePredicate.convert(from, from))
+    }
+
+    private inner class ForwardingUpdateManager(private val forwardTo: UpdateManager): UpdateManager {
+
+        override fun update(updatable: Updatable, updateMessage: Text) {
+            forwardTo.update(this@ValidatedMapped, updateMessage)
+        }
+
+        override fun hasUpdate(scope: String): Boolean {
+            return false
+        }
+
+        override fun getUpdate(scope: String): Updatable? {
+            return null
+        }
+
+        override fun addUpdateMessage(key: Updatable, text: Text) {
+            forwardTo.addUpdateMessage(this@ValidatedMapped, text)
+        }
+
+        override fun hasChangeHistory(): Boolean {
+            return false
+        }
+
+        override fun changeHistory(): List<String> {
+            return listOf()
+        }
+
+        override fun changeCount(): Int {
+            return 0
+        }
+
+        override fun restoreCount(scope: String): Int {
+            return 0
+        }
+
+        override fun restore(scope: String) {
+        }
+
+        override fun forwardsCount(): Int {
+            return 0
+        }
+
+        override fun forwardsHandler() {
+        }
+
+        override fun revert() {
+        }
+
+        override fun revertLast() {
+        }
+
+        override fun apply(final: Boolean) {
+        }
+
+        override fun flush(): List<String> {
+            return listOf()
+        }
+
     }
 }
