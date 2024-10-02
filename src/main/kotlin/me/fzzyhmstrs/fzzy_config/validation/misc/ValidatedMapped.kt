@@ -89,12 +89,11 @@ class ValidatedMapped<N, T> @JvmOverloads constructor(private val delegate: Vali
         replaceWith = ReplaceWith("serializeEntry(input: T)")
     )
     override fun serializeEntry(input: N?, errorBuilder: MutableList<String>, flags: Byte): TomlElement {
-        println(input)
         return if(input == null) {
             delegate.serializeEntry(null, errorBuilder, flags)
         } else {
             delegate.serializeEntry(from.apply(input), errorBuilder, flags)
-        }.also { println(it) }
+        }
     }
 
     override fun serialize(input: N): ValidationResult<TomlElement> {
