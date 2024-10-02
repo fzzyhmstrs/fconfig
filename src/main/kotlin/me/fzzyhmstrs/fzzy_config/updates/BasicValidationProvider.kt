@@ -11,13 +11,21 @@
 package me.fzzyhmstrs.fzzy_config.updates
 
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
+import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.*
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.*
+import net.minecraft.block.Block
+import net.minecraft.entity.EntityType
+import net.minecraft.fluid.Fluid
+import net.minecraft.item.Item
+import net.minecraft.item.Items
+import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import java.awt.Color
@@ -56,7 +64,7 @@ internal interface BasicValidationProvider {
                         ValidatedEnumMap.tryMake(if (input != null) input as Map<Enum<*>, *> else mapOf(), keyProjectionValidation, valueProjectionValidation)
                     } else if (keyArgumentType.jvmErasure.javaObjectType.isInstance("")) {
                         ValidatedStringMap.tryMake(if (input != null)input as Map<String, *> else mapOf(), keyProjectionValidation, valueProjectionValidation)
-                    } else if (keyArgumentType.jvmErasure.javaObjectType.isInstance(Identifier(""))) {
+                    } else if (keyArgumentType.jvmErasure.javaObjectType.isInstance("i".fcId())) {
                         ValidatedIdentifierMap.tryMake(if (input != null)input as Map<Identifier, *> else mapOf(), keyProjectionValidation, valueProjectionValidation)
                     } else {
                         ValidatedMap.tryMake(if (input != null)input as Map<*, *> else mapOf(), keyProjectionValidation, valueProjectionValidation)
@@ -64,7 +72,7 @@ internal interface BasicValidationProvider {
                 } else {
                     return null
                 }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 return null
             }
         }
@@ -89,13 +97,13 @@ internal interface BasicValidationProvider {
         }
 
         try {
-            return if (input != null)
-                if (input is ValidatedField<*>)
+            return if (input != null) {
+                if (input is ValidatedField<*>) {
                     return input
-                else if (input is Walkable && input !is ConfigSection)
+                } else if (input is Walkable && input !is ConfigSection) {
                     return ValidatedAny(input)
-                else
-                    when (inputType.jvmErasure.javaObjectType) {
+                } else {
+                    when (val jot = inputType.jvmErasure.javaObjectType) {
                         java.lang.Integer::class.java -> getIntRestrict(annotations)?.let { ValidatedInt(input as Int, it.max, it.min) } ?: ValidatedInt(input as Int)
                         java.lang.Short::class.java -> getShortRestrict(annotations)?.let { ValidatedShort(input as Short, it.max, it.min) } ?: ValidatedShort(input as Short)
                         java.lang.Byte::class.java -> getByteRestrict(annotations)?.let { ValidatedByte(input as Byte, it.max, it.min) } ?: ValidatedByte(input as Byte)
@@ -107,10 +115,23 @@ internal interface BasicValidationProvider {
                         Identifier::class.java -> ValidatedIdentifier(input as Identifier)
                         java.lang.String::class.java -> ValidatedString(input as String)
                         TagKey::class.java -> ValidatedTagKey(input as TagKey<*>)
-                        else -> complexStrategy(input, inputType, annotations)
+                        else -> {
+                            if (Item::class.java.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as Item, Registries.ITEM)
+                            } else if (Block::class.java.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as Block, Registries.BLOCK)
+                            } else if (EntityType::class.java.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as EntityType<*>, Registries.ENTITY_TYPE)
+                            } else if (Fluid::class.java.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as Fluid, Registries.FLUID)
+                            } else {
+                                complexStrategy(input, inputType, annotations)
+                            }
+                        }
                     }
-            else
-                when (inputType.jvmErasure.javaObjectType) {
+                }
+            } else {
+                when (val jot = inputType.jvmErasure.javaObjectType) {
                     java.lang.Integer::class.java -> ValidatedInt()
                     java.lang.Short::class.java -> ValidatedShort()
                     java.lang.Byte::class.java -> ValidatedByte()
@@ -121,9 +142,26 @@ internal interface BasicValidationProvider {
                     java.awt.Color::class.java -> ValidatedColor()
                     Identifier::class.java -> ValidatedIdentifier()
                     java.lang.String::class.java -> ValidatedString()
-                    else -> complexStrategy(null, inputType, annotations)
+                    Item::class.java -> ValidatedRegistryType.of(Registries.ITEM)
+                    Block::class.java -> ValidatedRegistryType.of(Registries.BLOCK)
+                    EntityType::class.java -> ValidatedRegistryType.of(Registries.ENTITY_TYPE)
+                    Fluid::class.java -> ValidatedRegistryType.of(Registries.FLUID)
+                    else -> {
+                        if (Item::class.java.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.ITEM)
+                        } else if (Block::class.java.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.BLOCK)
+                        } else if (EntityType::class.java.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.ENTITY_TYPE)
+                        } else if (Fluid::class.java.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.FLUID)
+                        } else {
+                            complexStrategy(null, inputType, annotations)
+                        }
+                    }
                 }
-        } catch (e: Exception) {
+            }
+        } catch (e: Throwable) {
             return null
         }
     }
