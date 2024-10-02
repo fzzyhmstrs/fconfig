@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
+import me.fzzyhmstrs.fzzy_config.fcId
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 import java.util.*
@@ -30,7 +31,7 @@ internal class SettingForwardCustomPayload(val update: String, val player: UUID,
     }
 
     companion object {
-        val id = Identifier("fzzy_config:setting_forward")
+        val id = "fzzy_config:setting_forward".fcId()
 
     }
 }

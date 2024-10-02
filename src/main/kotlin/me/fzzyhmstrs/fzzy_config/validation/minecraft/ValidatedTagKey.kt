@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget
+import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
@@ -121,8 +122,8 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     //client
     private fun popupTagPopup(b: ClickableWidget, isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>>) {
         val entryValidator = EntryValidator<String>{s, _ -> Identifier.tryParse(s)?.let { validator.validateEntry(it, EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: ValidationResult.error(s, "invalid Identifier")}
-        val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.registry, Identifier(e))) }
-        val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s, c, cv -> validator.allowableIds.getSuggestions(s, c, cv.convert({ Identifier(it) }, { Identifier(it) }))}
+        val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.registry, e.simpleId())) }
+        val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s, c, cv -> validator.allowableIds.getSuggestions(s, c, cv.convert({ it.simpleId() }, { it.simpleId() }))}
         val textField = SuggestionBackedTextFieldWidget(170, 20, { validator.get().toString() }, choicePredicate.convert({it.id.toString()}, {it.id.toString()}), entryValidator, entryApplier, suggestionProvider)
         val popup = PopupWidget.Builder(translation())
             .addElement("text_field", textField, Position.BELOW, Position.ALIGN_LEFT)
