@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation.number
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
+import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -138,10 +139,10 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
         ClickableWidget(0, 0, 110, 20, DECIMAL_FORMAT.format(wrappedValue.get()).lit()) {
         companion object {
-            private val TEXTURE = Identifier.of("widget/slider")
-            private val HIGHLIGHTED_TEXTURE = Identifier.of("widget/slider_highlighted")
-            private val HANDLE_TEXTURE = Identifier.of("widget/slider_handle")
-            private val HANDLE_HIGHLIGHTED_TEXTURE = Identifier.of("widget/slider_handle_highlighted")
+            private val TEXTURE = "widget/slider".simpleId()
+            private val HIGHLIGHTED_TEXTURE = "widget/slider_highlighted".simpleId()
+            private val HANDLE_TEXTURE = "widget/slider_handle".simpleId()
+            private val HANDLE_HIGHLIGHTED_TEXTURE = "widget/slider_handle_highlighted".simpleId()
             private val DECIMAL_FORMAT: DecimalFormat = Util.make(
                 DecimalFormat("#.##")
             ) { format: DecimalFormat ->
