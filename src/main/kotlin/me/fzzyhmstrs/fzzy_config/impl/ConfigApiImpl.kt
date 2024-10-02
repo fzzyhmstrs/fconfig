@@ -421,7 +421,6 @@ internal object ConfigApiImpl {
                 fields.addAll(sup.java.declaredFields.filter { !isTransient(it.modifiers) })
             }
 
-            println(fields.map { it.name })
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             for (prop in config.javaClass.kotlin.memberProperties.filter {
                 if (ignoreNonSync(flags)) true else !isNonSync(it)
