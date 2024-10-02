@@ -251,7 +251,8 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         @JvmOverloads
         constructor(attributeId: String, lockAttribute: Boolean = false): this(attributeId.simpleId(), lockAttribute)
 
-        private var id: Identifier = attributeId.toString().simpleId() //copying
+        private var uuid: UUID? = null
+        private var name: String = attributeId.toTranslationKey()
         private var amount: ValidatedDouble = ValidatedDouble(0.0)
         private var operation: Operation = Operation.ADDITION
         private var lockOperation = false
