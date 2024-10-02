@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
+import me.fzzyhmstrs.fzzy_config.fcId
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
@@ -29,7 +30,7 @@ internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: 
     }
 
     companion object {
-        val type: Id<ConfigSyncS2CCustomPayload> = CustomPayload.id("fzzy_config:config_sync_s2c")
+        val type: Id<ConfigSyncS2CCustomPayload> = Id("config_sync_s2c".fcId())
         val codec: PacketCodec<PacketByteBuf, ConfigSyncS2CCustomPayload> = CustomPayload.codecOf({ c, b -> c.write(b) }, { b -> ConfigSyncS2CCustomPayload(b)})
     }
 }
