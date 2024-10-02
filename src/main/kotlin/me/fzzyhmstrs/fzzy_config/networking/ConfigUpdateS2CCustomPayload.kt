@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
-import me.fzzyhmstrs.fzzy_config.networking.ConfigPermissionsS2CCustomPayload.Companion
+import me.fzzyhmstrs.fzzy_config.fcId
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
@@ -40,7 +40,7 @@ internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>): F
 
     companion object {
 
-        val id = Identifier("fzzy_config:config_update_s2c")
+        val id = "config_update_s2c".fcId()
 
         private fun readMap(buf: PacketByteBuf): Map<String, String> {
             val size = buf.readVarInt()
