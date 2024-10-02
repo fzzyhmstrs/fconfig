@@ -11,3 +11,4 @@
 * Fixed `@Translation` not working for config sections
 * Inherited config classes fully work again
 * Fixed mapped values not instancing themselves properly; which was breaking mapped lists, maps, and other collection views in the GUI.
+* Restore config ordering from alphabetical to declared-order in the TOML outputs. Superclasses will appear after the direct class fields.
