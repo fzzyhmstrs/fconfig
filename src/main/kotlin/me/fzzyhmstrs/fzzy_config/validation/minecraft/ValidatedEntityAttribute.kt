@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.text
@@ -275,9 +276,9 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
     class Builder @JvmOverloads constructor(private val attributeId: Identifier, private val lockAttribute: Boolean = false) {
 
         @JvmOverloads
-        constructor(attributeId: String, lockAttribute: Boolean = false): this(Identifier.of(attributeId), lockAttribute)
+        constructor(attributeId: String, lockAttribute: Boolean = false): this(attributeId.simpleId(), lockAttribute)
 
-        private var id: Identifier = Identifier.of(attributeId.toString())
+        private var id: Identifier = attributeId.toString().simpleId() //copying
         private var amount: ValidatedDouble = ValidatedDouble(0.0)
         private var operation: Operation = Operation.ADD_VALUE
         private var lockOperation = false

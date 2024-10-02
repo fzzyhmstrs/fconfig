@@ -24,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient.Ingred
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.simpleId
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextWidget
@@ -329,13 +330,13 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             }
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
-            return ItemProvider(Identifier.of(toml.asTomlLiteral().toString()))
+            return ItemProvider(toml.asTomlLiteral().toString().simpleId())
         }
         override fun serialize(): TomlElement {
             return TomlLiteral(id.toString())
         }
         override fun copy(): IngredientProvider {
-            return ItemProvider(Identifier.of(id.toString()))
+            return ItemProvider(id.toString().simpleId())
         }
         override fun toString(): String {
             return "Item Ingredient {$id}"
@@ -376,7 +377,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
                     if (str.startsWith("#")) {
                         null
                     } else {
-                        Identifier.of(str)
+                        str.simpleId()
                     }
                 } catch (e: Exception) {
                     null
@@ -386,7 +387,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
                 try {
                     val str = it.asTomlLiteral().toString()
                     if (str.startsWith("#")) {
-                        Identifier.of(str.substring(1))
+                        str.substring(1).simpleId()
                     } else {
                         null
                     }
@@ -429,13 +430,13 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             return Ingredient.fromTag(TagKey.of(RegistryKeys.ITEM, tag))
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
-            return TagProvider(Identifier.of(toml.asTomlLiteral().toString().replace("#", "")))
+            return TagProvider(toml.asTomlLiteral().toString().replace("#", "").simpleId())
         }
         override fun serialize(): TomlElement {
             return TomlLiteral("#${tag}")
         }
         override fun copy(): IngredientProvider {
-            return TagProvider(Identifier.of(tag.toString()))
+            return TagProvider(tag.toString().simpleId())
         }
         override fun toString(): String {
             return "Tag Ingredient {$tag}"
@@ -451,9 +452,9 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
 
     sealed interface IngredientProvider {
         companion object {
-            private val STACK_INSTANCE = ItemProvider(Identifier.of("dummy"))
+            private val STACK_INSTANCE = ItemProvider("dummy".simpleId())
             private val STACKS_INSTANCE = ListProvider(setOf())
-            private val TAG_INSTANCE = TagProvider(Identifier.of("dummy"))
+            private val TAG_INSTANCE = TagProvider("dummy".simpleId())
             fun serialize(provider: IngredientProvider): TomlElement {
                 val toml = TomlTableBuilder(2)
                 toml.element("type", TomlLiteral(provider.type().type()))

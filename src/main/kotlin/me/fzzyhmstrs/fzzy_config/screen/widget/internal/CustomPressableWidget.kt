@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
+import me.fzzyhmstrs.fzzy_config.simpleId
 import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
@@ -66,9 +67,9 @@ abstract class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, me
 
     private companion object {
         private val TEXTURES: ButtonTextures = ButtonTextures(
-            Identifier.ofVanilla("widget/button"),
-            Identifier.ofVanilla("widget/button_disabled"),
-            Identifier.ofVanilla("widget/button_highlighted")
+            "widget/button".simpleId(),
+            "widget/button_disabled".simpleId(),
+            "widget/button_highlighted".simpleId()
         )
     }
 }
