@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import io.netty.buffer.ByteBuf
+import me.fzzyhmstrs.fzzy_config.fcId
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.codec.PacketCodecs
 import net.minecraft.network.packet.CustomPayload
@@ -24,7 +25,7 @@ class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: Mutable
     }
 
     companion object {
-        val type: Id<ConfigPermissionsS2CCustomPayload> = Id(Identifier("fzzy_config:config_perms_s2c"))
+        val type: Id<ConfigPermissionsS2CCustomPayload> = Id("config_perms_s2c".fcId())
         val codec: PacketCodec<ByteBuf, ConfigPermissionsS2CCustomPayload> = PacketCodec.tuple(
             PacketCodecs.STRING,
             ConfigPermissionsS2CCustomPayload::id,
