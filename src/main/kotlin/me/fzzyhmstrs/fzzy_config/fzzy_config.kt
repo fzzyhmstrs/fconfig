@@ -33,6 +33,14 @@ internal fun String.fcId(): Identifier {
     return Identifier(FC.MOD_ID, this)
 }
 
+internal fun String.simpleId(): Identifier {
+    return Identifier.of(this)
+}
+
+internal fun String.nsId(path: String): Identifier {
+    return Identifier.of(this, path)
+}
+
 @Internal
 object FC: ModInitializer {
     internal const val MOD_ID = "fzzy_config"
