@@ -41,11 +41,11 @@ internal fun String.fcId(): Identifier {
 }
 
 internal fun String.simpleId(): Identifier {
-    return Identifier.of(this)
+    return Identifier(this)
 }
 
 internal fun String.nsId(path: String): Identifier {
-    return Identifier.of(this, path)
+    return Identifier(this, path)
 }
 
 
