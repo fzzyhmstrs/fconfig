@@ -12,6 +12,8 @@ package me.fzzyhmstrs.fzzy_config_test;
 
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList;
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType;
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble;
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.registry.Registries;
@@ -35,6 +37,15 @@ public class JavaTestConfig2 extends JavaTestConfig {
 		list.add(Blocks.CANDLE);
 		return list;
 	}
+
+	public ValidatedFloat aFloat = new ValidatedFloat(1, 1, 0.3F);
+
+	@ValidatedFloat.Restrict(min = 0.3F, max = 1)
+	public float aFloat2 = 1;
+
+	public ValidatedFloat aFloat3 = new ValidatedFloat(1, 1, 0.3F);
+
+	public ValidatedDouble aDouble = new ValidatedDouble(1, 1, 0.3F);
 
 
 }

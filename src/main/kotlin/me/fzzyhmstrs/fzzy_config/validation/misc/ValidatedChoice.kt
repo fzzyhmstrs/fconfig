@@ -311,7 +311,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
 
         override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activePredicate.test(thisVal)
-            super.renderWidget(context, mouseX, mouseY, delta)
+            super.renderCustom(context, mouseX, mouseY, delta)
         }
 
         override fun getNarrationMessage(): MutableText {
