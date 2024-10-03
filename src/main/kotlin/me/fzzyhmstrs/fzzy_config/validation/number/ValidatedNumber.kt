@@ -37,6 +37,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Util
 import net.minecraft.util.math.MathHelper
+import org.apache.commons.lang3.math.NumberUtils.toDouble
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
@@ -48,6 +49,7 @@ import java.util.function.Function
 import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.round
 
 sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, protected val maxValue: T, protected val widgetType: WidgetType): ValidatedField<T>(defaultValue) where T: Number, T:Comparable<T> {
 
@@ -74,7 +76,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     protected abstract fun convert(input: Double): ValidationResult<T>
 
-    @ApiStatus.Internal
+    @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType) {
@@ -149,10 +151,14 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         private fun split(range: Double): Double {
-            val d = range.toString().replace(".","").toDouble()
-            return if (d % 16.0 == 0.0) {
+            var d = range
+            while (d < 16.0) {
+                d *= 100.0
+            }
+            d = round(d)
+            return if (d.toInt() % 16 == 0) {
                 (range / 16.0)
-            } else if (d % 12.0 == 0.0) {
+            } else if (d.toInt() % 12 == 0) {
                 (range / 12.0)
             } else {
                 (range / 10.0)
