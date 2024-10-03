@@ -31,8 +31,4 @@ internal object PlatformApiImpl: PlatformApi {
     override fun isModLoaded(mod: String): Boolean {
         return PlatformUtils.isModLoaded(mod)
     }
-
-    override fun sendChat(player: PlayerEntity?, message: Text) {
-        player?.sendMessage(message, false)
-    }
 }
