@@ -83,7 +83,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         initHeader()
         initFooter()
         initBody()
-        initTabNavigation()
+        initLayout()
     }
     private fun initHeader() {
         val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
@@ -124,7 +124,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         directionalLayoutWidget.add(doneButton)
     }
 
-    override fun initTabNavigation() {
+    private fun initLayout() {
         layout.refreshPositions()
         configList.position(width, layout)
     }
