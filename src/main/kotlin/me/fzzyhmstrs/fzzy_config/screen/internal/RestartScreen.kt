@@ -42,8 +42,8 @@ internal class RestartScreen: PopupWidgetScreen(FcText.empty()) {
         textHeadingLayoutWidget.add(IconWidget(20, 20, "textures/gui/sprites/widget/entry_error.png".fcId()))
         directionalLayoutWidget.add(textHeadingLayoutWidget) { it.alignHorizontalCenter() }
         directionalLayoutWidget.add(MultilineTextWidget("fc.config.restart.sync".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(180)) { it.alignHorizontalCenter() }
-        directionalLayoutWidget.add(ButtonWidget.builder("menu.quit".translate()) { this.close(); this.client?.scheduleStop() }.dimensions(0, 0, 180, 20).build()) { it.alignHorizontalCenter() }
-        directionalLayoutWidget.add(ButtonWidget.builder("fc.button.restart.cancel".translate()) { this.close(); disconnect() }.dimensions(0, 0, 180, 20).build()) { it.alignHorizontalCenter() }
+        directionalLayoutWidget.add(CustomButtonWidget.builder("menu.quit".translate()) { this.close(); this.client?.scheduleStop() }.dimensions(0, 0, 180, 20).build()) { it.alignHorizontalCenter() }
+        directionalLayoutWidget.add(CustomButtonWidget.builder("fc.button.restart.cancel".translate()) { this.close(); disconnect() }.dimensions(0, 0, 180, 20).build()) { it.alignHorizontalCenter() }
         layout.forEachChild {
             addDrawableChild(it)
         }

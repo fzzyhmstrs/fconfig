@@ -31,6 +31,7 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager.ConfigScree
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NoPermsButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ScreenOpenButtonWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
@@ -296,7 +297,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val textRenderer = MinecraftClient.getInstance().textRenderer
         return nameMap.mapValues { (name, translation) ->
                 Function { _ ->
-                    ButtonWidget.builder(translation) { openScopedScreen(name) }
+                    CustomButtonWidget.builder(translation) { openScopedScreen(name) }
                         .dimensions(0, 0, min(100, textRenderer.getWidth(translation) + 8), 20)
                         .narrationSupplier{ _ -> FcText.translatable("fc.button.navigate", translation) }
                         .build()
@@ -489,8 +490,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val popup = PopupWidget.Builder("fc.button.restore".translate())
             .addDivider()
             .addElement("confirm_text", MultilineTextWidget("fc.config.restore.confirm.desc".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
-            .addElement("confirm_button", ButtonWidget.builder(confirmText) { entry.restore(); PopupWidget.pop(); PopupWidget.pop() }.size(buttonWidth, 20).build(), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
+            .addElement("confirm_button", CustomButtonWidget.builder(confirmText) { entry.restore(); PopupWidget.pop(); PopupWidget.pop() }.size(buttonWidth, 20).build(), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("cancel_button", CustomButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y - h + 28 })
             .width(buttonWidth + 4 + buttonWidth + 16)
@@ -514,7 +515,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 MultilineTextWidget("fc.button.forward.active".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
             .addElement("player_finder", SuggestionBackedTextFieldWidget(110, 20, {player}, ChoiceValidator.any(), validator, {s -> player = s}, { s, cursor, choiceValidator -> CommandSource.suggestMatching(playerEntries.keys.filter { choiceValidator.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }, s.substring(0, cursor).let{ SuggestionsBuilder(it, it.lowercase(Locale.ROOT), 0) }) }), Position.BELOW, Position.ALIGN_LEFT)
             .addElement("forward_button", ActiveButtonWidget(forwardText, buttonWidth, 20, {playerEntries.containsKey(player)}, { forwardUpdate(entry, playerEntries[player]); PopupWidget.pop(); PopupWidget.pop() }), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "forward_button", Position.ALIGN_RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("cancel_button", CustomButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "forward_button", Position.ALIGN_RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .build()
         PopupWidget.push(popup)
     }

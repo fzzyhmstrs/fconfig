@@ -177,7 +177,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
             .addElement("click_kb2", TextWidget("fc.button.info.click_kb2".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
             .addDivider()
             .addElement("alert", TextWidget("fc.button.info.alert".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addDoneButton()
+            .addDoneWidget()
             .build()
         PopupWidget.push(popup)
     }
