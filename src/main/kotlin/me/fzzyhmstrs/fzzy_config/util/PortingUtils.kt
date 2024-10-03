@@ -39,45 +39,45 @@ object PortingUtils {
     }
 
     fun <T> Registry<T>.optional(id: Identifier): Optional<T> {
-        return this.getOrEmpty(id)
+        return this.getOptionalValue(id)
     }
 
     fun RegistryWrapper.WrapperLookup.anyOptional(key: RegistryKey<out Registry<*>>):  Optional<out RegistryWrapper.Impl<*>> {
-        return this.getOptionalWrapper(key)
+        return this.getOptional(key)
     }
 
     fun <T> RegistryWrapper.WrapperLookup.optional(key: RegistryKey<out Registry<T>>):  Optional<out RegistryWrapper.Impl<T>> {
-        return this.getOptionalWrapper(key)
+        return this.getOptional(key)
     }
 
     fun <T> Registry<T>.tagIdList(): List<Identifier> {
-        return this.streamTags().map { it.id }.toList()
+        return this.tags.map { it.tag.id }.toList()
     }
 
     fun <T> Registry<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
         return if(predicate == null)
-            this.streamTags().map { it.id }.toList()
+            this.tags.map { it.tag.id }.toList()
         else
-            this.streamTags().map { it.id }.filter(predicate).toList()
+            this.tags.map { it.tag.id }.filter(predicate).toList()
     }
 
     fun <T> RegistryWrapper.Impl<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
         return if(predicate == null)
-            this.streamTags().map { it.tag.id }.toList()
+            this.tags.map { it.tag.id }.toList()
         else
-            this.streamTags().map { it.tag.id }.filter(predicate).toList()
+            this.tags.map { it.tag.id }.filter(predicate).toList()
     }
 
     fun <T> Registry<T>.namedEntryList(tagKey: TagKey<T>): Optional<RegistryEntryList.Named<T>> {
-        return this.getEntryList(tagKey)
+        return this.getOptional(tagKey)
     }
 
     fun <T> TagKey<T>.regRef(): RegistryKey<out Registry<T>> {
-        return this.registry
+        return this.registryRef
     }
 
     fun TagKey<*>.regRefId(): Identifier {
-        return this.registry.value
+        return this.registryRef.value
     }
 
 }

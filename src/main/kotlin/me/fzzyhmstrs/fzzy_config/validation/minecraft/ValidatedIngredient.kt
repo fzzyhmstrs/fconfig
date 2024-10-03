@@ -429,7 +429,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             return ProviderType.TAG
         }
         override fun provide(): Ingredient {
-            return Ingredient.fromTag(Registries.ITEM.getEntryList(TagKey.of(RegistryKeys.ITEM, tag)).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
+            return Ingredient.fromTag(Registries.ITEM.namedEntryList(TagKey.of(RegistryKeys.ITEM, tag)).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
             return TagProvider(toml.asTomlLiteral().toString().replace("#", "").simpleId())
