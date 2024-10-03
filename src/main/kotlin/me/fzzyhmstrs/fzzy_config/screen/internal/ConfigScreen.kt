@@ -29,10 +29,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.TextWidget
-import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
+import net.minecraft.client.gui.widget.*
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
@@ -89,7 +86,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         initHeader()
         initFooter()
         initBody()
-        initTabNavigation()
+        initLayout()
     }
     private fun initHeader() {
         val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
@@ -130,7 +127,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         directionalLayoutWidget.add(doneButton)
     }
 
-    override fun initTabNavigation() {
+    private fun initLayout() {
         layout.refreshPositions()
         configList.position(width, layout)
     }
