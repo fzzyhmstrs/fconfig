@@ -39,7 +39,7 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
 
     override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = manager.hasChanges() || manager.hasChangeHistory() || manager.hasRestores(scope)
-        super.renderWidget(context, mouseX, mouseY, delta)
+        super.renderCustom(context, mouseX, mouseY, delta)
         RenderSystem.enableBlend()
         if (manager.hasChanges()) {
             if (isFocused || isHovered)
