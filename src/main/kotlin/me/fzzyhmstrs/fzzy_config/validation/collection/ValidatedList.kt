@@ -181,7 +181,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
             val listWidget = ListListWidget(list, entryHandler) { _, _ -> ChoiceValidator.any() }
             val popup = PopupWidget.Builder(this.translation())
                 .addElement("list", listWidget, Position.BELOW, Position.ALIGN_LEFT)
-                .addDoneButton()
+                .addDoneWidget()
                 .onClose { this.setAndUpdate(listWidget.getList()) }
                 .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
