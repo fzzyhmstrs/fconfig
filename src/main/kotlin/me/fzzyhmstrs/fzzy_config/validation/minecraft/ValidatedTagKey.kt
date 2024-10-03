@@ -19,8 +19,10 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.regRef
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.error
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -47,8 +49,8 @@ import kotlin.jvm.optionals.getOrNull
  */
 open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>, private val predicate: Predicate<Identifier>? = null): ValidatedField<TagKey<T>>(defaultValue) {
 
-    private val validator = if(predicate == null) ValidatedIdentifier.ofRegistryTags(defaultValue.registry) else ValidatedIdentifier.ofRegistryTags(defaultValue.registry, predicate)
-    private val codec = TagKey.codec(defaultValue.registry)
+    private val validator = if(predicate == null) ValidatedIdentifier.ofRegistryTags(defaultValue.regRef()) else ValidatedIdentifier.ofRegistryTags(defaultValue.regRef(), predicate)
+    private val codec = TagKey.codec(defaultValue.regRef())
 
     override fun set(input: TagKey<T>) {
         validator.validateAndSet(input.id)
@@ -88,7 +90,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
      * @since 0.2.0
      */
     override fun copyStoredValue(): TagKey<T> {
-        return TagKey.of(storedValue.registry, storedValue.id)
+        return TagKey.of(storedValue.regRef(), storedValue.id)
     }
 
     /**
@@ -102,7 +104,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
-        return input is TagKey<*> && input.registry == storedValue.registry
+        return input is TagKey<*> && input.regRef() == storedValue.regRef()
     }
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<TagKey<T>>): ClickableWidget {
@@ -115,14 +117,14 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
      * @suppress
      */
     override fun toString(): String {
-        return "Validated TagKey[value=$storedValue, validation=${if(predicate==null) "any tag in ${storedValue.registry}" else "tags from ${storedValue.registry} restricted with a predicate"}]"
+        return "Validated TagKey[value=$storedValue, validation=${if(predicate==null) "any tag in ${storedValue.regRef()}" else "tags from ${storedValue.regRef()} restricted with a predicate"}]"
     }
 
     @Internal
     //client
     private fun popupTagPopup(b: ClickableWidget, isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>>) {
-        val entryValidator = EntryValidator<String>{s, _ -> Identifier.tryParse(s)?.let { validator.validateEntry(it, EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: ValidationResult.error(s, "invalid Identifier")}
-        val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.registry, e.simpleId())) }
+        val entryValidator = EntryValidator<String>{s, _ -> Identifier.tryParse(s)?.let { validator.validateEntry(it, EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: error(s, "invalid Identifier")}
+        val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.regRef(), e.simpleId())) }
         val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s, c, cv -> validator.allowableIds.getSuggestions(s, c, cv.convert({ it.simpleId() }, { it.simpleId() }))}
         val textField = SuggestionBackedTextFieldWidget(170, 20, { validator.get().toString() }, choicePredicate.convert({it.id.toString()}, {it.id.toString()}), entryValidator, entryApplier, suggestionProvider)
         val popup = PopupWidget.Builder(translation())

@@ -32,6 +32,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.namedEntryList
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.MultilineTextWidget
