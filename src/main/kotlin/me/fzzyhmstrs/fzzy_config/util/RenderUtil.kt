@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
 import kotlin.math.min
 
@@ -22,10 +23,10 @@ import kotlin.math.min
 object RenderUtil {
 
     /**
-     * Extension function to replicate drawGuiTexture from 1.20.2+. Will brute force render the texture passed as a "standard" texture by adding the necessary identifier path information (such as the .png).
-     *
-     * This method is surely not very efficient. It is designed to be a porting feature.
-     * @param id Identier - The sprite identifier (1.20.2+ style) for the image.
+     * * Extension function to replicate drawGuiTexture from 1.20.2+. Will brute force render the texture passed as a "standard" texture by adding the necessary identifier path information (such as the .png).
+     *      *
+     *      * This method is surely not very efficient. It is designed to be a porting feature.
+     *      * @param id Identier - The sprite identifier (1.20.2+ style) for the image.
      * @param x Int - the x location of the texture
      * @param y Int - the y location of the texture
      * @param width - the width of the texture
@@ -33,7 +34,37 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun DrawContext.drawGuiTexture(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+    fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        this.drawTexture(Identifier(id.namespace, "textures/gui/sprites/${id.path}.png"), x, y, width, height, 0f, 0f, width, height, width, height)
+    }
+
+    /**
+     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * @param id Identifier - The sprite identifier for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width - the width of the texture
+     * @param height - the height of the texture
+     * @param color - the color of the texture
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
+        this.drawTexture(Identifier(id.namespace, "textures/gui/sprites/${id.path}.png"), x, y, width, height, 0f, 0f, width, height, width, height)
+    }
+
+    /**
+     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * @param id Identifier - The sprite identifier for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width - the width of the texture
+     * @param height - the height of the texture
+     * @param alpha - the texture transparency
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
         this.drawTexture(Identifier(id.namespace, "textures/gui/sprites/${id.path}.png"), x, y, width, height, 0f, 0f, width, height, width, height)
     }
 
