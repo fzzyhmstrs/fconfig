@@ -10,6 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.text.Text
 import java.io.File
 
 /**

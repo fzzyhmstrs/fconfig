@@ -1,0 +1,175 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ValidatedRegistryType</title>
+    <link href="../../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../../images/fc_banner.png">
+<link href="../../../images/discord_banner.png">
+<link href="../../../images/discord_small_banner.png">
+<link href="../../../images/wiki_banner.png">
+<link href="../../../images/wiki_small_banner.png">
+<link href="../../../images/docs_banner.png">
+<link href="../../../images/docs_small_banner.png">
+<link href="../../../images/cf_banner.png">
+<link href="../../../images/modrinth_banner.png">
+<link href="../../../images/icon.png">
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.minecraft/-validated-registry-type/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.5.0+1.21</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.minecraft\-validated-registry-type\index.html">0.5.0+24w34a</a><a href="index.html">0.5.0+1.21</a><a href="..\..\..\..\0.5.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.minecraft\-validated-registry-type\index.html">0.5.0+1.20.6</a><a href="..\..\..\..\0.5.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.minecraft\-validated-registry-type\index.html">0.5.0+1.20.4</a><a href="..\..\..\..\0.5.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.minecraft\-validated-registry-type\index.html">0.5.0+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.2%2B24w34a">0.4.2+24w34a</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.2%2B1.21">0.4.2+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.2%2B1.20.6">0.4.2+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.2%2B1.20.4">0.4.2+1.20.4</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.2%2B1.20.1">0.4.2+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.1%2B24w34a">0.4.1+24w34a</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.1%2B1.21">0.4.1+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.1%2B1.20.6">0.4.1+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.1%2B1.20.4">0.4.1+1.20.4</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.1%2B1.20.1">0.4.1+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.0%2B1.21">0.4.0+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.0%2B1.20.6">0.4.0+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.0%2B1.20.4">0.4.0+1.20.4</a><a href="..\..\..\..\..\not-found-version.html?v=0.4.0%2B1.20.1">0.4.0+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.7%2B1.21">0.3.7+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.7%2B1.20.6">0.3.7+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.7%2B1.20.1">0.3.7+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.6%2B1.21">0.3.6+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.6%2B1.20.6">0.3.6+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.6%2B1.20.1">0.3.6+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.4%2B1.21">0.3.4+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.3%2B1.20.6">0.3.3+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.3%2B1.20.1">0.3.3+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.2%2B1.20.6">0.3.2+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.2%2B1.20.1">0.3.2+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.1%2B1.20.5">0.3.1+1.20.5</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.1%2B1.20.1">0.3.1+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.0%2B1.20.5">0.3.0+1.20.5</a><a href="..\..\..\..\..\not-found-version.html?v=0.3.0%2B1.20.1">0.3.0+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.8%2B1.20.5">0.2.8+1.20.5</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.8%2B1.20.1">0.2.8+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.7%2B1.20.5">0.2.7+1.20.5</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.7%2B1.20.1">0.2.7+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.5%2B1.20.5">0.2.5+1.20.5</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.5%2B1.20.1">0.2.5+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.4%2B1.20.1">0.2.4+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.2%2B1.20.1">0.2.2+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.1%2B1.20.1">0.2.1+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.0%2B1.20.5-rc2">0.2.0+1.20.5-rc2</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.0%2B1.20.5-rc1">0.2.0+1.20.5-rc1</a><a href="..\..\..\..\..\not-found-version.html?v=0.2.0%2B1.20.1">0.2.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.validation.minecraft/ValidatedRegistryType///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Fzzy Config</a><span class="delimiter">/</span><a href="../index.html">me.fzzyhmstrs.fzzy_config.validation.minecraft</a><span class="delimiter">/</span><span class="current">ValidatedRegistryType</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Validated</span><wbr><span>Registry</span><wbr><span><span>Type</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">ValidatedRegistryType</a></div><p class="paragraph">Helper to create validation for Registered objects, specifically things in a <span data-unresolved-link="net.minecraft.registry/DefaultedRegistry///PointingToDeclaration/">DefaultedRegistry</span> like Items and Blocks.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.5.0</p></span><h4 class="">See also</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/map.html"><span>Validated</span><wbr><span>Field.</span><wbr><span>map</span></a></div></span></div><div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
+import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
+import me.fzzyhmstrs.fzzy_config.validation.misc.*
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
+import net.minecraft.item.Items
+import net.minecraft.item.SwordItem
+import net.minecraft.registry.Registries
+import net.minecraft.registry.tag.ItemTags
+import net.minecraft.util.Identifier
+import java.awt.Color
+import java.util.function.Function
+
+fun main() { 
+   //sampleStart 
+   //example simple validation of items. Any item in the Registries.ITEM registry will be valid.
+//Type: ValidatedField&lt;Item&gt;
+var validatedItem = ValidatedRegistryType.of(Registries.ITEM)
+
+//in a more complex example, we can filter down. Maybe only swords from your mod (we'll pretend your mod is minecraft for this example)
+//Type: ValidatedField&lt;Item&gt;
+var validatedItemComplex = ValidatedRegistryType.of(Items.WOODEN_SWORD, Registries.ITEM) { id, re -&gt; id.namespace == "minecraft" &amp;&amp; re.value() is SwordItem }
+
+//Since we know all the outputs will be swords, we could map it down to provide SwordItem outputs
+//Type: ValidatedField&lt;SwordItem&gt;
+var validatedItemSword = ValidatedRegistryType.of(Items.WOODEN_SWORD, Registries.ITEM) { id, re -&gt;
+    id.namespace == "minecraft" &amp;&amp; re.value() is SwordItem
+}.map(
+    { item -&gt; item as SwordItem },
+    Function.identity()
+) 
+   //sampleEnd
+}</code></pre></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1401316002%2FFunctions%2F769193423" anchor-label="of" id="1401316002%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="of.html"><span><span>of</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1401316002%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="of.html"><span class="token function">of</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">registry<span class="token operator">: </span><span data-unresolved-link="net.minecraft.registry/DefaultedRegistry///PointingToDeclaration/">DefaultedRegistry</span><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Validation for a registry object in a <span data-unresolved-link="net.minecraft.registry/DefaultedRegistry///PointingToDeclaration/">DefaultedRegistry</span></p></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="of.html"><span class="token function">of</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="of.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">registry<span class="token operator">: </span><span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="of.html"><span class="token function">of</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="of.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">registry<span class="token operator">: </span><span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">predicate<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/BiPredicate.html">BiPredicate</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token punctuation">, </span><span data-unresolved-link="net.minecraft.registry.entry/RegistryEntry///PointingToDeclaration/">RegistryEntry</span><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator">&gt;</span></div><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="of.html"><span class="token function">of</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="of.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">registry<span class="token operator">: </span><span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">predicate<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html">Predicate</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.registry.entry/RegistryEntry///PointingToDeclaration/">RegistryEntry</span><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="of.html">T</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Validation for a registry object in a <span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span>, the Registry doesn't have to be Defaulted because a default is being provided.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
