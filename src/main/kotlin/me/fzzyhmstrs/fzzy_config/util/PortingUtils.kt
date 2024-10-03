@@ -25,7 +25,7 @@ import java.util.function.Predicate
 object PortingUtils {
 
     fun getWhite(alpha: Float): Int {
-        return ColorHelper.getWhite(alpha)
+        return ColorHelper.Argb.fromFloats(alpha, 1f, 1f, 1f)
     }
 
     fun PlayerEntity.sendChat(message: Text) {
@@ -41,14 +41,14 @@ object PortingUtils {
     }
 
     fun <T> Registry<T>.tagIdList(): List<Identifier> {
-        return this.streamTags().map { it.tag.id }.toList()
+        return this.streamTags().map { it.id }.toList()
     }
 
     fun <T> Registry<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
         return if(predicate == null)
-            this.streamTags().map { it.tag.id }.toList()
+            this.streamTags().map { it.id }.toList()
         else
-            this.streamTags().map { it.tag.id }.filter(predicate).toList()
+            this.streamTags().map { it.id }.filter(predicate).toList()
     }
 
     fun <T> RegistryWrapper.Impl<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
