@@ -19,13 +19,14 @@ import net.minecraft.registry.tag.TagKey
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.ColorHelper
+import java.awt.Color
 import java.util.Optional
 import java.util.function.Predicate
 
 object PortingUtils {
 
     fun getWhite(alpha: Float): Int {
-        return ColorHelper.Argb.fromFloats(alpha, 1f, 1f, 1f)
+        return Color(1f, 1f, 1f, alpha).rgb
     }
 
     fun PlayerEntity.sendChat(message: Text) {
