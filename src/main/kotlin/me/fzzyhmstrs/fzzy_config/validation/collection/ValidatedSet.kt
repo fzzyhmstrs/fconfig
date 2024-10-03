@@ -178,7 +178,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
             val listWidget = ListListWidget(list, entryHandler, choiceValidator)
             val popup = PopupWidget.Builder(this.translation())
                 .addElement("list", listWidget, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT)
-                .addDoneButton()
+                .addDoneWidget()
                 .onClose { this.setAndUpdate(listWidget.getList().toSet()) }
                 .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })

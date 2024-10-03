@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_ONGOING
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
@@ -97,11 +98,11 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
         super.renderWidget(context, mouseX, mouseY, delta)
         if(isValid) {
             if (ongoingChanges())
-                context.drawGuiTexture(ENTRY_ONGOING, x + width - 20, y, 20, 20)
+                context.drawTex(ENTRY_ONGOING, x + width - 20, y, 20, 20)
             else
-                context.drawGuiTexture(ENTRY_OK, x + width - 20, y, 20, 20)
+                context.drawTex(ENTRY_OK, x + width - 20, y, 20, 20)
         } else {
-            context.drawGuiTexture(ENTRY_ERROR, x + width - 20, y, 20, 20)
+            context.drawTex(ENTRY_ERROR, x + width - 20, y, 20, 20)
         }
 
     }

@@ -15,6 +15,8 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
+import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget.SuggestionProvider
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.gui.DrawContext
 import org.lwjgl.glfw.GLFW
@@ -93,11 +95,11 @@ class SuggestionBackedTextFieldWidget(
         super.renderWidget(context, mouseX, mouseY, delta)
         if(isValid) {
             if (ongoingChanges())
-                context.drawGuiTexture(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
+                context.drawTex(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
             else
-                context.drawGuiTexture(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
+                context.drawTex(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
         } else {
-            context.drawGuiTexture(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
+            context.drawTex(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
         }
         if (pendingSuggestions?.isDone == true) {
             val suggestions = pendingSuggestions?.get()

@@ -84,7 +84,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
             val mapWidget = MapListWidget(map, keyHandler, valueHandler, choiceValidator)
             val popup = PopupWidget.Builder(this.translation())
                 .addElement("map", mapWidget, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT)
-                .addDoneButton()
+                .addDoneWidget()
                 .onClose { this.setAndUpdate(mapWidget.getMap()) }
                 .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })

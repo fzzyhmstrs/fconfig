@@ -196,7 +196,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             .addElement("list", entryList, Position.BELOW, Position.ALIGN_CENTER)
             .addElement("revert", ActiveButtonWidget("fc.button.revert".translate(), 147, 20, { manager.hasChanges() }, { manager.revert() }), Position.BELOW, Position.ALIGN_LEFT)
             .addElement("restore", ActiveButtonWidget("fc.button.restore".translate(), 147, 20, { manager.hasRestores("") }, { manager.restore("") }), Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addDoneButton()
+            .addDoneWidget()
             .onClose { manager.apply(true); if(manager.hasChanges()) setAndUpdate(newThing) }
             .build()
         PopupWidget.push(popup)
