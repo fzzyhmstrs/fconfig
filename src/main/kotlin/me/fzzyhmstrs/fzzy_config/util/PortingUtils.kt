@@ -46,9 +46,9 @@ object PortingUtils {
 
     fun <T> Registry<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
         return if(predicate == null)
-            this.tags.map { it.tag.id }.toList()
+            this.streamTags().map { it.tag.id }.toList()
         else
-            this.tags.map { it.tag.id }.filter(predicate).toList()
+            this.streamTags().map { it.tag.id }.filter(predicate).toList()
     }
 
     fun <T> RegistryWrapper.Impl<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
