@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
+import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
@@ -28,6 +29,8 @@ abstract class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, me
 
     open fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val minecraftClient = MinecraftClient.getInstance()
+        RenderSystem.enableBlend()
+        RenderSystem.enableDepthTest()
         context.drawTex(get(active, this.isSelected), this.x, this.y, this.getWidth(), this.getHeight(), ColorHelper.getWhite(this.alpha))
         val i = if (this.active) 16777215 else 10526880
         this.drawMessage(context, minecraftClient.textRenderer, i or (MathHelper.ceil(this.alpha * 255.0f) shl 24))
