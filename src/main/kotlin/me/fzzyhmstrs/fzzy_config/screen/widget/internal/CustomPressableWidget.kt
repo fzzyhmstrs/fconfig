@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
+import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import com.mojang.blaze3d.systems.RenderSystem
