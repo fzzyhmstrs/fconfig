@@ -129,7 +129,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
         val textField = SuggestionBackedTextFieldWidget(170, 20, { validator.get().toString() }, choicePredicate.convert({it.id.toString()}, {it.id.toString()}), entryValidator, entryApplier, suggestionProvider)
         val popup = PopupWidget.Builder(translation())
             .addElement("text_field", textField, Position.BELOW, Position.ALIGN_LEFT)
-            .addDoneButton({ textField.pushChanges(); PopupWidget.pop() })
+            .addDoneWidget({ textField.pushChanges(); PopupWidget.pop() })
             .positionX { _, _ -> b.x - 8 }
             .positionY { _, h -> b.y + 28 + 24 - h }
             .build()

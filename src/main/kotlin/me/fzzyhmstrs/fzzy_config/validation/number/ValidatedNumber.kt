@@ -17,7 +17,7 @@ import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -202,9 +202,9 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             RenderSystem.enableBlend()
             RenderSystem.defaultBlendFunc()
             RenderSystem.enableDepthTest()
-            context.drawGuiTexture(getTexture(), x, y, getWidth(), getHeight(), ColorHelper.getWhite(alpha))
+            context.drawTex(getTexture(), x, y, getWidth(), getHeight(), ColorHelper.getWhite(alpha))
             val progress = MathHelper.getLerpProgress(value.toDouble(), minValue.toDouble(), maxValue.toDouble())
-            context.drawGuiTexture(getHandleTexture(), x + (progress * (width - 8).toDouble()).toInt(), y, 8, getHeight())
+            context.drawTex(getHandleTexture(), x + (progress * (width - 8).toDouble()).toInt(), y, 8, getHeight())
             this.drawScrollableText(context, minecraftClient.textRenderer, 2, 0xFFFFFF or (MathHelper.ceil(alpha * 255.0f) shl 24))
         }
 

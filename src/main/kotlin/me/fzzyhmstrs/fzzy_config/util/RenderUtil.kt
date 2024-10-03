@@ -31,7 +31,7 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun DrawContext.drawGuiTexture(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+    fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
         this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height)
     }
 
@@ -42,11 +42,27 @@ object RenderUtil {
      * @param y Int - the y location of the texture
      * @param width - the width of the texture
      * @param height - the height of the texture
+     * @param color - the color of the texture
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun DrawContext.drawGuiTexture(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
+    fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
         this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, color)
+    }
+
+    /**
+     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * @param id Identifier - The sprite identifier for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width - the width of the texture
+     * @param height - the height of the texture
+     * @param alpha - the texture transparency
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
+        this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, PortingUtils.getWhite(alpha))
     }
 
 }

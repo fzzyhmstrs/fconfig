@@ -18,10 +18,15 @@ import net.minecraft.registry.entry.RegistryEntryList
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.ColorHelper
 import java.util.Optional
 import java.util.function.Predicate
 
 object PortingUtils {
+
+    fun getWhite(alpha: Float): Int {
+        return ColorHelper.getWhite(alpha)
+    }
 
     fun PlayerEntity.sendChat(message: Text) {
         this.sendMessage(message, false)

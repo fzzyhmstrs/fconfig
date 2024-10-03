@@ -16,7 +16,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -102,7 +102,7 @@ internal open class BaseConfigEntry(
             for (action in actions) {
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
-                context.drawGuiTexture(action.sprite, x + offset, y, 20, 20)
+                context.drawTex(action.sprite, x + offset, y, 20, 20)
                 if (isMouseOverAction(offset, offsetIncrement, mouseX, mouseY, x, y)) {
                     MinecraftClient.getInstance().currentScreen?.setTooltip(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190), HoveredTooltipPositioner.INSTANCE, this.isFocused)
                 }

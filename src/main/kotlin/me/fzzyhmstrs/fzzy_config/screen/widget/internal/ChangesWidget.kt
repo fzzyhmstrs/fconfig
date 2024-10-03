@@ -17,7 +17,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -37,15 +37,15 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         private val changesHighlightedTex: Identifier = "widget/changes_highlighted".fcId()
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = manager.hasChanges() || manager.hasChangeHistory() || manager.hasRestores(scope)
         super.renderWidget(context, mouseX, mouseY, delta)
         RenderSystem.enableBlend()
         if (manager.hasChanges()) {
             if (isFocused || isHovered)
-                context.drawGuiTexture(changesHighlightedTex, x + 68, y - 4, 16, 16)
+                context.drawTex(changesHighlightedTex, x + 68, y - 4, 16, 16)
             else
-                context.drawGuiTexture(changesTex, x + 67, y - 4, 16, 16)
+                context.drawTex(changesTex, x + 67, y - 4, 16, 16)
             context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, manager.changeCount().toString(), x + 76, y, 0xFFFFFF)
         }
     }
@@ -77,7 +77,7 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
             .addElementSpacedH("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 20, { manager.hasRestores(scope) }, { b -> openRestoreConfirmPopup(b) }), 2, Position.BELOW, Position.ALIGN_JUSTIFY)
             // Change History
             .addElementSpacedH("changelog", ActiveButtonWidget(changelogText, client.textRenderer.getWidth(changelogText) + 8, 20, { manager.hasChangeHistory() }, { openChangelogPopup() }), 2, Position.BELOW, Position.ALIGN_JUSTIFY)
-            .addDoneButton(spacingH = 2)
+            .addDoneWidget(spacingH = 2)
             .positionX(PopupWidget.Builder.at { this.x - 8 })
             .positionY(PopupWidget.Builder.popupContext { h -> this.y - h + 28 })
             .build()
@@ -95,8 +95,8 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         val popup = PopupWidget.Builder("fc.button.restore".translate())
             .addDivider()
             .addElement("confirm_text", MultilineTextWidget("fc.button.restore.confirm.desc".translate(), client.textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
-            .addElement("confirm_button", ButtonWidget.builder(confirmText) { manager.restore(scope); PopupWidget.pop() }.size(buttonWidth, 20).build(), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("cancel_button", ButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
+            .addElement("confirm_button", CustomButtonWidget.builder(confirmText) { manager.restore(scope); PopupWidget.pop() }.size(buttonWidth, 20).build(), Position.BELOW, Position.ALIGN_LEFT)
+            .addElement("cancel_button", CustomButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width / 2 - w / 2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y - h + 28 })
             .width(buttonWidth + 4 + buttonWidth + 16)
@@ -108,7 +108,7 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         val changes = manager.changeHistory()
         val popup = PopupWidget.Builder("fc.button.changelog".translate())
             .addElement("changelog", ChangelogListWidget(changes, widthSupplier), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("done_button", ButtonWidget.builder(ScreenTexts.DONE) { PopupWidget.pop() }.size(50, 20).build(), Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addElement("done_button", CustomButtonWidget.builder(ScreenTexts.DONE) { PopupWidget.pop() }.size(50, 20).build(), Position.BELOW, Position.ALIGN_JUSTIFY)
             .positionX(PopupWidget.Builder.at { 0 })
             .build()
         PopupWidget.push(popup)

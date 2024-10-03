@@ -21,7 +21,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -244,7 +244,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             .addElement("hl_map", HLMapWidget(mutableColor), "r_box", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("s_slider", VerticalSliderWidget({mutableColor.s.toDouble()}, 0, 0, 20, 68, FcText.empty(), {d -> mutableColor.updateHSL(mutableColor.h, d.toFloat(), mutableColor.l)}), "hl_map", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("hex_box", ValidationBackedTextFieldWidget(84, 20, {mutableColor.hex.get()}, ChoiceValidator.any(), mutableColor.hex, {s -> mutableColor.updateHex(s) }), "hl_map", Position.BELOW, Position.VERTICAL_TO_LEFT_EDGE)
-            .addDoneButton ({ this.setAndUpdate(mutableColor.createHolder()); PopupWidget.pop()})
+            .addDoneWidget ({ this.setAndUpdate(mutableColor.createHolder()); PopupWidget.pop()})
             .onClose { this.setAndUpdate(mutableColor.createHolder()) }
             .noCloseOnClick()
             .build()
@@ -678,24 +678,24 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()
-            context.drawGuiTexture(if (isSelected) BORDER_HIGHLIGHTED else BORDER, x, y, getWidth(), getHeight())
+            context.drawTex(if (isSelected) BORDER_HIGHLIGHTED else BORDER, x, y, getWidth(), getHeight())
             if (mutableColor.s == 1f) {
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
-                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60, ColorHelper.getWhite((mutableColor.a / 255f)))
+                context.drawTex(CENTER, x+4, y+4, 52, 60, ColorHelper.getWhite((mutableColor.a / 255f)))
             } else {
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
-                context.drawGuiTexture(CENTER_DESAT, x+4, y+4, 52, 60, ColorHelper.getWhite((mutableColor.a / 255f)))
+                context.drawTex(CENTER_DESAT, x+4, y+4, 52, 60, ColorHelper.getWhite((mutableColor.a / 255f)))
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
-                context.drawGuiTexture(CENTER, x+4, y+4, 52, 60, ColorHelper.getWhite((mutableColor.a / 255f)*(mutableColor.s / 1f)))
+                context.drawTex(CENTER, x+4, y+4, 52, 60, ColorHelper.getWhite((mutableColor.a / 255f)*(mutableColor.s / 1f)))
             }
             val cX = x + 4 + MathHelper.clampedMap(mutableColor.l, 0f, 1f, 0f, 52f).toInt() - 2
             val cY = y + 4 + MathHelper.clampedMap(mutableColor.h, 0f, 1f, 0f, 60f).toInt() - 2
             RenderSystem.enableBlend()
             RenderSystem.enableDepthTest()
-            context.drawGuiTexture(CROSSHAIR, cX, cY, 5, 5)
+            context.drawTex(CROSSHAIR, cX, cY, 5, 5)
         }
 
         override fun onClick(mouseX: Double, mouseY: Double) {

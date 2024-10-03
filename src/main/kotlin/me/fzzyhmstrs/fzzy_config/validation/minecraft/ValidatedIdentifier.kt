@@ -28,7 +28,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.optional
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.regRefId
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.tagIdList
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -174,7 +174,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             val textField = PopupIdentifierTextFieldWidget(170, 20, choicePredicate, this)
             val popup = PopupWidget.Builder(this.translation())
                 .addElement("text_field", textField, PopupWidget.Builder.Position.BELOW)
-                .addDoneButton({ textField.pushChanges(); PopupWidget.pop() })
+                .addDoneWidget({ textField.pushChanges(); PopupWidget.pop() })
                 .positionX { _, _ -> it.x - 8 }
                 .positionY { _, h -> it.y + 28 + 24 - h }
                 .build()
@@ -882,11 +882,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             super.renderWidget(context, mouseX, mouseY, delta)
             if(isValid) {
                 if (ongoingChanges())
-                    context.drawGuiTexture(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
+                    context.drawTex(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
                 else
-                    context.drawGuiTexture(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
+                    context.drawTex(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
             } else {
-                context.drawGuiTexture(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
+                context.drawTex(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
             }
             if (pendingSuggestions?.isDone == true) {
                 val suggestions = pendingSuggestions?.get()

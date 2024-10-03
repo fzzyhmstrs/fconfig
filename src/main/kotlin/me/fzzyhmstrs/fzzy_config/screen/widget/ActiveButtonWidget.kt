@@ -12,14 +12,12 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -57,13 +55,13 @@ open class ActiveButtonWidget(
         return titleSupplier.get()
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = activeSupplier.get()
         if (background != null) {
             if (this.isSelected && active) {
                 RenderSystem.enableBlend()
                 RenderSystem.disableDepthTest()
-                context.drawGuiTexture(background, x, y, getWidth(), getHeight(), ColorHelper.getWhite(alpha))
+                context.drawTex(background, x, y, getWidth(), getHeight(), alpha)
             }
             val i = if (active) 0xFFFFFF else 0xA0A0A0
             drawMessage(context, MinecraftClient.getInstance().textRenderer, i or (MathHelper.ceil(alpha * 255.0f) shl 24))

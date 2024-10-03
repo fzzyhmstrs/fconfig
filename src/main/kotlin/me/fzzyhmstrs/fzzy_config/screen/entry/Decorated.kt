@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
 import com.mojang.blaze3d.systems.RenderSystem
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
 
@@ -21,6 +21,6 @@ interface Decorated {
     fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawGuiTexture(decorationId(), x, y, 16, 16)
+        context.drawTex(decorationId(), x, y, 16, 16)
     }
 }

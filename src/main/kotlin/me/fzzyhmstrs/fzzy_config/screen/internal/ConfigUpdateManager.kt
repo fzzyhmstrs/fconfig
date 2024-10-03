@@ -84,7 +84,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
     override fun forwardsHandler() {
         val popup = PopupWidget.Builder("fc.config.forwarded".translate())
             .addElement("list", ForwardedEntryListWidget(forwardedUpdates, this), Position.BELOW, Position.ALIGN_CENTER)
-            .addDoneButton()
+            .addDoneWidget()
             .build()
         PopupWidget.push(popup)
     }
