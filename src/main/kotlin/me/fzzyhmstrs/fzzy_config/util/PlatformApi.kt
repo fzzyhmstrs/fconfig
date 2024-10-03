@@ -52,11 +52,4 @@ interface PlatformApi {
      * @since 0.5.0
      */
     fun isModLoaded(mod: String): Boolean
-
-    /**
-     * Sends a message directly to a players chat window. This is a porting feature.
-     * @param player [PlayerEntity], nullable - the player to send to. Shouldn't be null in practice, but nullable for passing in the nullable client player.
-     * @param message [Text] - the message to send
-     */
-    fun sendChat(player: PlayerEntity?, message: Text)
 }
