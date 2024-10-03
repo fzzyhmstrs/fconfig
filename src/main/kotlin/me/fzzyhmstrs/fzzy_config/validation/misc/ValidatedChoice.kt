@@ -309,7 +309,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             entry.descriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
         }
 
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activePredicate.test(thisVal)
             super.renderWidget(context, mouseX, mouseY, delta)
         }

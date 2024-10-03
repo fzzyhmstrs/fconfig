@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -54,14 +55,14 @@ open class ActiveButtonWidget(
         return titleSupplier.get()
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = activeSupplier.get()
         if (background != null) {
             if (this.isSelected && active) {
                 context.setShaderColor(1.0f, 1.0f, 1.0f, alpha)
                 RenderSystem.enableBlend()
                 RenderSystem.disableDepthTest()
-                context.drawGuiTexture(background, x, y, getWidth(), getHeight())
+                context.drawTex(background, x, y, getWidth(), getHeight(), alpha)
             }
             context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
             val i = if (active) 0xFFFFFF else 0xA0A0A0
