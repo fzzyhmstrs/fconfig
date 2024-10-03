@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
@@ -38,6 +39,7 @@ import org.lwjgl.glfw.GLFW
 import java.awt.Color
 import java.util.function.BiConsumer
 import java.util.function.BiFunction
+import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
 import kotlin.math.max
@@ -533,10 +535,52 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.2.0
          */
+        @Deprecated("Use addDoneWidget instead")
         @JvmOverloads
         fun addDoneButton(pressAction: ButtonWidget.PressAction = ButtonWidget.PressAction{ pop() }, parent: String? = null, spacingH: Int = 4): Builder {
+            val bw = ButtonWidget.builder(ScreenTexts.DONE, pressAction).build()
             val trueParent = parent ?: lastEl
-            addElementSpacedH("done_for_$trueParent", ButtonWidget.builder(ScreenTexts.DONE, pressAction).size(50, 20).build(), trueParent, spacingH, Position.BELOW, Position.ALIGN_JUSTIFY)
+            addElementSpacedH(
+                "done_for_$trueParent",
+                CustomButtonWidget.builder(ScreenTexts.DONE) { cbw ->
+                    bw.setDimensions(cbw.width, cbw.height)
+                    bw.setPosition(cbw.x, cbw.y)
+                    bw.tooltip = cbw.tooltip
+                    bw.message = cbw.message
+                    pressAction.onPress(bw)
+                    cbw.tooltip = bw.tooltip
+                    cbw.message = bw.message
+                    cbw.setDimensions(bw.width, bw.height)
+                    cbw.setPosition(bw.x, bw.y)
+                }.size(50, 20).build(),
+                trueParent,
+                spacingH,
+                Position.BELOW,
+                Position.ALIGN_JUSTIFY
+            )
+            return this
+        }
+        /**
+         * Adds a "Done" button below the previously added element, or below the defined parent
+         *
+         * The button automatically uses the layout BELOW, ALIGN_JUSTIFY
+         * @param pressAction [ButtonWidget.PressAction] - defines the buttons action when clicked
+         * @param parent String, optional. defines the parent element for this button. by default (null), will be the previously added element.
+         * @return Builder - this builder for further use
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        @JvmOverloads
+        fun addDoneWidget(pressAction: Consumer<CustomButtonWidget> = Consumer { pop() }, parent: String? = null, spacingH: Int = 4): Builder {
+            val trueParent = parent ?: lastEl
+            addElementSpacedH(
+                "done_for_$trueParent",
+                CustomButtonWidget.builder(ScreenTexts.DONE, pressAction).size(50, 20).build(),
+                trueParent,
+                spacingH,
+                Position.BELOW,
+                Position.ALIGN_JUSTIFY
+            )
             return this
         }
         /**

@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -68,11 +69,11 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         super.renderWidget(context, mouseX, mouseY, delta)
         if(isValid) {
             if (ongoingChanges())
-                context.drawGuiTexture(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
+                context.drawTex(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
             else
-                context.drawGuiTexture(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
+                context.drawTex(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
         } else {
-            context.drawGuiTexture(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
+            context.drawTex(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
         }
 
     }
