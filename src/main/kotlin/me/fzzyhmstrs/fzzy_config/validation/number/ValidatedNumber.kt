@@ -153,10 +153,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         private fun split(range: Double): Double {
-            var d = range
-            while (d.toInt().toDouble() != d) {
-                d *= 10.0
-            }
+            val d = range.toString().replace(".","").toDouble()
             return if (d % 16.0 == 0.0) {
                 (range / 16.0)
             } else if (d % 12.0 == 0.0) {
