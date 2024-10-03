@@ -1,14 +1,10 @@
 ### Additions
-* Added a decimal format to `ValidatedFloat` and `Double`; the values within will now be formatted like `#.##`, instead of showing the entire fractional part.
-* Added exception if a `ValidatedNumber` is provided with a min >= max.
-* Added `Item`, `Block`, `EntityType`, and `Fluid` as types that can be automatically wrapped with validation without having to specify it yourself.
+* None
 
 ### Changes
-* Using `@Translation` at the config-level will add the option to use the prefix itself as a lang key for the config title.
+* `ValidatedEnum` popups now center the enum buttons on popups with very long enum names
+* Many internal refactors to further move away from referencing version specific MC code outside util classes
+* Further implement Custom widgets and remove more vanilla widget references
 
 ### Fixes
-* Fixed tooltip alert for the `RELOAD_RESOURCES` action on config-level alerts
-* Fixed `@Translation` not working for config sections
-* Inherited config classes fully work again
-* Fixed mapped values not instancing themselves properly; which was breaking mapped lists, maps, and other collection views in the GUI.
-* Restore config ordering from alphabetical to declared-order in the TOML outputs. Superclasses will appear after the direct class fields.
+* Fixed number widgets sometimes freezing if their allowable range was low (<1.0)
