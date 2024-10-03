@@ -66,7 +66,7 @@ open class ActiveButtonWidget(
             val i = if (active) 0xFFFFFF else 0xA0A0A0
             drawMessage(context, MinecraftClient.getInstance().textRenderer, i or (MathHelper.ceil(alpha * 255.0f) shl 24))
         } else {
-            super.renderWidget(context, mouseX, mouseY, delta)
+            super.renderCustom(context, mouseX, mouseY, delta)
         }
     }
 

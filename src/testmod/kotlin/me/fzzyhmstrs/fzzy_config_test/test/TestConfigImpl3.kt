@@ -19,6 +19,8 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import net.minecraft.block.Blocks
 import net.minecraft.client.MinecraftClient
@@ -60,6 +62,8 @@ class TestConfigImpl3: Config(Identifier.of("fzzy_config_test","test_config3")) 
     }
     @RequiresRestart
     private var int2 = ValidatedInt(6, 10, 1)
+
+    private var floatTest = ValidatedDouble(5.0, 6.6, 5.0)
 
     private var itemTest = Items.EGG
 
