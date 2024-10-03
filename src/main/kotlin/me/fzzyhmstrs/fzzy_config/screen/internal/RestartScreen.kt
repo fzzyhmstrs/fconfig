@@ -30,7 +30,7 @@ internal class RestartScreen: PopupWidgetScreen(FcText.empty()) {
     override fun init() {
         super.init()
         initBody()
-        initTabNavigation()
+        initLayout()
     }
 
     private fun initBody() {
@@ -65,7 +65,7 @@ internal class RestartScreen: PopupWidgetScreen(FcText.empty()) {
         }
     }
 
-    override fun initTabNavigation() {
+    fun initLayout() {
         layout.refreshPositions()
     }
 
