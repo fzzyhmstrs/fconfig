@@ -620,7 +620,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 //memoize to cache the predicate test get also
-                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.toList() }
+                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().tagIdList() }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
                 return ValidatedIdentifier("c:dummy".simpleId(), ids)
             } else {
@@ -648,7 +648,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 //memoize to cache the predicate test get also
-                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
+                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().tagIdList(predicate) }
                 val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
                 return ValidatedIdentifier("c:dummy".simpleId(), ids)
             } else {
