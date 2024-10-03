@@ -10,9 +10,12 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.ColorHelper
+import java.awt.Color
 
 /**
  * Render utils for DrawContext to provide functionality similar to 1.20.2+ sprite rendering
@@ -32,7 +35,7 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
-        this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height)
+        this.drawGuiTexture(id, x, y, width, height)
     }
 
     /**
@@ -47,7 +50,10 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
-        this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, color)
+        val floats = Color(color).getComponents(floatArrayOf(0f, 0f, 0f, 0f))
+        RenderSystem.setShaderColor(floats[0], floats[1], floats[2], floats[3])
+        this.drawGuiTexture(id, x, y, width, height)
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
     }
 
     /**
@@ -62,7 +68,9 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
-        this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, PortingUtils.getWhite(alpha))
+        RenderSystem.setShaderColor(1f, 1f, 1f, alpha)
+        this.drawGuiTexture(id, x, y, width, height)
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
     }
 
 }
