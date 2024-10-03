@@ -119,7 +119,7 @@ internal object NetworkEvents {
 
         registrar.playToClient(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec, NetworkEventsClient::handleUpdate)
 
-        registrar.playToClient(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec, this::handleUpdate)
+        registrar.playToServer(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec, this::handleUpdate)
 
         registrar.playBidirectional(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec, this::handleSettingForwardBidirectional)
 
