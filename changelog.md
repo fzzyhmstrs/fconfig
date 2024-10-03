@@ -1,4 +1,5 @@
 ### Additions
+* Port to 24w40a
 * Added a decimal format to `ValidatedFloat` and `Double`; the values within will now be formatted like `#.##`, instead of showing the entire fractional part.
 * Added exception if a `ValidatedNumber` is provided with a min >= max.
 * Added `Item`, `Block`, `EntityType`, and `Fluid` as types that can be automatically wrapped with validation without having to specify it yourself.
