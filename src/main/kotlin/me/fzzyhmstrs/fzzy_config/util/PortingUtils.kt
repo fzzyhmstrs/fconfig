@@ -33,34 +33,34 @@ object PortingUtils {
     }
 
     fun <T> Registry<T>.optional(id: Identifier): Optional<T> {
-        return this.getOptionalValue(id)
+        return this.getOrEmpty(id)
     }
 
     fun <T> RegistryWrapper.WrapperLookup.optional(key: RegistryKey<out Registry<T>>):  Optional<out RegistryWrapper.Impl<T>> {
-        return this.getOptional(key)
+        return this.getOptionalWrapper(key)
     }
 
     fun <T> Registry<T>.tagIdList(): List<Identifier> {
-        return this.tags.map { it.tag.id }.toList()
+        return this.streamTags().map { it.tag.id }.toList()
     }
 
     fun <T> RegistryWrapper.Impl<T>.tagIdList(predicate: Predicate<Identifier>? = null): List<Identifier> {
         return if(predicate == null)
-            this.tags.map { it.tag.id }.toList()
+            this.streamTags().map { it.tag.id }.toList()
         else
-            this.tags.map { it.tag.id }.filter(predicate).toList()
+            this.streamTags().map { it.tag.id }.filter(predicate).toList()
     }
 
     fun <T> Registry<T>.namedEntryList(tagKey: TagKey<T>): Optional<RegistryEntryList.Named<T>> {
-        return this.getOptional(tagKey)
+        return this.getEntryList(tagKey)
     }
 
     fun <T> TagKey<T>.regRef(): RegistryKey<out Registry<T>> {
-        return this.registryRef
+        return this.registry
     }
 
     fun TagKey<*>.regRefId(): Identifier {
-        return this.registryRef.value
+        return this.registry.value
     }
 
 }
