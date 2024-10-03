@@ -44,10 +44,11 @@ internal object NetworkEvents {
     }
 
     private fun handleUpdate(payload: ConfigUpdateC2SCustomPayload, context: IPayloadContext) {
+        if (context.player().isEmpty) return
         SyncedConfigRegistry.receiveConfigUpdate(
             payload.updates,
-            context.player().cast<ServerPlayerEntity>().server,
-            context.player().cast(),
+            context.player().get().cast<ServerPlayerEntity>().server,
+            context.player().get().cast(),
             payload.changeHistory,
             { player, id -> canSend(player, id) },
             { player, pl -> send(player, pl) }
