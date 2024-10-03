@@ -10,6 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.text.Text
 import java.io.File
 
 internal object PlatformApiImpl: PlatformApi {
@@ -28,5 +30,9 @@ internal object PlatformApiImpl: PlatformApi {
 
     override fun isModLoaded(mod: String): Boolean {
         return PlatformUtils.isModLoaded(mod)
+    }
+
+    override fun sendChat(player: PlayerEntity?, message: Text) {
+        player?.sendMessage(message, false)
     }
 }
