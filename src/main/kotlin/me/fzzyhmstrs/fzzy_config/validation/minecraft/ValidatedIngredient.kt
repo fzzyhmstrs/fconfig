@@ -25,6 +25,7 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.namedEntryList
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextWidget
@@ -428,7 +429,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             return ProviderType.TAG
         }
         override fun provide(): Ingredient {
-            return Ingredient.fromTag(Registries.ITEM.getEntryList(TagKey.of(RegistryKeys.ITEM, tag)).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
+            return Ingredient.fromTag(Registries.ITEM.namedEntryList(TagKey.of(RegistryKeys.ITEM, tag)).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
             return TagProvider(toml.asTomlLiteral().toString().replace("#", "").simpleId())

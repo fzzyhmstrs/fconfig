@@ -25,6 +25,9 @@ import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.optional
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.regRefId
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.tagIdList
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -312,7 +315,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         fun <T> ofTag(defaultValue: Identifier, tag: TagKey<T>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(tag.registry().value)
+            val maybeRegistry = Registries.REGISTRIES.optional(tag.regRefId())
             if (maybeRegistry.isEmpty) return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { listOf() }))
             val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
@@ -334,11 +337,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofTag(tag: TagKey<T>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(tag.registry().value)
+            val maybeRegistry = Registries.REGISTRIES.optional(tag.regRefId())
             if (maybeRegistry.isEmpty) return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ false }, { listOf() }))
             val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ false }, { listOf() }))
             val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
-            return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false))
+            return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers( { id -> supplier.get().contains(id) }, supplier, false))
         }
 
         /**
@@ -482,13 +485,13 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
 
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(defaultValue, registry)
             } else {
-                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 val predicate2: Predicate<Identifier> = Predicate { id -> registry2.streamKeys().anyMatch { key -> key.value == id }}
@@ -510,12 +513,12 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(defaultValue, registry, predicate)
             } else {
-                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 val predicate2: Predicate<Identifier> = Predicate {
@@ -539,12 +542,12 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(defaultValue, registry, predicate)
             } else {
-                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 val predicate2: Predicate<Identifier> = Predicate {
@@ -585,12 +588,12 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(registry, predicate)
             } else {
-                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 val predicate2: Predicate<Identifier> = Predicate {
@@ -614,18 +617,18 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 //memoize to cache the predicate test get also
                 val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.toList() }
-                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
                 return ValidatedIdentifier("c:dummy".simpleId(), ids)
             } else {
-                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
-                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.toList() }
-                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().tagIdList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
                 return ValidatedIdentifier("c:dummy".simpleId(), ids)
             }
         }
@@ -642,18 +645,18 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         fun <T: Any> ofRegistryTags(key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 //memoize to cache the predicate test get also
                 val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
-                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
                 return ValidatedIdentifier("c:dummy".simpleId(), ids)
             } else {
-                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
-                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
-                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().tagIdList(predicate) }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
                 return ValidatedIdentifier("c:dummy".simpleId(), ids)
             }
         }
@@ -668,18 +671,18 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 //memoize to cache the predicate test get also
-                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.toList() }
-                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().tagIdList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
                 return ValidatedIdentifier(default.id, ids)
             } else {
-                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
-                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.toList() }
-                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().tagIdList() }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
                 return ValidatedIdentifier(default.id, ids)
             }
         }
@@ -695,18 +698,18 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         fun <T: Any> ofRegistryTags(default: TagKey<T>, key: RegistryKey<out Registry<T>>, predicate: Predicate<Identifier>): ValidatedIdentifier {
-            val maybeRegistry = Registries.REGISTRIES.getOrEmpty(key.value)
+            val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 //memoize to cache the predicate test get also
-                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
-                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                val supplier: Supplier<List<Identifier>> = Suppliers.memoize { maybeRegistry.get().tagIdList(predicate) }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
                 return ValidatedIdentifier(default.id, ids)
             } else {
-                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().getOptionalWrapper(key)
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
                 if (maybeRegistry2.isEmpty) throw IllegalStateException("Couldn't find registry based on passed key")
                 //no memoization, this registry is dynamic
-                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().streamTags().map { it.tag.id }.filter(predicate).toList() }
-                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, true)
+                val supplier: Supplier<List<Identifier>> = Supplier { maybeRegistry2.get().tagIdList(predicate) }
+                val ids = AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false)
                 return ValidatedIdentifier(default.id, ids)
             }
         }
