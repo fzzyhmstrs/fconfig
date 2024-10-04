@@ -8,3 +8,4 @@
 
 ### Fixes
 * Fixed number widgets sometimes freezing if their allowable range was low (<1.0)
+* Fixed integer type slider left/right button incrementing on ranges <10 min to max
