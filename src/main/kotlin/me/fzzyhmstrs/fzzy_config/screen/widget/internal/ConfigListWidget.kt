@@ -313,13 +313,4 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, he
         }
         super.appendNarrations(builder, entry)
     }
-
-    internal fun getTop(): Int {
-        return top
-    }
-
-    internal fun getBottom(): Int {
-        return bottom
-    }
-
 }
