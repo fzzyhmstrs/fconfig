@@ -19,7 +19,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.minecraft.client.MinecraftClient
@@ -544,14 +543,14 @@ class PopupWidget
             addElementSpacedH(
                 "done_for_$trueParent",
                 CustomButtonWidget.builder(ScreenTexts.DONE) { cbw ->
-                    bw.setDimensions(cbw.width, cbw.height)
+                    bw.width = cbw.width
                     bw.setPosition(cbw.x, cbw.y)
                     bw.tooltip = cbw.tooltip
                     bw.message = cbw.message
                     pressAction.onPress(bw)
                     cbw.tooltip = bw.tooltip
                     cbw.message = bw.message
-                    cbw.setDimensions(bw.width, bw.height)
+                    cbw.width = bw.width
                     cbw.setPosition(bw.x, bw.y)
                 }.size(50, 20).build(),
                 trueParent,

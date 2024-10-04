@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
