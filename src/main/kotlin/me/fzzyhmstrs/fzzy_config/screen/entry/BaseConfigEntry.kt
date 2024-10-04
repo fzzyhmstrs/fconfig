@@ -40,7 +40,7 @@ import kotlin.math.min
 //client
 internal open class BaseConfigEntry(
     val name: Text,
-    protected val description: Text,
+    val description: Text,
     private var actions: Set<Action>,
     protected val parent: ConfigListWidget,
     protected val widget: ClickableWidget)
@@ -113,6 +113,9 @@ internal open class BaseConfigEntry(
                 offset -= offsetIncrement
             }
         }
+
+        if (mouseY < parent.y || mouseY > parent.bottom) return
+
         if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null) {
             //let widgets tooltip win
         } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty()) {

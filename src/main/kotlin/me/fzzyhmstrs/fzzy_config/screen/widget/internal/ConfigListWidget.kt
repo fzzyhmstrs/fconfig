@@ -52,10 +52,27 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         this.children().toList()
     }
 
-    private val  search: SuffixArray<Int> by lazy {
+    private val search: SuffixArray<Int> by lazy {
         val array = SuffixArray<Int>()
         for ((i, entry) in wholeList.withIndex()) {
             array.add(i, entry.name.string.lowercase(Locale.ROOT))
+        }
+        array.build()
+        array
+    }
+
+    private val searchExact: Map<String, Int> by lazy {
+        val map: MutableMap<String, Int> = mutableMapOf()
+        for ((i, entry) in wholeList.withIndex()) {
+            map[entry.name.string.lowercase(Locale.ROOT)] = i
+        }
+        map
+    }
+
+    private val searchDesc: SuffixArray<Int> by lazy {
+        val array = SuffixArray<Int>()
+        for ((i, entry) in wholeList.withIndex()) {
+            array.add(i, entry.description.string.lowercase(Locale.ROOT))
         }
         array.build()
         array
@@ -83,18 +100,116 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         return suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)
     }
 
-
     fun updateSearchedEntries(searchInput: String): Int {
-        if (searchInput == "") {
+        val type: SearchType
+        val trimmedSearchInput = if (searchInput.startsWith('$')) {
+            type = SearchType.DESCRIPTION
+            if (searchInput.length == 1) {
+                ""
+            } else {
+                searchInput.substring(1)
+            }
+        } else if (searchInput.startsWith('-')) {
+            if (searchInput.startsWith("-$")) {
+                type = SearchType.NEGATE_DESCRIPTION
+                if (searchInput.length == 2) {
+                    ""
+                } else {
+                    searchInput.substring(2)
+                }
+            } else if (searchInput.startsWith("-\"")) {
+                if (searchInput.length > 2 && searchInput.endsWith('"')) {
+                    type = SearchType.NEGATE_EXACT
+                    if (searchInput.length == 3) {
+                        ""
+                    } else {
+                        searchInput.substring(2, searchInput.lastIndex)
+                    }
+                } else {
+                    type = SearchType.NEGATION
+                    if (searchInput.length == 2) {
+                        ""
+                    } else {
+                        searchInput.substring(2)
+                    }
+                }
+            } else {
+                type = SearchType.NEGATION
+                if (searchInput.length == 1) {
+                    ""
+                } else {
+                    searchInput.substring(1)
+                }
+            }
+        } else if (searchInput.startsWith('"')) {
+            if (searchInput.length > 1 && searchInput.endsWith('"')) {
+                type = SearchType.EXACT
+                if (searchInput.length == 2) {
+                    ""
+                } else {
+                    searchInput.substring(1, searchInput.lastIndex)
+                }
+            } else {
+                type = SearchType.NORMAL
+                if (searchInput.length == 1) {
+                    ""
+                } else {
+                    searchInput.substring(1)
+                }
+            }
+        } else {
+            type = SearchType.NORMAL
+            searchInput
+        }
+
+        if (trimmedSearchInput == "") {
             this.replaceEntries(wholeList.toList())
             scrollAmount = 0.0
             return wholeList.size
         }
-        val results = search.findAll(searchInput.lowercase(Locale.ROOT))
-        val list = wholeList.filterIndexed { index, _ -> results.contains(index) }
+
+        val list: List<BaseConfigEntry>
+        when (type) {
+            SearchType.DESCRIPTION -> {
+                val results = searchDesc.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
+                list = wholeList.filterIndexed { index, _ -> results.contains(index) }
+            }
+            SearchType.NEGATION -> {
+                val results = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
+                list = wholeList.filterIndexed { index, _ -> !results.contains(index) }
+            }
+            SearchType.NEGATE_DESCRIPTION -> {
+                val results = searchDesc.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
+                list = wholeList.filterIndexed { index, _ -> !results.contains(index) }
+            }
+            SearchType.EXACT -> {
+                val result = searchExact[trimmedSearchInput.lowercase(Locale.ROOT)]
+                list = if(result != null) listOf(wholeList[result]) else listOf()
+            }
+            SearchType.NEGATE_EXACT -> {
+                val result = searchExact[trimmedSearchInput.lowercase(Locale.ROOT)]
+                list = wholeList.filterIndexed { index, _ -> index != result }
+            }
+            SearchType.NORMAL -> {
+                val results = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
+                list = wholeList.filterIndexed { index, _ -> results.contains(index) }
+            }
+        }
+        /*val results = search.findAll(searchInput.lowercase(Locale.ROOT))
+        val list = wholeList.filterIndexed { index, _ -> results.contains(index) }*/
         this.replaceEntries(list)
         scrollAmount = 0.0
         return list.size
+    }
+
+
+    private enum class SearchType {
+        DESCRIPTION,
+        NEGATION,
+        NEGATE_DESCRIPTION,
+        EXACT,
+        NEGATE_EXACT,
+        NORMAL
     }
 
     override fun forEachChild(consumer: Consumer<ClickableWidget>) {
