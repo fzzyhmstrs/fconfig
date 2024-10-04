@@ -112,7 +112,7 @@ internal open class BaseConfigEntry(
             }
         }
 
-        if (mouseY < parent.y || mouseY > (parent.y + parent.height)) return
+        if (mouseY < parent.getTop() || mouseY > parent.getBottom()) return
 
         if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null) {
             //let widgets tooltip win
