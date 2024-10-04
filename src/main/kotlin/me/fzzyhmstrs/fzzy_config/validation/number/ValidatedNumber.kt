@@ -168,8 +168,19 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         private var confirmActive = false
         private var cachedWrappedValue: T = wrappedValue.get()
         private var value: T = wrappedValue.get()
-        private val increment = max((maxValue.toDouble() - minValue.toDouble())/ 102.0, min(1.0, split(maxValue.toDouble() - minValue.toDouble())))
+        private val increment = max(
+            (maxValue.toDouble() - minValue.toDouble())/ 102.0,
+            if (isIntType()) {
+                max(1.0, split(maxValue.toDouble() - minValue.toDouble()))
+            } else {
+                min(1.0, split(maxValue.toDouble() - minValue.toDouble()))
+            }
+        )
         private var isValid = validator.validateEntry(wrappedValue.get(), EntryValidator.ValidationType.STRONG).isValid()
+
+        private fun isIntType(): Boolean {
+            return maxValue is Int || maxValue is Long || maxValue is Short || maxValue is Byte
+        }
 
         private fun isChanged(): Boolean {
             return value != wrappedValue.get()
