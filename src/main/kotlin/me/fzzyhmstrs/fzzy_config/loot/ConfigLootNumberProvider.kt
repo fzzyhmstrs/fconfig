@@ -8,7 +8,7 @@
 * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
 * */
 
-package me.fzzyhmstrs.modifier_core.loot
+package me.fzzyhmstrs.fzzy_config.loot
 
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
