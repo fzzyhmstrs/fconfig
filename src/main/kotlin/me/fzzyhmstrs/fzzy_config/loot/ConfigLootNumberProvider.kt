@@ -39,7 +39,7 @@ class ConfigLootNumberProvider(private val scope: String, private val scaling: F
 
         private var cachedResults: MutableMap<String, Supplier<Float>> = mutableMapOf()
 
-        internal fun invalidateConfigLootNumberResults() {
+        internal fun invalidateResults() {
             cachedResults = mutableMapOf()
         }
         
