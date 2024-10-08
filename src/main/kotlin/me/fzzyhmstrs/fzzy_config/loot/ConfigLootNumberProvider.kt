@@ -44,7 +44,7 @@ class ConfigLootNumberProvider(private val scope: String, private val scaling: F
         }
         
         private fun getResult(scope: String): Float {
-            return cachedResults.computeIfAbsent(scope) { scope -> computeResultSupplier(scope) }
+            return cachedResults.computeIfAbsent(scope) { scope -> computeResultSupplier(scope) }?.get() ?: 0f
         }
 
         private fun computeResultSupplier(scope: String): Supplier<Float> {
