@@ -10,6 +10,19 @@
 
 package me.fzzyhmstrs.fzzy_config.result
 
+/**
+ * Generic provider of values based on a string scope provided
+ * @param T Non null type to return
+ * @author fzzyhmstrs
+ * @since 0.5.3
+ */
 interface ResultProvider<T: Any> {
+    /**
+     * Provides a result. Note non-null return value, so implementations should have a fallback mechanism.
+     * @param scope String scope to provide a result based on
+     * @return T result based on scope provided. In general the result should be consistent for like-keys. If keyA.equals(keyB), the result should either be the same or have a consistent source (derive from the same supplier, function, etc.)
+     * @author fzzyhmstrs
+     * @since 0.5.3
+     */
     fun getResult(scope: String): T
 }
