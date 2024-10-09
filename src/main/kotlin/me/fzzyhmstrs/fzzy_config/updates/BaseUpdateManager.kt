@@ -48,8 +48,8 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     //   scopes are built into translation-key-like strings
     //   ex. 'mymod.items.dropRates.oceanChests'
 
-    protected val updateMap: LinkedHashMap<String, Updatable> = LinkedHashMap()
-    private val changeHistory: MutableMap<Updatable, SortedMap<Long, Text>> = mutableMapOf()
+    protected var updateMap: LinkedHashMap<String, Updatable> = LinkedHashMap()
+    private var changeHistory: MutableMap<Updatable, SortedMap<Long, Text>> = mutableMapOf()
 
     override fun update(updatable: Updatable, updateMessage: Text) {
         updateMap.computeIfAbsent(updatable.getEntryKey()) { updatable }
@@ -125,9 +125,9 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     }
 
     override fun flush(): List<String> {
-        updateMap.clear()
+        updateMap = LinkedHashMap()
         val updates = buildChangeHistoryLog()
-        changeHistory.clear()
+        changeHistory = mutableMapOf()
         return updates
     }
 
