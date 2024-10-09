@@ -21,6 +21,10 @@ import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.api.NetworkApi
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
+import me.fzzyhmstrs.fzzy_config.result.api.ResultApi
+import me.fzzyhmstrs.fzzy_config.result.api.ResultApiJava
+import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
+import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiJavaImpl
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.PlatformApiImpl
 import net.peanuuutz.tomlkt.*
@@ -125,4 +129,13 @@ object ConfigApiJava {
         return EventApiImpl
     }
 
+    /**
+     * Provides an instance of the [ResultApiJava] for creation of [ResultProvider][me.fzzyhmstrs.fzzy_config.result.ResultProvider] to indirectly refer to configs via scope strings
+     * @author fzzyhmstrs
+     * @since 0.5.3
+     */
+    @JvmStatic
+    fun result(): ResultApiJava {
+        return ResultApiJavaImpl
+    }
 }
