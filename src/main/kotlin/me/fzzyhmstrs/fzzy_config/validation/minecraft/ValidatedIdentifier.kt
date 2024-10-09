@@ -484,7 +484,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>): ValidatedIdentifier {
+        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.optional(key.value)
 
             if (maybeRegistry.isPresent) {
@@ -512,7 +512,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
+        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<out Registry<T>>, predicate: Predicate<RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
@@ -541,7 +541,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
+        fun <T> ofRegistryKey(defaultValue: Identifier, key: RegistryKey<out Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
@@ -570,7 +570,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>): ValidatedIdentifier {
+        fun <T> ofRegistryKey(key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
             return ofRegistryKey("minecraft:air".simpleId(), key)
         }
 
@@ -587,7 +587,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         @Suppress("UNCHECKED_CAST")
         @Deprecated("Only use for validation in a list or map")
-        fun <T> ofRegistryKey(key: RegistryKey<Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
+        fun <T> ofRegistryKey(key: RegistryKey<out Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
