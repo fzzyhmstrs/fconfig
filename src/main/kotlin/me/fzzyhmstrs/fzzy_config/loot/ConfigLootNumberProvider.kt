@@ -10,21 +10,26 @@
 
 package me.fzzyhmstrs.fzzy_config.loot
 
+import com.mojang.serialization.Codec
 import com.mojang.serialization.MapCodec
 import com.mojang.serialization.codecs.RecordCodecBuilder
-import me.fzzyhmstrs.fzzy_core.FC
-import me.fzzyhmstrs.fzzy_core.fcId
+import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.result.ResultProviderSupplier
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import net.minecraft.loot.context.LootContext
 import net.minecraft.loot.context.LootContextParameter
 import net.minecraft.loot.provider.number.LootNumberProvider
 import net.minecraft.loot.provider.number.LootNumberProviderType
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
+import java.util.function.Supplier
 
 class ConfigLootNumberProvider(private val scope: String, private val scaling: Float): LootNumberProvider {
 
     override fun nextFloat(context: LootContext): Float {
-        return getResult(scope) / scaling
+        return resultProvider.getResult(scope) / scaling
     }
 
     override fun getType(): LootNumberProviderType {
@@ -37,55 +42,17 @@ class ConfigLootNumberProvider(private val scope: String, private val scaling: F
 
     companion object {
 
-        private var cachedResults: MutableMap<String, Supplier<Float>> = mutableMapOf()
-
-        internal fun invalidateResults() {
-            cachedResults = mutableMapOf()
-        }
-        
-        private fun getResult(scope: String): Float {
-            return cachedResults.computeIfAbsent(scope) { scope -> computeResultSupplier(scope) }?.get() ?: 0f
-        }
-
-        private fun computeResultSupplier(scope: String): Supplier<Float> {
-            try {
-                var startIndex = 0
-                while (startIndex < scope.length) {
-                    val nextStartIndex = scope.indexOf(".", startIndex)
-                    if (nextStartIndex == -1) {
-                        FC.LOGGER.error("Invalid scope $scope provided to a Config Loot Number. Config not found! Default value of 0.0 used.")
-                        return Supplier { 0f }
-                    }
-                    startIndex = nextStartIndex
-                    val testScope = scope.subString(0, nextStartIndex)
-                    val config = SyncedConfigRegistry.syncedConfigs()[testScope] ?: continue
-                    if (testScope == scope) {
-                        FC.LOGGER.error("Invalid scope $scope provided to a Config Loot Number. No setting scope provided! Default value of 0.0 used.")
-                        FC.LOGGER.error("Found: $scope")
-                        FC.LOGGER.error("Need $scope[.subScopes].settingName")
-                        return Supplier { 0f }
-                    }
-                    ConfigApiImpl.drill(config, scope.removePrefix("$testScope."), '.', ConfigApiImpl.IGNORE_VISIBILITY)  { config, _, _, thing, thingProp, _, _, _ ->
-                        if (thing == null) {
-                            FC.LOGGER.error("Error encountered while reading Config Loot Number value for $scope. Value was null! Default value of 0.0 used.")
-                            return Supplier { 0f }
-                        }
-                        return if (thing is ValidatedNumber<*>) {
-                            Supplier { (thing.get() as Number).toFloat() }
-                        } else if (thing is Number) {
-                            Supplier { (thingProp.get(config) as Number).toFloat() }
-                        } else {
-                            FC.LOGGER.error("Error encountered while reading Config Loot Number value for $scope. Value is not a number! Default value of 0.0 used.")
-                            Supplier { 0f }
-                        }
-                    }
+        private val resultProvider = ConfigApiImpl.createSimpleResultProvider(0f, ResultProviderSupplier { scope, _, thing, thingProp ->
+            when (thing) {
+                is ValidatedNumber<*> -> Supplier { (thing.get().toFloat()) }
+                is Number -> Supplier { ((thingProp.getter.call()as Number).toFloat()) }
+                else -> {
+                    FC.LOGGER.error("Error encountered while reading value for $scope. Value is not a number! Default value ${Supplier { 0f }} used.")
+                    Supplier { 0f }
                 }
-            } catch (e: Throwable) {
-                FC.LOGGER.error("Critical exception encountered while reading Config Loot Number value for $scope. Default value of 0.0 used")
-                return Supplier { 0f }
             }
-        }
-      
+        })
+
         private val CODEC: MapCodec<ConfigLootNumberProvider> = RecordCodecBuilder.mapCodec { instance: RecordCodecBuilder.Instance<ConfigLootNumberProvider> ->
             instance.group(
                 Codec.STRING.fieldOf("scope").forGetter(ConfigLootNumberProvider::scope),
