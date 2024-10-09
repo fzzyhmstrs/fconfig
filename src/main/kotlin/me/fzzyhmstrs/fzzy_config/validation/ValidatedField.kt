@@ -31,6 +31,10 @@ import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 import java.util.function.Function
+import kotlin.reflect.KType
+import kotlin.reflect.full.allSupertypes
+import kotlin.reflect.full.starProjectedType
+import kotlin.reflect.jvm.jvmErasure
 
 /**
  * Validated Field Collection - serialization is indistinguishable from their wrapped values, but deserialized into a validated wrapper
@@ -459,6 +463,12 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
                     DataResult.success(result)
             }
         )
+    }
+
+    fun argumentType(): KType? {
+        var superType: KType? = null
+        this::class.allSupertypes.filter { it.jvmErasure == ValidatedField::class }.forEach { superType = it }
+        return superType?.arguments?.get(0)?.type
     }
 
     companion object {
