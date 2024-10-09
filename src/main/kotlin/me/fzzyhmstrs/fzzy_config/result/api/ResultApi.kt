@@ -15,14 +15,73 @@ import me.fzzyhmstrs.fzzy_config.result.ResultProviderSupplier
 import java.util.function.Supplier
 import kotlin.reflect.KClass
 
+/**
+ * API for reflectively providing results from a config using string scopes rather than direct access.
+ * @author fzzyhmstrs
+ * @since 0.5.3
+ */
 interface ResultApi {
 
+    /**
+     * Creates a result provider that will return values of the given type from valid config scopes matching that type.
+     * 
+     * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     *
+     * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
+     * @param T non-null provider type. Needs to be a type that can actually be provided by a config
+     * @param fallback [Supplier]&lt;[T]&gt; - supplies a fallback value if the scope provided isn't valid. This fallback will be cached against any invalid scope, and an error logged, rather than an exception being thrown.
+     * @param clazz [KClass]&lt;[T]&gt; - class type to provide. Scopes provided can point to either a direct instance of the type, or `validatedField<T>`. So Boolean and ValidatedBoolean are both valid targets for a Boolean provider.
+     * @return [ResultProvider] to supply results based on passed scopes. This should be created once per use-case (static, companion object, etc), otherwise caching won't be effective.
+     * @author fzzyhmstrs
+     * @since 0.5.3
+     */
     fun <T: Any> createResultProvider(fallback: Supplier<T>, clazz: KClass<T>): ResultProvider<T>
 
+    /**
+     * Creates a result provider that will return values of the given type from valid config scopes matching that type, with a custom Supplier generator instance.
+     * 
+     * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     *
+     * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
+     * @param T non-null provider type. Needs to be a type that can actually be provided by a config
+     * @param fallback [Supplier]&lt;[T]&gt; - supplies a fallback value if the scope provided isn't valid. This fallback will be cached against any invalid scope, and an error logged, rather than an exception being thrown.
+     * @param clazz [KClass]&lt;[T]&gt; - class type to provide. Scopes provided can point to either a direct instance of the type, or `validatedField<T>`. So Boolean and ValidatedBoolean are both valid targets for a Boolean provider.
+     * @param drillFunction [ResultProviderSupplier] - a custom creator of Suppliers for creating scoped results.
+     * @return [ResultProvider] to supply results based on passed scopes. This should be created once per use-case (static, companion object, etc), otherwise caching won't be effective.
+     * @author fzzyhmstrs
+     * @since 0.5.3
+     */
     fun <T: Any> createResultProvider(fallback: Supplier<T>, drillFunction: ResultProviderSupplier<T>): ResultProvider<T>
 
+    /**
+     * Creates a result provider that will return values of the given type from valid config scopes matching that type.
+     * 
+     * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     *
+     * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
+     * @param T non-null provider type. Needs to be a type that can actually be provided by a config
+     * @param fallback [T] - a fallback value if the scope provided isn't valid. This fallback will be cached against any invalid scope, and an error logged, rather than an exception being thrown.
+     * @param clazz [KClass]&lt;[T]&gt; - class type to provide. Scopes provided can point to either a direct instance of the type, or `validatedField<T>`. So Boolean and ValidatedBoolean are both valid targets for a Boolean provider.
+     * @return [ResultProvider] to supply results based on passed scopes. This should be created once per use-case (static, companion object, etc), otherwise caching won't be effective.
+     * @author fzzyhmstrs
+     * @since 0.5.3
+     */
     fun <T: Any> createSimpleResultProvider(fallback: T, clazz: KClass<T>): ResultProvider<T>
 
+    /**
+     * Creates a result provider that will return values of the given type from valid config scopes matching that type, with a custom Supplier generator instance.
+     * 
+     * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     *
+     * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
+     * @param T non-null provider type. Needs to be a type that can actually be provided by a config
+     * @param fallback [T] - supplies a fallback value if the scope provided isn't valid. This fallback will be cached against any invalid scope, and an error logged, rather than an exception being thrown.
+     * @param clazz [KClass]&lt;[T]&gt; - class type to provide. Scopes provided can point to either a direct instance of the type, or `validatedField<T>`. So Boolean and ValidatedBoolean are both valid targets for a Boolean provider.
+     * @param drillFunction [ResultProviderSupplier] - a custom creator of Suppliers for creating scoped results.
+     * @return [ResultProvider] to supply results based on passed scopes. This should be created once per use-case (static, companion object, etc), otherwise caching won't be effective.
+     * @author fzzyhmstrs
+     * @since 0.5.3
+     */
     fun <T: Any> createSimpleResultProvider(fallback: T, drillFunction: ResultProviderSupplier<T>): ResultProvider<T>
 
 }
