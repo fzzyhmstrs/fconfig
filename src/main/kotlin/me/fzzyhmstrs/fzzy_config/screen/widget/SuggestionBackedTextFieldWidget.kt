@@ -152,7 +152,7 @@ class SuggestionBackedTextFieldWidget(
             suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }
-        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || (keyCode == GLFW.GLFW_KEY_TAB && bl)) {
             pushChanges()
             if (closePopup)
                 PopupWidget.pop()
