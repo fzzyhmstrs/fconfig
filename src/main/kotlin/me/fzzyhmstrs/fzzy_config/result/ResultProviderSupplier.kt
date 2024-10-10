@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.result
 
 import me.fzzyhmstrs.fzzy_config.config.Config
+import org.jetbrains.annotations.ApiStatus
 import java.util.function.Supplier
 import kotlin.reflect.KMutableProperty
 
@@ -21,6 +22,7 @@ import kotlin.reflect.KMutableProperty
  * @since 0.5.3
  */
 @FunctionalInterface
+@ApiStatus.Experimental
 fun interface ResultProviderSupplier<T: Any> {
     /**
      * Creates a result supplier from config values. Since configs are by design mutable in-game, the result should freshly inspect the value on every `get()`.
@@ -29,12 +31,14 @@ fun interface ResultProviderSupplier<T: Any> {
      *
      * Using this general strategy ensures that fresh values are supplied on every call.
      * @param scope String representation of a config setting. See [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation) for an overview of how scopes work.
+     * @param args List&lt;String&gt; optionally provided args appended to the provided scope. The scope parameter also technically contains these, pre-processing
      * @param config [Config] the config instance providing results
      * @param thing [Any] the candidate result to potentially use to create the supplier with.
-     * @param proprty [KMutableProperty] reflection property instance for the [thing]
+     * @param property [KMutableProperty] reflection property instance for the [thing]
      * @return [Supplier]&lt;[T]&gt; supplier instance for retrieving values from the config scope provided.
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    fun supplier(scope: String, config: Config, thing: Any, property: KMutableProperty<*>): Supplier<T>
+    @ApiStatus.Experimental
+    fun supplier(scope: String, args: List<String>, config: Config, thing: Any, property: KMutableProperty<*>): Supplier<T>
 }

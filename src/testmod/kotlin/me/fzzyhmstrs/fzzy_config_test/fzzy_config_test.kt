@@ -19,6 +19,8 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
+import me.fzzyhmstrs.fzzy_config_test.loot.ConfigLootCondition
+import me.fzzyhmstrs.fzzy_config_test.loot.ConfigLootNumberProvider
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigClient
 import me.fzzyhmstrs.fzzy_config_test.test.TestPopupScreen
@@ -47,15 +49,17 @@ object FC: ModInitializer {
 
     override fun onInitialize() {
         PermissionCheckEvent.EVENT.register { _, permission ->
-            if (permission == TEST_PERMISSION_GOOD) 
-                TriState.TRUE 
-            else if (permission == TEST_PERMISSION_BAD) 
-                TriState.FALSE 
-            else 
+            if (permission == TEST_PERMISSION_GOOD)
+                TriState.TRUE
+            else if (permission == TEST_PERMISSION_BAD)
+                TriState.FALSE
+            else
                 TriState.DEFAULT
         }
 
         TestConfig.init()
+        ConfigLootCondition.init()
+        ConfigLootNumberProvider.init()
         val expressionTestResults = AssertionResults()
         assertConstExpression("3 + 5", 8.0, expressionTestResults)
         assertConstExpression("3 - 5", -2.0, expressionTestResults)
