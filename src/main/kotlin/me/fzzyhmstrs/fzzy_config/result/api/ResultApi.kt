@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.result.api
 
 import me.fzzyhmstrs.fzzy_config.result.ResultProvider
 import me.fzzyhmstrs.fzzy_config.result.ResultProviderSupplier
+import org.jetbrains.annotations.ApiStatus
 import java.util.function.Supplier
 import kotlin.reflect.KClass
 
@@ -20,12 +21,15 @@ import kotlin.reflect.KClass
  * @author fzzyhmstrs
  * @since 0.5.3
  */
+@ApiStatus.Experimental
 interface ResultApi {
 
     /**
-     * Creates a result provider that will return values of the given type from valid config scopes matching that type.
-     * 
-     * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     * Creates a result provider that will return values of the given type from a config. This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     *
+     * For an overview of scope, see [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation).
+     *
+     * You can also supply _args_ via the scope string by appending them with a `?` like `mod_id.config_id.settingName?arg?arg2`. See the wiki for details on how this is or can be utilized.
      *
      * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
      * @param T non-null provider type. Needs to be a type that can actually be provided by a config
@@ -35,12 +39,15 @@ interface ResultApi {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
+    @ApiStatus.Experimental
     fun <T: Any> createResultProvider(fallback: Supplier<T>, clazz: KClass<T>): ResultProvider<T>
 
     /**
-     * Creates a result provider that will return values of the given type from valid config scopes matching that type, with a custom Supplier generator instance.
-     * 
-     * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     * Creates a result provider that will return values of the given type from a config. This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     *
+     * For an overview of scope, see [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation).
+     *
+     * You can also supply _args_ via the scope string by appending them with a `?` like `mod_id.config_id.settingName?arg?arg2`. See the wiki for details on how this is or can be utilized.
      *
      * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
      * @param T non-null provider type. Needs to be a type that can actually be provided by a config
@@ -50,12 +57,15 @@ interface ResultApi {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
+    @ApiStatus.Experimental
     fun <T: Any> createResultProvider(fallback: Supplier<T>, drillFunction: ResultProviderSupplier<T>): ResultProvider<T>
 
     /**
-     * Creates a result provider that will return values of the given type from valid config scopes matching that type.
-     * 
-     * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     * Creates a result provider that will return values of the given type from a config. This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     *
+     * For an overview of scope, see [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation).
+     *
+     * You can also supply _args_ via the scope string by appending them with a `?` like `mod_id.config_id.settingName?arg?arg2`. See the wiki for details on how this is or can be utilized.
      *
      * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
      * @param T non-null provider type. Needs to be a type that can actually be provided by a config
@@ -65,12 +75,15 @@ interface ResultApi {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
+    @ApiStatus.Experimental
     fun <T: Any> createSimpleResultProvider(fallback: T, clazz: KClass<T>): ResultProvider<T>
 
     /**
-     * Creates a result provider that will return values of the given type from valid config scopes matching that type, with a custom Supplier generator instance.
-     * 
-     * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     * Creates a result provider that will return values of the given type from a config. This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
+     *
+     * For an overview of scope, see [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation).
+     *
+     * You can also supply _args_ via the scope string by appending them with a `?` like `mod_id.config_id.settingName?arg?arg2`. See the wiki for details on how this is or can be utilized.
      *
      * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
      * @param T non-null provider type. Needs to be a type that can actually be provided by a config
@@ -80,6 +93,7 @@ interface ResultApi {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
+    @ApiStatus.Experimental
     fun <T: Any> createSimpleResultProvider(fallback: T, drillFunction: ResultProviderSupplier<T>): ResultProvider<T>
 
 }
