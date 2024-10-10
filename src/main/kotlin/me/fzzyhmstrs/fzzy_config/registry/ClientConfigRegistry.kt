@@ -46,6 +46,10 @@ internal object ClientConfigRegistry {
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
     private var hasScrapedMetadata = false
 
+    fun getClientConfig(scope: String): Config? {
+        return clientConfigs[scope]?.active
+    }
+
     //client
     internal fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
