@@ -110,6 +110,14 @@ object ConfigApiJava {
     }
 
     /**
+     * Whether a config corresponding to the provided scope is registered
+     */
+    @JvmStatic
+    fun isConfigLoaded(scope: String): Boolean {
+        return ConfigApiImpl.isConfigLoaded(scope)
+    }
+
+    /**
      * Provides an instance of the [NetworkApi] for usage of the built-in cross-loader networking API
      * @author fzzyhmstrs
      * @since 0.5.0

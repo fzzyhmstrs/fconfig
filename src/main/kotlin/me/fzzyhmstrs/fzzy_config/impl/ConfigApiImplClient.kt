@@ -139,4 +139,8 @@ internal object ConfigApiImplClient {
             comment.append(".")
         return comment.toString()
     }
+
+    internal fun getClientConfig(scope: String): Config? {
+        return ClientConfigRegistry.getClientConfig(scope)
+    }
 }
