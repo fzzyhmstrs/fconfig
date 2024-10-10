@@ -88,6 +88,12 @@ internal object ConfigApiImpl {
             FCC.openRestartScreen()
     }
 
+    internal fun getConfig(scope: String): Config? {
+        return SyncedConfigRegistry.syncedConfigs()[scope]
+            ?:
+            if(isClient) ConfigApiImplClient.getClientConfig(scope) else null
+    }
+
     ///////////////////// Registration ///////////////////////////////////////////////////
 
     internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T {
@@ -127,6 +133,20 @@ internal object ConfigApiImpl {
     }
     private fun <T: Config> registerAndLoadClient(configClass: () -> T): T {
         return registerClient(readOrCreateAndValidate(configClass), configClass)
+    }
+
+    internal fun isConfigLoaded(scope: String): Boolean {
+        var startIndex = 0
+        while (startIndex < scope.length) {
+            val nextStartIndex = scope.indexOf(".", startIndex)
+            if (nextStartIndex == -1) {
+                return false
+            }
+            startIndex = nextStartIndex + 1
+            val testScope = scope.substring(0, nextStartIndex)
+            if (SyncedConfigRegistry.hasConfig(testScope)) return true
+        }
+        return false
     }
 
     ///////////////// Flags //////////////////////////////////////////////////////////////
@@ -647,7 +667,7 @@ internal object ConfigApiImpl {
         return ValidationResult.predicated(list, list.isEmpty(), "Access Violations Found!")
     }
 
-    fun isConfigAdmin(player: PlayerEntity, config: Config): Boolean {
+    internal fun isConfigAdmin(player: PlayerEntity, config: Config): Boolean {
         val annotation = config::class.annotations.firstOrNull{ it is AdminAccess }?.cast<WithCustomPerms>()
         if (annotation == null) {
             return player.hasPermissionLevel(3)

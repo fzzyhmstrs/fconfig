@@ -46,6 +46,8 @@ object TestConfig {
         }
     }
 
+    val resultProvider = ConfigApi.result().createSimpleResultProvider(-666, Int::class)
+
     var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
     var testConfig4 = ConfigApi.registerAndLoadConfig({ TestConfigImpl4() }, RegisterType.BOTH)
 }
