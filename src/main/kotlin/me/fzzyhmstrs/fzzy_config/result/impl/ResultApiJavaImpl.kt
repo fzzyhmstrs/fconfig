@@ -26,7 +26,7 @@ object ResultApiJavaImpl: ResultApiJava {
 
     override fun <T : Any> createResultProvider(fallback: Supplier<T>, drillFunction: ResultProviderSupplierJava<T>): ResultProvider<T> {
         return CachedConfigValueProvider { scope ->
-            computeResultSupplier(scope, fallback) { s, a, c, t, tp -> drillFunction.supplierJava(s, a, c, t, tp.javaField) }
+            computeResultSupplier(scope, fallback) { s, c, t, tp -> drillFunction.supplierJava(s, c, t, tp.javaField) }
         }
     }
 
@@ -36,7 +36,7 @@ object ResultApiJavaImpl: ResultApiJava {
 
     override fun <T : Any> createSimpleResultProvider(fallback: T, drillFunction: ResultProviderSupplierJava<T>): ResultProvider<T> {
         return CachedConfigValueProvider { scope ->
-            computeResultSupplier(scope, { fallback }) { s, a, c, t, tp -> drillFunction.supplierJava(s, a, c, t, tp.javaField) }
+            computeResultSupplier(scope, { fallback }) { s, c, t, tp -> drillFunction.supplierJava(s, c, t, tp.javaField) }
         }
     }
 }

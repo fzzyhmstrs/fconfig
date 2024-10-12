@@ -27,6 +27,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
+import java.util.function.Function
 
 inline fun<reified T> Any?.cast(): T {
     return this as T
@@ -99,9 +100,7 @@ object FCC {
         this.openRestartScreen = true
     }
 
-    fun withRestart(consumer: Consumer<Boolean>) {
-        consumer.accept(openRestartScreen)
-        openRestartScreen = false
-
+    fun withRestart(function: Function<Boolean, Boolean>) {
+        openRestartScreen = function.apply(openRestartScreen)
     }
 }
