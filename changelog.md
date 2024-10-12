@@ -11,3 +11,4 @@
 ### Fixes
 * Restart screen now properly shows when a restart-causing change is received.
 * Pressing tab on suggestions now properly tabs the result into the setting text field instead of changing focus to the next widget (done button etc.)
+* `ValidatedIdentifier.ofRegistryKey` now takes `? extends Registry` like the other helper method types, instead of just `Registry`.
