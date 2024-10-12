@@ -12,8 +12,10 @@ package me.fzzyhmstrs.fzzy_config_test.test
 
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.util.FcText.description
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.Walkable
@@ -116,6 +118,10 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
     @WithPerms(5)
     var list1 = listOf(1, 3, 5, 7)
     var list2 = listOf(1, 3, 5, 7).validated()
+
+    var list2Button = ConfigAction.Builder().title("List2 Contains 9".lit()).build { println(TestConfig.listProvider.getArgResult("fzzy_config_test.test_config2.list2?contains=9", ContainsArg)) }
+    var list2Index = ConfigAction.Builder().title("List2 Index 1".lit()).build { println(TestConfig.listProvider.getArgResult("fzzy_config_test.test_config2.list2?index=1", IndexArg(-666))) }
+    var list2Process = ConfigAction.Builder().title("List2 Process".lit()).build { TestConfig.listProvider.processArgResults("fzzy_config_test.test_config2.list2?contains=9?random?index=1", ContainsArg.to { println(it) }, IndexArg(-666).to { println(it) }, RandomArg(-777).to { println(it) }) }
 
     @Comment("Testing out a comment")
     var color1 = Color(255, 128, 0).validated(true)
