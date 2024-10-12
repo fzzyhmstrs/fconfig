@@ -41,5 +41,5 @@ fun interface ResultProviderSupplierJava<T: Any> {
      * @since 0.5.3
      */
     @ApiStatus.Experimental
-    fun supplierJava(scope: String, args: List<String>, config: Config, thing: Any, property: Field?): Supplier<T>
+    fun supplierJava(scope: String, config: Config, thing: Any, property: Field?): Supplier<T>
 }
