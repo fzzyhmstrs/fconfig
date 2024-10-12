@@ -158,7 +158,8 @@ internal object NetworkEventsClient {
         FCC.withRestart { openRestartScreen ->
             if (openRestartScreen) {
                 ConfigApiImplClient.openRestartScreen()
-            }
+            } else
+                false
         }
     }
 
