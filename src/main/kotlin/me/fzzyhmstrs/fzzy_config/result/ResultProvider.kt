@@ -19,7 +19,9 @@ import org.jetbrains.annotations.ApiStatus
  * @since 0.5.3
  */
 @ApiStatus.Experimental
+@JvmDefaultWithoutCompatibility
 interface ResultProvider<T: Any> {
+
     /**
      * Provides a result. Note non-null return value, so implementations should have a fallback mechanism.
      *
@@ -31,4 +33,22 @@ interface ResultProvider<T: Any> {
      */
     @ApiStatus.Experimental
     fun getResult(scope: String): T
+
+
+    @ApiStatus.Experimental
+    fun <R> getArgResult(scope: String, arg: ResultArg<in T, out R>): R {
+        val argMap = ResultArg.getArgs(scope)
+        val argVal = argMap[arg.arg] ?: return arg.fallback
+        return arg.applyArg(getResult(ResultArg.stripArgs(scope)), argVal)
+    }
+
+    @ApiStatus.Experimental
+    fun processArgResults(scope: String, vararg arg: ResultArg<in T, *>.Processor) {
+        val argMap = ResultArg.getArgs(scope)
+        val result = getResult(ResultArg.stripArgs(scope))
+        for (a in arg) {
+            val argVal = argMap[a.arg] ?: continue
+            a.applyArg(result, argVal)
+        }
+    }
 }
