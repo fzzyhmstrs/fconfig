@@ -40,12 +40,12 @@ class ConfigLootNumberProvider(private val scope: String, private val scaling: F
 
     companion object {
 
-        private val resultProvider = ConfigApi.result().createSimpleResultProvider(0f) { scope, _, _, thing, thingProp ->
+        private val resultProvider = ConfigApi.result().createSimpleResultProvider(0f) { scope, _, thing, thingProp ->
             when (thing) {
                 is ValidatedNumber<*> -> Supplier { (thing.get().toFloat()) }
                 is Number -> Supplier { ((thingProp.getter.call() as Number).toFloat()) }
                 else -> {
-                    println("Error encountered while reading value for $scope. Value is not a number! Default value ${Supplier { 0f }} used.")
+                    println("Error encountered while reading value for $scope. Value is not a number! Default value 0f used.")
                     Supplier { 0f }
                 }
             }
