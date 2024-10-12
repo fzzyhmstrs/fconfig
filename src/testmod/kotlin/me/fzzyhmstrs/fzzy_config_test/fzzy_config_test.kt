@@ -15,12 +15,9 @@ import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.util.Expression
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
-import me.fzzyhmstrs.fzzy_config_test.loot.ConfigLootCondition
-import me.fzzyhmstrs.fzzy_config_test.loot.ConfigLootNumberProvider
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigClient
 import me.fzzyhmstrs.fzzy_config_test.test.TestPopupScreen
@@ -31,13 +28,11 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.minecraft.client.gui.Selectable
 import net.minecraft.util.Identifier
 import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.util.math.MathHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.math.exp
 import kotlin.random.Random
 
 object FC: ModInitializer {
@@ -58,8 +53,6 @@ object FC: ModInitializer {
         }
 
         TestConfig.init()
-        ConfigLootCondition.init()
-        ConfigLootNumberProvider.init()
         val expressionTestResults = AssertionResults()
         assertConstExpression("3 + 5", 8.0, expressionTestResults)
         assertConstExpression("3 - 5", -2.0, expressionTestResults)
