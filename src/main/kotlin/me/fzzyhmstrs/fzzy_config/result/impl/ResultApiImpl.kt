@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.IGNORE_VISIBILITY
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.drill
+import me.fzzyhmstrs.fzzy_config.result.ResultArg
 import me.fzzyhmstrs.fzzy_config.result.ResultProvider
 import me.fzzyhmstrs.fzzy_config.result.ResultProviderSupplier
 import me.fzzyhmstrs.fzzy_config.result.api.ResultApi
@@ -58,7 +59,7 @@ object ResultApiImpl: ResultApi {
         scope: String,
         fallback: Supplier<T>,
         clazz: KClass<T>,
-        drillFunction: ResultProviderSupplier<T> = ResultProviderSupplier { s, _, config, thing, thingProp ->
+        drillFunction: ResultProviderSupplier<T> = ResultProviderSupplier { s, config, thing, thingProp ->
             if (thing is ValidatedField<*> && thing.argumentType()?.jvmErasure?.isSuperclassOf(clazz) == true) {
                 Supplier { (thing.get() as T) }
             }
@@ -98,21 +99,12 @@ object ResultApiImpl: ResultApi {
                     return fallback
                 }
                 var supplier = fallback
-                val argsString = scope.removePrefix(scope.substringBefore('?'))
-                val target = scope.removePrefix("$testScope.").removeSuffix(argsString)
+                val target = ResultArg.stripArgs(scope.removePrefix("$testScope."))
                 drill(config, target, '.', IGNORE_VISIBILITY)  { _, _, _, thing, thingProp, _, _, _ ->
                     if (thing == null) {
                         FC.LOGGER.error("Error encountered while reading value for $scope. Value was null! Default value $fallback used.")
                     } else {
-                        val args = if (argsString.length > 1) {
-                            argsString.substring(1).split('?')
-                        } else if (argsString.length == 1) {
-                            FC.LOGGER.error("Error encountered while reading value for $scope. Empty Argument provided! Results may be undefined")
-                            listOf()
-                        } else {
-                            listOf()
-                        }
-                        supplier = drillFunction.supplier(scope, args, config, thing, thingProp)
+                        supplier = drillFunction.supplier(ResultArg.stripArgs(scope), config, thing, thingProp)
                     }
                 }
                 return supplier

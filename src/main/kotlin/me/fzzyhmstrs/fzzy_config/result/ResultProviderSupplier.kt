@@ -40,5 +40,5 @@ fun interface ResultProviderSupplier<T: Any> {
      * @since 0.5.3
      */
     @ApiStatus.Experimental
-    fun supplier(scope: String, args: List<String>, config: Config, thing: Any, property: KMutableProperty<*>): Supplier<T>
+    fun supplier(scope: String, config: Config, thing: Any, property: KMutableProperty<*>): Supplier<T>
 }
