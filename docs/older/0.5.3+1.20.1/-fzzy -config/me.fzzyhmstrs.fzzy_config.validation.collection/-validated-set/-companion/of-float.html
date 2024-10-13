@@ -1,0 +1,114 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ofFloat</title>
+    <link href="../../../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../../../images/fc_banner.png">
+<link href="../../../../images/discord_banner.png">
+<link href="../../../../images/discord_small_banner.png">
+<link href="../../../../images/wiki_banner.png">
+<link href="../../../../images/wiki_small_banner.png">
+<link href="../../../../images/docs_banner.png">
+<link href="../../../../images/docs_small_banner.png">
+<link href="../../../../images/cf_banner.png">
+<link href="../../../../images/modrinth_banner.png">
+<link href="../../../../images/icon.png">
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.collection/-validated-set/-companion/of-float.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.5.3+1.20.1</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.5.3+24w40a</a><a href="..\..\..\..\..\0.5.3+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.5.3+1.21</a><a href="..\..\..\..\..\0.5.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.5.3+1.20.6</a><a href="..\..\..\..\..\0.5.3+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.5.3+1.20.4</a><a href="of-float.html">0.5.3+1.20.1</a><a href="..\..\..\..\..\0.5.0+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.5.0+24w34a</a><a href="..\..\..\..\..\0.5.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.5.0+1.21</a><a href="..\..\..\..\..\0.5.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.5.0+1.20.6</a><a href="..\..\..\..\..\0.5.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.5.0+1.20.4</a><a href="..\..\..\..\..\0.5.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.5.0+1.20.1</a><a href="..\..\..\..\..\0.4.2+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.2+24w34a</a><a href="..\..\..\..\..\0.4.2+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.2+1.21</a><a href="..\..\..\..\..\0.4.2+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.2+1.20.6</a><a href="..\..\..\..\..\0.4.2+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.2+1.20.4</a><a href="..\..\..\..\..\0.4.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.2+1.20.1</a><a href="..\..\..\..\..\0.4.1+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.1+24w34a</a><a href="..\..\..\..\..\0.4.1+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.1+1.21</a><a href="..\..\..\..\..\0.4.1+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.1+1.20.6</a><a href="..\..\..\..\..\0.4.1+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.1+1.20.4</a><a href="..\..\..\..\..\0.4.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.1+1.20.1</a><a href="..\..\..\..\..\0.4.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.0+1.21</a><a href="..\..\..\..\..\0.4.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.0+1.20.6</a><a href="..\..\..\..\..\0.4.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.0+1.20.4</a><a href="..\..\..\..\..\0.4.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.4.0+1.20.1</a><a href="..\..\..\..\..\0.3.7+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.7+1.21</a><a href="..\..\..\..\..\0.3.7+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.7+1.20.6</a><a href="..\..\..\..\..\0.3.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.7+1.20.1</a><a href="..\..\..\..\..\0.3.6+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.6+1.21</a><a href="..\..\..\..\..\0.3.6+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.6+1.20.6</a><a href="..\..\..\..\..\0.3.6+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.6+1.20.1</a><a href="..\..\..\..\..\0.3.4+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.4+1.21</a><a href="..\..\..\..\..\0.3.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.3+1.20.6</a><a href="..\..\..\..\..\0.3.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.3+1.20.1</a><a href="..\..\..\..\..\0.3.2+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.2+1.20.6</a><a href="..\..\..\..\..\0.3.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.2+1.20.1</a><a href="..\..\..\..\..\0.3.1+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.1+1.20.5</a><a href="..\..\..\..\..\0.3.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.1+1.20.1</a><a href="..\..\..\..\..\0.3.0+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.0+1.20.5</a><a href="..\..\..\..\..\0.3.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.3.0+1.20.1</a><a href="..\..\..\..\..\0.2.8+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.8+1.20.5</a><a href="..\..\..\..\..\0.2.8+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.8+1.20.1</a><a href="..\..\..\..\..\0.2.7+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.7+1.20.5</a><a href="..\..\..\..\..\0.2.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.7+1.20.1</a><a href="..\..\..\..\..\0.2.5+1.20.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.5+1.20.5</a><a href="..\..\..\..\..\0.2.5+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.5+1.20.1</a><a href="..\..\..\..\..\0.2.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.4+1.20.1</a><a href="..\..\..\..\..\0.2.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.2+1.20.1</a><a href="..\..\..\..\..\0.2.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.1+1.20.1</a><a href="..\..\..\..\..\0.2.0+1.20.5-rc2\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.0+1.20.5-rc2</a><a href="..\..\..\..\..\0.2.0+1.20.5-rc1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.0+1.20.5-rc1</a><a href="..\..\..\..\..\0.2.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.collection\-validated-set\-companion\of-float.html">0.2.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="member" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.validation.collection/ValidatedSet.Companion/ofFloat/#kotlin.collections.Set[kotlin.Float]/PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../../index.html">Fzzy Config</a><span class="delimiter">/</span><a href="../../index.html">me.fzzyhmstrs.fzzy_config.validation.collection</a><span class="delimiter">/</span><a href="../index.html">ValidatedSet</a><span class="delimiter">/</span><a href="index.html">Companion</a><span class="delimiter">/</span><span class="current">ofFloat</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>of</span><wbr><span><span>Float</span></span></h1>
+  </div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><a href="of-float.html"><span class="token function">ofFloat</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">set<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">ValidatedSet</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token operator">&gt;</span></div><p class="paragraph">creates a Validated Float Set</p><p class="paragraph">Allows any float value from NEGATIVE_INFINITY to POSITIVE_INFINITY, repeating elements allowed</p><span class="kdoc-tag"><h4 class="">Return</h4><p class="paragraph"><a href="../index.html">ValidatedSet</a> from the set provided</p></span><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.2.0</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>set</span></span></u></div></span></div><div><div class="title"><p class="paragraph">input Set<float></float></p></div></div></div></div></div><hr><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div></div><span class="token keyword">fun </span><a href="of-float.html"><span class="token function">ofFloat</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">vararg </span>f<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../index.html">ValidatedSet</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token operator">&gt;</span></div><p class="paragraph">creates a Validated Float Set</p><p class="paragraph">Allows any float value from NEGATIVE_INFINITY to POSITIVE_INFINITY, repeating elements allowed</p><span class="kdoc-tag"><h4 class="">Return</h4><p class="paragraph"><a href="../index.html">ValidatedSet</a> from the set provided</p></span><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.2.0</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>f</span></span></u></div></span></div><div><div class="title"><p class="paragraph">vararg float inputs to construct the set</p></div></div></div></div></div></div></div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
