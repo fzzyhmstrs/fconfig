@@ -26,10 +26,13 @@ import me.fzzyhmstrs.fzzy_config.networking.api.NetworkApi
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
 import me.fzzyhmstrs.fzzy_config.theme.api.ThemeApi
 import me.fzzyhmstrs.fzzy_config.theme.impl.ThemeApiImpl
+import me.fzzyhmstrs.fzzy_config.result.api.ResultApi
+import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.PlatformApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.peanuuutz.tomlkt.*
+import org.jetbrains.annotations.ApiStatus
 import java.io.File
 import java.util.function.Supplier
 
@@ -372,6 +375,11 @@ object ConfigApi {
         return ConfigApiImpl.makeDir(folder, subfolder)
     }
 
+    @JvmStatic
+    fun isConfigLoaded(scope: String): Boolean {
+        return ConfigApiImpl.isConfigLoaded(scope)
+    }
+
     /**
      * Provides an instance of the [NetworkApi] for usage of the built-in cross-loader networking API
      * @author fzzyhmstrs
@@ -411,4 +419,15 @@ object ConfigApi {
         return ThemeApiImpl
     }
 
+}
+    /**
+     * Provides an instance of the [ResultApi] for creation of [ResultProvider][me.fzzyhmstrs.fzzy_config.result.ResultProvider] to indirectly refer to configs via scope strings
+     * @author fzzyhmstrs
+     * @since 0.5.3
+     */
+    @JvmStatic
+    @ApiStatus.Experimental
+    fun result(): ResultApi {
+        return ResultApiImpl
+    }
 }

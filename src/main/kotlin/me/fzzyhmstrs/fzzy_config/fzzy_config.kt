@@ -20,6 +20,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.function.Consumer
+import java.util.function.Function
 
 inline fun<reified T> Any?.cast(): T {
     return this as T
@@ -31,6 +32,14 @@ inline fun<reified T> Any?.nullCast(): T? {
 
 internal fun String.fcId(): Identifier {
     return Identifier.of(FC.MOD_ID, this)
+}
+
+internal fun String.simpleId(): Identifier {
+    return Identifier.of(this)
+}
+
+internal fun String.nsId(path: String): Identifier {
+    return Identifier.of(this, path)
 }
 
 @Internal
@@ -68,9 +77,7 @@ object FCC: ClientModInitializer {
         this.openRestartScreen = true
     }
 
-    fun withRestart(consumer: Consumer<Boolean>) {
-        consumer.accept(openRestartScreen)
-        openRestartScreen = false
-
+    fun withRestart(function: Function<Boolean, Boolean>) {
+        openRestartScreen = function.apply(openRestartScreen)
     }
 }

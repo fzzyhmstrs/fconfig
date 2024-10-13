@@ -12,6 +12,8 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import net.minecraft.resource.SynchronousResourceReloader
 import net.minecraft.util.Identifier
+import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.text.Text
 import java.io.File
 
 internal object PlatformApiImpl: PlatformApi {

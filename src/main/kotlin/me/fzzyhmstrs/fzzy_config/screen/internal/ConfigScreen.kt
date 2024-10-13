@@ -31,7 +31,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.*
-import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
@@ -46,8 +45,8 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     private var parent: Screen? = null
 
     internal val layout = ThreePartsLayoutWidget(this)
-    private val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.empty())
-    private val doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
+    private var searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.empty())
+    private var doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
     private val configList: ConfigListWidget = entriesWidget.apply(this)
 
     fun setParent(screen: Screen?) {
@@ -85,13 +84,17 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         close()
     }
 
+    override fun resize(client: MinecraftClient, width: Int, height: Int) {
+        super.resize(client, width, height)
+    }
+
     override fun init() {
         super.init()
         ThemeApiImpl.addConfigScreen(scope)
         initHeader()
         initFooter()
         initBody()
-        initTabNavigation()
+        initLayout()
     }
     private fun initHeader() {
         val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2)) { positioner ->
@@ -132,19 +135,26 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
             else
                 searchField.setEditableColor(0xFF5555)
         }
+        searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.empty())
         searchField.setMaxLength(100)
         searchField.text = ""
         searchField.setChangedListener { s -> setColor(configList.updateSearchedEntries(s)) }
+        searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
         directionalLayoutWidget.add(searchField)
         //forward alert button
         directionalLayoutWidget.add(TextlessActionWidget("widget/action/alert".fcId(), "widget/action/alert_inactive".fcId(), "widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(), { manager.hasForwards() } ) { manager.forwardsHandler() })
         //changes button
         directionalLayoutWidget.add(ChangesWidget(scope, { this.width }, manager))
         //done button
+        val msg = doneButton.message
+        val tt = doneButton.tooltip
+        doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
+        doneButton.message = msg
+        doneButton.tooltip = tt
         directionalLayoutWidget.add(doneButton)
     }
 
-    override fun initTabNavigation() {
+    private fun initLayout() {
         layout.refreshPositions()
         configList.position(width, layout)
     }
@@ -197,7 +207,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
             .addElement("click_kb2", TextWidget("fc.button.info.click_kb2".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
             .addDivider()
             .addElement("alert", TextWidget("fc.button.info.alert".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addDoneButton()
+            .addDoneWidget()
             .build()
         PopupWidget.push(popup)
     }

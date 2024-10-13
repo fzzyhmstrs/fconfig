@@ -29,6 +29,10 @@ import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.api.NetworkApi
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
+import me.fzzyhmstrs.fzzy_config.result.api.ResultApi
+import me.fzzyhmstrs.fzzy_config.result.api.ResultApiJava
+import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
+import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiJavaImpl
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.PlatformApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -106,6 +110,14 @@ object ConfigApiJava {
     }
 
     /**
+     * Whether a config corresponding to the provided scope is registered
+     */
+    @JvmStatic
+    fun isConfigLoaded(scope: String): Boolean {
+        return ConfigApiImpl.isConfigLoaded(scope)
+    }
+
+    /**
      * Provides an instance of the [NetworkApi] for usage of the built-in cross-loader networking API
      * @author fzzyhmstrs
      * @since 0.5.0
@@ -135,4 +147,13 @@ object ConfigApiJava {
         return EventApiImpl
     }
 
+    /**
+     * Provides an instance of the [ResultApiJava] for creation of [ResultProvider][me.fzzyhmstrs.fzzy_config.result.ResultProvider] to indirectly refer to configs via scope strings
+     * @author fzzyhmstrs
+     * @since 0.5.3
+     */
+    @JvmStatic
+    fun result(): ResultApiJava {
+        return ResultApiJavaImpl
+    }
 }

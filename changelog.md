@@ -1,20 +1,14 @@
 ### Additions
-* Added `ValidatedField` mapping. Validation can be mapped to validation of any other convertible type with the new `map` methods.
-  * New helper class `ValidatedRegistryType` maps `ValidatedIdentifier` to registry objects, allowing for easy direct implmentation of setting based on registry objects (Items, Blocks, etc) without having to later map the identifiers yourself.
-* `ValidatedField` now has a helper `codec` method for generating a Codec of the underlying type.
-* `ValidatedField` now has a listener system that triggers on any `set` of the field. This listener is a `Consumer<ValidatedField<T>>` and is added with `withListener`
-* Added `EventApi` and corresponding direct implementations in the `Config` class
-  * like other sub-apis, access this Api through the `ConfigApi`
-  * `onSyncClient` - fires when a config is synced to a client
-  * `onUpdateClient` - fires when a config is updated in-game on the client side
-  * `onUpdateServer` - fires when a config is updated in-game on the server side
-* Added `ConfigAction`, which can be used to add arbitrary on-click buttons in the Config GUI. Use them to link to your wiki, open a patchouli guide book, give the player an item, etc.
-* Added extremely basic `PlatformApi` for simple cross-loader tasks like checking if the game state is client-sided or not.
+* New _**experimental**_ Result Provider api; providing a framework for reflectively accessing any config value via string scopes
+  * Create result providers for any configurable type, providers soft fail to fallbacks given during creation
+  * Results are dynamically updated as the config changes, no need for relogging, reloading, etc.
+  * Built in argument handling system for performing actions on the scope requested - check the size of a list, check if a list contains a value, scale a result, anything you can dream up.
+  * Check the [wiki article](https://github.com/fzzyhmstrs/fconfig/wiki/Result-Providers) for an example use case.
 
 ### Changes
-* Specialized widgets no longer internally extend `PressableWidget` or `ButtonWidget`, which was causing issues with Visual Overhaul or any other mod that leaks the constructor of the widget. It is recommended to use the `Custom` variants of those classes for any custom validation implementation.
+* None.
 
 ### Fixes
-* `ValidatedIdentifier` can now bind to dynamic registries using the `ofRegistryKey` initializer methods.
-* Fix syncing on login not working.
-* Fixed updates on client-only configs sometimes blasting the log with the full config contents.
+* Restart screen now properly shows when a restart-causing change is received.
+* Pressing tab on suggestions now properly tabs the result into the setting text field instead of changing focus to the next widget (done button etc.)
+* `ValidatedIdentifier.ofRegistryKey` now takes `? extends Registry` like the other helper method types, instead of just `Registry`.

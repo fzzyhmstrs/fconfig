@@ -23,6 +23,7 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
@@ -44,6 +45,10 @@ internal object ClientConfigRegistry {
     private var validScopes: MutableSet<String> = mutableSetOf() //configs are sorted into Managers by namespace
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
     private var hasScrapedMetadata = false
+
+    fun getClientConfig(scope: String): Config? {
+        return clientConfigs[scope]?.active
+    }
 
     //client
     internal fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
@@ -101,7 +106,7 @@ internal object ClientConfigRegistry {
                 MinecraftClient.getInstance().execute {
                     result.get().config.save()
                     for (action in actions) {
-                        player.sendMessage(action.clientPrompt)
+                        MinecraftClient.getInstance().player?.sendChat(action.clientPrompt)
                     }
                     try {
                         config.onUpdateClient()

@@ -17,7 +17,7 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.theme.ThemeKeys
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -38,7 +38,7 @@ import kotlin.math.min
 //client
 internal open class BaseConfigEntry(
     val name: Text,
-    protected val description: Text,
+    val description: Text,
     private var actions: Set<Action>,
     protected val parent: ConfigListWidget,
     protected val widget: ClickableWidget)
@@ -104,13 +104,16 @@ internal open class BaseConfigEntry(
             for (action in actions) {
                 RenderSystem.enableBlend()
                 RenderSystem.enableDepthTest()
-                context.drawGuiTexture(action.sprite, x + offset, y, 20, 20)
+                context.drawTex(action.sprite, x + offset, y, 20, 20)
                 if (isMouseOverAction(offset, offsetIncrement, mouseX, mouseY, x, y)) {
                     MinecraftClient.getInstance().currentScreen?.setTooltip(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190), HoveredTooltipPositioner.INSTANCE, this.isFocused)
                 }
                 offset -= offsetIncrement
             }
         }
+
+        if (mouseY < parent.y || mouseY > parent.bottom) return
+
         if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null) {
             //let widgets tooltip win
         } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty()) {

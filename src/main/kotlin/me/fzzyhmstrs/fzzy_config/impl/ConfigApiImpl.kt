@@ -21,9 +21,7 @@ import me.fzzyhmstrs.fzzy_config.FCC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.cast
-import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigAction
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext
+import me.fzzyhmstrs.fzzy_config.config.*
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.VERSIONS
@@ -31,6 +29,7 @@ import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.updates.BasicValidationProvider
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
@@ -52,8 +51,7 @@ import java.util.function.Supplier
 import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.reflect.*
-import kotlin.reflect.full.findAnnotation
-import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.*
 import kotlin.reflect.jvm.javaField
 
 internal object ConfigApiImpl {
@@ -65,6 +63,7 @@ internal object ConfigApiImpl {
     private var wrapperLookup: WrapperLookup? = null
 
     internal fun invalidateLookup() {
+        ResultApiImpl.invalidateProviderCaches()
         this.wrapperLookup = null
     }
 
@@ -88,6 +87,12 @@ internal object ConfigApiImpl {
     internal fun openRestartScreen() {
         if (isClient)
             FCC.openRestartScreen()
+    }
+
+    internal fun getConfig(scope: String): Config? {
+        return SyncedConfigRegistry.syncedConfigs()[scope]
+            ?:
+            if(isClient) ConfigApiImplClient.getClientConfig(scope) else null
     }
 
     ///////////////////// Registration ///////////////////////////////////////////////////
@@ -133,6 +138,20 @@ internal object ConfigApiImpl {
 
     private fun <T: Config> registerAndLoadClient(configClass: () -> T): T {
         return registerClient(readOrCreateAndValidate(configClass), configClass)
+    }
+
+    internal fun isConfigLoaded(scope: String): Boolean {
+        var startIndex = 0
+        while (startIndex < scope.length) {
+            val nextStartIndex = scope.indexOf(".", startIndex)
+            if (nextStartIndex == -1) {
+                return false
+            }
+            startIndex = nextStartIndex + 1
+            val testScope = scope.substring(0, nextStartIndex)
+            if (SyncedConfigRegistry.hasConfig(testScope)) return true
+        }
+        return false
     }
 
     ///////////////// Flags //////////////////////////////////////////////////////////////
@@ -299,7 +318,11 @@ internal object ConfigApiImpl {
             }
             val ignoreVisibility = isIgnoreVisibility(config::class) || ignoreVisibility(flags)
             //java fields are ordered in declared order, apparently not so for Kotlin properties. use these first to get ordering. skip Transient
-            val fields = config::class.java.fields.filter { !isTransient(it.modifiers) }
+            val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }.toMutableList()
+            for (sup in config::class.allSuperclasses) {
+                if (sup == Config::class) continue //ignore Config itself, as that has state we don't need
+                fields.addAll(sup.java.declaredFields.filter { !isTransient(it.modifiers) })
+            }
             //generate an index map, so I can order the properties based on name
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             //kotlin member properties filtered by [field map contains it && if NonSync matters, it isn't NonSync]. NonSync does not matter by default
@@ -412,7 +435,12 @@ internal object ConfigApiImpl {
             val globalAction = getAction(config::class.annotations)
             val ignoreVisibility = isIgnoreVisibility(config::class) || ignoreVisibility(flags)
 
-            val fields = config::class.java.fields.filter { !isTransient(it.modifiers) }
+            val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }.toMutableList()
+            for (sup in config::class.allSuperclasses) {
+                if (sup == Config::class) continue
+                fields.addAll(sup.java.declaredFields.filter { !isTransient(it.modifiers) })
+            }
+
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             for (prop in config.javaClass.kotlin.memberProperties.filter {
                 if (ignoreNonSync(flags)) true else !isNonSync(it)
@@ -644,7 +672,7 @@ internal object ConfigApiImpl {
         return ValidationResult.predicated(list, list.isEmpty(), "Access Violations Found!")
     }
 
-    fun isConfigAdmin(player: PlayerEntity, config: Config): Boolean {
+    internal fun isConfigAdmin(player: PlayerEntity, config: Config): Boolean {
         val annotation = config::class.annotations.firstOrNull{ it is AdminAccess }?.cast<WithCustomPerms>()
         if (annotation == null) {
             return player.hasPermissionLevel(3)

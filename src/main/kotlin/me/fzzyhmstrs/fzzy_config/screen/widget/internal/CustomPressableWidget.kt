@@ -10,13 +10,14 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
+import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.ButtonTextures
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.KeyCodes
-import net.minecraft.client.render.RenderLayer
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.ColorHelper
@@ -26,19 +27,17 @@ abstract class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, me
 
     abstract fun onPress()
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    open fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val minecraftClient = MinecraftClient.getInstance()
-        context.drawGuiTexture(
-            RenderLayer::getGuiTextured,
-            TEXTURES[active, this.isSelected],
-            this.x,
-            this.y,
-            this.getWidth(),
-            this.getHeight(),
-            ColorHelper.getWhite(this.alpha)
-        )
+        RenderSystem.enableBlend()
+        RenderSystem.enableDepthTest()
+        context.drawTex(get(active, this.isSelected), this.x, this.y, this.getWidth(), this.getHeight(), ColorHelper.getWhite(this.alpha))
         val i = if (this.active) 16777215 else 10526880
         this.drawMessage(context, minecraftClient.textRenderer, i or (MathHelper.ceil(this.alpha * 255.0f) shl 24))
+    }
+
+    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        renderCustom(context, mouseX, mouseY, delta)
     }
 
     open fun drawMessage(context: DrawContext?, textRenderer: TextRenderer?, color: Int) {
@@ -61,11 +60,20 @@ abstract class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, me
         }
     }
 
+
+
     private companion object {
-        private val TEXTURES: ButtonTextures = ButtonTextures(
-            Identifier.ofVanilla("widget/button"),
-            Identifier.ofVanilla("widget/button_disabled"),
-            Identifier.ofVanilla("widget/button_highlighted")
-        )
+
+        private val tex =  "widget/button".simpleId()
+        private val disabled = "widget/button_disabled".simpleId()
+        private val highlighted = "widget/button_highlighted".simpleId()
+
+        fun get(enabled: Boolean, focused: Boolean): Identifier {
+            return if (enabled) {
+                if (focused) this.highlighted else this.tex
+            } else {
+                this.disabled
+            }
+        }
     }
 }

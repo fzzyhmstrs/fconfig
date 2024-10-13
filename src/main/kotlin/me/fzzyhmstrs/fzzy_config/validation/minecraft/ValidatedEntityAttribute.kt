@@ -19,7 +19,9 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.text
@@ -225,8 +227,8 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
             .addDivider()
             .addElement("attribute", if(lockAttribute) TextWidget(0, 0, 110, 20, attribute?.translationKey?.translate() ?: storedValue.attributeId.text(), MinecraftClient.getInstance().textRenderer).alignCenter() else storedValue.validator().widgetEntry(), Position.BELOW, Position.ALIGN_JUSTIFY)
             .addElement("amount", amountValidator.widgetEntry(), Position.BELOW, Position.ALIGN_JUSTIFY)
-            .addElement("operation", if(lockOperation) ButtonWidget.builder(storedValue.operation.name.lit()) { _ -> }.size(110, 20).build().also { it.active = false } else operationValidator.widgetEntry(), Position.BELOW, Position.ALIGN_JUSTIFY)
-            .addDoneButton()
+            .addElement("operation", if(lockOperation) CustomButtonWidget.builder(storedValue.operation.name.lit()) { _ -> }.size(110, 20).build().also { it.active = false } else operationValidator.widgetEntry(), Position.BELOW, Position.ALIGN_JUSTIFY)
+            .addDoneWidget()
             .onClose{ this.setAndUpdate(storedValue.copy(
                 attributeId =  if(lockAttribute) storedValue.attributeId else storedValue.validator().get(),
                 amount = amountValidator.get(),
@@ -275,9 +277,9 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
     class Builder @JvmOverloads constructor(private val attributeId: Identifier, private val lockAttribute: Boolean = false) {
 
         @JvmOverloads
-        constructor(attributeId: String, lockAttribute: Boolean = false): this(Identifier.of(attributeId), lockAttribute)
+        constructor(attributeId: String, lockAttribute: Boolean = false): this(attributeId.simpleId(), lockAttribute)
 
-        private var id: Identifier = Identifier.of(attributeId.toString())
+        private var id: Identifier = attributeId.toString().simpleId() //copying
         private var amount: ValidatedDouble = ValidatedDouble(0.0)
         private var operation: Operation = Operation.ADD_VALUE
         private var lockOperation = false

@@ -17,9 +17,16 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
+import net.minecraft.block.Blocks
 import net.minecraft.client.MinecraftClient
+import net.minecraft.entity.EntityType
+import net.minecraft.fluid.Fluids
+import net.minecraft.item.Items
 import net.minecraft.text.ClickEvent
 import net.minecraft.util.Identifier
 
@@ -29,7 +36,7 @@ class TestConfigImpl3: Config(Identifier.of("fzzy_config_test","test_config3")) 
 
     private var configAction = ConfigAction.Builder().title("Open Docs...".lit()).build(ClickEvent(ClickEvent.Action.OPEN_URL, "https://fzzyhmstrs.github.io/fconfig/"))
 
-    private var configAction2 = ConfigAction.Builder().title("Say Hi...".lit()).build { MinecraftClient.getInstance().player?.sendMessage("Hiya".lit()) }
+    private var configAction2 = ConfigAction.Builder().title("Say Hi...".lit()).build { MinecraftClient.getInstance().player?.sendChat("Hiya".lit()) }
 
     private var configAction3 = ConfigAction.Builder().title("Give Loots...".lit()).build(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/give @s minecraft:diamond"))
 
@@ -56,7 +63,15 @@ class TestConfigImpl3: Config(Identifier.of("fzzy_config_test","test_config3")) 
     @RequiresRestart
     private var int2 = ValidatedInt(6, 10, 1)
 
-    private var intList = ValidatedInt(1, 10, 0).toList(1, 3, 5, 7)
+    private var floatTest = ValidatedDouble(5.0, 6.6, 5.0)
+
+    private var itemTest = Items.EGG
+
+    private var blockTest = Blocks.AMETHYST_BLOCK
+
+    private var entityTest = EntityType.EGG
+
+    private var fluidTest = Fluids.LAVA
 
     /*
     {

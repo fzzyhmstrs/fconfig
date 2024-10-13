@@ -24,6 +24,8 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient.Ingred
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.namedEntryList
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextWidget
@@ -256,14 +258,14 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             .addDivider()
             .addElement("items_label", TextWidget(110, 13, "fc.validated_field.ingredient.items".translate(), textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
             .addElement("items", listItemValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("items_clear", ButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listItemValidator.validateAndSet(setOf()) }.size(60, 20).build(), "items", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("items_clear", CustomButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listItemValidator.validateAndSet(setOf()) }.size(60, 20).build(), "items", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("items_textbox", SuppliedTextWidget({ listItemValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listItemValidator.get().joinToString("\n").lit() }, "items", Position.ALIGN_JUSTIFY, Position.BELOW)
             .addDivider()
             .addElement("tags_label", TextWidget(110, 13, "fc.validated_field.ingredient.tags".translate(), textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
             .addElement("tags", listTagValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("tags_clear", ButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60, 20).build(), "tags", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+            .addElement("tags_clear", CustomButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60, 20).build(), "tags", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
             .addElement("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() }, "tags", Position.ALIGN_JUSTIFY, Position.BELOW)
-            .addDoneButton()
+            .addDoneWidget()
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
             .onClose{ this.setAndUpdate(fromLists()) }
@@ -330,13 +332,13 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             }
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
-            return ItemProvider(Identifier.of(toml.asTomlLiteral().toString()))
+            return ItemProvider(toml.asTomlLiteral().toString().simpleId())
         }
         override fun serialize(): TomlElement {
             return TomlLiteral(id.toString())
         }
         override fun copy(): IngredientProvider {
-            return ItemProvider(Identifier.of(id.toString()))
+            return ItemProvider(id.toString().simpleId())
         }
         override fun toString(): String {
             return "Item Ingredient {$id}"
@@ -377,7 +379,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
                     if (str.startsWith("#")) {
                         null
                     } else {
-                        Identifier.of(str)
+                        str.simpleId()
                     }
                 } catch (e: Exception) {
                     null
@@ -387,7 +389,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
                 try {
                     val str = it.asTomlLiteral().toString()
                     if (str.startsWith("#")) {
-                        Identifier.of(str.substring(1))
+                        str.substring(1).simpleId()
                     } else {
                         null
                     }
@@ -427,16 +429,16 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             return ProviderType.TAG
         }
         override fun provide(): Ingredient {
-            return Ingredient.fromTag(Registries.ITEM.getEntryList(TagKey.of(RegistryKeys.ITEM, tag)).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
+            return Ingredient.fromTag(Registries.ITEM.namedEntryList(TagKey.of(RegistryKeys.ITEM, tag)).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
-            return TagProvider(Identifier.of(toml.asTomlLiteral().toString().replace("#", "")))
+            return TagProvider(toml.asTomlLiteral().toString().replace("#", "").simpleId())
         }
         override fun serialize(): TomlElement {
             return TomlLiteral("#${tag}")
         }
         override fun copy(): IngredientProvider {
-            return TagProvider(Identifier.of(tag.toString()))
+            return TagProvider(tag.toString().simpleId())
         }
         override fun toString(): String {
             return "Tag Ingredient {$tag}"
@@ -452,9 +454,9 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
 
     sealed interface IngredientProvider {
         companion object {
-            private val STACK_INSTANCE = ItemProvider(Identifier.of("dummy"))
+            private val STACK_INSTANCE = ItemProvider("dummy".simpleId())
             private val STACKS_INSTANCE = ListProvider(setOf())
-            private val TAG_INSTANCE = TagProvider(Identifier.of("dummy"))
+            private val TAG_INSTANCE = TagProvider("dummy".simpleId())
             fun serialize(provider: IngredientProvider): TomlElement {
                 val toml = TomlTableBuilder(2)
                 toml.element("type", TomlLiteral(provider.type().type()))

@@ -12,11 +12,10 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.PressableWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -57,10 +56,10 @@ class TextlessActionWidget(
             activeIcon
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = activeSupplier.get()
-        super.renderWidget(context, mouseX, mouseY, delta)
-        context.drawGuiTexture(getTex(), x, y, getWidth(), getHeight())
+        super.renderCustom(context, mouseX, mouseY, delta)
+        context.drawTex(getTex(), x, y, getWidth(), getHeight())
         if (this.active && activeNarration.string != "") {
             tooltip = Tooltip.of(activeNarration)
         } else if (inactiveNarration.string != "") {

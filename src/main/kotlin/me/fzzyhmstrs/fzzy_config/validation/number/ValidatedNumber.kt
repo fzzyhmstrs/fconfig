@@ -15,10 +15,11 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
 import me.fzzyhmstrs.fzzy_config.theme.ThemeKeys
+import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawGuiTexture
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -39,6 +40,7 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.Util
 import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
+import org.apache.commons.lang3.math.NumberUtils.toDouble
 import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
@@ -50,6 +52,7 @@ import java.util.function.Function
 import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.round
 
 sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, protected val maxValue: T, protected val widgetType: WidgetType): ValidatedField<T>(defaultValue) where T: Number, T:Comparable<T> {
 
@@ -76,7 +79,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     protected abstract fun convert(input: Double): ValidationResult<T>
 
-    @ApiStatus.Internal
+    @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType) {
@@ -152,12 +155,13 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         private fun split(range: Double): Double {
             var d = range
-            while (d.toInt().toDouble() != d) {
-                d *= 10.0
+            while (d < 16.0) {
+                d *= 100.0
             }
-            return if (d % 16.0 == 0.0) {
+            d = round(d)
+            return if (d.toInt() % 16 == 0) {
                 (range / 16.0)
-            } else if (d % 12.0 == 0.0) {
+            } else if (d.toInt() % 12 == 0) {
                 (range / 12.0)
             } else {
                 (range / 10.0)
@@ -169,11 +173,19 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         private var confirmActive = false
         private var cachedWrappedValue: T = wrappedValue.get()
         private var value: T = wrappedValue.get()
-        private val increment: Double
-            get() {
-                return max((maxValue.toDouble() - minValue.toDouble())/ (getWidth() - 8.0), min(1.0, split(maxValue.toDouble() - minValue.toDouble())))
+        private val increment = max(
+            (maxValue.toDouble() - minValue.toDouble())/ 102.0,
+            if (isIntType()) {
+                max(1.0, split(maxValue.toDouble() - minValue.toDouble()))
+            } else {
+                min(1.0, split(maxValue.toDouble() - minValue.toDouble()))
             }
+        )
         private var isValid = validator.validateEntry(wrappedValue.get(), EntryValidator.ValidationType.STRONG).isValid()
+
+        private fun isIntType(): Boolean {
+            return maxValue is Int || maxValue is Long || maxValue is Short || maxValue is Byte
+        }
 
         /*override fun getWidth(): Int {
             if (originalWidth != width)
@@ -217,7 +229,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             RenderSystem.enableBlend()
             RenderSystem.defaultBlendFunc()
             RenderSystem.enableDepthTest()
-            context.drawGuiTexture(getTexture(), x, y, getWidth(), getHeight(), ColorHelper.getWhite(alpha))
+            context.drawTex(getTexture(), x, y, getWidth(), getHeight(), ColorHelper.getWhite(alpha))
             val progress = MathHelper.getLerpProgress(value.toDouble(), minValue.toDouble(), maxValue.toDouble())
             context.drawGuiTexture(getHandleTexture(), x + (progress * (getWidth() - 8).toDouble()).toInt(), y, 8, getHeight())
             this.drawScrollableText(context, minecraftClient.textRenderer, 2, 0xFFFFFF or (MathHelper.ceil(alpha * 255.0f) shl 24))

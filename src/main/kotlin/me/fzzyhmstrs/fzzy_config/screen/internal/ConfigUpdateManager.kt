@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
@@ -27,6 +28,7 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -82,7 +84,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
     override fun forwardsHandler() {
         val popup = PopupWidget.Builder("fc.config.forwarded".translate())
             .addElement("list", ForwardedEntryListWidget(forwardedUpdates, this), Position.BELOW, Position.ALIGN_CENTER)
-            .addDoneButton()
+            .addDoneWidget()
             .build()
         PopupWidget.push(popup)
     }
@@ -171,17 +173,17 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         }
         if (clientActions.isNotEmpty()) {
             for (action in clientActions) {
-                MinecraftClient.getInstance().player?.sendMessage(action.clientUpdateMessage)
+                MinecraftClient.getInstance().player?.sendChat(action.clientUpdateMessage)
             }
         }
         if (serverActions.isNotEmpty()) {
             if (MinecraftClient.getInstance().isInSingleplayer)
                 for (action in serverActions) {
-                    MinecraftClient.getInstance().player?.sendMessage(action.clientUpdateMessage)
+                    MinecraftClient.getInstance().player?.sendChat(action.clientUpdateMessage)
                 }
             else
                 for (action in serverActions) {
-                    MinecraftClient.getInstance().player?.sendMessage(action.serverUpdateMessage)
+                    MinecraftClient.getInstance().player?.sendChat(action.serverUpdateMessage)
                 }
         }
         //save config updates locally
