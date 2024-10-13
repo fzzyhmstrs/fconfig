@@ -11,9 +11,9 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import com.mojang.brigadier.CommandDispatcher
-import io.netty.buffer.Unpooled
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.FCC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
@@ -25,9 +25,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 import net.minecraft.client.gui.screen.TitleScreen
-import net.minecraft.network.PacketByteBuf
-import net.minecraft.network.packet.Packet
-import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import net.minecraft.util.Identifier
@@ -38,7 +35,6 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.TickEvent
 import net.minecraftforge.fml.ModList
 import net.minecraftforge.network.NetworkEvent
-import net.minecraftforge.network.PacketDistributor
 import java.util.*
 import java.util.function.Supplier
 
@@ -47,10 +43,6 @@ internal object NetworkEventsClient {
     fun canSend(id: Identifier): Boolean {
         val handler = MinecraftClient.getInstance().networkHandler ?: return false
         return handler.isConnectionOpen
-    }
-
-    fun send(packet: Packet<*>) {
-        PacketDistributor.SERVER.noArg().send(packet)
     }
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
@@ -63,9 +55,7 @@ internal object NetworkEventsClient {
             return
         }
         val payload = SettingForwardCustomPayload(update, player, scope, summary)
-        val buf = PacketByteBuf(Unpooled.buffer())
-        payload.write(buf)
-        send(CustomPayloadC2SPacket(payload.getId(), buf))
+        ConfigApi.network().send(payload, null)
     }
 
     fun updateServer(serializedConfigs: Map<String, String>, changeHistory: List<String>, playerPerm: Int) {
@@ -78,9 +68,7 @@ internal object NetworkEventsClient {
             return
         }
         val payload = ConfigUpdateC2SCustomPayload(serializedConfigs, changeHistory, playerPerm)
-        val buf = PacketByteBuf(Unpooled.buffer())
-        payload.write(buf)
-        send(CustomPayloadC2SPacket(payload.getId(), buf))
+        ConfigApi.network().send(payload, null)
     }
 
     fun receiveSync(payload: ConfigSyncS2CCustomPayload, context: ClientPlayNetworkContext) {
