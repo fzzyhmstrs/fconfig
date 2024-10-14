@@ -15,8 +15,10 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.description
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
@@ -36,7 +38,6 @@ import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.text.MutableText
-import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 import java.awt.Color
@@ -106,11 +107,35 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
             var testValidated2 = listOf(1, 3, 5, 7).validated()
         }
 
-        class TestAny2: Walkable {
+        class TestAny2: Walkable, Translatable {
             @RequiresRestart
             var testInt = 1
             var testValidated = ValidatedFloat(3f, 6f, 1f)
             var testValidated2 = listOf(1, 3, 5, 7).validated()
+
+            override fun translationKey(): String {
+                return ""
+            }
+
+            override fun descriptionKey(): String {
+                return ""
+            }
+
+            override fun translation(fallback: String?): MutableText {
+                return FcText.literal("Butthead")
+            }
+
+            override fun description(fallback: String?): MutableText {
+                return FcText.literal("Beavis and Butthead")
+            }
+
+            override fun hasTranslation(): Boolean {
+                return false
+            }
+
+            override fun hasDescription(): Boolean {
+                return true
+            }
         }
     }
 
