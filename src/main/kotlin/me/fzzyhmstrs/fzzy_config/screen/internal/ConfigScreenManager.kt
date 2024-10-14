@@ -43,6 +43,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -281,9 +282,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
                         basicValidation2.setUpdateManager(manager)
                         manager.setUpdatableEntry(basicValidation2)
                         if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
-                            functionMap.computeIfAbsent(old) { sortedMapOf() } [index] = Pair(new, forwardableEntryBuilder(name, ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), basicValidation2))
+                            functionMap.computeIfAbsent(old) { sortedMapOf() } [index] = Pair(new, forwardableEntryBuilder(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), basicValidation2))
                         else
-                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), basicValidation2))
+                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), basicValidation2))
                     } else if (perms == PermResult.OUT_OF_GAME) {
                         functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
                     } else {
