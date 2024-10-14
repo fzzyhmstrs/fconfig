@@ -131,6 +131,11 @@ internal open class BaseConfigEntry(
 
     private fun createTooltip(): List<OrderedText> {
         val list: MutableList<OrderedText> = mutableListOf()
+        if (truncatedName != name) {
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(name, 190))
+            if (description.string != "")
+                list.add(FcText.empty().asOrderedText())
+        }
         if (description.string != "") {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
@@ -139,6 +144,10 @@ internal open class BaseConfigEntry(
 
     private fun createFullTooltip(): List<OrderedText> {
         val list: MutableList<OrderedText> = mutableListOf()
+        if (truncatedName != name) {
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(name, 190))
+            list.add(FcText.empty().asOrderedText())
+        }
         if (description.string != "") {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
