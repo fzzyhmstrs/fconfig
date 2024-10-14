@@ -151,10 +151,10 @@ internal open class BaseConfigEntry(
         val list: MutableList<OrderedText> = mutableListOf()
         if (truncatedName != name) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(name, 190))
-            if (description.isNotEmpty())
+            if (description.string != "")
                 list.add(FcText.empty().asOrderedText())
         }
-        if (description.isNotEmpty()) {
+        if (description.string != "") {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
         return list
@@ -166,7 +166,7 @@ internal open class BaseConfigEntry(
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(name, 190))
             list.add(FcText.empty().asOrderedText())
         }
-        if (description.isNotEmpty()) {
+        if (description.string != "") {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
         if(actions.isNotEmpty()) {
