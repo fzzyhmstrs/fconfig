@@ -207,19 +207,19 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     override fun translationKey(): String {
-        return (storedValue as? Translatable)?.hasTranslation()?.let { (storedValue as? Translatable)?.translationKey() } ?: super.translationKey()
+        return (storedValue as? Translatable)?.translationKey()?.takeIf { (storedValue as? Translatable)?.hasTranslation() == true } ?: super.translationKey()
     }
 
     override fun descriptionKey(): String {
-        return (storedValue as? Translatable)?.hasDescription()?.let { (storedValue as? Translatable)?.descriptionKey() } ?: super.descriptionKey()
+        return (storedValue as? Translatable)?.descriptionKey()?.takeIf { (storedValue as? Translatable)?.hasDescription() == true } ?: super.descriptionKey()
     }
 
     override fun translation(fallback: String?): MutableText {
-        return  (storedValue as? Translatable)?.hasTranslation()?.let { (storedValue as? Translatable)?.translation(fallback) } ?: super.translation(fallback)
+        return  (storedValue as? Translatable)?.translation(fallback)?.takeIf { (storedValue as? Translatable)?.hasTranslation() == true } ?: super.translation(fallback)
     }
 
     override fun description(fallback: String?): MutableText {
-        return (storedValue as? Translatable)?.hasDescription()?.let { (storedValue as? Translatable)?.description(fallback) } ?: super.description(fallback)
+        return (storedValue as? Translatable)?.description(fallback)?.takeIf { (storedValue as? Translatable)?.hasDescription() == true } ?: super.description(fallback)
     }
 
     override fun hasTranslation(): Boolean {
