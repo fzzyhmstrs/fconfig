@@ -15,7 +15,6 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
 import me.fzzyhmstrs.fzzy_config.theme.ThemeKeys
-import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -231,7 +230,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             RenderSystem.enableDepthTest()
             context.drawTex(getTexture(), x, y, getWidth(), getHeight(), ColorHelper.getWhite(alpha))
             val progress = MathHelper.getLerpProgress(value.toDouble(), minValue.toDouble(), maxValue.toDouble())
-            context.drawGuiTexture(getHandleTexture(), x + (progress * (getWidth() - 8).toDouble()).toInt(), y, 8, getHeight())
+            context.drawTex(getHandleTexture(), x + (progress * (getWidth() - 8).toDouble()).toInt(), y, 8, getHeight())
             this.drawScrollableText(context, minecraftClient.textRenderer, 2, 0xFFFFFF or (MathHelper.ceil(alpha * 255.0f) shl 24))
         }
 

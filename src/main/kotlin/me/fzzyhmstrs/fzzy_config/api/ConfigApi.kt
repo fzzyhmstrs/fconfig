@@ -419,7 +419,6 @@ object ConfigApi {
         return ThemeApiImpl
     }
 
-}
     /**
      * Provides an instance of the [ResultApi] for creation of [ResultProvider][me.fzzyhmstrs.fzzy_config.result.ResultProvider] to indirectly refer to configs via scope strings
      * @author fzzyhmstrs
