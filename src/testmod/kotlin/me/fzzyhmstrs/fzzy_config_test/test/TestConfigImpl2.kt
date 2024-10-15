@@ -14,7 +14,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.util.FcText.description
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -47,7 +47,10 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
     @WithPerms(5)
     var bl1 = true
     @RequiresAction(Action.RELOAD_DATA)
-    var bl2 = ValidatedBoolean()
+    var bl2 = ValidatedBoolean().withCondition({ bl3.get() }, "bl3 needs to be true".lit())
+    var bl3 = ValidatedBoolean(false)
+
+    var bl2Button = ConfigAction.Builder().title("bl2 Conditionally".lit()).build { println("Conditionally:${bl2.getConditionally()}, base: ${bl2.get()}") }
 
     @WithCustomPerms(["my_perm.custom"])
     var int1 = 6

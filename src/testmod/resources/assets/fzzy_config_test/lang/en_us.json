@@ -23,6 +23,7 @@
   "fzzy_config_test.test_config.EPSILON.desc" : "The fifth choice",
   "fzzy_config_test.test_config.list1" : "Very Wow Long List Name For Testing",
 
+  "fzzy_config_test.test_config2.bl2.desc" : "Existing Description",
   "fzzy_config_test.test_config2.int1" : "Test integer",
   "fzzy_config_test.test_config2.int1.desc" : "Integers have cool descriptions",
 
