@@ -35,12 +35,14 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.contextualize
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.text.MutableText
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Supplier
@@ -204,6 +206,30 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
 
     override fun actions(): Set<Action> {
         return ConfigApiImpl.getActions(storedValue, ConfigApiImpl.IGNORE_NON_SYNC)
+    }
+
+    override fun translationKey(): String {
+        return (storedValue as? Translatable)?.translationKey()?.takeIf { (storedValue as? Translatable)?.hasTranslation() == true } ?: super.translationKey()
+    }
+
+    override fun descriptionKey(): String {
+        return (storedValue as? Translatable)?.descriptionKey()?.takeIf { (storedValue as? Translatable)?.hasDescription() == true } ?: super.descriptionKey()
+    }
+
+    override fun translation(fallback: String?): MutableText {
+        return  (storedValue as? Translatable)?.translation(fallback)?.takeIf { (storedValue as? Translatable)?.hasTranslation() == true } ?: super.translation(fallback)
+    }
+
+    override fun description(fallback: String?): MutableText {
+        return (storedValue as? Translatable)?.description(fallback)?.takeIf { (storedValue as? Translatable)?.hasDescription() == true } ?: super.description(fallback)
+    }
+
+    override fun hasTranslation(): Boolean {
+        return (storedValue as? Translatable)?.hasTranslation()?.let { if(!it && super.hasTranslation()) true else it } ?: super.hasTranslation()
+    }
+
+    override fun hasDescription(): Boolean {
+        return (storedValue as? Translatable)?.hasDescription()?.let { if(!it && super.hasTranslation()) true else it } ?: super.hasDescription()
     }
 
     //client
