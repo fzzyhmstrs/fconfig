@@ -133,8 +133,6 @@ internal open class BaseConfigEntry(
                 lines.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190))
             }
             MinecraftClient.getInstance().currentScreen?.setTooltip(lines, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
-        } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && fullTooltip.isNotEmpty()) {
-
         } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty()) {
             MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, HoveredTooltipPositioner.INSTANCE, this.isFocused)
         }*/
@@ -148,10 +146,10 @@ internal open class BaseConfigEntry(
         val list: MutableList<OrderedText> = mutableListOf()
         if (truncatedName != name) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(name, 190))
-            if (description.string != "")
+            if (description.isNotEmpty())
                 list.add(FcText.empty().asOrderedText())
         }
-        if (description.string != "") {
+        if (description.isNotEmpty()) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
         return list
@@ -163,7 +161,7 @@ internal open class BaseConfigEntry(
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(name, 190))
             list.add(FcText.empty().asOrderedText())
         }
-        if (description.string != "") {
+        if (description.isNotEmpty()) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
         if(actions.isNotEmpty()) {
