@@ -60,6 +60,8 @@
     "fc.validated_field.number.textbox.usage.unfocused": "Нажмите на галочку, чтобы подтвердить ввод.",
     "fc.validated_field.object": "Редактировать...",
     "fc.validated_field.set": "Редактировать набор...",
+    "fc.validated_field.condition": "Условие не соблюдено",
+    "fc.validated_field.conditions": "Условия не соблюдены",
 
     "fc.validated_field.default": "Восстановить [%1$s] значение по умолчанию [%2$s]",
     "fc.validated_field.update.error": "Ошибка обновления для [%1$s], [%2$s] до [%3$s]: %4$s",
