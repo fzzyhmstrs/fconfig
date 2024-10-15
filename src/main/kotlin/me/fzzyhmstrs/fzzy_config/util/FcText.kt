@@ -349,23 +349,10 @@ object FcText {
     }
 
     fun Text.isEmpty(): Boolean {
-        return this.string == ""
+        return this.content.type == PlainTextContent.EMPTY
     }
 
     fun Text.isNotEmpty(): Boolean {
         return this.string != ""
-    }
-
-    fun toLinebreakText(texts: List<Text>): MutableText {
-        if (texts.isEmpty()) return empty()
-        var text: MutableText? = null
-        for (message in texts) {
-            if (text == null) {
-                text = message.copy()
-            } else {
-                text.append(literal("\n")).append(message)
-            }
-        }
-        return text ?: empty()
     }
 }
