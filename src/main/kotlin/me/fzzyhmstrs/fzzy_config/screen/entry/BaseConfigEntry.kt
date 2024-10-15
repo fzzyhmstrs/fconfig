@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.isNotEmpty
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -116,6 +117,14 @@ internal open class BaseConfigEntry(
 
         if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null) {
             //let widgets tooltip win
+        } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && widget.tooltip != null && actions.isNotEmpty()) {
+            val lines: MutableList<OrderedText> = mutableListOf()
+            widget.tooltip?.let { lines.addAll(it.getLines(MinecraftClient.getInstance())) }
+            lines.add(FcText.empty().asOrderedText())
+            for (action in actions) {
+                lines.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190))
+            }
+            MinecraftClient.getInstance().currentScreen?.setTooltip(lines, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
         } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty()) {
             MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, HoveredTooltipPositioner.INSTANCE, this.isFocused)
         } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && fullTooltip.isNotEmpty()) {
@@ -129,7 +138,12 @@ internal open class BaseConfigEntry(
 
     private fun createTooltip(): List<OrderedText> {
         val list: MutableList<OrderedText> = mutableListOf()
-        if (description.string != "") {
+        if (truncatedName != name) {
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(name, 190))
+            if (description.isNotEmpty())
+                list.add(FcText.empty().asOrderedText())
+        }
+        if (description.isNotEmpty()) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
         return list
@@ -137,11 +151,15 @@ internal open class BaseConfigEntry(
 
     private fun createFullTooltip(): List<OrderedText> {
         val list: MutableList<OrderedText> = mutableListOf()
-        if (description.string != "") {
+        if (truncatedName != name) {
+            list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(name, 190))
+            list.add(FcText.empty().asOrderedText())
+        }
+        if (description.isNotEmpty()) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
         if(actions.isNotEmpty()) {
-            if (description.string != "")
+            if (description.isNotEmpty())
                 list.add(FcText.empty().asOrderedText())
             for (action in actions) {
                 list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190))
