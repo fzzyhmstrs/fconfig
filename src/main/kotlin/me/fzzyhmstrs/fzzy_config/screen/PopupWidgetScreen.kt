@@ -69,6 +69,8 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
             super.render(context, mouseX, mouseY, delta)
         else
             super.render(context, 0, 0, delta)
+        if (popupWidgets.isNotEmpty())
+            context.matrices.translate(0f, 0f, 500f)
         for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
             if(index == popupWidgets.lastIndex)
                 popup.render(context, mouseX, mouseY, delta)

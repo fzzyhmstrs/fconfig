@@ -14,6 +14,7 @@ import com.mojang.brigadier.Message
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.MutableText
+import net.minecraft.text.PlainTextContent
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
@@ -340,5 +341,13 @@ object FcText {
      */
     fun MutableText.colored(color: Int): MutableText {
         return this.styled { s -> s.withColor(color) }
+    }
+
+    fun Text.isEmpty(): Boolean {
+        return this.content.type == PlainTextContent.EMPTY
+    }
+
+    fun Text.isNotEmpty(): Boolean {
+        return this.string != ""
     }
 }
