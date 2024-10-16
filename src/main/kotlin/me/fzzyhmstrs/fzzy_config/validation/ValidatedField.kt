@@ -23,6 +23,9 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.Condition
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionImpl
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
@@ -31,9 +34,9 @@ import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 import java.util.function.Function
+import java.util.function.Supplier
 import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
-import kotlin.reflect.full.starProjectedType
 import kotlin.reflect.jvm.jvmErasure
 
 /**
@@ -437,9 +440,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     }
 
     /**
-     * Provides a [Codec] representing the value type of this validation, backed by the validators within, as applicable
+     * Provides a [Codec] representing the value type of this validation, backed by the validators within as applicable
      *
-     * So, for example, if you have a double with a validity range 0.0 to 1.0, this will de/serialize the double using the Codec, and enforce the valid range.
+     * For example, if you have a double with a validity range 0.0 to 1.0, this will de/serialize the double using the Codec, and enforce the valid range.
      * @return [Codec]&lt;[T]&gt; - Codec of type T backed by this validation.
      * @author fzzyhmstrs
      * @since 0.5.0
@@ -465,7 +468,64 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         )
     }
 
-    fun argumentType(): KType? {
+    /**
+     * Convert this field to a [ValidatedCondition]. The provided condition (and any others you append) must pass for the stored value to be provided, otherwise the fallback will be supplied.
+     * @param condition [Condition] a condition to check before passing the stored value
+     * @throws IllegalStateException if the fallback is this
+     * @return this condition
+     * @author fzzyhmstrs
+     * @since 0.5.4
+     */
+    open fun toCondition(condition: Condition, fallback: Supplier<T>): ValidatedCondition<T> {
+        val newField = ValidatedCondition(this, fallback)
+        return newField.withCondition(condition)
+    }
+
+    /**
+     * Convert this field to a [ValidatedCondition]. The provided condition (and any others you append) must pass for the stored value to be provided, otherwise the fallback will be supplied.
+     *
+     * Note: a ValidatedField is a supplier. If you want a custom failMessage, this is a valid overload of `withCondition(ValidatedField<Boolean>)`
+     * @param condition [Supplier]&lt;Boolean&gt; a supplier of booleans for the condition to check against
+     * @param failMessage [Text] a message to provide to a tooltip if a condition isn't met
+     * @throws IllegalStateException if the fallback is this
+     * @return this condition
+     * @author fzzyhmstrs
+     * @since 0.5.4
+     */
+    open fun toCondition(condition: Supplier<Boolean>, failMessage: Text, fallback: Supplier<T>): ValidatedCondition<T> {
+        val newField = ValidatedCondition(this, fallback)
+        newField.withCondition(ConditionImpl(condition, failMessage))
+        return newField
+    }
+
+    /**
+     * Convert this field to a [ValidatedCondition] using the provided validation as a supplier. The provided condition (and any others you append) must pass for the stored value to be provided, otherwise the fallback will be supplied.
+     * @param condition [ValidatedField]&lt;Boolean&gt; a condition to check before passing the stored value
+     * @throws IllegalStateException if this field is passed into itself
+     * @return this condition
+     * @author fzzyhmstrs
+     * @since 0.5.4
+     */
+    open fun toCondition(condition: ValidatedField<Boolean>, fallback: Supplier<T>): ValidatedCondition<T> {
+        val newField = ValidatedCondition(this, fallback)
+        return newField.withCondition(condition, condition.translation())
+    }
+
+    /**
+     * Convert this field to a [ValidatedCondition] using the provided scope with a default boolean provider. The provided condition (and any others you append) must pass for the stored value to be provided, otherwise the fallback will be supplied. The provided scope must point to a valid boolean config scope otherwise the initial condition will never pass.
+     * @param scope String - a config `scope` pointing to a boolean or validated boolean.
+     * @param failMessage [Text] a message to provide to a tooltip if a condition isn't met
+     * @throws IllegalStateException if the fallback is this
+     * @return this condition
+     * @author fzzyhmstrs
+     * @since 0.5.4
+     */
+    open fun toCondition(scope: String, failMessage: Text, fallback: Supplier<T>): ValidatedCondition<T> {
+        val newField = ValidatedCondition(this, fallback)
+        return newField.withCondition(scope, failMessage)
+    }
+
+    internal fun argumentType(): KType? {
         var superType: KType? = null
         this::class.allSupertypes.filter { it.jvmErasure == ValidatedField::class }.forEach { superType = it }
         return superType?.arguments?.get(0)?.type
