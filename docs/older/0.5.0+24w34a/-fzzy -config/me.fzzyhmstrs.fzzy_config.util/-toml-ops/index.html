@@ -1,0 +1,851 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>TomlOps</title>
+    <link href="../../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../../images/fc_banner.png">
+<link href="../../../images/discord_banner.png">
+<link href="../../../images/discord_small_banner.png">
+<link href="../../../images/wiki_banner.png">
+<link href="../../../images/wiki_small_banner.png">
+<link href="../../../images/docs_banner.png">
+<link href="../../../images/docs_small_banner.png">
+<link href="../../../images/cf_banner.png">
+<link href="../../../images/modrinth_banner.png">
+<link href="../../../images/icon.png">
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-toml-ops/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.5.0+24w34a</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.4+1.21.2-pre4</a><a href="..\..\..\..\0.5.4+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.4+1.21</a><a href="..\..\..\..\0.5.4+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.4+1.20.6</a><a href="..\..\..\..\0.5.4+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.4+1.20.4</a><a href="..\..\..\..\0.5.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.4+1.20.1</a><a href="..\..\..\..\0.5.3+24w40a\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.3+24w40a</a><a href="..\..\..\..\0.5.3+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.3+1.21</a><a href="..\..\..\..\0.5.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.3+1.20.6</a><a href="..\..\..\..\0.5.3+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.3+1.20.4</a><a href="..\..\..\..\0.5.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.3+1.20.1</a><a href="index.html">0.5.0+24w34a</a><a href="..\..\..\..\0.5.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.0+1.21</a><a href="..\..\..\..\0.5.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.0+1.20.6</a><a href="..\..\..\..\0.5.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.0+1.20.4</a><a href="..\..\..\..\0.5.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.5.0+1.20.1</a><a href="..\..\..\..\0.4.2+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.2+24w34a</a><a href="..\..\..\..\0.4.2+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.2+1.21</a><a href="..\..\..\..\0.4.2+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.2+1.20.6</a><a href="..\..\..\..\0.4.2+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.2+1.20.4</a><a href="..\..\..\..\0.4.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.2+1.20.1</a><a href="..\..\..\..\0.4.1+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.1+24w34a</a><a href="..\..\..\..\0.4.1+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.1+1.21</a><a href="..\..\..\..\0.4.1+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.1+1.20.6</a><a href="..\..\..\..\0.4.1+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.1+1.20.4</a><a href="..\..\..\..\0.4.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.1+1.20.1</a><a href="..\..\..\..\0.4.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.0+1.21</a><a href="..\..\..\..\0.4.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.0+1.20.6</a><a href="..\..\..\..\0.4.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.0+1.20.4</a><a href="..\..\..\..\0.4.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-toml-ops\index.html">0.4.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.util/TomlOps///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Fzzy Config</a><span class="delimiter">/</span><a href="../index.html">me.fzzyhmstrs.fzzy_config.util</a><span class="delimiter">/</span><span class="current">TomlOps</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Toml</span><wbr><span><span>Ops</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">TomlOps</a> : <span data-unresolved-link="com.mojang.serialization/DynamicOps///PointingToDeclaration/">DynamicOps</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt; </span></div><p class="paragraph">Dynamic Ops for dealing with TomlElements in Codecs and other related things</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.2.0</p></span><h4 class="">See also</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-companion/-i-n-s-t-a-n-c-e.html"><span>TomlOps.</span><wbr><span>Companion.</span><wbr><span>INSTANCE</span></a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="2006127883%2FConstructors%2F769193423" anchor-label="TomlOps" id="2006127883%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-toml-ops.html"><span>Toml</span><wbr><span><span>Ops</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2006127883%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-1692467030%2FClasslikes%2F769193423" anchor-label="Companion" id="-1692467030%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1692467030%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-924937482%2FFunctions%2F769193423" anchor-label="compressMaps" id="-924937482%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-924937482%2FFunctions%2F769193423"><span>compress</span><wbr><span><span>Maps</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-924937482%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-924937482%2FFunctions%2F769193423"><span class="token function">compressMaps</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-399440599%2FFunctions%2F769193423" anchor-label="convertList" id="-399440599%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-399440599%2FFunctions%2F769193423"><span>convert</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-399440599%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#-399440599%2FFunctions%2F769193423">U</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#-399440599%2FFunctions%2F769193423"><span class="token function">convertList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DynamicOps///PointingToDeclaration/">DynamicOps</span><span class="token operator">&lt;</span><a href="index.html#-399440599%2FFunctions%2F769193423">U</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html#-399440599%2FFunctions%2F769193423">U</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="179224469%2FFunctions%2F769193423" anchor-label="convertMap" id="179224469%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#179224469%2FFunctions%2F769193423"><span>convert</span><wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="179224469%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#179224469%2FFunctions%2F769193423">U</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#179224469%2FFunctions%2F769193423"><span class="token function">convertMap</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DynamicOps///PointingToDeclaration/">DynamicOps</span><span class="token operator">&lt;</span><a href="index.html#179224469%2FFunctions%2F769193423">U</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html#179224469%2FFunctions%2F769193423">U</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1798603553%2FFunctions%2F769193423" anchor-label="convertTo" id="1798603553%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="convert-to.html"><span>convert</span><wbr><span><span>To</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1798603553%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="convert-to.html">U</a><span class="token operator">&gt; </span><a href="convert-to.html"><span class="token function">convertTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">outOps<span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DynamicOps///PointingToDeclaration/">DynamicOps</span><span class="token operator">&lt;</span><a href="convert-to.html">U</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">input<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="convert-to.html">U</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2095789404%2FFunctions%2F769193423" anchor-label="createBoolean" id="2095789404%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-boolean.html"><span>create</span><wbr><span><span>Boolean</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2095789404%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-boolean.html"><span class="token function">createBoolean</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="448974874%2FFunctions%2F769193423" anchor-label="createByte" id="448974874%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-byte.html"><span>create</span><wbr><span><span>Byte</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="448974874%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-byte.html"><span class="token function">createByte</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2019428647%2FFunctions%2F769193423" anchor-label="createByteList" id="2019428647%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#2019428647%2FFunctions%2F769193423"><span>create</span><wbr><span>Byte</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2019428647%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#2019428647%2FFunctions%2F769193423"><span class="token function">createByteList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/nio/ByteBuffer.html">ByteBuffer</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="378361466%2FFunctions%2F769193423" anchor-label="createDouble" id="378361466%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-double.html"><span>create</span><wbr><span><span>Double</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="378361466%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-double.html"><span class="token function">createDouble</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="157313076%2FFunctions%2F769193423" anchor-label="createFloat" id="157313076%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-float.html"><span>create</span><wbr><span><span>Float</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="157313076%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-float.html"><span class="token function">createFloat</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1392288526%2FFunctions%2F769193423" anchor-label="createInt" id="1392288526%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-int.html"><span>create</span><wbr><span><span>Int</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1392288526%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-int.html"><span class="token function">createInt</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1707795737%2FFunctions%2F769193423" anchor-label="createIntList" id="1707795737%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1707795737%2FFunctions%2F769193423"><span>create</span><wbr><span>Int</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1707795737%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#1707795737%2FFunctions%2F769193423"><span class="token function">createIntList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/IntStream.html">IntStream</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="541939826%2FFunctions%2F769193423" anchor-label="createList" id="541939826%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-list.html"><span>create</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="541939826%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-list.html"><span class="token function">createList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html">Stream</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1865202790%2FFunctions%2F769193423" anchor-label="createLong" id="-1865202790%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-long.html"><span>create</span><wbr><span><span>Long</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1865202790%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-long.html"><span class="token function">createLong</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="185378111%2FFunctions%2F769193423" anchor-label="createLongList" id="185378111%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#185378111%2FFunctions%2F769193423"><span>create</span><wbr><span>Long</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="185378111%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#185378111%2FFunctions%2F769193423"><span class="token function">createLongList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/LongStream.html">LongStream</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2023076312%2FFunctions%2F769193423" anchor-label="createMap" id="-2023076312%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1341985243%2FFunctions%2F769193423"><span>create</span><wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2023076312%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#1341985243%2FFunctions%2F769193423"><span class="token function">createMap</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-map.html"><span class="token function">createMap</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">map<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html">Stream</a><span class="token operator">&lt;</span><span data-unresolved-link="com.mojang.datafixers.util/Pair///PointingToDeclaration/">Pair</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1550574842%2FFunctions%2F769193423" anchor-label="createNumeric" id="1550574842%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-numeric.html"><span>create</span><wbr><span><span>Numeric</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1550574842%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-numeric.html"><span class="token function">createNumeric</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">i<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-number/index.html">Number</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1398664204%2FFunctions%2F769193423" anchor-label="createShort" id="-1398664204%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-short.html"><span>create</span><wbr><span><span>Short</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1398664204%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-short.html"><span class="token function">createShort</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html">Short</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2143068550%2FFunctions%2F769193423" anchor-label="createString" id="-2143068550%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-string.html"><span>create</span><wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2143068550%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="create-string.html"><span class="token function">createString</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1134490186%2FFunctions%2F769193423" anchor-label="empty" id="-1134490186%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="empty.html"><span><span>empty</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1134490186%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="empty.html"><span class="token function">empty</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="26857888%2FFunctions%2F769193423" anchor-label="emptyList" id="26857888%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#26857888%2FFunctions%2F769193423"><span>empty</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="26857888%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#26857888%2FFunctions%2F769193423"><span class="token function">emptyList</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2133831424%2FFunctions%2F769193423" anchor-label="emptyMap" id="-2133831424%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-2133831424%2FFunctions%2F769193423"><span>empty</span><wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2133831424%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-2133831424%2FFunctions%2F769193423"><span class="token function">emptyMap</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="225497789%2FFunctions%2F769193423" anchor-label="get" id="225497789%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#225497789%2FFunctions%2F769193423"><span><span>get</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="225497789%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator </span><span class="token keyword">fun </span><a href="index.html#225497789%2FFunctions%2F769193423"><span class="token function">get</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1336197191%2FFunctions%2F769193423" anchor-label="getBooleanValue" id="1336197191%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-boolean-value.html"><span>get</span><wbr><span>Boolean</span><wbr><span><span>Value</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1336197191%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-boolean-value.html"><span class="token function">getBooleanValue</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="886638416%2FFunctions%2F769193423" anchor-label="getByteBuffer" id="886638416%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#886638416%2FFunctions%2F769193423"><span>get</span><wbr><span>Byte</span><wbr><span><span>Buffer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="886638416%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#886638416%2FFunctions%2F769193423"><span class="token function">getByteBuffer</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/java/nio/ByteBuffer.html">ByteBuffer</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-257533775%2FFunctions%2F769193423" anchor-label="getGeneric" id="-257533775%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-257533775%2FFunctions%2F769193423"><span>get</span><wbr><span><span>Generic</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-257533775%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-257533775%2FFunctions%2F769193423"><span class="token function">getGeneric</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="395235225%2FFunctions%2F769193423" anchor-label="getIntStream" id="395235225%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#395235225%2FFunctions%2F769193423"><span>get</span><wbr><span>Int</span><wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="395235225%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#395235225%2FFunctions%2F769193423"><span class="token function">getIntStream</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/IntStream.html">IntStream</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="929060058%2FFunctions%2F769193423" anchor-label="getList" id="929060058%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#929060058%2FFunctions%2F769193423"><span>get</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="929060058%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#929060058%2FFunctions%2F769193423"><span class="token function">getList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="455225372%2FFunctions%2F769193423" anchor-label="getLongStream" id="455225372%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#455225372%2FFunctions%2F769193423"><span>get</span><wbr><span>Long</span><wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="455225372%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#455225372%2FFunctions%2F769193423"><span class="token function">getLongStream</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/LongStream.html">LongStream</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-549152468%2FFunctions%2F769193423" anchor-label="getMap" id="-549152468%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-549152468%2FFunctions%2F769193423"><span>get</span><wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-549152468%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-549152468%2FFunctions%2F769193423"><span class="token function">getMap</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="com.mojang.serialization/MapLike///PointingToDeclaration/">MapLike</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1400800420%2FFunctions%2F769193423" anchor-label="getMapEntries" id="1400800420%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1400800420%2FFunctions%2F769193423"><span>get</span><wbr><span>Map</span><wbr><span><span>Entries</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1400800420%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#1400800420%2FFunctions%2F769193423"><span class="token function">getMapEntries</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/BiConsumer.html">BiConsumer</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="659296658%2FFunctions%2F769193423" anchor-label="getMapValues" id="659296658%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-map-values.html"><span>get</span><wbr><span>Map</span><wbr><span><span>Values</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="659296658%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-map-values.html"><span class="token function">getMapValues</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html">Stream</a><span class="token operator">&lt;</span><span data-unresolved-link="com.mojang.datafixers.util/Pair///PointingToDeclaration/">Pair</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1039330889%2FFunctions%2F769193423" anchor-label="getNumberValue" id="1039330889%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#30959373%2FFunctions%2F769193423"><span>get</span><wbr><span>Number</span><wbr><span><span>Value</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1039330889%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#30959373%2FFunctions%2F769193423"><span class="token function">getNumberValue</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-number/index.html">Number</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-number/index.html">Number</a></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-number-value.html"><span class="token function">getNumberValue</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-number/index.html">Number</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1744449840%2FFunctions%2F769193423" anchor-label="getStream" id="-1744449840%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-stream.html"><span>get</span><wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1744449840%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-stream.html"><span class="token function">getStream</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/stream/Stream.html">Stream</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1366849936%2FFunctions%2F769193423" anchor-label="getStringValue" id="1366849936%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-string-value.html"><span>get</span><wbr><span>String</span><wbr><span><span>Value</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1366849936%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-string-value.html"><span class="token function">getStringValue</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1142292274%2FFunctions%2F769193423" anchor-label="listBuilder" id="-1142292274%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1142292274%2FFunctions%2F769193423"><span>list</span><wbr><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1142292274%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-1142292274%2FFunctions%2F769193423"><span class="token function">listBuilder</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/ListBuilder///PointingToDeclaration/">ListBuilder</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="282795184%2FFunctions%2F769193423" anchor-label="mapBuilder" id="282795184%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#282795184%2FFunctions%2F769193423"><span>map</span><wbr><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="282795184%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#282795184%2FFunctions%2F769193423"><span class="token function">mapBuilder</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/RecordBuilder///PointingToDeclaration/">RecordBuilder</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1391424056%2FFunctions%2F769193423" anchor-label="mergeToList" id="-1391424056%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="merge-to-list.html"><span>merge</span><wbr><span>To</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1391424056%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="merge-to-list.html"><span class="token function">mergeToList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">list<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">values<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="merge-to-list.html"><span class="token function">mergeToList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">list<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="386547626%2FFunctions%2F769193423" anchor-label="mergeToMap" id="386547626%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#446631275%2FFunctions%2F769193423"><span>merge</span><wbr><span>To</span><wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="386547626%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#446631275%2FFunctions%2F769193423"><span class="token function">mergeToMap</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/MapLike///PointingToDeclaration/">MapLike</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#238551366%2FFunctions%2F769193423"><span class="token function">mergeToMap</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-mutable-map/index.html">MutableMap</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="merge-to-map.html"><span class="token function">mergeToMap</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">map<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">key<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">value<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-616663004%2FFunctions%2F769193423" anchor-label="mergeToPrimitive" id="-616663004%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-616663004%2FFunctions%2F769193423"><span>merge</span><wbr><span>To</span><wbr><span><span>Primitive</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-616663004%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-616663004%2FFunctions%2F769193423"><span class="token function">mergeToPrimitive</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1296404133%2FFunctions%2F769193423" anchor-label="remove" id="-1296404133%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="remove.html"><span><span>remove</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1296404133%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="remove.html"><span class="token function">remove</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">key<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="641546641%2FFunctions%2F769193423" anchor-label="set" id="641546641%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#641546641%2FFunctions%2F769193423"><span><span>set</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="641546641%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator </span><span class="token keyword">fun </span><a href="index.html#641546641%2FFunctions%2F769193423"><span class="token function">set</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">p2<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="180295731%2FFunctions%2F769193423" anchor-label="update" id="180295731%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#180295731%2FFunctions%2F769193423"><span><span>update</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="180295731%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#180295731%2FFunctions%2F769193423"><span class="token function">update</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">p2<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html">Function</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-404484353%2FFunctions%2F769193423" anchor-label="updateGeneric" id="-404484353%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-404484353%2FFunctions%2F769193423"><span>update</span><wbr><span><span>Generic</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-404484353%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#-404484353%2FFunctions%2F769193423"><span class="token function">updateGeneric</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">p1<span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span></span><span class="parameter ">p2<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html">Function</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1215420615%2FFunctions%2F769193423" anchor-label="withDecoder" id="1215420615%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1215420615%2FFunctions%2F769193423"><span>with</span><wbr><span><span>Decoder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1215420615%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#1215420615%2FFunctions%2F769193423">E</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#1215420615%2FFunctions%2F769193423"><span class="token function">withDecoder</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/Decoder///PointingToDeclaration/">Decoder</span><span class="token operator">&lt;</span><a href="index.html#1215420615%2FFunctions%2F769193423">E</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html">Function</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="com.mojang.datafixers.util/Pair///PointingToDeclaration/">Pair</span><span class="token operator">&lt;</span><a href="index.html#1215420615%2FFunctions%2F769193423">E</a><span class="token punctuation">, </span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1244858601%2FFunctions%2F769193423" anchor-label="withEncoder" id="-1244858601%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1244858601%2FFunctions%2F769193423"><span>with</span><wbr><span><span>Encoder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1244858601%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#-1244858601%2FFunctions%2F769193423">E</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#-1244858601%2FFunctions%2F769193423"><span class="token function">withEncoder</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/Encoder///PointingToDeclaration/">Encoder</span><span class="token operator">&lt;</span><a href="index.html#-1244858601%2FFunctions%2F769193423">E</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html">Function</a><span class="token operator">&lt;</span><a href="index.html#-1244858601%2FFunctions%2F769193423">E</a><span class="token punctuation">, </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1716260324%2FFunctions%2F769193423" anchor-label="withParser" id="1716260324%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1716260324%2FFunctions%2F769193423"><span>with</span><wbr><span><span>Parser</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1716260324%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="index.html#1716260324%2FFunctions%2F769193423">E</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">&gt; </span><a href="index.html#1716260324%2FFunctions%2F769193423"><span class="token function">withParser</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">p0<span class="token operator">: </span><span data-unresolved-link="com.mojang.serialization/Decoder///PointingToDeclaration/">Decoder</span><span class="token operator">&lt;</span><a href="index.html#1716260324%2FFunctions%2F769193423">E</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html">Function</a><span class="token operator">&lt;</span><span data-unresolved-link="net.peanuuutz.tomlkt/TomlElement///PointingToDeclaration/">TomlElement</span><span class="token punctuation">, </span><span data-unresolved-link="com.mojang.serialization/DataResult///PointingToDeclaration/">DataResult</span><span class="token operator">&lt;</span><a href="index.html#1716260324%2FFunctions%2F769193423">E</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
