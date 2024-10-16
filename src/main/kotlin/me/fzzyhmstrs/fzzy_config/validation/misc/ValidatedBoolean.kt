@@ -15,17 +15,12 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.Condition
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionImpl
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.asTomlLiteral
 import net.peanuuutz.tomlkt.toBoolean
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.*
-import java.util.function.Supplier
 
 /**
  * a validated boolean value
@@ -48,16 +43,6 @@ open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defa
      * since 0.2.0
      */
     constructor(): this(true)
-
-    open fun withCondition(condition: Condition): ValidatedCondition {
-        val valCondition = ValidatedCondition(this.storedValue)
-        valCondition.withCondition(condition)
-        return valCondition
-    }
-
-    open fun withCondition(condition: Supplier<Boolean>, failMessage: Text): ValidatedCondition {
-        return withCondition(ConditionImpl(condition, failMessage))
-    }
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Boolean> {

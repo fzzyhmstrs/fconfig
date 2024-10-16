@@ -11,8 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
-import com.sun.org.apache.xml.internal.serializer.utils.Utils.messages
-import me.fzzyhmstrs.fzzy_config.util.FcText.isNotEmpty
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.MutableText
@@ -354,5 +352,18 @@ object FcText {
 
     fun Text.isNotEmpty(): Boolean {
         return this.string != ""
+    }
+
+    fun toLinebreakText(texts: List<Text>): MutableText {
+        if (texts.isEmpty()) return empty()
+        var text: MutableText? = null
+        for (message in texts) {
+            if (text == null) {
+                text = message.copy()
+            } else {
+                text.append(literal("\n")).append(message)
+            }
+        }
+        return text ?: empty()
     }
 }
