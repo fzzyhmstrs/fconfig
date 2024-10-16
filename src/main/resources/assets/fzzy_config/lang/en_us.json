@@ -60,6 +60,8 @@
 "fc.validated_field.number.textbox.usage.unfocused": "Click checkmark to confirm entry.",
 "fc.validated_field.object": "Edit...",
 "fc.validated_field.set": "Edit Set...",
+"fc.validated_field.condition": "Condition not met",
+"fc.validated_field.conditions": "Conditions not met",
 
 "fc.validated_field.default": "Restore [%1$s] to default of [%2$s]",
 "fc.validated_field.update.error": "Update error for [%1$s], [%2$s] to [%3$s]: %4$s",
