@@ -27,7 +27,6 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
-import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.text.OrderedText
@@ -52,9 +51,6 @@ internal open class BaseConfigEntry(
     }
     private val fullTooltip: List<OrderedText> by lazy {
         createFullTooltip()
-    }
-    private val tooltipString: String by lazy {
-        createTooltipString()
     }
 
     init {
@@ -113,7 +109,21 @@ internal open class BaseConfigEntry(
 
         if (mouseY < parent.y || mouseY > parent.bottom) return
 
-        if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null) {
+        val list: MutableList<OrderedText> = mutableListOf()
+
+        widget.tooltip?.let { list.addAll(it.getLines(MinecraftClient.getInstance())) }
+
+        if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && fullTooltip.isNotEmpty()) {
+            if(list.isNotEmpty()) list.add(FcText.empty().asOrderedText())
+            list.addAll(fullTooltip)
+            MinecraftClient.getInstance().currentScreen?.setTooltip(list, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
+        } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty() && !MinecraftClient.getInstance().navigationType.isKeyboard) {
+            if(list.isNotEmpty()) list.add(FcText.empty().asOrderedText())
+            list.addAll(tooltip)
+            MinecraftClient.getInstance().currentScreen?.setTooltip(list, HoveredTooltipPositioner.INSTANCE, true)
+        }
+
+        /*if (widget.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && widget.tooltip != null) {
             //let widgets tooltip win
         } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && widget.tooltip != null && actions.isNotEmpty()) {
             val lines: MutableList<OrderedText> = mutableListOf()
@@ -123,11 +133,11 @@ internal open class BaseConfigEntry(
                 lines.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190))
             }
             MinecraftClient.getInstance().currentScreen?.setTooltip(lines, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
+        } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && fullTooltip.isNotEmpty()) {
+
         } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty()) {
             MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, HoveredTooltipPositioner.INSTANCE, this.isFocused)
-        } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && fullTooltip.isNotEmpty()) {
-            MinecraftClient.getInstance().currentScreen?.setTooltip(fullTooltip, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
-        }
+        }*/
     }
 
     private fun isMouseOverAction(offset: Int, offsetIncrement: Int, mouseX: Int, mouseY: Int, x: Int, y: Int): Boolean {
@@ -166,9 +176,9 @@ internal open class BaseConfigEntry(
         return list
     }
 
-    private fun createTooltipString(): String {
+    private fun createTooltipString(tt: List<OrderedText>): String {
         val builder = StringBuilder()
-        for (tip in tooltip) {
+        for (tip in tt) {
             tip.accept { _, _, codepoint ->
                 builder.appendCodePoint(codepoint)
                 true
@@ -176,6 +186,7 @@ internal open class BaseConfigEntry(
         }
         return builder.toString()
     }
+
     open fun restartText(action: Action): Text {
         return action.settingTooltip
     }
@@ -189,15 +200,15 @@ internal open class BaseConfigEntry(
     }
 
     override fun setFocused(focused: Boolean) {
-        if(description.string != "") {
-            widget.tooltip = Tooltip.of(description)
-        }
         widget.isFocused = focused
     }
 
     open fun appendEntryNarrations(builder: NarrationMessageBuilder) {
-        if(tooltip.isNotEmpty()) {
-            builder.put(NarrationPart.HINT, tooltipString)
+        val prefix = widget.tooltip?.let { createTooltipString(it.getLines(MinecraftClient.getInstance())) + ". " } ?: ""
+        if (MinecraftClient.getInstance().navigationType.isKeyboard && fullTooltip.isNotEmpty()) {
+            builder.put(NarrationPart.HINT, prefix +  createTooltipString(fullTooltip))
+        } else if(tooltip.isNotEmpty()) {
+            builder.put(NarrationPart.HINT, prefix +  createTooltipString(tooltip))
         }
     }
 
