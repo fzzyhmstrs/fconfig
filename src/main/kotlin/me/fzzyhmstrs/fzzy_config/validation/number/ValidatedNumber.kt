@@ -37,8 +37,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Util
 import net.minecraft.util.math.MathHelper
-import org.apache.commons.lang3.math.NumberUtils.toDouble
-import org.jetbrains.annotations.ApiStatus
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.text.DecimalFormat

@@ -35,10 +35,11 @@ import me.fzzyhmstrs.fzzy_config_test.FC.TEST_PERMISSION_GOOD
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.registry.tag.TagKey
+import net.minecraft.text.MutableText
+import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 import java.awt.Color
-import java.util.function.BiFunction
 
 @Version(1)
 class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
@@ -47,10 +48,10 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
     @WithPerms(5)
     var bl1 = true
     @RequiresAction(Action.RELOAD_DATA)
-    var bl2 = ValidatedBoolean().withCondition({ bl3.get() }, "bl3 needs to be true".lit())
+    var bl2 = ValidatedBoolean().toCondition({ bl3.get() }, "bl3 needs to be true".lit().formatted(Formatting.RED), { false }).withCondition({ set2.isNotEmpty() }, "Set2 can't be empty".lit().formatted(Formatting.RED)).withFailTitle("Disabled".lit(), "Super disabled".lit())
     var bl3 = ValidatedBoolean(false)
 
-    var bl2Button = ConfigAction.Builder().title("bl2 Conditionally".lit()).build { println("Conditionally:${bl2.getConditionally()}, base: ${bl2.get()}") }
+    var bl2Button = ConfigAction.Builder().title("bl2 Conditionally".lit()).build { println("Conditionally:${ bl2.get() }, base: ${ bl2.getUnconditional() }") }
 
     @WithCustomPerms(["my_perm.custom"])
     var int1 = 6
