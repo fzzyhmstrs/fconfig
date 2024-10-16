@@ -28,7 +28,7 @@ import java.util.function.Function
  * @author fzzyhmstrs
  * @since 0.5.0
  */
-class ValidatedMapped<N, T> @JvmOverloads constructor(private val delegate: ValidatedField<T>, private val to: Function<T, out N>, private val from: Function<in N, T>, defaultValue: N = to.apply(delegate.get())): ValidatedField<N>(defaultValue) {
+open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegate: ValidatedField<T>, private val to: Function<T, out N>, private val from: Function<in N, T>, defaultValue: N = to.apply(delegate.get())): ValidatedField<N>(defaultValue) {
 
     override var storedValue: N
         get() = to.apply(delegate.get())
