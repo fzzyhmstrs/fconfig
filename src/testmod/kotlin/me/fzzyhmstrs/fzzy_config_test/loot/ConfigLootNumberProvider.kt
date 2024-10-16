@@ -16,7 +16,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import net.minecraft.loot.context.LootContext
-import net.minecraft.loot.context.LootContextParameter
 import net.minecraft.loot.provider.number.LootNumberProvider
 import net.minecraft.loot.provider.number.LootNumberProviderType
 import net.minecraft.registry.Registries
@@ -32,10 +31,6 @@ class ConfigLootNumberProvider(private val scope: String, private val scaling: F
 
     override fun getType(): LootNumberProviderType {
         return TYPE
-    }
-
-    override fun getRequiredParameters(): MutableSet<LootContextParameter<*>> {
-        return mutableSetOf()
     }
 
     companion object {

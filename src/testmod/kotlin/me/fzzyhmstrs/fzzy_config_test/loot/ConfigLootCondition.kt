@@ -17,7 +17,6 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import net.minecraft.loot.condition.LootCondition
 import net.minecraft.loot.condition.LootConditionType
 import net.minecraft.loot.context.LootContext
-import net.minecraft.loot.context.LootContextParameter
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
 import net.minecraft.util.Identifier
@@ -36,10 +35,6 @@ class ConfigLootCondition(private val scope: String): LootCondition {
 
     override fun getType(): LootConditionType {
         return TYPE
-    }
-
-    override fun getRequiredParameters(): MutableSet<LootContextParameter<*>> {
-        return mutableSetOf()
     }
 
     companion object {

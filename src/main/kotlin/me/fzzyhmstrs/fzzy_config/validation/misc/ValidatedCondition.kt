@@ -309,10 +309,8 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         override fun setTooltip(tooltip: Tooltip?) {
             Exception().printStackTrace()
             if (active) {
-                println("A")
                 delegateWidget.tooltip = tooltip
             } else {
-                println("B")
                 super.setTooltip(tooltip)
             }
         }
