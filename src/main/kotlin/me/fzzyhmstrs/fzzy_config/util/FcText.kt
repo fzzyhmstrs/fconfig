@@ -346,7 +346,7 @@ object FcText {
     }
 
     fun Text.isEmpty(): Boolean {
-        return this.content.type == PlainTextContent.EMPTY
+        return this.string == ""
     }
 
     fun Text.isNotEmpty(): Boolean {
