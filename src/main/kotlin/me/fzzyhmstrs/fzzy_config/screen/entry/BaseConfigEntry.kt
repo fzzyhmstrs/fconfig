@@ -133,6 +133,8 @@ internal open class BaseConfigEntry(
                 lines.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190))
             }
             MinecraftClient.getInstance().currentScreen?.setTooltip(lines, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
+        } else if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && fullTooltip.isNotEmpty()) {
+
         } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty()) {
             MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, HoveredTooltipPositioner.INSTANCE, this.isFocused)
         }*/
