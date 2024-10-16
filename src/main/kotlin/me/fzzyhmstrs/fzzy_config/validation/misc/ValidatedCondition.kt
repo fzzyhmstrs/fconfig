@@ -213,14 +213,14 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         private val delegateWidget: ClickableWidget
     ) : ActiveButtonWidget({ if(conditionMessages.get().size == 1) singleFailText ?: "fc.validated_field.condition".translate() else pluralFailText ?: singleFailText ?: "fc.validated_field.conditions".translate() }, width, height, activeSupplier, { _ -> }, null), Decorated {
 
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activeSupplier.get()
             if (active) {
                 super.setTooltip(delegateWidget.tooltip)
                 delegateWidget.render(context, mouseX, mouseY, delta)
             } else {
                 super.setTooltip(makeTooltip())
-                super.renderWidget(context, mouseX, mouseY, delta)
+                super.renderButton(context, mouseX, mouseY, delta)
             }
         }
 
@@ -245,11 +245,11 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
                 super.mouseReleased(mouseX, mouseY, button)
         }
 
-        override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
             return if (active)
-                delegateWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+                delegateWidget.mouseScrolled(mouseX, mouseY, verticalAmount)
             else
-                super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+                super.mouseScrolled(mouseX, mouseY, verticalAmount)
         }
 
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {

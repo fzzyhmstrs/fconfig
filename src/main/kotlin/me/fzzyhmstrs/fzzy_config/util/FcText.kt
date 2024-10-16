@@ -11,11 +11,10 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
-import com.sun.org.apache.xml.internal.serializer.utils.Utils.messages
+import me.fzzyhmstrs.fzzy_config.util.FcText.isNotEmpty
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.MutableText
-import net.minecraft.text.PlainTextContent
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
@@ -348,7 +347,7 @@ object FcText {
     }
 
     fun Text.isEmpty(): Boolean {
-        return this.content.type == PlainTextContent.EMPTY
+        return this.string == ""
     }
 
     fun Text.isNotEmpty(): Boolean {
