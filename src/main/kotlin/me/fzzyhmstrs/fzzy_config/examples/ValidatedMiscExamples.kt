@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.examples
 
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
@@ -141,6 +142,15 @@ object ValidatedMiscExamples {
         override fun prefix(): String {
             return "my.config.test_enum"
         }
+    }
+
+    fun conditions() {
+        //any validation can be wrapped in conditions. All the conditions need to pass, otherwise a fallback will be returned instead of the stored value
+        // conditions should supply live values. Validated fields are a convenient mechanism to do that. A plain boolean won't update in-GUI until changes are applied.
+        val validatedBooleanGate = ValidatedBoolean()
+
+        //create a conditional validation with toCondition
+        val validatedConditionInt = ValidatedInt(5, 100, 0).toCondition(validatedBooleanGate, "Gate must be true".lit()) { 0 }
     }
 
     // example validated Enum. COOL is the default value. This enum is going to use a Cycling style of widget for the GUI, much like vanilla. This is optional.

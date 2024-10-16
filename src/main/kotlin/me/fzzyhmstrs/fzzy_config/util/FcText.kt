@@ -11,9 +11,11 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
+import com.sun.org.apache.xml.internal.serializer.utils.Utils.messages
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.MutableText
+import net.minecraft.text.PlainTextContent
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
@@ -340,5 +342,26 @@ object FcText {
      */
     fun MutableText.colored(color: Int): MutableText {
         return this.styled { s -> s.withColor(color) }
+    }
+
+    fun Text.isEmpty(): Boolean {
+        return this.content.type == PlainTextContent.EMPTY
+    }
+
+    fun Text.isNotEmpty(): Boolean {
+        return this.string != ""
+    }
+
+    fun toLinebreakText(texts: List<Text>): MutableText {
+        if (texts.isEmpty()) return empty()
+        var text: MutableText? = null
+        for (message in texts) {
+            if (text == null) {
+                text = message.copy()
+            } else {
+                text.append(literal("\n")).append(message)
+            }
+        }
+        return text ?: empty()
     }
 }

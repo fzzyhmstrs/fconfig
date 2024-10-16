@@ -74,7 +74,7 @@ open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defa
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Boolean>): ClickableWidget {
         return ActiveButtonWidget(
-            {if(get()) "fc.validated_field.boolean.true".translate() else "fc.validated_field.boolean.false".translate()},
+            { if(get()) "fc.validated_field.boolean.true".translate() else "fc.validated_field.boolean.false".translate() },
             110,
             20,
             { true },
