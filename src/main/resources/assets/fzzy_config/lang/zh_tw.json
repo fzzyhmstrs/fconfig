@@ -1,6 +1,6 @@
 {
-    "fc.validated_field.boolean.true": "True",
-    "fc.validated_field.boolean.false": "False",
+    "fc.validated_field.boolean.true": "是",
+    "fc.validated_field.boolean.false": "否",
     "fc.validated_field.color.r": "R",
     "fc.validated_field.color.g": "G",
     "fc.validated_field.color.b": "B",
