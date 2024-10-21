@@ -140,7 +140,7 @@ internal object NetworkEventsClient {
         ValidatedIdentifier.receiveSync(payload)
     }
 
-    private fun handleTick(event: ClientTickEvent) {
+    private fun handleTick(event: TickEvent.ClientTickEvent) {
         if (event.phase == TickEvent.Phase.START) return
         FCC.withScope { scopeToOpen ->
             if (scopeToOpen != "") {
