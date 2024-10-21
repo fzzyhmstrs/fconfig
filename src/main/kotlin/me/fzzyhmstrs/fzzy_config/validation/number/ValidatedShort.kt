@@ -68,7 +68,7 @@ open class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValu
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Short> {
         return try {
             ValidationResult.success(toml.asTomlLiteral().toShort())
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedShort [$fieldName]: ${e.localizedMessage}")
         }
     }

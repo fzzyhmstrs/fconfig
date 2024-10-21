@@ -54,7 +54,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
             val string = toml.toString()
             val chkEnum = valuesMap[string] ?: return ValidationResult.error(storedValue, "Invalid enum selection at setting [$fieldName]. Possible values are: [${valuesMap.keys}]")
             ValidationResult.success(chkEnum)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(storedValue, "Critical error deserializing enum [$fieldName]: ${e.localizedMessage}")
         }
     }
@@ -93,7 +93,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
         if (input == null) return false
         return try {
             input::class.java == defaultValue::class.java && validateEntry(input as T, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             false
         }
     }

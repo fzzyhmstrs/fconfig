@@ -34,6 +34,8 @@ import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
+import net.minecraft.loot.LootTables
+import net.minecraft.loot.context.LootContextTypes
 import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.network.ServerPlayerEntity
@@ -81,6 +83,10 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
     var testString = ValidatedString.fromList(FabricLoader.getInstance().allMods.map{ it.metadata.id })
 
     var testDynamicIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.BIOME)
+
+    var testLootIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.LOOT_TABLE)
+
+    var testLootIdentifierPredicated = ValidatedIdentifier.ofRegistryKey(LootTables.IGLOO_CHEST_CHEST.value, RegistryKeys.LOOT_TABLE) { entry -> entry.value().type == LootContextTypes.CHEST }
 
     var exampleValidatedAttribute1 = ValidatedEntityAttribute.Builder("generic.max_health", true)
         // supply a UUID and name, otherwise generic ones will be used for you

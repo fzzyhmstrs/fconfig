@@ -101,7 +101,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<String> {
         return try {
             ValidationResult.success(toml.asTomlLiteral().toString())
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(storedValue, "Critical error deserializing string [$fieldName]: ${e.localizedMessage}")
         }
     }
@@ -125,7 +125,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
         else
             try {
                 SuggestionBackedTextFieldWidget(110, 20, this, choicePredicate, this, this, { s, cursor, choiceValidator -> checker.getSuggestions(s, cursor, choiceValidator) }, false)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 throw IllegalStateException("Entry Checker provided to Validated String [${getEntryKey()}] is a EntrySuggester of type other than String")
             }
     }
@@ -163,7 +163,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
          */
         @JvmStatic
         fun fromList(strings: List<String>): ValidatedString {
-            return ValidatedString(try{ strings[0] } catch (e: Exception) { throw IllegalStateException("List passed to ValidatedString can't be empty.") }, AllowableStrings({s -> strings.contains(s)}, { strings }))
+            return ValidatedString(try{ strings[0] } catch (e: Throwable) { throw IllegalStateException("List passed to ValidatedString can't be empty.") }, AllowableStrings({s -> strings.contains(s)}, { strings }))
         }
 
         /**

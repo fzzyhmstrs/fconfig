@@ -90,8 +90,9 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
                 .build()
             PopupWidget.push(popup)
-        } catch (e: Exception) {
-            FC.LOGGER.error("Unexpected exception caught while opening list popup")
+        } catch (e: Throwable) {
+            FC.LOGGER.error("Unexpected exception caught while opening string map popup")
+            e.printStackTrace()
         }
     }
     @Internal
@@ -103,7 +104,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
                 val annotations = if (value != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(value!!::class)
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         listOf()
                     }
                 else
@@ -112,7 +113,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
                 table.element(key, el, annotations)
             }
             return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.predicated(table.build(), errors.isEmpty(), "Critical exception encountered while serializing map: ${e.localizedMessage}")
         }
     }
@@ -135,7 +136,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
                 map[keyResult.get()] = valueResult.get()
             }
             ValidationResult.predicated(map, keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
         }
     }
@@ -171,7 +172,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
         if (input !is Map<*, *>) return false
         return try {
             validateEntry(input as Map<String, V>, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             false
         }
     }
@@ -205,7 +206,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
         internal fun<V> tryMake(map: Map<String, V>, keyHandler: Entry<*, *>, valueHandler: Entry<*, *>): ValidatedStringMap<V>? {
             return try {
                 ValidatedStringMap(map, keyHandler as Entry<String, *>, valueHandler as Entry<V, *>)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 return null
             }
         }
