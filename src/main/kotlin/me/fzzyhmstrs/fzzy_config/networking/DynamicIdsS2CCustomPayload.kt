@@ -30,10 +30,6 @@ internal class DynamicIdsS2CCustomPayload(val key: Identifier, val ids: List<Ide
         return type
     }
 
-    override fun id(): Identifier {
-        return type
-    }
-
     companion object {
 
         private fun readList(buf: PacketByteBuf): List<Identifier> {
