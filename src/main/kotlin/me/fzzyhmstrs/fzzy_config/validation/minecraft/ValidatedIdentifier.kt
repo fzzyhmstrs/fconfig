@@ -27,6 +27,7 @@ import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.anyOptional
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.optional
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.regRefId
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.tagIdList
@@ -275,11 +276,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
         internal fun createSyncs(manager: RegistryWrapper.WrapperLookup): List<DynamicIdsS2CCustomPayload> {
             return dynamicRegistrySyncsNeeded.mapNotNull { regKey ->
-                manager.getOptional(regKey).getOrNull()?.let {
+                manager.anyOptional(regKey).getOrNull()?.let {
                     impl -> DynamicIdsS2CCustomPayload(regKey.value, impl.streamKeys().map { key -> key.value }.toList().also { list -> dynamicIds[regKey.value] = list })
                 }
             } + filteredDynamicRegistrySyncsNeeded.mapNotNull { (regKey, filter) ->
-                manager.getOptional(regKey).getOrNull()?.let {
+                manager.anyOptional(regKey).getOrNull()?.let {
                         impl -> DynamicIdsS2CCustomPayload(regKey.value, impl.streamEntries().filter(filter).map { it.registryKey() }.map { key -> key.value }.toList().also { list -> dynamicIds[regKey.value] = list })
                 }
             }
@@ -288,12 +289,12 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         internal fun createSpSyncs(manager: RegistryWrapper.WrapperLookup) {
             Exception().printStackTrace()
             dynamicRegistrySyncsNeeded.mapNotNull { regKey ->
-                manager.getOptional(regKey).getOrNull()?.let {
+                manager.anyOptional(regKey).getOrNull()?.let {
                         impl -> impl.streamKeys().map { key -> key.value }.toList().also { list -> dynamicIds[regKey.value] = list }
                 }
             }
             filteredDynamicRegistrySyncsNeeded.mapNotNull { (regKey, filter) ->
-                manager.getOptional(regKey).getOrNull()?.let {
+                manager.anyOptional(regKey).getOrNull()?.let {
                         impl -> impl.streamEntries().filter(filter).map { it.registryKey() }.map { key -> key.value }.toList().also { list -> dynamicIds[regKey.value] = list }
                 }
             }
