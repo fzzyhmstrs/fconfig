@@ -83,7 +83,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
                 }
             }
             ValidationResult.predicated(set, errors.isEmpty(), "Error(s) encountered while deserializing set, some entries were skipped: $errors")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(defaultValue, "Critical error encountered while deserializing set [$fieldName], using defaults.")
         }
     }
@@ -97,14 +97,14 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
                 val annotations = if (entry != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(entry!!::class)
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         listOf()
                     }
                 else
                     listOf()
                 toml.element(tomlEntry, annotations)
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             return ValidationResult.error(toml.build(), "Critical error encountered while serializing set: ${e.localizedMessage}")
         }
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
@@ -154,7 +154,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         if (input !is Set<*>) return false
         return try {
             validateEntry(input as Set<T>, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             false
         }
     }
@@ -184,7 +184,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
                 .build()
             PopupWidget.push(popup)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             FC.LOGGER.error("Unexpected exception caught while opening list popup")
         }
     }
@@ -226,7 +226,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         internal fun <T> tryMake(set: Set<T>, entry: Entry<*, *>): ValidatedSet<T>? {
             return try {
                 ValidatedSet(set, entry as Entry<T, *>)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 null
             }
         }

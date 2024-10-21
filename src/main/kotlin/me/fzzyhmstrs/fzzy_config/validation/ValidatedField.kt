@@ -115,7 +115,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
                     updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert", translation(), get().toString(), pushedValue.toString()))
                     set(it)
                 }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert.error", translation(), e.localizedMessage))
             }
         } else {
@@ -218,7 +218,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return try {
             @Suppress("DEPRECATION", "UNCHECKED_CAST")
             serializeEntry(input as T?, errorBuilder, flags)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             null
         }
     }

@@ -164,7 +164,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             } else {
                 value
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(storedValue, "Critical error deserializing choices [$fieldName]: ${e.localizedMessage}")
         }
     }
@@ -203,7 +203,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         if (input == null) return false
         return try {
             input::class.java == defaultValue!!::class.java && validateEntry(input as T, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             false
         }
     }

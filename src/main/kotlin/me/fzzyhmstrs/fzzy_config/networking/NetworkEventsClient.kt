@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
@@ -100,6 +101,10 @@ internal object NetworkEventsClient {
 
     fun handleSettingForward(payload: SettingForwardCustomPayload, context: IPayloadContext) {
         ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
+    }
+
+    fun receiveDynamicIds(payload: DynamicIdsS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ValidatedIdentifier.receiveSync(payload)
     }
 
     private fun handleTick(event: ClientTickEvent.Post) {
