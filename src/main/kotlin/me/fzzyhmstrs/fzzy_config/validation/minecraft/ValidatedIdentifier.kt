@@ -530,19 +530,19 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(defaultValue, registry)
             } else {
-                if (RegistryLoader.SYNCED_REGISTRIES.any { entry -> entry.key == key }) {
-                    val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
-                    if (maybeRegistry2.isPresent) {
-                        val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
-                        val predicate2: Predicate<Identifier> = Predicate { id -> registry2.streamKeys().anyMatch { key -> key.value == id } }
-                        val supplier2: Supplier<List<Identifier>> = Supplier { registry2.streamKeys().map { it.value }.toList() }
-                        return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false))
-                    }
+
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
+                if (maybeRegistry2.isPresent) {
+                    val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                    val predicate2: Predicate<Identifier> = Predicate { id -> registry2.streamKeys().anyMatch { key -> key.value == id } }
+                    val supplier2: Supplier<List<Identifier>> = Supplier { registry2.streamKeys().map { it.value }.toList() }
+                    return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false))
+                } else {
+                    dynamicRegistrySyncsNeeded.add(key)
+                    val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[key.value]?.contains(id) == true }
+                    val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[key.value] ?: listOf() }
+                    return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false))
                 }
-                dynamicRegistrySyncsNeeded.add(key)
-                val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[key.value]?.contains(id) == true}
-                val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[key.value] ?: listOf() }
-                return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false))
             }
         }
 
@@ -564,24 +564,23 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 val registry = maybeRegistry.get() as? Registry<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
                 return ofRegistry(defaultValue, registry, predicate)
             } else {
-                if (RegistryLoader.SYNCED_REGISTRIES.any { entry -> entry.key == key }) {
-                    val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
-                    if (maybeRegistry2.isPresent) {
-                        val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
-                        val predicate2: Predicate<Identifier> = Predicate {
-                                id -> registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test((registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
-                        }
-                        val supplier2: Supplier<List<Identifier>> = Supplier {
-                            registry2.streamKeys().filter { key -> predicate.test((registry2.getOptional(key).takeIf { it.isPresent } ?: return@filter false).get()) }.map { it.value }.toList()
-                        }
-                        return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false))
+                val maybeRegistry2 = ConfigApiImpl.getWrapperLookup().optional(key)
+                if (maybeRegistry2.isPresent) {
+                    val registry2 = maybeRegistry2.get() as? RegistryWrapper.Impl<T> ?: throw IllegalStateException("Couldn't find registry based on passed key")
+                    val predicate2: Predicate<Identifier> = Predicate {
+                            id -> registry2.streamKeys().anyMatch { key -> key.value == id } && predicate.test((registry2.getOptional(RegistryKey.of(key, id)).takeIf { it.isPresent } ?: return@Predicate false).get())
                     }
+                    val supplier2: Supplier<List<Identifier>> = Supplier {
+                        registry2.streamKeys().filter { key -> predicate.test((registry2.getOptional(key).takeIf { it.isPresent } ?: return@filter false).get()) }.map { it.value }.toList()
+                    }
+                    return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false))
+                } else {
+                    FC.LOGGER.warn("Validated Identifier for Registry Key $key won't have predicate filtering as this registry is not synced")
+                    filteredDynamicRegistrySyncsNeeded.add((key as RegistryKey<Registry<*>>) to (predicate as Predicate<RegistryEntry<*>>))
+                    val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[key.value]?.contains(id) == true }
+                    val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[key.value] ?: listOf() }
+                    return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false))
                 }
-                FC.LOGGER.warn("Validated Identifier for Registry Key $key won't have predicate filtering as this registry is not synced")
-                filteredDynamicRegistrySyncsNeeded.add((key as RegistryKey<Registry<*>>) to (predicate as Predicate<RegistryEntry<*>>))
-                val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[key.value]?.contains(id) == true }
-                val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[key.value] ?: listOf() }
-                return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false))
             }
         }
 

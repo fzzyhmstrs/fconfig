@@ -76,7 +76,7 @@ internal object NetworkEvents {
         //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
         ConfigApi.network().registerS2C(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, NetworkEventsClient::receiveForward)
 
-        ConfigApi.network().registerS2C(DynamicIdsS2CCustomPayload.type, DynamicIdsS2CCustomPayload.codec, NetworkEventsClient::receiveDynamicIds)
+        ConfigApi.network().registerS2C(DynamicIdsS2CCustomPayload.type, ::DynamicIdsS2CCustomPayload, NetworkEventsClient::receiveDynamicIds)
 
 
         ServerConfigurationConnectionEvents.CONFIGURE.register { handler, _ ->
