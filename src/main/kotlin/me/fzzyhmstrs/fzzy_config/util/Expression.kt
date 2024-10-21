@@ -84,7 +84,7 @@ fun interface Expression {
     fun evalSafe(vars: Map<Char, Double>, fallback: Double): Double {
         return try {
             this.eval(vars)
-        } catch(e: Exception) {
+        } catch(e: Throwable) {
             fallback
         }
     }
@@ -131,7 +131,7 @@ fun interface Expression {
             try {
                 val reader = StringReader(str)
                 return parseExpression(reader, context, 1000)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 throw IllegalStateException("Error parsing math equation [$context]: ${e.localizedMessage}")
             }
         }
@@ -148,7 +148,7 @@ fun interface Expression {
             return try {
                 val reader = StringReader(str)
                 ValidationResult.success(parseExpression(reader, str, 1000))
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 ValidationResult.error(null, e.localizedMessage)
             }
         }
@@ -169,7 +169,7 @@ fun interface Expression {
             return try {
                 result.get()?.eval(varMap)
                 result
-            } catch(e: Exception) {
+            } catch(e: Throwable) {
                 ValidationResult.error(null, "Incorrect variables used in expression: [$str], available: [$vars]")
             }
         }

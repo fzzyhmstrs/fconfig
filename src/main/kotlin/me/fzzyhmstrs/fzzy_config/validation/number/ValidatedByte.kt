@@ -68,7 +68,7 @@ open class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue:
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Byte> {
         return try {
             ValidationResult.success(toml.asTomlLiteral().toByte())
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedByte [$fieldName]: ${e.localizedMessage}")
         }
     }

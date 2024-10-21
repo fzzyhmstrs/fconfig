@@ -89,7 +89,7 @@ open class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue:
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Long> {
         return try {
             ValidationResult.success(toml.asTomlLiteral().toLong())
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedLong [$fieldName]: ${e.localizedMessage}")
         }
     }

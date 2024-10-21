@@ -90,7 +90,7 @@ open class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: I
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Int> {
         return try {
             ValidationResult.success(toml.asTomlLiteral().toInt())
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
         }
     }

@@ -48,7 +48,7 @@ open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defa
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Boolean> {
         return try {
             ValidationResult.success(toml.asTomlLiteral().toBoolean())
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(storedValue, "Critical error deserializing boolean [$fieldName]: ${e.localizedMessage}")
         }
     }

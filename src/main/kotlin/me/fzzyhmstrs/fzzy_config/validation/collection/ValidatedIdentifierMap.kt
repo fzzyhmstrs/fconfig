@@ -102,8 +102,9 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
                 .build()
             PopupWidget.push(popup)
-        } catch (e: Exception) {
-            FC.LOGGER.error("Unexpected exception caught while opening list popup")
+        } catch (e: Throwable) {
+            FC.LOGGER.error("Unexpected exception caught while opening identifier map popup")
+            e.printStackTrace()
         }
     }
     @Internal
@@ -115,7 +116,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
                 val annotations = if (value != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(value!!::class)
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         listOf()
                     }
                 else
@@ -124,7 +125,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
                 table.element(key.toString(), el, annotations)
             }
             return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.predicated(table.build(), errors.isEmpty(), "Critical exception encountered while serializing map: ${e.localizedMessage}")
         }
     }
@@ -152,7 +153,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
                 map[keyResult.get()] = valueResult.get()
             }
             ValidationResult.predicated(map, keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
         }
     }
@@ -185,7 +186,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
         if (input !is Map<*, *>) return false
         return try {
             validateEntry(input as Map<Identifier, V>, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             false
         }
     }
@@ -226,7 +227,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
         internal fun<V> tryMake(map: Map<Identifier, V>, keyHandler: Entry<*, *>, valueHandler: Entry<*, *>): ValidatedIdentifierMap<V>? {
             return try {
                 ValidatedIdentifierMap(map, keyHandler as ValidatedIdentifier, valueHandler as Entry<V, *>)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 return null
             }
         }
