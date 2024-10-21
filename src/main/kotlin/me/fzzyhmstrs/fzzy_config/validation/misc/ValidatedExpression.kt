@@ -80,7 +80,7 @@ open class ValidatedExpression @JvmOverloads constructor(
         if (parsedString != storedValue) {
             val tryExpression = try {
                 Expression.parse(storedValue)
-            } catch(e: Exception) {
+            } catch(e: Throwable) {
                 parsedExpression
             }
             parsedExpression = tryExpression
@@ -92,7 +92,7 @@ open class ValidatedExpression @JvmOverloads constructor(
         return try {
             val string = toml.toString()
             ValidationResult.success(string)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(storedValue, "Critical error deserializing math expression [$fieldName]: ${e.localizedMessage}")
         }
     }

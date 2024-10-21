@@ -67,7 +67,7 @@ open class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValu
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Float> {
         return try {
             ValidationResult.success(toml.asTomlLiteral().toFloat())
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
         }
     }

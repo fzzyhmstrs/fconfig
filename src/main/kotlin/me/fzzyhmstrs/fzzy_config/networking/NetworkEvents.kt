@@ -168,5 +168,8 @@ internal object NetworkEvents {
         //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
         ConfigApi.network().registerS2C(SettingForwardCustomPayload.id, SettingForwardCustomPayload::class.java,
             ::SettingForwardCustomPayload, NetworkEventsClient::receiveForward)
+
+        ConfigApi.network().registerS2C(DynamicIdsS2CCustomPayload.id, DynamicIdsS2CCustomPayload::class.java,
+            ::DynamicIdsS2CCustomPayload, NetworkEventsClient::receiveDynamicIds)
     }
 }

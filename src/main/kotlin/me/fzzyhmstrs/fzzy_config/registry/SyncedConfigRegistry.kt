@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.registry
 import io.netty.buffer.Unpooled
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
@@ -21,7 +22,9 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket
 import net.minecraft.server.MinecraftServer
@@ -87,12 +90,20 @@ internal object SyncedConfigRegistry {
     }
 
     internal fun onJoin(player: ServerPlayerEntity, server: MinecraftServer, canSender: BiPredicate<ServerPlayerEntity, Identifier>, sender: BiConsumer<ServerPlayerEntity, FzzyPayload>) {
-        if (server.isSingleplayer) return
+        if (server.isSingleplayer) {
+            ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player)) //for the registries that still need the data in SP
+            return
+        }
         if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.id)) return
         for ((id, config) in syncedConfigs) {
             val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
             val payload = ConfigPermissionsS2CCustomPayload(id, perms)
             sender.accept(player, payload)
+        }
+        val dynamicIdSyncs = ValidatedIdentifier.createSyncs(PortingUtils.getDynamicManager(player))
+        if (dynamicIdSyncs.isEmpty()) return
+        for (sync in dynamicIdSyncs) {
+            sender.accept(player, sync)
         }
     }
 
@@ -122,6 +133,15 @@ internal object SyncedConfigRegistry {
                 } catch (e: Throwable) {
                     FC.LOGGER.error("Error encountered while running reload onSyncServer event for config $id, for player $player!")
                     e.printStackTrace()
+                }
+            }
+            if (player.server.isSingleplayer) {
+                ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player))
+            } else {
+                val dynamicIdSyncs = ValidatedIdentifier.createSyncs(PortingUtils.getDynamicManager(player))
+                if (dynamicIdSyncs.isEmpty()) continue
+                for (sync in dynamicIdSyncs) {
+                    sender.accept(player, sync)
                 }
             }
         }
