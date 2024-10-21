@@ -84,6 +84,11 @@ internal object ConfigApiImplClient {
     internal fun getTranslation(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String = fieldName): MutableText {
         for (annotation in annotations) {
             if (annotation is Translation) {
+                for (ga in globalAnnotations) {
+                    if (ga is Translation && ga.negate) {
+                        return thing.transSupplied { fallback.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
+                    }
+                }
                 if (annotation.negate) {
                     return thing.transSupplied { fallback.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
                 }
