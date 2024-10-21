@@ -227,7 +227,7 @@ internal object ConfigApiImpl {
                             val result = deserializeFromToml(classInstance, tomlElement, errorBuilder)
                             if (result.isError())
                                 ValidationResult.error("", "Error(s) encountered while deserializing old config file into new format").writeWarning(errorBuilder)
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
                             FC.LOGGER.error("Error encountered while converting old config file")
                             e.printStackTrace()
                         }
@@ -243,7 +243,7 @@ internal object ConfigApiImpl {
                 f.writeText(serializedConfig)
                 return classInstance
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             FC.LOGGER.error("Critical error encountered while reading or creating [$name]. Using default config.")
             e.printStackTrace()
             return configClass()
@@ -287,7 +287,7 @@ internal object ConfigApiImpl {
                 }
                 f.writeText(str)
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             FC.LOGGER.error("Failed to save config file $name!")
             e.printStackTrace()
         }
@@ -338,7 +338,7 @@ internal object ConfigApiImpl {
                 val el = if (propVal is EntrySerializer<*>) { //is EntrySerializer
                     try {
                         propVal.serializeEntry(null, errorBuilder, flags)
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         errorBuilder.add("Problem encountered with serialization of [$name]: ${e.localizedMessage}")
                         TomlNull
                     }
@@ -350,7 +350,7 @@ internal object ConfigApiImpl {
                     } else {
                         try {
                             encodeToTomlElement(propVal, prop.returnType) ?: TomlNull
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
                             errorBuilder.add("Problem encountered with raw data during serialization of [$name]: ${e.localizedMessage}")
                             TomlNull
                         }
@@ -366,7 +366,7 @@ internal object ConfigApiImpl {
                 toml.element(name, el, tomlAnnotations)
 
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             errorBuilder.add("Critical error encountered while serializing config!: ${e.localizedMessage}")
             return toml.build()
         }
@@ -395,7 +395,7 @@ internal object ConfigApiImpl {
                     }
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             errorBuilder.add("Critical error encountered while serializing config update!: ${e.localizedMessage}")
             return toml.build()
         }
@@ -490,7 +490,7 @@ internal object ConfigApiImpl {
                                 }
                             if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                             prop.setter.call(config, thing.get())
-                        } catch(e: Exception) {
+                        } catch(e: Throwable) {
                             errorBuilder.add("Error deserializing basic validation [$name]: ${e.localizedMessage}")
                         }
                     } else {
@@ -510,14 +510,14 @@ internal object ConfigApiImpl {
                                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                                 prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop))
                             }
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
                             errorBuilder.add("Error deserializing raw field [$name]: ${e.localizedMessage}")
                         }
                     }
                 }
 
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             errorBuilder.add("Critical error encountered while deserializing")
         }
         return ValidationResult.predicated(ConfigContext(config).withContext(ACTIONS, restartNeeded).withContext(RESTART_RECORDS, restartRecords), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
@@ -532,7 +532,7 @@ internal object ConfigApiImpl {
         val version = if(toml.containsKey("version")) {
             try {
                 toml["version"]?.asTomlLiteral()?.toInt() ?: 0
-            }catch (e: Exception) {
+            }catch (e: Throwable) {
                 -1 //error state, pass back non-valid version number
             }
         } else {
@@ -586,14 +586,14 @@ internal object ConfigApiImpl {
                                     }
                                 }
                             prop.setter.call(config, thing.get()) //change?
-                        } catch(e: Exception) {
+                        } catch(e: Throwable) {
                             errorBuilder.add("Error deserializing basic validation [$str]: ${e.localizedMessage}")
                         }
                     }
                 }
             }
             }
-        } catch(e: Exception) {
+        } catch(e: Throwable) {
             errorBuilder.add("Critical error encountered while deserializing update")
         }
         return ValidationResult.predicated(ConfigContext(config).withContext(ACTIONS, actionsNeeded).withContext(RESTART_RECORDS, restartRecords), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
@@ -712,7 +712,7 @@ internal object ConfigApiImpl {
         return try {
             val strategy = Toml.serializersModule.serializer(clazz)
             Toml. encodeToTomlElement(strategy, a)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             null
         }
     }
@@ -721,7 +721,7 @@ internal object ConfigApiImpl {
         return try {
             val strategy = Toml.serializersModule.serializer(clazz) as? KSerializer<*> ?: return null
             Toml.decodeFromTomlElement(strategy, element)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             null
         }
     }
@@ -974,13 +974,13 @@ internal object ConfigApiImpl {
                         val newFlags = if (ignoreVisibility) flags or IGNORE_VISIBILITY else flags
                         walk(propVal, newPrefix, newFlags, walkAction)
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     FC.LOGGER.error("Critical exception caught while walking $prefix")
                     e.printStackTrace()
                     // continue without borking
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             FC.LOGGER.error("Critical exception encountered while Walking through ${walkable::class.simpleName}")
             e.printStackTrace()
         }
@@ -1013,8 +1013,8 @@ internal object ConfigApiImpl {
                         globalAnnotations,
                         callback
                     )
-                } catch (e: Exception) {
-                    FC.LOGGER.error("Critical exception caught while drill to $target")
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Critical exception caught while acting on a drill to $target")
                     e.printStackTrace()
                     // continue without borking
                 }
@@ -1029,14 +1029,14 @@ internal object ConfigApiImpl {
                         } else {
                             break
                         }
-                    } catch (e: Exception) {
-                        FC.LOGGER.error("Critical exception caught while drill to $target")
+                    } catch (e: Throwable) {
+                        FC.LOGGER.error("Critical exception caught while drilling to $target")
                         e.printStackTrace()
                         // continue without borking
                     }
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             FC.LOGGER.error("Critical exception encountered while Drilling into ${walkable::class.simpleName}")
             e.printStackTrace()
         }

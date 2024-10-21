@@ -203,7 +203,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<IngredientProvider> {
         return try {
             ValidationResult.success(IngredientProvider.deserialize(toml, fieldName))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(storedValue, "Critical error while deserializing ValidatedIngredient [$fieldName]: ${e.localizedMessage}")
         }
     }
@@ -352,7 +352,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
 
     class ListProvider(val ids: Set<Identifier>, val tags: Set<Identifier>): IngredientProvider {
 
-        constructor(input: Set<Any>):this(input.mapNotNull { it as? Identifier }.toSet(), input.mapNotNull { try { (it as? TagKey<Item>)?.id } catch (e: Exception){ null } }.toSet())
+        constructor(input: Set<Any>):this(input.mapNotNull { it as? Identifier }.toSet(), input.mapNotNull { try { (it as? TagKey<Item>)?.id } catch (e: Throwable){ null } }.toSet())
 
         override fun type(): ProviderType {
             return ProviderType.LIST
@@ -379,7 +379,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
                     } else {
                         str.simpleId()
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     null
                 }
             }.toSet()
@@ -391,7 +391,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
                     } else {
                         null
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     null
                 }
             }.toSet()
