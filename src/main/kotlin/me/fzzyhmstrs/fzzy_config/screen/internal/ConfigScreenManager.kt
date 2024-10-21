@@ -115,7 +115,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             return
         try {
             forwardedUpdates.add(ForwardedUpdate(scope, update, player, entry!!, summary))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             //empty catch block to avoid stupid crashes
         }
     }

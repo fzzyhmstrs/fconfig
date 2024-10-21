@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.api.ServerPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
+import net.fabricmc.fabric.api.loot.v3.LootTableEvents
 import net.fabricmc.fabric.api.networking.v1.*
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.network.ServerPlayerEntity
@@ -75,6 +76,9 @@ internal object NetworkEvents {
         ConfigApi.network().registerC2S(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, this::receiveForward)
         //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
         ConfigApi.network().registerS2C(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, NetworkEventsClient::receiveForward)
+
+        ConfigApi.network().registerS2C(DynamicIdsS2CCustomPayload.type, DynamicIdsS2CCustomPayload.codec, NetworkEventsClient::receiveDynamicIds)
+
 
         ServerConfigurationConnectionEvents.CONFIGURE.register { handler, _ ->
             SyncedConfigRegistry.onConfigure(

@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
@@ -82,6 +83,10 @@ internal object NetworkEventsClient {
 
     fun receiveForward(payload: SettingForwardCustomPayload, context: ClientPlayNetworkContext) {
         ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
+    }
+
+    fun receiveDynamicIds(payload: DynamicIdsS2CCustomPayload, context: ClientPlayNetworkContext) {
+        ValidatedIdentifier.receiveSync(payload)
     }
 
     fun registerClient() {
