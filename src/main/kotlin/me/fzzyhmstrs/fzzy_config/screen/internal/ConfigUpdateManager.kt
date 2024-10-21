@@ -128,7 +128,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
                         }
                         try {
                             prop.setter.call(walkable, update.get())
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
                             FC.LOGGER.error("Error pushing update to simple property [$new]")
                             e.printStackTrace()
                         }
