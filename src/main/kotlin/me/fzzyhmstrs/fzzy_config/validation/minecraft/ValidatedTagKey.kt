@@ -66,7 +66,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
             } else {
                 ValidationResult.error(storedValue, "Error deserializing Validated Tag [$fieldName]: ${dataResult.error().getOrNull()?.message()}")
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(storedValue, "Critical error encountered while deserializing Validated Tag [$fieldName]: ${e.localizedMessage}")
         }
     }
@@ -78,7 +78,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
         }
         return try {
             ValidationResult.success(JsonOps.INSTANCE.convertTo(TomlOps.INSTANCE, encodeResult.result().get()))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(TomlNull, "Critical Error while serializing TagKey: ${e.localizedMessage}")
         }
     }
