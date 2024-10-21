@@ -136,7 +136,7 @@ internal object NetworkEventsClient {
         ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
     }
 
-    fun receiveDynamicIds(payload: DynamicIdsS2CCustomPayload, context: ClientPlayNetworkContext) {
+    fun receiveDynamicIds(payload: DynamicIdsS2CCustomPayload, context: IPayloadContext) {
         ValidatedIdentifier.receiveSync(payload)
     }
 
