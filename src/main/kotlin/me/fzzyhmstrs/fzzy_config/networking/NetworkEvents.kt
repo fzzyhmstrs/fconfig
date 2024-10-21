@@ -122,7 +122,7 @@ internal object NetworkEvents {
 
         registrar.play(SettingForwardCustomPayload.id, ::SettingForwardCustomPayload, this::handleSettingForwardBidirectional)
 
-        registrar.playToClient(DynamicIdsS2CCustomPayload.type, DynamicIdsS2CCustomPayload.codec, NetworkEventsClient::receiveDynamicIds)
+        registrar.play(DynamicIdsS2CCustomPayload.type, ::DynamicIdsS2CCustomPayload, NetworkEventsClient::receiveDynamicIds)
         //PayloadTypeRegistry.configurationC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         //PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         //PayloadTypeRegistry.playS2C().register(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec)
