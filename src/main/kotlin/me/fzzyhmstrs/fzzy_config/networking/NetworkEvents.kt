@@ -10,9 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.networking
 
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.networking.api.ServerPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.minecraft.network.packet.CustomPayload
