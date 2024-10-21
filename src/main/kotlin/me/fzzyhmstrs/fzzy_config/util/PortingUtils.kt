@@ -42,6 +42,10 @@ object PortingUtils {
         return this.getOptionalValue(id)
     }
 
+    fun RegistryWrapper.WrapperLookup.anyOptional(key: RegistryKey<out Registry<*>>):  Optional<out RegistryWrapper.Impl<*>> {
+        return this.getOptional(key)
+    }
+
     fun <T> RegistryWrapper.WrapperLookup.optional(key: RegistryKey<out Registry<T>>):  Optional<out RegistryWrapper.Impl<T>> {
         return this.getOptional(key)
     }
