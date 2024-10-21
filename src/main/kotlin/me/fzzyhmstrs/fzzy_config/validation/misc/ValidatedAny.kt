@@ -187,7 +187,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                     manager.setUpdatableEntry(basicValidation2)
                     val fieldName = new.substringAfterLast('.')
                     val name = ConfigApiImplClient.getTranslation(basicValidation2, fieldName, annotations, globalAnnotations)
-                    entryList.add(BaseConfigEntry(name, ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action, entryList, basicValidation2.widgetEntry()))
+                    entryList.add(BaseConfigEntry(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action, entryList, basicValidation2.widgetEntry()))
                 }
             }
         }
