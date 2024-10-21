@@ -372,7 +372,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
         ): ValidationResult<EntityAttributeInstanceHolder> {
             val table = try {
                 toml.asTomlTable()
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 return ValidationResult.error(this, "Error deserializing EntityAttributeInstance [$fieldName], TomlElement not a TomlTable")
             }
             val attributeId = table["id"]?.let { idValidator.deserializeEntry(it, errorBuilder, fieldName, flags).takeIf { result -> result.isValid() }?.get() ?: return ValidationResult.error(this, "Error deserializing EntityAttributeInstance [$fieldName], invalid identifier")} ?: return ValidationResult.error(this, "Error deserializing EntityAttributeInstance [$fieldName], key 'id' is missing")

@@ -102,7 +102,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     fun setFromHexString(s: String) {
         val colorInt = try {
             Integer.parseUnsignedInt(s, 16)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             FC.LOGGER.warn("Validated Color can't accept input [$s], maintaining current color [${toHexString()}]")
             get().toInt()
         }
@@ -273,7 +273,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                 throw IllegalStateException(result.getError())
             val colorInt = try {
                 Integer.parseUnsignedInt(str, 16)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 throw IllegalStateException("Error parsing shorthand Expression [$this]")
             }
             return Color(colorInt, transparent).validated(transparent)
@@ -302,7 +302,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                         try {
                             Integer.parseUnsignedInt(s, 16)
                             ValidationResult.success(s)
-                        }catch (e: Exception) {
+                        }catch (e: Throwable) {
                             ValidationResult.error(s, "String not parsable as color Integer: ${e.localizedMessage}")
                         }
                 }
@@ -439,7 +439,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                 toml.element("g", TomlLiteral(g), TomlComment("Green component, 0 to 255"))
                 toml.element("b", TomlLiteral(b), TomlComment("Blue component, 0 to 255"))
                 if (alphaMode) toml.element("a", TomlLiteral(a), TomlComment("Alpha component, 0 to 255"))
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 errorBuilder.add("Critical exception while serializing color: ${e.localizedMessage}")
             }
             return toml.build()
@@ -459,7 +459,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                 val tomlA = if(!alphaMode) 255 else table["a"]?.asTomlLiteral()?.toInt() ?: 255
 
                 ValidationResult.success(ColorHolder(tomlR, tomlG, tomlB, tomlA, this.alphaMode))
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 ValidationResult.error(this, "Critical error encountered deserializing color [$fieldName], using previous value.")
             }
         }
@@ -612,7 +612,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             hex.validateAndSet(new)
             val argb = try {
                 Integer.parseUnsignedInt(new, 16)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 argb()
             }
             val aa = argb shr 24 and 0xFF

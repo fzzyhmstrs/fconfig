@@ -67,7 +67,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
                 val annotations = if (value != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(value!!::class)
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         listOf()
                     }
                 else
@@ -76,7 +76,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
                 table.element(key, el, annotations)
             }
             return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.predicated(table.build(), errors.isEmpty(), "Critical exception encountered while serializing map: ${e.localizedMessage}")
         }
     }
@@ -99,7 +99,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
                 map[keyResult.get()] = valueResult.get()
             }
             ValidationResult.predicated(map, keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors")
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
         }
     }
@@ -176,8 +176,9 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
                 .build()
             PopupWidget.push(popup)
-        } catch (e: Exception) {
-            FC.LOGGER.error("Unexpected exception caught while opening list popup")
+        } catch (e: Throwable) {
+            FC.LOGGER.error("Unexpected exception caught while opening enum map popup")
+            e.printStackTrace()
         }
     }
 
@@ -186,7 +187,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
         if (input !is Map<*, *>) return false
         return try {
             validateEntry(input as Map<K, V>, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             false
         }
     }
@@ -227,7 +228,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
         internal fun<K:Enum<*>, V> tryMake(map: Map<K, V>, keyHandler: Entry<*, *>, valueHandler: Entry<*, *>): ValidatedEnumMap<K, V>? {
             return try {
                 ValidatedEnumMap(map, keyHandler as Entry<K, *>, valueHandler as Entry<V, *>)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 return null
             }
         }

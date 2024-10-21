@@ -10,12 +10,14 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import me.fzzyhmstrs.fzzy_config.cast
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryWrapper
 import net.minecraft.registry.entry.RegistryEntryList
 import net.minecraft.registry.tag.TagKey
+import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.ColorHelper
@@ -30,6 +32,10 @@ object PortingUtils {
 
     fun PlayerEntity.sendChat(message: Text) {
         this.sendMessage(message, false)
+    }
+
+    fun getDynamicManager(player: ServerPlayerEntity): RegistryWrapper.WrapperLookup {
+        return player.server.reloadableRegistries.createRegistryLookup().cast()
     }
 
     fun <T> Registry<T>.optional(id: Identifier): Optional<T> {
