@@ -116,7 +116,7 @@ class SuggestionBackedTextFieldWidget(
             try {
                 applier.accept(s)
                 needsUpdating = true
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 //
             }
         }

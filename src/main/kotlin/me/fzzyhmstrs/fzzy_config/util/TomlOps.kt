@@ -62,16 +62,16 @@ class TomlOps: DynamicOps<TomlElement> {
     override fun createString(value: String): TomlElement {
         return try {
             TomlLiteral(NativeLocalTime(value))
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             try {
                 TomlLiteral(NativeLocalDate(value))
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 try {
                     TomlLiteral(NativeLocalDateTime(value))
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     try {
                         TomlLiteral(NativeOffsetDateTime(value))
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         TomlLiteral(value)
                     }
                 }
@@ -127,7 +127,7 @@ class TomlOps: DynamicOps<TomlElement> {
             table.elements(map.content)
             try {
                 table.element(key.content, value)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 return DataResult.error{ "Not a valid map key: $key" }
             }
             return DataResult.success(table.build())
@@ -177,7 +177,7 @@ class TomlOps: DynamicOps<TomlElement> {
                 TomlLiteral.Type.String -> {
                     try {
                         DataResult.success(java.lang.Long.parseLong(input.toString()))
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         DataResult.error { "Not a number: $input" }
                     }
                 }
@@ -192,7 +192,7 @@ class TomlOps: DynamicOps<TomlElement> {
     override fun getBooleanValue(input: TomlElement): DataResult<Boolean> {
         return try {
             DataResult.success((input as TomlLiteral).toBoolean())
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             DataResult.error { "Not a boolean: $input" }
         }
     }

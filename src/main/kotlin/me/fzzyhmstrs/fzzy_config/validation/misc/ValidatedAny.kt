@@ -110,7 +110,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             val toml = serialize(this.get()).get()
             val result = ConfigApi.deserializeFromToml(new, toml, mutableListOf())
             if (result.isError()) storedValue else result.get().config
-        } catch(e: Exception) {
+        } catch(e: Throwable) {
             storedValue //object doesn't have an empty constructor. no prob.
         }
     }
@@ -147,7 +147,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     //client
     private fun openObjectPopup() {
         val newThing = copyStoredValue()
-        val newNewThing = try{ createInstance() } catch (e: Exception) { defaultValue }
+        val newNewThing = try{ createInstance() } catch (e: Throwable) { defaultValue }
         val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
         val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 160, 0, false)
         ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, globalAnnotations, _ ->
@@ -270,7 +270,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                     if (update != null && update is Supplier<*>) {
                         try {
                             prop.setter.call(walkable, update.get())
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
                             FC.LOGGER.error("Error pushing update to simple property [$new]")
                             e.printStackTrace()
                         }

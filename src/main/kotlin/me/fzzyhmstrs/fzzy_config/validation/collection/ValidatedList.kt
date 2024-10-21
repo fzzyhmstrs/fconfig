@@ -89,7 +89,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
             } else {
                 ValidationResult.success(list)
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             ValidationResult.error(defaultValue, "Critical error enountered while deserializing list [$fieldName], using defaults.")
         }
     }
@@ -104,14 +104,14 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
                 val annotations = if (entry != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(entry!!::class)
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         listOf()
                     }
                 else
                     listOf()
                 toml.element(tomlEntry, annotations)
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             return ValidationResult.error(toml.build(), "Critical error encountered while serializing list: ${e.localizedMessage}")
         }
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
@@ -161,7 +161,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         if (input !is List<*>) return false
         return try {
             validateEntry(input as List<T>, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             false
         }
     }
@@ -187,7 +187,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
                 .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
                 .build()
             PopupWidget.push(popup)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             FC.LOGGER.error("Unexpected exception caught while opening list popup")
         }
     }
@@ -255,7 +255,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         internal fun <T> tryMake(list: List<T>, entry: Entry<*, *>): ValidatedList<T>? {
             return try {
                 ValidatedList(list, entry as Entry<T, *>)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 null
             }
         }
