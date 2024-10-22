@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.networking
 import io.netty.buffer.Unpooled
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.networking.api.ServerPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.minecraft.network.PacketByteBuf
@@ -24,7 +23,6 @@ import net.minecraft.util.Identifier
 import net.minecraftforge.event.OnDatapackSyncEvent
 import net.minecraftforge.network.NetworkDirection
 import net.minecraftforge.network.NetworkEvent
-import net.minecraftforge.network.NetworkRegistry
 import net.minecraftforge.network.PacketDistributor
 import java.util.function.Supplier
 
@@ -119,7 +117,7 @@ internal object NetworkEvents {
         val serverPlayer = event.player
         if (serverPlayer == null) {
             SyncedConfigRegistry.onEndDataReload(
-                event.players,
+                event.playerList.playerList,
                 { player, id -> ConfigApi.network().canSend(id, player) },
                 { player, payload -> ConfigApi.network().send(payload, player) }
             )
