@@ -110,7 +110,7 @@ internal object ClientConfigRegistry {
                 }
             }
             for (action in actions) {
-                player.sendMessage(action.clientPrompt)
+                player.sendChat(action.clientPrompt)
             }
         }
     }

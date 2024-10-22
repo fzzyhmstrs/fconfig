@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.impl
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.networking.api.*
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
@@ -30,7 +31,7 @@ internal object NetworkApiImpl: NetworkApi {
         return if (playerEntity is ServerPlayerEntity) {
             NetworkRegistry.hasChannel(playerEntity.networkHandler, id)
         } else {
-            NetworkEventsClient.canSend(id)
+            ConfigApi.network().canSend(id, null)
         }
     }
 

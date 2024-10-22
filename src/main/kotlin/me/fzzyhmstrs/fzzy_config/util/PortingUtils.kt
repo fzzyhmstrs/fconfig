@@ -27,7 +27,7 @@ import java.util.function.Predicate
 object PortingUtils {
 
     fun getWhite(alpha: Float): Int {
-        return ColorHelper.Argb.fromFloats(alpha, 1f, 1f, 1f)
+        return ColorHelper.getWhite(alpha)
     }
 
     fun PlayerEntity.sendChat(message: Text) {
@@ -35,7 +35,7 @@ object PortingUtils {
     }
 
     fun getDynamicManager(player: ServerPlayerEntity): RegistryWrapper.WrapperLookup {
-        return player.server.reloadableRegistries.registryManager.cast()
+        return player.server.reloadableRegistries.createRegistryLookup().cast()
     }
 
     fun <T> Registry<T>.optional(id: Identifier): Optional<T> {

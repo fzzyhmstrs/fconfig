@@ -35,7 +35,7 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
-        this.drawGuiTexture(id, x, y, width, height)
+        this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height)
     }
 
     /**
@@ -50,10 +50,7 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
-        val floats = Color(color).getComponents(floatArrayOf(0f, 0f, 0f, 0f))
-        RenderSystem.setShaderColor(floats[0], floats[1], floats[2], floats[3])
-        this.drawGuiTexture(id, x, y, width, height)
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+        this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, color)
     }
 
     /**
@@ -68,9 +65,7 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
-        RenderSystem.setShaderColor(1f, 1f, 1f, alpha)
-        this.drawGuiTexture(id, x, y, width, height)
-        RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
+        this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, PortingUtils.getWhite(alpha))
     }
 
 }
