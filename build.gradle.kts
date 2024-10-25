@@ -123,9 +123,9 @@ dependencies {
     modCompileOnly("com.terraformersmc:modmenu:$modmenuVersion") {
         isTransitive = false
     }
-    /*modLocalRuntime("com.terraformersmc:modmenu:$modmenuVersion") {
+    modLocalRuntime("com.terraformersmc:modmenu:$modmenuVersion") {
         isTransitive = false
-    }*/
+    }
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
