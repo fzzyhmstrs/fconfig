@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.TomlHeaderComment;
 import me.fzzyhmstrs.fzzy_config.annotations.Translation;
 import me.fzzyhmstrs.fzzy_config.config.Config;
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble;
+import me.fzzyhmstrs.fzzy_config_test.test.TestConfigImpl3;
 import net.minecraft.util.Identifier;
 
 import java.util.function.Supplier;
@@ -32,4 +33,18 @@ public class JavaTestConfig extends Config {
     public boolean aBoolean = true;
 
     public ValidatedDouble validatedDouble = new ValidatedDouble(1.0, 1.0, 0.0);
+
+    public TestEnum testEnum = TestEnum.C;
+
+    public enum TestEnum implements EnumTranslatable {
+        A,
+        B,
+        C;
+
+        @NotNull
+        @Override
+        public String prefix() {
+            return "my_mod.test_enum";
+        }
+    }
 }
