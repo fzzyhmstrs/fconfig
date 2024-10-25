@@ -56,6 +56,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
             if (entryHandler.validateEntry(thing, EntryValidator.ValidationType.WEAK).isError())
                 throw IllegalStateException("Default Set entry [$thing] not valid per entryHandler provided")
         }
+        compositeFlags(entryHandler)
     }
 
     /**

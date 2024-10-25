@@ -35,6 +35,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
+import kotlin.experimental.and
+import kotlin.experimental.or
 import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
 import kotlin.reflect.jvm.jvmErasure
@@ -63,6 +65,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     private var updateKey = ""
     private var updateManager: UpdateManager? = null
     private var listener: Consumer<ValidatedField<T>>? = null
+    protected var flags: Byte = 0
 
     /**
      * Attaches a listener to this field. This listener will be called any time the field is written to ("set"). `accept`, `validateAndSet`, `setAndUpdate` and so on will all call the listener.
@@ -531,6 +534,25 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return superType?.arguments?.get(0)?.type
     }
 
+    internal open fun setFlag(flag: Byte) {
+        if (hasFlag(flag)) return
+        this.flags = (this.flags + flag).toByte()
+    }
+
+    private fun hasFlag(flag: Byte): Boolean {
+        return (this.flags and flag) == flag
+    }
+
+    protected fun compositeFlags(other: Entry<*, *>) {
+        this.flags = this.flags or other.flags()
+    }
+
+    override fun hasFlag(flag: Entry.Flag): Boolean {
+        return this.hasFlag(flag.flag)
+    }
+
+
+
     companion object {
 
         /**
@@ -544,6 +566,12 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         fun<T, F: ValidatedField<T>> F.withListener(listener: Consumer<F>): F {
             @Suppress("UNCHECKED_CAST") //ok since Consumers type will be erased anyway, and the listener will always be provided with the receiver itself (F)
             this.addListener(listener as Consumer<ValidatedField<T>>)
+            return this
+        }
+
+
+        fun <T, F: ValidatedField<T>> F.withFlag(flag: Entry.Flag): F {
+            this.setFlag(flag.flag)
             return this
         }
     }

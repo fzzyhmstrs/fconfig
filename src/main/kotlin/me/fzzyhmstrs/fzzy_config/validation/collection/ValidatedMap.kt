@@ -57,6 +57,8 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
             if (valueHandler.validateEntry(value, EntryValidator.ValidationType.WEAK).isError())
                 throw IllegalStateException("Default Map value [$value] not valid per valueHandler provided")
         }
+        compositeFlags(keyHandler)
+        compositeFlags(valueHandler)
     }
 
     /**
