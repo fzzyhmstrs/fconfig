@@ -82,7 +82,15 @@ class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
 
     var testString = ValidatedString.fromList(FabricLoader.getInstance().allMods.map{ it.metadata.id })
 
+    var testSimpleIdentifier = ValidatedIdentifier("minecraft:stick")
+
     var testDynamicIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.BIOME)
+
+    var testLootIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.LOOT_TABLE)
+
+    var testLootIdentifier2 = ValidatedIdentifier.ofDynamicKey(RegistryKeys.LOOT_TABLE, "test_loot_2") { id, _ -> id.path.contains("gameplay") }
+
+    var testLootIdentifierPredicated = ValidatedIdentifier.ofRegistryKey(LootTables.IGLOO_CHEST_CHEST.value, RegistryKeys.LOOT_TABLE) { entry -> entry.value().type == LootContextTypes.CHEST }
 
     var exampleValidatedAttribute1 = ValidatedEntityAttribute.Builder("generic.max_health", true)
         // supply a UUID and name, otherwise generic ones will be used for you

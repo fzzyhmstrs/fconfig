@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
@@ -27,6 +28,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.EntityType
 import net.minecraft.fluid.Fluids
 import net.minecraft.item.Items
+import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.ClickEvent
 import net.minecraft.util.Identifier
 
@@ -39,6 +41,8 @@ class TestConfigImpl3: Config(Identifier("fzzy_config_test", "test_config3")) {
     private var configAction2 = ConfigAction.Builder().title("Say Hi...".lit()).build { MinecraftClient.getInstance().player?.sendChat("Hiya".lit()) }
 
     private var configAction3 = ConfigAction.Builder().title("Give Loots...".lit()).build(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/give @s minecraft:diamond"))
+
+    var testLootIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.LOOT_TABLE)
 
     fun getBl1(): Boolean {
         return bl1
@@ -72,6 +76,35 @@ class TestConfigImpl3: Config(Identifier("fzzy_config_test", "test_config3")) {
     private var entityTest = EntityType.EGG
 
     private var fluidTest = Fluids.LAVA
+
+    var testEnum = Test.B
+
+    enum class Test(val id: Int) {
+        A(1) {
+
+            override fun getMultId(): Int {
+                return id * 1
+            }
+        },
+        B(2) {
+
+            override fun getMultId(): Int {
+                return id * 2
+            }
+        },
+        C(3) {
+
+            override fun getMultId(): Int {
+                return id * 3
+            }
+        };
+
+        fun getIdentity(): Int {
+            return id
+        }
+
+        abstract fun getMultId(): Int
+    }
 
     /*
     {

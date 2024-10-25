@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.screen.entry.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
@@ -196,6 +197,14 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             delegate.widgetEntry(choicePredicate))
     }
 
+    override fun setFlag(flag: Byte) {
+        delegate.setFlag(flag)
+    }
+
+    override fun hasFlag(flag: Entry.Flag): Boolean {
+        return delegate.hasFlag(flag)
+    }
+
     /**
      * @suppress
      */
@@ -306,7 +315,6 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         }
 
         override fun setTooltip(tooltip: Tooltip?) {
-            Exception().printStackTrace()
             if (active) {
                 println("A")
                 delegateWidget.tooltip = tooltip
