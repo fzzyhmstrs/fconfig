@@ -30,8 +30,19 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
+@JvmDefaultWithCompatibility
 interface Entry<T, E: Entry<T, E>>: EntryHandler<T>, EntryWidget<T>, Consumer<T>, Supplier<T> {
     fun instanceEntry(): E
     fun isValidEntry(input: Any?): Boolean
     fun trySet(input: Any?)
+    fun hasFlag(flag: Flag): Boolean {
+        return false
+    }
+    fun flags(): Byte {
+        return 0
+    }
+
+    enum class Flag(internal val flag: Byte) {
+        REQUIRES_WORLD(1)
+    }
 }
