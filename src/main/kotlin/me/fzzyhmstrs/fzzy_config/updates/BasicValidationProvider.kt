@@ -42,7 +42,7 @@ internal interface BasicValidationProvider {
             try {
                 val clazz = type.jvmErasure
                 if (clazz.javaObjectType.isEnum) {
-                    return (clazz.javaObjectType as? Class<Enum<*>>)?.let { ValidatedEnum(it.enumConstants[0]) }
+                    return (input as? Enum<*>)?.let { ValidatedEnum(it) }
                 } else if (clazz.isSubclassOf(List::class)) {
                     val argument = type.arguments[0]
                     val argumentType = argument.type ?: return null

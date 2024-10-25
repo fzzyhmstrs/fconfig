@@ -60,6 +60,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
             if (entryHandler.validateEntry(thing, EntryValidator.ValidationType.WEAK).isError())
                 throw IllegalStateException("Default List entry [$thing] not valid per entryHandler provided")
         }
+        compositeFlags(entryHandler)
     }
 
     /**
