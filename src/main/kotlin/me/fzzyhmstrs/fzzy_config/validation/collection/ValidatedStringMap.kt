@@ -53,6 +53,8 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
             if (valueHandler.validateEntry(value, EntryValidator.ValidationType.WEAK).isError())
                 throw IllegalStateException("Default Map value [$value] not valid per valueHandler provided")
         }
+        compositeFlags(keyHandler)
+        compositeFlags(valueHandler)
     }
 
     override fun copyStoredValue(): Map<String, V> {
