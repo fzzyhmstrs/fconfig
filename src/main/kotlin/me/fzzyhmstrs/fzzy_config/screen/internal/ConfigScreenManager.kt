@@ -36,27 +36,20 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NoPermsButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ScreenOpenButtonWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
-import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.MultilineTextWidget
 import net.minecraft.client.network.PlayerListEntry
-import net.minecraft.client.resource.language.I18n
 import net.minecraft.command.CommandSource
-import net.minecraft.resource.DefaultResourcePackBuilder.callback
 import net.minecraft.text.Text
-import net.peanuuutz.tomlkt.TomlComment
 import java.util.*
 import java.util.function.Function
 import kotlin.math.max
@@ -73,6 +66,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private var copyBuffer: Any? = null
     private var cachedPermissionLevel = 0
     private var cachedPerms:  Map<String, Map<String, Boolean>> = mapOf()
+    private var cachedOutOfGame: Boolean = false
 
     init {
         val map: MutableMap<String, Set<Config>> = mutableMapOf()
@@ -119,6 +113,15 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     internal fun provideScreen(scope: String = this.scope): Screen? {
+        if(cachedPermissionLevel != ConfigApiImplClient.getPlayerPermissionLevel()
+            || cachedPerms != ConfigApiImplClient.getPerms()
+            || cachedOutOfGame != outOfGame()) {
+            cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
+            cachedPerms = ConfigApiImplClient.getPerms()
+            cachedOutOfGame = outOfGame()
+            manager.flush()
+            prepareScreens()
+        }
         if (MinecraftClient.getInstance().currentScreen !is ConfigScreen) {
             manager.flush()
             manager.pushUpdatableStates()
@@ -135,9 +138,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     internal fun openScreen(scope: String = this.scope) {
-        if(cachedPermissionLevel != ConfigApiImplClient.getPlayerPermissionLevel() || cachedPerms != ConfigApiImplClient.getPerms()) {
+        if(cachedPermissionLevel != ConfigApiImplClient.getPlayerPermissionLevel()
+            || cachedPerms != ConfigApiImplClient.getPerms()
+            || cachedOutOfGame != outOfGame()) {
             cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
             cachedPerms = ConfigApiImplClient.getPerms()
+            cachedOutOfGame = outOfGame()
             manager.flush()
             prepareScreens()
         }
@@ -155,6 +161,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
             scope
         val screen = screens[realScope]?.build() ?: return
         MinecraftClient.getInstance().setScreen(screen)
+    }
+
+    private fun outOfGame(): Boolean {
+        val client = MinecraftClient.getInstance()
+        return (client.world == null || client.networkHandler == null || !client.isInSingleplayer)
     }
 
     private fun pushToBuffer(input: Any?) {
