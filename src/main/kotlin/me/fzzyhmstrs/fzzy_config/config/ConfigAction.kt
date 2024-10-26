@@ -11,8 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -21,7 +21,6 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ConfirmLinkScreen
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.MutableText
@@ -32,8 +31,8 @@ import net.minecraft.util.Util
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.io.File
 import java.net.URISyntaxException
-import java.util.function.Consumer
 import java.util.function.Supplier
+import kotlin.experimental.and
 
 /**
  * Builds a button that will appear in a Config GUI, to perform some arbitrary, possible non-config-related action
@@ -56,11 +55,28 @@ class ConfigAction @JvmOverloads constructor(
     private val background: Identifier? = null)
 :
     EntryWidget<Any>,
+    EntryFlag,
     Translatable
 {
+
+    private var flags: Byte = 0
+
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<Any>): ClickableWidget {
-        return DecoratedActiveButtonWidget(titleSupplier, 110, 20, decoration, activeSupplier, Consumer { _ -> pressAction.run() }, background)
+        return DecoratedActiveButtonWidget(titleSupplier, 110, 20, decoration, activeSupplier, { _ -> pressAction.run() }, background)
+    }
+
+    internal fun setFlag(flag: Byte) {
+        if (hasFlag(flag)) return
+        this.flags = (this.flags + flag).toByte()
+    }
+
+    private fun hasFlag(flag: Byte): Boolean {
+        return (this.flags and flag) == flag
+    }
+
+    override fun hasFlag(flag: EntryFlag.Flag): Boolean {
+        return this.hasFlag(flag.flag)
     }
 
     /**
@@ -74,6 +90,7 @@ class ConfigAction @JvmOverloads constructor(
         private var desc: Text? = null
         private var background: Identifier? = null
         private var decoration: Identifier? = null
+        private var flags: Byte = 0
 
         /**
          * Sets the title of the widget. This will be a static title, unchanging based on state.
@@ -136,8 +153,27 @@ class ConfigAction @JvmOverloads constructor(
             return this
         }
 
+        /**
+         * Defines the tooltip description for this button. Default is no tooltip.
+         * @param desc [Text] the tooltip to display. Will be split be newlines automatically
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.5.6
+         */
         fun desc(desc: Text): Builder {
             this.desc = desc
+            return this
+        }
+
+        /**
+         * Adds a flag to this Action.
+         * @param flag [EntryFlag.Flag] flag to add to this action
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.5.6
+         */
+        fun flag(flag: EntryFlag.Flag): Builder {
+            this.flags = (this.flags + flag.flag).toByte()
             return this
         }
 
@@ -149,7 +185,9 @@ class ConfigAction @JvmOverloads constructor(
          * @since 0.5.0
          */
         fun build(action: Runnable): ConfigAction {
-            return ConfigAction(titleSupplier, activeSupplier, action, decoration ?: TextureIds.DECO_BUTTON_CLICK, desc, background)
+            val q = ConfigAction(titleSupplier, activeSupplier, action, decoration ?: TextureIds.DECO_BUTTON_CLICK, desc, background)
+            q.flags = flags
+            return q
         }
 
         /**
@@ -225,7 +263,16 @@ class ConfigAction @JvmOverloads constructor(
                     ClickEvent.Action.COPY_TO_CLIPBOARD -> TextureIds.DECO_BUTTON_CLICK
                 }
             }
-            return ConfigAction(titleSupplier, activeSupplier, runnable, decoration ?: TextureIds.DECO_BUTTON_CLICK, desc, background)
+            when(action) {
+                ClickEvent.Action.RUN_COMMAND -> this.flag(EntryFlag.Flag.REQUIRES_WORLD)
+                ClickEvent.Action.SUGGEST_COMMAND -> this.flag(EntryFlag.Flag.REQUIRES_WORLD)
+                else -> {}
+            }
+            val q = ConfigAction(titleSupplier, activeSupplier, runnable, decoration ?: TextureIds.DECO_BUTTON_CLICK, desc, background)
+            println(titleSupplier.get())
+            println(flags)
+            q.flags = flags
+            return q
         }
     }
 
