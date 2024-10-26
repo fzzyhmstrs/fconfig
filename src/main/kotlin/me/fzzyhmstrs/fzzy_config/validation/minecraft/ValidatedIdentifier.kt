@@ -623,7 +623,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 }
                 FC.LOGGER.warn("Method ofRegistryKey is deprecated for registry $key; use ofDynamicKey instead")
                 val predicateId = key.value.withSuffixedPath(getOffset(key).toString())
-                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), predicateId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key.map { it.value }.orElse("minecraft:air".simpleId()), re) } as Predicate<RegistryEntry<*>>)))
+                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), predicateId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key?.map { it.value }?.orElse("minecraft:air".simpleId()) ?: "minecraft:air".simpleId(), re) } as Predicate<RegistryEntry<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[predicateId]?.contains(id) == true }
                 val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[predicateId] ?: listOf() }
                 return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
@@ -679,7 +679,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 }
                 FC.LOGGER.warn("Method ofRegistryKey is deprecated for registry $key; use ofDynamicKey instead")
                 val predicateId = key.value.withSuffixedPath(getOffset(key).toString())
-                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), predicateId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key.map { it.value }.orElse("minecraft:air".simpleId()), re) } as Predicate<RegistryEntry<*>>)))
+                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), predicateId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key?.map { it.value }?.orElse("minecraft:air".simpleId()) ?: "minecraft:air".simpleId(), re) } as Predicate<RegistryEntry<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[predicateId]?.contains(id) == true }
                 val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[predicateId] ?: listOf() }
                 return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
@@ -761,7 +761,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                     }
                 }
                 val pId = key.value.withSuffixedPath(predicateId)
-                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), pId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key.map { it.value }.orElse("minecraft:air".simpleId()), re) } as Predicate<RegistryEntry<*>>)))
+                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), pId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key?.map { it.value }?.orElse("minecraft:air".simpleId()) ?: "minecraft:air".simpleId(), re) } as Predicate<RegistryEntry<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[pId]?.contains(id) == true }
                 val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[pId] ?: listOf() }
                 return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
@@ -803,7 +803,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                     }
                 }
                 val pId = key.value.withSuffixedPath(predicateId)
-                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), pId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key.map { it.value }.orElse("minecraft:air".simpleId()), re) } as Predicate<RegistryEntry<*>>)))
+                filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), pId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key?.map { it.value }?.orElse("minecraft:air".simpleId()) ?: "minecraft:air".simpleId(), re) } as Predicate<RegistryEntry<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[pId]?.contains(id) == true }
                 val supplier3: Supplier<List<Identifier>> = Supplier { dynamicIds[pId] ?: listOf() }
                 return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers(predicate3, supplier3, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
