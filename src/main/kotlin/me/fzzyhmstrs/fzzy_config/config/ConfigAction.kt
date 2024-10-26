@@ -276,8 +276,6 @@ class ConfigAction @JvmOverloads constructor(
                 else -> {}
             }
             val q = ConfigAction(titleSupplier, activeSupplier, runnable, decoration ?: TextureIds.DECO_BUTTON_CLICK, desc, background)
-            println(titleSupplier.get())
-            println(flags)
             q.flags = flags
             return q
         }
