@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
@@ -225,7 +226,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private fun walkConfig(set: ConfigSet, functionMap: MutableMap<String, SortedMap<Int, Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>>, nameMap: MutableMap<String, Text>, actionMap: MutableMap<String, MutableSet<Action>>, playerPermLevel: Int) {
         val config: Config = set.active
         val baseConfig: Config = set.base
-        val defaultPermLevel = config.defaultPermLevel()
         //putting the config buttons themselves, in the base scope. ex: "my_mod"
         nameMap[config.getId().toTranslationKey()] = ConfigApiImplClient.getTranslation(config, "", config::class.annotations, listOf(), config::class.java.simpleName) //config.transLit(config::class.java.simpleName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
@@ -234,6 +234,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
         ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
             val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)
             if (action != null) actionMap[new] = mutableSetOf(action)
+            val flags = if(thing is EntryFlag) {
+                EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
+            } else {
+                EntryFlag.Flag.NONE
+            }
             if (thing is ConfigSection) {
                 val fieldName = new.substringAfterLast('.')
                 val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
@@ -255,7 +260,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val fieldName = new.substringAfterLast('.')
                 val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
-                val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, thing.hasFlag(Entry.Flag.REQUIRES_WORLD))
+                val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
                 if(perms.success) {
                     thing.setUpdateManager(manager)
                     manager.setUpdatableEntry(thing)
@@ -273,7 +278,15 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val fieldName = new.substringAfterLast('.')
                 val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
-                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, configActionEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), thing))
+                val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
+                if (perms.success) {
+                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, configActionEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), thing))
+                } else if (perms == PermResult.OUT_OF_GAME) {
+                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
+                } else {
+                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
+                }
+
                 index++
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
@@ -284,12 +297,14 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {
                     basicValidation2.trySet(thing)
+                    @Suppress("DEPRECATION")
                     basicValidation2.setEntryKey(new)
                     val fieldName = new.substringAfterLast('.')
                     val name = ConfigApiImplClient.getTranslation(basicValidation2, fieldName, annotations, globalAnnotations)
                     nameMap[new] = name
-                    val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, basicValidation2.hasFlag(Entry.Flag.REQUIRES_WORLD))
+                    val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
                     if(perms.success) {
+                        @Suppress("DEPRECATION")
                         basicValidation2.setUpdateManager(manager)
                         manager.setUpdatableEntry(basicValidation2)
                         if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
@@ -341,8 +356,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
     }
 
-    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean, needsWorld: Boolean): PermResult {
+    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean, flags: List<EntryFlag.Flag>): PermResult {
         val client = MinecraftClient.getInstance()
+        val needsWorld = flags.contains(EntryFlag.Flag.REQUIRES_WORLD)
         if(client.isInSingleplayer || (clientOnly && !needsWorld)) return PermResult.SUCCESS //single player or client config, they can do what they want!!
         if (needsWorld) return PermResult.OUT_OF_GAME //setting specifically needs
         // 1. NonSync wins over everything, even whole config annotations
@@ -360,7 +376,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 return PermResult.SUCCESS
         }
 
-        //not in a game, can't send packets so can't know your permissions for realz
+        //not in a game, can't send packets so can't know your permissions for real
         if (client.world == null || client.networkHandler == null) return PermResult.OUT_OF_GAME
 
         for (annotation in annotations) {
