@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
@@ -462,7 +463,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
             },
             { t ->
                 val errors: MutableList<String> = mutableListOf()
-                val result = ConfigApiImpl.serializeEntry(this, errors, ConfigApiImpl.CHECK_NON_SYNC)
+                val serializer = this.instanceEntry()
+                serializer.trySet(t)
+                val result = ConfigApiImpl.serializeEntry(serializer, errors, ConfigApiImpl.CHECK_NON_SYNC)
                 if(errors.isNotEmpty())
                     DataResult.error { "Serialization failed with errors: $errors" }
                 else
@@ -543,11 +546,11 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return (this.flags and flag) == flag
     }
 
-    protected fun compositeFlags(other: Entry<*, *>) {
+    protected fun compositeFlags(other: EntryFlag) {
         this.flags = this.flags or other.flags()
     }
 
-    override fun hasFlag(flag: Entry.Flag): Boolean {
+    override fun hasFlag(flag: EntryFlag.Flag): Boolean {
         return this.hasFlag(flag.flag)
     }
 
@@ -570,7 +573,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         }
 
 
-        fun <T, F: ValidatedField<T>> F.withFlag(flag: Entry.Flag): F {
+        fun <T, F: ValidatedField<T>> F.withFlag(flag: EntryFlag.Flag): F {
             this.setFlag(flag.flag)
             return this
         }
