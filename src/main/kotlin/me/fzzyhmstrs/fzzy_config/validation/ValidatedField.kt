@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
@@ -35,6 +36,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
+import kotlin.experimental.and
+import kotlin.experimental.or
 import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
 import kotlin.reflect.jvm.jvmErasure
@@ -63,6 +66,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     private var updateKey = ""
     private var updateManager: UpdateManager? = null
     private var listener: Consumer<ValidatedField<T>>? = null
+    protected var flags: Byte = 0
 
     /**
      * Attaches a listener to this field. This listener will be called any time the field is written to ("set"). `accept`, `validateAndSet`, `setAndUpdate` and so on will all call the listener.
@@ -459,7 +463,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
             },
             { t ->
                 val errors: MutableList<String> = mutableListOf()
-                val result = ConfigApiImpl.serializeEntry(this, errors, ConfigApiImpl.CHECK_NON_SYNC)
+                val serializer = this.instanceEntry()
+                serializer.trySet(t)
+                val result = ConfigApiImpl.serializeEntry(serializer, errors, ConfigApiImpl.CHECK_NON_SYNC)
                 if(errors.isNotEmpty())
                     DataResult.error { "Serialization failed with errors: $errors" }
                 else
@@ -531,6 +537,25 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return superType?.arguments?.get(0)?.type
     }
 
+    internal open fun setFlag(flag: Byte) {
+        if (hasFlag(flag)) return
+        this.flags = (this.flags + flag).toByte()
+    }
+
+    private fun hasFlag(flag: Byte): Boolean {
+        return (this.flags and flag) == flag
+    }
+
+    protected fun compositeFlags(other: EntryFlag) {
+        this.flags = this.flags or other.flags()
+    }
+
+    override fun hasFlag(flag: EntryFlag.Flag): Boolean {
+        return this.hasFlag(flag.flag)
+    }
+
+
+
     companion object {
 
         /**
@@ -544,6 +569,12 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         fun<T, F: ValidatedField<T>> F.withListener(listener: Consumer<F>): F {
             @Suppress("UNCHECKED_CAST") //ok since Consumers type will be erased anyway, and the listener will always be provided with the receiver itself (F)
             this.addListener(listener as Consumer<ValidatedField<T>>)
+            return this
+        }
+
+
+        fun <T, F: ValidatedField<T>> F.withFlag(flag: EntryFlag.Flag): F {
+            this.setFlag(flag.flag)
             return this
         }
     }

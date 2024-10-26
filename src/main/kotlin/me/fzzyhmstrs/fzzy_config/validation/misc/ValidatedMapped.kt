@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
@@ -123,6 +124,14 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
 
     override fun widgetEntry(choicePredicate: ChoiceValidator<N>): ClickableWidget {
         return delegate.widgetEntry(choicePredicate.convert(from, from))
+    }
+
+    override fun setFlag(flag: Byte) {
+        delegate.setFlag(flag)
+    }
+
+    override fun hasFlag(flag: EntryFlag.Flag): Boolean {
+        return delegate.hasFlag(flag)
     }
 
     private inner class ForwardingUpdateManager(private val forwardTo: UpdateManager): UpdateManager {

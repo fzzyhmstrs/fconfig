@@ -12,12 +12,12 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.screen.entry.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
-import me.fzzyhmstrs.fzzy_config.util.FcText.isNotEmpty
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.minecraft.client.gui.DrawContext
@@ -197,6 +197,14 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             delegate.widgetEntry(choicePredicate))
     }
 
+    override fun setFlag(flag: Byte) {
+        delegate.setFlag(flag)
+    }
+
+    override fun hasFlag(flag: EntryFlag.Flag): Boolean {
+        return delegate.hasFlag(flag)
+    }
+
     /**
      * @suppress
      */
@@ -307,7 +315,6 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         }
 
         override fun setTooltip(tooltip: Tooltip?) {
-            Exception().printStackTrace()
             if (active) {
                 delegateWidget.tooltip = tooltip
             } else {

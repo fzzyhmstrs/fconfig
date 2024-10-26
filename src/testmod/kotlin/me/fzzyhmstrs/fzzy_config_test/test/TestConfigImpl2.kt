@@ -61,7 +61,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
     var int2 = ValidatedInt(6, 10, 1)
 
     @WithPerms(5)
-    var enum1 = TestEnum.ALPHA
+    var enum1 = TestEnum.GAMMA
     @WithPerms(5)
     var enum2 = TestEnum.BETA.validated()
 
