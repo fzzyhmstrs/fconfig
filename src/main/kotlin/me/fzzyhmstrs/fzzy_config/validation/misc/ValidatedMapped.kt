@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
@@ -130,7 +130,7 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
         delegate.setFlag(flag)
     }
 
-    override fun hasFlag(flag: Entry.Flag): Boolean {
+    override fun hasFlag(flag: EntryFlag.Flag): Boolean {
         return delegate.hasFlag(flag)
     }
 
