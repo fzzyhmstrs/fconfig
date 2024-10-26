@@ -2116,10 +2116,6 @@ fun interface Expression {
             val params = member?.parameters
                 ?: return null
 
-            /*println(typeOf<Double>())
-            println(params.map { it.type })
-            println(randomType)
-            println(doubleType)*/
             var numCount = 0
             val inputs: MutableList<Any> = mutableListOf()
             for (param in params) {
@@ -2132,24 +2128,18 @@ fun interface Expression {
                 var j = 0
                 for (param in params) {
                     if (param.type == doubleType) {
-                        //println("Double TYPE")
                         inputs.add(expressions[j])
                         j++
                     } else if (param.type.classifier == randomClassifier) {
-                        //println("Random TYPE")
                         inputs.add(random)
                     }
 
                 }
                 if (expressions.size != numCount) {
-                    //println(expressions)
-                    //println("Num count doesn't match!!")
                     throw IllegalStateException("Incorrect number of parameters passed to [$chunk], expected [${numCount}] found [${expressions.size}]")
                 }
-                //println(inputs)
             } else {
                 for (param in params) {
-                    //println("Random TYPE")
                     inputs.add(random)
                 }
                 if (reader.peek() == '(')
