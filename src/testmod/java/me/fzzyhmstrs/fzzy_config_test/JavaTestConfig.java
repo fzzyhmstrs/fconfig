@@ -13,9 +13,11 @@ package me.fzzyhmstrs.fzzy_config_test;
 import me.fzzyhmstrs.fzzy_config.annotations.TomlHeaderComment;
 import me.fzzyhmstrs.fzzy_config.annotations.Translation;
 import me.fzzyhmstrs.fzzy_config.config.Config;
+import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable;
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble;
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigImpl3;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
 
