@@ -42,8 +42,6 @@ class TestConfigImpl3: Config(Identifier("fzzy_config_test", "test_config3")) {
 
     private var configAction3 = ConfigAction.Builder().title("Give Loots...".lit()).build(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/give @s minecraft:diamond"))
 
-    var testLootIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.LOOT_TABLE)
-
     fun getBl1(): Boolean {
         return bl1
     }
