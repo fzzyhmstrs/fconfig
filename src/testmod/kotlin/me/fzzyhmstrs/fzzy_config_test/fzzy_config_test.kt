@@ -77,13 +77,15 @@ object FC: ModInitializer {
         assertConstExpression("floor(4.5)", 4.0, expressionTestResults)
         assertConstExpression("round(4.25)", 4.0, expressionTestResults)
         assertConstExpression("ln(4.5)", kotlin.math.ln(4.5), expressionTestResults)
-        assertConstExpression("log(4,4)", kotlin.math.log(4.0,4.0), expressionTestResults)
+        assertConstExpression("log(4, 4)", kotlin.math.log(4.0,4.0), expressionTestResults)
         assertConstExpression("log10(5)", kotlin.math.log10(5.0), expressionTestResults)
         assertConstExpression("log2(5)", kotlin.math.log2(5.0), expressionTestResults)
         assertConstExpression("abs(-4.5)", 4.5,expressionTestResults)
         assertConstExpression("sin(4.5)", MathHelper.sin(4.5.toFloat()).toDouble(), expressionTestResults)
         assertConstExpression("cos(4.5)", MathHelper.cos(4.5.toFloat()).toDouble(), expressionTestResults)
-        assertConstExpression("incr(4.268,0.1)", 4.2,expressionTestResults)
+        assertConstExpression("incr(4.268, 0.1)", 4.2,expressionTestResults)
+        assertConstExpression("max(4.55, 0.1)", 4.55, expressionTestResults)
+        assertConstExpression("min(4.55, 0.1)", 0.1, expressionTestResults)
         println(expressionTestResults)
     }
 
