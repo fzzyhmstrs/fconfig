@@ -381,15 +381,15 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return ValidatedSet(setOf(*elements), this)
     }
     /**
-     * wraps the provided collection into a [ValidatedList] with this field as validation
+     * wraps the provided collection into a [ValidatedSet] with this field as validation
      * @param collection the collection to wrap. Same type as this field
-     * @return [ValidatedList] wrapping the collection and this field as validation
+     * @return [ValidatedSet] wrapping the collection and this field as validation
      * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.sets
      * @author fzzyhmstrs
      * @since 0.3.1
      */
-    fun toSet(collection: Collection<T>): ValidatedList<T> {
-        return ValidatedList(collection.toList(), this)
+    fun toSet(collection: Collection<T>): ValidatedSet<T> {
+        return ValidatedSet(collection.toSet(), this)
     }
 
     /**
