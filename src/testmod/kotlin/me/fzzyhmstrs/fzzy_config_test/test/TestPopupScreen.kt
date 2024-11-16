@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config_test.test
 
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
+import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigScreenWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.PositionRelativePos
@@ -62,6 +63,7 @@ class TestPopupScreen: PopupWidgetScreen(FcText.empty()) {
         testBooleanWidget.setPosition(20, 170)
         addDrawableChild(testBooleanWidget)
 
+        addDrawableChild(ConfigScreenWidget.of("fzzy_config_test", ConfigScreenWidget.Position.Corner.TOP_LEFT))
     }
 
     private fun openTestPopupWidget() {
