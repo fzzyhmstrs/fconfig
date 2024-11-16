@@ -35,7 +35,7 @@ import java.util.function.Supplier
  * @since 0.2.0
  */
 //client
-class TextlessActionWidget(
+open class TextlessActionWidget(
     private val activeIcon: Identifier,
     private val inactiveIcon: Identifier,
     private val highlightedIcon: Identifier,
