@@ -169,6 +169,8 @@
 "fc.button.paste": "Paste",
 "fc.button.delete": "Delete Entry",
 "fc.button.add": "Add New Entry",
+"fc.button.config": "Open Config",
+"fc.button.config_inactive": "§cConfig not found§r",
 "fc.button.cancel": "Cancel",
 "fc.button.slider.usage.focused": "Press up or down arrows to change value",
 "fc.button.restart.cancel": "Back to Title Screen",
