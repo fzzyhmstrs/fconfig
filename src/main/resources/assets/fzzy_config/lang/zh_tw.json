@@ -169,6 +169,8 @@
     "fc.button.paste": "貼上",
     "fc.button.delete": "刪除項目",
     "fc.button.add": "新增項目",
+    "fc.button.config": "開啟配置",
+    "fc.button.config_inactive": "§c未找到配置§r",
     "fc.button.cancel": "取消",
     "fc.button.slider.usage.focused": "按向上或向下箭頭鍵來更改值",
     "fc.button.restart.cancel": "返回標題畫面",
