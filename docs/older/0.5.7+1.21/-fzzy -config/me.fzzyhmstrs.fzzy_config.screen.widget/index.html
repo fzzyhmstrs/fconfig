@@ -1,0 +1,347 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>me.fzzyhmstrs.fzzy_config.screen.widget</title>
+    <link href="../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../images/fc_banner.png">
+<link href="../../images/discord_banner.png">
+<link href="../../images/discord_small_banner.png">
+<link href="../../images/wiki_banner.png">
+<link href="../../images/wiki_small_banner.png">
+<link href="../../images/docs_banner.png">
+<link href="../../images/docs_small_banner.png">
+<link href="../../images/cf_banner.png">
+<link href="../../images/modrinth_banner.png">
+<link href="../../images/icon.png">
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.5.7+1.21</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.7+1.21.2</a><a href="index.html">0.5.7+1.21</a><a href="..\..\..\0.5.7+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.7+1.20.6</a><a href="..\..\..\0.5.7+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.7+1.20.4</a><a href="..\..\..\0.5.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.7+1.20.1</a><a href="..\..\..\0.5.6+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.6+1.21.2</a><a href="..\..\..\0.5.6+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.6+1.21</a><a href="..\..\..\0.5.6+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.6+1.20.6</a><a href="..\..\..\0.5.6+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.6+1.20.4</a><a href="..\..\..\0.5.6+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.6+1.20.1</a><a href="..\..\..\0.5.5+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.5+1.21.2</a><a href="..\..\..\0.5.4+1.21.2-pre4\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.4+1.21.2-pre4</a><a href="..\..\..\0.5.4+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.4+1.21</a><a href="..\..\..\0.5.4+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.4+1.20.6</a><a href="..\..\..\0.5.4+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.4+1.20.4</a><a href="..\..\..\0.5.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.4+1.20.1</a><a href="..\..\..\0.5.3+24w40a\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.3+24w40a</a><a href="..\..\..\0.5.3+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.3+1.21</a><a href="..\..\..\0.5.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.3+1.20.6</a><a href="..\..\..\0.5.3+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.3+1.20.4</a><a href="..\..\..\0.5.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.3+1.20.1</a><a href="..\..\..\0.5.0+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.0+24w34a</a><a href="..\..\..\0.5.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.0+1.21</a><a href="..\..\..\0.5.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.0+1.20.6</a><a href="..\..\..\0.5.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.0+1.20.4</a><a href="..\..\..\0.5.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.5.0+1.20.1</a><a href="..\..\..\0.4.2+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.2+24w34a</a><a href="..\..\..\0.4.2+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.2+1.21</a><a href="..\..\..\0.4.2+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.2+1.20.6</a><a href="..\..\..\0.4.2+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.2+1.20.4</a><a href="..\..\..\0.4.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.2+1.20.1</a><a href="..\..\..\0.4.1+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.1+24w34a</a><a href="..\..\..\0.4.1+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.1+1.21</a><a href="..\..\..\0.4.1+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.1+1.20.6</a><a href="..\..\..\0.4.1+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.1+1.20.4</a><a href="..\..\..\0.4.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.1+1.20.1</a><a href="..\..\..\0.4.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.0+1.21</a><a href="..\..\..\0.4.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.0+1.20.6</a><a href="..\..\..\0.4.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.0+1.20.4</a><a href="..\..\..\0.4.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\index.html">0.4.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.screen.widget////PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../index.html">Fzzy Config</a><span class="delimiter">/</span><span class="current">me.fzzyhmstrs.fzzy_config.screen.widget</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-1275207890%2FClasslikes%2F769193423" anchor-label="ActiveButtonWidget" id="-1275207890%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-active-button-widget/index.html"><span>Active</span><wbr><span>Button</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1275207890%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-active-button-widget/index.html">ActiveButtonWidget</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">titleSupplier<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">activeSupplier<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">pressAction<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><a href="-active-button-widget/index.html">ActiveButtonWidget</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="../me.fzzyhmstrs.fzzy_config.screen.widget.internal/-custom-pressable-widget/index.html">CustomPressableWidget</a></div><div class="brief "><p class="paragraph">A Button Widget that can supply its message and active state, and render a custom background</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="918241957%2FClasslikes%2F769193423" anchor-label="ClickableTextWidget" id="918241957%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-clickable-text-widget/index.html"><span>Clickable</span><wbr><span>Text</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="918241957%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-clickable-text-widget/index.html">ClickableTextWidget</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">parent<span class="token operator">: </span><span data-unresolved-link="net.minecraft.client.gui.screen/Screen///PointingToDeclaration/">Screen</span><span class="token punctuation">, </span></span><span class="parameter ">message<span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span><span class="token punctuation">, </span></span><span class="parameter ">textRenderer<span class="token operator">: </span><span data-unresolved-link="net.minecraft.client.font/TextRenderer///PointingToDeclaration/">TextRenderer</span></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="net.minecraft.client.gui.widget/AbstractTextWidget///PointingToDeclaration/">AbstractTextWidget</span></div><div class="brief "><p class="paragraph">A <span data-unresolved-link="net.minecraft.client.gui.widget/AbstractTextWidget///PointingToDeclaration/">AbstractTextWidget</span> that can process click and hover actions on rendered text</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-394997768%2FClasslikes%2F769193423" anchor-label="ConfigScreenWidget" id="-394997768%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-config-screen-widget/index.html"><span>Config</span><wbr><span>Screen</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-394997768%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-config-screen-widget/index.html">ConfigScreenWidget</a> : <a href="-textless-action-widget/index.html">TextlessActionWidget</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2037468261%2FClasslikes%2F769193423" anchor-label="DecoratedActiveButtonWidget" id="2037468261%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-decorated-active-button-widget/index.html"><span>Decorated</span><wbr><span>Active</span><wbr><span>Button</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2037468261%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-decorated-active-button-widget/index.html">DecoratedActiveButtonWidget</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">titleSupplier<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">decoration<span class="token operator">: </span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token punctuation">, </span></span><span class="parameter ">activeProvider<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">pressAction<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><a href="-active-button-widget/index.html">ActiveButtonWidget</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">background<span class="token operator">: </span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="-active-button-widget/index.html">ActiveButtonWidget</a>, <a href="../me.fzzyhmstrs.fzzy_config.screen.entry/-decorated/index.html">Decorated</a></div><div class="brief "><p class="paragraph">An <a href="-active-button-widget/index.html">ActiveButtonWidget</a> that allows for parents to render its decoration</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1011255329%2FClasslikes%2F769193423" anchor-label="DecorationWrappedWidget" id="-1011255329%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-decoration-wrapped-widget/index.html"><span>Decoration</span><wbr><span>Wrapped</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1011255329%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-decoration-wrapped-widget/index.html">DecorationWrappedWidget</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">child<span class="token operator">: </span><span data-unresolved-link="net.minecraft.client.gui.widget/ClickableWidget///PointingToDeclaration/">ClickableWidget</span><span class="token punctuation">, </span></span><span class="parameter ">decoration<span class="token operator">: </span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="net.minecraft.client.gui.widget/ClickableWidget///PointingToDeclaration/">ClickableWidget</span>, <a href="../me.fzzyhmstrs.fzzy_config.screen.entry/-decorated/index.html">Decorated</a></div><div class="brief "><p class="paragraph">A widget that wraps another widget with a decoration</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1953360862%2FClasslikes%2F769193423" anchor-label="OnClickTextFieldWidget" id="-1953360862%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-on-click-text-field-widget/index.html"><span>On</span><wbr><span>Click</span><wbr><span>Text</span><wbr><span>Field</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1953360862%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-on-click-text-field-widget/index.html">OnClickTextFieldWidget</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">textSupplier<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">onClick<span class="token operator">: </span><a href="-on-click-text-field-widget/-on-interact-action/index.html">OnClickTextFieldWidget.OnInteractAction</a></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="net.minecraft.client.gui.widget/TextFieldWidget///PointingToDeclaration/">TextFieldWidget</span></div><div class="brief "><p class="paragraph">A button widget that masquerades as a text field widget. The text within is not editable.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1346893688%2FClasslikes%2F769193423" anchor-label="PopupWidget" id="-1346893688%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-popup-widget/index.html"><span>Popup</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1346893688%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-popup-widget/index.html">PopupWidget</a> : <span data-unresolved-link="net.minecraft.client.gui/ParentElement///PointingToDeclaration/">ParentElement</span>, <span data-unresolved-link="net.minecraft.client.gui/Narratable///PointingToDeclaration/">Narratable</span>, <span data-unresolved-link="net.minecraft.client.gui/Drawable///PointingToDeclaration/">Drawable</span>, <a href="../me.fzzyhmstrs.fzzy_config.screen.internal/-suggestion-window-listener/index.html">SuggestionWindowListener</a></div><div class="brief "><p class="paragraph">A widget comprised of a collection of child elements that "Pops up" onto screens that implement <a href="../me.fzzyhmstrs.fzzy_config.screen/-popup-parent-element/index.html">me.fzzyhmstrs.fzzy_config.screen.PopupParentElement</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2095008651%2FClasslikes%2F769193423" anchor-label="Scalable" id="-2095008651%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-scalable/index.html"><span><span>Scalable</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2095008651%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-scalable/index.html">Scalable</a></div><div class="brief "><p class="paragraph">Provides a set width/height method for parents of implementing widgets</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1930443567%2FClasslikes%2F769193423" anchor-label="SuggestionBackedTextFieldWidget" id="-1930443567%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-suggestion-backed-text-field-widget/index.html"><span>Suggestion</span><wbr><span>Backed</span><wbr><span>Text</span><wbr><span>Field</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1930443567%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-suggestion-backed-text-field-widget/index.html">SuggestionBackedTextFieldWidget</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">wrappedValue<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">choiceValidator<span class="token operator">: </span><a href="../me.fzzyhmstrs.fzzy_config.validation.misc/-choice-validator/index.html">ChoiceValidator</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">validator<span class="token operator">: </span><a href="../me.fzzyhmstrs.fzzy_config.entry/-entry-validator/index.html">EntryValidator</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">applier<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">suggestionProvider<span class="token operator">: </span><a href="-suggestion-backed-text-field-widget/-suggestion-provider/index.html">SuggestionBackedTextFieldWidget.SuggestionProvider</a><span class="token punctuation">, </span></span><span class="parameter ">closePopup<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></span></span><span class="token punctuation">)</span> : <a href="-validation-backed-text-field-widget/index.html">ValidationBackedTextFieldWidget</a>, <a href="../me.fzzyhmstrs.fzzy_config.screen.internal/-suggestion-window-provider/index.html">SuggestionWindowProvider</a></div><div class="brief "><p class="paragraph">A <a href="-validation-backed-text-field-widget/index.html">ValidationBackedTextFieldWidget</a> that provides suggestions for string completion to the user</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1472785051%2FClasslikes%2F769193423" anchor-label="SuppliedTextWidget" id="1472785051%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-supplied-text-widget/index.html"><span>Supplied</span><wbr><span>Text</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1472785051%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-supplied-text-widget/index.html">SuppliedTextWidget</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">messageSupplier<span class="token operator">: </span><span data-unresolved-link="com.google.common.base/Supplier///PointingToDeclaration/">Supplier</span><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">textRenderer<span class="token operator">: </span><span data-unresolved-link="net.minecraft.client.font/TextRenderer///PointingToDeclaration/">TextRenderer</span><span class="token punctuation">, </span></span><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="net.minecraft.client.gui.widget/AbstractTextWidget///PointingToDeclaration/">AbstractTextWidget</span></div><div class="brief "><p class="paragraph">An <span data-unresolved-link="net.minecraft.client.gui.widget/AbstractTextWidget///PointingToDeclaration/">AbstractTextWidget</span> that renders text from a supplier of text, not a static text instance</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1071864874%2FClasslikes%2F769193423" anchor-label="TextlessActionWidget" id="1071864874%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-textless-action-widget/index.html"><span>Textless</span><wbr><span>Action</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1071864874%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-textless-action-widget/index.html">TextlessActionWidget</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">activeIcon<span class="token operator">: </span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token punctuation">, </span></span><span class="parameter ">inactiveIcon<span class="token operator">: </span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token punctuation">, </span></span><span class="parameter ">highlightedIcon<span class="token operator">: </span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token punctuation">, </span></span><span class="parameter ">activeNarration<span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span><span class="token punctuation">, </span></span><span class="parameter ">inactiveNarration<span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span><span class="token punctuation">, </span></span><span class="parameter ">activeSupplier<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">pressAction<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><a href="-textless-action-widget/index.html">TextlessActionWidget</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <a href="../me.fzzyhmstrs.fzzy_config.screen.widget.internal/-custom-pressable-widget/index.html">CustomPressableWidget</a></div><div class="brief "><p class="paragraph">A button widget that is 20x20 pixels and displays a sprite instead of a textual message</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-315125267%2FClasslikes%2F769193423" anchor-label="TextureIds" id="-315125267%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-texture-ids/index.html"><span>Texture</span><wbr><span><span>Ids</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-315125267%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-texture-ids/index.html">TextureIds</a></div><div class="brief "><p class="paragraph">Defines standard widget sprites used throughout Fzzy Config. May be useful for custom widgets, popups, etc.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1074813662%2FClasslikes%2F769193423" anchor-label="ValidationBackedNumberFieldWidget" id="-1074813662%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validation-backed-number-field-widget/index.html"><span>Validation</span><wbr><span>Backed</span><wbr><span>Number</span><wbr><span>Field</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1074813662%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validation-backed-number-field-widget/index.html">ValidationBackedNumberFieldWidget</a><span class="token operator">&lt;</span><a href="-validation-backed-number-field-widget/index.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-number/index.html">Number</a><span class="token operator">&gt;</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">wrappedValue<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="-validation-backed-number-field-widget/index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">choiceValidator<span class="token operator">: </span><a href="../me.fzzyhmstrs.fzzy_config.validation.misc/-choice-validator/index.html">ChoiceValidator</a><span class="token operator">&lt;</span><a href="-validation-backed-number-field-widget/index.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">validationProvider<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Function.html">Function</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span><a href="../me.fzzyhmstrs.fzzy_config.util/-validation-result/index.html">ValidationResult</a><span class="token operator">&lt;</span><a href="-validation-backed-number-field-widget/index.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">applier<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><a href="-validation-backed-number-field-widget/index.html">T</a><span class="token operator">&gt;</span><span class="token operator"> = </span>Consumer { _ -&gt;}</span></span><span class="token punctuation">)</span> : <span data-unresolved-link="net.minecraft.client.gui.widget/TextFieldWidget///PointingToDeclaration/">TextFieldWidget</span></div><div class="brief "><p class="paragraph">A <span data-unresolved-link="net.minecraft.client.gui.widget/TextFieldWidget///PointingToDeclaration/">TextFieldWidget</span> for entering number values, backed by validation of some sort.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="89800326%2FClasslikes%2F769193423" anchor-label="ValidationBackedTextFieldWidget" id="89800326%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validation-backed-text-field-widget/index.html"><span>Validation</span><wbr><span>Backed</span><wbr><span>Text</span><wbr><span>Field</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="89800326%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validation-backed-text-field-widget/index.html">ValidationBackedTextFieldWidget</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">wrappedValue<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">choiceValidator<span class="token operator">: </span><a href="../me.fzzyhmstrs.fzzy_config.validation.misc/-choice-validator/index.html">ChoiceValidator</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">validator<span class="token operator">: </span><a href="../me.fzzyhmstrs.fzzy_config.entry/-entry-validator/index.html">EntryValidator</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">applier<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="net.minecraft.client.gui.widget/TextFieldWidget///PointingToDeclaration/">TextFieldWidget</span></div><div class="brief "><p class="paragraph">A <span data-unresolved-link="net.minecraft.client.gui.widget/TextFieldWidget///PointingToDeclaration/">TextFieldWidget</span> backed by string validation that can consume and apply strings from/to an outside source</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="127314671%2FClasslikes%2F769193423" anchor-label="VerticalSliderWidget" id="127314671%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-vertical-slider-widget/index.html"><span>Vertical</span><wbr><span>Slider</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="127314671%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-vertical-slider-widget/index.html">VerticalSliderWidget</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">wrappedValue<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">x<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">y<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">message<span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span><span class="token punctuation">, </span></span><span class="parameter ">valueApplier<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="net.minecraft.client.gui.widget/ClickableWidget///PointingToDeclaration/">ClickableWidget</span></div><div class="brief "><p class="paragraph">A vertically oriented SliderWidget, works as one would expect a sldier widget to work, but doesn't render the slider value that needs to be done separately via the <span data-unresolved-link="me.fzzyhmstrs.fzzy_config.screen.widget/VerticalSliderWidget/valueApplier/#/PointingToDeclaration/">valueApplier</span></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
