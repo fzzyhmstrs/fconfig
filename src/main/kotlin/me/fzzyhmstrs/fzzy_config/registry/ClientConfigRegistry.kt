@@ -200,6 +200,10 @@ internal object ClientConfigRegistry {
         return manager.provideScreen(scope)
     }
 
+    internal fun hasScreen(scope: String): Boolean {
+        return getValidScope(scope) != null
+    }
+
     //client
     internal fun getPerms(): Map<String, Map<String, Boolean>> {
         return HashMap(customPermissions)
