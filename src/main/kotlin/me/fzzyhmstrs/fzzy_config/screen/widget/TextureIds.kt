@@ -56,6 +56,19 @@ object TextureIds {
 
     /////////////////////////
 
+    /** a gray button texture with the fzzy config logo in the middle */
+    val CONFIG = "widget/action/config".fcId()
+
+    /** same as above but with the "inactive" button texture */
+    val CONFIG_INACTIVE = "widget/action/config_inactive".fcId()
+
+    /** same as above but with a white highlighted border */
+    val CONFIG_HIGHLIGHTED = "widget/action/config_highlighted".fcId()
+    val CONFIG_LANG = "fc.button.config".translate()
+    val CONFIG_INACTIVE_LANG = "fc.button.config_inactive".translate()
+
+    /////////////////////////
+
     /** a list of map entries in square brackets */
     val DECO_MAP = "widget/decoration/map".fcId()
 

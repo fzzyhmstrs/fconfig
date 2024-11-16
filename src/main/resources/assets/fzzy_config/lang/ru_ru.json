@@ -136,7 +136,7 @@
     "fc.config.reload_resources.update.client.prompt": "[Перезагрузить наборы ресурсов]",
     "fc.config.reload_resources.update.server": "Вы внесли изменения в конфигурацию(и), которые требуют от клиентов перезагрузки ресурсов (F3 + T). Подключенные клиенты были автоматически обновлены и уведомлены об этом; пожалуйста, свяжитесь с игроками, если возникнут какие-либо вопросы.",
     "fc.config.prompt.hover": "Нажмите, чтобы выполнить команду",
-    
+
     "fc.button.accept": "Принять",
     "fc.button.deny": "Отклонить",
     "fc.button.apply": "Применить изменения",
@@ -169,6 +169,8 @@
     "fc.button.paste": "Вставить",
     "fc.button.delete": "Удалить запись",
     "fc.button.add": "Добавить новую запись",
+    "fc.button.config": "Открыть Конфигурацию",
+    "fc.button.config_inactive": "§cКонфигурация не найдена§r",
     "fc.button.cancel": "Отменить",
     "fc.button.slider.usage.focused": "Нажимайте стрелки вверх или вниз, чтобы изменить значение",
     "fc.button.restart.cancel": "Вернуться к титульному экрану",
