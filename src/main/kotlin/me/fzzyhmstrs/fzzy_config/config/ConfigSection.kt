@@ -32,6 +32,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  */
 open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, EntryKeyed, Translatable {
 
+    @Transient
     private var sectionKey = "fc.config.generic.section"
 
     @Internal

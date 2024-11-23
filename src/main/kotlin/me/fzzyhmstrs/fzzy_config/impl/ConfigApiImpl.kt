@@ -76,6 +76,7 @@ internal object ConfigApiImpl {
     internal const val CHECK_ACTIONS: Byte = 2
     internal const val IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
     internal const val IGNORE_VISIBILITY: Byte = 4
+    internal const val IGNORE_NON_SYNC_AND_IGNORE_VISIBILITY: Byte = 5
     internal const val RECORD_RESTARTS: Byte = 8
     internal const val CHECK_ACTIONS_AND_RECORD_RESTARTS: Byte = 10
 
@@ -323,7 +324,8 @@ internal object ConfigApiImpl {
             //kotlin member properties filtered by [field map contains it && if NonSync matters, it isn't NonSync]. NonSync does not matter by default
             for (prop in config.javaClass.kotlin.memberProperties.filter {
                 if (ignoreNonSync(flags)) true else !isNonSync(it)
-                && if(ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
+                        && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
+                        && if(ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
             }.sortedBy { orderById[it.name] }) {
                 //has to be a public mutable property. private and protected and val another way to have serialization ignore
                 if (prop !is KMutableProperty<*>) continue
@@ -425,6 +427,7 @@ internal object ConfigApiImpl {
             return ValidationResult.error(ConfigContext(config).withContext(ACTIONS, mutableSetOf<Action>()), "Improper TOML format passed to deserializeFromToml")
         }
         try {
+            config::class.java
             val checkActions = checkActions(flags)
             val recordRestarts = if (!checkActions) false else recordRestarts(flags)
             val globalAction = getAction(config::class.annotations)
@@ -439,7 +442,8 @@ internal object ConfigApiImpl {
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             for (prop in config.javaClass.kotlin.memberProperties.filter {
                 if (ignoreNonSync(flags)) true else !isNonSync(it)
-                && if(ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
+                        && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
+                        && if(ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
             }.sortedBy { orderById[it.name] }) {
                 if (prop !is KMutableProperty<*>) continue
                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
@@ -730,7 +734,7 @@ internal object ConfigApiImpl {
 
     ///////////////// Reflection /////////////////////////////////////////////////////////
 
-    private fun isIgnoreVisibility(clazz: KClass<*>): Boolean {
+    internal fun isIgnoreVisibility(clazz: KClass<*>): Boolean {
         return clazz.annotations.firstOrNull { (it is IgnoreVisibility) }?.let { true } ?: false
     }
     private fun isNonSync(property: KProperty<*>): Boolean {
@@ -971,11 +975,12 @@ internal object ConfigApiImpl {
                     if (walkCallback.isContinued())
                         continue
                     if (propVal is Walkable) {
-                        val newFlags = if (ignoreVisibility) flags or IGNORE_VISIBILITY else flags
+                        val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
                         walk(propVal, newPrefix, newFlags, walkAction)
                     }
                 } catch (e: Throwable) {
-                    FC.LOGGER.error("Critical exception caught while walking $prefix")
+                    FC.LOGGER.error("Critical exception caught while walking $prefix for property $property.name")
+                    FC.LOGGER.error(" > Walk Flags: $flags, Ignoring Visibility: $ignoreVisibility")
                     e.printStackTrace()
                     // continue without borking
                 }
@@ -1014,7 +1019,8 @@ internal object ConfigApiImpl {
                         callback
                     )
                 } catch (e: Throwable) {
-                    FC.LOGGER.error("Critical exception caught while acting on a drill to $target")
+                    FC.LOGGER.error("Critical exception caught while acting on a drill for $target")
+                    FC.LOGGER.error(" > Drill Final Flags: $flags, Ignoring Visibility: $ignoreVisibility")
                     e.printStackTrace()
                     // continue without borking
                 }
@@ -1024,13 +1030,16 @@ internal object ConfigApiImpl {
                     try {
                         val propVal = property.get(walkable)
                         if (propVal is Walkable) {
-                            val newFlags = if (ignoreVisibility) flags or IGNORE_VISIBILITY else flags
+                            val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
+                            propVal::class.java.accessFlags()
                             drill(propVal, target.substringAfter(delimiter), delimiter, newFlags, walkAction)
                         } else {
                             break
                         }
                     } catch (e: Throwable) {
                         FC.LOGGER.error("Critical exception caught while drilling to $target")
+                        FC.LOGGER.error(" > Drill Flags: $flags, Ignoring Visibility: $ignoreVisibility")
+                        FC.LOGGER.error(" > Current Property: $string, new target: ${target.substringAfter(delimiter)}")
                         e.printStackTrace()
                         // continue without borking
                     }
