@@ -44,16 +44,21 @@ import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
+import org.apache.commons.lang3.mutable.MutableLong
 import java.io.File
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
+import java.util.concurrent.CompletableFuture
 import java.util.function.Supplier
 import kotlin.experimental.and
 import kotlin.math.min
 import kotlin.experimental.or
 import kotlin.reflect.*
 import kotlin.reflect.full.*
+import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaField
+import kotlin.reflect.jvm.javaGetter
+import kotlin.reflect.jvm.javaSetter
 
 internal object ConfigApiImpl {
 
@@ -80,6 +85,9 @@ internal object ConfigApiImpl {
     internal const val IGNORE_NON_SYNC_AND_IGNORE_VISIBILITY: Byte = 5
     internal const val RECORD_RESTARTS: Byte = 8
     internal const val CHECK_ACTIONS_AND_RECORD_RESTARTS: Byte = 10
+
+    private val configClass = Config::class
+    private val configSectionClass = ConfigSection::class
 
     internal fun openScreen(scope: String) {
         if (isClient)
@@ -156,8 +164,13 @@ internal object ConfigApiImpl {
     //////////////// Read, Create, Save //////////////////////////////////////////////////
 
     internal fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T {
+        fun log(start: Long) {
+            FC.LOGGER.info("Loaded config {} in {}ms", "$folder:$name", (System.currentTimeMillis() - start))
+        }
         //wrap entire method in a try-catch. don't need to have config problems causing a hard crash, just fall back
         try {
+            val start = System.currentTimeMillis()
+            val stageTime = MutableLong(System.currentTimeMillis())
             //create our directory, or bail if we can't for some reason
             val (dir, dirCreated) = makeDir(folder, subfolder)
             if (!dirCreated) {
@@ -203,6 +216,7 @@ internal object ConfigApiImpl {
                     }
                     f.writeText(updatedConfig)
                 }
+                log(start)
                 return readConfig
             } else if (!f.createNewFile()) {
                 FC.LOGGER.error("Couldn't create new file for config [$name]. Using default config.")
@@ -243,6 +257,7 @@ internal object ConfigApiImpl {
                     fErrorsOutResult.writeError(fErrorsOut)
                 }
                 f.writeText(serializedConfig)
+                log(start)
                 return classInstance
             }
         } catch (e: Throwable) {
@@ -307,31 +322,32 @@ internal object ConfigApiImpl {
         //used to build a TOML table piece by piece
         val toml = TomlTableBuilder()
         try {
+            val clazz = config::class
             if (config is Config) {
-                val version = getVersion(config::class)
-                val headerAnnotations = tomlHeaderAnnotations(config::class).toMutableList()
+                val version = getVersion(clazz)
+                val headerAnnotations = tomlHeaderAnnotations(clazz).toMutableList()
                 headerAnnotations.add(TomlHeaderComment("Don't change this! Version used to track needed updates."))
                 toml.element("version", TomlLiteral(version), headerAnnotations.map { TomlComment(it.text) })
             }
-            val ignoreVisibility = isIgnoreVisibility(config::class) || ignoreVisibility(flags)
+            val ignoreVisibility = isIgnoreVisibility(clazz) || ignoreVisibility(flags)
             //java fields are ordered in declared order, apparently not so for Kotlin properties. use these first to get ordering. skip Transient
-            val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }.toMutableList()
-            for (sup in config::class.allSuperclasses) {
-                if (sup == Config::class) continue //ignore Config itself, as that has state we don't need
+            val fields = clazz.java.declaredFields.filter { !isTransient(it.modifiers) }.toMutableList()
+            for (sup in clazz.allSuperclasses) {
+                if (sup == configClass) continue //ignore Config itself, as that has state we don't need
                 fields.addAll(sup.java.declaredFields.filter { !isTransient(it.modifiers) })
             }
             //generate an index map, so I can order the properties based on name
             val orderById = fields.withIndex().associate { it.value.name to it.index }
             //kotlin member properties filtered by [field map contains it && if NonSync matters, it isn't NonSync]. NonSync does not matter by default
             for (prop in config.javaClass.kotlin.memberProperties.filter {
-                if (ignoreNonSync(flags)) true else !isNonSync(it)
+                it is KMutableProperty<*>
+                        && (if (ignoreNonSync(flags)) true else !isNonSync(it))
                         && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-                        && if(ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
+                        && if(ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
             }.sortedBy { orderById[it.name] }) {
                 //has to be a public mutable property. private and protected and val another way to have serialization ignore
                 if (prop !is KMutableProperty<*>) continue
                 //get the actual [thing] from the property
-                if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 val propVal = prop.get(config)
                 if (propVal is ConfigAction) continue
                 //if(ignoreVisibility) (prop.javaField?.trySetAccessible())
@@ -340,7 +356,8 @@ internal object ConfigApiImpl {
                 //serialize the element. EntrySerializer elements will have a set serialization method
                 val el = if (propVal is EntrySerializer<*>) { //is EntrySerializer
                     try {
-                        propVal.serializeEntry(null, errorBuilder, flags)
+                        val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
+                        propVal.serializeEntry(null, errorBuilder, newFlags)
                     } catch (e: Throwable) {
                         errorBuilder.add("Problem encountered with serialization of [$name]: ${e.localizedMessage}")
                         TomlNull
@@ -349,7 +366,8 @@ internal object ConfigApiImpl {
                 } else if (propVal != null) {
                     val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
                     if (basicValidation != null) {
-                        basicValidation.trySerialize(propVal, errorBuilder, flags) ?: TomlNull
+                        val newFlags = if (ignoreVisibility) flags or IGNORE_VISIBILITY else flags
+                        basicValidation.trySerialize(propVal, errorBuilder, newFlags) ?: TomlNull
                     } else {
                         try {
                             encodeToTomlElement(propVal, prop.returnType) ?: TomlNull
@@ -427,27 +445,30 @@ internal object ConfigApiImpl {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
             return ValidationResult.error(ConfigContext(config).withContext(ACTIONS, mutableSetOf<Action>()), "Improper TOML format passed to deserializeFromToml")
         }
+        val clazz = config::class
         try {
-            config::class.java
             val checkActions = checkActions(flags)
             val recordRestarts = if (!checkActions) false else recordRestarts(flags)
-            val globalAction = getAction(config::class.annotations)
-            val ignoreVisibility = isIgnoreVisibility(config::class) || ignoreVisibility(flags)
+            val globalAction = getAction(clazz.annotations)
+            val ignoreVisibility = isIgnoreVisibility(clazz) || ignoreVisibility(flags)
 
-            val fields = config::class.java.declaredFields.filter { !isTransient(it.modifiers) }.toMutableList()
-            for (sup in config::class.allSuperclasses) {
-                if (sup == Config::class) continue
-                fields.addAll(sup.java.declaredFields.filter { !isTransient(it.modifiers) })
+            val fields = clazz.java.declaredFields.toMutableList()
+            for (sup in clazz.allSuperclasses) {
+                if (sup == configClass) continue
+                if (sup == configSectionClass) continue
+                if (sup.java.isInterface) continue
+                fields.addAll(sup.java.declaredFields)
             }
 
             val orderById = fields.withIndex().associate { it.value.name to it.index }
+
             for (prop in config.javaClass.kotlin.memberProperties.filter {
-                if (ignoreNonSync(flags)) true else !isNonSync(it)
+                it is KMutableProperty<*>
+                        && (if (ignoreNonSync(flags)) true else !isNonSync(it))
                         && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-                        && if(ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
+                        && if(ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
             }.sortedBy { orderById[it.name] }) {
                 if (prop !is KMutableProperty<*>) continue
-                if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 val propVal = prop.get(config)
                 if (propVal is ConfigAction) continue
                 val name = prop.name
@@ -465,7 +486,8 @@ internal object ConfigApiImpl {
                     val action = requiredAction(prop.annotations, globalAction)
                     val result = if(checkActions && propVal is Supplier<*> && action != null) {
                         val before = propVal.get()
-                        propVal.deserializeEntry(tomlElement, errorBuilder, name, flags).also { r ->
+                        val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
+                        propVal.deserializeEntry(tomlElement, errorBuilder, name, newFlags).also { r ->
                             if(r.get() != before) {
                                 restartNeeded.add(action)
                                 if(recordRestarts && action.restartPrompt) {
@@ -474,7 +496,8 @@ internal object ConfigApiImpl {
                             }
                         }
                     } else {
-                        propVal.deserializeEntry(tomlElement, errorBuilder, name, flags)
+                        val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
+                        propVal.deserializeEntry(tomlElement, errorBuilder, name, newFlags)
                     }
                     if (result.isError()) {
                         errorBuilder.add(result.getError())
@@ -503,7 +526,7 @@ internal object ConfigApiImpl {
                             val action = requiredAction(prop.annotations, globalAction)
                             if(checkActions && action != null) {
                                 if(ignoreVisibility) (prop.javaField?.trySetAccessible())
-                                prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop).also{
+                                prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop).also {
                                     if (propVal != it) {
                                         restartNeeded.add(action)
                                         if(recordRestarts && action.restartPrompt) {
@@ -520,7 +543,6 @@ internal object ConfigApiImpl {
                         }
                     }
                 }
-
             }
         } catch (e: Throwable) {
             errorBuilder.add("Critical error encountered while deserializing")
@@ -735,9 +757,20 @@ internal object ConfigApiImpl {
 
     ///////////////// Reflection /////////////////////////////////////////////////////////
 
-    internal fun isIgnoreVisibility(clazz: KClass<*>): Boolean {
+    private fun isIgnoreVisibility(clazz: KClass<*>): Boolean {
         return clazz.annotations.firstOrNull { (it is IgnoreVisibility) }?.let { true } ?: false
     }
+
+    private fun trySetAccessible(prop: KMutableProperty<*>): Boolean {
+        //println("Before ${prop.name}, ${prop.isAccessible}")
+        if (prop.isAccessible) return true
+        val bl = prop.javaField?.trySetAccessible() != false
+                && prop.javaGetter?.trySetAccessible() != false
+                && prop.javaSetter?.trySetAccessible() != false
+        //println("After ${prop.name}, ${prop.isAccessible}")
+        return bl
+    }
+
     private fun isNonSync(property: KProperty<*>): Boolean {
         return isNonSync(property.annotations)
     }
@@ -745,8 +778,15 @@ internal object ConfigApiImpl {
         return annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
     }
 
+    @Suppress("DEPRECATION")
     private fun getAction(annotations: List<Annotation>): Action? {
-        return (annotations.firstOrNull { (it is RequiresAction) } as? RequiresAction ?: annotations.firstOrNull { (it is RequiresRestart) }?.let { RequiresAction(Action.RESTART) })?.action
+        return (annotations.firstOrNull {
+            (it is RequiresAction)
+        } as? RequiresAction ?: annotations.firstOrNull {
+            (it is RequiresRestart)
+        }?.let {
+            RequiresAction(Action.RESTART)
+        })?.action
     }
 
     private fun requiredAction(settingAnnotations: List<Annotation>, classAction: Action?): Action? {
@@ -803,8 +843,8 @@ internal object ConfigApiImpl {
         return field.annotations.mapNotNull { it as? TomlHeaderComment }
     }
     private fun getVersion(clazz: KClass<*>): Int {
-        val version = clazz.findAnnotation<Version>()
-        return version?.version ?: 0
+        val ver = clazz.java.annotations.firstOrNull { it is Version } as? Version
+        return ver?.version ?: 0
     }
     private fun getCompat(clazz: KClass<*>): Pair<File?, Boolean> {
         val version = clazz.findAnnotation<ConvertFrom>() ?: return Pair(null, false)
@@ -953,7 +993,7 @@ internal object ConfigApiImpl {
                 .filter {
                     it is KMutableProperty<*>
                             && (if (ignoreNonSync(flags)) true else !isNonSync(it))
-                            && if (ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
+                            && if (ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
                 }.sortedBy {
                     orderById[it.name]
                 }
@@ -1001,7 +1041,7 @@ internal object ConfigApiImpl {
                 !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
                         && it is KMutableProperty<*>
                         && (if (ignoreNonSync(flags)) true else !isNonSync(it))
-                        && if (ignoreVisibility) (it.javaField?.trySetAccessible() == true) else it.visibility == KVisibility.PUBLIC
+                        && if (ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
             }.associateBy { it.name }
             val globalAnnotations = walkable::class.annotations
             val callback = WalkCallback(walkable)
