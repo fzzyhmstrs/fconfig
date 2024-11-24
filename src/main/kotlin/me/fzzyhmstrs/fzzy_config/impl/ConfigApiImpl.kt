@@ -1070,7 +1070,6 @@ internal object ConfigApiImpl {
                         val propVal = property.get(walkable)
                         if (propVal is Walkable) {
                             val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
-                            propVal::class.java.accessFlags()
                             drill(propVal, target.substringAfter(delimiter), delimiter, newFlags, walkAction)
                         } else {
                             break
