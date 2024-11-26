@@ -10,13 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config.networking.impl
 
-import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.networking.api.*
-import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
-import net.fabricmc.fabric.impl.networking.PayloadTypeRegistryImpl
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
