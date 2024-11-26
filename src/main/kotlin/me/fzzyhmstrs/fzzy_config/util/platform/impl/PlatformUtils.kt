@@ -8,7 +8,7 @@
 * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
 * */
 
-package me.fzzyhmstrs.fzzy_config.util
+package me.fzzyhmstrs.fzzy_config.util.platform.impl
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
@@ -45,6 +45,10 @@ internal object PlatformUtils {
 
     fun isModLoaded(mod: String): Boolean {
         return ModList.get().isLoaded(mod)
+    }
+
+    fun isDev(): Boolean {
+        return !FMLEnvironment.production
     }
 
     fun configName(scope: String, fallback: String): String {
