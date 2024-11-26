@@ -8,10 +8,11 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.util
+package me.fzzyhmstrs.fzzy_config.util.platform.impl
 
-import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.text.Text
+import me.fzzyhmstrs.fzzy_config.util.PlatformApi
+import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
+import net.minecraft.registry.Registry
 import java.io.File
 
 internal object PlatformApiImpl: PlatformApi {
@@ -30,5 +31,13 @@ internal object PlatformApiImpl: PlatformApi {
 
     override fun isModLoaded(mod: String): Boolean {
         return PlatformUtils.isModLoaded(mod)
+    }
+
+    override fun isDev(): Boolean {
+        return PlatformUtils.isDev()
+    }
+
+    override fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T> {
+        return RegistrarImpl(namespace, registry)
     }
 }
