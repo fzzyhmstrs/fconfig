@@ -27,7 +27,7 @@ import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
 import me.fzzyhmstrs.fzzy_config.result.api.ResultApi
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
-import me.fzzyhmstrs.fzzy_config.util.PlatformApiImpl
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus

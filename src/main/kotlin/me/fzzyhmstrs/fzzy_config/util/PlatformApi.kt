@@ -10,7 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.registry.Registry
 import net.minecraft.text.Text
 import java.io.File
 
@@ -52,4 +54,21 @@ interface PlatformApi {
      * @since 0.5.0
      */
     fun isModLoaded(mod: String): Boolean
+
+    /**
+     * Whether the current JVM environment is a development environment
+     * @author fzzyhmstrs
+     * @since 0.5.9
+     */
+    fun isDev(): Boolean
+
+    /**
+     * Creates a [Registrar] wrapper for registering objects in a platform-agnostic way.
+     * @param namespace String namespace to register objects under
+     * @param registry [Registry] registry to wrap
+     * @return [Registrar] platform-agnostic wrapper that registers object
+     * @author fzzyhmstrs
+     * @since 0.5.9
+     */
+    fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T>
 }
