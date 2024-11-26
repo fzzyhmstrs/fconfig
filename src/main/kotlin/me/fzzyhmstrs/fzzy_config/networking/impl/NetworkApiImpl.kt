@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.networking.impl
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.networking.api.*
 import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
 import net.minecraft.entity.player.PlayerEntity
