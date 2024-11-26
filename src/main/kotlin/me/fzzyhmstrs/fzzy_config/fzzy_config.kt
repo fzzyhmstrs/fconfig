@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEvents
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
@@ -46,6 +47,7 @@ internal fun String.nsId(path: String): Identifier {
 object FC: ModInitializer {
     internal const val MOD_ID = "fzzy_config"
     internal val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
+    internal val DEVLOG: Logger = ConfigApi.platform().devLogger(MOD_ID)
 
     override fun onInitialize() {
         NetworkEvents.registerServer()
