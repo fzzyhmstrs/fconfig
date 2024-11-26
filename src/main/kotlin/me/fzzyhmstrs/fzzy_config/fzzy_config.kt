@@ -10,14 +10,12 @@
 
 package me.fzzyhmstrs.fzzy_config
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEvents
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
-import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.util.Identifier
-import net.minecraftforge.api.distmarker.Dist
 import net.minecraftforge.common.MinecraftForge
-import net.minecraftforge.event.RegisterCommandsEvent
-import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.fml.common.Mod
 import net.minecraftforge.network.NetworkEvent
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -70,6 +68,7 @@ class FzzyConfigForge() {
 object FC {
     internal const val MOD_ID = "fzzy_config"
     internal val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
+    internal val DEVLOG: Logger = ConfigApi.platform().devLogger(MOD_ID)
 
 }
 

@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.util.platform.impl
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import net.minecraft.registry.Registry
+import org.slf4j.Logger
 import java.io.File
 
 internal object PlatformApiImpl: PlatformApi {
@@ -35,6 +36,10 @@ internal object PlatformApiImpl: PlatformApi {
 
     override fun isDev(): Boolean {
         return PlatformUtils.isDev()
+    }
+
+    override fun devLogger(name: String): Logger {
+        return DevLogger(name)
     }
 
     override fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T> {
