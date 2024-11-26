@@ -8,7 +8,7 @@
 * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
 * */
 
-package me.fzzyhmstrs.fzzy_config.util
+package me.fzzyhmstrs.fzzy_config.util.platform.impl
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
@@ -23,6 +23,7 @@ import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.api.metadata.CustomValue
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.registry.Registries
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import java.io.File
@@ -44,6 +45,10 @@ internal object PlatformUtils {
 
     fun isModLoaded(mod: String): Boolean {
         return FabricLoader.getInstance().isModLoaded(mod)
+    }
+
+    fun isDev(): Boolean {
+        return FabricLoader.getInstance().isDevelopmentEnvironment
     }
 
     fun configName(scope: String, fallback: String): String {
