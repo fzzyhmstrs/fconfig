@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.Registry
 import net.minecraft.text.Text
+import org.slf4j.Logger
 import java.io.File
 
 /**
@@ -61,6 +62,15 @@ interface PlatformApi {
      * @since 0.5.9
      */
     fun isDev(): Boolean
+
+    /**
+     * Returns a logger that checks if the current environment [isDev] before doing any logging
+     * @param name String id of the delegate logger. This will be created with LoggerFactory.getLogger
+     * @return [Logger] instance with builtin dev checks
+     * @author fzzyhmstrs
+     * @since 0.5.9
+     */
+    fun devLogger(name: String): Logger
 
     /**
      * Creates a [Registrar] wrapper for registering objects in a platform-agnostic way.

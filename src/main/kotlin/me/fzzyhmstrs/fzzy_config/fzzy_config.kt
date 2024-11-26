@@ -10,10 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEvents
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
-import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.util.Identifier
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
@@ -63,6 +64,7 @@ class FzzyConfigNeoForge(bus: IEventBus) {
 object FC {
     internal const val MOD_ID = "fzzy_config"
     internal val LOGGER: Logger = LoggerFactory.getLogger(MOD_ID)
+    internal val DEVLOG: Logger = ConfigApi.platform().devLogger(MOD_ID)
 
 }
 
