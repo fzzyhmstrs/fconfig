@@ -30,7 +30,25 @@ interface EntryFlag {
          * @author fzzyhmstrs
          * @since 0.5.6
          */
-        REQUIRES_WORLD(1);
+        REQUIRES_WORLD(1),
+        /**
+         * Marks that listeners should not be fired on change
+         * @author fzzyhmstrs
+         * @since 0.5.9
+         */
+        QUIET(2),
+        /**
+         * Marks that strong validation should be used. This should be used with caution. Strong validation often relies on game state being loaded. Ensure that is the case before setting with this field active.
+         * @author fzzyhmstrs
+         * @since 0.5.9
+         */
+        STRONG(4),
+        /**
+         * Marks that the field should update its state when set.
+         * @author fzzyhmstrs
+         * @since 0.5.9
+         */
+        UPDATE(8);
 
         companion object {
             val NONE = listOf<Flag>()

@@ -251,16 +251,56 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     /**
      * A setter method for the [storedValue] that first validates the value being set and then stores the post-validation result.
      *
+     * Flags will be ignored. Validation will be weak, listener will be called if present, and sync state will not be updated.
      * @param input T. the pre-validation input of type T that will be validated and then stored, where T is the type of the wrapped value in this field.
      * @return ValidationResult of the input, after corrections, with applicable error messages.
      * @author fzzyhmstrs
      * @since 0.1.0
      */
     open fun validateAndSet(input: T): ValidationResult<T> {
+        if (input == get()) return ValidationResult.success(get())
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.WEAK)
         set(tVal1.get())
         if (tVal1.isError()) {
             return ValidationResult.error(tVal1.get(), "Error validating and setting input [$input]. Corrected to [${tVal1.get()}] >>>> Possible reasons: [${tVal1.getError()}]")
+        }
+        return ValidationResult.success(get())
+    }
+
+    /**
+     * A setter method for the [storedValue] that first validates the value being set and then stores the post-validation result.
+     *
+     * Flags applied to this field or passed into this method alter the normal behavior of [validateAndSet]
+     * - [EntryFlag.Flag.QUIET]: Will not call listeners
+     * - [EntryFlag.Flag.STRONG]: Will use strong validation as opposed to the normal weak validation
+     * - [EntryFlag.Flag.UPDATE]: Sync state will be updated as if changed in a GUI directly. This should only be used when the field has had it's state pushed (typically while a config GUI is open).
+     * @param input T. the pre-validation input of type T that will be validated and then stored, where T is the type of the wrapped value in this field.
+     * @return ValidationResult of the input, after corrections, with applicable error messages.
+     * @author fzzyhmstrs
+     * @since 0.5.9
+     */
+    open fun validateAndSetFlagged(input: T, vararg flag: EntryFlag.Flag): ValidationResult<T> {
+        if (input == get()) return ValidationResult.success(get())
+        val tVal1 = if (hasFlag(EntryFlag.Flag.STRONG) || flag.contains(EntryFlag.Flag.STRONG)) {
+            correctEntry(input, EntryValidator.ValidationType.STRONG)
+        } else {
+            correctEntry(input, EntryValidator.ValidationType.WEAK)
+        }
+        if (hasFlag(EntryFlag.Flag.UPDATE) || flag.contains(EntryFlag.Flag.UPDATE)) {
+            val message = if (tVal1.isError()) {
+                FcText.translatable("fc.validated_field.update.error", translation(), get().toString(), tVal1.get().toString(), tVal1.getError())
+            } else {
+                updateMessage(get(), tVal1.get())
+            }
+            update(message)
+        }
+        if (flag.contains(EntryFlag.Flag.QUIET)) {
+            storedValue = tVal1.get()
+        } else {
+            set(tVal1.get())
+        }
+        if (tVal1.isError()) {
+            return ValidationResult.error(tVal1.get(), "Error validating and setting flagged input [$input]. Corrected to [${tVal1.get()}] >>>> Flags: ${flag.toList()} >>>> Possible reasons: [${tVal1.getError()}]")
         }
         return ValidationResult.success(get())
     }

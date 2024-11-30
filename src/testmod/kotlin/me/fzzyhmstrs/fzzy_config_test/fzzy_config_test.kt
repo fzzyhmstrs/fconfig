@@ -33,12 +33,10 @@ import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.util.math.MathHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.random.Random
 
 object FC: ModInitializer {
     const val MOD_ID = "fzzy_config_test"
     val LOGGER: Logger = LoggerFactory.getLogger("fzzy_config_test")
-    val fcRandom = Random(System.currentTimeMillis())
     const val TEST_PERMISSION_GOOD = "test.perm.good"
     const val TEST_PERMISSION_BAD = "test.perm.bad"
 
