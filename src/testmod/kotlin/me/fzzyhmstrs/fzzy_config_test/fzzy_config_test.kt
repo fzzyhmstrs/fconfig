@@ -15,7 +15,6 @@ import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.util.Expression
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
@@ -31,19 +30,15 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
-import net.minecraft.client.gui.Selectable
 import net.minecraft.util.Identifier
 import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.util.math.MathHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import kotlin.math.exp
-import kotlin.random.Random
 
 object FC: ModInitializer {
     const val MOD_ID = "fzzy_config_test"
     val LOGGER: Logger = LoggerFactory.getLogger("fzzy_config_test")
-    val fcRandom = Random(System.currentTimeMillis())
     const val TEST_PERMISSION_GOOD = "test.perm.good"
     const val TEST_PERMISSION_BAD = "test.perm.bad"
 
@@ -139,10 +134,10 @@ object FCC: ClientModInitializer {
                 ValidationResult.success(s)
             } else {
                 if(s.contains("chicken", true)){
-                    val s2 = s.replace(Regex("(?i)chicken"),"chicken")
-                    ValidationResult.error(s2,"'chicken' needs to be lowercase in the string")
+                    val s2 = s.replace(Regex("(?i)chicken"), "chicken")
+                    ValidationResult.error(s2, "'chicken' needs to be lowercase in the string")
                 } else {
-                    ValidationResult.error(s,"String must contain the lowercase word 'chicken'")
+                    ValidationResult.error(s, "String must contain the lowercase word 'chicken'")
                 }
             }
         }
@@ -200,5 +195,5 @@ object FCC: ClientModInitializer {
 }
 
 fun String.fctId(): Identifier {
-    return Identifier.of(FC.MOD_ID,this)
+    return Identifier.of(FC.MOD_ID, this)
 }
