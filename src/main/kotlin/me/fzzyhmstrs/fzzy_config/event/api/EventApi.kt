@@ -10,6 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.event.api
 
+import net.minecraft.util.Identifier
+
 /**
  * API for registration of config events
  * @author fzzyhmstrs
@@ -64,4 +66,33 @@ interface EventApi {
      * @since 0.5.0
      */
     fun onUpdateServer(listener: OnUpdateServerListener)
+
+    /**
+     * Registers a listener to the `onRegisteredClient` event.
+     * - If the config has already been registered when this is called the listener will be fired right away
+     * - Otherwise, the listener will be queued and fired after the config is registered
+     *
+     * Typically, this will happen sometime during mod initialization, but that isn't guaranteed. Fzzy Configs can be loaded lazily. If the config is never loaded, or not loaded on the client, this listener will never be fired.
+     *
+     * This should only perform client logic, and anything referencing client-only classes needs to go here.
+     * @param configId [Identifier] the registry id of the config to listen for
+     * @param listener [OnRegisteredClientListener] callback that is fired when any config is registered on the client side. This can be used to act on registration of other configs, not just your own.
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun onRegisteredClient(configId: Identifier, listener: OnRegisteredClientListener)
+
+    /**
+     * Registers a listener to the global `onChangedServer` event. This will be fired on the logical server after an updated config is prepared for saving.
+     * - If the config has already been registered when this is called the listener will be fired right away
+     * - Otherwise, the listener will be queued and fired after the config is registered
+     *
+     * Typically, this will happen sometime during mod initialization, but that isn't guaranteed. Fzzy Configs can be loaded lazily. This is a "common" event despite the name (fired on client and server). If the config is never loaded, or not loaded as a synced config, this listener will never be fired.
+     * @param configId [Identifier] the registry id of the config to listen for
+     * @param listener [OnRegisteredServerListener] callback that is fired when any config is updated on the server side. This can be used to inspect other configs, not just your own.
+     * @see [me.fzzyhmstrs.fzzy_config.config.Config.onUpdateServer] A direct-implementation option for inspecting your own config on change.
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun onRegisteredServer(configId: Identifier, listener: OnRegisteredServerListener)
 }
