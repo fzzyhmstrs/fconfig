@@ -10,25 +10,26 @@
 
 package me.fzzyhmstrs.fzzy_config.event.api
 
+import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.config.Config
-import net.minecraft.util.Identifier
 
 /**
- * Listener for on-changed events on the client side. Will be fired for any and all updated configs, allowing inspection of other configs. For use in your own configs, consider directly implementing [Config.onUpdateClient][me.fzzyhmstrs.fzzy_config.config.Config.onUpdateClient]
+ * Listener for on-registered events on the server side. Will be fired for all configs registered on the server, including your own. Common code should also use this, as server configs are loaded on both sides regardless of environment (they are not technically "server" configs, they are "synced" configs).
  *
- * Register with [EventApi.onUpdateClient][me.fzzyhmstrs.fzzy_config.event.api.EventApi.onUpdateClient]
+ * Register with [EventApi.onRegisteredClient][me.fzzyhmstrs.fzzy_config.event.api.EventApi.onRegisteredClient]
  * @author fzzyhmstrs
- * @since 0.5.0
+ * @since 0.5.9
  */
 @FunctionalInterface
-fun interface OnUpdateClientListener {
+fun interface OnRegisteredServerListener {
 
     /**
-     * Called by the `onChangedClient` event when the client side of a config is changed.
-     * @param id [Identifier] the registered id attached to the config instance.
+     * Called by the `onRegisteredClient` event when the client side of a config is synced.
+     *
+     * If the config in question is registered with [RegisterType.CLIENT] only, this will *not* be called.
      * @param config [Config] the config instance. This should only be read, or changes only made to transient fields/methods. Making updates to settings here will NOT be captured by the synchronization system.
      * @author fzzyhmstrs
-     * @since 0.5.0
+     * @since 0.5.9
      */
-    fun onChanged(id: Identifier, config: Config)
+    fun onRegistered(config: Config)
 }
