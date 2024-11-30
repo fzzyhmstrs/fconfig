@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
+import java.util.function.Consumer
 import java.util.function.Function
 
 /**
@@ -187,13 +188,25 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
         /**
          * reports error, if any, to a provided string list
-         * @param errorBuilder MutableList<String> for appending errors.
+         * @param errorBuilder MutableList&lt;String&gt; for appending errors.
          * @return ValidationResult returns itself
          * @author fzzyhmstrs
          * @since 0.2.0
          */
         fun <T> ValidationResult<T>.report(errorBuilder: MutableList<String>): ValidationResult<T> {
             if (this.isError()) errorBuilder.add(this.error)
+            return this
+        }
+
+        /**
+         * reports error, if any, to a provided reporter (such as a logger)
+         * @param errorReporter Consumer&lt;String&gt; for reporting errors.
+         * @return ValidationResult returns itself
+         * @author fzzyhmstrs
+         * @since 0.5.9
+         */
+        fun <T> ValidationResult<T>.report(errorReporter: Consumer<String>): ValidationResult<T> {
+            if (this.isError()) errorReporter.accept(this.error)
             return this
         }
 
