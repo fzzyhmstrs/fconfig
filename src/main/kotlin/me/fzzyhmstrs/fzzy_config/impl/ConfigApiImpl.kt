@@ -21,10 +21,13 @@ import me.fzzyhmstrs.fzzy_config.FCC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.cast
-import me.fzzyhmstrs.fzzy_config.config.*
+import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.VERSIONS
+import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
@@ -32,16 +35,17 @@ import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.updates.BasicValidationProvider
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
-import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.util.Walkable
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.BuiltinRegistries
 import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.apache.commons.lang3.mutable.MutableLong
@@ -53,7 +57,9 @@ import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.math.min
 import kotlin.reflect.*
-import kotlin.reflect.full.*
+import kotlin.reflect.full.allSuperclasses
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaGetter
@@ -103,6 +109,14 @@ internal object ConfigApiImpl {
             if(isClient) ConfigApiImplClient.getClientConfig(scope) else null
     }
 
+    internal fun getSyncedConfig(id: Identifier): Config? {
+        return SyncedConfigRegistry.getConfig(id.toTranslationKey())
+    }
+
+    internal fun getClientConfig(id: Identifier): Config? {
+        return if(isClient) ConfigApiImplClient.getClientConfig(id) else null
+    }
+
     ///////////////////// Registration ///////////////////////////////////////////////////
 
     internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T {
@@ -144,7 +158,19 @@ internal object ConfigApiImpl {
         return registerClient(readOrCreateAndValidate(configClass), configClass)
     }
 
-    internal fun isConfigLoaded(scope: String): Boolean {
+    internal fun isConfigLoaded(scope: String, type: RegisterType): Boolean {
+        return when (type) {
+            RegisterType.BOTH -> isSyncedConfigLoaded(scope) || isClientConfigLoaded(scope)
+            RegisterType.SERVER -> isSyncedConfigLoaded(scope)
+            RegisterType.CLIENT -> isClientConfigLoaded(scope)
+        }
+    }
+
+    internal fun isSyncedConfigLoaded(id: Identifier): Boolean {
+        return SyncedConfigRegistry.hasConfig(id.toTranslationKey())
+    }
+
+    internal fun isSyncedConfigLoaded(scope: String): Boolean {
         var startIndex = 0
         while (startIndex < scope.length) {
             val nextStartIndex = scope.indexOf(".", startIndex)
@@ -156,6 +182,16 @@ internal object ConfigApiImpl {
             if (SyncedConfigRegistry.hasConfig(testScope)) return true
         }
         return false
+    }
+
+    internal fun isClientConfigLoaded(id: Identifier): Boolean {
+        if (!isClient) return false
+        return ConfigApiImplClient.isConfigLoaded(id)
+    }
+
+    internal fun isClientConfigLoaded(scope: String): Boolean {
+        if (!isClient) return false
+        return ConfigApiImplClient.isConfigLoaded(scope)
     }
 
     ///////////////// Flags //////////////////////////////////////////////////////////////
