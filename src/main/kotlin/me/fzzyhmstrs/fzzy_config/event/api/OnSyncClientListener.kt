@@ -24,9 +24,9 @@ import net.minecraft.util.Identifier
 fun interface OnSyncClientListener {
 
     /**
-     * Called by the `onSyncClient` event when the client side of a config is synced. NOTE: Only called if a restart prompt is not created (so if the game state will continue into game).
+     * Called by the `onSyncServer` event when the client side of a config is synced. NOTE: Only called if a restart prompt is not created (so if the game state will continue into game).
      * @param id [Identifier] the registered id attached to the config instance.
-     * @param config [Config] the config instance. This should only be read, or changes only made to transient fields/methods. Making updates to settings here will NOT be captured by the syncronization system.
+     * @param config [Config] the config instance. This should only be read, or changes only made to transient fields/methods. Making updates to settings here will NOT be captured by the synchronization system.
      * @author fzzyhmstrs
      * @since 0.5.0
      */
