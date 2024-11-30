@@ -76,7 +76,7 @@ interface PlatformApi {
      * Creates a [Registrar] wrapper for registering objects in a platform-agnostic way.
      * @param namespace String namespace to register objects under
      * @param registry [Registry] registry to wrap
-     * @return [Registrar] platform-agnostic wrapper that registers object
+     * @return [Registrar] platform-agnostic wrapper that registers objects
      * @author fzzyhmstrs
      * @since 0.5.9
      */
