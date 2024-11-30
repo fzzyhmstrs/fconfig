@@ -16,16 +16,16 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.descSupplied
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transSupplied
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlComment
-import java.lang.StringBuilder
 import java.util.*
 
 internal object ConfigApiImplClient {
@@ -38,7 +38,7 @@ internal object ConfigApiImplClient {
         MinecraftClient.getInstance().textRenderer.getWidth(ellipses)
     }
 
-    fun ellipses(input: Text, maxWidth: Int): Text {
+    internal fun ellipses(input: Text, maxWidth: Int): Text {
         return if (MinecraftClient.getInstance().textRenderer.getWidth(input) <= maxWidth)
             input
         else
@@ -55,6 +55,32 @@ internal object ConfigApiImplClient {
 
     internal fun registerConfig(config: Config, baseConfig: Config) {
         ClientConfigRegistry.registerConfig(config, baseConfig)
+    }
+
+    internal fun isConfigLoaded(id: Identifier): Boolean {
+        return ClientConfigRegistry.hasClientConfig(id.toTranslationKey())
+    }
+
+    internal fun isConfigLoaded(scope: String): Boolean {
+        var startIndex = 0
+        while (startIndex < scope.length) {
+            val nextStartIndex = scope.indexOf(".", startIndex)
+            if (nextStartIndex == -1) {
+                return false
+            }
+            startIndex = nextStartIndex + 1
+            val testScope = scope.substring(0, nextStartIndex)
+            if (ClientConfigRegistry.hasClientConfig(testScope)) return true
+        }
+        return false
+    }
+
+    internal fun getClientConfig(scope: String): Config? {
+        return ClientConfigRegistry.getClientConfig(scope)
+    }
+
+    internal fun getClientConfig(id: Identifier): Config? {
+        return ClientConfigRegistry.getClientConfig(id.toTranslationKey())
     }
 
     internal fun openScreen(scope: String) {
@@ -131,7 +157,7 @@ internal object ConfigApiImplClient {
     private val spacer = ". "
 
     private fun getComments(annotations: List<Annotation>): String {
-        var comment = StringBuilder()
+        val comment = StringBuilder()
         for (annotation in annotations) {
             if (annotation is TomlComment) {
                 if (comment.isNotEmpty())
@@ -146,9 +172,5 @@ internal object ConfigApiImplClient {
         if (comment.isNotEmpty())
             comment.append(".")
         return comment.toString()
-    }
-
-    internal fun getClientConfig(scope: String): Config? {
-        return ClientConfigRegistry.getClientConfig(scope)
     }
 }
