@@ -291,12 +291,17 @@ internal object SyncedConfigRegistry {
         quarantinedUpdates.remove(id)
     }
 
-    internal fun hasConfig(id: String): Boolean {
-        return syncedConfigs.containsKey(id)
+    internal fun hasConfig(scope: String): Boolean {
+        return syncedConfigs.containsKey(scope)
+    }
+
+    internal fun getConfig(scope: String): Config? {
+        return syncedConfigs[scope]
     }
 
     internal fun registerConfig(config: Config) {
         syncedConfigs[config.getId().toTranslationKey()] = config
+        EventApiImpl.fireOnRegisteredServer(config.getId(), config)
     }
 
     internal class QuarantinedUpdate(val playerUuid: UUID, val changeHistory: List<String>, val configId: String, val configString: String)

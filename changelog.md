@@ -1,10 +1,12 @@
 ### Additions
-* None.
+* New `isDev` method in `PlatformApi` for checking if the instance is running in a development environment.
+* Implement a barebones `Registrar` system for platform-agnostic registration of objects
+  * Registers objects into `RegistrySupplier` instances, much like the (Neo)Forge deferred registry system.
+* Added `onRegisteredClient` and `onRegisteredServer` to the `EventApi` for listening to config registrations and only acting after the config has been successfully registered.
 
 ### Changes
-* None.
+* `ConfigApi.isConfigLoaded(scope)` has been deprecated in favor of `ConfigApi.isConfigLoaded(scope, type)`. This new overload can check for client configs; the now-deprecated method only checked synced ones.
+  * Also consider the new register event instead of trying to check for config load yourself.
 
 ### Fixes
-* Fixed `@IgnoreVisibility` not handling private classes with non-private members
-* Fixed `transient` not working properly for de/serialization
-* `ConfigSection` now properly marks it's internal key as transient.
+* None.
