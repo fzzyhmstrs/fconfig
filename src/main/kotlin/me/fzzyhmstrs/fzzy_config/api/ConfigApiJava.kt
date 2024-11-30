@@ -100,8 +100,21 @@ object ConfigApiJava {
      * Whether a config corresponding to the provided scope is registered
      */
     @JvmStatic
+    @Deprecated("Only polls synced configs. Use newer overload with RegisterType param")
     fun isConfigLoaded(scope: String): Boolean {
-        return ConfigApiImpl.isConfigLoaded(scope)
+        return ConfigApiImpl.isSyncedConfigLoaded(scope)
+    }
+
+    /**
+     * Returns whether a config corresponding to the provided scope has been loaded or not, on the specified load side.
+     * @see [EventApi.onRegisteredClient] For reacting to a config load as it happens, consider this event
+     * @see [EventApi.onRegisteredServer] For reacting to a config load as it happens, consider this event
+     * @author fzzyhmstrs
+     * @since 0.5.9
+     */
+    @JvmStatic
+    fun isConfigLoaded(scope: String, type: RegisterType): Boolean {
+        return ConfigApiImpl.isConfigLoaded(scope, type)
     }
 
     /**

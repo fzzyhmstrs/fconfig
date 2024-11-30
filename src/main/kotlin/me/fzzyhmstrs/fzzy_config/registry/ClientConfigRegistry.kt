@@ -23,8 +23,8 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
@@ -47,7 +47,11 @@ internal object ClientConfigRegistry {
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
     private var hasScrapedMetadata = false
 
-    fun getClientConfig(scope: String): Config? {
+    internal fun hasClientConfig(scope: String): Boolean {
+        return getClientConfig(scope) != null
+    }
+
+    internal fun getClientConfig(scope: String): Config? {
         return clientConfigs[scope]?.active
     }
 
@@ -247,6 +251,7 @@ internal object ClientConfigRegistry {
         validSubScopes.put(config.getId().namespace, config.getId().path)
         UpdateManager.applyKeys(config)
         clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config, baseConfig)
+        EventApiImpl.fireOnRegisteredClient(config.getId(), config)
     }
 
     private class ConfigPair(val active: Config, val base: Config)

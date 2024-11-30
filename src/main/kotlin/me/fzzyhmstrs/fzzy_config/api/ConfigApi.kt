@@ -27,8 +27,8 @@ import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
 import me.fzzyhmstrs.fzzy_config.result.api.ResultApi
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
-import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus
 import java.io.File
@@ -353,9 +353,25 @@ object ConfigApi {
         return ConfigApiImpl.makeDir(folder, subfolder)
     }
 
+    /**
+     * Whether a config corresponding to the provided scope is registered
+     */
     @JvmStatic
+    @Deprecated("Only polls synced configs. Use newer overload with RegisterType param")
     fun isConfigLoaded(scope: String): Boolean {
-        return ConfigApiImpl.isConfigLoaded(scope)
+        return ConfigApiImpl.isSyncedConfigLoaded(scope)
+    }
+
+    /**
+     * Returns whether a config corresponding to the provided scope has been loaded or not, on the specified load side.
+     * @see [EventApi.onRegisteredClient] For reacting to a config load as it happens, consider this event
+     * @see [EventApi.onRegisteredServer] For reacting to a config load as it happens, consider this event
+     * @author fzzyhmstrs
+     * @since 0.5.9
+     */
+    @JvmStatic
+    fun isConfigLoaded(scope: String, type: RegisterType): Boolean {
+        return ConfigApiImpl.isConfigLoaded(scope, type)
     }
 
     /**
