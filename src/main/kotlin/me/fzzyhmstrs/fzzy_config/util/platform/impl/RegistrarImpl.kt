@@ -1,15 +1,19 @@
 package me.fzzyhmstrs.fzzy_config.util.platform.impl
 
 import me.fzzyhmstrs.fzzy_config.nsId
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
 import net.minecraft.registry.Registry
+import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
-import net.neoforged.bus.api.IEventBus
-import net.neoforged.fml.ModList
-import net.neoforged.neoforge.registries.DeferredRegister
+import net.minecraftforge.eventbus.api.IEventBus
+import net.minecraftforge.fml.ModList
+import net.minecraftforge.fml.javafmlmod.FMLModContainer
+import net.minecraftforge.registries.DeferredRegister
 import java.util.function.Supplier
+import kotlin.jvm.optionals.getOrNull
 
 internal class RegistrarImpl<T>(private val namespace: String, private val registry: Registry<T>): Registrar<T> {
 
@@ -24,10 +28,10 @@ internal class RegistrarImpl<T>(private val namespace: String, private val regis
         }
     }
 
-    private val deferred = DeferredRegister.create(registry, namespace)
+    private val deferred = DeferredRegister.create(registry.key, namespace)
 
     override fun init() {
-        val bus = ModList.get().getModContainerById(namespace)?.get()?.eventBus
+        val bus = ModList.get().getModContainerById(namespace)?.getOrNull()?.nullCast<FMLModContainer>()?.eventBus
         if (bus == null) {
             unboundRegistrars.add(deferred)
             return
@@ -36,7 +40,7 @@ internal class RegistrarImpl<T>(private val namespace: String, private val regis
     }
 
     override fun register(name: String, entrySupplier: Supplier<T>): RegistrySupplier<T> {
-        return RegistrySupplierImpl(deferred.register(name, entrySupplier))
+        return RegistrySupplierImpl(deferred.register(name, entrySupplier), RegistryKey.of(registry.key, Identifier(namespace, name)))
     }
 
     override fun getRegistry(): Registry<T> {

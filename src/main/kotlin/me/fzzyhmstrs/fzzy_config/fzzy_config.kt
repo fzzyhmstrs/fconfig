@@ -16,7 +16,9 @@ import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.util.Identifier
 import net.minecraftforge.common.MinecraftForge
+import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.fml.common.Mod
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext
 import net.minecraftforge.network.NetworkEvent
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.slf4j.Logger
@@ -51,7 +53,7 @@ class FzzyConfigForge() {
     init {
         MinecraftForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
         NetworkEvents.registerPayloads()
-        PlatformUtils.registerCommands()
+        PlatformUtils.registerCommands(FMLJavaModLoadingContext.get().modEventBus)
 
         if (PlatformUtils.isClient())
             NetworkEventsClient.registerClient()
