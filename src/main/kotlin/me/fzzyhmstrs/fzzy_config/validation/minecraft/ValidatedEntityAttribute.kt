@@ -55,6 +55,7 @@ import net.peanuuutz.tomlkt.TomlNull
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.*
 import java.util.function.Consumer
 
 /**
