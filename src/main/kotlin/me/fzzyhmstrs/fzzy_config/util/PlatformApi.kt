@@ -11,9 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
-import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.Registry
-import net.minecraft.text.Text
+import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
 import java.io.File
 
@@ -34,7 +33,7 @@ interface PlatformApi {
 
     /**
      * The config directory
-     * @return [File] respresenting the standard config directory inside the game folder.
+     * @return [File] representing the standard config directory inside the game folder.
      * @author fzzyhmstrs
      * @since 0.5.0
      */
@@ -80,5 +79,6 @@ interface PlatformApi {
      * @author fzzyhmstrs
      * @since 0.5.9
      */
+    @ApiStatus.Experimental
     fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T>
 }
