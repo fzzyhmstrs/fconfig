@@ -12,11 +12,11 @@ package me.fzzyhmstrs.fzzy_config.networking
 
 import io.netty.buffer.ByteBuf
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.codec.PacketCodecs
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
-import net.minecraft.util.Identifier
 
 class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: MutableMap<String, Boolean>): CustomPayload {
 
@@ -27,9 +27,9 @@ class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: Mutable
     companion object {
         val type: Id<ConfigPermissionsS2CCustomPayload> = Id("config_perms_s2c".fcId())
         val codec: PacketCodec<ByteBuf, ConfigPermissionsS2CCustomPayload> = PacketCodec.tuple(
-            PacketCodecs.STRING,
+            PortingUtils.Codecs.STRING,
             ConfigPermissionsS2CCustomPayload::id,
-            PacketCodecs.map({ mutableMapOf() }, PacketCodecs.STRING, PacketCodecs.BOOL),
+            PacketCodecs.map({ mutableMapOf() }, PortingUtils.Codecs.STRING, PortingUtils.Codecs.BOOL),
             ConfigPermissionsS2CCustomPayload::permissions,
             ::ConfigPermissionsS2CCustomPayload
         )

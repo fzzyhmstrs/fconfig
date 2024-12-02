@@ -16,7 +16,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
-import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
