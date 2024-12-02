@@ -34,6 +34,7 @@ import net.minecraft.entity.EntityType
 import net.minecraft.fluid.Fluids
 import net.minecraft.item.Items
 import net.minecraft.loot.LootTables
+import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.ClickEvent
 import net.minecraft.util.Identifier
@@ -55,6 +56,13 @@ class TestConfigImpl3: Config(Identifier("fzzy_config_test","test_config3")) {
         testLootIdentifier.validateAndSetFlagged("this_should_fail".fctId(), EntryFlag.Flag.STRONG).report(FC.LOGGER::error)
         FC.LOGGER.warn("C")
         testLootIdentifier.validateAndSetFlagged(LootTables.SHEEP_SHEARING.value, EntryFlag.Flag.STRONG).report(FC.LOGGER::error)
+    }
+
+    private var configAction5 = ConfigAction.Builder().decoration(TextureIds.DECO_FOLDER).title("Status Registry...".lit()).build {
+        FC.LOGGER.info("Current status effect entries")
+        for ((key, _) in Registries.STATUS_EFFECT.entrySet) {
+            FC.LOGGER.info(key.value.toString())
+        }
     }
 
     var testLootIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.LOOT_TABLE).withListener { f -> FC.LOGGER.info("My value is ${f.get()}") }
