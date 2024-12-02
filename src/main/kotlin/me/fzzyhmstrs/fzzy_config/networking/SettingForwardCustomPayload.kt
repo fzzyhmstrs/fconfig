@@ -15,7 +15,6 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
-import net.minecraft.util.Identifier
 import java.util.*
 
 internal class SettingForwardCustomPayload(val update: String, val player: UUID, val scope: String, val summary: String): CustomPayload {

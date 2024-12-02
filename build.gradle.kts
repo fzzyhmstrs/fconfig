@@ -73,10 +73,6 @@ sourceSets {
             if (includeExamples.toBooleanLenient() != true) {
                 exclude("me/fzzyhmstrs/fzzy_config/examples/**")
             }
-            val testMode: String by project
-            if (testMode.toBooleanLenient() != true) {
-                exclude("me/fzzyhmstrs/fzzy_config/test/**")
-            }
         }
     }
     create("testmod"){
