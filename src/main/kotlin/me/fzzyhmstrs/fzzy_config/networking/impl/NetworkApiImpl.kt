@@ -13,7 +13,7 @@ package me.fzzyhmstrs.fzzy_config.networking.impl
 import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.networking.api.*
-import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.server.network.ServerPlayerEntity

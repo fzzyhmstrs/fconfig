@@ -23,9 +23,9 @@ import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.event.RegisterCommandsEvent
 import net.minecraftforge.eventbus.api.IEventBus
 import net.minecraftforge.fml.ModList
+import net.minecraftforge.fml.loading.FMLLoader
 import net.minecraftforge.fml.loading.FMLPaths
 import net.minecraftforge.forgespi.Environment
-import net.minecraftforge.registries.DeferredRegister
 import net.minecraftforge.server.permission.PermissionAPI
 import java.io.File
 
@@ -48,7 +48,7 @@ internal object PlatformUtils {
     }
 
     fun isDev(): Boolean {
-        return !FMLEnvironment.production
+        return !FMLLoader.isProduction()
     }
 
     fun configName(scope: String, fallback: String): String {
@@ -75,7 +75,8 @@ internal object PlatformUtils {
         return PermissionAPI.getPermission(player, node) == true
     } //COnfigApiImpl, elsewhere??
 
-    fun registerCommands() {
+    fun registerCommands(bus: IEventBus) {
+        RegistrarImpl.resolveUnbound(bus)
         MinecraftForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> registerCommands(event) }
         //val commandArgumentTypes = DeferredRegister.create(RegistryKeys.COMMAND_ARGUMENT_TYPE, FC.MOD_ID)
         //commandArgumentTypes.register(bus)
