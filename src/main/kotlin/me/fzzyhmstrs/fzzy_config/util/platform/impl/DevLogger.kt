@@ -4,10 +4,10 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.Marker
 
-class DevLogger(name: String): Logger {
-    
+internal class DevLogger(name: String): Logger {
+
     private val delegate = LoggerFactory.getLogger(name)
-    
+
     override fun getName(): String {
         return delegate.name
     }
