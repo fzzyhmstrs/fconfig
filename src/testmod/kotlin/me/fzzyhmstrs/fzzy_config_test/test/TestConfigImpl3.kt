@@ -24,7 +24,6 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.withListene
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
-import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config_test.FC
 import me.fzzyhmstrs.fzzy_config_test.fctId
@@ -51,11 +50,11 @@ class TestConfigImpl3: Config(Identifier.of("fzzy_config_test","test_config3")) 
 
     private var configAction4 = ConfigAction.Builder().decoration(TextureIds.DECO_BOOK).title("Set With Flags...".lit()).build {
         FC.LOGGER.warn("A")
-        testLootIdentifier.validateAndSetFlagged(LootTables.SHEEP_SHEARING.value, EntryFlag.Flag.STRONG, EntryFlag.Flag.QUIET, EntryFlag.Flag.UPDATE).report(FC.LOGGER::error)
+        testLootIdentifier.validateAndSetFlagged(LootTables.FISHING_GAMEPLAY.value, EntryFlag.Flag.STRONG, EntryFlag.Flag.QUIET, EntryFlag.Flag.UPDATE).report(FC.LOGGER::error)
         FC.LOGGER.warn("B")
         testLootIdentifier.validateAndSetFlagged("this_should_fail".fctId(), EntryFlag.Flag.STRONG).report(FC.LOGGER::error)
         FC.LOGGER.warn("C")
-        testLootIdentifier.validateAndSetFlagged(LootTables.SHEEP_SHEARING.value, EntryFlag.Flag.STRONG).report(FC.LOGGER::error)
+        testLootIdentifier.validateAndSetFlagged(LootTables.FISHING_GAMEPLAY.value, EntryFlag.Flag.STRONG).report(FC.LOGGER::error)
     }
 
     private var configAction5 = ConfigAction.Builder().decoration(TextureIds.DECO_FOLDER).title("Status Registry...".lit()).build {
