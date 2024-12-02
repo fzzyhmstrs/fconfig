@@ -75,6 +75,7 @@ internal object PlatformUtils {
     } //COnfigApiImpl, elsewhere??
 
     fun registerCommands(bus: IEventBus) {
+        RegistrarImpl.resolveUnbound(bus)
         NeoForge.EVENT_BUS.addListener { event: RegisterCommandsEvent -> registerCommands(event) }
         //val commandArgumentTypes = DeferredRegister.create(RegistryKeys.COMMAND_ARGUMENT_TYPE, FC.MOD_ID)
         //commandArgumentTypes.register(bus)
