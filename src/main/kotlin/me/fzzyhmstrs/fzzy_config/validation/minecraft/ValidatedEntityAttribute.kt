@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
 import com.google.common.base.Supplier
 import com.google.common.collect.Multimap
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
@@ -47,7 +48,10 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
-import net.peanuuutz.tomlkt.*
+import net.peanuuutz.tomlkt.TomlElement
+import net.peanuuutz.tomlkt.TomlNull
+import net.peanuuutz.tomlkt.TomlTableBuilder
+import net.peanuuutz.tomlkt.asTomlTable
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.UUID
 import java.util.function.Consumer
@@ -61,9 +65,10 @@ import java.util.function.Consumer
  * @author fzzyhmstrs
  * @since 0.3.1
  */
+@Deprecated("Scheduled for removal in 0.6.0")
 @Suppress("MemberVisibilityCanBePrivate")
 open class ValidatedEntityAttribute private constructor(attributeId: Identifier, private val lockAttribute: Boolean, uuid: UUID, name: String, amount: Double, operation: Operation, private val lockOperation: Boolean, private val amountValidator: Entry<Double, *> = ValidatedDouble(amount)): ValidatedField<ValidatedEntityAttribute.EntityAttributeInstanceHolder>(
-    EntityAttributeInstanceHolder(attributeId, uuid, name, amount, operation)
+    EntityAttributeInstanceHolder(attributeId, uuid, name, amount, operation).also { FC.LOGGER.error("ValidatedEntityAttribute is scheduled for removal in 0.6.0. Please implement an alternative or a breaking incompatibility will be introduced.") }
 ) {
 
     /**
@@ -72,6 +77,8 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Scheduled for removal in 0.6.0")
     fun addToMap(map: Multimap<EntityAttribute, EntityAttributeModifier>) {
         storedValue.addToMap(map)
     }
@@ -82,6 +89,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
+    @Deprecated("Scheduled for removal in 0.6.0")
     fun getModifier(): EntityAttributeModifier {
         return storedValue.createModifier()
     }
@@ -94,6 +102,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
+    @Deprecated("Scheduled for removal in 0.6.0")
     fun updateModifier(new: EntityAttributeModifier) {
         validateAndSet(storedValue.copy(uuid = new.id, name = new.name, amount = amountValidator.correctEntry(new.value, EntryValidator.ValidationType.STRONG).get(), operation = if(lockOperation) storedValue.operation else new.operation))
     }
@@ -105,6 +114,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
+    @Deprecated("Scheduled for removal in 0.6.0")
     fun updateModifierAmount(newAmount: Double) {
         validateAndSet(storedValue.copy(amount = amountValidator.correctEntry(newAmount, EntryValidator.ValidationType.STRONG).get()))
     }
@@ -120,7 +130,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @since 0.3.1
      */
     @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Returns an EntityAttributeInstanceHolder instance. You probably don't want to directly interact with that.")
+    @Deprecated("Scheduled for removal in 0.6.0. Returns an EntityAttributeInstanceHolder instance. You probably don't want to directly interact with that.")
     override fun get(): EntityAttributeInstanceHolder {
         return super.get()
     }
@@ -135,7 +145,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @since 0.3.1
      */
     @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Accepts an EntityAttributeInstanceHolder instance. You probably don't want to directly interact with that.")
+    @Deprecated("Scheduled for removal in 0.6.0. Accepts an EntityAttributeInstanceHolder instance. You probably don't want to directly interact with that.")
     override fun accept(input: EntityAttributeInstanceHolder) {
         super.accept(input)
     }
@@ -151,7 +161,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @since 0.3.1
      */
     @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Copies an EntityAttributeInstanceHolder instance. You probably don't want to directly interact with that.")
+    @Deprecated("Scheduled for removal in 0.6.0. Copies an EntityAttributeInstanceHolder instance. You probably don't want to directly interact with that.")
     override fun copyStoredValue(): EntityAttributeInstanceHolder {
         return storedValue.copy()
     }
@@ -170,6 +180,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
+    @Deprecated("Scheduled for removal in 0.6.0")
     override fun instanceEntry(): ValidatedField<EntityAttributeInstanceHolder> {
         return ValidatedEntityAttribute(storedValue.attributeId, lockAttribute, storedValue.uuid, storedValue.name, storedValue.amount, storedValue.operation, lockOperation, amountValidator)
     }
@@ -245,6 +256,7 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      * @author fzzyhmstrs
      * @since 0.3.1
      */
+    @Deprecated("Scheduled for removal in 0.6.0")
     class Builder @JvmOverloads constructor(private val attributeId: Identifier, private val lockAttribute: Boolean = false) {
 
         @JvmOverloads
@@ -290,16 +302,19 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
             return this
         }
         @JvmOverloads
+        @Deprecated("Scheduled for removal in 0.6.0")
         fun amount(amount: Double, min: Double = -Double.MAX_VALUE, max: Double = Double.MAX_VALUE): Builder {
             this.amount = ValidatedDouble(amount, max, min)
             return this
         }
+        @Deprecated("Scheduled for removal in 0.6.0")
         fun operation(operation: Operation, lockOperation: Boolean = false): Builder {
             this.operation = operation
             this.lockOperation = lockOperation
             return this
         }
 
+        @Deprecated("Scheduled for removal in 0.6.0")
         fun build(): ValidatedEntityAttribute {
             return ValidatedEntityAttribute(attributeId, lockAttribute, uuid?:UUID.nameUUIDFromBytes("$name+${operation.name}".toByteArray()), name, amount.get(), operation, lockOperation, amount)
         }
@@ -310,13 +325,13 @@ open class ValidatedEntityAttribute private constructor(attributeId: Identifier,
      *
      * It is an [EntryHandler] for its own type
      * @param attributeId Identifier - the registry id of this holders entity attribute
-     * @param uuid [UUID] - uuid of this holders attribute modifier
-     * @param name String - name of this holders attribute modifier
+     * @param id [Identifier] - id of this holders attribute modifier
      * @param amount Double - value of this holders attribute modifier
      * @param operation [Operation] - modifier operation of this holders attribute modifier
      * @author fzzyhmstrs
      * @since 0.3.1
      */
+    @Deprecated("Scheduled for removal in 0.6.0")
     data class EntityAttributeInstanceHolder(val attributeId: Identifier, val uuid: UUID, val name: String, val amount: Double, val operation: Operation): EntryHandler<EntityAttributeInstanceHolder> {
 
         private val idValidator = ValidatedIdentifier.ofRegistry(attributeId, Registries.ATTRIBUTE)
