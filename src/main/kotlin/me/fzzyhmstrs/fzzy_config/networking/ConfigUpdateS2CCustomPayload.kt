@@ -15,7 +15,6 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.CustomPayload.Id
-import net.minecraft.util.Identifier
 
 internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>): CustomPayload {
 
