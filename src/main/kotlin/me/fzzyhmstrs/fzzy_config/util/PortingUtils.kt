@@ -10,12 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import io.netty.buffer.ByteBuf
 import me.fzzyhmstrs.fzzy_config.cast
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.network.codec.PacketCodec
-import net.minecraft.network.encoding.StringEncoding
-import net.minecraft.network.encoding.VarInts
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.RegistryWrapper
