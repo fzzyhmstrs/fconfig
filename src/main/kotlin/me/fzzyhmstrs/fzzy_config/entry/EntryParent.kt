@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.entry
 
 import me.fzzyhmstrs.fzzy_config.annotations.Action
-import net.peanuuutz.tomlkt.TomlElement
 
 /**
  * An entry that is a parent of other entries
