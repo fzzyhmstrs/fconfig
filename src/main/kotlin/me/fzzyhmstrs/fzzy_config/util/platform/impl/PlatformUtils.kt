@@ -23,7 +23,6 @@ import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.api.metadata.CustomValue
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
-import net.minecraft.registry.Registries
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import java.io.File
