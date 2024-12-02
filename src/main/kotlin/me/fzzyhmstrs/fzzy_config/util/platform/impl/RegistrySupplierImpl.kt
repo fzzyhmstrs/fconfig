@@ -5,7 +5,7 @@ import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.util.Identifier
 
-class RegistrySupplierImpl<T>(private val entry: RegistryEntry.Reference<T>): RegistrySupplier<T> {
+internal class RegistrySupplierImpl<T>(private val entry: RegistryEntry.Reference<T>): RegistrySupplier<T> {
 
     override fun getKey(): RegistryKey<T> {
         return entry.registryKey()
