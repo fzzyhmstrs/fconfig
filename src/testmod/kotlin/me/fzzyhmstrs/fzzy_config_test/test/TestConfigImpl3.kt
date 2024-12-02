@@ -34,6 +34,7 @@ import net.minecraft.entity.EntityType
 import net.minecraft.fluid.Fluids
 import net.minecraft.item.Items
 import net.minecraft.loot.LootTables
+import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.ClickEvent
 import net.minecraft.util.Identifier
@@ -47,6 +48,13 @@ class TestConfigImpl3: Config(Identifier("fzzy_config_test", "test_config3")) {
     private var configAction2 = ConfigAction.Builder().title("Say Hi...".lit()).build { MinecraftClient.getInstance().player?.sendChat("Hiya".lit()) }
 
     private var configAction3 = ConfigAction.Builder().title("Give Loots...".lit()).build(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/give @s minecraft:diamond"))
+
+    private var configAction5 = ConfigAction.Builder().decoration(TextureIds.DECO_FOLDER).title("Status Registry...".lit()).build {
+        FC.LOGGER.info("Current status effect entries")
+        for ((key, _) in Registries.STATUS_EFFECT.entrySet) {
+            FC.LOGGER.info(key.value.toString())
+        }
+    }
 
     fun getBl1(): Boolean {
         return bl1
