@@ -11,18 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
-import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Identifier
-import java.util.function.Consumer
-import java.util.function.Supplier
 
 
 //client
