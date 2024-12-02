@@ -20,7 +20,6 @@ import net.minecraft.registry.tag.TagKey
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.ColorHelper
 import java.awt.Color
 import java.util.Optional
 import java.util.function.Predicate
@@ -80,5 +79,4 @@ object PortingUtils {
     fun TagKey<*>.regRefId(): Identifier {
         return this.registry.value
     }
-
 }
