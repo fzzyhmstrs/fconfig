@@ -8,7 +8,7 @@ import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import java.util.function.Supplier
 
-class RegistrarImpl<T>(private val namespace: String, private val registry: Registry<T>): Registrar<T> {
+internal class RegistrarImpl<T>(private val namespace: String, private val registry: Registry<T>): Registrar<T> {
 
     override fun init() {
         //fabric needs nothing
