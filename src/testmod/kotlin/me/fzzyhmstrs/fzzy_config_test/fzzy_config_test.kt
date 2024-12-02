@@ -30,6 +30,9 @@ import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.util.Identifier
 import net.fabricmc.fabric.api.util.TriState
+import net.minecraft.entity.effect.StatusEffect
+import net.minecraft.entity.effect.StatusEffectCategory
+import net.minecraft.registry.Registries
 import net.minecraft.util.math.MathHelper
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -40,7 +43,14 @@ object FC: ModInitializer {
     const val TEST_PERMISSION_GOOD = "test.perm.good"
     const val TEST_PERMISSION_BAD = "test.perm.bad"
 
+    private val TEST_REGISTRAR = ConfigApi.platform().createRegistrar(MOD_ID, Registries.STATUS_EFFECT)
+
     override fun onInitialize() {
+
+        TEST_REGISTRAR.init()
+
+        TEST_REGISTRAR.register("test") { object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){} }
+
         PermissionCheckEvent.EVENT.register { _, permission ->
             if (permission == TEST_PERMISSION_GOOD)
                 TriState.TRUE
