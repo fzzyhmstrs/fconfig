@@ -12,7 +12,7 @@ package me.fzzyhmstrs.fzzy_config.networking.impl
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.networking.api.*
-import me.fzzyhmstrs.fzzy_config.util.PlatformUtils
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
