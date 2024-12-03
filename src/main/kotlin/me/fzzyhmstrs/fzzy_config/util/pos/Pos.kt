@@ -40,4 +40,8 @@ interface Pos: Supplier<Int> {
      * @since 0.2.0
      */
     fun dec(amount: Int)
+
+    companion obect {
+        val ZERO = ImmutablePos(0)
+    }
 }
