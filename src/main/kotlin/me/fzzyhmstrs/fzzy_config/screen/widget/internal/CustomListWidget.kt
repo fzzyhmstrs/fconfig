@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
+import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -20,13 +21,19 @@ abstract class CustomListWidget(private val client: MinecraftClient, x: Int, y: 
 
     //// Widget ////
 
-    private val elements: MutableList<Element> = mutableListOf()
+    companion object {
+        private val scrollMultiplier: Supplier<Double> = SUpplier { 10.0 }
+        private val verticalPadding: Supplier<Int> = Supplier { 2 }
+    }
+
+    private val entries: Entries = Entries()
     private var focusedElement: Element? = null
     private var hoveredElement: Element? = null
     private var dragging = false
+    private var scrollAmount = 0.0
 
     override fun children(): MutableList<out Element> {
-        return elements
+        return entries
     }
 
     override fun renderWidget(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
@@ -74,7 +81,11 @@ abstract class CustomListWidget(private val client: MinecraftClient, x: Int, y: 
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        return super<ClickableWidget>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+        if (entries.isEmpty())
+        if (scrollAmount = 0.0 && verticalAmount < 0.0) return true
+        val scrollDistance = verticalAmount * scrollMultiplier.get()
+        
+        return true
     }
 
     override fun isFocused(): Boolean {
@@ -86,25 +97,110 @@ abstract class CustomListWidget(private val client: MinecraftClient, x: Int, y: 
     }
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-
+        hoveredElement?.appendHoveredNarrations(builder.nextMessage())
+        focusedElement?.appendFocusedNarrations(builder.nextMessage())
+        
     }
 
+    fun insertEntry(insertion: UnaryOperator<Entries>) {
+        
+    }
 
-    abstract class Entry(private val parentElement: ParentElement, var h: Int): Element {
+    inner class Entries(): Iterable<Entry> {
 
-        private var x: Int = 0
-        private var y: Int = 0
-        private var w: Int = 0
+        private val delegate: MutableList<Entry> = mutableListOf()
+        //map <group, map <scope, entry> >
+        private val delegateMap: MutableMap<String, MutableMap<String, Entry>> = mutableMapOf()
 
-        fun position(x: Int, y: Int, w: Int) {
+        fun get(index: Int): Entry {
+            return delegate.get(index)
+        }
+
+        override fun iterator(): Iterator<Entry> {
+            return delegate.iterator()
+        }
+
+        fun add(element: Entry) {
+            add(delegate.lastIndex + 1, element)
+        }
+        
+        fun add(index: Int, element: Entry) {
+            previousIndex = index - 1
+            nextIndex = index + 1
+            val previous = if(previousIndex < 0 || previous > delegate.lastIndex) {
+                null
+            } else {
+                delegate[previousIndex]
+            }
+            val next = if(nextIndex < 0 || nextIndex > delegate.lastIndex) {
+                null
+            } else {
+                delegate[nextIndex]
+            }
+            element.onAdd(this@CustomListWidget.scrollAmount, previous, next)
+            delegate.add(index, element)
+        }
+
+        fun remove(entry: Entry)
+        
+        fun removeAt(index: Int) {
+            previousIndex = index - 1
+            nextIndex = index + 1
+            val previous = if(previousIndex < 0) {
+                null
+            } else {
+                delegate[previousIndex]
+            }
+            val next = if(nextIndex > delegate.lastIndex) {
+                null
+            } else {
+                delegate[nextIndex]
+            }
+            element.onRemove(previous, next)
+            val removed = delegate.removeAt(index)
+            delegateMap.remove(removed.
+        }
+        
+    }
+
+    abstract class Entry(private val parentElement: CustomListWidget, var h: Int, scope: String, group: String = ""): Element {
+
+        val id: Id = Id(scope, group)
+        protected var x: Int = 0
+        protected var top: Pos = Pos.ZERO
+        protected var bottom: Pos = ImmutableSuppliedPos(top) { if (visible) h else 0 }
+        protected var w: Int = 0
+        var visible = true
+
+        fun onAdd(scrollAmount: Int, previous: Entry?, next: Entry?) {
+            if (previous == null) {
+                top = AbsPos(scrollAmount)
+            } else {
+                top = ImmutableSuppliedPos(previous.bottom) { if (visible) verticalPadding.get() else 0 }   
+            }
+            if (next != null) {
+                next.top = ImmutableSuppliedPos(bottom) { if (next.visible) verticalPadding.get() else 0 }
+            }
+        }
+
+        fun onRemove(previous: Entry?, next: Entry?) {
+            if (previous != null && next != null) {
+                next.top = ImmutableSuppliedPos(previous.bottom) { if (next.visible) verticalPadding.get() else 0 }
+            } else if (next != null) {
+                next.top = top
+            }
+        }
+        
+        fun position(x: Int, w: Int) {
             this.x = x
-            this.y = y
             this.w = w
         }
 
-        fun scroll(dX: Int) {
-            x += dX
+        fun scroll(dY: Int) {
+            top.inc(dY)
         }
+
+        fun bottom(): Int
 
         override fun isFocused(): Boolean {
             return this.parentElement.focused == this
@@ -134,6 +230,16 @@ abstract class CustomListWidget(private val client: MinecraftClient, x: Int, y: 
 
         open fun appendFocusedNarrations(builder: NarrationMessageBuilder) {
 
+        }
+
+        class Id(val scope: String, val group: String) {
+            override fun equals(other: Any?): Boolean {
+                if (other !is Id) return false
+                return other.scope == this.scope && other.group == this.group
+            }
+            override fun hashcode(): Int {
+                return scope.hashcode() + (31 * group.hashcode())
+            }
         }
     }
 
