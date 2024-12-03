@@ -15,13 +15,13 @@ package me.fzzyhmstrs.fzzy_config.util.pos
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-interface Pos {
+interface Pos: Supplier<Int> {
     /**
      * Returns the position of this pos
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, originates from the Supplier interface as of 0.5.9
      */
-    fun get(): Int
+    override fun get(): Int
     /**
      * Sets the position of this pos
      * @author fzzyhmstrs
