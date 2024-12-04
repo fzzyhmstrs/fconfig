@@ -13,15 +13,14 @@ package me.fzzyhmstrs.fzzy_config.util.pos
 import java.util.function.Supplier
 
 /**
- * A relative [Pos] wth an offset supplier. Offsets a parent Pos. This position is immutable in the direct sense. Mutation of this pos via [set], [inc], and [dec] does *not* affect position.
- * @param parent Pos - the Pos this is relative to
- * @param offset Supplier<Int> - the supplied offset compared to the parent
+ * An immutable [Pos] based on a reference value supplier. Mutation of this pos will have no effect.
+ * @param reference Supplier - the reference supplied value
  * @author fzzyhmstrs
  * @since 0.5.9
  */
-class ImmutableSuppliedPos(private val parent: Pos, private val offset: Supplier<Int>): Pos {
+class ReferencePos constructor(private val reference: Supplier<Int>): Pos {
     override fun get(): Int {
-        return parent.get() + offset.get()
+        return reference.get()
     }
     override fun set(new: Int) {
     }
@@ -30,6 +29,6 @@ class ImmutableSuppliedPos(private val parent: Pos, private val offset: Supplier
     override fun dec(amount: Int) {
     }
     override fun toString(): String {
-        return "[$parent + ${offset.get()}]"
+        return "[${reference.get()}]"
     }
 }

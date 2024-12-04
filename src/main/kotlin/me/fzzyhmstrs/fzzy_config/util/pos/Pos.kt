@@ -10,6 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.util.pos
 
+import java.util.function.Supplier
+
 /**
  * Defines the mutable position of something
  * @author fzzyhmstrs
@@ -41,7 +43,7 @@ interface Pos: Supplier<Int> {
      */
     fun dec(amount: Int)
 
-    companion obect {
+    companion object {
         val ZERO = ImmutablePos(0)
     }
 }
