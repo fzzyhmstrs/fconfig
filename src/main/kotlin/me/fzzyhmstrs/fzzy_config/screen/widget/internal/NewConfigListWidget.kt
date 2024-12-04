@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.util.pos.*
+import me.fzzyhmstrs.fzzy_config.util.Searcher
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -11,13 +12,21 @@ import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
 
-class NewConfigListWidget(private val client: MinecraftClient, entryBuilders: List<Function<NewConfigListWidget, out Entry>>, x: Int, y: Int, width: Int, height: Int) : CustomListWidget<NewConfigListWidget.Entry>(
+class NewConfigListWidget(
+    private val client: MinecraftClient, 
+    entryBuilders: List<Function<NewConfigListWidget, out Entry>>, 
+    x: Int, 
+    y: Int, 
+    width: Int, 
+    height: Int) 
+: 
+CustomListWidget<NewConfigListWidget.Entry>(
     client,
     x,
     y,
     width,
-    height
-) {
+    height), LastSelectable
+{
 
     //// Widget ////
 
@@ -72,10 +81,22 @@ class NewConfigListWidget(private val client: MinecraftClient, entryBuilders: Li
         return true
     }
 
+    override var lastSelected: Element? = null
+
+    override fun pushLast() {
+        lastSelected = focused
+    }
+
+    override fun popLast() {
+        (lastSelected as? Entry)?.let { focused = it }
+    }
+
     inner class Entries(private val delegate: List<Entry>): Iterable<Entry> {
 
         //map <group, map <scope, entry> >
         private val delegateMap: Map<String, Map<String, Entry>>
+
+        private val searcher: Searcher<Entry> = Searcher(delegate)
 
         init {
             var previousEntry: Entry? = null
@@ -87,7 +108,6 @@ class NewConfigListWidget(private val client: MinecraftClient, entryBuilders: Li
                 map.computeIfAbsent(e.group) { _ -> mutableMapOf() }[e.scope] = e
                 previousEntry = e
             }
-
             delegateMap = map
         }
 
@@ -105,6 +125,10 @@ class NewConfigListWidget(private val client: MinecraftClient, entryBuilders: Li
             if (delegate.isEmpty()) return delegate
             refreshEntryLists()
             return inFrameEntries
+        }
+
+        fun search(searchInput: String): Int {
+            val foundEntries = searcher.search(searchInput)
         }
 
         private fun refreshEntryLists() {
@@ -128,7 +152,7 @@ class NewConfigListWidget(private val client: MinecraftClient, entryBuilders: Li
             } else {
                 delegate.subList(index, index2).filter { it.visibility.visible }
             }
-            selectableEntries = delegate.filter { it.visibility.selectable}.toMutableList()
+            selectableEntries = delegate.filter { it.visibility.selectable }.toMutableList()
             dirty = false
         }
 
@@ -157,15 +181,14 @@ class NewConfigListWidget(private val client: MinecraftClient, entryBuilders: Li
         }
     }
 
-    abstract class Entry(parentElement: ParentElement, var h: Int, val scope: String, val group: String = ""): CustomListWidget.Entry(parentElement) {
+    abstract class Entry(parentElement: ParentElement, var h: Int, override val name: Text, override val desc: Text, val scope: String, val group: String = "")
+        : CustomListWidget.Entry(parentElement), Searcher.SearchContent {
 
         var visibility = Visibility.VISIBLE
         protected var x: Int = 0
         protected var w: Int = 0
         internal var top: Pos = Pos.ZERO
         internal var bottom: Pos = ImmutableSuppliedPos(top) { if (visibility.visible) h else 0 }
-
-
 
         fun onAdd(parentPos: Pos, previous: Entry?) {
             if (previous == null) {
@@ -204,23 +227,33 @@ class NewConfigListWidget(private val client: MinecraftClient, entryBuilders: Li
     }
 
     enum class Visibility(val visible: Boolean, val skip: Boolean, val selectable: Boolean) {
-        HIDDEN(false, true, false),
-        FILTERED(false, false, false),
         VISIBLE(true, false, true),
+        HIDDEN(false, false, false),
+        FILTERED(false, false, false),
         GROUP_VISIBLE(true, true, true),
-        GROUP_FILTERED(false, true, false),
-        SUMMARY_VISIBLE(true, true, false),
-        SUMMARY_FILTERED(true, true, false);
+        GROUP_FILTERED(false, true, false), //filtering handled externally
+        HEADER_VISIBLE(true, true, false);
 
         fun reset(): Visibility {
             return when (this) {
-                HIDDEN -> HIDDEN
                 FILTERED -> VISIBLE
-                VISIBLE -> VISIBLE
-                GROUP_VISIBLE -> GROUP_VISIBLE
                 GROUP_FILTERED -> GROUP_VISIBLE
-                SUMMARY_VISIBLE -> SUMMARY_VISIBLE
-                SUMMARY_FILTERED -> SUMMARY_FILTERED
+                else -> this
+            }
+        }
+
+        fun hide(): Visibility {
+            return when (this) {
+                FILTERED -> HIDDEN
+                VISIBLE -> HIDDEN
+                else -> this
+            }
+        }
+
+        fun filter(): Visibility {
+            return when (this) {
+                VISIBLE -> FILTERED
+                else -> this
             }
         }
     }
