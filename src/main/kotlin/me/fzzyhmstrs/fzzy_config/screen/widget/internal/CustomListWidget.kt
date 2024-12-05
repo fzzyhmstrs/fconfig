@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -7,8 +8,10 @@ import net.minecraft.client.gui.ParentElement
 import net.minecraft.client.gui.navigation.GuiNavigation
 import net.minecraft.client.gui.navigation.GuiNavigationPath
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.screen.ScreenTexts
+import net.minecraft.text.Text
 
 abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int) : ClickableWidget(
     x,
@@ -103,9 +106,21 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     }
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        hoveredElement?.appendHoveredNarrations(builder.nextMessage())
-        focusedElement?.appendFocusedNarrations(builder.nextMessage().nextMessage())
-        TODO()
+        if (client.navigationType.isKeyboard) {
+            focusedElement?.appendNarrations(builder.nextMessage())
+            val i = selectableEntries().indexOf(focusedElement)
+            if (i > 0) {
+
+            }
+        } else {
+            hoveredElement?.appendNarrations(builder.nextMessage())
+            val i = selectableEntries().indexOf(hoveredElement)
+            if (i > 0) {
+
+            }
+        }
+
+        builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
     }
 
     abstract class Entry<P: ParentElement>(val parentElement: P): Element {
@@ -119,11 +134,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
 
         abstract fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float)
 
-        open fun appendHoveredNarrations(builder: NarrationMessageBuilder) {
-
-        }
-
-        open fun appendFocusedNarrations(builder: NarrationMessageBuilder) {
+        open fun appendNarrations(builder: NarrationMessageBuilder) {
 
         }
     }
