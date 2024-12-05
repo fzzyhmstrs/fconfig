@@ -11,6 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.registry
 
 import com.google.common.collect.HashMultimap
+import kotlinx.atomicfu.AtomicBoolean
+import kotlinx.atomicfu.atomic
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -42,9 +44,9 @@ internal object ClientConfigRegistry {
     private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
     private val configScreenManagers: MutableMap<String, ConfigScreenManager> = mutableMapOf()
     private val customPermissions: MutableMap<String, Map<String, Boolean>> = mutableMapOf()
-    private var validScopes: MutableSet<String> = mutableSetOf() //configs are sorted into Managers by namespace
+    private var validScopes: MutableSet<String> = Collections.synchronizedSet(mutableSetOf()) //configs are sorted into Managers by namespace
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
-    private var hasScrapedMetadata = false
+    private var hasScrapedMetadata: AtomicBoolean = atomic(false)
 
     internal fun hasClientConfig(scope: String): Boolean {
         return getClientConfig(scope) != null
@@ -156,17 +158,15 @@ internal object ClientConfigRegistry {
     }
 
     //client
+    @Synchronized
     internal fun getScreenScopes(): Set<String> {
-        if (!hasScrapedMetadata) {
-            val set = mutableSetOf(*validScopes.toTypedArray())
+        if (!hasScrapedMetadata.value) {
             for (scope in PlatformUtils.customScopes()) {
-                set.add(scope)
+                validScopes.add(scope)
             }
-            hasScrapedMetadata = true
-            return set.toSet()
-        } else {
-            return validScopes
+            hasScrapedMetadata.value = true
         }
+        return validScopes
     }
 
     //client
