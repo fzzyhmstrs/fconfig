@@ -54,13 +54,10 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     }
 
     override fun setFocused(focused: Element?) {
-        if (this.focusedElement != null) {
-            focusedElement?.isFocused = false
-        }
-        if (focused != null) {
-            focused.isFocused = true
-        }
         val f = focused as? E
+        if (f != null && !selectableEntries().contains(f)) return
+        focusedElement?.isFocused = false
+        f?.isFocused = true
         this.focusedElement = f
         if (f != null && client.navigationType.isKeyboard) {
             ensureVisible(f)
