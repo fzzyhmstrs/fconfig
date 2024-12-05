@@ -1,7 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
-import me.fzzyhmstrs.fzzy_config.nullCast
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NewConfigListWidget.Entry
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -12,7 +10,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.screen.ScreenTexts
 
-abstract class CustomListWidget<E: Entry>(private val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int) : ClickableWidget(
+abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int) : ClickableWidget(
     x,
     y,
     width,
@@ -22,8 +20,8 @@ abstract class CustomListWidget<E: Entry>(private val client: MinecraftClient, x
 
     //// Widget ////
 
-    private var focusedElement: E? = null
-    private var hoveredElement: E? = null
+    protected var focusedElement: E? = null
+    protected var hoveredElement: E? = null
     private var dragging = false
 
     abstract fun selectableEntries(): List<E>
@@ -41,7 +39,7 @@ abstract class CustomListWidget<E: Entry>(private val client: MinecraftClient, x
             null
         context.enableScissor(this.x, this.y, this.right, this.bottom)
         for (entry in inFrameEntries()) {
-
+            entry.render(context, mouseX, mouseY, delta)
         }
         context.disableScissor()
     }
@@ -106,11 +104,11 @@ abstract class CustomListWidget<E: Entry>(private val client: MinecraftClient, x
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
         hoveredElement?.appendHoveredNarrations(builder.nextMessage())
-        focusedElement?.appendFocusedNarrations(builder.nextMessage())
-
+        focusedElement?.appendFocusedNarrations(builder.nextMessage().nextMessage())
+        TODO()
     }
 
-    abstract class Entry(val parentElement: ParentElement): Element {
+    abstract class Entry<P: ParentElement>(val parentElement: P): Element {
 
         override fun isFocused(): Boolean {
             return this.parentElement.focused == this
@@ -120,10 +118,6 @@ abstract class CustomListWidget<E: Entry>(private val client: MinecraftClient, x
         }
 
         abstract fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float)
-
-        abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float)
-
-        open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float) {}
 
         open fun appendHoveredNarrations(builder: NarrationMessageBuilder) {
 

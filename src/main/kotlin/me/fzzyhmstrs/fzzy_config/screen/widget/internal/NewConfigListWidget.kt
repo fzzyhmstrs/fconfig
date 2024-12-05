@@ -1,14 +1,23 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
-import me.fzzyhmstrs.fzzy_config.nullCast
-import me.fzzyhmstrs.fzzy_config.util.pos.*
+import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.util.Searcher
+import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
+import net.minecraft.client.gui.Selectable
+import net.minecraft.client.gui.navigation.GuiNavigation
+import net.minecraft.client.gui.navigation.GuiNavigation.Arrow
+import net.minecraft.client.gui.navigation.GuiNavigationPath
+import net.minecraft.client.gui.navigation.NavigationAxis
+import net.minecraft.client.gui.navigation.NavigationDirection
+import net.minecraft.text.Text
 import java.util.function.Function
+import java.util.function.Predicate
 import java.util.function.Supplier
+import java.util.function.UnaryOperator
 import kotlin.math.max
 import kotlin.math.min
 
@@ -52,7 +61,6 @@ CustomListWidget<NewConfigListWidget.Entry>(
     private val bottom
         get() = y + height
 
-
     override fun ensureVisible(entry: Entry) {
         if (entry.top.get() < top) {
             val scrollAmount = top - entry.top.get()
@@ -91,24 +99,83 @@ CustomListWidget<NewConfigListWidget.Entry>(
         (lastSelected as? Entry)?.let { focused = it }
     }
 
+
+    override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
+        if (this.entries.isEmpty()) {
+            return null
+        } else if (navigation !is Arrow) {
+            return super.getNavigationPath(navigation)
+        } else {
+            val entry: Entry? = this.focusedElement
+            if (navigation.direction().axis == NavigationAxis.HORIZONTAL && entry != null) {
+                return GuiNavigationPath.of(this, entry.getNavigationPath(navigation))
+            } else {
+                var i = -1
+                var navigationDirection = navigation.direction()
+                if (entry != null) {
+                    i = entry.children().indexOf(entry.getFocused())
+                }
+
+                if (i == -1) {
+                    when (navigationDirection) {
+                        NavigationDirection.LEFT -> {
+                            i = Int.MAX_VALUE
+                            navigationDirection = NavigationDirection.DOWN
+                        }
+
+                        NavigationDirection.RIGHT -> {
+                            i = 0
+                            navigationDirection = NavigationDirection.DOWN
+                        }
+
+                        else -> i = 0
+                    }
+                }
+
+                var entry2: Entry? = entry
+
+                var guiNavigationPath: GuiNavigationPath?
+                do {
+                    entry2 = this.entries.getNeighboringEntry(navigationDirection, entry2)
+                    if (entry2 == null) {
+                        return null
+                    }
+                    guiNavigationPath = entry2.getNavigationPath(navigation)
+                } while (guiNavigationPath == null)
+
+                return GuiNavigationPath.of(this, guiNavigationPath)
+            }
+        }
+    }
+
+    //////////////////////////////
+
     inner class Entries(private val delegate: List<Entry>): Iterable<Entry> {
 
         //map <group, map <scope, entry> >
         private val delegateMap: Map<String, Map<String, Entry>>
+        private val groups: Map<String, GroupPair>
 
         private val searcher: Searcher<Entry> = Searcher(delegate)
 
         init {
             var previousEntry: Entry? = null
             val pos = ReferencePos { this@NewConfigListWidget.top }
-            val map: MutableMap<String, MutableMap<String, Entry>> = mutableMapOf()
+            val entryMap: MutableMap<String, MutableMap<String, Entry>> = mutableMapOf()
+            val groupMap: MutableMap<String, GroupPair> = mutableMapOf()
 
             for (e in delegate) {
                 e.onAdd(pos, previousEntry)
-                map.computeIfAbsent(e.group) { _ -> mutableMapOf() }[e.scope] = e
+                if (!e.visibility.skip) {
+                    entryMap.computeIfAbsent(e.group) { _ -> mutableMapOf() }[e.scope] = e
+                }
+                if (e.visibility.group) {
+                    groupMap[e.group] = GroupPair(e, true)
+                }
                 previousEntry = e
             }
-            delegateMap = map
+            delegateMap = entryMap
+            groups = groupMap
         }
 
         private var inFrameEntries: List<Entry> = listOf()
@@ -128,7 +195,41 @@ CustomListWidget<NewConfigListWidget.Entry>(
         }
 
         fun search(searchInput: String): Int {
+            dirty = true
             val foundEntries = searcher.search(searchInput)
+            for (e in delegate) {
+                if (e.visibility.skip) continue
+                e.applyVisibility(Visibility::filter)
+            }
+            for (e in foundEntries) {
+                e.applyVisibility(Visibility::unfilter)
+            }
+            for (e in groups.values) {
+                val groupEntries = delegateMap[e.group.group]?.values
+                if (groupEntries == null) {
+                    e.group.applyVisibility { _ -> Visibility.GROUP_FILTERED }
+                    continue
+                }
+                e.group.applyVisibility { v -> v.group(groupEntries) }
+            }
+            return foundEntries.size
+        }
+
+        fun toggleGroup(g: String) {
+            dirty = true
+            val groupEntries = delegateMap[g] ?: return
+            val groupPair = groups[g] ?: return
+            if (groupPair.visible) {
+                for (e in groupEntries.values) {
+                    e.applyVisibility(Visibility::hide)
+                }
+                groupPair.visible = false
+            } else {
+                for (e in groupEntries.values) {
+                    e.applyVisibility(Visibility::unhide)
+                }
+                groupPair.visible = true
+            }
         }
 
         private fun refreshEntryLists() {
@@ -179,23 +280,53 @@ CustomListWidget<NewConfigListWidget.Entry>(
         override fun iterator(): Iterator<Entry> {
             return delegate.iterator()
         }
+
+        fun getNeighboringEntry(direction: NavigationDirection, entry: Entry?): Entry? {
+            return if (entry == null) {
+                when (direction) {
+                    NavigationDirection.UP -> TODO()
+                    NavigationDirection.DOWN -> TODO()
+                    NavigationDirection.LEFT -> TODO()
+                    NavigationDirection.RIGHT -> TODO()
+                }
+            } else {
+                entry.getNeighbor(!direction.isPositive)
+            }
+        }
     }
 
-    abstract class Entry(parentElement: ParentElement, var h: Int, override val name: Text, override val desc: Text, val scope: String, val group: String = "")
-        : CustomListWidget.Entry(parentElement), Searcher.SearchContent {
+    private class GroupPair(val group: Entry, var visible: Boolean)
+
+    abstract class Entry(parentElement: NewConfigListWidget, var h: Int, override val name: Text, override val desc: Text, val scope: String, val group: String = "")
+        : CustomListWidget.Entry<NewConfigListWidget>(parentElement), ParentElement, Searcher.SearchContent {
 
         var visibility = Visibility.VISIBLE
         protected var x: Int = 0
         protected var w: Int = 0
-        internal var top: Pos = Pos.ZERO
-        internal var bottom: Pos = ImmutableSuppliedPos(top) { if (visibility.visible) h else 0 }
+        internal var top: EntryPos = EntryPos.ZERO
+        internal var bottom: Pos = Pos.ZERO
+
+        private var focusedSelectable: Selectable? = null
+        private var focusedElement: Element? = null
+
+        abstract fun selectableChildren(): List<Selectable>
+
+        fun getNeighbor(up: Boolean): Entry? {
+            return this.top.getSelectableNeighbor(up)
+        }
 
         fun onAdd(parentPos: Pos, previous: Entry?) {
             if (previous == null) {
-                top = RelPos(parentPos)
+                top = RelEntryPos(parentPos, null)
             } else {
-                top = ImmutableSuppliedPos(previous.bottom) { if (visibility.visible) verticalPadding.get() else 0 }
+                top = ImmutableSuppliedEntryPos(
+                    previous.bottom,
+                    { if (visibility.visible) verticalPadding.get() else 0 },
+                    previous.top
+                )
+                previous.top.next = top
             }
+            bottom = ImmutableSuppliedPos(top) { if (visibility.visible) h else 0 }
         }
         
         fun position(x: Int, w: Int) {
@@ -205,6 +336,10 @@ CustomListWidget<NewConfigListWidget.Entry>(
 
         fun scroll(dY: Int) {
             top.inc(dY)
+        }
+
+        fun applyVisibility(operator: UnaryOperator<Visibility>) {
+            this.visibility = operator.apply(this.visibility)
         }
 
         override fun isFocused(): Boolean {
@@ -219,43 +354,113 @@ CustomListWidget<NewConfigListWidget.Entry>(
         }
 
         override fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            if (!visibility.visible) return
             renderEntry(context, x, top.get(), w, mouseX, mouseY, delta)
             if (isFocused || this.isMouseOver(mouseX.toDouble(), mouseY.toDouble())) {
                 renderBorder(context, x, top.get(), w, mouseX, mouseY, delta)
             }
         }
+
+        abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float)
+
+        open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float) {}
+
+        interface EntryPos: Pos {
+            val previous: EntryPos?
+            var next: EntryPos?
+            fun getEntry(): Entry?
+
+            fun neighbor(up: Boolean): EntryPos? {
+                return if (up) {
+                    previous
+                } else
+                    next
+            }
+
+            fun getSelectableNeighbor(up: Boolean): Entry? {
+                return getEntry() ?: neighbor(up)?.getSelectableNeighbor(up)
+            }
+
+            companion object {
+                val ZERO = object: EntryPos {
+                    override val previous: EntryPos? = null
+                    override var next: EntryPos? = null
+                    override fun getEntry(): Entry? { return null }
+                    override fun get(): Int { return 0 }
+                    override fun set(new: Int) {}
+                    override fun inc(amount: Int) {}
+                    override fun dec(amount: Int) {}
+                }
+            }
+        }
+
+        inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null) : RelPos(parent), EntryPos {
+            override fun getEntry(): Entry? {
+                return this@Entry.takeIf { it.visibility.selectable }
+            }
+        }
+
+        inner class ImmutableSuppliedEntryPos(parent: Pos, offset: Supplier<Int>, override val previous: EntryPos?, override var next: EntryPos? = null) : ImmutableSuppliedPos(parent, offset), EntryPos {
+            override fun getEntry(): Entry? {
+                return this@Entry.takeIf { it.visibility.selectable }
+            }
+        }
     }
 
-    enum class Visibility(val visible: Boolean, val skip: Boolean, val selectable: Boolean) {
-        VISIBLE(true, false, true),
-        HIDDEN(false, false, false),
-        FILTERED(false, false, false),
-        GROUP_VISIBLE(true, true, true),
-        GROUP_FILTERED(false, true, false), //filtering handled externally
-        HEADER_VISIBLE(true, true, false);
+    enum class Visibility(val visible: Boolean, val skip: Boolean, val selectable: Boolean, val group: Boolean) {
+        VISIBLE(true, false, true, false),
+        HIDDEN(false, false, false, false),
+        FILTERED(false, false, false, false),
+        FILTERED_HIDDEN(false, false, false, false),
+        GROUP_VISIBLE(true, true, true, true),
+        GROUP_FILTERED(false, true, false, true), //filtering handled externally
+        GROUP_DISABLED(false, true, false, false), //errored group with no entries
+        HEADER_VISIBLE(true, true, false, false);
 
-        fun reset(): Visibility {
+        fun filter(): Visibility {
+            return when (this) {
+                VISIBLE -> FILTERED
+                HIDDEN -> FILTERED_HIDDEN
+                else -> this
+            }
+        }
+
+        fun unfilter(): Visibility {
             return when (this) {
                 FILTERED -> VISIBLE
-                GROUP_FILTERED -> GROUP_VISIBLE
+                FILTERED_HIDDEN -> HIDDEN
                 else -> this
             }
         }
 
         fun hide(): Visibility {
             return when (this) {
-                FILTERED -> HIDDEN
+                FILTERED -> FILTERED_HIDDEN
                 VISIBLE -> HIDDEN
                 else -> this
             }
         }
 
-        fun filter(): Visibility {
+        fun unhide(): Visibility {
             return when (this) {
-                VISIBLE -> FILTERED
+                HIDDEN -> VISIBLE
+                FILTERED_HIDDEN -> FILTERED
                 else -> this
             }
         }
+
+        fun group(groupEntries: Collection<Entry>): Visibility {
+            return if (this.group) {
+                if (groupEntries.any { it.visibility.visible }) {
+                    GROUP_VISIBLE
+                } else {
+                    GROUP_FILTERED
+                }
+            } else {
+                this
+            }
+        }
+
     }
 
 }
