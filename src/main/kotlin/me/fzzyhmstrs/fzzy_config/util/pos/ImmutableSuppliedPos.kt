@@ -19,7 +19,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.5.9
  */
-class ImmutableSuppliedPos(private val parent: Pos, private val offset: Supplier<Int>): Pos {
+open class ImmutableSuppliedPos(private val parent: Pos, private val offset: Supplier<Int>): Pos {
     override fun get(): Int {
         return parent.get() + offset.get()
     }
