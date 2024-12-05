@@ -11,6 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.registry
 
 import com.google.common.collect.HashMultimap
+import kotlinx.atomicfu.AtomicBoolean
+import kotlinx.atomicfu.atomic
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
