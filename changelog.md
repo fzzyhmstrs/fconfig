@@ -19,3 +19,4 @@
 
 ### Fixes
 * Fixed inaccurate docs in `ValidatedEntityAttribute.Builder` and `EntityAttributeInstanceHolder`
+* Attempt fix on Github/#24, which appears to be caused by concurrent access of some kind. Client scopes are now synchronized. 

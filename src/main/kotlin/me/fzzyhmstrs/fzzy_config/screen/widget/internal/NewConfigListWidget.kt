@@ -1,8 +1,12 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
-import me.fzzyhmstrs.fzzy_config.util.pos.*
+import me.fzzyhmstrs.fzzy_config.util.pos.ImmutableSuppliedPos
+import me.fzzyhmstrs.fzzy_config.util.pos.Pos
+import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
+import me.fzzyhmstrs.fzzy_config.util.pos.RelPos
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -13,9 +17,11 @@ import net.minecraft.client.gui.navigation.GuiNavigation.Arrow
 import net.minecraft.client.gui.navigation.GuiNavigationPath
 import net.minecraft.client.gui.navigation.NavigationAxis
 import net.minecraft.client.gui.navigation.NavigationDirection
+import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.text.Text
 import java.util.function.Function
-import java.util.function.Predicate
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
 import kotlin.math.max
@@ -98,7 +104,6 @@ CustomListWidget<NewConfigListWidget.Entry>(
     override fun popLast() {
         (lastSelected as? Entry)?.let { focused = it }
     }
-
 
     override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
         if (this.entries.isEmpty()) {
@@ -364,6 +369,29 @@ CustomListWidget<NewConfigListWidget.Entry>(
         abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float)
 
         open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float) {}
+
+        override fun appendNarrations(builder: NarrationMessageBuilder) {
+            val list: List<Selectable?> = this.selectableChildren()
+            val selectedElementNarrationData = Screen.findSelectedElementData(list, this.focusedSelectable)
+            if (selectedElementNarrationData != null) {
+                if (selectedElementNarrationData.selectType.isFocused) {
+                    this.focusedSelectable = selectedElementNarrationData.selectable
+                }
+
+                if (list.size > 1) {
+                    builder.put(
+                        NarrationPart.POSITION,
+                        FcText.translatable("narrator.position.object_list", selectedElementNarrationData.index + 1, list.size)
+                    )
+                    if (selectedElementNarrationData.selectType == Selectable.SelectionType.FOCUSED) {
+                        builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+                    }
+                }
+
+                selectedElementNarrationData.selectable.appendNarrations(builder.nextMessage())
+            }
+        }
+
 
         interface EntryPos: Pos {
             val previous: EntryPos?
