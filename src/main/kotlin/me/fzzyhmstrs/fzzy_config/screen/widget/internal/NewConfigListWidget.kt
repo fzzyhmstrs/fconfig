@@ -105,6 +105,18 @@ CustomListWidget<NewConfigListWidget.Entry>(
         (lastSelected as? Entry)?.let { focused = it }
     }
 
+    /*
+        https://webaim.org/techniques/keyboard/
+
+        Navigation strategy will be broadly based on the information provided in the link above
+
+        https://accessibleweb.com/question-answer/navigate-website-keyboard/
+        https://www.w3.org/TR/WCAG22/
+
+        Navigation goal is to fully comply in a standardized way with the above accesibleweb information. 
+
+    */
+
     override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
         if (this.entries.isEmpty()) {
             return null
@@ -112,8 +124,12 @@ CustomListWidget<NewConfigListWidget.Entry>(
             return super.getNavigationPath(navigation)
         } else {
             val entry: Entry? = this.focusedElement
-            if (navigation.direction().axis == NavigationAxis.HORIZONTAL && entry != null) {
-                return GuiNavigationPath.of(this, entry.getNavigationPath(navigation))
+            if (entry != null) {
+                //this needs to return null if the keyboard action should "escape" the content
+                val entryNavigationPath = entry.getNavigationPath(navigation)
+                if (entryNavigationPath != null) {
+                    return GuiNavigationPath.of(this, entryNavigationPath)
+                }
             } else {
                 var i = -1
                 var navigationDirection = navigation.direction()
@@ -289,10 +305,10 @@ CustomListWidget<NewConfigListWidget.Entry>(
         fun getNeighboringEntry(direction: NavigationDirection, entry: Entry?): Entry? {
             return if (entry == null) {
                 when (direction) {
-                    NavigationDirection.UP -> TODO()
-                    NavigationDirection.DOWN -> TODO()
-                    NavigationDirection.LEFT -> TODO()
-                    NavigationDirection.RIGHT -> TODO()
+                    NavigationDirection.UP -> delegate.lastOrNull()
+                    NavigationDirection.DOWN -> delegate.firstOrNull()
+                    NavigationDirection.LEFT -> delegate.firstOrNull()
+                    NavigationDirection.RIGHT -> delegate.lastOrNull()
                 }
             } else {
                 entry.getNeighbor(!direction.isPositive)
