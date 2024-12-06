@@ -31,6 +31,8 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     protected val leftPadding: Supplier<Int> = Supplier { 16 }
     protected val rightPadding: Supplier<Int> = Supplier { 10 }
     protected val scrollWidth: Supplier<Int> = Supplier { 6 }
+    protected val scrollType: Supplier<ScrollBarType> = Supplier { ScrollBarType.DYNAMIC }
+    protected val scrollFixedHeight: Supplier<Int> = Supplier { 8 }
 
     fun rowWidth(): Int {
         return width - leftPadding.get() - rightPadding.get() - scrollWidth.get()
@@ -127,10 +129,12 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
         if (!this.isSelectButton(button)) {
             return false
         }
-        updateScrollingState(mouseX, mouseY, button)
         if (!isMouseOver(mouseX, mouseY)) {
             return false
         }
+        val todo1 = TODO("Manage scroll button clicks if the scroll bar is configured to show buttons")
+        updateScrollingState(mouseX, mouseY, button)
+        val todo2 = TODO("Handle 'jumping' the scroll bar if the click is off the current scroll bar space")
         val e = entryAtY(mouseY.toInt())
         if (e != null && e.mouseClicked(mouseX, mouseY, button)) {
             val e2 = focused
@@ -177,9 +181,9 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
                     val totalDelta = contentHeight() - height
                     val newTopDeltaAmount = (-1 * (totalDelta * travelProgress)).toInt()
                     val scrollToDo = newTopDeltaAmount - topDelta()
-
+                    return handleScrollByBar(scrollToDo)
                 }
-                TODO()
+                return true
             }
         }
         return false
@@ -221,6 +225,11 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
         }
 
         builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+    }
+
+    private class ScrollBarType {
+        DYNAMIC,
+        FIXED
     }
 
     abstract class Entry<P: ParentElement>(val parentElement: P): Element {
