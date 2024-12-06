@@ -11,8 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.registry
 
 import com.google.common.collect.HashMultimap
-import kotlinx.atomicfu.AtomicBoolean
-import kotlinx.atomicfu.atomic
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -31,6 +29,7 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 
 /**
@@ -46,7 +45,7 @@ internal object ClientConfigRegistry {
     private val customPermissions: MutableMap<String, Map<String, Boolean>> = mutableMapOf()
     private var validScopes: MutableSet<String> = Collections.synchronizedSet(mutableSetOf()) //configs are sorted into Managers by namespace
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
-    private var hasScrapedMetadata: AtomicBoolean = atomic(false)
+    private var hasScrapedMetadata: AtomicBoolean = AtomicBoolean(false)
 
     internal fun hasClientConfig(scope: String): Boolean {
         return getClientConfig(scope) != null
@@ -160,11 +159,11 @@ internal object ClientConfigRegistry {
     //client
     @Synchronized
     internal fun getScreenScopes(): Set<String> {
-        if (!hasScrapedMetadata.value) {
+        if (!hasScrapedMetadata.get()) {
             for (scope in PlatformUtils.customScopes()) {
                 validScopes.add(scope)
             }
-            hasScrapedMetadata.value = true
+            hasScrapedMetadata.set(true)
         }
         return validScopes
     }
