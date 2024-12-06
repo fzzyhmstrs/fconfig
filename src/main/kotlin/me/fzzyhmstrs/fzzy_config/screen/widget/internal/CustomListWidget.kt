@@ -132,12 +132,27 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return super<ParentElement>.mouseReleased(mouseX, mouseY, button)
+        return focused?.mouseReleased(mouseX, mouseY, button) == true
     }
 
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        return super<ParentElement>.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+        if (super<ParentElement>.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+            return true
+        } else if (button == 0 && this.scrolling) {
+            return if (mouseY < y.toDouble()) {
+                this.scrollToTop()
+            } else if (mouseY > this.bottom.toDouble()) {
+                this.scrollToBottom()
+            } else {
+                TODO()
+            }
+        }
+        return false
     }
+
+    abstract fun scrollToTop(): Boolean
+
+    abstract fun scrollToBottom(): Boolean
 
     abstract fun handleScroll(verticalAmount: Double): Boolean
 
