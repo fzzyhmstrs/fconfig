@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.screen.ScreenTexts
+import net.minecraft.util.math.MathHelper
 import java.util.function.Supplier
 
 abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int) : ClickableWidget(
@@ -26,7 +27,6 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     protected var focusedElement: E? = null
     protected var hoveredElement: E? = null
     private var dragging = false
-    private var scrolling = false
 
     protected val leftPadding: Supplier<Int> = Supplier { 16 }
     protected val rightPadding: Supplier<Int> = Supplier { 10 }
@@ -94,6 +94,8 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
 
     abstract fun bottomDelta(): Int
 
+    abstract fun contentHeight(): Int
+
     abstract fun entryAtY(mouseY: Int): E?
 
     protected open fun isSelectButton(button: Int): Boolean {
@@ -101,13 +103,24 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     }
 
     private fun noScroll(): Boolean {
-        return topDelta() >= 0 && bottomDelta() <= 0
+        return contentHeight() <= height
     }
+
+    private var scrollingY = -1.0
+    private var scrollingTop = -1.0
+    private var scrollingBottom = -1.0
 
     private fun updateScrollingState(mouseX: Double, mouseY: Double, button: Int) {
         if (noScroll()) return
         if (button != 0) return
-        this.scrolling = mouseX > (right - scrollWidth.get()) && (mouseY < right)
+        this.scrollingY = if(mouseX > (right - scrollWidth.get()) && (mouseX < right))  mouseY else -1.0
+        if (scrollingY > 0.0) {
+            val contentFraction = (height / contentHeight()).toDouble()
+            val upwardTravel = topDelta() * contentFraction
+            val downwardTravel = bottomDelta() * contentFraction
+            scrollingTop = scrollingY + upwardTravel
+            scrollingBottom = scrollingY + downwardTravel
+        }
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -128,7 +141,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
             dragging = true
             return true
         }
-        return this.scrolling
+        return this.scrollingY >= 0.0
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -138,12 +151,34 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
         if (super<ParentElement>.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
             return true
-        } else if (button == 0 && this.scrolling) {
+        } else if (button == 0 && this.scrollingY >= 0.0) {
+            val mouseDelta = mouseY - scrollingY
             return if (mouseY < y.toDouble()) {
                 this.scrollToTop()
             } else if (mouseY > this.bottom.toDouble()) {
                 this.scrollToBottom()
+            } else if(topDelta() >= 0 && mouseDelta < 0.0) {
+                scrollingY = mouseY
+                return true
+            } else if(bottomDelta() <= 0 && mouseDelta > 0.0) {
+                scrollingY = mouseY
+                return true
             } else {
+                val travelProgress = MathHelper.getLerpProgress(mouseY, scrollingTop, scrollingBottom)
+                if (travelProgress < 0.0) {
+                    scrollToTop()
+                    scrollingBottom = scrollingBottom - scrollingTop + mouseY
+                    scrollingTop = mouseY
+                } else if (travelProgress > 1.0) {
+                    scrollToBottom()
+                    scrollingTop = mouseY - (scrollingBottom - scrollingTop)
+                    scrollingBottom = mouseY
+                } else {
+                    val totalDelta = contentHeight() - height
+                    val newTopDeltaAmount = (-1 * (totalDelta * travelProgress)).toInt()
+                    val scrollToDo = newTopDeltaAmount - topDelta()
+
+                }
                 TODO()
             }
         }
@@ -155,6 +190,8 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     abstract fun scrollToBottom(): Boolean
 
     abstract fun handleScroll(verticalAmount: Double): Boolean
+
+    abstract fun handleScrollByBar(scrollAmount: Int): Boolean
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         return handleScroll(verticalAmount)
