@@ -33,6 +33,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     protected val scrollWidth: Supplier<Int> = Supplier { 6 }
     protected val scrollType: Supplier<ScrollBarType> = Supplier { ScrollBarType.DYNAMIC }
     protected val scrollFixedHeight: Supplier<Int> = Supplier { 8 }
+    protected val scrollButtonType: Supplier<ScrollBarButtons> = Supplier { ScrollBarButtons.SPLIT }
 
     fun rowWidth(): Int {
         return width - leftPadding.get() - rightPadding.get() - scrollWidth.get()
@@ -112,16 +113,25 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     private var scrollingTop = -1.0
     private var scrollingBottom = -1.0
 
+    private fun scrollheight(): Int {
+        return scrollButtonType.get().scrollBottom(bottom) - scrollButtonType.get().scrollTop(y)
+    }
+
+
     private fun updateScrollingState(mouseX: Double, mouseY: Double, button: Int) {
         if (noScroll()) return
         if (button != 0) return
         this.scrollingY = if(mouseX > (right - scrollWidth.get()) && (mouseX < right))  mouseY else -1.0
         if (scrollingY > 0.0) {
-            val contentFraction = (height / contentHeight()).toDouble()
-            val upwardTravel = topDelta() * contentFraction
-            val downwardTravel = bottomDelta() * contentFraction
-            scrollingTop = scrollingY + upwardTravel
-            scrollingBottom = scrollingY + downwardTravel
+            if (scrollType.get() == ScrollBarType.DYNAMIC) {
+                val contentFraction = (scrollheight() / contentHeight()).toDouble()
+                val upwardTravel = topDelta() * contentFraction
+                val downwardTravel = bottomDelta() * contentFraction
+                scrollingTop = scrollingY + upwardTravel
+                scrollingBottom = scrollingY + downwardTravel
+            } else {
+
+            }
         }
     }
 
@@ -227,9 +237,51 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
         builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
     }
 
-    private class ScrollBarType {
+    protected enum class ScrollBarType {
         DYNAMIC,
         FIXED
+    }
+
+    protected enum class ScrollBarButtons {
+        NONE {
+            override fun scrollTop(top: Int): Int {
+                return top
+            }
+
+            override fun scrollBottom(bottom: Int): Int {
+                return bottom
+            }
+        },
+        TOP {
+            override fun scrollTop(top: Int): Int {
+                return top + 12
+            }
+
+            override fun scrollBottom(bottom: Int): Int {
+                return bottom
+            }
+        },
+        BOTTOM {
+            override fun scrollTop(top: Int): Int {
+                return top
+            }
+
+            override fun scrollBottom(bottom: Int): Int {
+                return bottom - 12
+            }
+        },
+        SPLIT{
+            override fun scrollTop(top: Int): Int {
+                return top + 6
+            }
+
+            override fun scrollBottom(bottom: Int): Int {
+                return bottom - 6
+            }
+        };
+
+        abstract fun scrollTop(top: Int): Int
+        abstract fun scrollBottom(bottom: Int): Int
     }
 
     abstract class Entry<P: ParentElement>(val parentElement: P): Element {
