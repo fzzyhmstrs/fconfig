@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
 import me.fzzyhmstrs.fzzy_config.util.pos.ImmutableSuppliedPos
@@ -15,12 +16,12 @@ import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.navigation.GuiNavigation
 import net.minecraft.client.gui.navigation.GuiNavigation.Arrow
 import net.minecraft.client.gui.navigation.GuiNavigationPath
-import net.minecraft.client.gui.navigation.NavigationAxis
 import net.minecraft.client.gui.navigation.NavigationDirection
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.text.Text
+import java.util.*
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
@@ -40,7 +41,7 @@ CustomListWidget<NewConfigListWidget.Entry>(
     x,
     y,
     width,
-    height), LastSelectable
+    height), Neighbor, LastSelectable, SuggestionWindowListener
 {
 
     //// Widget ////
@@ -77,16 +78,29 @@ CustomListWidget<NewConfigListWidget.Entry>(
         }
     }
 
+
+    override fun topDelta(): Int {
+        return entries.top() - top
+    }
+
+    override fun bottomDelta(): Int {
+        return entries.bottom() - bottom
+    }
+
+    override fun entryAtY(mouseY: Int): Entry? {
+        return entries.entryAtY(mouseY)
+    }
+
     override fun handleScroll(verticalAmount: Double): Boolean {
         if (entries.isEmpty() || verticalAmount == 0.0) return false
         if (verticalAmount > 0.0) {
-            val topDelta = top - entries.top()
+            val topDelta = -topDelta()
             if (topDelta == 0) return true
             val scrollDist = (verticalAmount * scrollMultiplier.get()).toInt().coerceAtLeast(1)
             val clampedDist = min(topDelta, scrollDist)
             entries.scroll(clampedDist)
         } else {
-            val bottomDelta = bottom - entries.bottom()
+            val bottomDelta = -bottomDelta()
             if (bottomDelta >= 0) return true
             val scrollDist = (verticalAmount * scrollMultiplier.get()).toInt().coerceAtMost(-1)
             val clampedDist = max(bottomDelta, scrollDist)
@@ -105,6 +119,8 @@ CustomListWidget<NewConfigListWidget.Entry>(
         (lastSelected as? Entry)?.let { focused = it }
     }
 
+    override val neighbor: EnumMap<NavigationDirection, Neighbor> = EnumMap(NavigationDirection::class.java)
+
     /*
         https://webaim.org/techniques/keyboard/
 
@@ -116,12 +132,11 @@ CustomListWidget<NewConfigListWidget.Entry>(
         Navigation goal is to fully comply in a standardized way with the above accesibleweb information. 
 
     */
-
     override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
         if (this.entries.isEmpty()) {
             return null
         } else if (navigation !is Arrow) {
-            return super.getNavigationPath(navigation)
+            return super<CustomListWidget>.getNavigationPath(navigation)
         } else {
             val entry: Entry? = this.focusedElement
             if (entry != null) {
@@ -129,35 +144,29 @@ CustomListWidget<NewConfigListWidget.Entry>(
                 val entryNavigationPath = entry.getNavigationPath(navigation)
                 if (entryNavigationPath != null) {
                     return GuiNavigationPath.of(this, entryNavigationPath)
+                } else {
+                    val neighbor = getNeighbor(navigation.direction())
+                    val neighborNavigationPath = neighbor?.getNavigationPath(navigation)
+                    if (neighborNavigationPath != null) {
+                        return neighborNavigationPath
+                    }
+                    var entry2: Entry? = entry
+                    var guiNavigationPath: GuiNavigationPath?
+                    do {
+                        entry2 = this.entries.getNextEntry(navigation.direction(), entry2)
+                        if (entry2 == null) {
+                            return null
+                        }
+                        guiNavigationPath = entry2.getNavigationPath(navigation)
+                    } while (guiNavigationPath == null)
+                    return GuiNavigationPath.of(this, guiNavigationPath)
                 }
             } else {
-                var i = -1
-                var navigationDirection = navigation.direction()
-                if (entry != null) {
-                    i = entry.children().indexOf(entry.getFocused())
-                }
-
-                if (i == -1) {
-                    when (navigationDirection) {
-                        NavigationDirection.LEFT -> {
-                            i = Int.MAX_VALUE
-                            navigationDirection = NavigationDirection.DOWN
-                        }
-
-                        NavigationDirection.RIGHT -> {
-                            i = 0
-                            navigationDirection = NavigationDirection.DOWN
-                        }
-
-                        else -> i = 0
-                    }
-                }
-
                 var entry2: Entry? = entry
 
                 var guiNavigationPath: GuiNavigationPath?
                 do {
-                    entry2 = this.entries.getNeighboringEntry(navigationDirection, entry2)
+                    entry2 = this.entries.getNextEntry(navigation.direction(), entry2)
                     if (entry2 == null) {
                         return null
                     }
@@ -168,6 +177,25 @@ CustomListWidget<NewConfigListWidget.Entry>(
             }
         }
     }
+
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) ?: super<CustomListWidget>.mouseClicked(mouseX, mouseY, button)
+    }
+
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: super<CustomListWidget>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    }
+
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        return suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) ?: super<CustomListWidget>.keyPressed(keyCode, scanCode, modifiers)
+    }
+
+    private var suggestionWindowElement: Element? = null
+
+    override fun setSuggestionWindowElement(element: Element?) {
+        this.suggestionWindowElement = element
+    }
+
 
     //////////////////////////////
 
@@ -215,6 +243,32 @@ CustomListWidget<NewConfigListWidget.Entry>(
             return inFrameEntries
         }
 
+        private fun refreshEntryLists() {
+            if (!dirty) return
+            var index = 0
+            while (index <= delegate.lastIndex) {
+                if (delegate[index].bottom.get() > this@NewConfigListWidget.top)
+                    break
+                else
+                    index++
+            }
+            var index2 = delegate.lastIndex
+            while (index2 >= 0) {
+                if (delegate[index2].top.get() < this@NewConfigListWidget.bottom)
+                    break
+                else
+                    index2--
+            }
+            index2++
+            inFrameEntries = if (index > index2) {
+                listOf()
+            } else {
+                delegate.subList(index, index2).filter { it.visibility.visible }
+            }
+            selectableEntries = delegate.filter { it.visibility.selectable }.toMutableList()
+            dirty = false
+        }
+
         fun search(searchInput: String): Int {
             dirty = true
             val foundEntries = searcher.search(searchInput)
@@ -253,31 +307,6 @@ CustomListWidget<NewConfigListWidget.Entry>(
             }
         }
 
-        private fun refreshEntryLists() {
-            if (!dirty) return
-            var index = 0
-            while (index <= delegate.lastIndex) {
-                if (delegate[index].bottom.get() > this@NewConfigListWidget.top)
-                    break
-                else
-                    index++
-            }
-            var index2 = delegate.lastIndex
-            while (index2 >= 0) {
-                if (delegate[index2].top.get() < this@NewConfigListWidget.bottom)
-                    break
-                else
-                    index2--
-            }
-            inFrameEntries = if (index > index2) {
-                listOf()
-            } else {
-                delegate.subList(index, index2).filter { it.visibility.visible }
-            }
-            selectableEntries = delegate.filter { it.visibility.selectable }.toMutableList()
-            dirty = false
-        }
-
         fun top() = delegate.firstOrNull()?.top?.get() ?: this@NewConfigListWidget.top
 
         fun bottom(): Int {
@@ -288,6 +317,13 @@ CustomListWidget<NewConfigListWidget.Entry>(
             if (delegate.isEmpty()) return
             dirty = true
             delegate.first().scroll(amount)
+        }
+
+        fun entryAtY(mouseY: Int): Entry? {
+            for (entry in inFrameEntries) {
+                if (entry.atY(mouseY)) return entry
+            }
+            return null
         }
 
         fun get(i: Int): Entry {
@@ -302,7 +338,7 @@ CustomListWidget<NewConfigListWidget.Entry>(
             return delegate.iterator()
         }
 
-        fun getNeighboringEntry(direction: NavigationDirection, entry: Entry?): Entry? {
+        fun getNextEntry(direction: NavigationDirection, entry: Entry?): Entry? {
             return if (entry == null) {
                 when (direction) {
                     NavigationDirection.UP -> delegate.lastOrNull()
@@ -322,13 +358,25 @@ CustomListWidget<NewConfigListWidget.Entry>(
         : CustomListWidget.Entry<NewConfigListWidget>(parentElement), ParentElement, Searcher.SearchContent {
 
         var visibility = Visibility.VISIBLE
-        protected var x: Int = 0
-        protected var w: Int = 0
+
+        protected open val x: Int
+            get() = parentElement.rowX()
+        protected open val w: Int
+            get() = parentElement.rowWidth()
+
         internal var top: EntryPos = EntryPos.ZERO
         internal var bottom: Pos = Pos.ZERO
 
+        fun atY(mouseY: Int): Boolean {
+            return mouseY >= top.get() && mouseY < bottom.get()
+        }
+
         private var focusedSelectable: Selectable? = null
         private var focusedElement: Element? = null
+        private var dragging = false
+
+        override val skip: Boolean
+            get() = visibility.skip
 
         abstract fun selectableChildren(): List<Selectable>
 
@@ -349,11 +397,6 @@ CustomListWidget<NewConfigListWidget.Entry>(
             }
             bottom = ImmutableSuppliedPos(top) { if (visibility.visible) h else 0 }
         }
-        
-        fun position(x: Int, w: Int) {
-            this.x = x
-            this.w = w
-        }
 
         fun scroll(dY: Int) {
             top.inc(dY)
@@ -368,6 +411,22 @@ CustomListWidget<NewConfigListWidget.Entry>(
         }
 
         override fun setFocused(focused: Boolean) {
+        }
+
+        override fun getFocused(): Element? {
+            return focusedElement
+        }
+
+        override fun setFocused(focused: Element?) {
+            this.focusedElement = focused
+        }
+
+        override fun isDragging(): Boolean {
+            return this.dragging
+        }
+
+        override fun setDragging(dragging: Boolean) {
+            this.dragging = dragging
         }
 
         override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
@@ -385,6 +444,10 @@ CustomListWidget<NewConfigListWidget.Entry>(
         abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float)
 
         open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float) {}
+
+        override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
+            return super<ParentElement>.getNavigationPath(navigation)
+        }
 
         override fun appendNarrations(builder: NarrationMessageBuilder) {
             val list: List<Selectable?> = this.selectableChildren()
@@ -506,5 +569,4 @@ CustomListWidget<NewConfigListWidget.Entry>(
         }
 
     }
-
 }
