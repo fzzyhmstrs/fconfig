@@ -65,8 +65,6 @@ CustomListWidget<NewConfigListWidget.Entry>(
 
     private val top
         get() = y
-    private val bottom
-        get() = y + height
 
     override fun ensureVisible(entry: Entry) {
         if (entry.top.get() < top) {
