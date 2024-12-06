@@ -182,6 +182,14 @@ CustomListWidget<NewConfigListWidget.Entry>(
         return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) ?: super<CustomListWidget>.mouseClicked(mouseX, mouseY, button)
     }
 
+    override fun scrollToTop(): Boolean {
+        return entries.scrollToTop()
+    }
+
+    override fun scrollToBottom(): Boolean {
+        return entries.scrollToBottom()
+    }
+
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: super<CustomListWidget>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
@@ -311,6 +319,16 @@ CustomListWidget<NewConfigListWidget.Entry>(
 
         fun bottom(): Int {
             return delegate.lastOrNull()?.bottom?.get() ?: this@NewConfigListWidget.bottom
+        }
+
+        fun scrollToTop(): Boolean {
+            delegate.firstOrNull()?.top?.set(0) ?: return false
+            return true
+        }
+
+        fun scrollToBottom(): Boolean {
+            delegate.firstOrNull()?.scroll(-this@NewConfigListWidget.bottomDelta()) ?: return false
+            return true
         }
 
         fun scroll(amount: Int) {
