@@ -11,7 +11,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.screen.ScreenTexts
-import net.minecraft.text.Text
+import java.util.function.Supplier
 
 abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int) : ClickableWidget(
     x,
@@ -26,6 +26,20 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     protected var focusedElement: E? = null
     protected var hoveredElement: E? = null
     private var dragging = false
+    private var scrolling = false
+
+    protected val leftPadding: Supplier<Int> = Supplier { 16 }
+    protected val rightPadding: Supplier<Int> = Supplier { 10 }
+    protected val scrollWidth: Supplier<Int> = Supplier { 6 }
+
+    fun rowWidth(): Int {
+        return width - leftPadding.get() - rightPadding.get() - scrollWidth.get()
+    }
+
+    fun rowX(): Int {
+
+        return x + leftPadding.get()
+    }
 
     abstract fun selectableEntries(): List<E>
 
@@ -76,8 +90,45 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
         return super<ParentElement>.getNavigationPath(navigation)
     }
 
+    abstract fun topDelta(): Int
+
+    abstract fun bottomDelta(): Int
+
+    abstract fun entryAtY(mouseY: Int): E?
+
+    protected open fun isSelectButton(button: Int): Boolean {
+        return button == 0 || button == 1
+    }
+
+    private fun noScroll(): Boolean {
+        return topDelta() >= 0 && bottomDelta() <= 0
+    }
+
+    private fun updateScrollingState(mouseX: Double, mouseY: Double, button: Int) {
+        if (noScroll()) return
+        if (button != 0) return
+        this.scrolling = mouseX > (right - scrollWidth.get()) && (mouseY < right)
+    }
+
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
+        if (!this.isSelectButton(button)) {
+            return false
+        }
+        updateScrollingState(mouseX, mouseY, button)
+        if (!isMouseOver(mouseX, mouseY)) {
+            return false
+        }
+        val e = entryAtY(mouseY.toInt())
+        if (e != null && e.mouseClicked(mouseX, mouseY, button)) {
+            val e2 = focused
+            if (e2 != e && e2 is ParentElement) {
+                e2.focused = null
+            }
+            focused = e
+            dragging = true
+            return true
+        }
+        return this.scrolling
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
