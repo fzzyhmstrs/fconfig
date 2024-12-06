@@ -87,6 +87,10 @@ CustomListWidget<NewConfigListWidget.Entry>(
         return entries.bottom() - bottom
     }
 
+    override fun contentHeight(): Int {
+        return entries.bottom() - entries.top()
+    }
+
     override fun entryAtY(mouseY: Int): Entry? {
         return entries.entryAtY(mouseY)
     }
@@ -106,6 +110,12 @@ CustomListWidget<NewConfigListWidget.Entry>(
             val clampedDist = max(bottomDelta, scrollDist)
             entries.scroll(clampedDist)
         }
+        return true
+    }
+
+    override fun handleScrollByBar(scrollAmount: Int): Boolean {
+        if (entries.isEmpty()) return false
+        entries.scroll(scrollAmount)
         return true
     }
 
@@ -299,12 +309,16 @@ CustomListWidget<NewConfigListWidget.Entry>(
         }
 
         fun toggleGroup(g: String) {
+            if (delegate.isEmpty()) return
             dirty = true
             val groupEntries = delegateMap[g] ?: return
             val groupPair = groups[g] ?: return
             if (groupPair.visible) {
                 for (e in groupEntries.values) {
                     e.applyVisibility(Visibility::hide)
+                }
+                if (bottom() - top() <= this@NewConfigListWidget.height) {
+                    this@NewConfigListWidget.ensureVisible(delegate.first())
                 }
                 groupPair.visible = false
             } else {
