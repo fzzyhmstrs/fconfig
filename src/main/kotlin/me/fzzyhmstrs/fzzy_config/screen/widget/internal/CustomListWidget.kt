@@ -15,7 +15,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 import java.util.function.Supplier
 
-abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int) : ClickableWidget(
+abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int) : ClickableWidget(
     x,
     y,
     width,
