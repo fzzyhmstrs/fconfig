@@ -29,13 +29,13 @@ import kotlin.math.max
 import kotlin.math.min
 
 class NewConfigListWidget(
-    private val client: MinecraftClient, 
-    entryBuilders: List<Function<NewConfigListWidget, out Entry>>, 
-    x: Int, 
-    y: Int, 
-    width: Int, 
-    height: Int) 
-: 
+    client: MinecraftClient,
+    entryBuilders: List<Function<NewConfigListWidget, out Entry>>,
+    x: Int,
+    y: Int,
+    width: Int,
+    height: Int)
+:
 CustomListWidget<NewConfigListWidget.Entry>(
     client,
     x,
@@ -137,7 +137,7 @@ CustomListWidget<NewConfigListWidget.Entry>(
         https://accessibleweb.com/question-answer/navigate-website-keyboard/
         https://www.w3.org/TR/WCAG22/
 
-        Navigation goal is to fully comply in a standardized way with the above accesibleweb information. 
+        Navigation goal is to fully comply in a standardized way with the above accesibleweb information.
 
     */
     override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
