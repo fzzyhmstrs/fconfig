@@ -303,6 +303,10 @@ CustomListWidget<NewConfigListWidget.Entry>(
                 }
                 e.group.applyVisibility { v -> v.group(groupEntries) }
             }
+            if (this@NewConfigListWidget.focusedElement?.visibility?.selectable != true) {
+                val replacement = this@NewConfigListWidget.focusedElement?.getNeighbor(true) ?: this@NewConfigListWidget.focusedElement?.getNeighbor(false)
+                this@NewConfigListWidget.focused = replacement
+            }
             return foundEntries.size
         }
 
@@ -314,6 +318,10 @@ CustomListWidget<NewConfigListWidget.Entry>(
             if (groupPair.visible) {
                 for (e in groupEntries.values) {
                     e.applyVisibility(Visibility::hide)
+                }
+                if (this@NewConfigListWidget.focusedElement?.visibility?.selectable != true) {
+                    val replacement = this@NewConfigListWidget.focusedElement?.getNeighbor(true) ?: this@NewConfigListWidget.focusedElement?.getNeighbor(false)
+                    this@NewConfigListWidget.focused = replacement
                 }
                 if (bottom() - top() <= this@NewConfigListWidget.height) {
                     this@NewConfigListWidget.ensureVisible(delegate.first())
@@ -463,6 +471,10 @@ CustomListWidget<NewConfigListWidget.Entry>(
             return mouseX >= x && mouseY >= top.get() && mouseX < (x + w) && mouseY < bottom.get()
         }
 
+        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+            return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
+        }
+
         override fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             if (!visibility.visible) return
             renderEntry(context, x, top.get(), w, mouseX, mouseY, delta)
@@ -474,6 +486,10 @@ CustomListWidget<NewConfigListWidget.Entry>(
         abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float)
 
         open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float) {}
+
+        override fun getFocusedPath(): GuiNavigationPath? {
+            return super<ParentElement>.getFocusedPath()
+        }
 
         override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
             return super<ParentElement>.getNavigationPath(navigation)
