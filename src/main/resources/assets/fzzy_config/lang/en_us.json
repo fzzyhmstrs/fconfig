@@ -75,6 +75,9 @@
 "fc.networking.permission.cheat": "Player [%1$s] may have tried cheating in server config changes!",
 "fc.networking.restart": "Configs require a restart.",
 
+"fc.narrator.position.list.hovered": "Hovered element %1$s of %2$s selectable elements",
+"fc.narrator.position.list.focused": "Focused element %1$s of %2$s selectable elements",
+
 "fc.command.config": "§6§lConfig Affected:§r",
 "fc.command.player": "§6§lPlayer Responsible:§r",
 "fc.command.history": "§6§lChange History at the time of the incident:§r",
