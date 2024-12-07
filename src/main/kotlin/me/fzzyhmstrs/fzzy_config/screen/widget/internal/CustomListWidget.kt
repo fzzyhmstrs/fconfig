@@ -13,6 +13,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.util.math.MathHelper
 import java.util.function.Supplier
+import kotlin.math.abs
 
 abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int) : ClickableWidget(
     x,
@@ -34,6 +35,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     protected val scrollType: Supplier<ScrollBarType> = Supplier { ScrollBarType.DYNAMIC }
     protected val scrollFixedHeight: Supplier<Int> = Supplier { 8 }
     protected val scrollButtonType: Supplier<ScrollBarButtons> = Supplier { ScrollBarButtons.SPLIT }
+    protected val scrollClickMoveAmount: Supplier<Int> = Supplier { 50 }
 
     fun rowWidth(): Int {
         return width - leftPadding.get() - rightPadding.get() - scrollWidth.get()
@@ -113,24 +115,60 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
     private var scrollingTop = -1.0
     private var scrollingBottom = -1.0
 
-    private fun scrollheight(): Int {
+    private fun scrollHeight(): Int {
         return scrollButtonType.get().scrollBottom(bottom) - scrollButtonType.get().scrollTop(y)
     }
 
+    private fun scrollTop(): Int {
+        return scrollButtonType.get().scrollTop(y)
+    }
 
-    private fun updateScrollingState(mouseX: Double, mouseY: Double, button: Int) {
+    private fun scrollBottom(): Int {
+        return scrollButtonType.get().scrollBottom(bottom)
+    }
+
+    private fun updateScrollingState(mouseY: Double, button: Int) {
         if (noScroll()) return
         if (button != 0) return
-        this.scrollingY = if(mouseX > (right - scrollWidth.get()) && (mouseX < right))  mouseY else -1.0
+        this.scrollingY = mouseY
         if (scrollingY > 0.0) {
             if (scrollType.get() == ScrollBarType.DYNAMIC) {
-                val contentFraction = (scrollheight() / contentHeight()).toDouble()
+                val contentFraction = (scrollHeight() / contentHeight()).toDouble()
                 val upwardTravel = topDelta() * contentFraction
                 val downwardTravel = bottomDelta() * contentFraction
                 scrollingTop = scrollingY + upwardTravel
                 scrollingBottom = scrollingY + downwardTravel
             } else {
+                val halfScrollBarHeight = scrollFixedHeight.get() / 2
+                scrollingTop = (scrollTop() + halfScrollBarHeight).toDouble()
+                scrollingBottom = (scrollBottom() + halfScrollBarHeight).toDouble()
+            }
+        }
+    }
 
+    private fun jumpScrollBarToMouse(mouseY: Double, button: Int): Int {
+        if (noScroll()) return 0
+        if (button != 0) return 0
+        if (mouseY < scrollTop() || mouseY > scrollBottom()) return 0
+        when (scrollType.get()) {
+            ScrollBarType.DYNAMIC -> {
+                val contentFraction = (scrollHeight() / contentHeight()).toDouble()
+                val topGap = topDelta() * contentFraction
+                val bottomGap = bottomDelta() * contentFraction
+                if ((mouseY >= scrollTop() - topGap) && (mouseY < scrollBottom() - bottomGap)) {
+                    return 0
+                }
+                val progress = topDelta() / (topDelta() - bottomDelta()).toDouble()
+                val halfBarHeight = (height * contentFraction).toInt() / 2
+                val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
+                return ((midPoint - mouseY)/contentFraction).toInt()
+            }
+            ScrollBarType.FIXED -> {
+                val progress = topDelta() / (topDelta() - bottomDelta()).toDouble()
+                val halfBarHeight = scrollFixedHeight.get() / 2
+                val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
+                val contentFraction = (scrollHeight() / contentHeight()).toDouble()
+                return ((midPoint - mouseY)/contentFraction).toInt()
             }
         }
     }
@@ -142,9 +180,21 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
         if (!isMouseOver(mouseX, mouseY)) {
             return false
         }
-        val todo1 = TODO("Manage scroll button clicks if the scroll bar is configured to show buttons")
-        updateScrollingState(mouseX, mouseY, button)
-        val todo2 = TODO("Handle 'jumping' the scroll bar if the click is off the current scroll bar space")
+        if (mouseX > (right - scrollWidth.get()) && (mouseX < right)) {
+            if (scrollButtonType.get().mouseOverUp(mouseY, y, bottom)) {
+                return handleScrollByBar(50)
+            } else if (scrollButtonType.get().mouseOverDown(mouseY, y, bottom)) {
+                return handleScrollByBar(-50)
+            } else {
+                val jump = jumpScrollBarToMouse(mouseY, button)
+                if (jump != 0) {
+                    handleScrollByBar(jump)
+                }
+                updateScrollingState(mouseY, button)
+                return true
+            }
+        }
+
         val e = entryAtY(mouseY.toInt())
         if (e != null && e.mouseClicked(mouseX, mouseY, button)) {
             val e2 = focused
@@ -251,6 +301,14 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
             override fun scrollBottom(bottom: Int): Int {
                 return bottom
             }
+
+            override fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean {
+                return false
+            }
+
+            override fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean {
+                return false
+            }
         },
         TOP {
             override fun scrollTop(top: Int): Int {
@@ -259,6 +317,14 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
 
             override fun scrollBottom(bottom: Int): Int {
                 return bottom
+            }
+
+            override fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean {
+                return mouseY < (top + 6) && mouseY >= top
+            }
+
+            override fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean {
+                return mouseY < scrollTop(top) && mouseY >= (top + 6)
             }
         },
         BOTTOM {
@@ -269,6 +335,14 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
             override fun scrollBottom(bottom: Int): Int {
                 return bottom - 12
             }
+
+            override fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean {
+                return mouseY < (bottom - 6) && mouseY >= scrollBottom(bottom)
+            }
+
+            override fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean {
+                return mouseY < bottom && mouseY >= (bottom - 6)
+            }
         },
         SPLIT{
             override fun scrollTop(top: Int): Int {
@@ -278,10 +352,20 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
             override fun scrollBottom(bottom: Int): Int {
                 return bottom - 6
             }
+
+            override fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean {
+                return mouseY < scrollTop(top) && mouseY >= top
+            }
+
+            override fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean {
+                return mouseY < bottom && mouseY >= scrollBottom(bottom)
+            }
         };
 
         abstract fun scrollTop(top: Int): Int
         abstract fun scrollBottom(bottom: Int): Int
+        abstract fun mouseOverUp(mouseY: Double, top: Int, bottom: Int): Boolean
+        abstract fun mouseOverDown(mouseY: Double, top: Int, bottom: Int): Boolean
     }
 
     abstract class Entry<P: ParentElement>(val parentElement: P): Element {
