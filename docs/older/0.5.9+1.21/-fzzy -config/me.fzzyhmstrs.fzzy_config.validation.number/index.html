@@ -1,0 +1,227 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>me.fzzyhmstrs.fzzy_config.validation.number</title>
+    <link href="../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../images/fc_banner.png">
+<link href="../../images/discord_banner.png">
+<link href="../../images/discord_small_banner.png">
+<link href="../../images/wiki_banner.png">
+<link href="../../images/wiki_small_banner.png">
+<link href="../../images/docs_banner.png">
+<link href="../../images/docs_small_banner.png">
+<link href="../../images/cf_banner.png">
+<link href="../../images/modrinth_banner.png">
+<link href="../../images/icon.png">
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.number/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.5.9+1.21</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.9+1.21.3</a><a href="index.html">0.5.9+1.21</a><a href="..\..\..\0.5.9+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.9+1.20.6</a><a href="..\..\..\0.5.9+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.9+1.20.4</a><a href="..\..\..\0.5.9+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.9+1.20.1</a><a href="..\..\..\0.5.7+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.7+1.21.2</a><a href="..\..\..\0.5.7+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.7+1.21</a><a href="..\..\..\0.5.7+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.7+1.20.6</a><a href="..\..\..\0.5.7+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.7+1.20.4</a><a href="..\..\..\0.5.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.7+1.20.1</a><a href="..\..\..\0.5.6+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.6+1.21.2</a><a href="..\..\..\0.5.6+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.6+1.21</a><a href="..\..\..\0.5.6+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.6+1.20.6</a><a href="..\..\..\0.5.6+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.6+1.20.4</a><a href="..\..\..\0.5.6+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.6+1.20.1</a><a href="..\..\..\0.5.5+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.5+1.21.2</a><a href="..\..\..\0.5.4+1.21.2-pre4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.4+1.21.2-pre4</a><a href="..\..\..\0.5.4+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.4+1.21</a><a href="..\..\..\0.5.4+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.4+1.20.6</a><a href="..\..\..\0.5.4+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.4+1.20.4</a><a href="..\..\..\0.5.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.4+1.20.1</a><a href="..\..\..\0.5.3+24w40a\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.3+24w40a</a><a href="..\..\..\0.5.3+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.3+1.21</a><a href="..\..\..\0.5.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.3+1.20.6</a><a href="..\..\..\0.5.3+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.3+1.20.4</a><a href="..\..\..\0.5.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.3+1.20.1</a><a href="..\..\..\0.5.0+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.0+24w34a</a><a href="..\..\..\0.5.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.0+1.21</a><a href="..\..\..\0.5.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.0+1.20.6</a><a href="..\..\..\0.5.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.0+1.20.4</a><a href="..\..\..\0.5.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.5.0+1.20.1</a><a href="..\..\..\0.4.2+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.2+24w34a</a><a href="..\..\..\0.4.2+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.2+1.21</a><a href="..\..\..\0.4.2+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.2+1.20.6</a><a href="..\..\..\0.4.2+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.2+1.20.4</a><a href="..\..\..\0.4.2+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.2+1.20.1</a><a href="..\..\..\0.4.1+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.1+24w34a</a><a href="..\..\..\0.4.1+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.1+1.21</a><a href="..\..\..\0.4.1+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.1+1.20.6</a><a href="..\..\..\0.4.1+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.1+1.20.4</a><a href="..\..\..\0.4.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.1+1.20.1</a><a href="..\..\..\0.4.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.0+1.21</a><a href="..\..\..\0.4.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.0+1.20.6</a><a href="..\..\..\0.4.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.0+1.20.4</a><a href="..\..\..\0.4.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation.number\index.html">0.4.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.validation.number////PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../index.html">Fzzy Config</a><span class="delimiter">/</span><span class="current">me.fzzyhmstrs.fzzy_config.validation.number</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-1722667766%2FClasslikes%2F769193423" anchor-label="ValidatedByte" id="-1722667766%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-byte/index.html"><span>Validated</span><wbr><span><span>Byte</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1722667766%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-byte/index.html">ValidatedByte</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">maxValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">minValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="-validated-number/-widget-type/index.html">ValidatedNumber.WidgetType</a><span class="token operator"> = </span>if(maxValue == Byte.MAX_VALUE || minValue == Byte.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER</span></span><span class="token punctuation">)</span> : <a href="-validated-number/index.html">ValidatedNumber</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte/index.html">Byte</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A validated byte number. This field is a wrapper of bytes that is both a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">java.util.function.Supplier</a> and <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">java.util.function.Consumer</a> of type Byte</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1046978015%2FClasslikes%2F769193423" anchor-label="ValidatedDouble" id="-1046978015%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-double/index.html"><span>Validated</span><wbr><span><span>Double</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1046978015%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-double/index.html">ValidatedDouble</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span></span><span class="parameter ">maxValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span></span><span class="parameter ">minValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="-validated-number/-widget-type/index.html">ValidatedNumber.WidgetType</a><span class="token operator"> = </span>if(maxValue == Double.MAX_VALUE || minValue == -Double.MAX_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER</span></span><span class="token punctuation">)</span> : <a href="-validated-number/index.html">ValidatedNumber</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-double/index.html">Double</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A validated double number. This field is a wrapper of doubles that is both a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">java.util.function.Supplier</a> and <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">java.util.function.Consumer</a> of type Double</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-566120300%2FClasslikes%2F769193423" anchor-label="ValidatedFloat" id="-566120300%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-float/index.html"><span>Validated</span><wbr><span><span>Float</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-566120300%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-float/index.html">ValidatedFloat</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token punctuation">, </span></span><span class="parameter ">maxValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token punctuation">, </span></span><span class="parameter ">minValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="-validated-number/-widget-type/index.html">ValidatedNumber.WidgetType</a><span class="token operator"> = </span>if(maxValue == Float.MAX_VALUE || minValue == -Float.MAX_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER</span></span><span class="token punctuation">)</span> : <a href="-validated-number/index.html">ValidatedNumber</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A validated float number. This field is a wrapper of floats that is both a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">java.util.function.Supplier</a> and <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">java.util.function.Consumer</a> of type Float</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-346236383%2FClasslikes%2F769193423" anchor-label="ValidatedInt" id="-346236383%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-int/index.html"><span>Validated</span><wbr><span><span>Int</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-346236383%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-int/index.html">ValidatedInt</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">maxValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">minValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="-validated-number/-widget-type/index.html">ValidatedNumber.WidgetType</a><span class="token operator"> = </span>if(maxValue == Int.MAX_VALUE || minValue == Int.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER</span></span><span class="token punctuation">)</span> : <a href="-validated-number/index.html">ValidatedNumber</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A validated integer number. This field is a wrapper of integers that is both a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">java.util.function.Supplier</a> and <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">java.util.function.Consumer</a> of type Int</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2048070166%2FClasslikes%2F769193423" anchor-label="ValidatedLong" id="2048070166%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-long/index.html"><span>Validated</span><wbr><span><span>Long</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2048070166%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-long/index.html">ValidatedLong</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter ">maxValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter ">minValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="-validated-number/-widget-type/index.html">ValidatedNumber.WidgetType</a><span class="token operator"> = </span>if(maxValue == Long.MAX_VALUE || minValue == Long.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER</span></span><span class="token punctuation">)</span> : <a href="-validated-number/index.html">ValidatedNumber</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html">Long</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A validated long number. This field is a wrapper of longs that is both a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">java.util.function.Supplier</a> and <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">java.util.function.Consumer</a> of type Long</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-754001495%2FClasslikes%2F769193423" anchor-label="ValidatedNumber" id="-754001495%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-number/index.html"><span>Validated</span><wbr><span><span>Number</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-754001495%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="-validated-number/index.html">ValidatedNumber</a><span class="token operator">&lt;</span><a href="-validated-number/index.html">T</a><span class="token operator"> : </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-number/index.html">Number</a>, <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-comparable/index.html">Comparable</a><span class="token operator">&lt;</span><a href="-validated-number/index.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span> : <a href="../me.fzzyhmstrs.fzzy_config.validation/-validated-field/index.html">ValidatedField</a><span class="token operator">&lt;</span><a href="-validated-number/index.html">T</a><span class="token operator">&gt; </span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="271118964%2FClasslikes%2F769193423" anchor-label="ValidatedShort" id="271118964%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-validated-short/index.html"><span>Validated</span><wbr><span><span>Short</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="271118964%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="-validated-short/index.html">ValidatedShort</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">defaultValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html">Short</a><span class="token punctuation">, </span></span><span class="parameter ">maxValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html">Short</a><span class="token punctuation">, </span></span><span class="parameter ">minValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html">Short</a><span class="token punctuation">, </span></span><span class="parameter ">widgetType<span class="token operator">: </span><a href="-validated-number/-widget-type/index.html">ValidatedNumber.WidgetType</a><span class="token operator"> = </span>if(maxValue == Short.MAX_VALUE || minValue == Short.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER</span></span><span class="token punctuation">)</span> : <a href="-validated-number/index.html">ValidatedNumber</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-short/index.html">Short</a><span class="token operator">&gt; </span></div><div class="brief "><p class="paragraph">A validated short number. This field is a wrapper of shorts that is both a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">java.util.function.Supplier</a> and <a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">java.util.function.Consumer</a> of type Short</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
