@@ -11,9 +11,9 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.screen.ScreenTexts
+import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 import java.util.function.Supplier
-import kotlin.math.abs
 
 abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int) : ClickableWidget(
     x,
@@ -274,13 +274,17 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
             focusedElement?.appendNarrations(builder.nextMessage())
             val i = selectableEntries().indexOf(focusedElement)
             if (i > 0) {
-
+                builder.nextMessage().put(NarrationPart.POSITION, FcText.translatable("fc.narrator.position.list.focused", i + 1, selectableEntries().size))
             }
         } else {
-            hoveredElement?.appendNarrations(builder.nextMessage())
+            hoveredElement?.appendNarrations(builder.nextMessage().nextMessage())
             val i = selectableEntries().indexOf(hoveredElement)
+            val j = selectableEntries().indexOf(focusedElement)
             if (i > 0) {
-
+                builder.nextMessage().put(NarrationPart.POSITION, FcText.translatable("fc.narrator.position.list.hovered", i + 1, selectableEntries().size))
+            }
+            if (j > 0 && i != j) {
+                builder.put(NarrationPart.POSITION, FcText.translatable("fc.narrator.position.list.focused", j + 1, selectableEntries().size))
             }
         }
 
@@ -344,7 +348,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(private val client
                 return mouseY < bottom && mouseY >= (bottom - 6)
             }
         },
-        SPLIT{
+        SPLIT {
             override fun scrollTop(top: Int): Int {
                 return top + 6
             }
