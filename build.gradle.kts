@@ -292,6 +292,7 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
 if (System.getenv("CURSEFORGE_TOKEN") != null) {
     curseforge {
         val releaseType: String by project
+        val mcVersions: String by project
         val mcCurseVersions: String by project
         val uploadDebugMode: String by project
 
@@ -301,7 +302,8 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             changelog = log
             changelogType = "markdown"
             this.releaseType = releaseType
-            for (ver in mcCurseVersions.split(",")){
+            val v = if (mcCurseVersions.isEmpty()) mcVersions else mcCurseVersions
+            for (ver in v.split(",")) {
                 addGameVersion(ver)
             }
             addGameVersion("Fabric")
