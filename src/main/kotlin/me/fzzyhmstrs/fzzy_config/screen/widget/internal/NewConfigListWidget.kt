@@ -66,6 +66,7 @@ CustomListWidget<NewConfigListWidget.Entry>(
     private val top
         get() = y
 
+
     override fun ensureVisible(entry: Entry) {
         if (entry.top.get() < top) {
             val scrollAmount = top - entry.top.get()
@@ -475,17 +476,25 @@ CustomListWidget<NewConfigListWidget.Entry>(
             return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
         }
 
+        @Deprecated("Use renderEntry/renderBorder/renderHighlight for rendering instead")
         override fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             if (!visibility.visible) return
-            renderEntry(context, x, top.get(), w, mouseX, mouseY, delta)
-            if (isFocused || this.isMouseOver(mouseX.toDouble(), mouseY.toDouble())) {
-                renderBorder(context, x, top.get(), w, mouseX, mouseY, delta)
+            val t = top.get()
+            renderEntry(context, x, t, w, h, mouseX, mouseY, delta)
+            val bl = this.isMouseOver(mouseX.toDouble(), mouseY.toDouble())
+            if (isFocused || bl) {
+                renderBorder(context, x, t, w, h, mouseX, mouseY, delta)
+            }
+            if (bl) {
+                renderHighlight(context, x, t, w, h, mouseX, mouseY, delta)
             }
         }
 
-        abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float)
+        abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float)
 
-        open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, mouseX: Int, mouseY: Int, delta: Float) {}
+        open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
+
+        open fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
 
         override fun getFocusedPath(): GuiNavigationPath? {
             return super<ParentElement>.getFocusedPath()
