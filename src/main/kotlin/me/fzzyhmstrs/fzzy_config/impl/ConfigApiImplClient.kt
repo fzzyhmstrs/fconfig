@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descSupplied
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.prefixSupplied
 import me.fzzyhmstrs.fzzy_config.util.FcText.transSupplied
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
@@ -152,6 +153,27 @@ internal object ConfigApiImplClient {
             }
         }
         return thing.descSupplied { getComments(annotations) }
+    }
+
+    internal fun getPrefix(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): MutableText? {
+        for (annotation in annotations) {
+            if (annotation is Translation) {
+                if (annotation.negate) {
+                    return thing.prefixSupplied { getComments(annotations) }
+                }
+                val key = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.prefix" else "${annotation.prefix}.prefix"
+                if (I18n.hasTranslation(key)) return key.translate()
+                break
+            }
+        }
+        for (annotation in globalAnnotations) {
+            if (annotation is Translation) {
+                val key = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.prefix" else "${annotation.prefix}.prefix"
+                if (I18n.hasTranslation(key)) return key.translate()
+                break
+            }
+        }
+        return null
     }
 
     private val spacer = ". "
