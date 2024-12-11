@@ -35,6 +35,17 @@ interface Translatable {
      */
     fun descriptionKey(): String
     /**
+     * translation key of this Translatable's inline prefix text. Unlike descriptions, which are usually displayed in-tooltips, prefixes are displayed inline in the config screen itself
+     *
+     * Both descriptions and prefixes are narrated like "hints" (tooltips), so usage of either and/or both is equivalent for narration except that prefixes are narrated before descriptions.
+     * @author fzzyhmstrs
+     * @since 0.5.10
+     */
+    fun prefixKey(): String {
+        return ""
+    }
+
+    /**
      * The translated [Text] name from the [translationKey]. Falls back to the implementing classes Simple Name (non-translated)
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -49,6 +60,14 @@ interface Translatable {
      */
     fun description(fallback: String? = null): MutableText {
         return FcText.translatableWithFallback(descriptionKey(), fallback ?: "")
+    }
+    /**
+     * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered.
+     * @author fzzyhmstrs
+     * @since 0.5.10
+     */
+    fun prefix(fallback: String? = null): MutableText {
+        return FcText.translatableWithFallback(prefixKey(), fallback ?: "")
     }
 
     /**
@@ -68,5 +87,14 @@ interface Translatable {
      */
     fun hasDescription(): Boolean {
         return I18n.hasTranslation(descriptionKey())
+    }
+    /**
+     * Whether this Translatable has a valid prefix
+     * @return Boolean - If there is a valid prefix.
+     * @author fzzyhmstrs
+     * @since 0.5.10
+     */
+    fun hasPrefix(): Boolean {
+        return false
     }
 }

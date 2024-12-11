@@ -252,7 +252,6 @@ object FcText {
         else
             empty()
     }
-
     /**
      * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built-in description, otherwise it will use the fallback literally
      * @receiver Anything, null or not. [Translatable] will provide its description.
@@ -265,6 +264,45 @@ object FcText {
         return if(this is Translatable) {
             if (this.hasDescription()) {
                 this.description()
+            } else {
+                literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
+            }
+        } else {
+            val fallback = fallbackSupplier.get()
+            if (fallback != "")
+                literal(fallback).formatted(Formatting.ITALIC)
+            else
+                empty()
+        }
+    }
+
+    internal fun Any?.prefix(fallback: String): Text {
+        return if(this is Translatable)
+            if (this.hasPrefix()) {
+                this.prefix()
+            } else {
+                translatable(fallback).formatted(Formatting.ITALIC)
+            }
+        else
+            translatable(fallback).formatted(Formatting.ITALIC)
+    }
+    internal fun Any?.prefixLit(literalFallback: String = ""): Text {
+        return if(this is Translatable) {
+            if (this.hasPrefix()) {
+                this.prefix(literalFallback)
+            } else {
+                literal(literalFallback).formatted(Formatting.ITALIC)
+            }
+        } else if(literalFallback != "")
+            literal(literalFallback).formatted(Formatting.ITALIC)
+        else
+            empty()
+    }
+
+    internal fun Any?.prefixSupplied(fallbackSupplier: Supplier<String>): MutableText {
+        return if(this is Translatable) {
+            if (this.hasPrefix()) {
+                this.prefix(fallbackSupplier.get())
             } else {
                 literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
             }
