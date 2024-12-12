@@ -32,6 +32,7 @@ import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus
 import java.io.File
+import java.io.Reader
 import java.util.function.Supplier
 
 /**
@@ -372,6 +373,19 @@ object ConfigApi {
     @JvmStatic
     fun isConfigLoaded(scope: String, type: RegisterType): Boolean {
         return ConfigApiImpl.isConfigLoaded(scope, type)
+    }
+
+    /**
+     * Parses a resource reader into a TomlElement for use in Codecs or other things.
+     * @param reader [Reader] input reader containing a toml file
+     * @return [TomlElement] parsed from the input reader
+     * @throws kotlinx.serialization.SerializationException if parsing fails
+     * @author fzzyhmstrs
+     * @since 0.5.10
+     */
+    @JvmStatic
+    fun parseReader(reader: Reader): TomlElement {
+        return ConfigApiImpl.parseReader(reader)
     }
 
     /**
