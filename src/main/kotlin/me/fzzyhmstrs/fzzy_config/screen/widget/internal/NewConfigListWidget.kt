@@ -343,12 +343,12 @@ CustomListWidget<NewConfigListWidget.Entry>(
         }
 
         fun scrollToTop(): Boolean {
-            delegate.firstOrNull()?.top?.set(0) ?: return false
+            delegate.firstOrNull()?.top?.set(0)?.also { dirty = true } ?: return false
             return true
         }
 
         fun scrollToBottom(): Boolean {
-            delegate.firstOrNull()?.scroll(-this@NewConfigListWidget.bottomDelta()) ?: return false
+            delegate.firstOrNull()?.scroll(-this@NewConfigListWidget.bottomDelta())?.also { dirty = true } ?: return false
             return true
         }
 
@@ -377,13 +377,29 @@ CustomListWidget<NewConfigListWidget.Entry>(
             return delegate.iterator()
         }
 
+        private fun firstSelectable(): Entry? {
+            for (e in delegate) {
+                if (e.visibility.selectable) return e
+            }
+            return null
+        }
+
+        private fun lastSelectable(): Entry? {
+            val iterator = delegate.listIterator(delegate.size)
+            while (iterator.hasPrevious()) {
+                val e = iterator.previous()
+                if (e.visibility.selectable) return e
+            }
+            return null
+        }
+
         fun getNextEntry(direction: NavigationDirection, entry: Entry?): Entry? {
             return if (entry == null) {
                 when (direction) {
-                    NavigationDirection.UP -> delegate.lastOrNull()
-                    NavigationDirection.DOWN -> delegate.firstOrNull()
-                    NavigationDirection.LEFT -> delegate.firstOrNull()
-                    NavigationDirection.RIGHT -> delegate.lastOrNull()
+                    NavigationDirection.UP -> lastSelectable()
+                    NavigationDirection.DOWN -> firstSelectable()
+                    NavigationDirection.LEFT -> firstSelectable()
+                    NavigationDirection.RIGHT -> lastSelectable()
                 }
             } else {
                 entry.getNeighbor(!direction.isPositive)
