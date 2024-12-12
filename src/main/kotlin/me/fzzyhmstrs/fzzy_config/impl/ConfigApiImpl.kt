@@ -49,7 +49,9 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.apache.commons.lang3.mutable.MutableLong
+import java.io.BufferedReader
 import java.io.File
+import java.io.Reader
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
 import java.util.function.Supplier
@@ -351,6 +353,13 @@ internal object ConfigApiImpl {
 
     internal fun <T : Config> save(configClass: T) {
         save(configClass.name, configClass.folder, configClass.subfolder, configClass)
+    }
+
+    internal fun parseReader(reader: Reader): TomlElement {
+        val r = (if (reader is BufferedReader) reader else BufferedReader(reader))
+        return r.use {
+            Toml.parseToTomlTable(TomlNativeReader(r))
+        }
     }
 
     ///////////////// END Read, Create, Save /////////////////////////////////////////////
