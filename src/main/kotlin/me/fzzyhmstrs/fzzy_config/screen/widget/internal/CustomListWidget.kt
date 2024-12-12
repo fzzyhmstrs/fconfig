@@ -57,6 +57,27 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return x + leftPadding.get()
     }
 
+    override fun setPosition(x: Int, y: Int) {
+        focusedElement?.let { ensureVisible(it) }
+        onReposition()
+        super.setPosition(x, y)
+    }
+
+    override fun setDimensions(width: Int, height: Int) {
+        focusedElement?.let { ensureVisible(it) }
+        onReposition()
+        super.setDimensions(width, height)
+    }
+
+    override fun setDimensionsAndPosition(width: Int, height: Int, x: Int, y: Int) {
+        focusedElement?.let { ensureVisible(it) }
+        onReposition()
+        super.setPosition(x, y)
+        super.setDimensions(width, height)
+    }
+
+    open fun onReposition() {}
+
     abstract fun selectableEntries(): List<E>
 
     abstract fun inFrameEntries(): List<E>
@@ -309,6 +330,14 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
             }
         }
         return false
+    }
+
+    fun page(up: Boolean) {
+        if (up) {
+
+        } else {
+
+        }
     }
 
     abstract fun scrollToTop(): Boolean
