@@ -72,11 +72,6 @@ internal object PlatformUtils {
         return Permissions.check(player, permission)
     } //COnfigApiImpl, elsewhere??
 
-    @JvmStatic
-    fun createConfigFactoryProvider(): Map<String, BiFunction<Screen, ModContainer, Screen?>> {
-        return ClientConfigRegistry.getScreenScopes().associateWith { scope -> BiFunction { _: Screen, _: ModContainer -> ClientConfigRegistry.provideScreen(scope) } }
-    }
-
     fun registerCommands() {
         /*ArgumentTypeRegistry.registerArgumentType(
             Identifier.of(FC.MOD_ID, "quarantined_updates"),
