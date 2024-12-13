@@ -1,8 +1,9 @@
-package me.fzzyhmstrs.fzzy_config_test.test.list
+package me.fzzyhmstrs.fzzy_config_test.test.screen
 
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NewConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
@@ -29,7 +30,8 @@ class TestEntry(parentElement: NewConfigListWidget, scope: String, private val b
         delta: Float
     ) {
         button.setPosition(x + width - 75, y + 2)
-        TODO("Not yet implemented")
+        button.render(context, mouseX, mouseY, delta)
+        context.drawText(MinecraftClient.getInstance().textRenderer, "Test Entry".lit(), x + 2, y + 6, 0xFFFFFF, true)
     }
 
     override fun children(): MutableList<out Element> {
