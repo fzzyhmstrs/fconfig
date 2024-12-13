@@ -225,12 +225,11 @@ internal class SuggestionWindow(
                 closer)
         }
         fun sortSuggestions(suggestions: Suggestions, text: String, cursor: Int): List<Suggestion> {
-            val string: String = text.substring(0, cursor)
-            val string2 = string.lowercase()
+            val string: String = (if(text.isNotEmpty()) text.substring(0, cursor) else text).lowercase()
             val list = Lists.newArrayList<Suggestion>()
             val list2 = Lists.newArrayList<Suggestion>()
             for (suggestion in suggestions.list) {
-                if (suggestion.text.startsWith(string2) || suggestion.text.startsWith("minecraft:$string2")) {
+                if (suggestion.text.startsWith(string) || suggestion.text.startsWith("minecraft:$string")) {
                     list.add(suggestion)
                     continue
                 }
