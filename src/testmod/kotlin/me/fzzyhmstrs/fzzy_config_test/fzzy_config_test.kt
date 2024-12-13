@@ -20,7 +20,7 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigClient
-import me.fzzyhmstrs.fzzy_config_test.test.TestPopupScreen
+import me.fzzyhmstrs.fzzy_config_test.test.screen.TestPopupScreen
 import me.lucko.fabric.api.permissions.v0.PermissionCheckEvent
 import net.fabricmc.api.ClientModInitializer
 import net.fabricmc.api.ModInitializer
