@@ -1,6 +1,6 @@
 package me.fzzyhmstrs.fzzy_config_test.test.screen
 
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NewConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.NewConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import net.minecraft.client.MinecraftClient

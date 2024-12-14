@@ -230,7 +230,19 @@ internal class ConfigScreenManager(private val scope: String, private val config
         var index = 0
         val prefix = config.getId().toTranslationKey()
         ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
+            val fieldName = new.substringAfterLast('.')
             val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)
+            val totalActions = action?.let { mutableSetOf(it) } ?: mutableSetOf()
+            if (thing is EntryParent) {
+                val anyActions = thing.actions()
+                if (anyActions.isNotEmpty()) {
+                    totalActions.addAll(anyActions)
+                    actionMap.computeIfAbsent(new) { mutableSetOf() }.addAll(anyActions)
+                }
+                if (thing.continueWalk()) {
+                    callback.cont()
+                }
+            }
             if (action != null) actionMap[new] = mutableSetOf(action)
             val flags = if(thing is EntryFlag) {
                 EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
@@ -238,24 +250,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 EntryFlag.Flag.NONE
             }
             if (thing is ConfigSection) {
-                val fieldName = new.substringAfterLast('.')
                 val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
-                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, sectionOpenEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), new))
+                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, sectionOpenEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, new))
                 index++
             } else if (thing is Updatable && thing is Entry<*, *>) {
-                val totalActions = action?.let { mutableSetOf(it) } ?: mutableSetOf()
-                if (thing is EntryParent) {
-                    val anyActions = thing.actions()
-                    if (anyActions.isNotEmpty()) {
-                        totalActions.addAll(anyActions)
-                        actionMap.computeIfAbsent(new) { mutableSetOf() }.addAll(anyActions)
-                    }
-                    if (thing is Walkable) {
-                        callback.cont()
-                    }
-                }
-                val fieldName = new.substringAfterLast('.')
                 val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
                 val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
@@ -273,16 +272,15 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 }
                 index++
             } else if (thing is ConfigAction) {
-                val fieldName = new.substringAfterLast('.')
                 val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                 nameMap[new] = name
                 val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
                 if (perms.success) {
-                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, configActionEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), thing))
+                    functionMap.computeIfAbsent(old) { sortedMapOf() }[index] = Pair(new, configActionEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
                 } else if (perms == PermResult.OUT_OF_GAME) {
-                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
+                    functionMap.computeIfAbsent(old) { sortedMapOf() }[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), totalActions))
                 } else {
-                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
+                    functionMap.computeIfAbsent(old) { sortedMapOf() }[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
                 }
 
                 index++
@@ -297,7 +295,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     basicValidation2.trySet(thing)
                     @Suppress("DEPRECATION")
                     basicValidation2.setEntryKey(new)
-                    val fieldName = new.substringAfterLast('.')
                     val name = ConfigApiImplClient.getTranslation(basicValidation2, fieldName, annotations, globalAnnotations)
                     nameMap[new] = name
                     val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
@@ -306,9 +303,9 @@ internal class ConfigScreenManager(private val scope: String, private val config
                         basicValidation2.setUpdateManager(manager)
                         manager.setUpdatableEntry(basicValidation2)
                         if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
-                            functionMap.computeIfAbsent(old) { sortedMapOf() } [index] = Pair(new, forwardableEntryBuilder(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), basicValidation2))
+                            functionMap.computeIfAbsent(old) { sortedMapOf() } [index] = Pair(new, forwardableEntryBuilder(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), totalActions, basicValidation2))
                         else
-                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action?.let { setOf(it) } ?: setOf(), basicValidation2))
+                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), totalActions, basicValidation2))
                     } else if (perms == PermResult.OUT_OF_GAME) {
                         functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
                     } else {
@@ -332,7 +329,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             }
     }
 
-    private fun buildBuilder(name:Text, scope: String, scopes: List<String>, scopeButtonFunctions: Map<String, Function<ConfigScreen, ClickableWidget>>, actionMap: MutableMap<String, MutableSet<Action>>, entryBuilders: List<Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>): ConfigScreenBuilder {
+    private fun buildBuilder(name: Text, scope: String, scopes: List<String>, scopeButtonFunctions: Map<String, Function<ConfigScreen, ClickableWidget>>, actionMap: MutableMap<String, MutableSet<Action>>, entryBuilders: List<Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>): ConfigScreenBuilder {
         val scopeSplit = scope.split(".")
         val parentScopes = scopes.filter { scopeSplit.containsAll(it.split(".")) && it != scope }.sortedBy { it.length }
         val functionList: MutableList<Function<ConfigScreen, ClickableWidget>> = mutableListOf()

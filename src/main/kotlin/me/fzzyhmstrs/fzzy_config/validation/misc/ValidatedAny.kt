@@ -206,6 +206,10 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         return ConfigApiImpl.getActions(storedValue, ConfigApiImpl.IGNORE_NON_SYNC)
     }
 
+    override fun continueWalk(): Boolean {
+        return true
+    }
+
     override fun translationKey(): String {
         return (storedValue as? Translatable)?.translationKey()?.takeIf { (storedValue as? Translatable)?.hasTranslation() == true } ?: super.translationKey()
     }

@@ -97,4 +97,6 @@ interface Translatable {
     fun hasPrefix(): Boolean {
         return false
     }
+
+    class Result(val name: Text, val desc: Text?, val prefix: Text?)
 }

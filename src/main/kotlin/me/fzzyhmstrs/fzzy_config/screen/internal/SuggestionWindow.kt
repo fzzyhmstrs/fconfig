@@ -42,6 +42,7 @@ internal class SuggestionWindow(
     private val suggestionSize = h / 12
     private var index = 0
 
+    @Suppress("UNUSED_PARAMETER")
     fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.matrices.push()
         context.matrices.translate(0f, 0f, 5f)
@@ -128,6 +129,7 @@ internal class SuggestionWindow(
         return !(mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         when (keyCode) {
             GLFW.GLFW_KEY_UP -> {
@@ -224,7 +226,7 @@ internal class SuggestionWindow(
                 applier,
                 closer)
         }
-        fun sortSuggestions(suggestions: Suggestions, text: String, cursor: Int): List<Suggestion> {
+        private fun sortSuggestions(suggestions: Suggestions, text: String, cursor: Int): List<Suggestion> {
             val string: String = (if(text.isNotEmpty()) text.substring(0, cursor) else text).lowercase()
             val list = Lists.newArrayList<Suggestion>()
             val list2 = Lists.newArrayList<Suggestion>()

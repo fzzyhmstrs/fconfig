@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
+import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -47,7 +48,7 @@ internal open class BaseConfigEntry(
     ElementListWidget.Entry<BaseConfigEntry>()
 {
 
-    private val truncatedName = ConfigApiImplClient.ellipses(name, if(widget is Decorated) 124 else 146)
+    private val truncatedName = ConfigApiImplClient.ellipses(name, if(widget is SpriteDecorated) 124 else 146)
     private val tooltip: List<OrderedText> by lazy {
         createTooltip()
     }
@@ -87,7 +88,7 @@ internal open class BaseConfigEntry(
         widget.setPosition(parent.getScrollbarX() - widget.width - 10, y)
         RenderSystem.disableDepthTest()
         widget.render(context, mouseX, mouseY, tickDelta)
-        if (widget is Decorated)
+        if (widget is SpriteDecorated)
             widget.renderDecoration(context, widget.x - 22, widget.y + 2, tickDelta)
         context.drawTextWithShadow(
             parent.getClient().textRenderer,

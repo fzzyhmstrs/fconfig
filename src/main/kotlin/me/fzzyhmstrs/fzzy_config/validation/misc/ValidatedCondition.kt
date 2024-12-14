@@ -13,7 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
-import me.fzzyhmstrs.fzzy_config.screen.entry.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -219,7 +219,8 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         private val activeSupplier: Supplier<Boolean>,
         private val conditionMessages: Supplier<List<Text>>,
         private val delegateWidget: ClickableWidget
-    ) : ActiveButtonWidget({ if(conditionMessages.get().size == 1) singleFailText ?: "fc.validated_field.condition".translate() else pluralFailText ?: singleFailText ?: "fc.validated_field.conditions".translate() }, width, height, activeSupplier, { _ -> }, null), Decorated {
+    ) : ActiveButtonWidget({ if(conditionMessages.get().size == 1) singleFailText ?: "fc.validated_field.condition".translate() else pluralFailText ?: singleFailText ?: "fc.validated_field.conditions".translate() }, width, height, activeSupplier, { _ -> }, null),
+        SpriteDecorated {
 
         override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activeSupplier.get()
