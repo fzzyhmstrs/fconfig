@@ -62,14 +62,21 @@ import kotlin.reflect.jvm.javaConstructor
  * @since 0.2.0
  */
 open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent {
+
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
-        return ConfigApi.deserializeFromToml(storedValue, toml, mutableListOf()).contextualize()
+        return ConfigApi.deserializeFromToml(copyStoredValue(), toml, mutableListOf()).contextualize()
     }
     @Internal
     override fun serialize(input: T): ValidationResult<TomlElement> {
         val errors = mutableListOf<String>()
         return ValidationResult.predicated(ConfigApi.serializeToToml(input, errors), errors.isEmpty(), "Errors encountered while serializing Object: $errors")
+    }
+
+    override fun deserializedChanged(old: Any?, new: Any?): Boolean {
+        old as? T ?: return true
+        new as? T ?: return true
+        return ConfigApi.serializeConfig(old, mutableListOf(), 1) != ConfigApi.serializeConfig(new, mutableListOf(), 1)
     }
 
     /**

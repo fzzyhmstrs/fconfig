@@ -110,6 +110,20 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         }
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
+
+    override fun deserializedChanged(old: Any?, new: Any?): Boolean {
+        old as? Set<T> ?: return true
+        new as? Set<T> ?: return true
+        if (old.size != new.size) return true
+        val o = old.toList()
+        val n = new.toList()
+        for ((index, e) in o.withIndex()) {
+            val e2 = n[index]
+            if (entryHandler.deserializedChanged(e, e2)) return true
+        }
+        return false
+    }
+
     @Internal
     override fun correctEntry(input: Set<T>, type: EntryValidator.ValidationType): ValidationResult<Set<T>> {
         val set: MutableSet<T> = mutableSetOf()
