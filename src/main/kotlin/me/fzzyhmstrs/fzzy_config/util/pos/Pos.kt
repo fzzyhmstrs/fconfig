@@ -43,6 +43,26 @@ interface Pos: Supplier<Int> {
      */
     fun dec(amount: Int)
 
+    operator fun plus(other: Pos): Int {
+        return this.get() + other.get()
+    }
+
+    operator fun minus(other: Pos): Int {
+        return this.get() - other.get()
+    }
+
+    operator fun times(other: Pos): Int {
+        return this.get() * other.get()
+    }
+
+    operator fun div(other: Pos): Int {
+        return this.get() / other.get()
+    }
+
+    operator fun rem(other: Pos): Int {
+        return this.get() % other.get()
+    }
+
     companion object {
         val ZERO = ImmutablePos(0)
     }
