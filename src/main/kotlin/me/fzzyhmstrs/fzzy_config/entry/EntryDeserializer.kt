@@ -24,4 +24,7 @@ import net.peanuuutz.tomlkt.TomlElement
 @FunctionalInterface
 fun interface EntryDeserializer<T> {
     fun deserializeEntry(toml: TomlElement, errorBuilder: MutableList<String>, fieldName: String, flags: Byte): ValidationResult<T>
+    fun deserializedChanged(old: Any?, new: Any?): Boolean {
+        return old != new
+    }
 }
