@@ -1,7 +1,19 @@
-package me.fzzyhmstrs.fzzy_config.screen.widget.internal
+/*
+ * Copyright (c) 2024 Fzzyhmstrs
+ *
+ * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+ *
+ * Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+ * You should have received a copy of the TDL-M with this software.
+ * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+ */
+
+package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
 import me.fzzyhmstrs.fzzy_config.util.pos.ImmutableSuppliedPos
@@ -36,7 +48,7 @@ class NewConfigListWidget(
     width: Int,
     height: Int)
 :
-CustomListWidget<NewConfigListWidget.Entry>(
+    CustomListWidget<NewConfigListWidget.Entry>(
     client,
     x,
     y,
@@ -414,10 +426,8 @@ CustomListWidget<NewConfigListWidget.Entry>(
 
         var visibility = Visibility.VISIBLE
 
-        protected open val x: Int
-            get() = parentElement.rowX()
-        protected open val w: Int
-            get() = parentElement.rowWidth()
+        protected open val x: Pos = ReferencePos { parentElement.rowX() }
+        protected open val w: Pos = ReferencePos { parentElement.rowWidth() }
 
         internal var top: EntryPos = EntryPos.ZERO
         internal var bottom: Pos = Pos.ZERO
@@ -451,7 +461,10 @@ CustomListWidget<NewConfigListWidget.Entry>(
                 previous.top.next = top
             }
             bottom = ImmutableSuppliedPos(top) { if (visibility.visible) h else 0 }
+            init()
         }
+
+        open fun init() {}
 
         fun scroll(dY: Int) {
             top.inc(dY)
@@ -485,7 +498,7 @@ CustomListWidget<NewConfigListWidget.Entry>(
         }
 
         override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
-            return mouseX >= x && mouseY >= top.get() && mouseX < (x + w) && mouseY < bottom.get()
+            return mouseX >= x.get() && mouseY >= top.get() && mouseX < (x + w) && mouseY < bottom.get()
         }
 
         override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -496,13 +509,13 @@ CustomListWidget<NewConfigListWidget.Entry>(
         override fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             if (!visibility.visible) return
             val t = top.get()
-            renderEntry(context, x, t, w, h, mouseX, mouseY, delta)
+            renderEntry(context, x.get(), t, w.get(), h, mouseX, mouseY, delta)
             val bl = this.isMouseOver(mouseX.toDouble(), mouseY.toDouble())
             if (isFocused || bl) {
-                renderBorder(context, x, t, w, h, mouseX, mouseY, delta)
+                renderBorder(context, x.get(), t, w.get(), h, mouseX, mouseY, delta)
             }
             if (bl) {
-                renderHighlight(context, x, t, w, h, mouseX, mouseY, delta)
+                renderHighlight(context, x.get(), t, w.get(), h, mouseX, mouseY, delta)
             }
         }
 
@@ -578,7 +591,8 @@ CustomListWidget<NewConfigListWidget.Entry>(
             }
         }
 
-        inner class ImmutableSuppliedEntryPos(parent: Pos, offset: Supplier<Int>, override val previous: EntryPos?, override var next: EntryPos? = null) : ImmutableSuppliedPos(parent, offset), EntryPos {
+        inner class ImmutableSuppliedEntryPos(parent: Pos, offset: Supplier<Int>, override val previous: EntryPos?, override var next: EntryPos? = null) : ImmutableSuppliedPos(parent, offset),
+                                                                                                                                                           EntryPos {
             override fun getEntry(): Entry? {
                 return this@Entry.takeIf { it.visibility.selectable }
             }
