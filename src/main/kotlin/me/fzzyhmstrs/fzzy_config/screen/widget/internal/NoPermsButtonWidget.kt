@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
-import me.fzzyhmstrs.fzzy_config.screen.entry.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -22,7 +22,8 @@ import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 
 //client
-internal class NoPermsButtonWidget(private val title: MutableText = FcText.translatable("fc.button.noPerms"), private val tooltipMessage: MutableText = FcText.translatable("fc.button.noPerms.desc")) : CustomPressableWidget(0, 0, 110, 20, FcText.empty()), Decorated {
+internal class NoPermsButtonWidget(private val title: MutableText = FcText.translatable("fc.button.noPerms"), private val tooltipMessage: MutableText = FcText.translatable("fc.button.noPerms.desc")) : CustomPressableWidget(0, 0, 110, 20, FcText.empty()),
+                                                                                                                                                                                                         SpriteDecorated {
 
     init {
         this.active = false
