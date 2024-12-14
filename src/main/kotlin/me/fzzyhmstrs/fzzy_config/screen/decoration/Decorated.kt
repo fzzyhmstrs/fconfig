@@ -8,7 +8,7 @@
 * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
 * */
 
-package me.fzzyhmstrs.fzzy_config.screen.entry
+package me.fzzyhmstrs.fzzy_config.screen.decoration
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
@@ -16,11 +16,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
 
 //client
-interface Decorated {
-    fun decorationId(): Identifier
-    fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
-        RenderSystem.enableBlend()
-        RenderSystem.enableDepthTest()
-        context.drawTex(decorationId(), x, y, 16, 16)
-    }
+@FunctionalInterface
+fun interface Decorated {
+    fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float)
 }

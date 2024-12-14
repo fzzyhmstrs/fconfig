@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
@@ -339,23 +340,23 @@ class PopupWidget
                 widget.height = widget.height + ((4 - set.spacingH) * 2)
             val posX = SuppliedPos(xPos, 0) { (wPos.get() - xPos.get()) / 2 - widget.width / 2 }
             val posY = RelPos(yPos, 0)
-            return PositionedElement(widget, posX, posY, Position.ALIGN_CENTER)
+            return PositionedElement(widget, set, posX, posY, Position.ALIGN_CENTER.cast())
         }
 
         private fun<E> createPositionedElement(set: PosSet, el: E, parent: String, positions: Array<out Position>): PositionedElement<E> where E: Widget {
             var newX: Pos = RelPos(set.x, set.spacingW)
             var newY: Pos = RelPos(set.y, set.spacingH)
             val parentEl = elements[parent] ?: titleElement
-            var alignment: PositionGlobalAlignment = parentEl.alignment
+            var alignment: LayoutWidget.PositionGlobalAlignment = parentEl.alignment
             for(pos in positions) {
                 val pair = pos.position(parentEl, el, set, newX, newY)
                 newX = pair.first
                 newY = pair.second
-                if (pos is PositionGlobalAlignment) {
+                if (pos is LayoutWidget.PositionGlobalAlignment) {
                     alignment = pos
                 }
             }
-            return PositionedElement(el, newX, newY, alignment)
+            return PositionedElement(el, set, newX, newY, alignment)
         }
 
         private var lastEl = "title"
@@ -915,11 +916,12 @@ class PopupWidget
          * Positions are broken down into 3 sub-categories:
          * - [PositionRelativePos] - How to generally position an element relative to its parent
          * - [PositionRelativeAlignment] - How to align an element in relation to the dimension features of its parent (top, bottom, left, and right edges etc.)
-         * - [PositionGlobalAlignment] - How to align an element in relation to the global dimensions of the Popup as a whole
+         * - [LayoutWidget.PositionGlobalAlignment] - How to align an element in relation to the global dimensions of the Popup as a whole
          * @author fzzyhmstrs
          * @since 0.2.0
          */
         //client
+        @Deprecated("Due for moving to LayoutWidget in 0.6.0")
         sealed interface Position {
             fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
 
@@ -929,79 +931,92 @@ class PopupWidget
              * @since 0.2.0
              */
             @Suppress("DEPRECATION", "UNUSED")
+            @Deprecated("Due for moving to LayoutWidget in 0.6.0")
             companion object Impl {
                 /**
                  * Positions an element below its parent. Does not define horizontal alignment or positioning.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val BELOW = PositionRelativePos.BELOW
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val BELOW: Position = LayoutWidget.PositionRelativePos.BELOW
                 /**
                  * Positions an element to the left of its parent. Does not define vertical alignment or positioning.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val LEFT = PositionRelativePos.LEFT
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val LEFT: Position = LayoutWidget.PositionRelativePos.LEFT
                 /**
                  * Positions an element to the right of its parent. Does not define vertical alignment or positioning.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val RIGHT = PositionRelativePos.RIGHT
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val RIGHT: Position = LayoutWidget.PositionRelativePos.RIGHT
                 /**
                  * Aligns an elements top edge horizontally with the top edge of its parent. Does not define any other position or alignment.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val HORIZONTAL_TO_TOP_EDGE = PositionRelativeAlignment.HORIZONTAL_TO_TOP_EDGE
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val HORIZONTAL_TO_TOP_EDGE: Position = LayoutWidget.PositionRelativeAlignment.HORIZONTAL_TO_TOP_EDGE
                 /**
                  * Aligns an elements bottom edge horizontally with the bottom edge of its parent. Does not define any other position or alignment.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val HORIZONTAL_TO_BOTTOM_EDGE = PositionRelativeAlignment.HORIZONTAL_TO_BOTTOM_EDGE
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val HORIZONTAL_TO_BOTTOM_EDGE: Position = LayoutWidget.PositionRelativeAlignment.HORIZONTAL_TO_BOTTOM_EDGE
                 /**
                  * Aligns an elements left edge vertically with the left edge of its parent. Does not define any other position or alignment.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val VERTICAL_TO_LEFT_EDGE = PositionRelativeAlignment.VERTICAL_TO_LEFT_EDGE
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val VERTICAL_TO_LEFT_EDGE: Position = LayoutWidget.PositionRelativeAlignment.VERTICAL_TO_LEFT_EDGE
                 /**
                  * Aligns an elements right edge vertically with the right edge of its parent. Does not define any other position or alignment.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val VERTICAL_TO_RIGHT_EDGE = PositionRelativeAlignment.VERTICAL_TO_RIGHT_EDGE
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val VERTICAL_TO_RIGHT_EDGE: Position = LayoutWidget.PositionRelativeAlignment.VERTICAL_TO_RIGHT_EDGE
                 /**
                  * Centers an element vertically relative to the vertical dimensions of its parent (top and bottom edges). Does not define any other position or alignment.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val CENTERED_VERTICALLY = PositionRelativeAlignment.CENTERED_VERTICALLY
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val CENTERED_VERTICALLY: Position = LayoutWidget.PositionRelativeAlignment.CENTERED_VERTICALLY
                 /**
                  * Centers an element horizontally relative to the horizontal dimensions of its parent (left and right edge). Does not define any other position or alignment.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val CENTERED_HORIZONTALLY = PositionRelativeAlignment.CENTERED_HORIZONTALLY
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val CENTERED_HORIZONTALLY: Position = LayoutWidget.PositionRelativeAlignment.CENTERED_HORIZONTALLY
                 /**
                  * Aligns an element to the left side of the Popup widget. Does not define any other position or alignment.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val ALIGN_LEFT = PositionGlobalAlignment.ALIGN_LEFT
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val ALIGN_LEFT: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT
                 /**
                  * Aligns an element to the right side of the Popup widget. Does not define any other position or alignment.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val ALIGN_RIGHT = PositionGlobalAlignment.ALIGN_RIGHT
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val ALIGN_RIGHT: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT
                 /**
                  * Centers an element relative to the width of the Popup widget. Does not define any other position or alignment.
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val ALIGN_CENTER = PositionGlobalAlignment.ALIGN_CENTER
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val ALIGN_CENTER: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_CENTER
                 /**
                  * Centers an element relative to the width of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
                  *
@@ -1011,7 +1026,8 @@ class PopupWidget
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val ALIGN_JUSTIFY = PositionGlobalAlignment.ALIGN_JUSTIFY
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val ALIGN_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_JUSTIFY
                 /**
                  * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
                  *
@@ -1021,7 +1037,8 @@ class PopupWidget
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val ALIGN_LEFT_AND_JUSTIFY = PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val ALIGN_LEFT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY
                 /**
                  * Aligns an element to the right side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
                  *
@@ -1031,119 +1048,18 @@ class PopupWidget
                  * @author fzzyhmstrs
                  * @since 0.2.0
                  */
-                val ALIGN_RIGHT_AND_JUSTIFY = PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY
+                @Deprecated("Due for moving to LayoutWidget in 0.6.0")
+                val ALIGN_RIGHT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY
             }
         }
 
         //client
         sealed interface PositionAlignment: Position
 
-        //client
-        enum class PositionRelativePos: Position {
-            @Deprecated("Use Positions Impl values")
-            BELOW {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(prevX, RelPos(parent.y, globalSet.spacingH + parent.elHeight()))
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            LEFT {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(parent.x, -el.width - globalSet.spacingW), prevY)
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            RIGHT {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(parent.x, parent.elWidth() + globalSet.spacingW), prevY)
-                }
-            }
-        }
-
-        //client
-        enum class PositionRelativeAlignment: PositionAlignment {
-            @Deprecated("Use Positions Impl values")
-            HORIZONTAL_TO_TOP_EDGE {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(prevX, RelPos(parent.y))
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            HORIZONTAL_TO_BOTTOM_EDGE {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(prevX, RelPos(parent.y, parent.elHeight() - el.height))
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            VERTICAL_TO_LEFT_EDGE {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(parent.x), prevY)
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            VERTICAL_TO_RIGHT_EDGE {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(SuppliedPos(parent.x, 0){ parent.elWidth() - el.width }, prevY)
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            CENTERED_HORIZONTALLY {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(SuppliedPos(parent.x, 0) { parent.elWidth()/2 - el.width/2 }, prevY)
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            CENTERED_VERTICALLY {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(prevX, RelPos(parent.y, parent.elHeight()/2 - el.height/2))
-                }
-            }
-        }
-
-        //client
-        enum class PositionGlobalAlignment: PositionAlignment {
-            @Deprecated("Use Positions Impl values")
-            ALIGN_LEFT {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(globalSet.x), prevY)
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            ALIGN_RIGHT {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            ALIGN_CENTER {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            ALIGN_JUSTIFY {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            ALIGN_LEFT_AND_JUSTIFY {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(RelPos(globalSet.x), prevY)
-                }
-            },
-            @Deprecated("Use Positions Impl values")
-            ALIGN_RIGHT_AND_JUSTIFY {
-                override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                    return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
-                }
-            }
-        }
-
         @Internal
         @Suppress("UNUSED")
         //client
-        class PositionedElement<T>(val element: T, var x: Pos, var y: Pos, val alignment: PositionGlobalAlignment) where T: Widget {
+        class PositionedElement<T>(val element: T, val set: PosSet, var x: Pos, var y: Pos, val alignment: LayoutWidget.PositionGlobalAlignment) where T: Widget {
             private fun upDown(): IntRange {
                 return IntRange(getTop(), getBottom())
             }

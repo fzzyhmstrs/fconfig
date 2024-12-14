@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.screen.entry.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Selectable
@@ -28,7 +28,8 @@ import net.minecraft.util.Identifier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class DecorationWrappedWidget(private val child: ClickableWidget, private val decoration: Identifier): ClickableWidget(child.x, child.y, child.width, child.height, FcText.empty()), Decorated {
+class DecorationWrappedWidget(private val child: ClickableWidget, private val decoration: Identifier): ClickableWidget(child.x, child.y, child.width, child.height, FcText.empty()),
+                                                                                                       SpriteDecorated {
 
     override fun decorationId(): Identifier {
         return decoration
