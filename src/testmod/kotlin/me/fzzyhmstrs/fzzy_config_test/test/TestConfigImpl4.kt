@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedEntityAttribute
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
@@ -121,6 +122,16 @@ class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
     ) }) }
 
     var validatedBlock = ValidatedRegistryType.of(Registries.BLOCK)
+
+    class MyTestAny {
+        var test: Int = 5
+        var test2: Double = 4.5
+        var test3: String = "ggg"
+    }
+
+    var myMap: ValidatedStringMap<MyTestAny> = ValidatedStringMap(mapOf("a" to MyTestAny(), "b" to MyTestAny()), ValidatedString(), ValidatedAny(MyTestAny()))
+
+
     /*
     {
      "bl1": false,

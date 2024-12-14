@@ -159,6 +159,23 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
             ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
         }
     }
+
+    override fun deserializedChanged(old: Any?, new: Any?): Boolean {
+        old as? Map<Identifier, V> ?: return true
+        new as? Map<Identifier, V> ?: return true
+        val checked: MutableList<Identifier> = mutableListOf()
+        for ((k, v) in old) {
+            if (!new.containsKey(k)) return true
+            if (valueHandler.deserializedChanged(v, new[k])) return true
+            checked.add(k)
+        }
+        for ((k, _) in new) {
+            if (checked.contains(k)) continue
+            return true
+        }
+        return false
+    }
+
     @Internal
     override fun validateEntry(input: Map<Identifier, V>, type: EntryValidator.ValidationType): ValidationResult<Map<Identifier, V>> {
         val keyErrors: MutableList<String> = mutableListOf()

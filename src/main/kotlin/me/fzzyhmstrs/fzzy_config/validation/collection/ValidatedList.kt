@@ -117,6 +117,18 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         }
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
+
+    override fun deserializedChanged(old: Any?, new: Any?): Boolean {
+        old as? List<T> ?: return true
+        new as? List<T> ?: return true
+        if (old.size != new.size) return true
+        for ((index, e) in old.withIndex()) {
+            val e2 = new[index]
+            if (entryHandler.deserializedChanged(e, e2)) return true
+        }
+        return false
+    }
+
     @Internal
     override fun correctEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val list: MutableList<T> = mutableListOf()
