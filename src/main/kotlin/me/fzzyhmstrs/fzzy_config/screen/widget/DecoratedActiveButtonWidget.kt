@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.screen.entry.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import java.util.function.Consumer
@@ -40,7 +40,7 @@ open class DecoratedActiveButtonWidget(
     background: Background? = null)
     :
     ActiveButtonWidget(titleSupplier, width, height, activeProvider, pressAction, background),
-    Decorated {
+    SpriteDecorated {
 
     constructor(title: Text,
                 width: Int,

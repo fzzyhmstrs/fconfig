@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import net.minecraft.server.network.ServerPlayerEntity
@@ -44,7 +45,7 @@ import net.minecraft.util.Identifier
  * @since 0.2.0
  */
 @Suppress("unused")
-open class Config @JvmOverloads constructor(protected val identifier: Identifier, val subfolder: String = "", val folder: String = identifier.namespace, val name: String = identifier.path): Walkable, Translatable {
+open class Config @JvmOverloads constructor(protected val identifier: Identifier, val subfolder: String = "", val folder: String = identifier.namespace, val name: String = identifier.path): Walkable, Translatable, EntryAnchor {
 
 
     /**
