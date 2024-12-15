@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomListWidget
@@ -21,10 +22,7 @@ import me.fzzyhmstrs.fzzy_config.util.pos.Pos
 import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
 import me.fzzyhmstrs.fzzy_config.util.pos.RelPos
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.ParentElement
-import net.minecraft.client.gui.Selectable
+import net.minecraft.client.gui.*
 import net.minecraft.client.gui.navigation.GuiNavigation
 import net.minecraft.client.gui.navigation.GuiNavigation.Arrow
 import net.minecraft.client.gui.navigation.GuiNavigationPath
@@ -33,6 +31,7 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.text.Text
+import net.minecraft.util.math.MathHelper
 import java.util.*
 import java.util.function.Function
 import java.util.function.Supplier
@@ -65,6 +64,14 @@ class NewConfigListWidget(
 
     private val entries: Entries by lazy {
         Entries(entryBuilders.map { it.apply(this) })
+    }
+
+    fun search(searchInput: String): Int {
+        return entries.search(searchInput)
+    }
+
+    fun toggleGroup(g: String) {
+        entries.toggleGroup(g)
     }
 
     override fun selectableEntries(): List<Entry> {
@@ -125,8 +132,18 @@ class NewConfigListWidget(
     }
 
     override fun handleScrollByBar(scrollAmount: Int): Boolean {
-        if (entries.isEmpty()) return false
-        entries.scroll(scrollAmount)
+        if (entries.isEmpty() || scrollAmount == 0) return false
+        if (scrollAmount > 0) {
+            val topDelta = -topDelta()
+            if (topDelta == 0) return true
+            val clampedDist = min(topDelta, scrollAmount)
+            entries.scroll(clampedDist)
+        } else {
+            val bottomDelta = -bottomDelta()
+            if (bottomDelta >= 0) return true
+            val clampedDist = max(bottomDelta, scrollAmount)
+            entries.scroll(clampedDist)
+        }
         return true
     }
 
@@ -173,13 +190,19 @@ class NewConfigListWidget(
                     }
                     var entry2: Entry? = entry
                     var guiNavigationPath: GuiNavigationPath?
+
+                    var c = 0
+
                     do {
                         entry2 = this.entries.getNextEntry(navigation.direction(), entry2)
                         if (entry2 == null) {
                             return null
                         }
                         guiNavigationPath = entry2.getNavigationPath(navigation)
-                    } while (guiNavigationPath == null)
+                        FC.DEVLOG.info("Nav1")
+                        FC.DEVLOG.info(guiNavigationPath.toString())
+                        c++
+                    } while (guiNavigationPath == null && c < 25)
                     return GuiNavigationPath.of(this, guiNavigationPath)
                 }
             } else {
@@ -192,6 +215,8 @@ class NewConfigListWidget(
                         return null
                     }
                     guiNavigationPath = entry2.getNavigationPath(navigation)
+                    FC.DEVLOG.info("Nav 2")
+                    FC.DEVLOG.info(guiNavigationPath.toString())
                 } while (guiNavigationPath == null)
 
                 return GuiNavigationPath.of(this, guiNavigationPath)
@@ -346,12 +371,20 @@ class NewConfigListWidget(
                 }
                 groupPair.visible = true
             }
+            val last = lastSelectable()
+            if (last == null) {
+                scrollToTop()
+            } else if (last.bottom.get() < this@NewConfigListWidget.top) {
+                this@NewConfigListWidget.ensureVisible(last)
+            }
         }
 
-        fun top() = delegate.firstOrNull()?.top?.get() ?: this@NewConfigListWidget.top
+        fun top(): Int {
+            return firstSelectable()?.top?.get() ?: this@NewConfigListWidget.top
+        }
 
         fun bottom(): Int {
-            return delegate.lastOrNull()?.bottom?.get() ?: this@NewConfigListWidget.bottom
+            return lastSelectable()?.bottom?.get() ?: this@NewConfigListWidget.bottom
         }
 
         fun scrollToTop(): Boolean {
@@ -406,15 +439,20 @@ class NewConfigListWidget(
         }
 
         fun getNextEntry(direction: NavigationDirection, entry: Entry?): Entry? {
+            FC.DEVLOG.info("This Entry")
+            FC.DEVLOG.info(entry.toString())
+            FC.DEVLOG.info("Next Entry")
             return if (entry == null) {
+                FC.DEVLOG.info("NULL")
                 when (direction) {
                     NavigationDirection.UP -> lastSelectable()
                     NavigationDirection.DOWN -> firstSelectable()
                     NavigationDirection.LEFT -> firstSelectable()
                     NavigationDirection.RIGHT -> lastSelectable()
-                }
+                }.also { FC.DEVLOG.info(it.toString()) }
             } else {
-                entry.getNeighbor(!direction.isPositive)
+                FC.DEVLOG.info("NOT NULL")
+                entry.getNeighbor(!direction.isPositive)?.also { FC.DEVLOG.info(it.toString()) }
             }
         }
     }
@@ -450,6 +488,11 @@ class NewConfigListWidget(
         }
 
         fun onAdd(parentPos: Pos, previous: Entry?) {
+            FC.DEVLOG.info("ON_ADD")
+            FC.DEVLOG.info(parentPos.toString())
+            FC.DEVLOG.info(previous.toString())
+            FC.DEVLOG.info(this.toString())
+
             if (previous == null) {
                 top = RelEntryPos(parentPos, null)
             } else {
@@ -458,10 +501,14 @@ class NewConfigListWidget(
                     { if (visibility.visible) verticalPadding.get() else 0 },
                     previous.top
                 )
+
+                FC.DEVLOG.info(top.toString())
                 previous.top.next = top
+                FC.DEVLOG.info(previous.top.toString())
             }
             bottom = ImmutableSuppliedPos(top) { if (visibility.visible) h else 0 }
             init()
+            FC.DEVLOG.info("")
         }
 
         open fun init() {}
@@ -479,6 +526,10 @@ class NewConfigListWidget(
         }
 
         override fun setFocused(focused: Boolean) {
+            if (!focused) {
+                this.focusedElement?.isFocused = false
+                this.focusedElement = null
+            }
         }
 
         override fun getFocused(): Element? {
@@ -486,6 +537,8 @@ class NewConfigListWidget(
         }
 
         override fun setFocused(focused: Element?) {
+            this.focusedElement?.isFocused = false
+            focused?.isFocused = true
             this.focusedElement = focused
         }
 
@@ -529,8 +582,29 @@ class NewConfigListWidget(
             return super<ParentElement>.getFocusedPath()
         }
 
-        override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
+        override fun getNavigationPath(navigation: GuiNavigation): GuiNavigationPath? {
+            if (children().isEmpty()) return null
+            if (navigation is Arrow) {
+                val i = if(navigation.direction().isPositive) 1 else -1
+
+                val j = MathHelper.clamp(i + children().indexOf(this.focused), 0, children().size - 1)
+
+                var k = j
+                while (k >= 0 && k < children().size) {
+                    val element = children()[k] as Element
+                    val guiNavigationPath = element.getNavigationPath(navigation)
+                    if (guiNavigationPath != null) {
+                        return GuiNavigationPath.of(this, guiNavigationPath)
+                    }
+                    k += i
+                }
+            }
+
             return super<ParentElement>.getNavigationPath(navigation)
+        }
+
+        override fun getNavigationFocus(): ScreenRect {
+            return ScreenRect(x.get(), top.get(), w.get(), h)
         }
 
         override fun appendNarrations(builder: NarrationMessageBuilder) {
@@ -555,6 +629,10 @@ class NewConfigListWidget(
             }
         }
 
+        override fun toString(): String {
+            return "Entry($scope#$group)"
+        }
+
 
         interface EntryPos: Pos {
             val previous: EntryPos?
@@ -569,7 +647,11 @@ class NewConfigListWidget(
             }
 
             fun getSelectableNeighbor(up: Boolean): Entry? {
-                return getEntry() ?: neighbor(up)?.getSelectableNeighbor(up)
+                return neighbor(up)?.getThisOrSelectableNeighbor(up)
+            }
+
+            fun getThisOrSelectableNeighbor(up: Boolean): Entry? {
+                return getEntry() ?: neighbor(up)?.getThisOrSelectableNeighbor(up)
             }
 
             companion object {
@@ -586,6 +668,7 @@ class NewConfigListWidget(
         }
 
         inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null) : RelPos(parent), EntryPos {
+
             override fun getEntry(): Entry? {
                 return this@Entry.takeIf { it.visibility.selectable }
             }
@@ -595,6 +678,10 @@ class NewConfigListWidget(
                                                                                                                                                            EntryPos {
             override fun getEntry(): Entry? {
                 return this@Entry.takeIf { it.visibility.selectable }
+            }
+
+            override fun toString(): String {
+                return "[${parent.get()} + ${offset.get()}](${previous?.getEntry()}|${next?.getEntry()})"
             }
         }
     }

@@ -11,9 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_ERROR
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_OK
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds.ENTRY_ONGOING
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -46,7 +43,7 @@ import java.util.function.Supplier
 @Suppress("LeakingThis")
 //client
 open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int, private val wrappedValue: Supplier<T>, private val choiceValidator: ChoiceValidator<T>, private val validationProvider: Function<Double, ValidationResult<T>>, private val applier: Consumer<T> = Consumer { _ ->}):
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.empty())
+    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY)
 {
 
     private var cachedWrappedValue: T = wrappedValue.get()
@@ -63,6 +60,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
      * @author fzzyhmstrs
      * @since 0.2.0
      */
+    @Deprecated("Scheduled for removal 0.6.0")
     fun prefixed(prefix: Text): ValidationBackedNumberFieldWidget<T> {
         this.prefix = prefix
         return this
@@ -74,6 +72,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
      * @author fzzyhmstrs
      * @since 0.2.0
      */
+    @Deprecated("Scheduled for removal 0.6.0")
     fun getValue(): T {
         return storedValue
     }
@@ -96,15 +95,15 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
             }
         }
         super.renderButton(context, mouseX, mouseY, delta)
-        if(isValid) {
+        val id = if(isValid) {
             if (ongoingChanges())
-                context.drawTex(ENTRY_ONGOING, x + width - 20, y, 20, 20)
+                TextureIds.ENTRY_ONGOING
             else
-                context.drawTex(ENTRY_OK, x + width - 20, y, 20, 20)
+                TextureIds.ENTRY_OK
         } else {
-            context.drawTex(ENTRY_ERROR, x + width - 20, y, 20, 20)
+            TextureIds.ENTRY_ERROR
         }
-
+        context.drawTex(id, x + width - 20, y, 20, 20)
     }
 
     override fun getInnerWidth(): Int {

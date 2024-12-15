@@ -335,7 +335,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             delegateWidget.y = y
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
             if (active)
                 delegateWidget.appendNarrations(builder)
             else

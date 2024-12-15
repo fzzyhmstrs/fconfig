@@ -37,7 +37,7 @@ import java.util.function.Supplier
 @Suppress("LeakingThis")
 //client
 open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected val wrappedValue: Supplier<String>, protected val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, protected val applier: Consumer<String>):
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.empty())
+    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY)
 {
 
     protected var cachedWrappedValue: String = wrappedValue.get()
@@ -67,15 +67,15 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
             }
         }
         super.renderButton(context, mouseX, mouseY, delta)
-        if(isValid) {
+        val id = if(isValid) {
             if (ongoingChanges())
-                context.drawTex(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
+                TextureIds.ENTRY_ONGOING
             else
-                context.drawTex(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
+                TextureIds.ENTRY_OK
         } else {
-            context.drawTex(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
+            TextureIds.ENTRY_ERROR
         }
-
+        context.drawTex(id, x + width - 20, y, 20, 20)
     }
 
     protected open fun isValidTest(s: String): Boolean {

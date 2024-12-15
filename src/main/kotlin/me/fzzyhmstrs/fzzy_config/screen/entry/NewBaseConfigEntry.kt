@@ -10,18 +10,30 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
+import jdk.javadoc.internal.doclets.formats.html.markup.ContentBuilder
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.NewConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DecorationWidget
+import me.fzzyhmstrs.fzzy_config.util.Translatable
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
+import net.minecraft.client.gui.widget.MultilineTextWidget
+import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.text.Text
+import java.util.function.UnaryOperator
 
-open class NewBaseConfigEntry protected constructor(private val layout: LayoutWidget, parentElement: NewConfigListWidget, h: Int, name: Text, desc: Text, scope: String, group: String = "") :
+class NewBaseConfigEntry(builder: ContentBuilder, parentElement: NewConfigListWidget, h: Int, name: Text, desc: Text, scope: String, group: String = "") :
     NewConfigListWidget.Entry(parentElement, h, name, desc, scope, group)
 {
 
+    /*
+    Validated Field will be EntryCreator
+     */
+
+    private val layout: LayoutWidget = builder.build()
     private var selectables: List<Selectable> = listOf()
     private var drawables: List<Drawable> = listOf()
     private var children: MutableList<out Element> = mutableListOf()
@@ -42,5 +54,33 @@ open class NewBaseConfigEntry protected constructor(private val layout: LayoutWi
 
     override fun selectableChildren(): List<Selectable> {
         return selectables
+    }
+
+
+    class ContentBuilder(translationResult: Translatable.Result) {
+        private var mainLayout: LayoutWidget = LayoutWidget(paddingW = 0, spacingW = 0)
+        private var contentLayout: LayoutWidget = LayoutWidget(paddingW = 0).clampWidth(110)
+        private val decoration = DecorationWidget()
+
+        init {
+            val titleWidget = TextWidget(70, 20, translationResult.name, MinecraftClient.getInstance().textRenderer)
+            val prefixWidget = translationResult.prefix?.let { /*MultilineTextWidget(70, 20, it, MinecraftClient.getInstance().textRenderer)*/ }
+        }
+
+        fun layoutMain(layoutOperations: UnaryOperator<LayoutWidget>): ContentBuilder {
+            mainLayout = layoutOperations.apply(mainLayout)
+            return this
+        }
+
+        fun layoutContent(layoutOperations: UnaryOperator<LayoutWidget>): ContentBuilder {
+            contentLayout = layoutOperations.apply(contentLayout)
+            return this
+        }
+
+
+        internal fun build(): LayoutWidget {
+            TODO()
+        }
+
     }
 }

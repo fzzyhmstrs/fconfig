@@ -16,7 +16,7 @@ import java.util.function.Supplier
  * An immutable [Pos] based on a reference value supplier. Mutation of this pos will have no effect.
  * @param reference Supplier - the reference supplied value
  * @author fzzyhmstrs
- * @since 0.5.9
+ * @since 0.6.0
  */
 class ReferencePos constructor(private val reference: Supplier<Int>): Pos {
     override fun get(): Int {

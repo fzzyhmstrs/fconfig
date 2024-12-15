@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config_test
 import com.mojang.brigadier.CommandDispatcher
+import com.mojang.brigadier.arguments.IntegerArgumentType
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.util.Expression
@@ -78,13 +79,13 @@ object FC: ModInitializer {
         assertConstExpression("floor(4.5)", 4.0, expressionTestResults)
         assertConstExpression("round(4.25)", 4.0, expressionTestResults)
         assertConstExpression("ln(4.5)", kotlin.math.ln(4.5), expressionTestResults)
-        assertConstExpression("log(4, 4)", kotlin.math.log(4.0,4.0), expressionTestResults)
+        assertConstExpression("log(4, 4)", kotlin.math.log(4.0, 4.0), expressionTestResults)
         assertConstExpression("log10(5)", kotlin.math.log10(5.0), expressionTestResults)
         assertConstExpression("log2(5)", kotlin.math.log2(5.0), expressionTestResults)
-        assertConstExpression("abs(-4.5)", 4.5,expressionTestResults)
+        assertConstExpression("abs(-4.5)", 4.5, expressionTestResults)
         assertConstExpression("sin(4.5)", MathHelper.sin(4.5.toFloat()).toDouble(), expressionTestResults)
         assertConstExpression("cos(4.5)", MathHelper.cos(4.5.toFloat()).toDouble(), expressionTestResults)
-        assertConstExpression("incr(4.268, 0.1)", 4.2,expressionTestResults)
+        assertConstExpression("incr(4.268, 0.1)", 4.2, expressionTestResults)
         assertConstExpression("max(4.55, 0.1)", 4.55, expressionTestResults)
         assertConstExpression("min(4.55, 0.1)", 0.1, expressionTestResults)
         println(expressionTestResults)
@@ -127,9 +128,10 @@ object FC: ModInitializer {
 object FCC: ClientModInitializer {
 
     var openDamnScreen = ""
+    var entries = 5
 
     //val testEnum = ValidatedEnum(Selectable.SelectionType.FOCUSED)
-    //val testEnum2 = ValidatedEnum(Selectable.SelectionType.FOCUSED,ValidatedEnum.WidgetType.CYCLING)
+    //val testEnum2 = ValidatedEnum(Selectable.SelectionType.FOCUSED, ValidatedEnum.WidgetType.CYCLING)
     val testInt = ValidatedInt(8, 16, 0)
     val testInt2 = ValidatedInt(8, Int.MAX_VALUE, 0, ValidatedNumber.WidgetType.TEXTBOX)
     val testString = ValidatedString.Builder("chickenfrog")
@@ -170,7 +172,7 @@ object FCC: ClientModInitializer {
         }
         ClientTickEvents.START_CLIENT_TICK.register{client ->
             if (openDamnScreen == "please") {
-                client.setScreen(TestPopupScreen())
+                client.setScreen(TestPopupScreen(entries))
                 openDamnScreen = ""
             } else if (openDamnScreen == "the_big_one") {
                 ConfigApi.openScreen("fzzy_config_test")
@@ -187,6 +189,16 @@ object FCC: ClientModInitializer {
                     openDamnScreen = "please"
                     1
                 }
+                .then(
+                    ClientCommandManager.argument("count", IntegerArgumentType.integer(1))
+                        .executes { context ->
+                            val entries = IntegerArgumentType.getInteger(context, "count")
+                            this.openDamnScreen = "please"
+                            this.entries = entries
+                            1
+                        }
+
+                )
 
         )
         dispatcher.register(

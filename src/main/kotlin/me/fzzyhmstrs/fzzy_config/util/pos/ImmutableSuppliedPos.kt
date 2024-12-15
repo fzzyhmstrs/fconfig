@@ -17,9 +17,9 @@ import java.util.function.Supplier
  * @param parent Pos - the Pos this is relative to
  * @param offset Supplier<Int> - the supplied offset compared to the parent
  * @author fzzyhmstrs
- * @since 0.5.9
+ * @since 0.6.0
  */
-open class ImmutableSuppliedPos(private val parent: Pos, private val offset: Supplier<Int>): Pos {
+open class ImmutableSuppliedPos(protected val parent: Pos, protected val offset: Supplier<Int>): Pos {
     override fun get(): Int {
         return parent.get() + offset.get()
     }

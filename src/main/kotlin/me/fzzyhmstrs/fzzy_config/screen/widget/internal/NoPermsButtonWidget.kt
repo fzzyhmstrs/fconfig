@@ -22,19 +22,15 @@ import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 
 //client
-internal class NoPermsButtonWidget(private val title: MutableText = FcText.translatable("fc.button.noPerms"), private val tooltipMessage: MutableText = FcText.translatable("fc.button.noPerms.desc")) : CustomPressableWidget(0, 0, 110, 20, FcText.empty()),
-                                                                                                                                                                                                         SpriteDecorated {
+internal class NoPermsButtonWidget(private val title: MutableText = FcText.translatable("fc.button.noPerms"), private val tooltipMessage: MutableText = FcText.translatable("fc.button.noPerms.desc"))
+    : CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY), SpriteDecorated {
 
     init {
         this.active = false
     }
 
-    override fun getNarrationMessage(): MutableText {
-        return this.message.copy()
-    }
-
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        builder.put(NarrationPart.TITLE, this.narrationMessage)
+    override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+        builder?.put(NarrationPart.TITLE, message)
         //builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
     }
 
@@ -46,9 +42,6 @@ internal class NoPermsButtonWidget(private val title: MutableText = FcText.trans
         val i = x + xMargin
         val j = x + getWidth() - xMargin
         drawScrollableText(context, textRenderer, title, i, y, j, y + getHeight(), color)
-    }
-
-    override fun onPress() {
     }
 
     override fun decorationId(): Identifier {

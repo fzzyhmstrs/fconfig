@@ -39,7 +39,7 @@ interface Translatable {
      *
      * Both descriptions and prefixes are narrated like "hints" (tooltips), so usage of either and/or both is equivalent for narration except that prefixes are narrated before descriptions.
      * @author fzzyhmstrs
-     * @since 0.5.10
+     * @since 0.6.0
      */
     fun prefixKey(): String {
         return ""
@@ -64,7 +64,7 @@ interface Translatable {
     /**
      * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered.
      * @author fzzyhmstrs
-     * @since 0.5.10
+     * @since 0.6.0
      */
     fun prefix(fallback: String? = null): MutableText {
         return FcText.translatableWithFallback(prefixKey(), fallback ?: "")
@@ -92,7 +92,7 @@ interface Translatable {
      * Whether this Translatable has a valid prefix
      * @return Boolean - If there is a valid prefix.
      * @author fzzyhmstrs
-     * @since 0.5.10
+     * @since 0.6.0
      */
     fun hasPrefix(): Boolean {
         return false
