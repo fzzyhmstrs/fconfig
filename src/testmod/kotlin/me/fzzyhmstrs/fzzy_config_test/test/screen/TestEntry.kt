@@ -13,7 +13,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
 class TestEntry(parentElement: NewConfigListWidget, scope: String, group: Int, index: Int, private val n: Text) :
-    NewConfigListWidget.Entry(parentElement, 24, scope.lit(), FcText.empty(), scope, group.toString())
+    NewConfigListWidget.Entry(parentElement, scope.lit(), FcText.empty(), scope, group.toString())
 {
 
     init {
@@ -25,6 +25,7 @@ class TestEntry(parentElement: NewConfigListWidget, scope: String, group: Int, i
     private val button: ButtonWidget = ButtonWidget.builder(n) { _ -> FC.LOGGER.info("I Pressed {} for height {}", n, h); h += 5 }.size(75, 20).build()
 
     private val childs = mutableListOf(button)
+    override var h: Int = 24
 
     override fun selectableChildren(): List<Selectable> {
         return childs
@@ -38,6 +39,8 @@ class TestEntry(parentElement: NewConfigListWidget, scope: String, group: Int, i
         height: Int,
         mouseX: Int,
         mouseY: Int,
+        hovered: Boolean,
+        focused: Boolean,
         delta: Float
     ) {
         button.setPosition(x + width - 75, y + 2)
@@ -45,7 +48,18 @@ class TestEntry(parentElement: NewConfigListWidget, scope: String, group: Int, i
         context.drawText(MinecraftClient.getInstance().textRenderer, "Test Entry".lit(), x + 2, y + 6, 0xFFFFFF, true)
     }
 
-    override fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderBorder(
+        context: DrawContext,
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        mouseX: Int,
+        mouseY: Int,
+        hovered: Boolean,
+        focused: Boolean,
+        delta: Float
+    ) {
         context.drawBorder(x, y, width, height, Colors.WHITE)
     }
 
