@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text

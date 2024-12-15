@@ -53,10 +53,11 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         hPos.set(newHeight - (2 * paddingH))
     }
 
-    fun setPos(x: Pos, y: Pos) {
+    fun setPos(x: Pos, y: Pos): LayoutWidget {
         this.x = x
         this.y = y
         updateElements()
+        return this
     }
 
     override fun setX(x: Int) {
@@ -121,10 +122,11 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         }
     }
 
-    fun categorize(children: MutableList<Element>, drawables: MutableList<Drawable>, selectables: MutableList<Selectable>, narratables: MutableList<AbstractTextWidget>) {
+    fun categorize(children: MutableList<Element>, drawables: MutableList<Drawable>, selectables: MutableList<Selectable>, other: Consumer<Widget>) {
         for ((_, posEl) in elements) {
             if (posEl.element is LayoutWidget) { //child layouts ship their children flat, since layouts just position things, they don't actually manage them like parent elements
-                posEl.element.categorize(children, drawables, selectables, narratables)
+                posEl.element.categorize(children, drawables, selectables, other)
+                other.accept(posEl.element)
                 continue
             }
             if(posEl.element is Element)
@@ -133,8 +135,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
                 drawables.add(posEl.element)
             if(posEl.element is Selectable)
                 selectables.add(posEl.element)
-            if(posEl.element is AbstractTextWidget)
-                narratables.add(posEl.element)
+            other.accept(posEl.element)
         }
     }
 
@@ -229,8 +230,8 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         var maxW = 0
         var maxH = 0
         for ((_, posEl) in elements) {
-            maxW = (posEl.getRight() + paddingW - ((posEl.getLeft() - paddingW).takeIf { it < 0 } ?: 0)).takeIf { it > maxW } ?: maxW //6 = outer edge padding
-            maxH = (posEl.getBottom() + paddingH).takeIf { it > maxH } ?: maxH //6 = outer edge padding
+            maxW = (posEl.getRight() + paddingW - ((posEl.getLeft() - paddingW).takeIf { it < 0 } ?: 0)).takeIf { it > maxW } ?: maxW
+            maxH = (posEl.getBottom() + paddingH).takeIf { it > maxH } ?: maxH
         }
         if (manualWidth <= 0)
             updateWidth(maxW)
@@ -243,6 +244,11 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     }
 
     fun compute(): LayoutWidget {
+        for (posEl in elements.values) {
+            if (posEl.element is LayoutWidget) {
+                posEl.element.compute()
+            }
+        }
         attemptRecomputeDims()
         attemptRecomputeDims()
         for (posEl in elements.values) {
