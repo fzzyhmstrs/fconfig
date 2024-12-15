@@ -40,6 +40,7 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
      * @author fzzyhmstrs
      * @since 0.2.0
      */
+    @Deprecated("Scheduled for removal 0.6.0")
     private fun align(horizontalAlignment: Float): ClickableTextWidget {
         this.horizontalAlignment = horizontalAlignment
         return this
@@ -50,6 +51,7 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
      * @author fzzyhmstrs
      * @since 0.2.0
      */
+    @Deprecated("Scheduled for removal 0.6.0")
     fun alignLeft(): ClickableTextWidget {
         return this.align(0.0f)
     }
@@ -59,6 +61,7 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
      * @author fzzyhmstrs
      * @since 0.2.0
      */
+    @Deprecated("Scheduled for removal 0.6.0")
     fun alignCenter(): ClickableTextWidget {
         return this.align(0.5f)
     }
@@ -68,6 +71,7 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
      * @author fzzyhmstrs
      * @since 0.2.0
      */
+    @Deprecated("Scheduled for removal 0.6.0")
     fun alignRight(): ClickableTextWidget {
         return this.align(1.0f)
     }

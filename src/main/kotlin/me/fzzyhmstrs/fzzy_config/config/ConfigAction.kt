@@ -88,7 +88,7 @@ class ConfigAction @JvmOverloads constructor(
      * @since 0.5.0
      */
     class Builder {
-        private var titleSupplier: Supplier<Text> = Supplier { FcText.empty() }
+        private var titleSupplier: Supplier<Text> = Supplier { FcText.EMPTY }
         private var activeSupplier: Supplier<Boolean> = Supplier { true }
         private var desc: Text? = null
         private var background: ActiveButtonWidget.Background? = null

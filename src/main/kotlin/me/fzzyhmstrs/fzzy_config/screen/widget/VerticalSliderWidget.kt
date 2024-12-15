@@ -78,7 +78,6 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
         }
         context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
         RenderSystem.enableBlend()
-        RenderSystem.defaultBlendFunc()
         RenderSystem.enableDepthTest()
         context.drawNineSlice(getTexture(), x, y, getWidth(), getHeight(), 1, 1, 200, 20)
         context.drawNineSlice(getHandlerTexture(), x, y + (value * (height - 8).toDouble()).toInt(), getWidth(), 8, 2, 2, 20, 8)

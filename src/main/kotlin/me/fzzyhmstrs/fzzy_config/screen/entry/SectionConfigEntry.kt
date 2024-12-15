@@ -16,6 +16,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 
 //client
+@Deprecated("To Remove")
 internal open class SectionConfigEntry(
     name: Text,
     description: Text,

@@ -44,7 +44,7 @@ open class TextlessActionWidget(
     private val activeSupplier: Supplier<Boolean>,
     private val pressAction: Consumer<TextlessActionWidget>)
     :
-    CustomPressableWidget(0, 0, 20, 20, FcText.empty())
+    CustomPressableWidget(0, 0, 20, 20, FcText.EMPTY)
 {
 
     private fun getTex(): Identifier {
@@ -69,10 +69,6 @@ open class TextlessActionWidget(
 
     override fun getNarrationMessage(): MutableText {
         return if(active) activeNarration.copy() else inactiveNarration.copy()
-    }
-
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        appendDefaultNarrations(builder)
     }
 
     override fun onPress() {

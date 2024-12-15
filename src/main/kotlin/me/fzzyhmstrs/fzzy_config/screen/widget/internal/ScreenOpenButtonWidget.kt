@@ -22,8 +22,8 @@ import net.minecraft.util.Identifier
 import java.util.function.Consumer
 
 //client
-internal class ScreenOpenButtonWidget(private val buttonTitle: Text, private val pressAction: Consumer<ScreenOpenButtonWidget>) : CustomPressableWidget(0, 0, 110, 20, FcText.empty()),
-                                                                                                                                  SpriteDecorated {
+internal class ScreenOpenButtonWidget(private val buttonTitle: Text, private val pressAction: Consumer<ScreenOpenButtonWidget>)
+    : CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY), SpriteDecorated {
 
     override fun getNarrationMessage(): MutableText {
         return this.message.copy()
@@ -33,10 +33,6 @@ internal class ScreenOpenButtonWidget(private val buttonTitle: Text, private val
         val i = x + xMargin
         val j = x + getWidth() - xMargin
         drawScrollableText(context, textRenderer, buttonTitle, i, y, j, y + getHeight(), color)
-    }
-
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        appendDefaultNarrations(builder)
     }
 
     override fun onPress() {

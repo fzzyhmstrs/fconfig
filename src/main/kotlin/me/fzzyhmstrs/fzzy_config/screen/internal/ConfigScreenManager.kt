@@ -57,6 +57,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 //client
+@Deprecated("To Change")
 internal class ConfigScreenManager(private val scope: String, private val configs: List<ConfigSet>) {
 
     private val configMap: Map<String, Set<Config>>

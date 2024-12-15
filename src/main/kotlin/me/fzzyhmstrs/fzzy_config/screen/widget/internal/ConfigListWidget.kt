@@ -29,8 +29,9 @@ import java.util.*
 import java.util.function.Consumer
 
 //client
-internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, height: Int, private var contentHeight: Int, private val listHeaderHeight: Int, drawBackground: Boolean) :
-    ElementListWidget<BaseConfigEntry>(minecraftClient, width, height, listHeaderHeight, (height - (height - listHeaderHeight - contentHeight)), 24), LastSelectable, Widget, SuggestionWindowListener
+@Deprecated("To Remove")
+internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, contentHeight: Int, headerHeight: Int, private val drawBackground: Boolean) :
+    ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable, SuggestionWindowListener
 {
 
     constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient, parent.width, parent.height, parent.layout.height - parent.layout.headerHeight - parent.layout.footerHeight, parent.layout.headerHeight, drawBackground)

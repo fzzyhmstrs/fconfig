@@ -28,10 +28,6 @@ open class CustomButtonWidget protected constructor(x: Int, y: Int, width: Int, 
         return narrationSupplier.createNarrationMessage { super.getNarrationMessage() }
     }
 
-    public override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        this.appendDefaultNarrations(builder)
-    }
-
     class Builder(private val message: Text, private val onPress: Consumer<CustomButtonWidget>) {
 
         private var tooltip: Tooltip? = null

@@ -19,7 +19,7 @@ import java.util.function.Function
 /**
  * Handles creating ConfigListWidget Entries (from a Config entry), not to be confusing
  * @author fzzyhmstrs
- * @since 0.5.10
+ * @since 0.6.0
  */
 @Internal
 @Experimental

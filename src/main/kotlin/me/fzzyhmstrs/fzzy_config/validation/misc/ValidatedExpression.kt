@@ -23,7 +23,6 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.MutableText
@@ -156,10 +155,6 @@ open class ValidatedExpression @JvmOverloads constructor(
 
         override fun getNarrationMessage(): MutableText {
             return "fc.validated_field.expression".translate().append(", ".lit()).append(this.message)
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            appendDefaultNarrations(builder)
         }
 
         override fun onPress() {
