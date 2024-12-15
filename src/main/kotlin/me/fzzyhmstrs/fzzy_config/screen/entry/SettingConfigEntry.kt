@@ -18,6 +18,7 @@ import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
 
 //client
+@Deprecated("To Remove")
 internal open class SettingConfigEntry(
     name: Text,
     description: Text,

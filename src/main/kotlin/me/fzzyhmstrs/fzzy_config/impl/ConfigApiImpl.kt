@@ -536,7 +536,7 @@ internal object ConfigApiImpl {
                         val before = propVal.get()
                         val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
                         propVal.deserializeEntry(tomlElement, errorBuilder, name, newFlags).also { r ->
-                            if(r.get() != before) {
+                            if(propVal.deserializedChanged(before, r.get()) ) {
                                 restartNeeded.add(action)
                                 if(recordRestarts && action.restartPrompt) {
                                     restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
@@ -558,7 +558,7 @@ internal object ConfigApiImpl {
                         try {
                             val action = requiredAction(prop.annotations, globalAction)
                             if(checkActions && action != null)
-                                if (propVal != thing.get()) {
+                                if (basicValidation.deserializedChanged(propVal, thing.get())) {
                                     restartNeeded.add(action)
                                     if(recordRestarts && action.restartPrompt) {
                                         restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
@@ -636,7 +636,7 @@ internal object ConfigApiImpl {
                     if(checkActions && v is Supplier<*> && action != null) {
                         val before = v.get()
                         v.deserializeEntry(it, errorBuilder, str, flags).also { r ->
-                            if(r.get() != before) {
+                            if(v.deserializedChanged(before, r.get())) {
                                 actionsNeeded.add(action)
                                 if(recordRestarts && action.restartPrompt) {
                                     restartRecords.add(str)
@@ -654,7 +654,7 @@ internal object ConfigApiImpl {
                         try {
                             val action = requiredAction(prop.annotations, globalAction)
                             if(checkActions && action != null)
-                                if (v != thing.get()) {
+                                if (basicValidation.deserializedChanged(v, thing.get())) {
                                     actionsNeeded.add(action)
                                     if(recordRestarts && action.restartPrompt) {
                                         restartRecords.add(str)

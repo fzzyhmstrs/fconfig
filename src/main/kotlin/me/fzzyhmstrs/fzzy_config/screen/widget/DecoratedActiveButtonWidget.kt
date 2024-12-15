@@ -30,6 +30,7 @@ import java.util.function.Supplier
  * @since 0.2.0
  */
 //client
+@Deprecated("To Remove")
 open class DecoratedActiveButtonWidget(
     titleSupplier: Supplier<Text>,
     width: Int,

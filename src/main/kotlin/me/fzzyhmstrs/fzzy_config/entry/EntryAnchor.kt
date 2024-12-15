@@ -23,7 +23,7 @@ import java.util.function.UnaryOperator
 /**
  * Handles marking an entry as a visitable "layer". The layer itself is defined by the builder, and the layers default name as defined by translation key or annotation is also passed in by default
  * @author fzzyhmstrs
- * @since 0.5.10
+ * @since 0.6.0
  */
 @Internal
 @Experimental

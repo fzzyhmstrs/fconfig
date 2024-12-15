@@ -55,6 +55,7 @@ import kotlin.math.min
  * @since 0.2.0
  */
 //client
+@Deprecated("To Change")
 class PopupWidget
     private constructor(
         private var message: Text,

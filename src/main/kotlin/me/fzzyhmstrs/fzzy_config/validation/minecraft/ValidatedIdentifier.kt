@@ -1006,7 +1006,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         private val choiceValidator: ChoiceValidator<Identifier>,
         private val validatedIdentifier: ValidatedIdentifier)
         :
-        TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.empty()),
+        TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY),
         SuggestionWindowProvider
     {
 

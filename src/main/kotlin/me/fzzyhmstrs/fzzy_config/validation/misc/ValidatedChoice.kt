@@ -250,12 +250,8 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             return entry.translationProvider.apply(entry.get(), entry.translationKey())
         }
 
-        override fun getNarrationMessage(): MutableText {
-            return this.message.copy()
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.TITLE, this.narrationMessage)
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+            builder?.put(NarrationPart.TITLE, this.message)
             //builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
         }
 
@@ -291,7 +287,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
                     { c: T -> c != entry.get() },
                     entry,
                     { entry.accept(it); constructTooltip(); PopupWidget.pop() })
-                builder.addElement("choice$index", button, prevParent, PopupWidget.Builder.PositionRelativePos.BELOW)
+                builder.addElement("choice$index", button, prevParent, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_CENTER)
                 prevParent = "choice$index"
             }
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
@@ -315,10 +311,6 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
 
         override fun getNarrationMessage(): MutableText {
             return entry.translationProvider.apply(thisVal, entry.translationKey())
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            appendDefaultNarrations(builder)
         }
 
         override fun onPress() {
@@ -355,10 +347,6 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
 
         override fun getNarrationMessage(): MutableText {
             return entry.translationProvider.apply(entry.get(), entry.translationKey())
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            appendDefaultNarrations(builder)
         }
 
         override fun onPress() {

@@ -31,6 +31,7 @@ import java.util.function.Supplier
 object FcText {
 
     internal val regex = Regex("(?=\\p{Lu})")
+    internal val EMPTY: Text = empty()
 
     /**
      * Wrapper method around Text.translatable. A backwards compatibility holdover from porting older versions

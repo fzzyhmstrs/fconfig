@@ -53,10 +53,6 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         return if (manager.hasChanges()) "fc.button.changes.message".translate(manager.changeCount()) else "fc.button.changes.message.noChanges".translate()
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        appendDefaultNarrations(builder)
-    }
-
     override fun onPress() {
         openChangesPopup()
     }

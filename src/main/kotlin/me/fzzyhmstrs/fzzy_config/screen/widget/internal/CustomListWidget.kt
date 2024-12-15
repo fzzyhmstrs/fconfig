@@ -12,12 +12,15 @@ import net.minecraft.client.gui.navigation.GuiNavigationPath
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.screen.ScreenTexts
+import net.minecraft.sound.SoundEvents
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 import java.util.function.Supplier
 
-abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int) : ClickableWidget(
+abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int)
+    : ClickableWidget(
     x,
     y,
     width,
@@ -41,11 +44,11 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     protected val scrollClickMoveAmount: Supplier<Int> = Supplier { 50 }
     protected val scrollBarBackground: Supplier<Identifier> = Supplier { "widget/scroll/vanilla/scroller_background".fcId() }
     protected val scrollBar: Supplier<Identifier> = Supplier { "widget/scroll/vanilla/scroller".fcId() }
-    protected val scrollBarHighlighted: Supplier<Identifier> = Supplier { "widget/scroll/vanilla/scroller_background".fcId() }
+    protected val scrollBarHighlighted: Supplier<Identifier> = Supplier { "widget/scroll/vanilla/scroller_highlighted".fcId() }
     protected val scrollBarDown: Supplier<Identifier> = Supplier { "widget/scroll/vanilla/scroll_down".fcId() }
     protected val scrollBarDownHighlighted: Supplier<Identifier> = Supplier { "widget/scroll/vanilla/scroll_down_highlighted".fcId() }
-    protected val scrollBarUp: Supplier<Identifier> = Supplier { "widget/scroll/vanilla/scroll_down".fcId() }
-    protected val scrollBarUpHighlighted: Supplier<Identifier> = Supplier { "widget/scroll/vanilla/scroll_down_highlighted".fcId() }
+    protected val scrollBarUp: Supplier<Identifier> = Supplier { "widget/scroll/vanilla/scroll_up".fcId() }
+    protected val scrollBarUpHighlighted: Supplier<Identifier> = Supplier { "widget/scroll/vanilla/scroll_up_highlighted".fcId() }
 
 
     fun rowWidth(): Int {
@@ -104,9 +107,9 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
             val type = scrollButtonType.get()
             if (mouseX >= (right - sW) && (mouseX < right)) {
                 if (pos.over) {
-                    context.drawTex(scrollBarHighlighted.get(), right - sW, y, sW, height)
+                    context.drawTex(scrollBarHighlighted.get(), right - sW, pos.top, sW, pos.bot - pos.top)
                 } else {
-                    context.drawTex(scrollBar.get(), right - sW, y, sW, height)
+                    context.drawTex(scrollBar.get(), right - sW, pos.top, sW, pos.bot - pos.top)
                 }
 
                 if (type.renderButtons()) {
@@ -122,7 +125,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
                     }
                 }
             } else {
-                context.drawTex(scrollBar.get(), right - sW, y, sW, height)
+                context.drawTex(scrollBar.get(), right - sW, pos.top, sW, pos.bot - pos.top)
                 if (type.renderButtons()) {
                     context.drawTex(scrollBarUp.get(), right - sW, type.upY(y, bottom), sW, scrollButtonHeight.get())
                     context.drawTex(scrollBarDown.get(), right - sW, type.downY(y, bottom), sW, scrollButtonHeight.get()
@@ -199,15 +202,30 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         this.scrollingY = mouseY
         if (scrollingY > 0.0) {
             if (scrollType.get() == ScrollBarType.DYNAMIC) {
-                val contentFraction = (scrollHeight() / contentHeight()).toDouble()
-                val upwardTravel = topDelta() * contentFraction
-                val downwardTravel = bottomDelta() * contentFraction
-                scrollingTop = scrollingY + upwardTravel
-                scrollingBottom = scrollingY + downwardTravel
+                val sH = scrollHeight()
+                val cH = contentHeight()
+                val contentFraction = (sH.toDouble() / cH.toDouble())
+                val topGap = -topDelta() * contentFraction
+                val bottomGap = bottomDelta() * contentFraction
+                if ((mouseY >= scrollTop() + topGap) && (mouseY < scrollBottom() - bottomGap)) {
+                    val upwardTravel = topDelta() * contentFraction
+                    val downwardTravel = bottomDelta() * contentFraction
+                    scrollingTop = scrollingY + upwardTravel
+                    scrollingBottom = scrollingY + downwardTravel
+                } else {
+                    scrollingY = -1.0
+                }
+
             } else {
-                val halfScrollBarHeight = scrollFixedHeight.get() / 2
-                scrollingTop = (scrollTop() + halfScrollBarHeight).toDouble()
-                scrollingBottom = (scrollBottom() + halfScrollBarHeight).toDouble()
+                val progress = topDelta().toDouble() / (topDelta() - bottomDelta()).toDouble()
+                val halfBarHeight = scrollFixedHeight.get() / 2
+                val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
+                if ((mouseY >= midPoint - halfBarHeight) && (mouseY < midPoint + halfBarHeight)) {
+                    scrollingTop = (scrollTop() + halfBarHeight).toDouble()
+                    scrollingBottom = (scrollBottom() + halfBarHeight).toDouble()
+                } else {
+                    scrollingY = -1.0
+                }
             }
         }
     }
@@ -218,22 +236,22 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         if (mouseY < scrollTop() || mouseY > scrollBottom()) return 0
         when (scrollType.get()) {
             ScrollBarType.DYNAMIC -> {
-                val contentFraction = (scrollHeight() / contentHeight()).toDouble()
+                val contentFraction = (scrollHeight().toDouble() / contentHeight().toDouble())
                 val topGap = topDelta() * contentFraction
                 val bottomGap = bottomDelta() * contentFraction
                 if ((mouseY >= scrollTop() - topGap) && (mouseY < scrollBottom() - bottomGap)) {
                     return 0
                 }
-                val progress = topDelta() / (topDelta() - bottomDelta()).toDouble()
+                val progress = topDelta().toDouble() / (topDelta() - bottomDelta()).toDouble()
                 val halfBarHeight = (height * contentFraction).toInt() / 2
                 val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
                 return ((midPoint - mouseY)/contentFraction).toInt()
             }
             ScrollBarType.FIXED -> {
-                val progress = topDelta() / (topDelta() - bottomDelta()).toDouble()
+                val progress = topDelta().toDouble() / (topDelta() - bottomDelta()).toDouble()
                 val halfBarHeight = scrollFixedHeight.get() / 2
                 val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
-                val contentFraction = (scrollHeight() / contentHeight()).toDouble()
+                val contentFraction = (scrollHeight().toDouble() / contentHeight().toDouble())
                 return ((midPoint - mouseY)/contentFraction).toInt()
             }
         }
@@ -242,16 +260,16 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     private fun scrollBarPosition(mouseY: Double): ScrollBarPosition {
         return when (scrollType.get()) {
             ScrollBarType.DYNAMIC -> {
-                val contentFraction = (scrollHeight() / contentHeight()).toDouble()
-                val topGap = topDelta() * contentFraction
+                val contentFraction = (scrollHeight().toDouble() / contentHeight().toDouble())
+                val topGap = -topDelta() * contentFraction
                 val bottomGap = bottomDelta() * contentFraction
-                return ScrollBarPosition((scrollTop() + topGap).toInt(),  (scrollBottom() - bottomGap).toInt(), (mouseY >= scrollTop() + topGap) && (mouseY < scrollBottom() - bottomGap))
+                ScrollBarPosition((scrollTop() + topGap).toInt(),  (scrollBottom() - bottomGap).toInt(), (mouseY >= scrollTop() + topGap) && (mouseY < scrollBottom() - bottomGap))
             }
             ScrollBarType.FIXED -> {
-                val progress = topDelta() / (topDelta() - bottomDelta()).toDouble()
+                val progress = topDelta().toDouble() / (topDelta() - bottomDelta()).toDouble()
                 val halfBarHeight = scrollFixedHeight.get() / 2
                 val midPoint = MathHelper.lerp(progress.toFloat(), scrollTop() + halfBarHeight, scrollBottom() - halfBarHeight)
-                return ScrollBarPosition(midPoint - halfBarHeight, midPoint + halfBarHeight,(mouseY >= midPoint - halfBarHeight) && (mouseY < midPoint + halfBarHeight))
+                ScrollBarPosition(midPoint - halfBarHeight, midPoint + halfBarHeight, (mouseY >= midPoint - halfBarHeight) && (mouseY < midPoint + halfBarHeight))
             }
         }
     }
@@ -265,8 +283,10 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
         if (mouseX >= (right - scrollWidth.get()) && (mouseX < right)) {
             if (scrollButtonType.get().mouseOverUp(mouseY, y, bottom)) {
+                client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(50)
             } else if (scrollButtonType.get().mouseOverDown(mouseY, y, bottom)) {
+                client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(-50)
             } else {
                 val jump = jumpScrollBarToMouse(mouseY, button)
@@ -276,12 +296,15 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
                 updateScrollingState(mouseY, button)
                 return true
             }
+        } else {
+            scrollingY = -1.0
         }
 
         val e = entryAtY(mouseY.toInt())
         if (e != null && e.mouseClicked(mouseX, mouseY, button)) {
             val e2 = focused
             if (e2 != e && e2 is ParentElement) {
+
                 e2.focused = null
             }
             focused = e
@@ -334,9 +357,9 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
 
     fun page(up: Boolean) {
         if (up) {
-
+            handleScrollByBar(scrollHeight())
         } else {
-
+            handleScrollByBar(-scrollHeight())
         }
     }
 

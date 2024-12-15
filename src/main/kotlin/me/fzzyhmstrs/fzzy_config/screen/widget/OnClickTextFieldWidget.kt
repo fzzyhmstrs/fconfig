@@ -29,7 +29,7 @@ import java.util.function.Supplier
 //client
 class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: OnInteractAction)
     :
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, 110, 20, FcText.empty())
+    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, 110, 20, FcText.EMPTY)
 {
     init {
         setMaxLength(1000)

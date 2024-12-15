@@ -126,7 +126,8 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     }
 
     //client
-    private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedEnum<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
+    private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedEnum<T>)
+        : CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
 
         val constants = entry.get().declaringJavaClass.enumConstants.mapNotNull { it as? T }.filter { choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }
 
@@ -134,13 +135,8 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
             return entry.get().let { it.transLit(it.name) }
         }
 
-        override fun getNarrationMessage(): MutableText {
-            return this.message.copy()
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.TITLE, this.narrationMessage)
-            //builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+            builder?.put(NarrationPart.TITLE, this.message)
         }
 
         override fun onPress() {
@@ -180,10 +176,6 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
             return thisVal.transLit(thisVal.name)
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            appendDefaultNarrations(builder)
-        }
-
         override fun onPress() {
             valueApplier.accept(thisVal)
         }
@@ -203,10 +195,6 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
 
         override fun getNarrationMessage(): MutableText {
             return entry.get().let { it.transLit(it.name) }
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            appendDefaultNarrations(builder)
         }
 
         override fun onPress() {

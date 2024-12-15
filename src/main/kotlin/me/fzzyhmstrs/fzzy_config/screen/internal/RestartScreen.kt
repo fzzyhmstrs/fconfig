@@ -22,7 +22,7 @@ import net.minecraft.client.gui.widget.*
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 
 //client
-internal class RestartScreen: PopupWidgetScreen(FcText.empty()) {
+internal class RestartScreen: PopupWidgetScreen(FcText.EMPTY) {
 
     private val layout = ThreePartsLayoutWidget(this)
 
