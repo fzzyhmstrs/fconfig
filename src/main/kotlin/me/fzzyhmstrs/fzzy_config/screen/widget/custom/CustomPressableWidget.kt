@@ -8,9 +8,10 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.screen.widget.internal
+package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
@@ -23,7 +24,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 
-open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message) {
+open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message), TooltipChild {
 
     open fun onPress() {}
 
@@ -64,8 +65,6 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         appendDefaultNarrations(builder)
     }
 
-
-
     private companion object {
 
         private val tex =  "widget/button".simpleId()
@@ -74,9 +73,9 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
 
         fun get(enabled: Boolean, focused: Boolean): Identifier {
             return if (enabled) {
-                if (focused) this.highlighted else this.tex
+                if (focused) highlighted else tex
             } else {
-                this.disabled
+                disabled
             }
         }
     }

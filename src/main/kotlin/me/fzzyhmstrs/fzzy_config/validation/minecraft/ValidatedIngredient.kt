@@ -15,7 +15,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
