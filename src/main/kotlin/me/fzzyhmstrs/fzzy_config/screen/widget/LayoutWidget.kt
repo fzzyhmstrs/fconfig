@@ -61,21 +61,17 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
 
     override fun setX(x: Int) {
         this.x.set(x)
-        xPos.set(x)
         updateElements()
     }
 
     override fun setY(y: Int) {
         this.y.set(y)
-        yPos.set(y)
         updateElements()
     }
 
     override fun setPosition(x: Int, y: Int) {
         this.x.set(x)
         this.y.set(y)
-        xPos.set(x)
-        yPos.set(y)
         updateElements()
     }
 
@@ -96,13 +92,27 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     }
 
     override fun setWidth(width: Int) {
-        manualHeight = width
+        manualWidth = width
         compute()
     }
 
     override fun setHeight(height: Int) {
         manualHeight = height
         compute()
+    }
+
+    fun clampWidth(width: Int): LayoutWidget {
+        manualWidth = width
+        if (elements.isNotEmpty())
+            compute()
+        return this
+    }
+
+    fun clampHeight(height: Int): LayoutWidget {
+        manualHeight = height
+        if (elements.isNotEmpty())
+            compute()
+        return this
     }
 
     override fun forEachChild(consumer: Consumer<ClickableWidget>?) {
@@ -129,10 +139,11 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     }
 
     private fun <E> createPositionedElement(set: PosSet, el: E, parent: String, positions: Array<out Position>): PositionedElement<E> where E: Widget {
-        var newX: Pos = RelPos(set.x, set.spacingW)
-        var newY: Pos = RelPos(set.y, set.spacingH)
+
         val parentEl = elements[parent]
         if (parentEl == null) { //initial element
+            var newX: Pos = RelPos(set.x)
+            var newY: Pos = RelPos(set.y)
             var alignment: PositionGlobalAlignment = PositionGlobalAlignment.ALIGN_CENTER
             for (pos in positions) {
                 if (pos is PositionAlignment) {
@@ -146,6 +157,8 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
             }
             return PositionedElement(el, set, newX, newY, alignment)
         }
+        var newX: Pos = RelPos(set.x, set.spacingW)
+        var newY: Pos = RelPos(set.y, set.spacingH)
         //subsequent elements
         var alignment: PositionGlobalAlignment = parentEl.alignment
         for(pos in positions) {
@@ -185,7 +198,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
      * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
      * @return Builder - this builder for further use
      * @author fzzyhmstrs
-     * @since 0.5.10
+     * @since 0.6.0
      */
     fun <E: Widget> add(id: String, element: E, parent: String, vararg positions: Position): LayoutWidget {
         val posEl = createPositionedElement(sets.peek(), element, parent, positions)
@@ -201,7 +214,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
      * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
      * @return Builder - this builder for further use
      * @author fzzyhmstrs
-     * @since 0.5.10
+     * @since 0.6.0
      */
     fun <E: Widget> add(id: String, element: E, vararg positions: Position): LayoutWidget {
         return add(id, element, lastEl, *positions)
@@ -216,8 +229,8 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         var maxW = 0
         var maxH = 0
         for ((_, posEl) in elements) {
-            maxW = (posEl.getRight() + 8 - ((posEl.getLeft() - 8).takeIf { it < 0 } ?: 0)).takeIf { it > maxW } ?: maxW //6 = outer edge padding
-            maxH = (posEl.getBottom() + 8).takeIf { it > maxH } ?: maxH //6 = outer edge padding
+            maxW = (posEl.getRight() + paddingW - ((posEl.getLeft() - paddingW).takeIf { it < 0 } ?: 0)).takeIf { it > maxW } ?: maxW //6 = outer edge padding
+            maxH = (posEl.getBottom() + paddingH).takeIf { it > maxH } ?: maxH //6 = outer edge padding
         }
         if (manualWidth <= 0)
             updateWidth(maxW)
@@ -235,9 +248,9 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         for (posEl in elements.values) {
             if (posEl.alignment == Position.ALIGN_JUSTIFY) {
                 if (posEl.element is ClickableWidget) {
-                    posEl.element.width = width - 16
+                    posEl.element.width = width - (2 * paddingW)
                 } else if (posEl.element is Scalable) {
-                    posEl.element.setWidth(width - 16)
+                    posEl.element.setWidth(width - (2 * paddingW))
                 }
             } else if (posEl.alignment == Position.ALIGN_LEFT_AND_JUSTIFY) {
                 var closestRightEl: PositionedElement<*>? = null
@@ -309,7 +322,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
      * - [PositionRelativeAlignment] - How to align an element in relation to the dimension features of its parent (top, bottom, left, and right edges etc.)
      * - [LayoutWidget.PositionGlobalAlignment] - How to align an element in relation to the global dimensions of the Popup as a whole
      * @author fzzyhmstrs
-     * @since 0.5.10
+     * @since 0.6.0
      */
     //client
     sealed interface Position {
@@ -318,80 +331,80 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         /**
          * Collection of all implemented [Position]. Preferred practice is to use this collection rather than referring directly to the underlying Enums
          * @author fzzyhmstrs
-         * @since 0.5.10
+         * @since 0.6.0
          */
         @Suppress("DEPRECATION", "UNUSED")
         companion object Impl {
             /**
              * Positions an element below its parent. Does not define horizontal alignment or positioning.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val BELOW: Position = PositionRelativePos.BELOW
             /**
              * Positions an element to the left of its parent. Does not define vertical alignment or positioning.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val LEFT: Position = PositionRelativePos.LEFT
             /**
              * Positions an element to the right of its parent. Does not define vertical alignment or positioning.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val RIGHT: Position = PositionRelativePos.RIGHT
             /**
              * Aligns an elements top edge horizontally with the top edge of its parent. Does not define any other position or alignment.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val HORIZONTAL_TO_TOP_EDGE: Position = LayoutWidget.PositionRelativeAlignment.HORIZONTAL_TO_TOP_EDGE
             /**
              * Aligns an elements bottom edge horizontally with the bottom edge of its parent. Does not define any other position or alignment.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val HORIZONTAL_TO_BOTTOM_EDGE: Position = LayoutWidget.PositionRelativeAlignment.HORIZONTAL_TO_BOTTOM_EDGE
             /**
              * Aligns an elements left edge vertically with the left edge of its parent. Does not define any other position or alignment.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val VERTICAL_TO_LEFT_EDGE: Position = LayoutWidget.PositionRelativeAlignment.VERTICAL_TO_LEFT_EDGE
             /**
              * Aligns an elements right edge vertically with the right edge of its parent. Does not define any other position or alignment.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val VERTICAL_TO_RIGHT_EDGE: Position = LayoutWidget.PositionRelativeAlignment.VERTICAL_TO_RIGHT_EDGE
             /**
              * Centers an element vertically relative to the vertical dimensions of its parent (top and bottom edges). Does not define any other position or alignment.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val CENTERED_VERTICALLY: Position = LayoutWidget.PositionRelativeAlignment.CENTERED_VERTICALLY
             /**
              * Centers an element horizontally relative to the horizontal dimensions of its parent (left and right edge). Does not define any other position or alignment.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val CENTERED_HORIZONTALLY: Position = LayoutWidget.PositionRelativeAlignment.CENTERED_HORIZONTALLY
             /**
              * Aligns an element to the left side of the Popup widget. Does not define any other position or alignment.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val ALIGN_LEFT: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT
             /**
              * Aligns an element to the right side of the Popup widget. Does not define any other position or alignment.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val ALIGN_RIGHT: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT
             /**
              * Centers an element relative to the width of the Popup widget. Does not define any other position or alignment.
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val ALIGN_CENTER: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_CENTER
             /**
@@ -401,7 +414,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
              *
              * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val ALIGN_JUSTIFY: Position = PositionGlobalAlignment.ALIGN_JUSTIFY
             /**
@@ -411,7 +424,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
              *
              * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val ALIGN_LEFT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY
             /**
@@ -421,7 +434,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
              *
              * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
              * @author fzzyhmstrs
-             * @since 0.5.10
+             * @since 0.6.0
              */
             val ALIGN_RIGHT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY
         }

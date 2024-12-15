@@ -36,6 +36,7 @@ import net.minecraft.util.Colors
 import kotlin.math.min
 
 //client
+@Deprecated("To Remove")
 internal open class BaseConfigEntry(
     val name: Text,
     val description: Text,
@@ -115,11 +116,11 @@ internal open class BaseConfigEntry(
         widget.tooltip?.let { list.addAll(it.getLines(MinecraftClient.getInstance())) }
 
         if (this.isFocused && MinecraftClient.getInstance().navigationType.isKeyboard && fullTooltip.isNotEmpty()) {
-            if(list.isNotEmpty()) list.add(FcText.empty().asOrderedText())
+            if(list.isNotEmpty()) list.add(OrderedText.EMPTY)
             list.addAll(fullTooltip)
             MinecraftClient.getInstance().currentScreen?.setTooltip(list, FocusedTooltipPositioner(ScreenRect(x, y, entryWidth, entryHeight)), this.isFocused)
         } else if (this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltip.isNotEmpty() && !MinecraftClient.getInstance().navigationType.isKeyboard) {
-            if(list.isNotEmpty()) list.add(FcText.empty().asOrderedText())
+            if(list.isNotEmpty()) list.add(OrderedText.EMPTY)
             list.addAll(tooltip)
             MinecraftClient.getInstance().currentScreen?.setTooltip(list, HoveredTooltipPositioner.INSTANCE, true)
         }
@@ -150,7 +151,7 @@ internal open class BaseConfigEntry(
         if (truncatedName != name) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(name, 190))
             if (description.isNotEmpty())
-                list.add(FcText.empty().asOrderedText())
+                list.add(OrderedText.EMPTY)
         }
         if (description.isNotEmpty()) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
@@ -162,14 +163,14 @@ internal open class BaseConfigEntry(
         val list: MutableList<OrderedText> = mutableListOf()
         if (truncatedName != name) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(name, 190))
-            list.add(FcText.empty().asOrderedText())
+            list.add(OrderedText.EMPTY)
         }
         if (description.isNotEmpty()) {
             list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(description, 190))
         }
         if(actions.isNotEmpty()) {
             if (description.isNotEmpty())
-                list.add(FcText.empty().asOrderedText())
+                list.add(OrderedText.EMPTY)
             for (action in actions) {
                 list.addAll(MinecraftClient.getInstance().textRenderer.wrapLines(restartText(action), 190))
             }

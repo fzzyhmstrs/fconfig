@@ -15,7 +15,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.Action
 /**
  * An entry that is a parent of other entries
  * @author fzzyhmstrs
- * @since 0.1.1, new method 0.5.11
+ * @since 0.1.1, new method 0.6.0
  */
 fun interface EntryParent {
     fun actions(): Set<Action>
