@@ -8,9 +8,8 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.screen.widget.internal
+package me.fzzyhmstrs.fzzy_config.screen.decoration
 
-import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.widget.ClickableWidget

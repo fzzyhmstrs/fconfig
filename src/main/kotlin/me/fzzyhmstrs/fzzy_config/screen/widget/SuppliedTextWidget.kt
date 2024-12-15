@@ -30,9 +30,9 @@ import kotlin.math.roundToInt
  * @param width Int - width of the widget in pixels
  * @param height Int - height of the widget in pixels
  * @author fzzyhmstrs
- * @since 0.3.1
+ * @since 0.3.1, removed alignCenter and now implements TooltipChild in 0.6.0
  */
-class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): AbstractTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer) {
+class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): AbstractTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer), TooltipChild {
 
     constructor(messageSupplier: Supplier<Text>, textRenderer: TextRenderer): this(messageSupplier, textRenderer, textRenderer.getWidth(messageSupplier.get().asOrderedText()), textRenderer.fontHeight)
 
@@ -59,15 +59,6 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
      */
     fun alignLeft(): SuppliedTextWidget {
         return this.align(0.0f)
-    }
-    /**
-     * Aligns the widget text to the center
-     * @return [SuppliedTextWidget] this widget
-     * @author fzzyhmstrs
-     * @since 0.3.1
-     */
-    fun alignCenter(): SuppliedTextWidget {
-        return this.align(0.5f)
     }
     /**
      * Aligns the widget text to the right
@@ -111,5 +102,10 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
     private fun trim(text: Text, width: Int): OrderedText? {
         val stringVisitable = textRenderer.trimToWidth(text, width - textRenderer.getWidth(ScreenTexts.ELLIPSIS))
         return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
+    }
+
+    override fun provideTooltipLines(mouseX: Double, mouseY: Double, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+        if (!parentSelected) return TooltipChild.EMPTY
+        return overflowTooltip?.let { listOf(it.get()) } ?: TooltipChild.EMPTY
     }
 }
