@@ -27,9 +27,9 @@ import java.util.function.Supplier
 /**
  * Searches provided inputs by name and/or description with optional search decorators
  * @param C subclass of [SearchContent]
- * @param searchEntries List&lt;[c]&gt; list of [SearchContent] entries to search through.
+ * @param searchEntries List&lt;[C]&gt; list of [SearchContent] entries to search through.
  * @author fzzyhmstrs
- * @since 0.5.9
+ * @since 0.6.0
  */
 class Searcher<C: Searcher.SearchContent>(private val searchEntries: List<C>) {
 
@@ -61,10 +61,10 @@ class Searcher<C: Searcher.SearchContent>(private val searchEntries: List<C>) {
 
     /**
      * Searches input entries with the provided input string. This search is case-insensitive.
-     * 
+     *
      * There is no guarantee on the order of returned results, so it may be prudent to use it to modify the based displayed list rather than directly.
      * @author fzzyhmstrs
-     * @since 0.5.9
+     * @since 0.6.0
      */
     fun search(searchInput: String): List<C> {
         val type: SearchType
@@ -161,7 +161,7 @@ class Searcher<C: Searcher.SearchContent>(private val searchEntries: List<C>) {
         }
         return list
     }
-    
+
     interface SearchContent {
         val name: Text
         val desc: Text?

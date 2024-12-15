@@ -10,8 +10,10 @@
 
 package me.fzzyhmstrs.fzzy_config_test.test.screen
 
+import jdk.internal.org.jline.utils.Colors.h
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigScreenWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.NewConfigListWidget
@@ -27,10 +29,11 @@ import me.fzzyhmstrs.fzzy_config_test.test.TestBasicConfigManager
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.TextWidget
+import org.lwjgl.glfw.GLFW
 import java.util.function.Function
 import java.util.function.Supplier
 
-class TestPopupScreen(private val size: Int = 5): PopupWidgetScreen(FcText.empty()) {
+class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
 
     val testBasicConfigManager = TestBasicConfigManager()
 
@@ -41,6 +44,13 @@ class TestPopupScreen(private val size: Int = 5): PopupWidgetScreen(FcText.empty
     val testStringWidget = testString.widgetEntry(ChoiceValidator.any())
     val testBooleanWidget = testBoolean.widgetEntry(ChoiceValidator.any())
     val listTestWidget = configWidget(size)
+    val groupButton = ButtonWidget.builder("Toggle".lit()) { _ -> listTestWidget.toggleGroup("2") }.size(50, 20).build()
+    val layout = TestLayoutContainerWidget { builder ->
+        builder.add("first", ButtonWidget.builder("First".lit()) { _ -> }.size(100, 20).build(), LayoutWidget.Position.ALIGN_CENTER, LayoutWidget.Position.BELOW)
+        builder.add("second", ButtonWidget.builder("Second".lit()) { _ -> }.size(100, 20).build(), LayoutWidget.Position.ALIGN_CENTER, LayoutWidget.Position.BELOW)
+        builder.add("third", ButtonWidget.builder("Third".lit()) { _ -> }.size(100, 20).build(), LayoutWidget.Position.ALIGN_CENTER, LayoutWidget.Position.BELOW)
+        builder.add("fourth", ButtonWidget.builder("Fourth".lit()) { _ -> }.size(100, 20).build(), LayoutWidget.Position.ALIGN_CENTER, LayoutWidget.Position.BELOW)
+    }
 
     override fun close() {
         super.close()
@@ -51,9 +61,9 @@ class TestPopupScreen(private val size: Int = 5): PopupWidgetScreen(FcText.empty
     private fun configWidget(size: Int): NewConfigListWidget {
         val list: MutableList<Function<NewConfigListWidget, TestEntry>> = mutableListOf()
         for (i in 1..size) {
-            list.add(Function { widget -> TestEntry(widget, "test.entry.$i", ButtonWidget.builder(i.toString().lit()) { _ -> FC.LOGGER.info("I Pressed {}", i) }.size(75, 20).build()) })
+            list.add(Function { widget -> TestEntry(widget, "test.entry.$i", (((i - 1) % 3) + 1), i, i.toString().lit()) })
         }
-        return NewConfigListWidget(MinecraftClient.getInstance(), list, 0, 0, 200, 200)
+        return NewConfigListWidget(MinecraftClient.getInstance(), list, 0, 0, 200, 100)
     }
 
     override fun init() {
@@ -70,8 +80,23 @@ class TestPopupScreen(private val size: Int = 5): PopupWidgetScreen(FcText.empty
         addDrawableChild(testBooleanWidget)
         listTestWidget.setPosition(140, 110)
         addDrawableChild(listTestWidget)
+        groupButton.setPosition(260, 80)
+        addDrawableChild(groupButton)
+        layout.setPosition(320, 0)
+        addDrawableChild(layout)
 
         addDrawableChild(ConfigScreenWidget.of("fzzy_config_test", ConfigScreenWidget.Position.Corner.TOP_LEFT))
+    }
+
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
+            listTestWidget.page(true)
+            return true
+        } else if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
+            listTestWidget.page(false)
+            return true
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
     private fun openTestPopupWidget() {

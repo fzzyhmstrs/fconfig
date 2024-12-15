@@ -25,6 +25,7 @@ import net.minecraft.client.search.SuffixArray
 import java.util.*
 
 //client
+@Deprecated("To Remove")
 internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, contentHeight: Int, headerHeight: Int, private val drawBackground: Boolean) :
     ElementListWidget<BaseConfigEntry>(minecraftClient, width, contentHeight, headerHeight, 24), LastSelectable, SuggestionWindowListener
 {

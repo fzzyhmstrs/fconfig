@@ -401,7 +401,7 @@ object ConfigApi {
      * @return [TomlElement] parsed from the input reader
      * @throws kotlinx.serialization.SerializationException if parsing fails
      * @author fzzyhmstrs
-     * @since 0.5.10
+     * @since 0.6.0
      */
     @JvmStatic
     fun parseReader(reader: Reader): TomlElement {

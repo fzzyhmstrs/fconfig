@@ -42,7 +42,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     private var parent: Screen? = null
 
     internal val layout = ThreePartsLayoutWidget(this)
-    private var searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.empty())
+    private var searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
     private var doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
     private val configList: ConfigListWidget = entriesWidget.apply(this)
 
@@ -114,7 +114,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
             else
                 searchField.setEditableColor(0xFF5555)
         }
-        searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.empty())
+        searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
         searchField.setMaxLength(100)
         searchField.text = ""
         searchField.setChangedListener { s -> setColor(configList.updateSearchedEntries(s)) }
