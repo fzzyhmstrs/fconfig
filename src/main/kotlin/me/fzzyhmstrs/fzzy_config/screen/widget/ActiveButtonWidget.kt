@@ -71,10 +71,6 @@ open class ActiveButtonWidget(
         }
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        appendDefaultNarrations(builder)
-    }
-
     override fun onPress() {
         pressAction.accept(this)
     }

@@ -16,15 +16,16 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.KeyCodes
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 
-abstract class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message) {
+open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message) {
 
-    abstract fun onPress()
+    open fun onPress() {}
 
     open fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val minecraftClient = MinecraftClient.getInstance()
@@ -57,6 +58,10 @@ abstract class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, me
         } else {
             return false
         }
+    }
+
+    override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+        appendDefaultNarrations(builder)
     }
 
 
