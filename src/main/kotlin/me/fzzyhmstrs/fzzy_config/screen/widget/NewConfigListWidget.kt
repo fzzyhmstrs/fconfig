@@ -13,7 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
@@ -270,10 +270,13 @@ class NewConfigListWidget(
             for (e in delegate) {
                 e.onAdd(pos, previousEntry)
                 if (!e.visibility.skip) {
-                    entryMap.computeIfAbsent(e.group) { _ -> mutableMapOf() }[e.scope] = e
+                    for (g in e.scope.inGroups) {
+                        entryMap.computeIfAbsent(g) { _ -> mutableMapOf() }[e.scope.scope] = e
+                    }
+
                 }
                 if (e.visibility.group) {
-                    groupMap[e.group] = GroupPair(e, true)
+                    groupMap[e.scope.group] = GroupPair(e, true)
                 }
                 previousEntry = e
             }
@@ -334,12 +337,12 @@ class NewConfigListWidget(
                 e.applyVisibility(Visibility::unfilter)
             }
             for (e in groups.values) {
-                val groupEntries = delegateMap[e.group.group]?.values
+                val groupEntries = delegateMap[e.groupEntry.scope.group]?.values
                 if (groupEntries == null) {
-                    e.group.applyVisibility { _ -> Visibility.GROUP_FILTERED }
+                    e.groupEntry.applyVisibility { _ -> Visibility.GROUP_DISABLED }
                     continue
                 }
-                e.group.applyVisibility { v -> v.group(groupEntries) }
+                e.groupEntry.applyVisibility { v -> v.group(groupEntries) }
             }
             if (this@NewConfigListWidget.focusedElement?.visibility?.selectable != true) {
                 val replacement = this@NewConfigListWidget.focusedElement?.getNeighbor(true) ?: this@NewConfigListWidget.focusedElement?.getNeighbor(false)
@@ -366,7 +369,21 @@ class NewConfigListWidget(
                 }
                 groupPair.visible = false
             } else {
+                val otherGroups: MutableSet<String> = mutableSetOf()
                 for (e in groupEntries.values) {
+                    val g2 = e.scope.group
+                    if (g2 != "" && g2 != g) {
+                        otherGroups.add(g2)
+                    }
+                }
+                outer@
+                for (e in groupEntries.values) {
+                    if (!e.visibility.group) {
+                        for (g2 in otherGroups) {
+                            if (e.scope.inGroups.contains(g2))
+                                continue@outer //skip changing visibility of nested groups, except for the nested group headers
+                        }
+                    }
                     e.applyVisibility(Visibility::unhide)
                 }
                 groupPair.visible = true
@@ -457,15 +474,16 @@ class NewConfigListWidget(
         }
     }
 
-    private class GroupPair(val group: Entry, var visible: Boolean)
+    private class GroupPair(val groupEntry: Entry, var visible: Boolean)
 
-    abstract class Entry(parentElement: NewConfigListWidget, var h: Int, override val name: Text, override val desc: Text, val scope: String, val group: String = "")
+    abstract class Entry(parentElement: NewConfigListWidget, override val name: Text, override val desc: Text?, val scope: Scope)
         : CustomListWidget.Entry<NewConfigListWidget>(parentElement), ParentElement, Searcher.SearchContent {
 
         var visibility = Visibility.VISIBLE
 
         protected open val x: Pos = ReferencePos { parentElement.rowX() }
         protected open val w: Pos = ReferencePos { parentElement.rowWidth() }
+        protected abstract var h: Int
 
         internal var top: EntryPos = EntryPos.ZERO
         internal var bottom: Pos = Pos.ZERO
@@ -562,21 +580,39 @@ class NewConfigListWidget(
         override fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             if (!visibility.visible) return
             val t = top.get()
-            renderEntry(context, x.get(), t, w.get(), h, mouseX, mouseY, delta)
             val bl = this.isMouseOver(mouseX.toDouble(), mouseY.toDouble())
-            if (isFocused || bl) {
-                renderBorder(context, x.get(), t, w.get(), h, mouseX, mouseY, delta)
-            }
-            if (bl) {
-                renderHighlight(context, x.get(), t, w.get(), h, mouseX, mouseY, delta)
-            }
+            renderEntry(context, x.get(), t, w.get(), h, mouseX, mouseY, bl, isFocused, delta)
+            renderBorder(context, x.get(), t, w.get(), h, mouseX, mouseY, bl, isFocused, delta)
+            renderHighlight(context, x.get(), t, w.get(), h, mouseX, mouseY, bl, isFocused, delta)
         }
 
-        abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float)
+        abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float)
 
-        open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
+        open fun renderBorder(
+            context: DrawContext,
+            x: Int,
+            y: Int,
+            width: Int,
+            height: Int,
+            mouseX: Int,
+            mouseY: Int,
+            hovered: Boolean,
+            focused: Boolean,
+            delta: Float
+        ) {}
 
-        open fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
+        open fun renderHighlight(
+            context: DrawContext,
+            x: Int,
+            y: Int,
+            width: Int,
+            height: Int,
+            mouseX: Int,
+            mouseY: Int,
+            hovered: Boolean,
+            focused: Boolean,
+            delta: Float
+        ) {}
 
         override fun getFocusedPath(): GuiNavigationPath? {
             return super<ParentElement>.getFocusedPath()
@@ -630,7 +666,7 @@ class NewConfigListWidget(
         }
 
         override fun toString(): String {
-            return "Entry($scope#$group)"
+            return "Entry:$scope"
         }
 
 
@@ -739,6 +775,11 @@ class NewConfigListWidget(
                 this
             }
         }
+    }
 
+    data class Scope(val scope: String, val group: String = "", val inGroups: List<String> = EMPTY) {
+        companion object {
+            private val EMPTY = listOf<String>()
+        }
     }
 }

@@ -10,10 +10,12 @@
 
 package me.fzzyhmstrs.fzzy_config.entry
 
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.screen.widget.NewConfigListWidget
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import org.jetbrains.annotations.ApiStatus.Experimental
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.Deque
 import java.util.function.Function
 
 /**
@@ -25,9 +27,15 @@ import java.util.function.Function
 @Experimental
 fun interface EntryCreator {
 
-    fun createEntry(client: Boolean, texts: Translatable.Result, annotations: List<Annotation>): List<Function<NewConfigListWidget, out NewConfigListWidget.Entry>>
+    fun createEntry(context: CreatorContext): List<Creator>
 
+    class CreatorContext(val scope: String,
+                         val groups: MutableList<String>,
+                         val client: Boolean,
+                         val texts: Translatable.Result,
+                         val annotations: List<Annotation>,
+                         val actions: Set<Action>)
 
-    class Creator(val scope: String, entries: List<Function<NewConfigListWidget, out NewConfigListWidget.Entry>>)
+    class Creator(val scope: String, val entry: Function<NewConfigListWidget, out NewConfigListWidget.Entry>)
 
 }
