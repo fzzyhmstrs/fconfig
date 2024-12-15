@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
