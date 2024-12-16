@@ -198,7 +198,7 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             if (!config.clientOnly && updatedConfigs.contains(config.active.getId()))
                 count++
         }
-        if (count > 0) {
+        if (count > 0 && !MinecraftClient.getInstance().isInSingleplayer) {
             //send updates to the server for distribution and saving there
             val updates = this.configs.filter { !it.clientOnly && updatedConfigs.contains(it.active.getId()) }.associate { it.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(it.active, this, mutableListOf()) }
             if (updates.isNotEmpty()) {
