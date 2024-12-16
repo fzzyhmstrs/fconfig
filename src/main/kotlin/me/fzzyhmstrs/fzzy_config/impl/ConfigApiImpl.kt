@@ -560,7 +560,7 @@ internal object ConfigApiImpl {
                                         restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                                     }
                                 }
-                            if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                            if(ignoreVisibility) trySetAccessible(prop)
                             prop.setter.call(config, thing.get())
                         } catch(e: Throwable) {
                             errorBuilder.add("Error deserializing basic validation [$name]: ${e.localizedMessage}")
@@ -569,7 +569,7 @@ internal object ConfigApiImpl {
                         try {
                             val action = requiredAction(prop.annotations, globalAction)
                             if(checkActions && action != null) {
-                                if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                                if(ignoreVisibility) trySetAccessible(prop)
                                 prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop).also {
                                     if (propVal != it) {
                                         restartNeeded.add(action)
@@ -579,7 +579,7 @@ internal object ConfigApiImpl {
                                     }
                                 })
                             } else {
-                                if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                                if(ignoreVisibility) trySetAccessible(prop)
                                 prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop))
                             }
                         } catch (e: Throwable) {
@@ -626,7 +626,7 @@ internal object ConfigApiImpl {
                 errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
                 return ValidationResult.error(ConfigContext(config), "Improper TOML format passed to deserializeDirtyFromToml")
             }
-            walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, str, v, prop, annotations, _, _ -> toml[str]?.let {
+            walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { c, _, str, v, prop, annotations, _, _ -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
                     val action = requiredAction(prop.annotations, globalAction)
                     if(checkActions && v is Supplier<*> && action != null) {
@@ -656,9 +656,9 @@ internal object ConfigApiImpl {
                                         restartRecords.add(str)
                                     }
                                 }
-                            prop.setter.call(config, thing.get()) //change?
+                            prop.setter.call(c, thing.get()) //change?
                         } catch(e: Throwable) {
-                            errorBuilder.add("Error deserializing basic validation [$str]: ${e.localizedMessage}")
+                            errorBuilder.add("Error during update while deserializing basic validation [$str]: ${e.localizedMessage}")
                         }
                     }
                 }
