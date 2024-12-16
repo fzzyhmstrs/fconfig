@@ -354,8 +354,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean, flags: List<EntryFlag.Flag>): PermResult {
         val client = MinecraftClient.getInstance()
         val needsWorld = flags.contains(EntryFlag.Flag.REQUIRES_WORLD)
-        if(client.isInSingleplayer || (clientOnly && !needsWorld)) return PermResult.SUCCESS //single player or client config, they can do what they want!!
-        if (needsWorld) return PermResult.OUT_OF_GAME //setting specifically needs
+        if (client.isInSingleplayer) return PermResult.SUCCESS //single player or client config, they can do what they want!!
+        if((clientOnly && !needsWorld))
+            return PermResult.SUCCESS //single player or client config, they can do what they want!!
+        else if ((client.world == null || client.networkHandler == null) && needsWorld) {
+            return PermResult.OUT_OF_GAME //but this one needs the world to be loaded
+        }
         // 1. NonSync wins over everything, even whole config annotations
         if (ConfigApiImpl.isNonSync(annotations)) return PermResult.SUCCESS
 
