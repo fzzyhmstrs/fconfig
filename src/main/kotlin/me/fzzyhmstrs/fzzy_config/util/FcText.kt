@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
+import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.MutableText
@@ -30,7 +31,7 @@ import java.util.function.Supplier
  */
 object FcText {
 
-    internal val regex = Regex("(?=\\p{Lu})")
+    internal val regex = Regex("(?=\\p{Lu}\\p{Ll})")
     internal val EMPTY: Text = empty()
 
     /**
@@ -277,43 +278,39 @@ object FcText {
         }
     }
 
-    internal fun Any?.prefix(fallback: String): Text {
-        return if(this is Translatable)
+    internal fun Any?.prefix(fallback: String): Text? {
+        if(this is Translatable) {
             if (this.hasPrefix()) {
-                this.prefix()
-            } else {
-                translatable(fallback).formatted(Formatting.ITALIC)
+                return this.prefix()
             }
-        else
+        }
+        return if (I18n.hasTranslation(fallback))
             translatable(fallback).formatted(Formatting.ITALIC)
+        else
+            null
     }
-    internal fun Any?.prefixLit(literalFallback: String = ""): Text {
-        return if(this is Translatable) {
+    internal fun Any?.prefixLit(literalFallback: String = ""): Text? {
+        if(this is Translatable) {
             if (this.hasPrefix()) {
-                this.prefix(literalFallback)
-            } else {
-                literal(literalFallback).formatted(Formatting.ITALIC)
+                return this.prefix(literalFallback)
             }
-        } else if(literalFallback != "")
+        }
+        return if(literalFallback != "")
             literal(literalFallback).formatted(Formatting.ITALIC)
         else
-            empty()
+            null
     }
-
-    internal fun Any?.prefixSupplied(fallbackSupplier: Supplier<String>): MutableText {
-        return if(this is Translatable) {
+    internal fun Any?.prefixSupplied(fallbackSupplier: Supplier<String>): MutableText? {
+        if(this is Translatable) {
             if (this.hasPrefix()) {
-                this.prefix(fallbackSupplier.get())
-            } else {
-                literal(fallbackSupplier.get()).formatted(Formatting.ITALIC)
+                return this.prefix(fallbackSupplier.get())
             }
-        } else {
-            val fallback = fallbackSupplier.get()
-            if (fallback != "")
-                literal(fallback).formatted(Formatting.ITALIC)
-            else
-                empty()
         }
+        val fallback = fallbackSupplier.get()
+        return if (fallback != "")
+            literal(fallback).formatted(Formatting.ITALIC)
+        else
+            null
     }
 
     /**

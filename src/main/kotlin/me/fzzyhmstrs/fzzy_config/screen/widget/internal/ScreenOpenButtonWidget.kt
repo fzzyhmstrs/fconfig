@@ -23,6 +23,7 @@ import net.minecraft.util.Identifier
 import java.util.function.Consumer
 
 //client
+@Deprecated("To Remove")
 internal class ScreenOpenButtonWidget(private val buttonTitle: Text, private val pressAction: Consumer<ScreenOpenButtonWidget>)
     : CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY), SpriteDecorated {
 

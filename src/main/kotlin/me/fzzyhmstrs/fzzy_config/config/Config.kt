@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import net.minecraft.server.network.ServerPlayerEntity
@@ -137,6 +138,13 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @since 0.5.0
      */
     open fun onUpdateServer(playerEntity: ServerPlayerEntity){}
+
+    /**
+     * @suppress
+     */
+    override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
+        return anchor.decoration(TextureDeco.DECO_FOLDER)
+    }
 
     /**
      * @suppress

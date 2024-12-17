@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -59,7 +60,8 @@ import kotlin.reflect.jvm.jvmErasure
 abstract class ValidatedField<T>(protected open var storedValue: T, protected var defaultValue: T = storedValue):
     Entry<T, ValidatedField<T>>,
     Updatable,
-    Translatable
+    Translatable,
+    EntryCreator
 {
 
     private var pushedValue: T? = null
@@ -383,8 +385,17 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return getEntryKey() + ".desc"
     }
 
+    override fun prefixKey(): String {
+        @Suppress("DEPRECATION")
+        return getEntryKey() + ".prefix"
+    }
+
     override fun translation(fallback: String?): MutableText {
         return FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+    }
+
+    override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
+        TODO("Not yet implemented")
     }
 
     /**
