@@ -25,9 +25,12 @@ import java.util.function.Function
  */
 @Internal
 @Experimental
+@JvmDefaultWithoutCompatibility
 fun interface EntryCreator {
 
     fun createEntry(context: CreatorContext): List<Creator>
+
+    fun prepare(scope: String, groups: LinkedList<String>, annotations: List<Annotation>, globalAnnotations: List<Annotation>) {}
 
     class CreatorContext(val scope: String,
                          val groups: LinkedList<String>,
