@@ -23,6 +23,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 
 //client
+@Deprecated("To Remove")
 internal class NoPermsButtonWidget(private val title: MutableText = FcText.translatable("fc.button.noPerms"), private val tooltipMessage: MutableText = FcText.translatable("fc.button.noPerms.desc"))
     : CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY), SpriteDecorated {
 
