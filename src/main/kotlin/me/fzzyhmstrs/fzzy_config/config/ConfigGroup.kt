@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
@@ -79,6 +80,49 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
             if (annotations.firstOrNull { it is Pop } != null) {
                 groups.poll()
             }
+        }
+    }
+
+    internal class GroupButtonWidget(private val list: DynamicListWidget, private val group: String, private val title: Text))
+    : 
+    CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY)
+    {
+    
+        init {
+            this.active = false
+        }
+    
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+            builder?.put(NarrationPart.TITLE, message)
+            //builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+        }
+    
+        override fun getTooltip(): Tooltip? {
+            return null
+        }
+
+        private fun getTex(bl: Boolean): Identifier {
+            return if (bl)
+                TextureIds.GROUP_COLLAPSE
+            else
+                TextureIds.GROUP_EXPAND
+        }
+    
+        override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            val bl = list.groupIsVisible(group)
+            val t = if (bl) title.copy().styled { s -> s.withUnderline(true) } else title
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, t, x + 19, y + (getHeight() - (MinecraftClient.getInstance().textRenderer.fontHeight) / 2))
+            context.drawTex(getTex(bl), x, y + 2, 16, 16)
+            //TODO(context.fill())
+        }
+
+        override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+            if (!parentSelected) return TooltipChild.EMPTY
+            return overflowTooltip?.let { listOf(it.get()) } ?: TooltipChild.EMPTY
+        }
+    
+        override fun provideNarrationLines(): List<Text> {
+            return overflowTooltip?.let { listOf(it.get()) } ?: TooltipChild.EMPTY
         }
     }
 }
