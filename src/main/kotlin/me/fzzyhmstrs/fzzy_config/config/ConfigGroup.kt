@@ -73,6 +73,7 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
     }
 
     @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD)
+    @Repeatable
     annotation class Pop
 
     companion object {
