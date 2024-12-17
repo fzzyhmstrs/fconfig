@@ -105,9 +105,29 @@ object EntryCreators {
                 LayoutWidget(paddingW = 0, spacingW = 0).add(
                     "header",
                     CustomMultilineTextWidget(prefix, 10),
-                    LayoutWidget.Position.ALIGN_JUSTIFY,
+                    LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
                     LayoutWidget.Position.BELOW)
             }
+            .visibility(DynamicListWidget.Visibility.HEADER_VISIBLE)
+            
+            ConfigEntry(listWidget, contentBuilder.build(), context.texts)
+        }
+        return listOf(EntryCreator.Creator(context.scope, context.texts, function))
+    }
+
+    fun createGroupEntry(context: EntryCreator.CreatorContext, group: String): List<EntryCreator.Creator> {
+        val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
+            val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
+            contentBuilder.layoutMain { _ ->
+                LayoutWidget(paddingW = 0, spacingW = 0).add(
+                    "group",
+                    ConfigGroup.GroupButtonWidget(listWidget, group, context.texts.name),
+                    LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
+                    LayoutWidget.Position.BELOW)
+            }
+            .visibility(DynamicListWidget.Visibility.GROUP_VISIBLE)
+            .group(group)
+            
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
