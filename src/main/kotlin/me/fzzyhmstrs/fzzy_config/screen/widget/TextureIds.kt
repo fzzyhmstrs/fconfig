@@ -67,6 +67,12 @@ object TextureIds {
     val CONFIG_LANG = "fc.button.config".translate()
     val CONFIG_INACTIVE_LANG = "fc.button.config_inactive".translate()
 
+    /** white wireframe box with a plus sign in the middle and cutouts in the top and bottom of the box */
+    val GROUP_EXPAND = "widget/action/group_expand".fcId()
+
+    /** white wireframe box with a minus sign in the middle */
+    val GROUP_COLLAPSE = "widget/action/group_collapse".fcId()
+
     /////////////////////////
 
     /** a list of map entries in square brackets */
