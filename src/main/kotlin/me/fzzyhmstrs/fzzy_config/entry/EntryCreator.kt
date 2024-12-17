@@ -11,11 +11,11 @@
 package me.fzzyhmstrs.fzzy_config.entry
 
 import me.fzzyhmstrs.fzzy_config.annotations.Action
-import me.fzzyhmstrs.fzzy_config.screen.widget.NewConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import org.jetbrains.annotations.ApiStatus.Experimental
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.Deque
+import java.util.LinkedList
 import java.util.function.Function
 
 /**
@@ -30,12 +30,28 @@ fun interface EntryCreator {
     fun createEntry(context: CreatorContext): List<Creator>
 
     class CreatorContext(val scope: String,
-                         val groups: MutableList<String>,
+                         val groups: LinkedList<String>,
                          val client: Boolean,
                          val texts: Translatable.Result,
                          val annotations: List<Annotation>,
-                         val actions: Set<Action>)
+                         val actions: Set<Action>,
+                         val misc: CreatorContextMisc)
 
-    class Creator(val scope: String, val entry: Function<NewConfigListWidget, out NewConfigListWidget.Entry>)
+    class CreatorContextMisc {
 
+        private val map: MutableMap<CreatorContextKey<*>, Any> = mutableMapOf()
+
+        fun <T> get(key: CreatorContextKey<T>): T? {
+            return map[key] as? T
+        }
+
+        fun <T: Any> put(key: CreatorContextKey<T>, value: T): CreatorContextMisc {
+            map[key] = value
+            return this
+        }
+    }
+
+    open class CreatorContextKey<T>
+
+    class Creator(val scope: String, val texts: Translatable.Result, val entry: Function<DynamicListWidget, out DynamicListWidget.Entry>)
 }

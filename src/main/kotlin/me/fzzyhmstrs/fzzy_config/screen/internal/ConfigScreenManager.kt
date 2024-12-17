@@ -15,15 +15,13 @@ import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
-import me.fzzyhmstrs.fzzy_config.entry.EntryParent
-import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
+import me.fzzyhmstrs.fzzy_config.screen.entry.*
 import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.SectionConfigEntry
@@ -51,6 +49,8 @@ import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.command.CommandSource
 import net.minecraft.text.Text
 import java.util.*
+import java.util.function.BiConsumer
+import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.math.max
 import kotlin.math.min
@@ -190,7 +190,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val restartSet: MutableMap<String, MutableSet<Action>> = mutableMapOf()
         val config = configs[0]
         walkConfig(config, functionMap, nameMap, restartSet, if(config.clientOnly) 4 else playerPermLevel)
-        //walkBasicValues(config.base, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
         val scopes = functionMap.keys.toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
         val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
@@ -209,7 +208,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
         for ((i, config) in configs.withIndex()) {
             functionMap.computeIfAbsent(scope) { sortedMapOf() }[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(ConfigApiImplClient.getTranslation(config.active, "", config.active::class.annotations, listOf(), config.active::class.java.simpleName), ConfigApiImplClient.getDescription(config.active, "", config.active::class.annotations, listOf()), config.active.getId().toTranslationKey()))
             walkConfig(config, functionMap, nameMap, actionMap, if(config.clientOnly) 4 else playerPermLevel)
-            //walkBasicValues(config.base, functionMap, nameMap, if(config.clientOnly) 4 else playerPermLevel)
         }
         val scopes = functionMap.keys.toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
@@ -237,13 +235,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val anyActions = thing.actions()
                 if (anyActions.isNotEmpty()) {
                     totalActions.addAll(anyActions)
-                    actionMap.computeIfAbsent(new) { mutableSetOf() }.addAll(anyActions)
                 }
                 if (thing.continueWalk()) {
                     callback.cont()
                 }
             }
-            if (action != null) actionMap[new] = mutableSetOf(action)
+            if (totalActions.isNotEmpty()) actionMap[new] = totalActions
             val flags = if(thing is EntryFlag) {
                 EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
             } else {
@@ -313,6 +310,156 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     }
                 }
                 index++
+            }
+        }
+    }
+
+    private fun walkConfig2(
+        set: ConfigSet,
+        functionMap: MutableMap<String, SortedMap<Int, EntryCreator.Creator>>,
+        nameMap: MutableMap<String, Translatable.Result>,
+        actionMap: MutableMap<String, MutableSet<Action>>,
+        anchorConsumer: BiConsumer<String, Any?>,
+        playerPermLevel: Int)
+    {
+        val config: Config = set.active
+        val baseConfig: Config = set.base
+        //putting the config buttons themselves, in the base scope. ex: "my_mod"
+        val prefix = config.getId().toTranslationKey()
+        val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, listOf(), config::class.java.simpleName)
+        //TODO(Add header entry builder)
+        nameMap[prefix] = configTexts
+
+        var index = 0
+        val groups: LinkedList<String> = LinkedList()
+
+        fun List<EntryCreator.Creator>.applyToMap(parent: String, functionMap: MutableMap<String, SortedMap<Int, EntryCreator.Creator>>) {
+            for (creator in this) {
+                functionMap.computeIfAbsent(parent) { sortedMapOf() }[index++] = creator
+            }
+        }
+
+        val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
+            .put(EntryCreators.OPEN_SCREEN, Consumer { scope -> openScopedScreen(scope) })
+
+        //walking the config, base scope passed to walk is ex: "my_mod.my_config"
+        ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
+            val flags = if(thing is EntryFlag) {
+                EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
+            } else {
+                EntryFlag.Flag.NONE
+            }
+
+            val entryCreator: EntryCreator?
+
+            val prepareResult = if (thing is EntryCreator) {
+                entryCreator = thing
+                ConfigApiImplClient.prepare(thing, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
+            } else if (thing != null) {
+                var basicValidation: ValidatedField<*>? = null
+                val target = new.removePrefix("$prefix.")
+                ConfigApiImpl.drill(baseConfig, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
+                    basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
+                }
+                val basicValidation2 = basicValidation
+                if (basicValidation2 != null) {
+                    entryCreator = basicValidation2
+                    ConfigApiImplClient.prepare(thing, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
+                } else {
+                    entryCreator = null
+                    ConfigApiImplClient.PrepareResult.FAIL
+                }
+            } else {
+                entryCreator = null
+                ConfigApiImplClient.PrepareResult.FAIL
+            }
+
+            if (!prepareResult.fail) {
+
+                if (prepareResult.cont) {
+                    callback.cont()
+                }
+
+                anchorConsumer.accept(new, thing)
+
+                val context = EntryCreator.CreatorContext(new, groups, set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
+
+                if (prepareResult.perms == ConfigApiImplClient.PermResult.FAILURE) {
+                    EntryCreators.createNoPermsEntry(context, "noPerms").applyToMap(old, functionMap)
+                } else if (prepareResult.perms == ConfigApiImplClient.PermResult.OUT_OF_GAME) {
+                    EntryCreators.createNoPermsEntry(context, "outOfGame").applyToMap(old, functionMap)
+                } else {
+                    entryCreator?.createEntry(context)?.applyToMap(old, functionMap)
+                }
+
+                //TODO(Do I Still Need This??)
+                if (prepareResult.actions.isNotEmpty()) actionMap[new] = prepareResult.actions.toMutableSet()
+
+                /*if (thing is ConfigSection) {
+                    val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
+                    nameMap[new] = name
+                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, sectionOpenEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, new))
+                    index++
+                } else if (thing is Updatable && thing is Entry<*, *>) {
+                    val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
+                    nameMap[new] = name
+                    val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
+                    if(perms.success) {
+                        thing.setUpdateManager(manager)
+                        manager.setUpdatableEntry(thing)
+                        if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
+                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, forwardableEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
+                        else
+                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
+                    } else if (perms == PermResult.OUT_OF_GAME) {
+                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), totalActions))
+                    } else {
+                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
+                    }
+                    index++
+                } else if (thing is ConfigAction) {
+                    val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
+                    nameMap[new] = name
+                    val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
+                    if (perms.success) {
+                        functionMap.computeIfAbsent(old) { sortedMapOf() }[index] = Pair(new, configActionEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
+                    } else if (perms == PermResult.OUT_OF_GAME) {
+                        functionMap.computeIfAbsent(old) { sortedMapOf() }[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), totalActions))
+                    } else {
+                        functionMap.computeIfAbsent(old) { sortedMapOf() }[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
+                    }
+
+                    index++
+                } else if (thing != null) {
+                    var basicValidation: ValidatedField<*>? = null
+                    val target = new.removePrefix("$prefix.")
+                    ConfigApiImpl.drill(baseConfig, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
+                        basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
+                    }
+                    val basicValidation2 = basicValidation
+                    if (basicValidation2 != null) {
+                        basicValidation2.trySet(thing)
+                        @Suppress("DEPRECATION")
+                        basicValidation2.setEntryKey(new)
+                        val name = ConfigApiImplClient.getTranslation(basicValidation2, fieldName, annotations, globalAnnotations)
+                        nameMap[new] = name
+                        val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
+                        if(perms.success) {
+                            @Suppress("DEPRECATION")
+                            basicValidation2.setUpdateManager(manager)
+                            manager.setUpdatableEntry(basicValidation2)
+                            if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
+                                functionMap.computeIfAbsent(old) { sortedMapOf() } [index] = Pair(new, forwardableEntryBuilder(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), totalActions, basicValidation2))
+                            else
+                                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), totalActions, basicValidation2))
+                        } else if (perms == PermResult.OUT_OF_GAME) {
+                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
+                        } else {
+                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
+                        }
+                    }
+                    index++
+                }*/
             }
         }
     }

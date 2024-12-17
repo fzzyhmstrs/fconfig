@@ -153,40 +153,40 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
 
     //client
     private fun openObjectPopup() {
-        val newThing = copyStoredValue()
-        val newNewThing = try{ createInstance() } catch (e: Throwable) { defaultValue }
-        val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
-        val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 160, 0, false)
-        ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, globalAnnotations, _ ->
-            val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)?.let { setOf(it) } ?: setOf()
-            if (thing is Updatable && thing is Entry<*, *>) {
-                val fieldName = new.substringAfterLast('.')
-                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
-                thing.setEntryKey(new)
-                thing.setUpdateManager(manager)
-                manager.setUpdatableEntry(thing)
-                entryList.add(SettingConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry(), null, null, null))
+                    val newThing = copyStoredValue()
+                    val newNewThing = try{ createInstance() } catch (e: Throwable) { defaultValue }
+                    val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
+                    val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 0, false)
+                    ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, globalAnnotations, _ ->
+                        val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)?.let { setOf(it) } ?: setOf()
+                        if (thing is Updatable && thing is Entry<*, *>) {
+                            val fieldName = new.substringAfterLast('.')
+                            val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
+                            thing.setEntryKey(new)
+                            thing.setUpdateManager(manager)
+                            manager.setUpdatableEntry(thing)
+                            entryList.add(SettingConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry(), null, null, null))
 
-            } else if (thing is ConfigAction) {
-                val fieldName = new.substringAfterLast('.')
-                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
-                entryList.add(BaseConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry()))
-            } else if (thing is Walkable) {
-                val validation = ValidatedAny(thing)
-                validation.setEntryKey(new)
-                validation.setUpdateManager(manager)
-                manager.setUpdatableEntry(validation)
-                val fieldName = new.substringAfterLast('.')
-                val name = ConfigApiImplClient.getTranslation(validation, fieldName, annotations, globalAnnotations)
-                val actions = ConfigApiImpl.getActions(thing, 1)
-                entryList.add(ValidatedAnyConfigEntry(name, ConfigApiImplClient.getDescription(validation, fieldName, annotations, globalAnnotations), actions, entryList, validation.widgetEntry(), null, null, null))
-            } else if (thing != null) {
-                var basicValidation: ValidatedField<*>? = null
-                val target = new.removePrefix("${getEntryKey()}.")
-                ConfigApiImpl.drill(newNewThing, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
-                    basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
-                }
-                val basicValidation2 = basicValidation
+                        } else if (thing is ConfigAction) {
+                            val fieldName = new.substringAfterLast('.')
+                            val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
+                            entryList.add(BaseConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry()))
+                        } else if (thing is Walkable) {
+                            val validation = ValidatedAny(thing)
+                            validation.setEntryKey(new)
+                            validation.setUpdateManager(manager)
+                            manager.setUpdatableEntry(validation)
+                            val fieldName = new.substringAfterLast('.')
+                            val name = ConfigApiImplClient.getTranslation(validation, fieldName, annotations, globalAnnotations)
+                            val actions = ConfigApiImpl.getActions(thing, 1)
+                            entryList.add(ValidatedAnyConfigEntry(name, ConfigApiImplClient.getDescription(validation, fieldName, annotations, globalAnnotations), actions, entryList, validation.widgetEntry(), null, null, null))
+                        } else if (thing != null) {
+                            var basicValidation: ValidatedField<*>? = null
+                            val target = new.removePrefix("${getEntryKey()}.")
+                            ConfigApiImpl.drill(newNewThing, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
+                                basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
+                            }
+                            val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {
                     basicValidation2.trySet(thing)
                     basicValidation2.setEntryKey(new)

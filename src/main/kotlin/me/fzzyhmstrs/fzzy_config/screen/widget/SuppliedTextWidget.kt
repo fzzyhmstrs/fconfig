@@ -106,8 +106,12 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
     }
 
-    override fun provideTooltipLines(mouseX: Double, mouseY: Double, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
         if (!parentSelected) return TooltipChild.EMPTY
+        return overflowTooltip?.let { listOf(it.get()) } ?: TooltipChild.EMPTY
+    }
+
+    override fun provideNarrationLines(): List<Text> {
         return overflowTooltip?.let { listOf(it.get()) } ?: TooltipChild.EMPTY
     }
 }
