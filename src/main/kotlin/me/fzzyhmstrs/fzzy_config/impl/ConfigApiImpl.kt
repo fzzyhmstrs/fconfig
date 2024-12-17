@@ -30,6 +30,7 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.VERSIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
+import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
@@ -853,10 +854,13 @@ internal object ConfigApiImpl {
     internal fun getActions(thing: Any, flags: Byte): Set<Action> {
         val classAction = getAction(thing::class.annotations)
         val propActions: MutableSet<Action> = mutableSetOf()
-        walk(thing, "", flags) { _, _, _, _, _, annotations, _, _ ->
+        walk(thing, "", flags) { _, _, _, v, _, annotations, _, _ ->
             val action = requiredAction(annotations, classAction)
             if (action != null) {
                 propActions.add(action)
+            }
+            if (v is EntryParent) {
+                propActions.addAll(v.actions())
             }
         }
         return propActions

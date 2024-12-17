@@ -39,15 +39,15 @@ import java.util.function.UnaryOperator
 import kotlin.math.max
 import kotlin.math.min
 
-class NewConfigListWidget(
+class DynamicListWidget(
     client: MinecraftClient,
-    entryBuilders: List<Function<NewConfigListWidget, out Entry>>,
+    entryBuilders: List<Function<DynamicListWidget, out Entry>>,
     x: Int,
     y: Int,
     width: Int,
     height: Int)
 :
-    CustomListWidget<NewConfigListWidget.Entry>(
+    CustomListWidget<DynamicListWidget.Entry>(
     client,
     x,
     y,
@@ -263,7 +263,7 @@ class NewConfigListWidget(
 
         init {
             var previousEntry: Entry? = null
-            val pos = ReferencePos { this@NewConfigListWidget.top }
+            val pos = ReferencePos { this@DynamicListWidget.top }
             val entryMap: MutableMap<String, MutableMap<String, Entry>> = mutableMapOf()
             val groupMap: MutableMap<String, GroupPair> = mutableMapOf()
 
@@ -304,14 +304,14 @@ class NewConfigListWidget(
             if (!dirty) return
             var index = 0
             while (index <= delegate.lastIndex) {
-                if (delegate[index].bottom.get() > this@NewConfigListWidget.top)
+                if (delegate[index].bottom.get() > this@DynamicListWidget.top)
                     break
                 else
                     index++
             }
             var index2 = delegate.lastIndex
             while (index2 >= 0) {
-                if (delegate[index2].top.get() < this@NewConfigListWidget.bottom)
+                if (delegate[index2].top.get() < this@DynamicListWidget.bottom)
                     break
                 else
                     index2--
@@ -344,9 +344,9 @@ class NewConfigListWidget(
                 }
                 e.groupEntry.applyVisibility { v -> v.group(groupEntries) }
             }
-            if (this@NewConfigListWidget.focusedElement?.visibility?.selectable != true) {
-                val replacement = this@NewConfigListWidget.focusedElement?.getNeighbor(true) ?: this@NewConfigListWidget.focusedElement?.getNeighbor(false)
-                this@NewConfigListWidget.focused = replacement
+            if (this@DynamicListWidget.focusedElement?.visibility?.selectable != true) {
+                val replacement = this@DynamicListWidget.focusedElement?.getNeighbor(true) ?: this@DynamicListWidget.focusedElement?.getNeighbor(false)
+                this@DynamicListWidget.focused = replacement
             }
             return foundEntries.size
         }
@@ -360,12 +360,12 @@ class NewConfigListWidget(
                 for (e in groupEntries.values) {
                     e.applyVisibility(Visibility::hide)
                 }
-                if (this@NewConfigListWidget.focusedElement?.visibility?.selectable != true) {
-                    val replacement = this@NewConfigListWidget.focusedElement?.getNeighbor(true) ?: this@NewConfigListWidget.focusedElement?.getNeighbor(false)
-                    this@NewConfigListWidget.focused = replacement
+                if (this@DynamicListWidget.focusedElement?.visibility?.selectable != true) {
+                    val replacement = this@DynamicListWidget.focusedElement?.getNeighbor(true) ?: this@DynamicListWidget.focusedElement?.getNeighbor(false)
+                    this@DynamicListWidget.focused = replacement
                 }
-                if (bottom() - top() <= this@NewConfigListWidget.height) {
-                    this@NewConfigListWidget.ensureVisible(delegate.first())
+                if (bottom() - top() <= this@DynamicListWidget.height) {
+                    this@DynamicListWidget.ensureVisible(delegate.first())
                 }
                 groupPair.visible = false
             } else {
@@ -391,17 +391,17 @@ class NewConfigListWidget(
             val last = lastSelectable()
             if (last == null) {
                 scrollToTop()
-            } else if (last.bottom.get() < this@NewConfigListWidget.top) {
-                this@NewConfigListWidget.ensureVisible(last)
+            } else if (last.bottom.get() < this@DynamicListWidget.top) {
+                this@DynamicListWidget.ensureVisible(last)
             }
         }
 
         fun top(): Int {
-            return firstSelectable()?.top?.get() ?: this@NewConfigListWidget.top
+            return firstSelectable()?.top?.get() ?: this@DynamicListWidget.top
         }
 
         fun bottom(): Int {
-            return lastSelectable()?.bottom?.get() ?: this@NewConfigListWidget.bottom
+            return lastSelectable()?.bottom?.get() ?: this@DynamicListWidget.bottom
         }
 
         fun scrollToTop(): Boolean {
@@ -410,7 +410,7 @@ class NewConfigListWidget(
         }
 
         fun scrollToBottom(): Boolean {
-            delegate.firstOrNull()?.scroll(-this@NewConfigListWidget.bottomDelta())?.also { dirty = true } ?: return false
+            delegate.firstOrNull()?.scroll(-this@DynamicListWidget.bottomDelta())?.also { dirty = true } ?: return false
             return true
         }
 
@@ -476,8 +476,8 @@ class NewConfigListWidget(
 
     private class GroupPair(val groupEntry: Entry, var visible: Boolean)
 
-    abstract class Entry(parentElement: NewConfigListWidget, override val name: Text, override val desc: Text?, val scope: Scope)
-        : CustomListWidget.Entry<NewConfigListWidget>(parentElement), ParentElement, Searcher.SearchContent {
+    abstract class Entry(parentElement: DynamicListWidget, override val name: Text, override val desc: Text?, val scope: Scope)
+        : CustomListWidget.Entry<DynamicListWidget>(parentElement), ParentElement, Searcher.SearchContent {
 
         var visibility = Visibility.VISIBLE
 
@@ -588,31 +588,9 @@ class NewConfigListWidget(
 
         abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float)
 
-        open fun renderBorder(
-            context: DrawContext,
-            x: Int,
-            y: Int,
-            width: Int,
-            height: Int,
-            mouseX: Int,
-            mouseY: Int,
-            hovered: Boolean,
-            focused: Boolean,
-            delta: Float
-        ) {}
+        open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
 
-        open fun renderHighlight(
-            context: DrawContext,
-            x: Int,
-            y: Int,
-            width: Int,
-            height: Int,
-            mouseX: Int,
-            mouseY: Int,
-            hovered: Boolean,
-            focused: Boolean,
-            delta: Float
-        ) {}
+        open fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
 
         override fun getFocusedPath(): GuiNavigationPath? {
             return super<ParentElement>.getFocusedPath()

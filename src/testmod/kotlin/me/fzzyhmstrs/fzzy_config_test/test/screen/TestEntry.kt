@@ -1,7 +1,6 @@
 package me.fzzyhmstrs.fzzy_config_test.test.screen
 
-import jdk.internal.org.jline.utils.Colors.h
-import me.fzzyhmstrs.fzzy_config.screen.widget.NewConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config_test.FC
@@ -13,13 +12,13 @@ import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
-class TestEntry(parentElement: NewConfigListWidget, scope: String, group: Int, index: Int, private val n: Text) :
-    NewConfigListWidget.Entry(parentElement, scope.lit(), FcText.empty(), NewConfigListWidget.Scope(scope, if (group == index) group.toString() else "", listOf(group.toString())))
+class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, index: Int, private val n: Text) :
+    DynamicListWidget.Entry(parentElement, scope.lit(), FcText.empty(), DynamicListWidget.Scope(scope, if (group == index) group.toString() else "", listOf(group.toString())))
     {
 
         init {
             if (group == index) {
-                this.visibility = NewConfigListWidget.Visibility.GROUP_VISIBLE
+                this.visibility = DynamicListWidget.Visibility.GROUP_VISIBLE
             }
         }
 

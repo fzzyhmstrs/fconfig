@@ -10,9 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import me.fzzyhmstrs.fzzy_config.nullCast
 import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.text.TranslatableTextContent
 
 /**
  * Classes that implement [Translatable] can be automatically utilized by many FzzyConfig systems for generating translatable text in-game
@@ -95,8 +97,21 @@ interface Translatable {
      * @since 0.6.0
      */
     fun hasPrefix(): Boolean {
-        return false
+        return I18n.hasTranslation(prefixKey())
     }
 
-    class Result(val name: Text, val desc: Text?, val prefix: Text?)
+    class Result(val name: Text, val desc: Text?, val prefix: Text?) {
+
+        fun getKeys(): List<String> {
+            val list: MutableList<String> = mutableListOf()
+            name.content.nullCast<TranslatableTextContent>()?.let { list.add(it.key) }
+            desc?.content.nullCast<TranslatableTextContent>()?.let { list.add(it.key) }
+            prefix?.content.nullCast<TranslatableTextContent>()?.let { list.add(it.key) }
+            return list
+        }
+
+        companion object {
+            val EMPTY = Result(FcText.empty(), null, null)
+        }
+    }
 }
