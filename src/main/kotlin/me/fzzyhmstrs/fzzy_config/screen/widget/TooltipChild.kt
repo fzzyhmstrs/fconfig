@@ -14,7 +14,11 @@ import net.minecraft.text.Text
 
 @JvmDefaultWithoutCompatibility
 interface TooltipChild {
-    fun provideTooltipLines(mouseX: Double, mouseY: Double, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+    fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+        return EMPTY
+    }
+
+    fun provideNarrationLines(): List<Text> {
         return EMPTY
     }
 

@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
+import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.text.MutableText
@@ -17,7 +18,20 @@ import net.minecraft.text.Text
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-open class CustomButtonWidget protected constructor(x: Int, y: Int, width: Int, height: Int, message: Text, private val pressAction: Consumer<CustomButtonWidget>, private val narrationSupplier: ButtonWidget.NarrationSupplier) : CustomPressableWidget(x, y, width, height, message) {
+open class CustomButtonWidget protected constructor(
+    x: Int,
+    y: Int,
+    width: Int,
+    height: Int,
+    message: Text,
+    private val pressAction: Consumer<CustomButtonWidget>,
+    private val narrationSupplier: ButtonWidget.NarrationSupplier,
+    private val child: TooltipChild? = null)
+    :
+    CustomPressableWidget(x, y, width, height, message)
+{
+
+
 
     override fun onPress() {
         pressAction.accept(this)
@@ -25,6 +39,14 @@ open class CustomButtonWidget protected constructor(x: Int, y: Int, width: Int, 
 
     override fun getNarrationMessage(): MutableText {
         return narrationSupplier.createNarrationMessage { super.getNarrationMessage() }
+    }
+
+    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+        return child?.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused) ?: super.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused)
+    }
+
+    override fun provideNarrationLines(): List<Text> {
+        return child?.provideNarrationLines() ?: super.provideNarrationLines()
     }
 
     class Builder(private val message: Text, private val onPress: Consumer<CustomButtonWidget>) {
@@ -35,6 +57,8 @@ open class CustomButtonWidget protected constructor(x: Int, y: Int, width: Int, 
         private var width = 150
         private var height = 20
         private var narrationSupplier: ButtonWidget.NarrationSupplier = DEFAULT_NARRATION_SUPPLIER
+        private var active = true
+        private var child: TooltipChild? = null
 
         fun position(x: Int, y: Int): Builder {
             this.x = x
@@ -67,9 +91,20 @@ open class CustomButtonWidget protected constructor(x: Int, y: Int, width: Int, 
             return this
         }
 
+        fun inactive(): Builder {
+            active = false
+            return this
+        }
+
+        fun child(child: TooltipChild): Builder {
+            this.child = child
+            return this
+        }
+
         fun build(): CustomButtonWidget {
-            val widget = CustomButtonWidget(x, y, width, height, message, onPress, narrationSupplier)
+            val widget = CustomButtonWidget(x, y, width, height, message, onPress, narrationSupplier, child)
             widget.tooltip = tooltip
+            widget.active = active
             return widget
         }
 
