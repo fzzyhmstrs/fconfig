@@ -64,6 +64,10 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
         return getEntryKey() + ".desc"
     }
 
+    override fun prefixKey(): String {
+        return getEntryKey() + ".prefix"
+    }
+
     @Internal
     override fun getEntryKey(): String {
         return sectionKey
