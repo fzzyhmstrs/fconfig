@@ -10,17 +10,15 @@
 
 package me.fzzyhmstrs.fzzy_config_test.test.screen
 
-import jdk.internal.org.jline.utils.Colors.h
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigScreenWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.NewConfigListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config_test.FC
 import me.fzzyhmstrs.fzzy_config_test.FCC.testBoolean
 import me.fzzyhmstrs.fzzy_config_test.FCC.testInt
 import me.fzzyhmstrs.fzzy_config_test.FCC.testInt2
@@ -58,12 +56,12 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
         this.client?.narratorManager?.clear()
     }
 
-    private fun configWidget(size: Int): NewConfigListWidget {
-        val list: MutableList<Function<NewConfigListWidget, TestEntry>> = mutableListOf()
+    private fun configWidget(size: Int): DynamicListWidget {
+        val list: MutableList<Function<DynamicListWidget, TestEntry>> = mutableListOf()
         for (i in 1..size) {
             list.add(Function { widget -> TestEntry(widget, "test.entry.$i", (((i - 1) % 3) + 1), i, i.toString().lit()) })
         }
-        return NewConfigListWidget(MinecraftClient.getInstance(), list, 0, 0, 200, 100)
+        return DynamicListWidget(MinecraftClient.getInstance(), list, 0, 0, 200, 100)
     }
 
     override fun init() {

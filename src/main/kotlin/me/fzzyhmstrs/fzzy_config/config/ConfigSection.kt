@@ -10,11 +10,12 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
-import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
-import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
-import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.entry.*
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.contextualize
@@ -31,7 +32,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, EntryKeyed, Translatable, EntryAnchor {
+open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, Translatable, EntryKeyed, EntryParent, EntryAnchor, EntryCreator {
 
     @Transient
     private var sectionKey = "fc.config.generic.section"
@@ -71,6 +72,18 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
     @Internal
     override fun setEntryKey(key: String) {
         sectionKey = key
+    }
+
+    override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
+        return anchor.decoration(TextureDeco.DECO_MAP)
+    }
+
+    override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
+        return EntryCreators.createSectionEntry(context)
+    }
+
+    override fun actions(): Set<Action> {
+        return ConfigApiImpl.getActions(this, ConfigApiImpl.IGNORE_NON_SYNC)
     }
 
     override fun toString(): String {
