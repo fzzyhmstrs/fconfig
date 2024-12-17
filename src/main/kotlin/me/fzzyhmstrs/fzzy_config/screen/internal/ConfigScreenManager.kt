@@ -12,9 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.annotations.*
-import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigAction
-import me.fzzyhmstrs.fzzy_config.config.ConfigSection
+import me.fzzyhmstrs.fzzy_config.config.*
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -342,6 +340,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
             .put(EntryCreators.OPEN_SCREEN, Consumer { scope -> openScopedScreen(scope) })
 
+        //Header entry injected into function map at top of config
+        if (configTexts.prefix != null) {
+            context = EntryCreator.CreatorContext(prefix, groups, set.clientOnly, configTexts, config::class.annotations, setOf(), contextMisc)
+            EntryCreators.createHeaderEntry(context, configTexts.prefix).applyToMap(prefix, functionMap)
+        }
+
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
             val flags = if(thing is EntryFlag) {
@@ -354,6 +358,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
             val prepareResult = if (thing is EntryCreator) {
                 entryCreator = thing
+                thing.prepare(new, groups, annotations, globalAnnotations)
                 ConfigApiImplClient.prepare(thing, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
@@ -363,7 +368,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 }
                 val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {
+                    basicValidation2.trySet(thing)
+                    @Suppress("DEPRECATION")
+                    basicValidation2.setEntryKey(new)
                     entryCreator = basicValidation2
+                    basicValidation2.prepare(new, groups, annotations, globalAnnotations)
                     ConfigApiImplClient.prepare(thing, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
                 } else {
                     entryCreator = null
@@ -375,9 +384,13 @@ internal class ConfigScreenManager(private val scope: String, private val config
             }
 
             if (!prepareResult.fail) {
-
                 if (prepareResult.cont) {
                     callback.cont()
+                }
+
+                if (entryCreator is Updatable) {
+                    entryCreator.setUpdateManager(manager)
+                    manager.setUpdatableEntry(entryCreator)
                 }
 
                 anchorConsumer.accept(new, thing)
@@ -395,6 +408,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 //TODO(Do I Still Need This??)
                 if (prepareResult.actions.isNotEmpty()) actionMap[new] = prepareResult.actions.toMutableSet()
 
+                ConfigGroup.pop(annotations, groups)
+                
                 /*if (thing is ConfigSection) {
                     val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                     nameMap[new] = name
