@@ -70,6 +70,10 @@ class DynamicListWidget(
         return entries.search(searchInput)
     }
 
+    fun groupIsVisible(g: String): Boolean {
+        return entries.groupIsVisible(g)
+    }
+
     fun toggleGroup(g: String) {
         entries.toggleGroup(g)
     }
@@ -351,6 +355,10 @@ class DynamicListWidget(
             return foundEntries.size
         }
 
+        fun groupIsVisible(g: String): Boolean {
+            return groups[g]?.visible ?: return false
+        }
+        
         fun toggleGroup(g: String) {
             if (delegate.isEmpty()) return
             dirty = true
