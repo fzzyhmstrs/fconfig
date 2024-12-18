@@ -45,7 +45,10 @@ import java.util.*
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-open class ConfigGroup @JvmOverloads constructor(private val groupName: String = ""): Translatable, EntryKeyed, EntryAnchor, EntryCreator, EntryPermissible {
+open class ConfigGroup @JvmOverloads constructor(private val groupName: String = "", 
+                                                 private val decoration: Decorated? = null, 
+                                                 private val offsetX: Int? = null, 
+                                                 private val offsetY: Int? = null): Translatable, EntryKeyed, EntryAnchor, EntryCreator, EntryPermissible {
 
     @Transient
     private var groupKey = "fc.config.generic.group"
@@ -73,7 +76,7 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
     }
 
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
-        return anchor.decoration(TextureDeco.DECO_LIST)
+        return anchor.decoration(TextureDeco.DECO_LIST).type(EntryAnchor.Anchor.AnchorType.INLINE)
     }
 
     override fun prepare(scope: String, groups: LinkedList<String>, annotations: List<Annotation>, globalAnnotations: List<Annotation>) {
