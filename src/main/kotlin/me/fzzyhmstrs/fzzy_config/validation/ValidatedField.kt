@@ -69,7 +69,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     private var pushedValue: T? = null
     private var updateKey = ""
     private var updateManager: UpdateManager? = null
-    private var listener: Consumer<ValidatedField<T>>? = null
+    private var listener: Consumer<out EntryListener<T>>? = null
     protected var flags: Byte = 0
 
     /**
@@ -80,6 +80,10 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @since 0.5.0
      */
     open fun addListener(listener: Consumer<ValidatedField<T>>) {
+        this.listener = listener
+    }
+
+    override fun listenToEntry(listener: Consumer<EntryListener<T>>) {
         this.listener = listener
     }
 
