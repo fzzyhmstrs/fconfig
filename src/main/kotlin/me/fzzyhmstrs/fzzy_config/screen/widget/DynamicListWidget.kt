@@ -358,7 +358,7 @@ class DynamicListWidget(
         fun groupIsVisible(g: String): Boolean {
             return groups[g]?.visible ?: return false
         }
-        
+
         fun toggleGroup(g: String) {
             if (delegate.isEmpty()) return
             dirty = true
@@ -399,7 +399,10 @@ class DynamicListWidget(
             val last = lastSelectable()
             if (last == null) {
                 scrollToTop()
-            } else if (last.bottom.get() < this@DynamicListWidget.top) {
+            } else if (last.bottom.get() < this@DynamicListWidget.bottom) {
+                if (this@DynamicListWidget.noScroll()) {
+                    scrollToTop()
+                }
                 this@DynamicListWidget.ensureVisible(last)
             }
         }
