@@ -16,7 +16,7 @@ import java.util.function.Supplier
 /**
  * A base Entry for configs.
  *
- * Performs 8 basic functions
+ * Performs 10 basic functions
  * - serialize contents
  * - deserialize input
  * - validate updates
@@ -26,15 +26,15 @@ import java.util.function.Supplier
  * - supply outputs
  * - create instances
  * - manages flags
+ * - accepts listeners
  *
  * @param T the non-null type of the Entry stored value
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, add EntryFlag 0.5.6, add EntryListener 0.6.0
  */
 @JvmDefaultWithCompatibility
-interface Entry<T, E: Entry<T, E>>: EntryHandler<T>, EntryWidget<T>, EntryFlag, Consumer<T>, Supplier<T> {
+interface Entry<T, E: Entry<T, E>>: EntryHandler<T>, EntryWidget<T>, EntryListener<T>, EntryFlag, Consumer<T>, Supplier<T> {
     fun instanceEntry(): E
     fun isValidEntry(input: Any?): Boolean
     fun trySet(input: Any?)
-
 }
