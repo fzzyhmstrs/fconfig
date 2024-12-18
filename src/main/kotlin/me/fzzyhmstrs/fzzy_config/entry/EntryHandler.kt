@@ -16,8 +16,15 @@ package me.fzzyhmstrs.fzzy_config.entry
  * - deserialize inputs
  * - validate updates
  * - correct errors
+ *
+ * Interface method: [copyValue], handles providing deep copies of passed inputs (as deep as possible)
  * @param T the non-null type of the Entry stored value
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, copyValue added 0.6.0
  */
-interface EntryHandler<T>: EntrySerializer<T>, EntryDeserializer<T>, EntryValidator<T>, EntryCorrector<T>
+interface EntryHandler<T>: EntrySerializer<T>, EntryDeserializer<T>, EntryValidator<T>, EntryCorrector<T> {
+  
+    fun copyValue(input: T): T {
+        return T
+    }
+}
