@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -392,6 +393,10 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
 
     override fun translation(fallback: String?): MutableText {
         return FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+    }
+
+    protected fun entryDeco(): Decorated? {
+        return null
     }
 
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
