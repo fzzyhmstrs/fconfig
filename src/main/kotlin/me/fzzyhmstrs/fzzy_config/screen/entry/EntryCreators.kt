@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
+import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
@@ -109,7 +110,7 @@ object EntryCreators {
                     LayoutWidget.Position.BELOW)
             }
             .visibility(DynamicListWidget.Visibility.HEADER_VISIBLE)
-            
+
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
@@ -127,7 +128,7 @@ object EntryCreators {
             }
             .visibility(DynamicListWidget.Visibility.GROUP_VISIBLE)
             .group(group)
-            
+
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
