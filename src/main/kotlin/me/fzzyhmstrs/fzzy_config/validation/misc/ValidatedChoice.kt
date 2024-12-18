@@ -152,7 +152,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     }
 
     override fun copyStoredValue(): T {
-        return storedValue
+        return entryHandler.copyValue(storedValue)
     }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
