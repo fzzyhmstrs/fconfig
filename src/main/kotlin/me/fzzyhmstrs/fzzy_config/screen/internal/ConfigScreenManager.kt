@@ -342,7 +342,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
         //Header entry injected into function map at top of config
         if (configTexts.prefix != null) {
-            context = EntryCreator.CreatorContext(prefix, groups, set.clientOnly, configTexts, config::class.annotations, setOf(), contextMisc)
+            val context = EntryCreator.CreatorContext(prefix, groups, set.clientOnly, configTexts, config::class.annotations, setOf(), contextMisc)
             EntryCreators.createHeaderEntry(context, configTexts.prefix).applyToMap(prefix, functionMap)
         }
 
@@ -409,7 +409,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 if (prepareResult.actions.isNotEmpty()) actionMap[new] = prepareResult.actions.toMutableSet()
 
                 ConfigGroup.pop(annotations, groups)
-                
+
                 /*if (thing is ConfigSection) {
                     val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
                     nameMap[new] = name
