@@ -25,6 +25,10 @@ interface ConfigSpec {
         return ActionBar.BOTTOM
     }
 
+    fun titleBar(): TitleBar {
+        return TitleBar.TOP
+    }
+
     fun closeAction(): CloseAction {
         return CloseAction.BACK
     }
@@ -38,6 +42,10 @@ interface ConfigSpec {
 
     enum class ActionBar {
         BOTTOM,
+        IN_SIDEBAR
+    }
+
+    enum class TitleBar {
         TOP,
         IN_SIDEBAR
     }
@@ -45,5 +53,9 @@ interface ConfigSpec {
     enum class CloseAction {
         BACK,
         DONE
+    }
+
+    companion object {
+        val DEFAULT = object: ConfigSpec {}
     }
 }
