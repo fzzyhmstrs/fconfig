@@ -62,6 +62,12 @@
 "fc.validated_field.set": "Edit Set...",
 "fc.validated_field.condition": "Condition not met",
 "fc.validated_field.conditions": "Conditions not met",
+"fc.validated_field.expand": "Expand group",
+"fc.validated_field.expand.usage.focused": "Press enter to expand group",
+"fc.validated_field.expand.usage.hovered": "Left click to expand group",
+"fc.validated_field.collapse": "Collapse group",
+"fc.validated_field.collapse.usage.focused": "Press enter to collapse group",
+"fc.validated_field.collapse.usage.hovered": "Left click to collapse group",
 
 "fc.validated_field.default": "Restore [%1$s] to default of [%2$s]",
 "fc.validated_field.update.error": "Update error for [%1$s], [%2$s] to [%3$s]: %4$s",

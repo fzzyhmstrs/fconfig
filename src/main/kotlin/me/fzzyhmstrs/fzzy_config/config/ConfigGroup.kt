@@ -10,19 +10,33 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
-import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.entry.*
+import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
+import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
+import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
+import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import net.minecraft.text.MutableText
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.screen.ScreenTexts
+import net.minecraft.text.OrderedText
+import net.minecraft.text.StringVisitable
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.Language
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.function.Supplier
+import java.util.*
 
 /**
  * Defines the start of a config group
@@ -43,7 +57,7 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
 
     @Internal
     override fun setEntryKey(key: String) {
-        sectionKey = key
+        groupKey = key
     }
 
     override fun translationKey(): String {
@@ -57,16 +71,16 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
     override fun prefixKey(): String {
         return getEntryKey() + ".prefix"
     }
-  
+
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
         return anchor.decoration(TextureDeco.DECO_LIST)
     }
 
     override fun prepare(scope: String, groups: LinkedList<String>, annotations: List<Annotation>, globalAnnotations: List<Annotation>) {
-        val fieldName = if (groupName != "") groupName else context.scope.substringAfterLast('.')
-        context.groups.push(fieldName)
+        val fieldName = if (groupName != "") groupName else scope.substringAfterLast('.')
+        groups.push(fieldName)
     }
-    
+
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val fieldName = if (groupName != "") groupName else context.scope.substringAfterLast('.')
         return EntryCreators.createGroupEntry(context, fieldName)
@@ -84,46 +98,86 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
         }
     }
 
-    internal class GroupButtonWidget(private val list: DynamicListWidget, private val group: String, private val title: Text))
-    : 
+    internal class GroupButtonWidget(private val list: DynamicListWidget, private val group: String, private val title: Text)
+    :
     CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY)
     {
-    
-        init {
-            this.active = false
-        }
-    
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, message)
-            //builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+            if (this.active) {
+                if (list.groupIsVisible(group)) {
+                    if (this.isFocused) {
+                        builder?.put(NarrationPart.USAGE, collapseUsageFocused)
+                    } else {
+                        builder?.put(NarrationPart.USAGE, collapseUsageHovered)
+                    }
+                } else {
+                    if (this.isFocused) {
+                        builder?.put(NarrationPart.USAGE, expandUsageFocused)
+                    } else {
+                        builder?.put(NarrationPart.USAGE, expandUsageHovered)
+                    }
+                }
+            }
         }
-    
+
         override fun getTooltip(): Tooltip? {
             return null
         }
 
-        private fun getTex(bl: Boolean): Identifier {
+        private fun getTex(bl: Boolean, bl2: Boolean): Identifier {
             return if (bl)
-                TextureIds.GROUP_COLLAPSE
+                if (bl2)
+                    TextureIds.GROUP_COLLAPSE_HIGHLIGHTED
+                else
+                    TextureIds.GROUP_COLLAPSE
+            else if (bl2)
+                TextureIds.GROUP_EXPAND_HIGHLIGHTED
             else
                 TextureIds.GROUP_EXPAND
         }
-    
+
         override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             val bl = list.groupIsVisible(group)
-            val t = if (bl) title.copy().styled { s -> s.withUnderline(true) } else title
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, t, x + 19, y + (getHeight() - (MinecraftClient.getInstance().textRenderer.fontHeight) / 2))
-            context.drawTex(getTex(bl), x, y + 2, 16, 16)
-            //TODO(context.fill())
+            val bl2 = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
+            val t = if (bl2) title.copy().styled { s -> s.withUnderline(true) } else title
+            val trimmed = trim(t, width - 17)
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, trimmed, x + 17, y + (getHeight() - (MinecraftClient.getInstance().textRenderer.fontHeight) / 2), -1)
+            context.drawTex(getTex(bl, bl2), x, y, 20, 20)
+            val h2 = y + height/2
+            if (bl) {
+                context.fill(x, h2, x + 1, y + height, -1)
+                context.fill(x + 1, h2, x + 2, y + height, -12698050)
+            } else {
+                val x1 = x + 17 + MinecraftClient.getInstance().textRenderer.getWidth(trimmed) + 7
+                val x2 = x + width - 7
+                if (x2 - 2 > x1) {
+                    context.fill(x1, h2 - 1, x2, h2, -1)
+                    context.fill(x1 + 1, h2, x2 + 1, h2 + 1, -12698050)
+                }
+            }
+        }
+
+        private fun trim(text: Text, width: Int): OrderedText? {
+            val stringVisitable = MinecraftClient.getInstance().textRenderer.trimToWidth(text, width - MinecraftClient.getInstance().textRenderer.getWidth(ScreenTexts.ELLIPSIS))
+            return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
         }
 
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
             if (!parentSelected) return TooltipChild.EMPTY
-            return overflowTooltip?.let { listOf(it.get()) } ?: TooltipChild.EMPTY
+            return if (list.groupIsVisible(group)) {
+                collapse
+            } else {
+                expand
+            }
         }
-    
-        override fun provideNarrationLines(): List<Text> {
-            return overflowTooltip?.let { listOf(it.get()) } ?: TooltipChild.EMPTY
+
+        companion object {
+            private val collapse = listOf("fc.validated_field.collapse".translate())
+            private val expand = listOf("fc.validated_field.expand".translate())
+            private val collapseUsageFocused = "fc.validated_field.collapse.usage.focused".translate()
+            private val expandUsageFocused = "fc.validated_field.expand.usage.focused".translate()
+            private val collapseUsageHovered = "fc.validated_field.collapse.usage.hovered".translate()
+            private val expandUsageHovered = "fc.validated_field.expand.usage.hovered".translate()
         }
     }
 }

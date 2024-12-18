@@ -186,7 +186,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return button == 0 || button == 1
     }
 
-    private fun noScroll(): Boolean {
+    protected fun noScroll(): Boolean {
         return contentHeight() <= height
     }
 
