@@ -47,7 +47,7 @@ import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.command.CommandSource
 import net.minecraft.text.Text
 import java.util.*
-import java.util.function.BiConsumer
+import java.util.function.Predicate
 import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.math.max
@@ -312,22 +312,35 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
     }
 
+    private fun prepareConfigScreens(playerPermLevel: Int) {
+        val functionMap: functionMap: MutableMap<String, SortedMap<Int, EntryCreator.Creator>> = mutableMapOf()
+        val nameMap: MutableMap<String, Text> = mutableMapOf()
+        val actionMap: MutableMap<String, MutableSet<Action>> = mutableMapOf()
+        nameMap[scope] = PlatformUtils.configName(this.scope, "Config Root").lit()
+        for ((i, config) in configs.withIndex()) {
+            functionMap.computeIfAbsent(scope) { sortedMapOf() }[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(ConfigApiImplClient.getTranslation(config.active, "", config.active::class.annotations, listOf(), config.active::class.java.simpleName), ConfigApiImplClient.getDescription(config.active, "", config.active::class.annotations, listOf()), config.active.getId().toTranslationKey()))
+            walkConfig(config, functionMap, nameMap, actionMap, if(config.clientOnly) 4 else playerPermLevel)
+        }
+        val scopes = functionMap.keys.toList()
+        val scopeButtonFunctions = buildScopeButtons(nameMap)
+        val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
+        for((scope, entryBuilders) in functionMap) {
+            val name = nameMap[scope] ?: continue
+            builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, actionMap, entryBuilders.values.toList())
+        }
+        this.screens = builders
+    }
+
     private fun walkConfig2(
-        set: ConfigSet,
-        functionMap: MutableMap<String, SortedMap<Int, EntryCreator.Creator>>,
-        nameMap: MutableMap<String, Translatable.Result>,
-        actionMap: MutableMap<String, MutableSet<Action>>,
-        anchorConsumer: BiConsumer<String, Any?>,
+        set: ConfigSet, //the current set of configs to walk
+        functionMap: MutableMap<String, SortedMap<Int, EntryCreator.Creator>>, //Creators go here, sorted by encounter order and scope
+        anchorPredicate: Predicate<AnchorResult>, //Returns true if the anchor will supplant an inline entry. nameMap will now happen here
         playerPermLevel: Int)
     {
         val config: Config = set.active
         val baseConfig: Config = set.base
-        //putting the config buttons themselves, in the base scope. ex: "my_mod"
         val prefix = config.getId().toTranslationKey()
         val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, listOf(), config::class.java.simpleName)
-        //TODO(Add header entry builder)
-        nameMap[prefix] = configTexts
-
         var index = 0
         val groups: LinkedList<String> = LinkedList()
 
@@ -338,14 +351,23 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
 
         val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
-            .put(EntryCreators.OPEN_SCREEN, Consumer { scope -> openScopedScreen(scope) })
+            .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
 
-        //Header entry injected into function map at top of config
-        if (configTexts.prefix != null) {
-            val context = EntryCreator.CreatorContext(prefix, groups, set.clientOnly, configTexts, config::class.annotations, setOf(), contextMisc)
-            EntryCreators.createHeaderEntry(context, configTexts.prefix).applyToMap(prefix, functionMap)
+        val skip = anchorPredicate.accept(AnchorResult(prefix, config, configTexts))
+
+        //apply top level Creators as needed
+        if (!skip || configTexts.prefix != null) {
+            val context = EntryCreator.CreatorContext(prefix, groups, set.clientOnly, configTexts, config::class.annotations, ConfigApiImpl.getActions(config, ConfigApiImpl.IGNORE_NON_SYNC), contextMisc)
+            //config button, if the config spec allows for them
+            if (!skip) {
+                EntryCreators.createConfigEntry(context, configTexts.prefix).applyToMap(this.scope, functionMap)
+            }
+            //Header entry injected into function map at top of config
+            if (configTexts.prefix != null) {
+                EntryCreators.createHeaderEntry(context, configTexts.prefix).applyToMap(prefix, functionMap)
+            }
         }
-
+        
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
             val flags = if(thing is EntryFlag) {
@@ -393,20 +415,21 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     manager.setUpdatableEntry(entryCreator)
                 }
 
-                anchorConsumer.accept(new, thing)
+                val skip = anchorPredicate.accept(AnchorResult(new, thing, prepareResults.texts))
 
-                val context = EntryCreator.CreatorContext(new, groups, set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
+                if (!skip) {
+                    val context = EntryCreator.CreatorContext(new, groups, set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
 
-                if (prepareResult.perms == ConfigApiImplClient.PermResult.FAILURE) {
-                    EntryCreators.createNoPermsEntry(context, "noPerms").applyToMap(old, functionMap)
-                } else if (prepareResult.perms == ConfigApiImplClient.PermResult.OUT_OF_GAME) {
-                    EntryCreators.createNoPermsEntry(context, "outOfGame").applyToMap(old, functionMap)
-                } else {
-                    entryCreator?.createEntry(context)?.applyToMap(old, functionMap)
+                    //TODO(handling creating context actions)
+    
+                    if (prepareResult.perms == ConfigApiImplClient.PermResult.FAILURE) {
+                        EntryCreators.createNoPermsEntry(context, "noPerms").applyToMap(old, functionMap)
+                    } else if (prepareResult.perms == ConfigApiImplClient.PermResult.OUT_OF_GAME) {
+                        EntryCreators.createNoPermsEntry(context, "outOfGame").applyToMap(old, functionMap)
+                    } else {
+                        entryCreator?.createEntry(context)?.applyToMap(old, functionMap)
+                    }
                 }
-
-                //TODO(Do I Still Need This??)
-                if (prepareResult.actions.isNotEmpty()) actionMap[new] = prepareResult.actions.toMutableSet()
 
                 ConfigGroup.pop(annotations, groups)
 
@@ -478,6 +501,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
             }
         }
     }
+
+    private class AnchorResult(val scope: String, val thing: Any?, val texts: Translatable.Result)
 
     private fun buildScopeButtons(nameMap: Map<String, Text>): Map<String, Function<ConfigScreen, ClickableWidget>> {
         val textRenderer = MinecraftClient.getInstance().textRenderer
