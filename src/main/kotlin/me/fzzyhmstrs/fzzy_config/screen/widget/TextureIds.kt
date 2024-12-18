@@ -69,9 +69,11 @@ object TextureIds {
 
     /** white wireframe box with a plus sign in the middle and cutouts in the top and bottom of the box */
     val GROUP_EXPAND = "widget/action/group_expand".fcId()
+    val GROUP_EXPAND_HIGHLIGHTED = "widget/action/group_expand_highlighted".fcId()
 
     /** white wireframe box with a minus sign in the middle */
     val GROUP_COLLAPSE = "widget/action/group_collapse".fcId()
+    val GROUP_COLLAPSE_HIGHLIGHTED = "widget/action/group_collapse_highlighted".fcId()
 
     /////////////////////////
 
