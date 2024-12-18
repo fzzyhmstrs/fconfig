@@ -133,6 +133,24 @@ object ConfigApi {
     }
 
     /**
+     * Registers a [ConfigSpec] for a namespaced set of configs. This should be applied to the entire config namespace, **behavior may be undefined if you apply divergent specs to different configs in your namespace, especially with a sidebar-based layout**
+     *
+     * If a spec isn't registered, Fzzy Config will use [ConfigSpec.DEFAULT]
+     *
+     * ConfigSpecs are experimental, with planned stabilization by 0.7.0. **Until 0.7.0 it is recommended to wrap this registration in a try block to handle unexpected changes in a fail-soft way**
+     * @param namespace String id of the config set. Generally your mod id.
+     * @param configSpec [ConfigSpec] defined spec instance with features you desire.
+     * @see ConfigSpec
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    @JvmStatic
+    @ApiStatus.Experimental
+    fun registerConfigSpec(namespace: String, configSpec: ConfigSpec) {
+        ConfigApiImpl.registerConfigSpec(namespace, configSpec)
+    }
+
+    /**
      * Reads a config from File or Creates a new config class; writes out any corrections, updates, or new content to File. Automatically adds ".toml" to the name for reading and writing.
      *
      * Includes [Version] updating support, automatic validation and correction, and detailed error reporting. Use this to generate the actual config class instance to be used in-game, if you have other custom initialization to perform, otherwise see [registerAndLoadConfig]. See the Example Config for typical usage case.
