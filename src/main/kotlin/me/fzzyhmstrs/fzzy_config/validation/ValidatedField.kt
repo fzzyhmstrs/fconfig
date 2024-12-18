@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -399,8 +400,29 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return null
     }
 
+    protected fun contentBuilder(): UnaryOperator<ConfigEntry.ContentBuilder> {
+        val deco = entryDeco()
+        return UnaryOperator { builder -> 
+            if (deco != null)
+                builder.decoration(deco)
+        }
+    }
+
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
-        TODO("Not yet implemented")
+        val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
+            val contentBuilder = ConfigEntry.ContentBuilder(context)
+            contentBuilder.layoutContent { contentLayout ->
+                contentLayout.add(
+                    "widget",
+                    entryWidget(),
+                    LayoutWidget.Position.ALIGN_JUSTIFY,
+                    LayoutWidget.Position.BELOW)
+            }
+            contentBuilder().apply(contentBuilder)
+
+            ConfigEntry(listWidget, contentBuilder.build(), context.texts)
+        }
+        return listOf(EntryCreator.Creator(context.scope, context.texts, function))
     }
 
     /**
