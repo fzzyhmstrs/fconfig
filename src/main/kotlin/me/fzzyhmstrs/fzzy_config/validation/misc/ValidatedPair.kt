@@ -171,12 +171,23 @@ open class ValidatedPair<A, B>(defaultValue: Tuple<A, B>, private val leftHandle
     }
 
     data class Tuple<X, Y>(val left: X, val right: Y) {
+
+        private contructor(left: X, right: Y, side: Boolean): this(left, right) {
+            this.side = side
+        }
+        
+        private var side: Boolean? = null
+        
         fun withLeft(newLeft: X): Tuple<X, Y> {
             return Tuple(newLeft, right)
         }
 
         fun withRight(newRight: Y): Tuple<X, Y> {
             return Tuple(left, newRight)
+        }
+
+        fun lastSide(): Boolean? {
+            return side
         }
     }
 }
