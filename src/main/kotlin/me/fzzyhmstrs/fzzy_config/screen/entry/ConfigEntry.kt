@@ -99,6 +99,10 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         narratables = n.filter { widget -> widget.message != name }
         c.addAll(actions.mapNotNull { it.nullCast() })
         t.addAll(actions.mapNotNull { it.nullCast() })
+        children = c
+        drawables = d
+        selectables = s
+        narratables = n
         tooltipProviders = t
     }
 
