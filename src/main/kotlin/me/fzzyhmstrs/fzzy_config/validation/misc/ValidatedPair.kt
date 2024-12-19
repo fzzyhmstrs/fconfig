@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
+import me.fzzyhmstrs.fzzy_config.screen.widget.LabelWrappedWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -37,7 +38,7 @@ import java.util.function.UnaryOperator
  * @author fzzyhmstrs
  * since 0.6.0
  */
-open class ValidatedPair<A, B>(defaultValue: Tuple<A, B>, private val leftHandler: Entry<A, *>, private val rightHandler: Entry<B, *>): ValidatedField<ValidatedPair.Tuple<A, B>>(defaultValue) {
+open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, B>, private val leftHandler: Entry<A, *>, private val rightHandler: Entry<B, *>, private val layoutStyle: LayoutStyle = LayoutStyle.SIDE_BY_SIDE): ValidatedField<ValidatedPair.Tuple<A, B>>(defaultValue) {
 
     @Internal
     companion object {
@@ -51,20 +52,43 @@ open class ValidatedPair<A, B>(defaultValue: Tuple<A, B>, private val leftHandle
          * @author fzzyhmstrs
          * since 0.6.0
          */
-        fun <A> of(defaultValue: Tuple<A, A>, handler: Entry<A, *>): ValidatedPair<A, A> {
-            return ValidatedPair(defaultValue, handler, handler)
+        @JvmStatic
+        @JvmOverloads
+        fun <A> of(defaultValue: Tuple<A, A>, handler: Entry<A, *>, layoutStyle: LayoutStyle = LayoutStyle.SIDE_BY_SIDE): ValidatedPair<A, A> {
+            return ValidatedPair(defaultValue, handler, handler, layoutStyle)
+        }
+
+        /**
+         * Attached text labels to the widgets of this pair. Labels will appear below the respective widget
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        @JvmStatic
+        fun <F: ValidatedPair<*, *>>.withLabels(leftLabel: Text, rightLabel: Text): F {
+            this.leftLabel = leftLabel
+            this.rightLabel = rightLabel
+            return this
         }
     }
 
     init {
         leftHandler.listenToEntry { e ->
+            onLeftChanged(e)
             accept(storedValue.withLeft(e.get()))
         }
         rightHandler.listenToEntry { e ->
+            onRightChanged(e)
             accept(storedValue.withRight(e.get()))
         }
     }
 
+    open fun onLeftChanged(left: Entry<A, *>) {}
+
+    open fun onRightChanged(right: Entry<B, *>) {}
+
+    private var leftLabel: Text? = null
+    private var rightLabel: Text? = null
+    
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Tuple<A, B>> {
         return try {
@@ -136,45 +160,69 @@ open class ValidatedPair<A, B>(defaultValue: Tuple<A, B>, private val leftHandle
     }
 
     @Internal
-    @Deprecated("Not used by this widget")
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Tuple<A, B>>): ClickableWidget {
-        val left = leftHandler.widgetEntry()
-        val right = rightHandler.widgetEntry()
-        left.width = 53
-        right.width = 53
+        val left = leftHandler.widgetEntry().wrap(leftLabel)
+        val right = rightHandler.widgetEntry().wrap(rightLabel)
+        if (layoutStyle = LayoutStyle.SIDE_BY_SIDE) {
+            left.width = 53
+            right.width = 53
+        }
         val layout = LayoutWidget(paddingW = 0, spacingW = 0)
         layout.add(
             "left",
             left,
             LayoutWidget.Position.ALIGN_LEFT)
-        layout.add(
-            "right",
-            right,
-            LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
-            LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+        if (layoutStyle = LayoutStyle.SIDE_BY_SIDE) 
+            layout.add(
+                "right",
+                right,
+                LayoutWidget.Position.RIGHT,
+                LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
+                LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+        else
+            layout.add(
+                "right",
+                right,
+                LayoutWidget.Position.ALIGN_LEFT,
+                LayoutWidget.Position.BELOW)
         return LayoutClickableWidget(0, 0, 110, 20, layout)
     }
 
     override fun contentBuilder(): UnaryOperator<ConfigEntry.ContentBuilder> {
         return UnaryOperator { contentBuilder ->
             contentBuilder.layoutContent { contentLayout ->
-                val w = (contentLayout.width - contentLayout.getGeneralHorizontalSpacing()) / 2
-                val left = leftHandler.widgetEntry()
-                val right = rightHandler.widgetEntry()
+                val w = if (layoutStyle = LayoutStyle.SIDE_BY_SIDE) 
+                    (contentLayout.width - contentLayout.getGeneralHorizontalSpacing()) / 2
+                else
+                    contentLayout.width
+                val left = leftHandler.widgetEntry().wrap(leftLabel)
+                val right = rightHandler.widgetEntry().wrap(rightLabel)
                 left.width = w
                 right.width = w
                 contentLayout.add(
                     "left",
                     left,
                     LayoutWidget.Position.ALIGN_LEFT)
-                contentLayout.add(
-                    "right",
-                    right,
-                    LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
-                    LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                if (layoutStyle = LayoutStyle.SIDE_BY_SIDE) 
+                    contentLayout.add(
+                        "right",
+                        right,
+                        LayoutWidget.Position.RIGHT,
+                        LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
+                        LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                else
+                    contentLayout.add(
+                        "right",
+                        right,
+                        LayoutWidget.Position.ALIGN_LEFT,
+                        LayoutWidget.Position.BELOW)
             }
         }
+    }
+
+    private fun ClickableWidget.wrap(label: Text?): ClickableWidget {
+        return if (label == null) this else LabelWrappedWidget(this, label)
     }
 
     /**
@@ -184,6 +232,30 @@ open class ValidatedPair<A, B>(defaultValue: Tuple<A, B>, private val leftHandle
         return "Validated Pair[value=$storedValue, leftHandler=$leftHandler, rightHandler=$rightHandler]"
     }
 
+    /**
+     * Determines how the child widgets will be laid out in the overall pair widget
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    enum class LayoutStyle {
+        /**
+         * The two widgets will display side by side, "squashed" to half the width of one normal setting widget (and with padding between them)
+         *
+         * Labels will appear below each widget, also side by side and squashed.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        SIDE_BY_SIDE,
+        /**
+         * The two widgets will be stacked one on top of the other just like two settings in the normal setting list, but with only one setting title. Like a mini "group" of settings
+         *
+         * Labels will appear below each widget, so the total widget would be Widget 1 > Label 1 > Widget 2 > Label 2 stacked on top of each other
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        STACKED
+    }
+    
     data class Tuple<X, Y>(val left: X, val right: Y) {
 
         private contructor(left: X, right: Y, side: Boolean): this(left, right) {
