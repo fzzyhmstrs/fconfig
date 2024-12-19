@@ -139,7 +139,21 @@ open class ValidatedPair<A, B>(defaultValue: Tuple<A, B>, private val leftHandle
     @Deprecated("Not used by this widget")
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Tuple<A, B>>): ClickableWidget {
-        return TODO()
+        val left = leftHandler.widgetEntry()
+        val right = rightHandler.widgetEntry()
+        left.width = 53
+        right.width = 53
+        val layout = LayoutWidget(paddingW = 0, spacingW = 0)
+        layout.add(
+            "left",
+            left,
+            LayoutWidget.Position.ALIGN_LEFT)
+        layout.add(
+            "right",
+            right,
+            LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
+            LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+        return LayoutClickableWidget(0, 0, 110, 20, layout)
     }
 
     override fun contentBuilder(): UnaryOperator<ConfigEntry.ContentBuilder> {
@@ -167,7 +181,7 @@ open class ValidatedPair<A, B>(defaultValue: Tuple<A, B>, private val leftHandle
      * @suppress
      */
     override fun toString(): String {
-        return "Validated Boolean[value=$storedValue, validation=true or false]"
+        return "Validated Pair[value=$storedValue, leftHandler=$leftHandler, rightHandler=$rightHandler]"
     }
 
     data class Tuple<X, Y>(val left: X, val right: Y) {
