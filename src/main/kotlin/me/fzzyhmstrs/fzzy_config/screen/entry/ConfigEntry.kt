@@ -57,9 +57,9 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     } else {
         val lo = LayoutWidget(paddingW = 0, spacingW = 0)
         for ((index, bl) in content.groupTypes.withIndex()) {
-            lo.add("$index", GroupLineWidget(bl), LayoutWidget.Position.ALIGN_LEFT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            lo.add("$index", GroupLineWidget(bl), LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         }
-        lo.add("layout", content.layoutWidget, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+        lo.add("layout", content.layoutWidget, LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         lo.setPos(this.x, this.top)
     }
     private var children: MutableList<Element> = mutableListOf()
