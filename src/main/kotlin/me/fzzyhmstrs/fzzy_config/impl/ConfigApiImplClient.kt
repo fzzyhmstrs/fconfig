@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
+import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -259,7 +260,7 @@ internal object ConfigApiImplClient {
         if (thing == null) return PrepareResult.FAIL
         val fieldName = id.substringAfterLast('.')
         val texts = getText(thing, fieldName, annotations, globalAnnotations)
-        val permResult = hasNeededPermLevel(playerPermLevel, config, configId, id, annotations, clientOnly, flags, getPerms())
+        val permResult = hasNeededPermLevel(thing, playerPermLevel, config, configId, id, annotations, clientOnly, flags, getPerms())
         if (!permResult.success) {
             return PrepareResult(permResult, setOf(), texts, (thing is EntryParent) && thing.continueWalk(), false)
         }
@@ -279,7 +280,8 @@ internal object ConfigApiImplClient {
         }
     }
 
-    private fun hasNeededPermLevel(playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean, flags: List<EntryFlag.Flag>, cachedPerms:  Map<String, Map<String, Boolean>>): PermResult {
+    private fun hasNeededPermLevel(thing: Any?, playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean, flags: List<EntryFlag.Flag>, cachedPerms:  Map<String, Map<String, Boolean>>): PermResult {
+        if (thing is EntryPermissible) return PermResult.SUCCESS
         val client = MinecraftClient.getInstance()
         val needsWorld = flags.contains(EntryFlag.Flag.REQUIRES_WORLD)
         if (client.isInSingleplayer) return PermResult.SUCCESS //single player or client config, they can do what they want!!

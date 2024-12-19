@@ -79,7 +79,7 @@ object EntryCreators {
             }
         }
         val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
-            val contentBuilder = ConfigEntry.ContentBuilder(context, context.actions)
+            val contentBuilder = ConfigEntry.ContentBuilder(context)
             contentBuilder.decoration(TextureDeco.DECO_LOCKED, 2, 2)
             contentBuilder.layoutContent { contentLayout ->
                 contentLayout.add(

@@ -15,7 +15,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import org.jetbrains.annotations.ApiStatus.Experimental
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.LinkedList
+import java.util.*
 import java.util.function.Function
 
 /**

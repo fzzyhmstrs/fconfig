@@ -19,6 +19,8 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -31,6 +33,7 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.Condition
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionImpl
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -39,6 +42,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
+import java.util.function.UnaryOperator
 import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.reflect.KType
@@ -69,7 +73,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     private var pushedValue: T? = null
     private var updateKey = ""
     private var updateManager: UpdateManager? = null
-    private var listener: Consumer<out EntryListener<T>>? = null
+    private var listener: Consumer<Entry<T, *>>? = null
     protected var flags: Byte = 0
 
     /**
@@ -79,11 +83,12 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @author fzzyhmstrs
      * @since 0.5.0
      */
+    @Deprecated("Use listenToEntry instead")
     open fun addListener(listener: Consumer<ValidatedField<T>>) {
-        this.listener = listener
+        this.listener = listener as? Consumer<Entry<T, *>>
     }
 
-    override fun listenToEntry(listener: Consumer<EntryListener<T>>) {
+    override fun listenToEntry(listener: Consumer<Entry<T, *>>) {
         this.listener = listener
     }
 
@@ -400,25 +405,37 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
     }
 
-    protected fun entryDeco(): Decorated? {
+    /**
+     *
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    protected open fun entryDeco(): Decorated? {
         return null
     }
 
-    protected fun contentBuilder(): UnaryOperator<ConfigEntry.ContentBuilder> {
+    /**
+     *
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    protected open fun contentBuilder(): UnaryOperator<ConfigEntry.ContentBuilder> {
         val deco = entryDeco()
-        return UnaryOperator { builder -> 
+        return UnaryOperator { builder ->
             if (deco != null)
                 builder.decoration(deco)
+            builder
         }
     }
 
+    @Internal
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
             val contentBuilder = ConfigEntry.ContentBuilder(context)
             contentBuilder.layoutContent { contentLayout ->
                 contentLayout.add(
                     "widget",
-                    entryWidget(),
+                    widgetEntry(),
                     LayoutWidget.Position.ALIGN_JUSTIFY,
                     LayoutWidget.Position.BELOW)
             }
@@ -430,7 +447,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     }
 
     /**
-     * wraps the provided values into a [ValidatedList] with this field as validation
+     * Wraps the provided values into a [ValidatedList] with this field as validation
      * @param elements the inputs for the list generation. Same type as this field
      * @return [ValidatedList] wrapping the provided values and this field as validation
      * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.lists
@@ -441,7 +458,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return ValidatedList(listOf(*elements), this)
     }
     /**
-     * wraps the provided collection into a [ValidatedList] with this field as validation
+     * Wraps the provided collection into a [ValidatedList] with this field as validation
      * @param collection the collection to wrap. Same type as this field
      * @return [ValidatedList] wrapping the collection and this field as validation
      * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.lists
@@ -452,7 +469,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return ValidatedList(collection.toList(), this)
     }
     /**
-     * wraps the provided values into a [ValidatedSet] with this field as validation
+     * Wraps the provided values into a [ValidatedSet] with this field as validation
      * @param elements the inputs for the set generation. Same type as this field
      * @return [ValidatedSet] wrapping the provided values and this field as validation
      * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.sets
@@ -463,7 +480,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return ValidatedSet(setOf(*elements), this)
     }
     /**
-     * wraps the provided collection into a [ValidatedSet] with this field as validation
+     * Wraps the provided collection into a [ValidatedSet] with this field as validation
      * @param collection the collection to wrap. Same type as this field
      * @return [ValidatedSet] wrapping the collection and this field as validation
      * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.sets
@@ -472,6 +489,17 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      */
     fun toSet(collection: Collection<T>): ValidatedSet<T> {
         return ValidatedSet(collection.toSet(), this)
+    }
+
+    /**
+     * Pairs this validation with another validation into one [ValidatedPair]
+     *
+     * Note that the resulting entry in the GUI will have two widgets "squashed" next to each other with the default pair layout, making each widget 53 px wide instead of the normal 110. Pick widgets that work within that constraint, or consider using the ValidatedPair constructor that lets you pick the layout type.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun <B> pairWith(other: Entry<B, *>): ValidatedPair<T, B> {
+        return ValidatedPair(ValidatedPair.Tuple(this.storedValue, other.get()), this, other)
     }
 
     /**

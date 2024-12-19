@@ -10,8 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
-import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.annotations.ApiStatus.Experimental
+import org.jetbrains.annotations.ApiStatus.Internal
 
 @JvmDefaultWithoutCompatibility
 @Internal
