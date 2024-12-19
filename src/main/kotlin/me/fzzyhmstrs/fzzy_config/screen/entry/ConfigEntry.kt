@@ -11,11 +11,14 @@
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
 import me.fzzyhmstrs.fzzy_config.annotations.Action
+import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
+import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.decoration.AbstractDecorationWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.DecorationWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
@@ -36,6 +39,7 @@ import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import java.util.*
 import java.util.function.Consumer
+import java.util.function.Supplier
 import java.util.function.UnaryOperator
 import kotlin.math.min
 
@@ -47,8 +51,17 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         this.visibility = content.visibility
     }
 
-    private val actions: List<ActionDecorationWidget> = content.actionWidgets
-    private val layout: LayoutWidget = content.layoutWidget.setPos(this.x, this.top)
+    private val actions: List<AbstractDecorationWidget> = content.actionWidgets
+    private val layout: LayoutWidget = if (content.groupTypes.isEmpty()) {
+        content.layoutWidget.setPos(this.x, this.top)
+    } else {
+        val lo = LayoutWidget(paddingW = 0, spacingW = 0)
+        for ((index, bl) in content.groupTypes.withIndex()) {
+            lo.add("$index", GroupLineWidget(bl), LayoutWidget.Position.ALIGN_LEFT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+        }
+        lo.add("layout", content.layoutWidget, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+        lo.setPos(this.x, this.top)
+    }
     private var children: MutableList<Element> = mutableListOf()
     private var drawables: List<Drawable> = listOf()
     private var selectables: List<Selectable> = listOf()
@@ -71,6 +84,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
     override fun init() {
         layout.setPos(this.x, this.top)
+        layout.setWidth(this.w.get())
         val c: MutableList<Element> = mutableListOf()
         val d: MutableList<Drawable> = mutableListOf()
         val s: MutableList<Selectable> = mutableListOf()
@@ -83,8 +97,13 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
                 t.add(w)
         }
         narratables = n.filter { widget -> widget.message != name }
-        t.addAll(actions)
+        c.addAll(actions.mapNotNull { it.nullCast() })
+        t.addAll(actions.mapNotNull { it.nullCast() })
         tooltipProviders = t
+    }
+
+    override fun resize() {
+        layout.setWidth(this.w.get())
     }
 
     override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
@@ -170,15 +189,18 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         return selectables
     }
 
-    class ContentBuilder(private val context: EntryCreator.CreatorContext, private val actionWidgets: List<ActionDecorationWidget>) {
+    class ContentBuilder(private val context: EntryCreator.CreatorContext, private val actionWidgets: List<AbstractDecorationWidget>) {
 
         constructor(context: EntryCreator.CreatorContext, actions: Set<Action>): this(context, actions.map { ActionDecorationWidget.setting(it) })
+
+        constructor(context: EntryCreator.CreatorContext): this(context, context.actions.map { ActionDecorationWidget.setting(it) })
 
         private var mainLayout: LayoutWidget = LayoutWidget(paddingW = 0, spacingW = 0)
         private var contentLayout: LayoutWidget = LayoutWidget(paddingW = 0).clampWidth(110)
         private val decorationWidget = DecorationWidget()
         private var group: String = ""
         private var visibility: DynamicListWidget.Visibility = DynamicListWidget.Visibility.VISIBLE
+        private val popStart = context.groups.size - context.annotations.filterIsInstance<ConfigGroup.Pop>().size
 
         init {
             val nameSupplier = { context.texts.name }
@@ -219,24 +241,29 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             return this
         }
 
-
         fun build(): BuildResult {
+            val groupTypes: MutableList<Boolean> = mutableListOf()
+            for (i in 0 until context.groups.size) {
+                groupTypes.add(i >= popStart)
+            }
             return BuildResult(
                 mainLayout.compute(),
                 actionWidgets,
                 DynamicListWidget.Scope(context.scope, group, context.groups.stream().toList()),
+                groupTypes,
                 visibility)
         }
 
         class BuildResult(
             val layoutWidget: LayoutWidget,
-            val actionWidgets: List<ActionDecorationWidget>,
+            val actionWidgets: List<AbstractDecorationWidget>,
             val scope: DynamicListWidget.Scope,
+            val groupTypes: List<Boolean>,
             val visibility: DynamicListWidget.Visibility)
 
     }
 
-    class ActionDecorationWidget private constructor(private val action: Action, private val actionTooltip: Text = action.settingTooltip): Widget, Drawable, TooltipChild {
+    class ActionDecorationWidget private constructor(private val action: Action, private val actionTooltip: Text = action.settingTooltip): AbstractDecorationWidget(), TooltipChild {
 
         companion object {
             fun setting(action: Action): ActionDecorationWidget {
@@ -252,21 +279,6 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             }
         }
 
-        private var x: Int = 0
-        private var y: Int = 0
-
-        override fun setX(x: Int) { this.x = x }
-
-        override fun setY(y: Int) { this.y = y }
-
-        override fun getX(): Int { return x }
-
-        override fun getY(): Int { return y }
-
-        override fun getWidth(): Int { return 20 }
-
-        override fun getHeight(): Int { return 20 }
-
         fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
             return ((mouseX >= x.toDouble()) && (mouseY >= x.toDouble()) && (mouseX < (x + this.width).toDouble()) && (mouseY < (y + this.height).toDouble()))
         }
@@ -280,6 +292,39 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
             if (!isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && !keyboardFocused) return TooltipChild.EMPTY
             return listOf(actionTooltip)
+        }
+    }
+
+    private class GroupLineWidget(private val end: Boolean): Drawable, Widget {
+
+        private var x: Int = 0
+        private var y: Int = 0
+        private var h: Supplier<Int>? = null
+
+        fun setH(h: Supplier<Int>) {
+            this.h = h
+        }
+
+        override fun setX(x: Int) { this.x = x }
+
+        override fun setY(y: Int) { this.y = y }
+
+        override fun getX(): Int { return x }
+
+        override fun getY(): Int { return y }
+
+        override fun getWidth(): Int { return 5 }
+
+        override fun getHeight(): Int { return h?.get() ?: 1 }
+
+        override fun forEachChild(consumer: Consumer<ClickableWidget>?) {
+        }
+
+
+        override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            val p = DynamicListWidget.verticalPadding.get()
+            context.fill(x, y - p, x + 1, y + height, -1)
+            context.fill(x + 1, y - p, x + 2, y + height, -12698050)
         }
     }
 }
