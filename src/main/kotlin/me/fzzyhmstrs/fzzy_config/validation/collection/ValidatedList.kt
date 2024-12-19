@@ -137,20 +137,23 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         val list: MutableList<T> = mutableListOf()
         val errors: MutableList<String> = mutableListOf()
         for (entry in input) {
-            val result = entryHandler.correctEntry(entry, type)
+            val result = entryHandler.correctEntry(entry, type).report(errors)
             list.add(result.get())
-            if (result.isError()) errors.add(result.getError())
         }
         return ValidationResult.predicated(list, errors.isEmpty(), "Errors corrected in list: $errors")
     }
+
     @Internal
     override fun validateEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val errors: MutableList<String> = mutableListOf()
         for (entry in input) {
-            val result = entryHandler.validateEntry(entry, type)
-            if (result.isError()) errors.add(result.getError())
+            entryHandler.validateEntry(entry, type).report(errors)
         }
         return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in list: $errors")
+    }
+
+    override fun copyValue(input: List<T>): List<T> {
+        return ArrayList(input)
     }
 
     /**
@@ -160,7 +163,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
      * @since 0.2.0
      */
     override fun copyStoredValue(): List<T> {
-        return storedValue.toList()
+        return ArrayList(storedValue)
     }
 
     /**

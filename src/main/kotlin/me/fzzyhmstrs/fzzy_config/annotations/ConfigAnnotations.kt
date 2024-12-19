@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.annotations
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 import me.fzzyhmstrs.fzzy_config.annotations.Action.RESTART
+import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.command
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -85,6 +86,7 @@ annotation class WithPerms(val opLevel: Int = 3)
  * Uses permissions from LuckPerms, or any permissions mod that integrates with `fabric-permissions-api`.
  *
  * Order of precedence:
+ * 0. [EntryPermissible] (hardcode bypass pf permission checks)
  * 1. [NonSync]
  * 2. [ClientModifiable] (Annotating config class itself)
  * 3. [ClientModifiable] (specific setting annotation)
@@ -106,7 +108,7 @@ annotation class WithCustomPerms(val perms: Array<String>, val fallback: Int = -
  *
  * Admin access will mark that a player can handle access violations (potential cheating of a config update) and other server-level issues, and will be notified in-game if such an error occurs while they are online.
  *
- * This annotation is outside of the chain of precedence of the others, it is solely responsible for determining admin access.
+ * This annotation is outside the chain of precedence of the others, it is solely responsible for determining admin access.
  *
  * If [WithCustomPerms] is used in the config class, this should be paired with it; otherwise the system will consider any server admin or owner (level 3+ perms) as an admin.
  * @param perms Array&lt;String&gt; - permission groups allowed to access this setting. Groups need to be compatible with LuckPerms or similar.
