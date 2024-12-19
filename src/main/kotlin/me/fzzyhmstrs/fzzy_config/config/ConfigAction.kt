@@ -12,10 +12,12 @@ package me.fzzyhmstrs.fzzy_config.config
 
 import com.google.common.collect.Sets
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -45,28 +47,44 @@ import kotlin.experimental.and
  * @param activeSupplier Supplier&lt;Boolean&gt; - supplies an active state; whether the button is insactive ("greyed out" and unclickable) or active (functioning normally)
  * @param pressAction [Runnable] - the action to execute on clicking the button
  * @param background [Identifier], nullable - if non-null, will provide a custom background for the widget rendering.
- * @param decoration [Identifier], nullable - if non-null, will render a "decoration" next to the widget. These are the typically white/wireframe icons shown next to certain settings like lists.
+ * @param decoration [Decorated], nullable - if non-null, will render a "decoration" next to the widget. These are the typically white/wireframe icons shown next to certain settings like lists.
  * @author fzzyhmstrs
- * @since 0.5.0
+ * @since 0.5.0, Decorated incorporated 0.6.0
  */
 class ConfigAction @JvmOverloads constructor(
     private val titleSupplier: Supplier<Text>,
     private val activeSupplier: Supplier<Boolean>,
     private val pressAction: Runnable,
-    private val decoration: Identifier,
+    private val decoration: Decorated?,
     private val description: Text? = null,
     private val background: ActiveButtonWidget.Background? = null)
 :
     EntryWidget<Any>,
     EntryFlag,
+    EntryCreator,
+    EntryKeyed,
     Translatable
 {
 
+    constructor(
+    titleSupplier: Supplier<Text>,
+    activeSupplier: Supplier<Boolean>,
+    pressAction: Runnable,
+    decoration: Identifier?,
+    description: Text? = null,
+    background: Identifier? = null): this(titleSupplier, activeSupplier, pressAction, id?.let{ SpriteDecoration(it) }, description, background)
+
     private var flags: Byte = 0
+    private var actionKey = "fc.config.generic.action"
 
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<Any>): ClickableWidget {
-        return DecoratedActiveButtonWidget(titleSupplier, 110, 20, decoration, activeSupplier, { _ -> pressAction.run() }, background)
+        return ActiveButtonWidget(titleSupplier, 110, 20, activeSupplier, { _ -> pressAction.run() }, background)
+    }
+
+    @Internal
+    override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
+        return EntryCreators.createActionEntry(context, decoration, this.widgetEntry())
     }
 
     internal fun setFlag(flag: Byte) {
@@ -281,23 +299,33 @@ class ConfigAction @JvmOverloads constructor(
         }
     }
 
-    override fun translationKey(): String {
-        return ""
+    @Internal
+    override fun getEntryKey(): String {
+        return actionKey
     }
 
-    override fun hasTranslation(): Boolean {
-        return false
+    @Internal
+    override fun setEntryKey(key: String) {
+        actionKey = key
+    }
+
+    override fun translationKey(): String {
+        return getEntryKey()
     }
 
     override fun descriptionKey(): String {
-        return ""
+        return getEntryKey() + ".desc"
+    }
+
+    override fun prefixKey(): String {
+        return getEntryKey() + ".prefix"
     }
 
     override fun hasDescription(): Boolean {
-        return description != null
+        return description != null || super.hasDescription()
     }
 
     override fun description(fallback: String?): MutableText {
-        return description?.copy() ?: FcText.literal(fallback ?: "")
+        return description?.copy() ?: super.description(fallback)
     }
 }
