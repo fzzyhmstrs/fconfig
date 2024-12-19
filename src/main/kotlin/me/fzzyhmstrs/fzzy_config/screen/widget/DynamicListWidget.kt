@@ -58,12 +58,18 @@ class DynamicListWidget(
     //// Widget ////
 
     companion object {
-        private val scrollMultiplier: Supplier<Double> = Supplier { 10.0 }
-        private val verticalPadding: Supplier<Int> = Supplier { 2 }
+        val scrollMultiplier: Supplier<Double> = Supplier { 10.0 }
+        val verticalPadding: Supplier<Int> = Supplier { 2 }
     }
 
     private val entries: Entries by lazy {
         Entries(entryBuilders.map { it.apply(this) })
+    }
+
+    fun resize() {
+        entries.iterator().forEach {
+            it.resize()
+        }
     }
 
     fun search(searchInput: String): Int {
@@ -541,6 +547,8 @@ class DynamicListWidget(
         }
 
         open fun init() {}
+
+        open fun resize() {}
 
         fun scroll(dY: Int) {
             top.inc(dY)

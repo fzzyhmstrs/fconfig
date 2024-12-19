@@ -16,14 +16,13 @@ import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.Widget
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.UnaryOperator
 
-class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0), private val paddingW: Int = 8, private val paddingH: Int = paddingW, spacingW: Int = 4, spacingH: Int = spacingW): Widget, Scalable {
+class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0), private val paddingW: Int = 8, private val paddingH: Int = paddingW, private val spacingW: Int = 4, private val spacingH: Int = spacingW): Widget, Scalable {
 
     private var width: Int = 0
     private var height: Int = 0
@@ -37,6 +36,22 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     private val sets: Deque<PosSet> = LinkedList(listOf(PosSet(xPos, yPos, wPos, hPos, spacingW, spacingH)))
 
     private val elements: MutableMap<String, PositionedElement<*>> = mutableMapOf()
+
+    fun getGeneralVerticalPadding(): Int {
+        return paddingH
+    }
+
+    fun getGeneralHorizontalPadding(): Int {
+        return paddingW
+    }
+
+    fun getGeneralVerticalSpacing(): Int {
+        return spacingH
+    }
+
+    fun getGeneralHorizontalSpacing(): Int {
+        return spacingW
+    }
 
     private fun updateElements() {
         for ((_, e) in elements) {

@@ -30,11 +30,12 @@ import java.util.function.Supplier
  *
  * @param T the non-null type of the Entry stored value
  * @author fzzyhmstrs
- * @since 0.2.0, add EntryFlag 0.5.6, add EntryListener 0.6.0
+ * @since 0.2.0, add EntryFlag 0.5.6, add listenToEntry 0.6.0
  */
 @JvmDefaultWithCompatibility
-interface Entry<T, E: Entry<T, E>>: EntryHandler<T>, EntryWidget<T>, EntryListener<T>, EntryFlag, Consumer<T>, Supplier<T> {
+interface Entry<T, E: Entry<T, E>>: EntryHandler<T>, EntryWidget<T>, EntryFlag, Consumer<T>, Supplier<T> {
     fun instanceEntry(): E
     fun isValidEntry(input: Any?): Boolean
     fun trySet(input: Any?)
+    fun listenToEntry(listener: Consumer<Entry<T, *>>)
 }
