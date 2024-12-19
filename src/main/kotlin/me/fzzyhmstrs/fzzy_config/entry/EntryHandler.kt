@@ -23,8 +23,8 @@ package me.fzzyhmstrs.fzzy_config.entry
  * @since 0.2.0, copyValue added 0.6.0
  */
 interface EntryHandler<T>: EntrySerializer<T>, EntryDeserializer<T>, EntryValidator<T>, EntryCorrector<T> {
-  
+
     fun copyValue(input: T): T {
-        return T
+        return input
     }
 }

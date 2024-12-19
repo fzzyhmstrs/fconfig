@@ -2,7 +2,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.navigation.NavigationDirection
-import java.util.EnumMap
+import java.util.*
 
 //client
 @JvmDefaultWithCompatibility

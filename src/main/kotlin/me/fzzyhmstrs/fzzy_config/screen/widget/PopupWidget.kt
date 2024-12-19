@@ -38,11 +38,8 @@ import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
-import java.util.function.BiConsumer
-import java.util.function.BiFunction
-import java.util.function.Consumer
+import java.util.function.*
 import java.util.function.Function
-import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
 

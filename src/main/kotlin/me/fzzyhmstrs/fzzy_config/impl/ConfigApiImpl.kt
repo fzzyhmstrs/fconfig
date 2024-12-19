@@ -21,13 +21,10 @@ import me.fzzyhmstrs.fzzy_config.FCC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.cast
-import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigAction
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext
+import me.fzzyhmstrs.fzzy_config.config.*
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.VERSIONS
-import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
@@ -195,6 +192,10 @@ internal object ConfigApiImpl {
     internal fun isClientConfigLoaded(scope: String): Boolean {
         if (!isClient) return false
         return ConfigApiImplClient.isConfigLoaded(scope)
+    }
+
+    internal fun registerConfigSpec(namespace: String, configSpec: ConfigSpec) {
+        TODO()
     }
 
     ///////////////// Flags //////////////////////////////////////////////////////////////

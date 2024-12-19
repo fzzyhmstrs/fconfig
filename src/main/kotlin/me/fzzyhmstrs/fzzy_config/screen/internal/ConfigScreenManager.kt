@@ -20,15 +20,11 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.screen.entry.*
-import me.fzzyhmstrs.fzzy_config.screen.entry.BaseConfigEntry
-import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigConfigEntry
-import me.fzzyhmstrs.fzzy_config.screen.entry.SectionConfigEntry
-import me.fzzyhmstrs.fzzy_config.screen.entry.SettingConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager.ConfigScreenBuilder
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NoPermsButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ScreenOpenButtonWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
@@ -47,9 +43,9 @@ import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.command.CommandSource
 import net.minecraft.text.Text
 import java.util.*
-import java.util.function.Predicate
 import java.util.function.Consumer
 import java.util.function.Function
+import java.util.function.Predicate
 import kotlin.math.max
 import kotlin.math.min
 
@@ -313,20 +309,20 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun prepareConfigScreens(playerPermLevel: Int) {
-        val functionMap: functionMap: MutableMap<String, SortedMap<Int, EntryCreator.Creator>> = mutableMapOf()
+        val functionMap: MutableMap<String, SortedMap<Int, EntryCreator.Creator>> = mutableMapOf()
         val nameMap: MutableMap<String, Text> = mutableMapOf()
         val actionMap: MutableMap<String, MutableSet<Action>> = mutableMapOf()
         nameMap[scope] = PlatformUtils.configName(this.scope, "Config Root").lit()
         for ((i, config) in configs.withIndex()) {
-            functionMap.computeIfAbsent(scope) { sortedMapOf() }[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(ConfigApiImplClient.getTranslation(config.active, "", config.active::class.annotations, listOf(), config.active::class.java.simpleName), ConfigApiImplClient.getDescription(config.active, "", config.active::class.annotations, listOf()), config.active.getId().toTranslationKey()))
-            walkConfig(config, functionMap, nameMap, actionMap, if(config.clientOnly) 4 else playerPermLevel)
+            //functionMap.computeIfAbsent(scope) { sortedMapOf() }[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(ConfigApiImplClient.getTranslation(config.active, "", config.active::class.annotations, listOf(), config.active::class.java.simpleName), ConfigApiImplClient.getDescription(config.active, "", config.active::class.annotations, listOf()), config.active.getId().toTranslationKey()))
+            //walkConfig2(config, functionMap, nameMap, actionMap, if(config.clientOnly) 4 else playerPermLevel)
         }
         val scopes = functionMap.keys.toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
         val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
         for((scope, entryBuilders) in functionMap) {
             val name = nameMap[scope] ?: continue
-            builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, actionMap, entryBuilders.values.toList())
+            //builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, actionMap, entryBuilders.values.toList())
         }
         this.screens = builders
     }
@@ -353,21 +349,21 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
             .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
 
-        val skip = anchorPredicate.accept(AnchorResult(prefix, config, configTexts))
+        val skip = anchorPredicate.test(AnchorResult(prefix, config, configTexts))
 
         //apply top level Creators as needed
         if (!skip || configTexts.prefix != null) {
             val context = EntryCreator.CreatorContext(prefix, groups, set.clientOnly, configTexts, config::class.annotations, ConfigApiImpl.getActions(config, ConfigApiImpl.IGNORE_NON_SYNC), contextMisc)
             //config button, if the config spec allows for them
             if (!skip) {
-                EntryCreators.createConfigEntry(context, configTexts.prefix).applyToMap(this.scope, functionMap)
+                EntryCreators.createConfigEntry(context).applyToMap(this.scope, functionMap)
             }
             //Header entry injected into function map at top of config
             if (configTexts.prefix != null) {
                 EntryCreators.createHeaderEntry(context, configTexts.prefix).applyToMap(prefix, functionMap)
             }
         }
-        
+
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
             val flags = if(thing is EntryFlag) {
@@ -415,13 +411,13 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     manager.setUpdatableEntry(entryCreator)
                 }
 
-                val skip = anchorPredicate.accept(AnchorResult(new, thing, prepareResults.texts))
+                val skip2 = anchorPredicate.test(AnchorResult(new, thing, prepareResult.texts))
 
-                if (!skip) {
+                if (!skip2) {
                     val context = EntryCreator.CreatorContext(new, groups, set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
 
                     //TODO(handling creating context actions)
-    
+
                     if (prepareResult.perms == ConfigApiImplClient.PermResult.FAILURE) {
                         EntryCreators.createNoPermsEntry(context, "noPerms").applyToMap(old, functionMap)
                     } else if (prepareResult.perms == ConfigApiImplClient.PermResult.OUT_OF_GAME) {

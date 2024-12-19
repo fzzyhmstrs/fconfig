@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
@@ -41,13 +42,13 @@ import java.util.*
 /**
  * Defines the start of a config group
  *
- * This could be used to link to a wiki, open another non-fzzy-config config, open a non-config screen, open a patchouli guide, run a command, and so on.
+ * Groups organize a grouping of settings into one unit that can be collapsed and expanded in the
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-open class ConfigGroup @JvmOverloads constructor(private val groupName: String = "", 
-                                                 private val decoration: Decorated? = null, 
-                                                 private val offsetX: Int? = null, 
+open class ConfigGroup @JvmOverloads constructor(private val groupName: String = "",
+                                                 private val decoration: Decorated? = null,
+                                                 private val offsetX: Int? = null,
                                                  private val offsetY: Int? = null): Translatable, EntryKeyed, EntryAnchor, EntryCreator, EntryPermissible {
 
     @Transient
@@ -76,7 +77,11 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
     }
 
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
-        return anchor.decoration(TextureDeco.DECO_LIST).type(EntryAnchor.Anchor.AnchorType.INLINE)
+        return anchor
+            .decoration(decoration ?: TextureDeco.DECO_LIST,
+                if (decoration != null) offsetX ?: 0 else 0,
+                if (decoration != null) offsetY ?: 0 else 0)
+            .type(EntryAnchor.AnchorType.INLINE)
     }
 
     override fun prepare(scope: String, groups: LinkedList<String>, annotations: List<Annotation>, globalAnnotations: List<Annotation>) {
@@ -147,10 +152,10 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, trimmed, x + 17, y + (getHeight() - (MinecraftClient.getInstance().textRenderer.fontHeight) / 2), -1)
             context.drawTex(getTex(bl, bl2), x, y, 20, 20)
             val h2 = y + height/2
-            if (bl) {
+            if (bl) { //vertical line
                 context.fill(x, h2, x + 1, y + height, -1)
                 context.fill(x + 1, h2, x + 2, y + height, -12698050)
-            } else {
+            } else { //horizontal line
                 val x1 = x + 17 + MinecraftClient.getInstance().textRenderer.getWidth(trimmed) + 7
                 val x2 = x + width - 7
                 if (x2 - 2 > x1) {

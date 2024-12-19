@@ -10,19 +10,10 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import com.mojang.brigadier.suggestion.Suggestions
-import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import me.fzzyhmstrs.fzzy_config.entry.EntrySuggester
-import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
+import me.fzzyhmstrs.fzzy_config.util.Searcher.SearchContent
 import net.minecraft.client.search.SuffixArray
-import net.minecraft.command.CommandSource
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 import java.util.*
-import java.util.concurrent.CompletableFuture
-import java.util.function.Predicate
-import java.util.function.Supplier
 
 /**
  * Searches provided inputs by name and/or description with optional search decorators

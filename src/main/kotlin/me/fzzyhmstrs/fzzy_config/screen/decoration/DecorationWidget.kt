@@ -11,31 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.screen.decoration
 
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.Widget
-import java.util.function.Consumer
 
-class DecorationWidget(private var decoration: Decorated? = null, private var offsetX: Int = 0, private var offsetY: Int = 0): Widget, Drawable {
-
-    private var x: Int = 0
-    private var y: Int = 0
-
-    override fun setX(x: Int) {
-        this.x = x
-    }
-
-    override fun setY(y: Int) {
-        this.y = y
-    }
-
-    override fun getX(): Int {
-        return x
-    }
-
-    override fun getY(): Int {
-        return y
-    }
+class DecorationWidget(private var decoration: Decorated? = null, private var offsetX: Int = 0, private var offsetY: Int = 0): AbstractDecorationWidget() {
 
     override fun getWidth(): Int {
         return if (decoration == null) 0 else 20
@@ -43,9 +20,6 @@ class DecorationWidget(private var decoration: Decorated? = null, private var of
 
     override fun getHeight(): Int {
         return if (decoration == null) 0 else 20
-    }
-
-    override fun forEachChild(consumer: Consumer<ClickableWidget>?) {
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {

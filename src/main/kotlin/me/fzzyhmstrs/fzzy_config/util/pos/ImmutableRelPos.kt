@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util.pos
 /**
- * A relative [Pos]. Offsets a parent Pos. Mutation of this pos will alter the offset.
+ * A relative [Pos]. Offsets a parent Pos. Mutation of this pos will NOT alter the offset.
  * @param parent Pos - the Pos this is relative to
  * @param p Int - the offset compared to the parent
  * @author fzzyhmstrs
