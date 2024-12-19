@@ -27,7 +27,10 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.*
+import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.DirectionalLayoutWidget
+import net.minecraft.client.gui.widget.TextWidget
+import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
