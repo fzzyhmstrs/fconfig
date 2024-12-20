@@ -110,7 +110,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
         context.disableScissor()
 
-        if (!noScroll()) {
+        if (!noScroll() && (!hideScrollWhileNotHovered() || this.hovered)) {
             val sW = scrollWidth.get()
             context.drawTex(scrollBarBackground.get(), right - sW, y, sW, height)
             val pos = scrollBarPosition(mouseY.toDouble())
@@ -188,6 +188,10 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
 
     protected fun noScroll(): Boolean {
         return contentHeight() <= height
+    }
+
+    open fun hideScrollWhileNotHovered(): Boolean {
+        return false
     }
 
     private var scrollingY = -1.0

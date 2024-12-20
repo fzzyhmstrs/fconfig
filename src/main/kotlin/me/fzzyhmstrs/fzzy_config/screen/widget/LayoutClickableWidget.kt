@@ -18,8 +18,12 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
-import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.*
+import net.minecraft.client.gui.navigation.GuiNavigation
+import net.minecraft.client.gui.navigation.GuiNavigationPath
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.KeyCodes
 import net.minecraft.text.Text
@@ -37,17 +41,22 @@ import net.minecraft.util.math.MathHelper
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val layout: LayoutWidget): ClickableWidget(x, y, width, height, FcText.empty()), ParentElement, TooltipChild {
+class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val layout: LayoutWidget): ClickableWidget(x, y, width, height, FcText.empty()),
+                                                                                                        ParentElement, TooltipChild {
 
     private var children: MutableList<Element> = mutableListOf()
     private var drawables: List<Drawable> = listOf()
     private var selectables: List<Selectable> = listOf()
     private var tooltipProviders: List<TooltipChild> = listOf()
+    private var focusedSelectable: Selectable? = null
+    private var focusedElement: Element? = null
+    private var dragging: Boolean = false
 
     init {
         val c: MutableList<Element> = mutableListOf()
         val d: MutableList<Drawable> = mutableListOf()
         val s: MutableList<Selectable> = mutableListOf()
+        val t: MutableList<TooltipChild> = mutableListOf()
         layout.categorize(c, d, s) { w ->
             if (w is TooltipChild)
                 t.add(w)
@@ -57,24 +66,38 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         selectables = s
         tooltipProviders = t
         layout.setPos(ReferencePos { this.x }, ReferencePos { this.y })
-        TODO("Add setDims in Layout for both at once")
-        layout.setWidth(width)
-        layout.setHeight(height)
+        layout.setDimensions(width, height)
     }
 
     override fun children(): MutableList<out Element> {
         return children
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderCustom(context, mouseX, mouseY, delta)
+    override fun isDragging(): Boolean {
+        return dragging
     }
 
-    override fun onClick(mouseX: Double, mouseY: Double) {   
+    override fun setDragging(dragging: Boolean) {
+        this.dragging = dragging
+    }
+
+
+    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        for (d in drawables) {
+            d.render(context, mouseX, mouseY, delta)
+        }
+        //renderCustom(context, mouseX, mouseY, delta)
+    }
+
+    override fun onClick(mouseX: Double, mouseY: Double) {
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
+    }
+
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return super<ParentElement>.mouseReleased(mouseX, mouseY, button)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -88,7 +111,32 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
     override fun charTyped(chr: Char, modifiers: Int): Boolean {
         return super<ParentElement>.charTyped(chr, modifiers)
     }
-    
+
+    override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
+        return super<ParentElement>.getNavigationPath(navigation)
+    }
+
+    override fun setFocused(focused: Boolean) {
+        if (!focused) {
+            this.focusedElement?.isFocused = false
+            this.focusedElement = null
+        }
+    }
+
+    override fun getFocused(): Element? {
+        return focusedElement
+    }
+
+    override fun setFocused(focused: Element?) {
+        this.focusedElement?.isFocused = false
+        focused?.isFocused = true
+        this.focusedElement = focused
+    }
+
+    override fun isFocused(): Boolean {
+        return focusedElement != null
+    }
+
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         return super<ParentElement>.keyPressed(keyCode, scanCode, modifiers)
     }
@@ -97,7 +145,7 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
       return super<ParentElement>.keyReleased(keyCode, scanCode, modifiers)
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
         val list: List<Selectable> = this.selectables.filter { it.isNarratable }
         val selectedElementNarrationData = Screen.findSelectedElementData(list, focusedSelectable)
         if (selectedElementNarrationData != null) {
