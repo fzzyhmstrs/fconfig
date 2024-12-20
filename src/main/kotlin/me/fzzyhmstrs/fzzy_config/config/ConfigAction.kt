@@ -13,9 +13,11 @@ package me.fzzyhmstrs.fzzy_config.config
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
+import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
+import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -70,8 +72,8 @@ class ConfigAction @JvmOverloads constructor(
     pressAction: Runnable,
     decoration: Identifier?,
     description: Text? = null,
-    background: Identifier? = null): this(titleSupplier, activeSupplier, pressAction, id?.let{ SpriteDecoration(it) }, description, background)
-    
+    background: Identifier? = null): this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background)
+
     private var flags: Byte = 0
     private var actionKey = "fc.config.generic.action"
 

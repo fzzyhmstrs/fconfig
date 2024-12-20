@@ -117,6 +117,12 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         compute()
     }
 
+    fun setDimensions(width: Int, height: Int) {
+        manualWidth = width
+        manualHeight = height
+        compute()
+    }
+
     fun clampWidth(width: Int): LayoutWidget {
         manualWidth = width
         if (elements.isNotEmpty())
