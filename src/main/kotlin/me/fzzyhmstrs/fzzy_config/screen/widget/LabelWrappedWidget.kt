@@ -10,23 +10,26 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.util.Identifier
+import net.minecraft.text.Text
 
 /**
- * A widget that wraps another widget with a decoration
+ * A widget that wraps another widget with a display label. The label will appear under the widget aligned left
  *
- * Decorations are not rendered by this widget, something like a custom Screen or ParentElement that is checking for Decorated will typically render it
+ * ```
+ * [  WIDGET  ]
+ * My label
+ * ```
  * @param child ClickableWidget - the widget wrapped by this one
- * @param decoration Identifier - id of the decoration to render
+ * @param label [Text] - text label to add to the wrapped widget
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.6.0
  */
 class LabelWrappedWidget(private val child: ClickableWidget, private val label: Text?)
     : ClickableWidget(child.x, child.y, child.width, child.height, label ?: FcText.EMPTY) {
@@ -101,7 +104,7 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
     }
 
     override fun getHeight(): Int {
-        return if (label == null) child.height else child.height + 11 
+        return if (label == null) child.height else child.height + 11
     }
 
     override fun setWidth(width: Int) {
