@@ -84,6 +84,10 @@ class DynamicListWidget(
         entries.toggleGroup(g)
     }
 
+    fun scrollToGroup(g: String) {
+        entries.scrollToGroup(g)
+    }
+
     override fun selectableEntries(): List<Entry> {
         return entries.selectableEntries()
     }
@@ -216,7 +220,7 @@ class DynamicListWidget(
                     return GuiNavigationPath.of(this, guiNavigationPath)
                 }
             } else {
-                var entry2: Entry? = entry
+                var entry2: Entry? = null
 
                 var guiNavigationPath: GuiNavigationPath?
                 do {
@@ -429,6 +433,14 @@ class DynamicListWidget(
         fun scrollToBottom(): Boolean {
             delegate.firstOrNull()?.scroll(-this@DynamicListWidget.bottomDelta())?.also { dirty = true } ?: return false
             return true
+        }
+
+        fun scrollToGroup(g: String) {
+            if (delegate.isEmpty()) return
+            val groupPair = groups[g] ?: return
+            if (this@DynamicListWidget.noScroll()) return
+            val delta = this@DynamicListWidget.top - groupPair.groupEntry.top.get()
+            handleScrollByBar(delta)
         }
 
         fun scroll(amount: Int) {

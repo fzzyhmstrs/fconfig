@@ -29,6 +29,8 @@ interface EntryAnchor {
         return anchor
     }
 
+    fun anchorId(scope: String): String
+
     class Anchor internal constructor(internal val layer: Int, internal var name: Text) {
         internal var type: AnchorType = AnchorType.NEW_SCREEN
         internal var decoration: Decorated? = null

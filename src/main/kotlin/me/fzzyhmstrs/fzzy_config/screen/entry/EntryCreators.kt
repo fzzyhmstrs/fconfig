@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
@@ -20,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import java.util.function.Consumer
 import java.util.function.Function
@@ -128,6 +130,25 @@ object EntryCreators {
             }
             .visibility(DynamicListWidget.Visibility.GROUP_VISIBLE)
             .group(group)
+
+            ConfigEntry(listWidget, contentBuilder.build(), context.texts)
+        }
+        return listOf(EntryCreator.Creator(context.scope, context.texts, function))
+    }
+
+    fun createActionEntry(context: EntryCreator.CreatorContext, decoration: Decorated?, widget: ClickableWidget): List<EntryCreator.Creator> {
+        val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
+            val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
+            contentBuilder.layoutContent { content ->
+                content.add(
+                    "action",
+                    widget,
+                    LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
+                    LayoutWidget.Position.BELOW)
+            }
+            if (decoration != null) {
+                contentBuilder.decoration(decoration, 2, 2)
+            }
 
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
