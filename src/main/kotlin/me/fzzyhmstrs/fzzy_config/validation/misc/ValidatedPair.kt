@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.LabelWrappedWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutClickableWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -22,6 +23,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.Tuple
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.UnaryOperator
@@ -64,7 +66,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
          * @since 0.6.0
          */
         @JvmStatic
-        fun <F: ValidatedPair<*, *>>.withLabels(leftLabel: Text, rightLabel: Text): F {
+        fun <F: ValidatedPair<*, *>> F.withLabels(leftLabel: Text, rightLabel: Text): F {
             this.leftLabel = leftLabel
             this.rightLabel = rightLabel
             return this
@@ -88,7 +90,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
 
     private var leftLabel: Text? = null
     private var rightLabel: Text? = null
-    
+
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Tuple<A, B>> {
         return try {
@@ -164,7 +166,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
     override fun widgetEntry(choicePredicate: ChoiceValidator<Tuple<A, B>>): ClickableWidget {
         val left = leftHandler.widgetEntry().wrap(leftLabel)
         val right = rightHandler.widgetEntry().wrap(rightLabel)
-        if (layoutStyle = LayoutStyle.SIDE_BY_SIDE) {
+        if (layoutStyle == LayoutStyle.SIDE_BY_SIDE) {
             left.width = 53
             right.width = 53
         }
@@ -173,7 +175,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
             "left",
             left,
             LayoutWidget.Position.ALIGN_LEFT)
-        if (layoutStyle = LayoutStyle.SIDE_BY_SIDE) 
+        if (layoutStyle == LayoutStyle.SIDE_BY_SIDE)
             layout.add(
                 "right",
                 right,
@@ -192,7 +194,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
     override fun contentBuilder(): UnaryOperator<ConfigEntry.ContentBuilder> {
         return UnaryOperator { contentBuilder ->
             contentBuilder.layoutContent { contentLayout ->
-                val w = if (layoutStyle = LayoutStyle.SIDE_BY_SIDE) 
+                val w = if (layoutStyle == LayoutStyle.SIDE_BY_SIDE)
                     (contentLayout.width - contentLayout.getGeneralHorizontalSpacing()) / 2
                 else
                     contentLayout.width
@@ -204,7 +206,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
                     "left",
                     left,
                     LayoutWidget.Position.ALIGN_LEFT)
-                if (layoutStyle = LayoutStyle.SIDE_BY_SIDE) 
+                if (layoutStyle == LayoutStyle.SIDE_BY_SIDE)
                     contentLayout.add(
                         "right",
                         right,
@@ -255,21 +257,21 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
          */
         STACKED
     }
-    
+
     data class Tuple<X, Y>(val left: X, val right: Y) {
 
-        private contructor(left: X, right: Y, side: Boolean): this(left, right) {
+        private constructor(left: X, right: Y, side: Boolean): this(left, right) {
             this.side = side
         }
-        
+
         private var side: Boolean? = null
-        
+
         fun withLeft(newLeft: X): Tuple<X, Y> {
-            return Tuple(newLeft, right)
+            return Tuple(newLeft, right, false)
         }
 
         fun withRight(newRight: Y): Tuple<X, Y> {
-            return Tuple(left, newRight)
+            return Tuple(left, newRight, true)
         }
 
         fun lastSide(): Boolean? {
