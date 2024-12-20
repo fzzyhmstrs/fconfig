@@ -82,6 +82,10 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
         return anchor.decoration(TextureDeco.DECO_MAP)
     }
 
+    override fun anchorId(scope: String): String {
+        return sectionKey
+    }
+
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         return EntryCreators.createSectionEntry(context)
     }

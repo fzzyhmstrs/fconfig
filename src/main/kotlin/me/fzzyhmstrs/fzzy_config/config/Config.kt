@@ -146,6 +146,10 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
         return anchor.decoration(TextureDeco.DECO_FOLDER)
     }
 
+    override fun anchorId(scope: String): String {
+        return translationKey()
+    }
+
     /**
      * @suppress
      */

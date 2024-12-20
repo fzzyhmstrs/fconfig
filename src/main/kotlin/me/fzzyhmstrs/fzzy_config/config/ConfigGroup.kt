@@ -84,6 +84,10 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
             .type(EntryAnchor.AnchorType.INLINE)
     }
 
+    override fun anchorId(scope: String): String {
+        return if (groupName != "") groupName else scope.substringAfterLast('.')
+    }
+
     override fun prepare(scope: String, groups: LinkedList<String>, annotations: List<Annotation>, globalAnnotations: List<Annotation>) {
         val fieldName = if (groupName != "") groupName else scope.substringAfterLast('.')
         groups.push(fieldName)
