@@ -12,7 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.decoration
 
 import net.minecraft.util.Identifier
 
-class SpriteDecoration(private val id: Identifier, override val h: Int = 16, override val w: Int = 16): SpriteDecorated {
+open class SpriteDecoration(private val id: Identifier, override val h: Int = 16, override val w: Int = 16): SpriteDecorated {
 
     override fun decorationId(): Identifier {
         return id

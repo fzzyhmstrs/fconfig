@@ -100,7 +100,7 @@ interface Translatable {
         return I18n.hasTranslation(prefixKey())
     }
 
-    class Result(val name: Text, val desc: Text?, val prefix: Text?) {
+    class Result(val name: Text, val desc: Text? = null, val prefix: Text? = null) {
 
         fun getKeys(): List<String> {
             val list: MutableList<String> = mutableListOf()

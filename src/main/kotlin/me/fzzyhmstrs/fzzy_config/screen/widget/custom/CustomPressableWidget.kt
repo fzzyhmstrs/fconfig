@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.ButtonTextures
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.KeyCodes
@@ -27,23 +28,35 @@ import net.minecraft.util.math.MathHelper
 
 open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message), TooltipChild {
 
+    protected open val textures: PressableTextures = DEFAULT_TEXTURES
+
     open fun onPress() {}
 
-    open fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    open fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         val minecraftClient = MinecraftClient.getInstance()
+        val i = if (this.active) 16777215 else 10526880
+        this.drawMessage(context, minecraftClient.textRenderer, x, y, width, height, i or (MathHelper.ceil(this.alpha * 255.0f) shl 24))
+    }
+
+    open fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawTex(get(active, this.isSelected), this.x, this.y, this.getWidth(), this.getHeight(), ColorHelper.getWhite(this.alpha))
-        val i = if (this.active) 16777215 else 10526880
-        this.drawMessage(context, minecraftClient.textRenderer, i or (MathHelper.ceil(this.alpha * 255.0f) shl 24))
+        context.drawTex(textures.get(active, this.isSelected), x, y, width, height, ColorHelper.getWhite(this.alpha))
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        renderCustom(context, mouseX, mouseY, delta)
+        renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
+        renderCustom(context,x, y, width, height, mouseX, mouseY, delta)
     }
 
-    open fun drawMessage(context: DrawContext?, textRenderer: TextRenderer?, color: Int) {
-        this.drawScrollableText(context, textRenderer, 2, color)
+    open fun drawMessage(context: DrawContext, textRenderer: TextRenderer, x: Int, y: Int, width: Int, height: Int, color: Int) {
+        this.drawScrollableText(context, textRenderer, x, y, width, height, 2, color)
+    }
+
+    protected open fun drawScrollableText(context: DrawContext, textRenderer: TextRenderer, x: Int, y: Int, width: Int, height: Int, xMargin: Int, color: Int) {
+        val i = x + xMargin
+        val j = x + width - xMargin
+        drawScrollableText(context, textRenderer, this.message, i, y, j, y + height, color)
     }
 
     override fun onClick(mouseX: Double, mouseY: Double) {
@@ -66,12 +79,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         appendDefaultNarrations(builder)
     }
 
-    private companion object {
-
-        private val tex =  "widget/button".simpleId()
-        private val disabled = "widget/button_disabled".simpleId()
-        private val highlighted = "widget/button_highlighted".simpleId()
-
+    data class PressableTextures(private val tex: Identifier, private val disabled: Identifier, private val highlighted: Identifier) {
         fun get(enabled: Boolean, focused: Boolean): Identifier {
             return if (enabled) {
                 if (focused) highlighted else tex
@@ -79,5 +87,13 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
                 disabled
             }
         }
+    }
+
+    protected companion object {
+        val tex =  "widget/button".simpleId()
+        val disabled = "widget/button_disabled".simpleId()
+        val highlighted = "widget/button_highlighted".simpleId()
+
+        val DEFAULT_TEXTURES = PressableTextures(tex, disabled, highlighted)
     }
 }

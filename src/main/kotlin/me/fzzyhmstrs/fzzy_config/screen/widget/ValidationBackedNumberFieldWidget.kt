@@ -42,7 +42,15 @@ import java.util.function.Supplier
  */
 @Suppress("LeakingThis")
 //client
-open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int, private val wrappedValue: Supplier<T>, private val choiceValidator: ChoiceValidator<T>, private val validationProvider: Function<Double, ValidationResult<T>>, private val applier: Consumer<T> = Consumer { _ ->}):
+open class ValidationBackedNumberFieldWidget<T: Number>(
+    width: Int,
+    height: Int,
+    private val wrappedValue: Supplier<T>,
+    private val choiceValidator: ChoiceValidator<T>,
+    private val validationProvider: Function<Double, ValidationResult<T>>,
+    private val applier: Consumer<T> = Consumer { _ ->},
+    private val renderStatus: Boolean = true)
+    :
     TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY)
 {
 
@@ -95,15 +103,17 @@ open class ValidationBackedNumberFieldWidget<T: Number>(width: Int, height: Int,
             }
         }
         super.renderWidget(context, mouseX, mouseY, delta)
-        val id = if(isValid) {
-            if (ongoingChanges())
-                TextureIds.ENTRY_ONGOING
-            else
-                TextureIds.ENTRY_OK
-        } else {
-            TextureIds.ENTRY_ERROR
+        if (renderStatus) {
+            val id = if (isValid) {
+                if (ongoingChanges())
+                    TextureIds.ENTRY_ONGOING
+                else
+                    TextureIds.ENTRY_OK
+            } else {
+                TextureIds.ENTRY_ERROR
+            }
+            context.drawTex(id, x + width - 20, y, 20, 20)
         }
-        context.drawTex(id, x + width - 20, y, 20, 20)
     }
 
     override fun getInnerWidth(): Int {

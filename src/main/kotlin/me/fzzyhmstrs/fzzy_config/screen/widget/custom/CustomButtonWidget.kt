@@ -15,6 +15,8 @@ import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
+import oshi.driver.windows.perfmon.PerfmonDisabled
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -26,12 +28,11 @@ open class CustomButtonWidget protected constructor(
     message: Text,
     private val pressAction: Consumer<CustomButtonWidget>,
     private val narrationSupplier: ButtonWidget.NarrationSupplier,
+    override val textures: PressableTextures,
     private val child: TooltipChild? = null)
     :
     CustomPressableWidget(x, y, width, height, message)
 {
-
-
 
     override fun onPress() {
         pressAction.accept(this)
@@ -58,6 +59,7 @@ open class CustomButtonWidget protected constructor(
         private var height = 20
         private var narrationSupplier: ButtonWidget.NarrationSupplier = DEFAULT_NARRATION_SUPPLIER
         private var active = true
+        private var textures: PressableTextures = DEFAULT_TEXTURES
         private var child: TooltipChild? = null
 
         fun position(x: Int, y: Int): Builder {
@@ -91,8 +93,8 @@ open class CustomButtonWidget protected constructor(
             return this
         }
 
-        fun inactive(): Builder {
-            active = false
+        fun active(active: Boolean): Builder {
+            this.active = active
             return this
         }
 
@@ -101,15 +103,19 @@ open class CustomButtonWidget protected constructor(
             return this
         }
 
+        fun textures(tex: Identifier, disabled: Identifier, highlighted: Identifier): Builder {
+            this.textures = PressableTextures(tex, disabled, highlighted)
+            return this
+        }
+
         fun build(): CustomButtonWidget {
-            val widget = CustomButtonWidget(x, y, width, height, message, onPress, narrationSupplier, child)
+            val widget = CustomButtonWidget(x, y, width, height, message, onPress, narrationSupplier, textures, child)
             widget.tooltip = tooltip
             widget.active = active
             return widget
         }
 
     }
-
 
     companion object {
 

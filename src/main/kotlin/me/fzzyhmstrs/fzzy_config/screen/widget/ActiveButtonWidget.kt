@@ -39,7 +39,7 @@ open class ActiveButtonWidget(
     height: Int,
     private val activeSupplier: Supplier<Boolean>,
     private val pressAction: Consumer<ActiveButtonWidget>,
-    private val background: Identifier? = null)
+    protected val background: Identifier? = null)
     :
     CustomPressableWidget(0, 0, width, height, titleSupplier.get()) {
 
@@ -54,18 +54,36 @@ open class ActiveButtonWidget(
         return titleSupplier.get()
     }
 
-    override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderCustom(
+        context: DrawContext,
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        mouseX: Int,
+        mouseY: Int,
+        delta: Float
+    ) {
         this.active = activeSupplier.get()
+        super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
+    }
+
+    override fun renderBackground(
+        context: DrawContext,
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        mouseX: Int,
+        mouseY: Int,
+        delta: Float
+    ) {
         if (background != null) {
             if (this.isSelected && active) {
                 RenderSystem.enableBlend()
                 RenderSystem.disableDepthTest()
-                context.drawTex(background, x, y, getWidth(), getHeight(), alpha)
+                context.drawTex(background, x, y, width, height, alpha)
             }
-            val i = if (active) 0xFFFFFF else 0xA0A0A0
-            drawMessage(context, MinecraftClient.getInstance().textRenderer, i or (MathHelper.ceil(alpha * 255.0f) shl 24))
-        } else {
-            super.renderCustom(context, mouseX, mouseY, delta)
         }
     }
 
