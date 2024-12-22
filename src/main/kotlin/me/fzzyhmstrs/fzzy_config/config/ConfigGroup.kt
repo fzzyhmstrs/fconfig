@@ -12,7 +12,6 @@ package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
-import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
@@ -24,7 +23,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
-import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -36,7 +35,6 @@ import net.minecraft.text.StringVisitable
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Language
-import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 
 /**
@@ -49,32 +47,10 @@ import java.util.*
 open class ConfigGroup @JvmOverloads constructor(private val groupName: String = "",
                                                  private val decoration: Decorated? = null,
                                                  private val offsetX: Int? = null,
-                                                 private val offsetY: Int? = null): Translatable, EntryKeyed, EntryAnchor, EntryCreator, EntryPermissible {
+                                                 private val offsetY: Int? = null): TranslatableEntry, EntryAnchor, EntryCreator, EntryPermissible {
 
     @Transient
-    private var groupKey = "fc.config.generic.group"
-
-    @Internal
-    override fun getEntryKey(): String {
-        return groupKey
-    }
-
-    @Internal
-    override fun setEntryKey(key: String) {
-        groupKey = key
-    }
-
-    override fun translationKey(): String {
-        return getEntryKey()
-    }
-
-    override fun descriptionKey(): String {
-        return getEntryKey() + ".desc"
-    }
-
-    override fun prefixKey(): String {
-        return getEntryKey() + ".prefix"
-    }
+    override var entryKey = "fc.config.generic.group"
 
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
         return anchor

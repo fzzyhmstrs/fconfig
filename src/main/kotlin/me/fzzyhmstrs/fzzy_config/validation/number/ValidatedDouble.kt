@@ -28,7 +28,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-open class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: Double, minValue: Double, widgetType: WidgetType = if(maxValue == Double.MAX_VALUE || minValue == -Double.MAX_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Double>(defaultValue, minValue, maxValue, widgetType) {
+class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: Double, minValue: Double, widgetType: WidgetType = if(maxValue == Double.MAX_VALUE || minValue == -Double.MAX_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Double>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated double number with a default selected from the min of the allowable range.
@@ -72,31 +72,48 @@ open class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxVa
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedDouble [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: Double): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
 
+    /**
+     * creates a deep copy of this ValidatedDouble
+     * return ValidatedDouble wrapping the current double value and validation restrictions
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedDouble {
         return ValidatedDouble(copyStoredValue(), maxValue, minValue, widgetType)
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Double && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
 
+    @Internal
+    override var increment: Double? = null
+
+    @Internal
     override fun convert(input: Double): ValidationResult<Double> {
         return ValidationResult.success(input)
     }
 
+    @Internal
     override fun minBound(): Double {
         return -Double.MAX_VALUE
     }
 
+    @Internal
     override fun maxBound(): Double {
         return Double.MAX_VALUE
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         val validation = if(minValue==-Double.MAX_VALUE && maxValue== Double.MAX_VALUE)
             "Unbounded"

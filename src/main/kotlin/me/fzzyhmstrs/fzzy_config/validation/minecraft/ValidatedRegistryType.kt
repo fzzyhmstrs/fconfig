@@ -59,7 +59,7 @@ object ValidatedRegistryType {
      */
     @JvmStatic
     fun <T: Any> of(defaultValue: T, registry: Registry<T>): ValidatedField<T> {
-
+        @Suppress("DEPRECATION")
         return ValidatedIdentifier.ofRegistry(registry).map(
             defaultValue,
             { id -> registry.get(id) ?: defaultValue },
@@ -80,6 +80,7 @@ object ValidatedRegistryType {
      */
     @JvmStatic
     fun <T: Any> of(defaultValue: T, registry: Registry<T>, predicate: Predicate<RegistryEntry<T>>): ValidatedField<T> {
+        @Suppress("DEPRECATION")
         return ValidatedIdentifier.ofRegistry(registry, predicate).map(
             defaultValue,
             { id -> registry.get(id) ?: defaultValue },
@@ -102,6 +103,7 @@ object ValidatedRegistryType {
      */
     @JvmStatic
     fun <T: Any> of(defaultValue: T, registry: Registry<T>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedField<T> {
+        @Suppress("DEPRECATION")
         return ValidatedIdentifier.ofRegistry(registry, predicate).map(
             defaultValue,
             { id -> registry.get(id) ?: defaultValue },

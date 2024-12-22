@@ -14,8 +14,8 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -60,19 +60,6 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         compositeFlags(entryHandler)
     }
 
-    /**
-     * Converts this ValidatedList into [ValidatedChoice] wrapping this list as the valid choice options
-     * @return [ValidatedChoice] with options based on this list's contents
-     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
-     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
-     * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
-     * @author fzzyhmstrs
-     * @since 0.2.0, added optional params 0.3.6
-     */
-    @JvmOverloads
-    fun toChoices(widgetType: WidgetType = WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoice<T> {
-        return ValidatedChoice(defaultValue, entryHandler, translationProvider, descriptionProvider, widgetType)
-    }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {
         return try {
@@ -94,6 +81,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
             ValidationResult.error(defaultValue, "Critical error enountered while deserializing list [$fieldName], using defaults.")
         }
     }
+
     @Internal
     @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     override fun serialize(input: List<T>): ValidationResult<TomlElement> {
@@ -118,6 +106,8 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
 
+    @Internal
+    @Suppress("SafeCastWithReturn", "UNCHECKED_CAST")
     override fun deserializedChanged(old: Any?, new: Any?): Boolean {
         old as? List<T> ?: return true
         new as? List<T> ?: return true
@@ -149,20 +139,6 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in list: $errors")
     }
 
-    override fun copyValue(input: List<T>): List<T> {
-        return ArrayList(input)
-    }
-
-    /**
-     * Creates a deep copy of the stored value and returns it
-     * @return List&lt;T&gt; - copy of the currently stored list
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun copyStoredValue(): List<T> {
-        return ArrayList(storedValue)
-    }
-
     /**
      * creates a deep copy of this ValidatedList
      * return ValidatedList wrapping a deep copy of the currently stored list and passes the entry handler
@@ -173,6 +149,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         return ValidatedList(copyStoredValue(), entryHandler)
     }
     @Internal
+    @Suppress("UNCHECKED_CAST")
     override fun isValidEntry(input: Any?): Boolean {
         if (input !is List<*>) return false
         return try {
@@ -181,10 +158,27 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
             false
         }
     }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input List&lt;[T]%gt; input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: List<T>): List<T> {
+        return input.toList()
+    }
+
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.list".translate(), 110, 20, TextureIds.DECO_LIST, {true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
+        return ActiveButtonWidget("fc.validated_field.list".translate(), 110, 20, { true }, { b: ActiveButtonWidget -> openListEditPopup(b) })
+    }
+
+    @Internal
+    override fun entryDeco(): Decorated.DecoratedOffset? {
+        return Decorated.DecoratedOffset(TextureDeco.DECO_LIST, 2, 2)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -196,7 +190,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
             }
             val listWidget = ListListWidget(list, entryHandler) { _, _ -> ChoiceValidator.any() }
             val popup = PopupWidget.Builder(this.translation())
-                .addElement("list", listWidget, Position.BELOW, Position.ALIGN_LEFT)
+                .add("list", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
                 .addDoneWidget()
                 .onClose { this.setAndUpdate(listWidget.getList()) }
                 .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
@@ -208,8 +202,22 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         }
     }
 
-    // List Interface
-    //////////////////////////////////
+    /**
+     * Converts this ValidatedList into [ValidatedChoice] wrapping this list as the valid choice options
+     * @return [ValidatedChoice] with options based on this list's contents
+     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
+     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
+     * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
+     * @author fzzyhmstrs
+     * @since 0.2.0, added optional params 0.3.6
+     */
+    @JvmOverloads
+    fun toChoices(widgetType: WidgetType = WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoice<T> {
+        return ValidatedChoice(defaultValue, entryHandler, translationProvider, descriptionProvider, widgetType)
+    }
+
+    // List Interface //////////////////////////////////
+
     override val size: Int
         get() = storedValue.size
 
@@ -252,6 +260,8 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
     override fun contains(element: T): Boolean {
         return storedValue.contains(element)
     }
+
+    // End List Interface //////////////////////////////
 
     companion object {
 

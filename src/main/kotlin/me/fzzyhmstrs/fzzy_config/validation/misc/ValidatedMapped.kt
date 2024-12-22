@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
@@ -37,44 +38,18 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
             delegate.accept(from.apply(value))
         }
 
+     @Deprecated("Use listenToEntry instead")
+     @Suppress("DEPRECATION")
      override fun addListener(listener: Consumer<ValidatedField<N>>) {
         delegate.addListener { _ -> listener.accept(this) }
     }
 
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun setUpdateManager(manager: UpdateManager) {
-        val newManager = ForwardingUpdateManager(manager)
-        delegate.setUpdateManager(newManager)
+    override fun listenToEntry(listener: Consumer<Entry<N, *>>) {
+        delegate.listenToEntry { _ -> listener.accept(this) }
     }
 
     @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun getEntryKey(): String {
-        return delegate.getEntryKey()
-    }
-
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun setEntryKey(key: String) {
-        delegate.setEntryKey(key)
-    }
-
-    /**
-     * Gets the wrapped result value from the mapped delegate
-     * @return N. The result being wrapped and passed by this ValidationResult.
-     * @author fzzyhmstrs
-     * @since 0.1.0
-     */
-    override fun get(): N {
-        return to.apply(delegate.get())
-    }
-
-    override fun accept(input: N) {
-        delegate.accept(from.apply(input))
-    }
-
-    @Internal
+    @Suppress("DEPRECATION")
     @Deprecated("use deserialize to avoid accidentally overwriting validation and error reporting")
     override fun deserializeEntry(toml: TomlElement, errorBuilder: MutableList<String>, fieldName: String, flags: Byte): ValidationResult<N> {
         return delegate.deserializeEntry(toml, errorBuilder, fieldName, flags).map(to)
@@ -91,28 +66,35 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
     )
     override fun serializeEntry(input: N?, errorBuilder: MutableList<String>, flags: Byte): TomlElement {
         return if(input == null) {
+            @Suppress("DEPRECATION")
             delegate.serializeEntry(null, errorBuilder, flags)
         } else {
+            @Suppress("DEPRECATION")
             delegate.serializeEntry(from.apply(input), errorBuilder, flags)
         }
     }
 
+    @Internal
     override fun serialize(input: N): ValidationResult<TomlElement> {
         return delegate.serialize(from.apply(input))
     }
 
-    override fun instanceEntry(): ValidatedField<N> {
-        return ValidatedMapped(delegate.instanceEntry(), to, from, defaultValue)
-    }
-
+    @Internal
     override fun correctEntry(input: N, type: EntryValidator.ValidationType): ValidationResult<N> {
         return delegate.correctEntry(from.apply(input), type).map(to)
     }
 
+    @Internal
     override fun validateEntry(input: N, type: EntryValidator.ValidationType): ValidationResult<N> {
         return delegate.validateEntry(from.apply(input), type).map(to)
     }
 
+    @Internal
+    override fun instanceEntry(): ValidatedField<N> {
+        return ValidatedMapped(delegate.instanceEntry(), to, from, defaultValue)
+    }
+
+    @Suppress("UNCHECKED_CAST")
     override fun isValidEntry(input: Any?): Boolean {
         if (input == null) return false
         try {
@@ -122,16 +104,73 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
         }
     }
 
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input [N] input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: N): N {
+        return to.apply(delegate.copyValue(from.apply(input)))
+    }
+
+    @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<N>): ClickableWidget {
         return delegate.widgetEntry(choicePredicate.convert(from, from))
     }
 
+    @Internal
     override fun setFlag(flag: Byte) {
         delegate.setFlag(flag)
     }
 
+    @Internal
     override fun hasFlag(flag: EntryFlag.Flag): Boolean {
         return delegate.hasFlag(flag)
+    }
+
+    /**
+     * Gets the wrapped result value from the mapped delegate
+     * @return N. The result being wrapped and passed by this ValidationResult.
+     * @author fzzyhmstrs
+     * @since 0.1.0
+     */
+    override fun get(): N {
+        return to.apply(delegate.get())
+    }
+
+    /**
+     * updates the mapped value. NOTE: this method will push updates to an UpdateManager, if any. For in-game updating consider [validateAndSet]
+     *
+     * This method is implemented from [java.util.function.Consumer].
+     * @param input new value to wrap
+     * @see validateAndSet
+     * @author fzzyhmstrs
+     * @since 0.1.0
+     */
+    override fun accept(input: N) {
+        delegate.accept(from.apply(input))
+    }
+
+    @Internal
+    @Suppress("DEPRECATION")
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun setUpdateManager(manager: UpdateManager) {
+        val newManager = ForwardingUpdateManager(manager)
+        delegate.setUpdateManager(newManager)
+    }
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun getEntryKey(): String {
+        return delegate.getEntryKey()
+    }
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun setEntryKey(key: String) {
+        delegate.setEntryKey(key)
     }
 
     private inner class ForwardingUpdateManager(private val forwardTo: UpdateManager): UpdateManager {

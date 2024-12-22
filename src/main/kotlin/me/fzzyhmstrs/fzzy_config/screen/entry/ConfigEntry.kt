@@ -106,8 +106,13 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         tooltipProviders = t
     }
 
-    override fun resize() {
+    override fun onResize() {
         layout.setWidth(this.w.get())
+        layout.update()
+    }
+
+    override fun onScroll(dY: Int) {
+        layout.update()
     }
 
     override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {

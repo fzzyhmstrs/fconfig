@@ -55,6 +55,8 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         if (minValue >= maxValue) throw IllegalStateException("Min value $minValue can't be >= Max value $maxValue")
     }
 
+    protected abstract var increment: T?
+
     @Internal
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
@@ -63,6 +65,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             return ValidationResult.error(maxValue, "Validated number [$input] above the valid range [$minValue] to [$maxValue]")
         return ValidationResult.success(input)
     }
+
     @Internal
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
@@ -79,7 +82,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType) {
             SLIDER -> {
-                ConfirmButtonSliderWidget(this, this.minValue, this.maxValue, choicePredicate, {d -> convert(d).get() }, { setAndUpdate(it) })
+                ConfirmButtonSliderWidget(this, this.increment, this.minValue, this.maxValue, choicePredicate, {d -> convert(d).get() }, { setAndUpdate(it) })
             }
             TEXTBOX -> {
                 ConfirmButtonTextFieldWidget(this, choicePredicate, {d -> val result = convert(d); this.validateEntry(result.get(), EntryValidator.ValidationType.STRONG).also(result.isValid(), result.getError())}, { setAndUpdate(it) })
@@ -90,6 +93,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     override fun description(fallback: String?): MutableText {
         return if(I18n.hasTranslation(descriptionKey())) super.description(fallback) else genericDescription()
     }
+
     private fun genericDescription(): MutableText {
         return if (minValue.compareTo(minBound()) == 0) {
             if (maxValue.compareTo(maxBound()) == 0) {
@@ -110,8 +114,16 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     @Internal
     protected abstract fun minBound(): T
+
     @Internal
     protected abstract fun maxBound(): T
+
+    companion object {
+        fun <T, F: ValidatedNumber<T>>F.withIncrement(increment: T): F {
+            this.increment = increment
+            return this
+        }
+    }
 
     /**
      * Determines which type of selector widget will be used for the Number selection
@@ -137,7 +149,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     }
 
     //client
-    protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
+    protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, incr: T?, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
         ClickableWidget(0, 0, 110, 20, DECIMAL_FORMAT.format(wrappedValue.get()).lit()) {
         companion object {
             private val TEXTURE = "textures/gui/slider.png".simpleId()
@@ -166,7 +178,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         private var confirmActive = false
         private var cachedWrappedValue: T = wrappedValue.get()
         private var value: T = wrappedValue.get()
-        private val increment = max(
+        private val increment = incr?.toDouble() ?: max(
             (maxValue.toDouble() - minValue.toDouble())/ 102.0,
             if (isIntType()) {
                 max(1.0, split(maxValue.toDouble() - minValue.toDouble()))
