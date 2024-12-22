@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.decoration.SmallSpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -21,54 +22,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
  * @since 0.1.0
  */
 object TextureDeco {
-
-    /** a green checkmark */
-    val ENTRY_OK = "widget/entry_ok".fcId()
-
-    /** a red triangular sign with an exclamation mark in the middle */
-    val ENTRY_ERROR = "widget/entry_error".fcId()
-
-    /** an animated sprite depicting a pencil writing*/
-    val ENTRY_ONGOING = "widget/entry_ongoing".fcId()
-
-    /////////////////////////
-
-    /** a gray button texture with a red minus sign in the middle */
-    val DELETE = "widget/action/delete".fcId()
-
-    /** same as above but with the "inactive" button texture */
-    val DELETE_INACTIVE = "widget/action/delete_inactive".fcId()
-
-    /** same as above but with a white highlighted border */
-    val DELETE_HIGHLIGHTED = "widget/action/delete_highlighted".fcId()
-    val DELETE_LANG = "fc.button.delete".translate()
-
-    /////////////////////////
-
-    /** a gray button with a green plus sign in the middle */
-    val ADD = "widget/action/add".fcId()
-
-    /** same as above but with the "inactive" button texture */
-    val ADD_INACTIVE = "widget/action/add_inactive".fcId()
-
-    /** same as above but with a white highlighted border */
-    val ADD_HIGHLIGHTED = "widget/action/add_highlighted".fcId()
-    val ADD_LANG = "fc.button.add".translate()
-
-    /////////////////////////
-
-    /** a gray button texture with the fzzy config logo in the middle */
-    val CONFIG = "widget/action/config".fcId()
-
-    /** same as above but with the "inactive" button texture */
-    val CONFIG_INACTIVE = "widget/action/config_inactive".fcId()
-
-    /** same as above but with a white highlighted border */
-    val CONFIG_HIGHLIGHTED = "widget/action/config_highlighted".fcId()
-    val CONFIG_LANG = "fc.button.config".translate()
-    val CONFIG_INACTIVE_LANG = "fc.button.config_inactive".translate()
-
-    /////////////////////////
 
     /** a list of map entries in square brackets */
     val DECO_MAP = SpriteDecoration(TextureIds.DECO_MAP)
@@ -115,6 +68,20 @@ object TextureDeco {
     /** a button icon with a mouse pointer hovering over it */
     val DECO_BUTTON_CLICK = SpriteDecoration(TextureIds.DECO_BUTTON_CLICK)
 
-    val MAP_LANG = "fc.validated_field.map".translate()
-    val MAP_ARROW = ">".lit()
+    //////////// SMALL (10x10) /////////////
+
+    /** wireframe "copy" symbol of two pieces of paper overlapping */
+    val CONTEXT_COPY = SmallSpriteDecoration(TextureIds.CONTEXT_COPY)
+
+    /** wireframe "paste" symbol of a clipboard */
+    val CONTEXT_PASTE = SmallSpriteDecoration(TextureIds.CONTEXT_PASTE)
+
+    /** wireframe arrow pointing right */
+    val CONTEXT_FORWARD = SmallSpriteDecoration(TextureIds.CONTEXT_FORWARD)
+
+    /** wireframe "undo" symbol of an arrow lopping left to right and pointing back left */
+    val CONTEXT_REVERT = SmallSpriteDecoration(TextureIds.CONTEXT_REVERT)
+
+    /** wireframe of two arrows pointing in a circular motion */
+    val CONTEXT_RESTORE = SmallSpriteDecoration(TextureIds.CONTEXT_RESTORE)
 }

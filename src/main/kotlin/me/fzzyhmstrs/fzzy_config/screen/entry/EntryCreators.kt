@@ -89,7 +89,7 @@ object EntryCreators {
                     CustomButtonWidget.builder("fc.button.$type".translate()) { }
                         .narrationSupplier { _ -> FcText.empty() }
                         .width(110)
-                        .inactive()
+                        .active(false)
                         .child(child)
                         .build(),
                     LayoutWidget.Position.ALIGN_JUSTIFY,
