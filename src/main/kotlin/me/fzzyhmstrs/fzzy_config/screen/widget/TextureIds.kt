@@ -124,4 +124,39 @@ object TextureIds {
 
     val MAP_LANG = "fc.validated_field.map".translate()
     val MAP_ARROW = ">".lit()
+
+    //////////// SMALL (10/11x10) /////////////
+
+    /** wireframe "copy" symbol of two pieces of paper overlapping. 10x10 */
+    val CONTEXT_COPY = "widget/context/copy".fcId()
+
+    /** wireframe "paste" symbol of a clipboard. 10x10 */
+    val CONTEXT_PASTE = "widget/context/paste".fcId()
+
+    /** wireframe arrow pointing right. 10x10 */
+    val CONTEXT_FORWARD = "widget/context/forward".fcId()
+
+    /** wireframe "undo" symbol of an arrow lopping left to right and pointing back left. 10x10 */
+    val CONTEXT_REVERT = "widget/context/revert".fcId()
+
+    /** wireframe of two arrows pointing in a circular motion. 10x10 */
+    val CONTEXT_RESTORE = "widget/context/restore".fcId()
+
+    /** up arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_UP = "widget/scroll/increment_up".fcId()
+
+    /** highlighted up arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_UP_HIGHLIGHTED = "widget/scroll/increment_up_highlighted".fcId()
+
+    /** greyed-out up arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_UP_DISABLED = "widget/scroll/increment_up_disabled".fcId()
+
+    /** down arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_DOWN = "widget/scroll/increment_down".fcId()
+
+    /** highlighted down arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_DOWN_HIGHLIGHTED = "widget/scroll/increment_down_highlighted".fcId()
+
+    /** greyed-out down arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_DOWN_DISABLED = "widget/scroll/increment_down_disabled".fcId()
 }
