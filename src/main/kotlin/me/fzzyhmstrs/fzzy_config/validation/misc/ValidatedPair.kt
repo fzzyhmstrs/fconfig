@@ -16,17 +16,19 @@ import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.LabelWrappedWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutClickableWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
-import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.Tuple
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
-import net.peanuuutz.tomlkt.*
+import net.peanuuutz.tomlkt.TomlElement
+import net.peanuuutz.tomlkt.TomlNull
+import net.peanuuutz.tomlkt.TomlTableBuilder
+import net.peanuuutz.tomlkt.asTomlTable
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.UnaryOperator
+import javax.swing.LayoutStyle
 
 /**
  * A validated pair of values
@@ -84,8 +86,20 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         }
     }
 
+    /**
+     * Called when the left side value is modified in-GUI or with set methods
+     * @param left [Entry]&lt;[A], *&gt; the left side handler, which is an Entry for the left type
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     open fun onLeftChanged(left: Entry<A, *>) {}
 
+    /**
+     * Called when the right side value is modified in-GUI or with set methods
+     * @param right [Entry]&lt;[B], *&gt; the right side handler, which is an Entry for the right type
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     open fun onRightChanged(right: Entry<B, *>) {}
 
     private var leftLabel: Text? = null
@@ -133,34 +147,6 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in pair: $errors")
     }
 
-    override fun copyValue(input: Tuple<A, B>): Tuple<A, B> {
-        return Tuple(leftHandler.copyValue(input.left), rightHandler.copyValue(input.right))
-    }
-
-    override fun copyStoredValue(): Tuple<A, B> {
-        return Tuple(leftHandler.copyValue(storedValue.left), rightHandler.copyValue(storedValue.right))
-    }
-
-    /**
-     * creates a deep copy of this ValidatedBoolean
-     * return ValidatedBoolean wrapping the current boolean value
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun instanceEntry(): ValidatedPair<A, B> {
-        return ValidatedPair(Tuple(leftHandler.copyValue(storedValue.left), rightHandler.copyValue(storedValue.right)), leftHandler, rightHandler)
-    }
-
-    @Internal
-    override fun isValidEntry(input: Any?): Boolean {
-        if (input !is Tuple<*, *>) return false
-        return try {
-            validateEntry(input as Tuple<A, B>, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Throwable) {
-            false
-        }
-    }
-
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Tuple<A, B>>): ClickableWidget {
@@ -191,6 +177,39 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         return LayoutClickableWidget(0, 0, 110, 20, layout)
     }
 
+    /**
+     * creates a deep copy of this ValidatedBoolean
+     * return ValidatedBoolean wrapping the current boolean value
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    override fun instanceEntry(): ValidatedPair<A, B> {
+        return ValidatedPair(Tuple(leftHandler.copyValue(storedValue.left), rightHandler.copyValue(storedValue.right)), leftHandler, rightHandler, layoutStyle)
+    }
+
+    @Internal
+    @Suppress("UNCHECKED_CAST")
+    override fun isValidEntry(input: Any?): Boolean {
+        if (input !is Tuple<*, *>) return false
+        return try {
+            validateEntry(input as Tuple<A, B>, EntryValidator.ValidationType.STRONG).isValid()
+        } catch (e: Throwable) {
+            false
+        }
+    }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input [Tuple]&lt;[A], [B]%gt; input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: Tuple<A, B>): Tuple<A, B> {
+        return Tuple(leftHandler.copyValue(input.left), rightHandler.copyValue(input.right))
+    }
+
+    @Internal
     override fun contentBuilder(): UnaryOperator<ConfigEntry.ContentBuilder> {
         return UnaryOperator { contentBuilder ->
             contentBuilder.layoutContent { contentLayout ->

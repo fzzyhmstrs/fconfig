@@ -19,14 +19,13 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
+import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.entry.*
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager.ConfigScreenBuilder
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NoPermsButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ScreenOpenButtonWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -37,6 +36,7 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.MultilineTextWidget
 import net.minecraft.client.network.PlayerListEntry
@@ -213,6 +213,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         this.screens = builders
     }
 
+    @Deprecated("To Remove")
     private fun walkConfig(set: ConfigSet, functionMap: MutableMap<String, SortedMap<Int, Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>>, nameMap: MutableMap<String, Text>, actionMap: MutableMap<String, MutableSet<Action>>, playerPermLevel: Int) {
         val config: Config = set.active
         val baseConfig: Config = set.base
@@ -309,12 +310,34 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun prepareConfigScreens(playerPermLevel: Int) {
-        val functionMap: MutableMap<String, SortedMap<Int, EntryCreator.Creator>> = mutableMapOf()
+        val configSpec = ClientConfigRegistry.getConfigSpec(this.scope)
+        val functionMap: MutableMap<String, MutableList<EntryCreator.Creator>> = mutableMapOf()
         val nameMap: MutableMap<String, Text> = mutableMapOf()
-        val actionMap: MutableMap<String, MutableSet<Action>> = mutableMapOf()
+        val anchors: MutableList<Function<DynamicListWidget, out DynamicListWidget.Entry>>
+        val anchorPredicate: Predicate<AnchorResult> =
+            if (configSpec.sidebar() == ConfigSpec.Sidebar.NONE) {
+                Predicate { _ -> false }
+            } else {
+                Predicate { result ->
+                    if (result.thing !is EntryAnchor) return@Predicate configSpec.sidebar() != ConfigSpec.Sidebar.KEEP_ENTRIES
+                    val layer = result.scope.split('.').filter { it != this.scope }.size
+                    val anchor = result.thing.anchorEntry(EntryAnchor.Anchor(layer, result.texts.name))
+                    val anchorId = result.thing.anchorId(result.scope)
+                    val anchorTexts = Translatable.Result(anchor.name, result.texts.desc, result.texts.prefix)
+                    if (configs.size == 1 && anchor.type == EntryAnchor.AnchorType.INLINE) {
+                        anchor.layer++
+                    } else if (anchor.type == EntryAnchor.AnchorType.INLINE) {
+                        anchor.layer += 2
+                    } else if (anchor.type == EntryAnchor.AnchorType.SECTION) {
+                        anchor.layer++
+                    }
+
+                    configSpec.sidebar() != ConfigSpec.Sidebar.KEEP_ENTRIES
+                }
+            }
         nameMap[scope] = PlatformUtils.configName(this.scope, "Config Root").lit()
-        for ((i, config) in configs.withIndex()) {
-            //functionMap.computeIfAbsent(scope) { sortedMapOf() }[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(ConfigApiImplClient.getTranslation(config.active, "", config.active::class.annotations, listOf(), config.active::class.java.simpleName), ConfigApiImplClient.getDescription(config.active, "", config.active::class.annotations, listOf()), config.active.getId().toTranslationKey()))
+        for (config in configs) {
+            walkConfig2(config, functionMap, anchorPredicate, playerPermLevel)
             //walkConfig2(config, functionMap, nameMap, actionMap, if(config.clientOnly) 4 else playerPermLevel)
         }
         val scopes = functionMap.keys.toList()
@@ -329,7 +352,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     private fun walkConfig2(
         set: ConfigSet, //the current set of configs to walk
-        functionMap: MutableMap<String, SortedMap<Int, EntryCreator.Creator>>, //Creators go here, sorted by encounter order and scope
+        functionMap: MutableMap<String, MutableList<EntryCreator.Creator>>, //Creators go here, sorted by encounter order and scope
         anchorPredicate: Predicate<AnchorResult>, //Returns true if the anchor will supplant an inline entry. nameMap will now happen here
         playerPermLevel: Int)
     {
@@ -337,12 +360,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val baseConfig: Config = set.base
         val prefix = config.getId().toTranslationKey()
         val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, listOf(), config::class.java.simpleName)
-        var index = 0
         val groups: LinkedList<String> = LinkedList()
 
-        fun List<EntryCreator.Creator>.applyToMap(parent: String, functionMap: MutableMap<String, SortedMap<Int, EntryCreator.Creator>>) {
+        fun List<EntryCreator.Creator>.applyToMap(parent: String, functionMap: MutableMap<String, MutableList<EntryCreator.Creator>>) {
             for (creator in this) {
-                functionMap.computeIfAbsent(parent) { sortedMapOf() }[index++] = creator
+                functionMap.computeIfAbsent(parent) { mutableListOf() }.add(creator)
             }
         }
 
@@ -387,7 +409,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {
                     basicValidation2.trySet(thing)
-                    @Suppress("DEPRECATION")
                     basicValidation2.setEntryKey(new)
                     entryCreator = basicValidation2
                     basicValidation2.prepare(new, groups, annotations, globalAnnotations)
@@ -418,12 +439,16 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
                     //TODO(handling creating context actions)
 
-                    if (prepareResult.perms == ConfigApiImplClient.PermResult.FAILURE) {
-                        EntryCreators.createNoPermsEntry(context, "noPerms").applyToMap(old, functionMap)
-                    } else if (prepareResult.perms == ConfigApiImplClient.PermResult.OUT_OF_GAME) {
-                        EntryCreators.createNoPermsEntry(context, "outOfGame").applyToMap(old, functionMap)
-                    } else {
-                        entryCreator?.createEntry(context)?.applyToMap(old, functionMap)
+                    when (prepareResult.perms) {
+                        ConfigApiImplClient.PermResult.FAILURE -> {
+                            EntryCreators.createNoPermsEntry(context, "noPerms").applyToMap(old, functionMap)
+                        }
+                        ConfigApiImplClient.PermResult.OUT_OF_GAME -> {
+                            EntryCreators.createNoPermsEntry(context, "outOfGame").applyToMap(old, functionMap)
+                        }
+                        else -> {
+                            entryCreator?.createEntry(context)?.applyToMap(old, functionMap)
+                        }
                     }
                 }
 
@@ -650,19 +675,19 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun noPermsEntryBuilder(name: Text, desc: Text, actions: Set<Action>): Function<ConfigListWidget, BaseConfigEntry> {
-        return Function { parent -> BaseConfigEntry(name, desc, actions, parent, NoPermsButtonWidget()) }
+        return Function { parent -> BaseConfigEntry(name, desc, actions, parent, ButtonWidget.Builder("".lit()) { _ -> }.build()) }
     }
 
     private fun outOfGameEntryBuilder(name: Text, desc: Text, actions: Set<Action>): Function<ConfigListWidget, BaseConfigEntry> {
-        return Function { parent -> BaseConfigEntry(name, desc, actions, parent, NoPermsButtonWidget("fc.button.outOfGame".translate(), "fc.button.outOfGame.desc".translate())) }
+        return Function { parent -> BaseConfigEntry(name, desc, actions, parent, ButtonWidget.Builder("".lit()) { _ -> }.build()) }
     }
 
     private fun sectionOpenEntryBuilder(name: Text, desc: Text, actions: Set<Action>, scope: String): Function<ConfigListWidget, BaseConfigEntry> {
-        return Function { parent -> SectionConfigEntry(name, desc, actions, parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) }) }
+        return Function { parent -> SectionConfigEntry(name, desc, actions, parent, ButtonWidget.Builder("".lit()) { _ -> }.build()) }
     }
 
     private fun configOpenEntryBuilder(name: Text, desc: Text, scope: String): Function<ConfigListWidget, BaseConfigEntry> {
-        return Function { parent -> ConfigConfigEntry(name, desc, setOf(), parent, ScreenOpenButtonWidget(name) { openScopedScreen(scope) }) }
+        return Function { parent -> ConfigConfigEntry(name, desc, setOf(), parent, ButtonWidget.Builder("".lit()) { _ -> }.build()) }
     }
 
     private fun configActionEntryBuilder(name: Text, desc: Text, actions: Set<Action>, entry: ConfigAction): Function<ConfigListWidget, BaseConfigEntry> {
