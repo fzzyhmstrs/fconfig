@@ -14,10 +14,8 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
@@ -61,60 +59,34 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
         compositeFlags(valueHandler)
     }
 
-    /**
-     * Creates a deep copy of the stored value and returns it
-     * @return Map&lt;K, V&gt; - deep copy of the currently stored map
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun copyStoredValue(): Map<K, V> {
-        return storedValue.toMap()
-    }
 
-    /**
-     * creates a deep copy of this ValidatedMap
-     * return ValidatedMap wrapping a deep copy of the currently stored map, as well as passing keyHandler and valueHandler
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun instanceEntry(): ValidatedMap<K, V> {
-        return ValidatedMap(copyStoredValue(), keyHandler, valueHandler)
-    }
-
+    //((?![a-z0-9_-]).) in case I need it...
     @Internal
-    //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.map".translate(), 110, 20, TextureIds.DECO_MAP, {true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    //client
-    private fun openMapEditPopup(b: ActiveButtonWidget) {
-        try {
-            val map = storedValue.map {
-                Pair(
-                    (keyHandler.instanceEntry() as Entry<K, *>).also { entry -> entry.accept(it.key) },
-                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.accept(it.value) }
-                )
-            }.associate { it }
-            val choiceValidator: BiFunction<MapListWidget<K, V>, MapListWidget.MapEntry<K, V>?, ChoiceValidator<K>> = BiFunction{ ll, le ->
-                MapListWidget.ExcludeSelfChoiceValidator(le) { self -> ll.getRawMap(self) }
+    override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Map<K, V>> {
+        return try {
+            val mapArray = toml.asTomlArray()
+            val map: MutableMap<K, V> = mutableMapOf()
+            val keyErrors: MutableList<String> = mutableListOf()
+            val valueErrors: MutableList<String> = mutableListOf()
+            for (pairEl in mapArray) {
+                val pairArray = pairEl.asTomlArray()
+                val key = pairArray[0]
+                val keyResult = keyHandler.deserializeEntry(key, keyErrors, "{$fieldName, @key: $key}", 1).report(keyErrors)
+                if (keyResult.isError()) {
+                    continue
+                }
+                val value = pairArray[1]
+                val valueResult = valueHandler.deserializeEntry(value, valueErrors, "{$fieldName, @key: $key}", 1).report(valueErrors)
+                map[keyResult.get()] = valueResult.get()
             }
-            val mapWidget = MapListWidget(map, keyHandler, valueHandler, choiceValidator)
-            val popup = PopupWidget.Builder(this.translation())
-                .addElement("map", mapWidget, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT)
-                .addDoneWidget()
-                .onClose { this.setAndUpdate(mapWidget.getMap()) }
-                .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
-                .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
-                .build()
-            PopupWidget.push(popup)
+            ValidationResult.predicated(map, keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: key = $keyErrors, value = $valueErrors")
         } catch (e: Throwable) {
-            FC.LOGGER.error("Unexpected exception caught while opening map popup")
-            e.printStackTrace()
+            ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
         }
     }
+
     @Internal
+    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     override fun serialize(input: Map<K, V>): ValidationResult<TomlElement> {
         val mapArray = TomlArrayBuilder(input.size)
         val errors: MutableList<String> = mutableListOf()
@@ -149,31 +121,8 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
         }
     }
 
-    //((?![a-z0-9_-]).) in case I need it...
     @Internal
-    override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Map<K, V>> {
-        return try {
-            val mapArray = toml.asTomlArray()
-            val map: MutableMap<K, V> = mutableMapOf()
-            val keyErrors: MutableList<String> = mutableListOf()
-            val valueErrors: MutableList<String> = mutableListOf()
-            for (pairEl in mapArray) {
-                val pairArray = pairEl.asTomlArray()
-                val key = pairArray[0]
-                val keyResult = keyHandler.deserializeEntry(key, keyErrors, "{$fieldName, @key: $key}", 1).report(keyErrors)
-                if (keyResult.isError()) {
-                    continue
-                }
-                val value = pairArray[1]
-                val valueResult = valueHandler.deserializeEntry(value, valueErrors, "{$fieldName, @key: $key}", 1).report(valueErrors)
-                map[keyResult.get()] = valueResult.get()
-            }
-            ValidationResult.predicated(map, keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: key = $keyErrors, value = $valueErrors")
-        } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
-        }
-    }
-
+    @Suppress("SafeCastWithReturn", "UNCHECKED_CAST")
     override fun deserializedChanged(old: Any?, new: Any?): Boolean {
         old as? Map<K, V> ?: return true
         new as? Map<K, V> ?: return true
@@ -200,6 +149,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
         }
         return ValidationResult.predicated(input, keyErrors.isEmpty() && valueErrors.isEmpty(), "Map validation had errors: key=${keyErrors}, value=$valueErrors")
     }
+
     @Internal
     override fun correctEntry(input: Map<K, V>, type: EntryValidator.ValidationType): ValidationResult<Map<K, V>> {
         val map: MutableMap<K, V> = mutableMapOf()
@@ -214,7 +164,19 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
         }
         return ValidationResult.predicated(map.toMap(), keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key = ${keyErrors}, value = $valueErrors")
     }
+
+    /**
+     * creates a deep copy of this ValidatedMap
+     * return ValidatedMap wrapping a deep copy of the currently stored map, as well as passing keyHandler and valueHandler
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    override fun instanceEntry(): ValidatedMap<K, V> {
+        return ValidatedMap(copyStoredValue(), keyHandler, valueHandler)
+    }
+
     @Internal
+    @Suppress("UNCHECKED_CAST")
     override fun isValidEntry(input: Any?): Boolean {
         if (input !is Map<*, *>) return false
         return try {
@@ -223,6 +185,58 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
             false
         }
     }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input Map&lt;[K], [V]%gt; input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: Map<K, V>): Map<K, V> {
+        return input.toMap()
+    }
+
+    @Internal
+    //client
+    override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
+        return ActiveButtonWidget("fc.validated_field.map".translate(), 110, 20, { true }, { b: ActiveButtonWidget -> openMapEditPopup(b) })
+    }
+
+    @Internal
+    override fun entryDeco(): Decorated.DecoratedOffset? {
+        return Decorated.DecoratedOffset(TextureDeco.DECO_MAP, 2, 2)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    //client
+    private fun openMapEditPopup(b: ActiveButtonWidget) {
+        try {
+            val map = storedValue.map {
+                Pair(
+                    (keyHandler.instanceEntry() as Entry<K, *>).also { entry -> entry.accept(it.key) },
+                    (valueHandler.instanceEntry() as Entry<V, *>).also { entry -> entry.accept(it.value) }
+                )
+            }.associate { it }
+            val choiceValidator: BiFunction<MapListWidget<K, V>, MapListWidget.MapEntry<K, V>?, ChoiceValidator<K>> = BiFunction{ ll, le ->
+                MapListWidget.ExcludeSelfChoiceValidator(le) { self -> ll.getRawMap(self) }
+            }
+            val mapWidget = MapListWidget(map, keyHandler, valueHandler, choiceValidator)
+            val popup = PopupWidget.Builder(this.translation())
+                .add("map", mapWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+                .addDoneWidget()
+                .onClose { this.setAndUpdate(mapWidget.getMap()) }
+                .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
+                .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+                .build()
+            PopupWidget.push(popup)
+        } catch (e: Throwable) {
+            FC.LOGGER.error("Unexpected exception caught while opening map popup")
+            e.printStackTrace()
+        }
+    }
+
+    /////////////// MAP ///////////////////////////
 
     override val entries: Set<Map.Entry<K, V>>
         get() = get().entries
@@ -249,6 +263,8 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
         return get().containsKey(key)
     }
 
+    /////////// END MAP ///////////////////////////
+
     /**
      * @suppress
      */
@@ -257,6 +273,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
      }
 
     companion object {
+        @Suppress("UNCHECKED_CAST")
         internal fun<K, V> tryMake(map: Map<K, V>, keyHandler: Entry<*, *>, valueHandler: Entry<*, *>): ValidatedMap<K, V>? {
             return try {
                 ValidatedMap(map, keyHandler as Entry<K, *>, valueHandler as Entry<V, *>)

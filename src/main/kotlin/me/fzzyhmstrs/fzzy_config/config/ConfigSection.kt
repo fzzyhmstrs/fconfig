@@ -16,7 +16,7 @@ import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
-import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.contextualize
 import me.fzzyhmstrs.fzzy_config.util.Walkable
@@ -32,10 +32,10 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, Translatable, EntryKeyed, EntryParent, EntryAnchor, EntryCreator {
+open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, TranslatableEntry, EntryParent, EntryAnchor, EntryCreator {
 
     @Transient
-    private var sectionKey = "fc.config.generic.section"
+    override var entryKey: String = "fc.config.generic.section"
 
     @Internal
     override fun serializeEntry(
@@ -56,34 +56,12 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
         return ConfigApi.deserializeFromToml(this, toml, errorBuilder, flags).contextualize()
     }
 
-    override fun translationKey(): String {
-        return getEntryKey()
-    }
-
-    override fun descriptionKey(): String {
-        return getEntryKey() + ".desc"
-    }
-
-    override fun prefixKey(): String {
-        return getEntryKey() + ".prefix"
-    }
-
-    @Internal
-    override fun getEntryKey(): String {
-        return sectionKey
-    }
-
-    @Internal
-    override fun setEntryKey(key: String) {
-        sectionKey = key
-    }
-
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
-        return anchor.decoration(TextureDeco.DECO_MAP)
+        return anchor.decoration(TextureDeco.DECO_MAP).type(EntryAnchor.AnchorType.SECTION)
     }
 
     override fun anchorId(scope: String): String {
-        return sectionKey
+        return entryKey
     }
 
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
