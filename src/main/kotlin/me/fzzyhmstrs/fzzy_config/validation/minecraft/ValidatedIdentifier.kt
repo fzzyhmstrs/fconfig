@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.nsId
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
@@ -125,15 +126,6 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
      */
     constructor(): this("c:/c".simpleId(), AllowableIdentifiers.ANY)
 
-    /**
-     * Creates a deep copy of the stored value and returns it
-     * @return Identifier - deep copy of the currently stored value
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun copyStoredValue(): Identifier {
-        return storedValue.toString().simpleId()
-    }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Identifier> {
         return try {
@@ -144,16 +136,21 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             ValidationResult.error(storedValue, "Critical error deserializing identifier [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: Identifier): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input.toString()))
     }
+
+
+
     @Internal
     override fun correctEntry(input: Identifier, type: EntryValidator.ValidationType): ValidationResult<Identifier> {
         val result = validator.validateEntry(input, type)
         return if(result.isError()) {
             ValidationResult.error(storedValue, "Invalid identifier [$input] found, corrected to [$storedValue]: ${result.getError()}")} else result
     }
+
     @Internal
     override fun validateEntry(input: Identifier, type: EntryValidator.ValidationType): ValidationResult<Identifier> {
         return validator.validateEntry(input, type)
@@ -168,17 +165,30 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     override fun instanceEntry(): ValidatedIdentifier {
         return ValidatedIdentifier(copyStoredValue(), allowableIds, validator)
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Identifier && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input Identifier input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: Identifier): Identifier {
+        return input.toString().simpleId()
+    }
+
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {
         return OnClickTextFieldWidget({ this.get().toString() }, { it, isKb, key, code, mods ->
             val textField = PopupIdentifierTextFieldWidget(170, 20, choicePredicate, this)
             val popup = PopupWidget.Builder(this.translation())
-                .addElement("text_field", textField, PopupWidget.Builder.Position.BELOW)
+                .add("text_field", textField, LayoutWidget.Position.BELOW)
                 .addDoneWidget({ textField.pushChanges(); PopupWidget.pop() })
                 .positionX { _, _ -> it.x - 8 }
                 .positionY { _, h -> it.y + 28 + 24 - h }
@@ -190,7 +200,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         })
     }
 
-    ////////////////////////
+    //////////// IDENTIFIER ///////////////////
 
     /**
      * @return the path of the cached Identifier
@@ -198,6 +208,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     fun getPath(): String {
         return storedValue.path
     }
+
     /**
      * @return the namespace of the cached Identifier
      */
@@ -219,23 +230,6 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
     fun withSuffixedPath(suffix: String): Identifier {
         return storedValue.withSuffixedPath(suffix)
-    }
-
-    /**
-     * @suppress
-     */
-    override fun toString(): String {
-        return storedValue.toString()
-    }
-
-    override fun translationKey(): String {
-        @Suppress("DEPRECATION")
-        return getEntryKey()
-    }
-
-    override fun descriptionKey(): String {
-        @Suppress("DEPRECATION")
-        return getEntryKey() + ".desc"
     }
 
     override fun equals(other: Any?): Boolean {
@@ -270,6 +264,14 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         return storedValue.toTranslationKey(prefix, suffix)
     }
 
+    //////// END IDENTIFIER ///////////////////
+
+    /**
+     * @suppress
+     */
+    override fun toString(): String {
+        return storedValue.toString()
+    }
 
     companion object {
 
@@ -582,7 +584,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                         return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
                     }
                 }
-                FC.LOGGER.warn("Method ofRegistryKey is deprecated for registry $key; use ofDynamicKey instead")
+                FC.LOGGER.warn("Method ofRegistryKey with Predicate is deprecated for registry $key; use ofDynamicKey instead")
                 val predicateId = key.value.withSuffixedPath(getOffset(key).toString())
                 filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), predicateId, (predicate as Predicate<RegistryEntry<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[predicateId]?.contains(id) == true }
@@ -621,7 +623,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                         return ValidatedIdentifier(defaultValue, AllowableIdentifiers(predicate2, supplier2, false)).withFlag(EntryFlag.Flag.REQUIRES_WORLD)
                     }
                 }
-                FC.LOGGER.warn("Method ofRegistryKey is deprecated for registry $key; use ofDynamicKey instead")
+                FC.LOGGER.warn("Method ofRegistryKey with BiPredicate is deprecated for registry $key; use ofDynamicKey instead")
                 val predicateId = key.value.withSuffixedPath(getOffset(key).toString())
                 filteredDynamicRegistrySyncsNeeded.add(Triple((key as RegistryKey<Registry<*>>), predicateId, (Predicate { re: RegistryEntry<T> -> predicate.test(re.key.map { it.value }.orElse("minecraft:air".simpleId()), re) } as Predicate<RegistryEntry<*>>)))
                 val predicate3: Predicate<Identifier> = Predicate { id -> dynamicIds[predicateId]?.contains(id) == true }
@@ -640,7 +642,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         @JvmStatic
-        @Suppress("UNCHECKED_CAST")
+        @Suppress("DeprecatedCallableAddReplaceWith", "DEPRECATION")
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofRegistryKey(key: RegistryKey<out Registry<T>>): ValidatedIdentifier {
             return ofRegistryKey("minecraft:air".simpleId(), key)
@@ -657,7 +659,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.2.0, added dynamic registry lookup and caching 0.5.0
          */
         @JvmStatic
-        @Suppress("UNCHECKED_CAST")
+        @Suppress("UNCHECKED_CAST", "DEPRECATION")
         fun <T> ofRegistryKey(key: RegistryKey<out Registry<T>>, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {
@@ -782,7 +784,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * @since 0.5.6
          */
         @JvmStatic
-        @Suppress("UNCHECKED_CAST")
+        @Suppress("UNCHECKED_CAST", "DEPRECATION")
         fun <T> ofDynamicKey(key: RegistryKey<out Registry<T>>, predicateId: String, predicate: BiPredicate<Identifier, RegistryEntry<T>>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.optional(key.value)
             if (maybeRegistry.isPresent) {

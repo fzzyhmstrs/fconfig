@@ -28,7 +28,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-open class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Float, minValue: Float, widgetType: WidgetType = if(maxValue == Float.MAX_VALUE || minValue == -Float.MAX_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Float>(defaultValue, minValue, maxValue, widgetType) {
+class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Float, minValue: Float, widgetType: WidgetType = if(maxValue == Float.MAX_VALUE || minValue == -Float.MAX_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Float>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated float number with a default selected from the min of the allowable range.
@@ -63,6 +63,7 @@ open class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValu
      * @since 0.2.0
      */
     constructor(): this(0f, Float.MAX_VALUE, -Float.MAX_VALUE, WidgetType.TEXTBOX)
+
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Float> {
         return try {
@@ -71,11 +72,18 @@ open class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValu
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: Float): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
 
+    /**
+     * creates a deep copy of this ValidatedFloat
+     * return ValidatedFloat wrapping the current float value and validation restrictions
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedFloat {
         return ValidatedFloat(defaultValue, maxValue, minValue, widgetType)
     }
@@ -84,18 +92,27 @@ open class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValu
         return input is Float && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
 
+    @Internal
+    override var increment: Float? = null
+
+    @Internal
     override fun convert(input: Double): ValidationResult<Float> {
         return ValidationResult.predicated(input.toFloat(), input <= Float.MAX_VALUE.toDouble() && input >= (-Float.MAX_VALUE).toDouble(), "[$input] out of Bounds for float value (${-Float.MIN_VALUE} to ${Float.MAX_VALUE} )")
     }
 
+    @Internal
     override fun minBound(): Float {
         return -Float.MAX_VALUE
     }
 
+    @Internal
     override fun maxBound(): Float {
         return Float.MIN_VALUE
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         val validation = if(minValue==-Float.MAX_VALUE && maxValue== Float.MAX_VALUE)
             "Unbounded"

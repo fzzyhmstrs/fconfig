@@ -52,6 +52,7 @@ open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defa
             ValidationResult.error(storedValue, "Critical error deserializing boolean [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: Boolean): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
@@ -66,10 +67,12 @@ open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defa
     override fun instanceEntry(): ValidatedBoolean {
         return ValidatedBoolean(copyStoredValue())
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Boolean
     }
+
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Boolean>): ClickableWidget {
