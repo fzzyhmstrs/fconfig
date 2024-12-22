@@ -14,10 +14,8 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -27,6 +25,7 @@ import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.WidgetType
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -59,18 +58,6 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         compositeFlags(entryHandler)
     }
 
-    /**
-     * Converts this ValidatedSet into [ValidatedChoice] wrapping this set as the valid choice options
-     * @return [ValidatedChoice] with options based on this set's contents
-     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
-     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
-     * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
-     * @author fzzyhmstrs
-     * @since 0.2.0, added optional params 0.4.0
-     */
-    fun toChoices(widgetType: ValidatedChoice.WidgetType = ValidatedChoice.WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoice<T> {
-        return ValidatedChoice(defaultValue.toList(), entryHandler, translationProvider, descriptionProvider, widgetType)
-    }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Set<T>> {
         return try {
@@ -88,7 +75,9 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
             ValidationResult.error(defaultValue, "Critical error encountered while deserializing set [$fieldName], using defaults.")
         }
     }
+
     @Internal
+    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     override fun serialize(input: Set<T>): ValidationResult<TomlElement> {
         val toml = TomlArrayBuilder()
         val errors: MutableList<String> = mutableListOf()
@@ -111,6 +100,8 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
 
+    @Internal
+    @Suppress("SafeCastWithReturn", "UNCHECKED_CAST")
     override fun deserializedChanged(old: Any?, new: Any?): Boolean {
         old as? Set<T> ?: return true
         new as? Set<T> ?: return true
@@ -135,6 +126,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         }
         return ValidationResult.predicated(set, errors.isEmpty(), "Errors corrected in set: $errors")
     }
+
     @Internal
     override fun validateEntry(input: Set<T>, type: EntryValidator.ValidationType): ValidationResult<Set<T>> {
         val errors: MutableList<String> = mutableListOf()
@@ -146,16 +138,6 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     }
 
     /**
-     * Creates a deep copy of the stored value and returns it
-     * @return Set&lt;T&gt; - copy of the currently stored set
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun copyStoredValue(): Set<T> {
-        return storedValue.toSet()
-    }
-
-    /**
      * creates a deep copy of this ValidatedSet
      * return ValidatedSet wrapping a deep copy of the currently stored set and passes the entry handlers
      * @author fzzyhmstrs
@@ -164,7 +146,9 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     override fun instanceEntry(): ValidatedSet<T> {
         return ValidatedSet(copyStoredValue(), entryHandler)
     }
+
     @Internal
+    @Suppress("UNCHECKED_CAST")
     override fun isValidEntry(input: Any?): Boolean {
         if (input !is Set<*>) return false
         return try {
@@ -174,10 +158,26 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         }
     }
 
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input Set&lt;[T]%gt; input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: Set<T>): Set<T> {
+        return input.toSet()
+    }
+
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.set".translate(), 110, 20, TextureIds.DECO_LIST, {true}, { b: ActiveButtonWidget -> openListEditPopup(b) })
+        return ActiveButtonWidget("fc.validated_field.set".translate(), 110, 20, { true }, { b: ActiveButtonWidget -> openListEditPopup(b) })
+    }
+
+    @Internal
+    override fun entryDeco(): Decorated.DecoratedOffset? {
+        return Decorated.DecoratedOffset(TextureDeco.DECO_LIST, 2, 2)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -192,7 +192,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
             }
             val listWidget = ListListWidget(list, entryHandler, choiceValidator)
             val popup = PopupWidget.Builder(this.translation())
-                .addElement("list", listWidget, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT)
+                .add("list", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
                 .addDoneWidget()
                 .onClose { this.setAndUpdate(listWidget.getList().toSet()) }
                 .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
@@ -204,8 +204,21 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         }
     }
 
-    // Set Interface
-    //////////////////////////////////
+    /**
+     * Converts this ValidatedSet into [ValidatedChoice] wrapping this set as the valid choice options
+     * @return [ValidatedChoice] with options based on this set's contents
+     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
+     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
+     * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
+     * @author fzzyhmstrs
+     * @since 0.2.0, added optional params 0.4.0
+     */
+    fun toChoices(widgetType: WidgetType = WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoice<T> {
+        return ValidatedChoice(defaultValue.toList(), entryHandler, translationProvider, descriptionProvider, widgetType)
+    }
+
+    // Set Interface //////////////////////////////////
+
     override val size: Int
         get() = storedValue.size
 
@@ -225,6 +238,8 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         return storedValue.contains(element)
     }
 
+    // End Set Interface //////////////////////////////
+
     companion object {
 
         /**
@@ -238,6 +253,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
          * @author fzzyhmstrs
          * @since 0.2.0
          */
+        @Suppress("UNCHECKED_CAST")
         internal fun <T> tryMake(set: Set<T>, entry: Entry<*, *>): ValidatedSet<T>? {
             return try {
                 ValidatedSet(set, entry as Entry<T, *>)

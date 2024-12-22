@@ -28,7 +28,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-open class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Short, minValue: Short, widgetType: WidgetType = if(maxValue == Short.MAX_VALUE || minValue == Short.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Short>(defaultValue, minValue, maxValue, widgetType) {
+class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Short, minValue: Short, widgetType: WidgetType = if(maxValue == Short.MAX_VALUE || minValue == Short.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Short>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated short number with a default selected from the min of the allowable range.
@@ -72,11 +72,18 @@ open class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValu
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedShort [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: Short): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
 
+    /**
+     * creates a deep copy of this ValidatedShort
+     * return ValidatedShort wrapping the current short value and validation restrictions
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedShort {
         return ValidatedShort(defaultValue, maxValue, minValue, widgetType)
     }
@@ -85,6 +92,8 @@ open class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValu
     override fun isValidEntry(input: Any?): Boolean {
         return input is Short && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
+
+    override var increment: Short? = null
 
     override fun convert(input: Double): ValidationResult<Short> {
         return ValidationResult.predicated(input.toInt().toShort(), input.toLong() == input.toInt().toShort().toLong(), "[$input] out of Bounds for short value (${Short.MIN_VALUE} to ${Short.MAX_VALUE} )")

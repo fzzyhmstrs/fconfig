@@ -12,17 +12,12 @@ package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
 import com.mojang.serialization.JsonOps
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.fcId
-import me.fzzyhmstrs.fzzy_config.screen.widget.DecorationWrappedWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.regRef
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.error
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -52,10 +47,6 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     private val validator = if(predicate == null) ValidatedIdentifier.ofRegistryTags(defaultValue.regRef()) else ValidatedIdentifier.ofRegistryTags(defaultValue.regRef(), predicate)
     private val codec = TagKey.codec(defaultValue.regRef())
 
-    override fun set(input: TagKey<T>) {
-        validator.validateAndSet(input.id)
-        super.set(input)
-    }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<TagKey<T>> {
         return try {
@@ -70,6 +61,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
             ValidationResult.error(storedValue, "Critical error encountered while deserializing Validated Tag [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: TagKey<T>): ValidationResult<TomlElement> {
         val encodeResult = codec.encodeStart(JsonOps.INSTANCE, input)
@@ -83,15 +75,6 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
         }
     }
 
-    /**
-     * Creates a deep copy of the stored value and returns it
-     * @return TagKey&lt;T&gt; - deep copy of the currently stored tagkey
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun copyStoredValue(): TagKey<T> {
-        return TagKey.of(storedValue.regRef(), storedValue.id)
-    }
 
     /**
      * creates a deep copy of this ValidatedTagKey
@@ -102,15 +85,36 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     override fun instanceEntry(): ValidatedField<TagKey<T>> {
         return ValidatedTagKey(copyStoredValue(), predicate)
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is TagKey<*> && input.regRef() == storedValue.regRef()
     }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input TagKey input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: TagKey<T>): TagKey<T> {
+        return TagKey.of(input.regRef(), input.id)
+    }
+
+    override fun set(input: TagKey<T>) {
+        validator.validateAndSet(input.id)
+        super.set(input)
+    }
+
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<TagKey<T>>): ClickableWidget {
-        return DecorationWrappedWidget(OnClickTextFieldWidget({ validator.get().toString() }, { it, isKb, key, code, mods ->
-            popupTagPopup(it, isKb, key, code, mods, choicePredicate)
-        }), "widget/decoration/tag".fcId())
+        return OnClickTextFieldWidget({ validator.get().toString() }, { it, isKb, key, code, mods -> popupTagPopup(it, isKb, key, code, mods, choicePredicate) })
+    }
+
+    @Internal
+    override fun entryDeco(): Decorated.DecoratedOffset {
+        return Decorated.DecoratedOffset(TextureDeco.DECO_TAG, 2, 2)
     }
 
     /**
@@ -123,12 +127,12 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
     @Internal
     //client
     private fun popupTagPopup(b: ClickableWidget, isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>>) {
-        val entryValidator = EntryValidator<String>{s, _ -> Identifier.tryParse(s)?.let { validator.validateEntry(it, EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: error(s, "invalid Identifier")}
+        val entryValidator = EntryValidator<String>{s, _ -> Identifier.tryParse(s)?.let { validator.validateEntry(it, EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: ValidationResult.error(s, "invalid Identifier")}
         val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.regRef(), e.simpleId())) }
         val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s, c, cv -> validator.allowableIds.getSuggestions(s, c, cv.convert({ it.simpleId() }, { it.simpleId() }))}
         val textField = SuggestionBackedTextFieldWidget(170, 20, { validator.get().toString() }, choicePredicate.convert({it.id.toString()}, {it.id.toString()}), entryValidator, entryApplier, suggestionProvider)
         val popup = PopupWidget.Builder(translation())
-            .addElement("text_field", textField, Position.BELOW, Position.ALIGN_LEFT)
+            .add("text_field", textField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .addDoneWidget({ textField.pushChanges(); PopupWidget.pop() })
             .positionX { _, _ -> b.x - 8 }
             .positionY { _, h -> b.y + 28 + 24 - h }

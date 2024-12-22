@@ -45,7 +45,8 @@ class DynamicListWidget(
     x: Int,
     y: Int,
     width: Int,
-    height: Int)
+    height: Int,
+    private val spec: ListSpec = ListSpec())
 :
     CustomListWidget<DynamicListWidget.Entry>(
     client,
@@ -66,9 +67,23 @@ class DynamicListWidget(
         Entries(entryBuilders.map { it.apply(this) })
     }
 
-    fun resize() {
+    override val leftPadding: Int
+        get() = spec.leftPadding
+
+    override val rightPadding: Int
+        get() = spec.rightPadding
+
+    override fun hideScrollWhileNotHovered(): Boolean {
+        return spec.hideScrollBar
+    }
+
+    override fun onReposition() {
+        resize()
+    }
+
+    private fun resize() {
         entries.iterator().forEach {
-            it.resize()
+            it.onResize()
         }
     }
 
@@ -560,9 +575,13 @@ class DynamicListWidget(
 
         open fun init() {}
 
-        open fun resize() {}
+        open fun onResize() {}
+
+        open fun onScroll(dY: Int) {}
 
         fun scroll(dY: Int) {
+            if (dY == 0) return
+            onScroll(dY)
             top.inc(dY)
         }
 
@@ -791,4 +810,6 @@ class DynamicListWidget(
             private val EMPTY = listOf<String>()
         }
     }
+
+    data class ListSpec(val leftPadding: Int = 16, val rightPadding: Int = 10, val hideScrollBar: Boolean = false)
 }

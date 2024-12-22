@@ -249,7 +249,7 @@ internal object ConfigApiImplClient {
 
     internal fun prepare(thing: Any?,
                          playerPermLevel: Int,
-                         config: Config,
+                         config: Any,
                          configId: String,
                          id: String,
                          annotations: List<Annotation>,
@@ -280,7 +280,7 @@ internal object ConfigApiImplClient {
         }
     }
 
-    private fun hasNeededPermLevel(thing: Any?, playerPermLevel: Int, config: Config, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean, flags: List<EntryFlag.Flag>, cachedPerms:  Map<String, Map<String, Boolean>>): PermResult {
+    private fun hasNeededPermLevel(thing: Any?, playerPermLevel: Int, config: Any, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean, flags: List<EntryFlag.Flag>, cachedPerms:  Map<String, Map<String, Boolean>>): PermResult {
         if (thing is EntryPermissible) return PermResult.SUCCESS
         val client = MinecraftClient.getInstance()
         val needsWorld = flags.contains(EntryFlag.Flag.REQUIRES_WORLD)
@@ -359,10 +359,10 @@ internal object ConfigApiImplClient {
             }
         }
         //8. fallback to default vanilla permission level
-        return if (playerPermLevel >= config.defaultPermLevel()) {
-            PermResult.SUCCESS
-        } else {
+        return if (config is Config && playerPermLevel < config.defaultPermLevel()) {
             PermResult.FAILURE
+        } else {
+            PermResult.SUCCESS
         }
     }
 

@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -47,7 +48,9 @@ import kotlin.math.max
  */
 open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
 
+    @Suppress("UNCHECKED_CAST")
     private val valuesMap: Map<String, T> = defaultValue.declaringJavaClass.enumConstants.associateBy { (it as Enum<*>).name } as Map<String, T>
+
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
@@ -58,10 +61,12 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
             ValidationResult.error(storedValue, "Critical error deserializing enum [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: T): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input.name))
     }
+
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
@@ -75,10 +80,6 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
         }
     }
 
-    override fun description(fallback: String?): MutableText {
-        return FcText.translatable(descriptionKey(), fallback ?: valuesMap.keys.toString())
-    }
-
     /**
      * creates a deep copy of this ValidatedEnum
      * return ValidatedEnum wrapping a copy of the currently stored object and widget type
@@ -88,14 +89,21 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     override fun instanceEntry(): ValidatedEnum<T> {
         return ValidatedEnum(this.defaultValue, this.widgetType)
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input == null) return false
         return try {
+            @Suppress("UNCHECKED_CAST")
             input::class.java == defaultValue::class.java && validateEntry(input as T, EntryValidator.ValidationType.STRONG).isValid()
         } catch (e: Throwable) {
             false
         }
+    }
+
+    @Internal
+    override fun description(fallback: String?): MutableText {
+        return FcText.translatable(descriptionKey(), fallback ?: valuesMap.keys.toString())
     }
 
     /**
@@ -129,7 +137,10 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedEnum<T>)
         : CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
 
-        val constants = entry.get().declaringJavaClass.enumConstants.mapNotNull { it as? T }.filter { choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }
+        val constants = entry.get().declaringJavaClass.enumConstants.mapNotNull {
+            @Suppress("UNCHECKED_CAST")
+            it as? T
+        }.filter { choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }
 
         override fun getMessage(): Text {
             return entry.get().let { it.transLit(it.name) }
@@ -150,7 +161,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
             var prevParent = "title"
             for (const in constants) {
                 val button = EnumOptionWidget(const, buttonWidth, {c -> (c as Enum<*>) != entry.get()}, { entry.accept(it); PopupWidget.pop() })
-                builder.addElement(const.name, button, prevParent, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_CENTER)
+                builder.add(const.name, button, prevParent, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
                 prevParent = const.name
             }
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
@@ -185,6 +196,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     //client
     private class CyclingOptionsWidget<T: Enum<*>>(choicePredicate: ChoiceValidator<T>, private val entry: Entry<T, *>): CustomPressableWidget(0, 0, 110, 20, entry.get().let { it.transLit(it.name) }) {
 
+        @Suppress("UNCHECKED_CAST")
         private val constants = entry.get().declaringJavaClass.enumConstants.mapNotNull { it as? T }.filter {
             choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
         }

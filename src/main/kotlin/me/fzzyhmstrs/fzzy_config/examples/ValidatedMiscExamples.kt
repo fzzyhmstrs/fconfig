@@ -215,6 +215,15 @@ object ValidatedMiscExamples {
         """
     }
 
+    fun pairs() {
+
+        //example validated pair. This is the long form constructor version, pairTo is convenient shorthand
+        val validatedPair = ValidatedPair(ValidatedPair.Tuple(5, "Hi"), ValidatedInt(5, 10, 0), ValidatedString())
+
+        //validated pair made with shorthand method
+        val validatedPairShort = ValidatedInt(5, 10, 0).pairWith(ValidatedString())
+    }
+
     fun strings() {
         //example validated string. This is built using the Builder, which is typically recommended except in special circumstances
         //this string requires that lowercase chicken be included in the string

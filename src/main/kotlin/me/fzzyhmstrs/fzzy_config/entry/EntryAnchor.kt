@@ -31,8 +31,8 @@ interface EntryAnchor {
 
     fun anchorId(scope: String): String
 
-    class Anchor internal constructor(internal val layer: Int, internal var name: Text) {
-        internal var type: AnchorType = AnchorType.NEW_SCREEN
+    class Anchor internal constructor(internal var layer: Int, internal var name: Text) {
+        internal var type: AnchorType = AnchorType.CONFIG
         internal var decoration: Decorated? = null
         internal var offsetX = 0
         internal var offsetY = 0
@@ -54,7 +54,8 @@ interface EntryAnchor {
     }
 
     enum class AnchorType {
-        NEW_SCREEN,
+        CONFIG,
+        SECTION,
         INLINE
     }
 }
