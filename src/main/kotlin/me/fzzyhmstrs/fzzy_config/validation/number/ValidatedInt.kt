@@ -29,7 +29,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @since 0.1.0
  */
 
-open class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, minValue: Int, widgetType: WidgetType = if(maxValue == Int.MAX_VALUE || minValue == Int.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Int>(defaultValue, minValue, maxValue, widgetType) {
+class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, minValue: Int, widgetType: WidgetType = if(maxValue == Int.MAX_VALUE || minValue == Int.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Int>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated int number generated with an [IntRange].
@@ -94,31 +94,48 @@ open class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: I
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: Int): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
 
+    /**
+     * creates a deep copy of this ValidatedInt
+     * return ValidatedInt wrapping the current int value and validation restrictions
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedInt {
         return ValidatedInt(defaultValue, maxValue, minValue, widgetType)
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Int && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
 
+    @Internal
+    override var increment: Int? = null
+
+    @Internal
     override fun convert(input: Double): ValidationResult<Int> {
         return ValidationResult.predicated(input.toInt(), input.toLong() == input.toInt().toLong(), "[$input] out of Bounds for int value (${Int.MIN_VALUE} to ${Int.MAX_VALUE} )")
     }
 
+    @Internal
     override fun minBound(): Int {
         return Int.MIN_VALUE
     }
 
+    @Internal
     override fun maxBound(): Int {
         return Int.MAX_VALUE
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         val validation = if(minValue==Int.MIN_VALUE && maxValue== Int.MAX_VALUE)
             "Unbounded"

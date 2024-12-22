@@ -29,6 +29,7 @@ import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.updates.BasicValidationProvider
@@ -46,7 +47,6 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
-import org.apache.commons.lang3.mutable.MutableLong
 import java.io.BufferedReader
 import java.io.File
 import java.io.Reader
@@ -189,13 +189,14 @@ internal object ConfigApiImpl {
         return ConfigApiImplClient.isConfigLoaded(id)
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     internal fun isClientConfigLoaded(scope: String): Boolean {
         if (!isClient) return false
         return ConfigApiImplClient.isConfigLoaded(scope)
     }
 
     internal fun registerConfigSpec(namespace: String, configSpec: ConfigSpec) {
-        TODO()
+        ClientConfigRegistry.registerConfigSpec(namespace, configSpec)
     }
 
     ///////////////// Flags //////////////////////////////////////////////////////////////
@@ -209,7 +210,6 @@ internal object ConfigApiImpl {
         //wrap entire method in a try-catch. don't need to have config problems causing a hard crash, just fall back
         try {
             val start = System.currentTimeMillis()
-            val stageTime = MutableLong(System.currentTimeMillis())
             //create our directory, or bail if we can't for some reason
             val (dir, dirCreated) = makeDir(folder, subfolder)
             if (!dirCreated) {

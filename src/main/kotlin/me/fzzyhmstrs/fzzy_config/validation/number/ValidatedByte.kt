@@ -28,7 +28,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-open class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte, minValue: Byte, widgetType: WidgetType = if(maxValue == Byte.MAX_VALUE || minValue == Byte.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Byte>(defaultValue, minValue, maxValue, widgetType) {
+class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte, minValue: Byte, widgetType: WidgetType = if(maxValue == Byte.MAX_VALUE || minValue == Byte.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Byte>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated byte number with a default selected from the min of the allowable range.
@@ -72,11 +72,18 @@ open class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue:
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedByte [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: Byte): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
 
+    /**
+     * creates a deep copy of this ValidatedByte
+     * return ValidatedByte wrapping the current byte value and validation restrictions
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedByte {
         return ValidatedByte(copyStoredValue(), maxValue, minValue, widgetType)
     }
@@ -86,18 +93,27 @@ open class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue:
         return input is Byte && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
 
+    @Internal
+    override var increment: Byte? = null
+
+    @Internal
     override fun convert(input: Double): ValidationResult<Byte> {
         return ValidationResult.predicated(input.toInt().toByte(), input.toLong() == input.toInt().toByte().toLong(), "[$input] out of Bounds for byte value (${Byte.MIN_VALUE} to ${Byte.MAX_VALUE} )")
     }
 
+    @Internal
     override fun minBound(): Byte {
         return Byte.MIN_VALUE
     }
 
+    @Internal
     override fun maxBound(): Byte {
         return Byte.MAX_VALUE
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         val validation = if(minValue==Byte.MIN_VALUE && maxValue== Byte.MAX_VALUE)
             "Unbounded"

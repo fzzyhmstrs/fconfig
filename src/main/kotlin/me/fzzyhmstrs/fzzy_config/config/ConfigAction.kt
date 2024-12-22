@@ -14,7 +14,6 @@ import com.google.common.collect.Sets
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
-import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
@@ -23,7 +22,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.SharedConstants
 import net.minecraft.client.MinecraftClient
@@ -64,8 +63,7 @@ class ConfigAction @JvmOverloads constructor(
     EntryWidget<Any>,
     EntryFlag,
     EntryCreator,
-    EntryKeyed,
-    Translatable
+    TranslatableEntry
 {
 
     constructor(
@@ -77,7 +75,7 @@ class ConfigAction @JvmOverloads constructor(
     background: Identifier? = null): this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background)
 
     private var flags: Byte = 0
-    private var actionKey = "fc.config.generic.action"
+    override var entryKey = "fc.config.generic.action"
 
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<Any>): ClickableWidget {
@@ -299,28 +297,6 @@ class ConfigAction @JvmOverloads constructor(
             q.flags = flags
             return q
         }
-    }
-
-    @Internal
-    override fun getEntryKey(): String {
-        return actionKey
-    }
-
-    @Internal
-    override fun setEntryKey(key: String) {
-        actionKey = key
-    }
-
-    override fun translationKey(): String {
-        return getEntryKey()
-    }
-
-    override fun descriptionKey(): String {
-        return getEntryKey() + ".desc"
-    }
-
-    override fun prefixKey(): String {
-        return getEntryKey() + ".prefix"
     }
 
     override fun hasDescription(): Boolean {

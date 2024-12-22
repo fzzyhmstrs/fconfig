@@ -10,14 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import com.mojang.blaze3d.systems.RenderSystem
-import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
-import net.minecraft.client.MinecraftClient
-import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.navigation.GuiNavigation
 import net.minecraft.client.gui.navigation.GuiNavigationPath
@@ -25,11 +20,8 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.KeyCodes
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.ColorHelper
-import net.minecraft.util.math.MathHelper
 
 /**
  * Clickable widget that contains a LayoutWidget which provides and lays out children of this widget. The layout will be automatically constrained to the dimensions of the widget, and updated as the position and size changes.

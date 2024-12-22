@@ -18,6 +18,7 @@ import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.Widget
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.UnaryOperator
@@ -108,31 +109,47 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     }
 
     override fun setWidth(width: Int) {
+        val bl = manualWidth != width
         manualWidth = width
-        compute()
+        if (bl)
+            compute()
+    }
+
+    internal fun setWidthQuiet(width: Int) {
+        manualWidth = width
     }
 
     override fun setHeight(height: Int) {
+        val bl = manualHeight != height
         manualHeight = height
-        compute()
+        if (bl)
+         compute()
+    }
+
+    internal fun setHeightQuiet(height: Int) {
+        manualHeight = height
     }
 
     fun setDimensions(width: Int, height: Int) {
+        val bl = manualWidth != width || manualHeight != height
         manualWidth = width
         manualHeight = height
-        compute()
+        if (bl)
+            compute()
     }
 
     fun clampWidth(width: Int): LayoutWidget {
+        val bl = manualWidth != width
         manualWidth = width
-        if (elements.isNotEmpty())
+        if (elements.isNotEmpty() && bl)
             compute()
         return this
     }
 
     fun clampHeight(height: Int): LayoutWidget {
+        val bl = manualHeight != height
         manualHeight = height
-        if (elements.isNotEmpty())
+        if (elements.isNotEmpty() && bl)
             compute()
         return this
     }
@@ -196,17 +213,41 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
 
     private var lastEl = ""
 
+    /**
+     * Push a custom element spacing to this widgets spacing stack. any elements added after this push will be spaced using the top h/w spacing on that stack, or the default spacing provided in the widget constructor if no custom spacing exists on the stack
+     * @param w [UnaryOperator] that passes the current horizontal spacing (top of the stack) and returns what the new spacing should be
+     * @param h [UnaryOperator] that passes the current vertival spacing (top of the stack) and returns what the new spacing should be
+     * @return this widget
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun pushSpacing(w: UnaryOperator<Int>, h: UnaryOperator<Int>): LayoutWidget {
         val prev = sets.peek()
         sets.push(prev.copy(spacingW = w.apply(prev.spacingW), spacingH = h.apply(prev.spacingH)))
         return this
     }
 
+    /**
+     * Pops a set of custom spacing off this widgets spacing stack. If all custom spacings are popped, will revert to the default spacing provided in the constructor
+     * @return this widget
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun popSpacing(): LayoutWidget {
-        if (sets.size > 0) {
+        if (sets.size > 1) {
             sets.pop()
         }
         return this
+    }
+
+    /**
+     * Returns the id of the last element added to this widget, or "" if none have been added yet
+     * @return String id of the last element added
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun lastElement(): String {
+        return lastEl
     }
 
     /**
@@ -262,6 +303,10 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
             updateHeight(maxH)
         else
             updateHeight(manualHeight)
+    }
+
+    fun update() {
+        updateElements()
     }
 
     fun compute(): LayoutWidget {
@@ -595,6 +640,46 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
             }
+        }
+    }
+
+    @Internal
+    @Suppress("UNUSED")
+    //client
+    class PositionedElement<T>(val element: T, val set: PosSet, var x: Pos, var y: Pos, val alignment: LayoutWidget.PositionGlobalAlignment) where T: Widget {
+        private fun upDown(): IntRange {
+            return IntRange(getTop(), getBottom())
+        }
+        fun getLeft(): Int {
+            return x.get()
+        }
+        fun getRight(): Int {
+            return x.get() + element.width
+        }
+        fun getTop(): Int {
+            return y.get()
+        }
+        fun getBottom(): Int {
+            return y.get() + element.height
+        }
+        fun elWidth(): Int {
+            return element.width
+        }
+        fun elHeight(): Int {
+            return element.height
+        }
+        fun update() {
+            element.x = x.get()
+            element.y = y.get()
+        }
+        fun otherIsLeftwards(element: PositionedElement<*>): Boolean {
+            return inUpDownBounds(element.upDown()) && element.getRight() <= getLeft()
+        }
+        fun otherIsRightwards(element: PositionedElement<*>): Boolean {
+            return inUpDownBounds(element.upDown()) && element.getLeft() >= getRight()
+        }
+        private fun inUpDownBounds(chk: IntRange): Boolean {
+            return upDown().intersect(chk).isNotEmpty()
         }
     }
 }

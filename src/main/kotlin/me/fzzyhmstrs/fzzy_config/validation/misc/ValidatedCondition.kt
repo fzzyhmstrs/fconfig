@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
@@ -56,7 +57,81 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
     private var pluralFailText: Text? = null
 
     /**
-     * Defines a custom condition fail-state title to appear in the de-activated widget. By default, (in english) these are "Condition not met" and "Conditions not met". A more specific message may be appropriate for user guidance, such as `"[setting] disabled"`
+     * creates a deep copy of this ValidatedCondition
+     * @return ValidatedCondition wrapping a deep copy of the currently stored object and conditions
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    override fun instanceEntry(): ValidatedField<T> {
+        val condition = ValidatedCondition(delegate.instanceEntry(), fallback)
+        condition.conditions = conditions
+        condition.singleFailText = singleFailText?.copy()
+        condition.pluralFailText = pluralFailText?.copy()
+        return condition
+    }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input [T] input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: T): T {
+        return delegate.copyValue(input)
+    }
+
+    @Internal
+    //client
+    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
+        return ConditionalActiveButtonWidget(
+            110,
+            20,
+            { checkConditions() },
+            { conditionFailMessages() },
+            delegate.widgetEntry(choicePredicate))
+    }
+
+    @Internal
+    override fun setFlag(flag: Byte) {
+        delegate.setFlag(flag)
+    }
+
+    @Internal
+    override fun hasFlag(flag: EntryFlag.Flag): Boolean {
+        return delegate.hasFlag(flag)
+    }
+
+    /**
+     * provide the stored value, gated behind the results of any provided conditions. If any condition fails, this will return false no matter the underlying value
+     * @return the stored value if the conditions pass, the supplied fallback value otherwise
+     * @author fzzyhmstrs
+     * @since 0.5.4
+     */
+    override fun get(): T {
+        for (condition in conditions) {
+            if (!condition.get()) return fallback.get()
+        }
+        return super.get()
+    }
+
+    /**
+     * Retrieves the wrapped value without performing condition checks
+     * @return stored value
+     * @author fzzyhmstrs
+     * @since 0.5.4
+     */
+    fun getUnconditional(): T {
+        return super.get()
+    }
+
+    @Internal
+    override fun entryDeco(): Decorated.DecoratedOffset? {
+        return Decorated.DecoratedOffset(ConditionDecoration{ checkConditions() }, 2, 2)
+    }
+
+    /**
+     * Defines a custom condition fail-state title to appear in the de-activated widget. By default, (in english) these are "Condition not met" and "Conditions not met". A more specific message may be appropriate for user guidance, such as `"|setting| disabled"`
      * @param singleFailText [Text] a message for a single condition failure, or if the number of conditions failing doesn't matter
      * @param pluralFailText [Text] a message for when multiple conditions are not met. [singleFailText] will be used if this is null and the single is provided.
      * @return this condition
@@ -170,46 +245,22 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
     }
 
     /**
-     * provide the stored value, gated behind the results of any provided conditions. If any condition fails, this will return false no matter the underlying value
-     * @return the stored value if the conditions pass, the supplied fallback value otherwise
-     * @author fzzyhmstrs
-     * @since 0.5.4
-     */
-    override fun get(): T {
-        for (condition in conditions) {
-            if (!condition.get()) return fallback.get()
-        }
-        return super.get()
-    }
-
-    fun getUnconditional(): T {
-        return super.get()
-    }
-
-    @Internal
-    //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
-        return ConditionalActiveButtonWidget(
-            110,
-            20,
-            { checkConditions() },
-            { conditionFailMessages() },
-            delegate.widgetEntry(choicePredicate))
-    }
-
-    override fun setFlag(flag: Byte) {
-        delegate.setFlag(flag)
-    }
-
-    override fun hasFlag(flag: EntryFlag.Flag): Boolean {
-        return delegate.hasFlag(flag)
-    }
-
-    /**
      * @suppress
      */
     override fun toString(): String {
         return "Validated Condition[delegate=$delegate, conditions=$conditions]"
+    }
+
+    private class ConditionDecoration(private val activeSupplier: Supplier<Boolean>): SpriteDecorated {
+
+        override fun decorationId(): Identifier {
+            return TextureIds.ENTRY_ERROR
+        }
+
+        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
+            if (!activeSupplier.get())
+                super.renderDecoration(context, x, y, delta)
+        }
     }
 
     //client
@@ -218,9 +269,21 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         height: Int,
         private val activeSupplier: Supplier<Boolean>,
         private val conditionMessages: Supplier<List<Text>>,
-        private val delegateWidget: ClickableWidget
-    ) : ActiveButtonWidget({ if(conditionMessages.get().size == 1) singleFailText ?: "fc.validated_field.condition".translate() else pluralFailText ?: singleFailText ?: "fc.validated_field.conditions".translate() }, width, height, activeSupplier, { _ -> }, null),
-        SpriteDecorated {
+        private val delegateWidget: ClickableWidget)
+        :
+        ActiveButtonWidget(
+            {
+                if (conditionMessages.get().size == 1)
+                    singleFailText ?: "fc.validated_field.condition".translate()
+                else
+                    pluralFailText ?: singleFailText ?: "fc.validated_field.conditions".translate()
+            },
+            width,
+            height,
+            activeSupplier,
+            { _ -> },
+            null)
+    {
 
         override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activeSupplier.get()
@@ -365,15 +428,6 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             } else {
                 if (!this.isFocused) GuiNavigationPath.of(this) else null
             }
-        }
-
-        override fun decorationId(): Identifier {
-            return TextureIds.ENTRY_ERROR
-        }
-
-        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
-            if (!active)
-                super.renderDecoration(context, x, y, delta)
         }
     }
 

@@ -88,15 +88,6 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
      */
     constructor(): this("", EntryChecker.any())
 
-    /**
-     * Creates a deep copy of the stored value and returns it
-     * @return String - deep copy of the currently stored value
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun copyStoredValue(): String {
-        return String(storedValue.toCharArray())
-    }
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<String> {
         return try {
@@ -105,18 +96,22 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
             ValidationResult.error(storedValue, "Critical error deserializing string [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: String): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
+
     @Internal
     override fun correctEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
         return checker.correctEntry(input, type)
     }
+
     @Internal
     override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
         return checker.validateEntry(input, type)
     }
+
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
@@ -139,9 +134,21 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
     override fun instanceEntry(): ValidatedString {
         return ValidatedString(copyStoredValue(), this.checker)
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is String && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
+    }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input String input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: String): String {
+        return String(input.toCharArray())
     }
 
     /**

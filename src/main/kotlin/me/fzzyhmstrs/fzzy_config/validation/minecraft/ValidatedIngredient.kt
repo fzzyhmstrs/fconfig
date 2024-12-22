@@ -10,11 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
-import me.fzzyhmstrs.fzzy_config.fcId
-import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
@@ -46,9 +43,9 @@ import java.util.function.Predicate
  * This does not store an ingredient, it stores an [IngredientProvider], which lazily generates the ingredient only when requested.
  * @sample me.fzzyhmstrs.fzzy_config.examples.MinecraftExamples.ingredients
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, marked final 0.6.0
  */
-open class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<IngredientProvider>(defaultValue) {
+class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<IngredientProvider>(defaultValue) {
 
     /**
      * A validated provider of [Ingredient]
@@ -120,7 +117,6 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             }
         }
     }
-
 
     /**
      * Supplies the [Ingredient] from this ValidatedIngredients Provider
@@ -197,6 +193,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
         }
         return result
     }
+
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<IngredientProvider> {
         return try {
@@ -205,19 +202,10 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
             ValidationResult.error(storedValue, "Critical error while deserializing ValidatedIngredient [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: IngredientProvider): ValidationResult<TomlElement> {
         return ValidationResult.success(IngredientProvider.serialize(input))
-    }
-
-    /**
-     * Creates a deep copy of the stored value and returns it
-     * @return IngredientProvider - deep copy of the currently stored provider
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun copyStoredValue(): IngredientProvider {
-        return storedValue.copy()
     }
 
     /**
@@ -229,22 +217,33 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
     override fun instanceEntry(): ValidatedField<IngredientProvider> {
         return ValidatedIngredient(copyStoredValue(), itemPredicate, tagPredicate)
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is IngredientProvider
     }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input Ingredient input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: IngredientProvider): IngredientProvider {
+        return input.copy()
+    }
+
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<IngredientProvider>): ClickableWidget {
-        return DecoratedActiveButtonWidget("fc.validated_field.ingredient.edit".translate(), 110, 20, "widget/decoration/ingredient".fcId(), { true }, { openIngredientPopup(it) })
+        return ActiveButtonWidget("fc.validated_field.ingredient.edit".translate(), 110, 20, { true }, { openIngredientPopup(it) })
     }
 
-    /**
-     * @suppress
-     */
-     override fun toString(): String {
-         return "Validated Ingredient[value=$storedValue, validation={$itemValidator, $tagValidator, $listItemValidator, $listTagValidator}]"
-     }
+    @Internal
+    override fun entryDeco(): Decorated.DecoratedOffset {
+        return Decorated.DecoratedOffset(TextureDeco.DECO_INGREDIENT, 2, 2)
+    }
 
     //client
     private fun openIngredientPopup(b: ClickableWidget) {
@@ -252,15 +251,15 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
 
         val popupNew = PopupWidget.Builder(translation())
             .addDivider()
-            .addElement("items_label", TextWidget(110, 13, "fc.validated_field.ingredient.items".translate(), textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("items", listItemValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("items_clear", CustomButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listItemValidator.validateAndSet(setOf()) }.size(60, 20).build(), "items", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("items_textbox", SuppliedTextWidget({ listItemValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listItemValidator.get().joinToString("\n").lit() }, "items", Position.ALIGN_JUSTIFY, Position.BELOW)
+            .add("items_label", TextWidget(110, 13, "fc.validated_field.ingredient.items".translate(), textRenderer).alignLeft(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("items", listItemValidator.widgetAndTooltipEntry(ChoiceValidator.any()), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("items_clear", CustomButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listItemValidator.validateAndSet(setOf()) }.size(60, 20).build(), "items", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("items_textbox", SuppliedTextWidget({ listItemValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listItemValidator.get().joinToString("\n").lit() }, "items", LayoutWidget.Position.ALIGN_JUSTIFY, LayoutWidget.Position.BELOW)
             .addDivider()
-            .addElement("tags_label", TextWidget(110, 13, "fc.validated_field.ingredient.tags".translate(), textRenderer).alignLeft(), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("tags", listTagValidator.widgetAndTooltipEntry(ChoiceValidator.any()), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("tags_clear", CustomButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60, 20).build(), "tags", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() }, "tags", Position.ALIGN_JUSTIFY, Position.BELOW)
+            .add("tags_label", TextWidget(110, 13, "fc.validated_field.ingredient.tags".translate(), textRenderer).alignLeft(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("tags", listTagValidator.widgetAndTooltipEntry(ChoiceValidator.any()), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("tags_clear", CustomButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60, 20).build(), "tags", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() }, "tags", LayoutWidget.Position.ALIGN_JUSTIFY, LayoutWidget.Position.BELOW)
             .addDoneWidget()
             .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
             .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
@@ -273,13 +272,20 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
     private fun fromLists(): IngredientProvider {
         if (listItemValidator.isEmpty() && listTagValidator.isEmpty())
             return ListProvider(setOf(), setOf())
-        if (listItemValidator.size == 1 && listTagValidator.isEmpty()) {
-            return ItemProvider(listItemValidator.first())
+        return if (listItemValidator.size == 1 && listTagValidator.isEmpty()) {
+            ItemProvider(listItemValidator.first())
         } else if (listItemValidator.isEmpty() && listTagValidator.size == 1) {
-            return TagProvider(listTagValidator.first())
+            TagProvider(listTagValidator.first())
         } else {
-            return ListProvider(listItemValidator.get(), listTagValidator.get())
+            ListProvider(listItemValidator.get(), listTagValidator.get())
         }
+    }
+
+    /**
+     * @suppress
+     */
+    override fun toString(): String {
+        return "Validated Ingredient[value=$storedValue, validation={$itemValidator, $tagValidator, $listItemValidator, $listTagValidator}]"
     }
 
     enum class ProviderType: EnumTranslatable {
@@ -350,7 +356,7 @@ open class ValidatedIngredient private constructor(defaultValue: IngredientProvi
 
     class ListProvider(val ids: Set<Identifier>, val tags: Set<Identifier>): IngredientProvider {
 
-        constructor(input: Set<Any>):this(input.mapNotNull { it as? Identifier }.toSet(), input.mapNotNull { try { (it as? TagKey<Item>)?.id } catch (e: Throwable){ null } }.toSet())
+        constructor(input: Set<Any>):this(input.mapNotNull { it as? Identifier }.toSet(), input.mapNotNull { try { (it as? TagKey<*>)?.id } catch (e: Throwable){ null } }.toSet())
 
         override fun type(): ProviderType {
             return ProviderType.LIST

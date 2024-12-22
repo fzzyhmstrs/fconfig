@@ -11,8 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
@@ -43,7 +43,6 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Suppress("DEPRECATION")
 open class ValidatedExpression @JvmOverloads constructor(
     defaultValue: String,
     private val validVars: Set<Char> = setOf(),
@@ -72,8 +71,17 @@ open class ValidatedExpression @JvmOverloads constructor(
     constructor(): this("0")
 
     private var parsedString = defaultValue
+    @Suppress("DEPRECATION")
     private var parsedExpression = Expression.parse(defaultValue, defaultValue)
 
+    /**
+     * Evaluates the math expression
+     * @param vars Map<Char, Double> - map of the input variables. The Char used must match the variable characters used in the string expression and visa-versa
+     * @return Double - The result of the expression evaluation
+     * @throws IllegalStateException if the evaluation hits a critical error. Often this will be because an expected variable is not passed to vars
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     @Deprecated("Where possible use safeEval() to avoid throwing exceptions on evaluation failure")
     override fun eval(vars: Map<Char, Double>): Double {
         if (parsedString != storedValue) {
@@ -84,8 +92,10 @@ open class ValidatedExpression @JvmOverloads constructor(
             }
             parsedExpression = tryExpression
         }
+        @Suppress("DEPRECATION")
         return parsedExpression.eval(vars)
     }
+
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<String> {
         return try {
@@ -95,33 +105,22 @@ open class ValidatedExpression @JvmOverloads constructor(
             ValidationResult.error(storedValue, "Critical error deserializing math expression [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: String): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
+
     @Internal
     override fun correctEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
         val result = validateEntry(input, type)
         return if(result.isError()) {
             ValidationResult.error(storedValue, "Invalid identifier [$input] found, reset to [$storedValue]: ${result.getError()}")} else result
     }
+
     @Internal
     override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
         return validator.validateEntry(input, type)
-    }
-    @Internal
-    override fun isValidEntry(input: Any?): Boolean {
-        return input is String && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
-    }
-
-    /**
-     * Creates a deep copy of the stored value and returns it
-     * @return String - deep copy of the string representation of the currently stored expression
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun copyStoredValue(): String {
-        return String(storedValue.toCharArray())
     }
 
     /**
@@ -133,6 +132,24 @@ open class ValidatedExpression @JvmOverloads constructor(
     override fun instanceEntry(): ValidatedExpression {
         return ValidatedExpression(copyStoredValue(), validVars, validator)
     }
+
+    @Internal
+    override fun isValidEntry(input: Any?): Boolean {
+        return input is String && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
+    }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input String representation of a math expression to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: String): String {
+        return String(input.toCharArray())
+    }
+
+
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<String>): ClickableWidget {
@@ -181,48 +198,48 @@ open class ValidatedExpression @JvmOverloads constructor(
                     PopupWidget.focusElement(editBox)
             }
             val popup = PopupWidget.Builder("fc.validated_field.expression".translate())
-                .addElement("ln",    CustomButtonWidget.builder("ln".lit())    { add("ln()", 3) }    .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.ln.tip".translate())).build(),             Position.BELOW, Position.ALIGN_LEFT)
-                .addElement("min",   CustomButtonWidget.builder("min".lit())   { add("min(, )", 4) } .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.min.tip".translate())).build(),   "ln",    Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("max",   CustomButtonWidget.builder("max".lit())   { add("max(, )", 4) } .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.max.tip".translate())).build(),   "min",   Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("log",   CustomButtonWidget.builder("log".lit())   { add("log(, )", 4) } .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.log.tip".translate())).build(),   "ln",    Position.BELOW, Position.ALIGN_LEFT)
-                .addElement("log10", CustomButtonWidget.builder("log10".lit()) { add("log10()", 6) } .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.log10.tip".translate())).build(), "log",   Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("log2",  CustomButtonWidget.builder("log2".lit())  { add("log2()", 5) }  .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.log2.tip".translate())).build(),  "log10", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("sqrt",  CustomButtonWidget.builder("sqrt".lit())  { add("sqrt()", 5) }  .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.sqrt.tip".translate())).build(),  "log",   Position.BELOW, Position.ALIGN_LEFT)
-                .addElement("abs",   CustomButtonWidget.builder("abs".lit())   { add("abs()", 4) }   .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.abs.tip".translate())).build(),   "sqrt",  Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("sin",   CustomButtonWidget.builder("sin".lit())   { add("sin()", 4) }   .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.sin.tip".translate())).build(),   "abs",   Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("cos",   CustomButtonWidget.builder("cos".lit())   { add("cos()", 4) }   .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.cos.tip".translate())).build(),   "sin",   Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("pow",   CustomButtonWidget.builder("^".lit())     { add(" ^ ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.pow.tip".translate())).build(),   "cos",   Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("paren", CustomButtonWidget.builder("(_)".lit())   { add("()", 1) }      .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.paren.tip".translate())).build(), "sqrt",  Position.BELOW, Position.ALIGN_LEFT)
-                .addElement("incr",  CustomButtonWidget.builder("incr".lit())  { add("incr(, )", 5) }.size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.incr.tip".translate())).build(),  "paren", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("ciel",  CustomButtonWidget.builder("ciel".lit())  { add("ciel()", 5) }  .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.ciel.tip".translate())).build(),  "incr",  Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("flr",   CustomButtonWidget.builder("flr".lit())   { add("floor()", 6) } .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.flr.tip".translate())).build(),   "ciel",  Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("rnd",   CustomButtonWidget.builder("rnd".lit())   { add("round()", 6) } .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.rnd.tip".translate())).build(),   "flr",   Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("plus",  CustomButtonWidget.builder("+".lit())     { add(" + ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.plus.tip".translate())).build(),  "paren", Position.BELOW, Position.ALIGN_LEFT)
-                .addElement("minus", CustomButtonWidget.builder("-".lit())     { add(" - ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.minus.tip".translate())).build(), "plus",  Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("times", CustomButtonWidget.builder("*".lit())     { add(" * ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.times.tip".translate())).build(), "minus", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("div",   CustomButtonWidget.builder("/".lit())     { add(" / ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.div.tip".translate())).build(),   "times", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-                .addElement("mod",   CustomButtonWidget.builder("%".lit())     { add(" % ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.mod.tip".translate())).build(),   "div",   Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("ln",    CustomButtonWidget.builder("ln".lit())    { add("ln()", 3) }    .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.ln.tip".translate())).build(),                   LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+                .add("min",   CustomButtonWidget.builder("min".lit())   { add("min(, )", 4) } .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.min.tip".translate())).build(),   "ln",    LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("max",   CustomButtonWidget.builder("max".lit())   { add("max(, )", 4) } .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.max.tip".translate())).build(),   "min",   LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("log",   CustomButtonWidget.builder("log".lit())   { add("log(, )", 4) } .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.log.tip".translate())).build(),   "ln",    LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+                .add("log10", CustomButtonWidget.builder("log10".lit()) { add("log10()", 6) } .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.log10.tip".translate())).build(), "log",   LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("log2",  CustomButtonWidget.builder("log2".lit())  { add("log2()", 5) }  .size(56, 20).tooltip(Tooltip.of("fc.validated_field.expression.log2.tip".translate())).build(),  "log10", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("sqrt",  CustomButtonWidget.builder("sqrt".lit())  { add("sqrt()", 5) }  .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.sqrt.tip".translate())).build(),  "log",   LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+                .add("abs",   CustomButtonWidget.builder("abs".lit())   { add("abs()", 4) }   .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.abs.tip".translate())).build(),   "sqrt",  LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("sin",   CustomButtonWidget.builder("sin".lit())   { add("sin()", 4) }   .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.sin.tip".translate())).build(),   "abs",   LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("cos",   CustomButtonWidget.builder("cos".lit())   { add("cos()", 4) }   .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.cos.tip".translate())).build(),   "sin",   LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("pow",   CustomButtonWidget.builder("^".lit())     { add(" ^ ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.pow.tip".translate())).build(),   "cos",   LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("paren", CustomButtonWidget.builder("(_)".lit())   { add("()", 1) }      .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.paren.tip".translate())).build(), "sqrt",  LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+                .add("incr",  CustomButtonWidget.builder("incr".lit())  { add("incr(, )", 5) }.size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.incr.tip".translate())).build(),  "paren", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("ciel",  CustomButtonWidget.builder("ciel".lit())  { add("ciel()", 5) }  .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.ciel.tip".translate())).build(),  "incr",  LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("flr",   CustomButtonWidget.builder("flr".lit())   { add("floor()", 6) } .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.flr.tip".translate())).build(),   "ciel",  LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("rnd",   CustomButtonWidget.builder("rnd".lit())   { add("round()", 6) } .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.rnd.tip".translate())).build(),   "flr",   LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("plus",  CustomButtonWidget.builder("+".lit())     { add(" + ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.plus.tip".translate())).build(),  "paren", LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+                .add("minus", CustomButtonWidget.builder("-".lit())     { add(" - ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.minus.tip".translate())).build(), "plus",  LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("times", CustomButtonWidget.builder("*".lit())     { add(" * ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.times.tip".translate())).build(), "minus", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("div",   CustomButtonWidget.builder("/".lit())     { add(" / ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.div.tip".translate())).build(),   "times", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                .add("mod",   CustomButtonWidget.builder("%".lit())     { add(" % ", 3) }     .size(32, 20).tooltip(Tooltip.of("fc.validated_field.expression.mod.tip".translate())).build(),   "div",   LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
 
             val charButtonSize = entry.validVars.size
             if(charButtonSize > 0) {
                 if (charButtonSize == 1) {
                     val chr = entry.validVars.toList()[0]
-                    popup.addElement("var", CustomButtonWidget.builder(chr.toString().lit()){ add(chr.toString(), 0) }.size(176, 20).build(), "plus", Position.BELOW, Position.ALIGN_LEFT)
+                    popup.add("var", CustomButtonWidget.builder(chr.toString().lit()){ add(chr.toString(), 0) }.size(176, 20).build(), "plus", LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
                 } else {
                     val list = entry.validVars.toList()
                     val chr = list[0]
                     val buttonWidth = (176 - ((charButtonSize - 1) * 4)) / charButtonSize
-                    popup.addElement("var", CustomButtonWidget.builder(chr.toString().lit()){ add(chr.toString(), 0) }.size(buttonWidth, 20).build(), "plus", Position.BELOW, Position.ALIGN_LEFT)
+                    popup.add("var", CustomButtonWidget.builder(chr.toString().lit()){ add(chr.toString(), 0) }.size(buttonWidth, 20).build(), "plus", LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
                     for(i in 1 until charButtonSize) {
                         val chri = list[i]
-                        popup.addElement("var$i", CustomButtonWidget.builder(chri.toString().lit()){ add(chri.toString(), 0) }.size(buttonWidth, 20).build(), Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
+                        popup.add("var$i", CustomButtonWidget.builder(chri.toString().lit()){ add(chri.toString(), 0) }.size(buttonWidth, 20).build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
                     }
                 }
             }
             if(charButtonSize > 0) {
-                popup.addElement("edit_box", editBox, "var", Position.BELOW, Position.ALIGN_LEFT)
+                popup.add("edit_box", editBox, "var", LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             } else {
-                popup.addElement("edit_box", editBox, "plus", Position.BELOW, Position.ALIGN_LEFT)
+                popup.add("edit_box", editBox, "plus", LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             }
             popup.addDoneWidget()
             popup.noCloseOnClick()

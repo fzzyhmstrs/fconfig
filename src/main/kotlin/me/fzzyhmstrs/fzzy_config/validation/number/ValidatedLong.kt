@@ -28,7 +28,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-open class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long, minValue: Long, widgetType: WidgetType = if(maxValue == Long.MAX_VALUE || minValue == Long.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Long>(defaultValue, minValue, maxValue, widgetType) {
+class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long, minValue: Long, widgetType: WidgetType = if(maxValue == Long.MAX_VALUE || minValue == Long.MIN_VALUE) WidgetType.TEXTBOX else WidgetType.SLIDER): ValidatedNumber<Long>(defaultValue, minValue, maxValue, widgetType) {
 
     /**
      * A validated long number generated with a [LongRange].
@@ -93,31 +93,48 @@ open class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue:
             ValidationResult.error(defaultValue, "Problem deserializing ValidatedLong [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: Long): ValidationResult<TomlElement> {
         return ValidationResult.success(TomlLiteral(input))
     }
 
+    /**
+     * creates a deep copy of this ValidatedLong
+     * return ValidatedLong wrapping the current long value and validation restrictions
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     override fun instanceEntry(): ValidatedLong {
         return ValidatedLong(defaultValue, maxValue, minValue, widgetType)
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is Long && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
 
+    @Internal
+    override var increment: Long? = null
+
+    @Internal
     override fun convert(input: Double): ValidationResult<Long> {
         return ValidationResult.success(input.toLong())
     }
 
+    @Internal
     override fun minBound(): Long {
         return Long.MIN_VALUE
     }
 
+    @Internal
     override fun maxBound(): Long {
         return Long.MAX_VALUE
     }
 
+    /**
+     * @suppress
+     */
     override fun toString(): String {
         val validation = if(minValue==Long.MIN_VALUE && maxValue== Long.MAX_VALUE)
             "Unbounded"
