@@ -35,7 +35,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
 open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, TranslatableEntry, EntryParent, EntryAnchor, EntryCreator {
 
     @Transient
-    override var entryKey: String = "fc.config.generic.section"
+    override var translatableEntryKey: String = "fc.config.generic.section"
 
     @Internal
     override fun serializeEntry(
@@ -61,7 +61,7 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
     }
 
     override fun anchorId(scope: String): String {
-        return entryKey
+        return translatableEntryKey
     }
 
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {

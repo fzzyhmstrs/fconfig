@@ -103,7 +103,7 @@ class AllowableIdentifiers @JvmOverloads constructor(
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        val ANY = AllowableIdentifiers({true}, {listOf()})
+        val ANY = AllowableIdentifiers({ true }, { emptyList() })
     }
 
 }

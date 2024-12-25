@@ -94,10 +94,10 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
                     try {
                         ConfigApiImpl.tomlAnnotations(entry!!::class)
                     } catch (e: Throwable) {
-                        listOf()
+                        emptyList()
                     }
                 else
-                    listOf()
+                    emptyList()
                 toml.element(tomlEntry, annotations)
             }
         } catch (e: Throwable) {

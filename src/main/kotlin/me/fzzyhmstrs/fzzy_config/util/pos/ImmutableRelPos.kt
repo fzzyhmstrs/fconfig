@@ -27,6 +27,6 @@ open class ImmutableRelPos @JvmOverloads constructor(private val parent: Pos, pr
     override fun dec(amount: Int) {
     }
     override fun toString(): String {
-        return "[$parent + $p]"
+        return "[${parent::class.java.simpleName}$parent + $p]"
     }
 }

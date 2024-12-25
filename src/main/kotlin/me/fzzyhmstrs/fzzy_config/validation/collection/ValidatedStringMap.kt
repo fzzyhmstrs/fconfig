@@ -89,10 +89,10 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
                     try {
                         ConfigApiImpl.tomlAnnotations(value!!::class)
                     } catch (e: Throwable) {
-                        listOf()
+                        emptyList()
                     }
                 else
-                    listOf()
+                    emptyList()
                 val el = valueHandler.serializeEntry(value, errors, 1)
                 table.element(key, el, annotations)
             }

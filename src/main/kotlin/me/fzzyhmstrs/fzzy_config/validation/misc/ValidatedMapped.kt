@@ -196,7 +196,7 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
         }
 
         override fun changeHistory(): List<String> {
-            return listOf()
+            return emptyList()
         }
 
         override fun changeCount(): Int {
@@ -227,7 +227,7 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
         }
 
         override fun flush(): List<String> {
-            return listOf()
+            return emptyList()
         }
 
     }

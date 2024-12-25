@@ -20,7 +20,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class SuppliedPos(private val parent: Pos, private var p: Int, private val offset: Supplier<Int>): Pos {
+open class SuppliedPos(private val parent: Pos, private var p: Int, private val offset: Supplier<Int>): Pos {
     override fun get(): Int {
         return parent.get() + p + offset.get()
     }
@@ -34,6 +34,6 @@ class SuppliedPos(private val parent: Pos, private var p: Int, private val offse
         p -= amount
     }
     override fun toString(): String {
-        return "[$parent + $p + ${offset.get()}]"
+        return "[${parent::class.java.simpleName}$parent + $p + ${offset.get()}]"
     }
 }

@@ -363,8 +363,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @Suppress("UNCHECKED_CAST")
         fun <T> ofTag(defaultValue: Identifier, tag: TagKey<T>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.optional(tag.regRefId())
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { listOf() }))
-            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { listOf() }))
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { emptyList() }))
+            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ false }, { emptyList() }))
             val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
             return ValidatedIdentifier(defaultValue, AllowableIdentifiers({ id -> supplier.get().contains(id) }, supplier, false))
         }
@@ -385,8 +385,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @Deprecated("Only use for validation in a list or map")
         fun <T> ofTag(tag: TagKey<T>): ValidatedIdentifier {
             val maybeRegistry = Registries.REGISTRIES.optional(tag.regRefId())
-            if (maybeRegistry.isEmpty) return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ false }, { listOf() }))
-            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ false }, { listOf() }))
+            if (maybeRegistry.isEmpty) return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ false }, { emptyList() }))
+            val registry = maybeRegistry.get() as? Registry<T> ?: return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers({ false }, { emptyList() }))
             val supplier = Supplier { registry.iterateEntries(tag).mapNotNull { registry.getId(it.value()) } }
             return ValidatedIdentifier("minecraft:air".simpleId(), AllowableIdentifiers( { id -> supplier.get().contains(id) }, supplier, false))
         }
