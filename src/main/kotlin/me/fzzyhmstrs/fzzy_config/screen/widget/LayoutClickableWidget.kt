@@ -37,9 +37,9 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
                                                                                                         ParentElement, TooltipChild {
 
     private var children: MutableList<Element> = mutableListOf()
-    private var drawables: List<Drawable> = listOf()
-    private var selectables: List<Selectable> = listOf()
-    private var tooltipProviders: List<TooltipChild> = listOf()
+    private var drawables: List<Drawable> = emptyList()
+    private var selectables: List<Selectable> = emptyList()
+    private var tooltipProviders: List<TooltipChild> = emptyList()
     private var focusedSelectable: Selectable? = null
     private var focusedElement: Element? = null
     private var dragging: Boolean = false

@@ -46,7 +46,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
-        renderCustom(context,x, y, width, height, mouseX, mouseY, delta)
+        renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
     }
 
     open fun drawMessage(context: DrawContext, textRenderer: TextRenderer, x: Int, y: Int, width: Int, height: Int, color: Int) {

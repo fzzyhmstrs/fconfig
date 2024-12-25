@@ -15,14 +15,14 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 @JvmDefaultWithoutCompatibility
 interface TranslatableEntry: Translatable, EntryKeyed {
 
-    var entryKey: String
+    var translatableEntryKey: String
 
     override fun setEntryKey(key: String) {
-        entryKey = key
+        this.translatableEntryKey = key
     }
 
     override fun getEntryKey(): String {
-        return entryKey
+        return translatableEntryKey
     }
 
     override fun translationKey(): String {

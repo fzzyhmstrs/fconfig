@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config_test.test.screen
 
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -28,8 +29,8 @@ class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, ind
         private val childs = mutableListOf(button)
         override var h: Int = 24
 
-        override fun selectableChildren(): List<Selectable> {
-            return childs
+        override fun selectableChildren(): List<SelectableElement> {
+            return childs.cast()
         }
 
         override fun renderEntry(
@@ -61,7 +62,8 @@ class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, ind
             focused: Boolean,
             delta: Float
         ) {
-            context.drawBorder(x, y, width, height, Colors.WHITE)
+            if (hovered || focused)
+                context.drawBorder(x, y, width, height, Colors.WHITE)
         }
 
         override fun children(): MutableList<out Element> {

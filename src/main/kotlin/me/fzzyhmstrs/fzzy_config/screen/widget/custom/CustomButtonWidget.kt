@@ -28,7 +28,7 @@ open class CustomButtonWidget protected constructor(
     message: Text,
     private val pressAction: Consumer<CustomButtonWidget>,
     private val narrationSupplier: ButtonWidget.NarrationSupplier,
-    override val textures: PressableTextures,
+    override val textures: PressableTextures = DEFAULT_TEXTURES,
     private val child: TooltipChild? = null)
     :
     CustomPressableWidget(x, y, width, height, message)

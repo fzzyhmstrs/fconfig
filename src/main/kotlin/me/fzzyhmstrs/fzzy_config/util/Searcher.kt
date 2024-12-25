@@ -139,7 +139,7 @@ class Searcher<C: Searcher.SearchContent>(private val searchEntries: List<C>) {
             }
             SearchType.EXACT -> {
                 val result = searchExact[trimmedSearchInput.lowercase(Locale.ROOT)]
-                list = if(result != null) listOf(result) else listOf()
+                list = if(result != null) listOf(result) else emptyList()
             }
             SearchType.NEGATE_EXACT -> {
                 val result = searchExact[trimmedSearchInput.lowercase(Locale.ROOT)]

@@ -29,7 +29,7 @@ class TestLayoutContainerWidget(layoutBuilder: UnaryOperator<LayoutWidget>) : Co
     private val selectables: MutableList<Selectable> = mutableListOf()
 
     init {
-        layout.categorize(children, drawables, selectables, mutableListOf())
+        layout.categorize(children, drawables, selectables)
         this.setWidth(layout.width)
         this.setHeight(layout.height)
     }
