@@ -29,6 +29,7 @@
   "fzzy_config_test.test_config2.int1.desc" : "Integers have cool descriptions",
 
   "fzzy_config_test.test_config2.section1.desc" : "This is a cool section description for a section with important setting that will require a restart.",
+  "fzzy_config_test.test_config2.section1.prefix" : "This is a cool section prefix for a section with important setting that will require a restart.",
   "fzzy_config_test.test_config2.choice1" : "Choices with Translation",
   "fzzy_config_test.test_config2.choice1.1" : "One",
   "fzzy_config_test.test_config2.choice1.desc.1" : "Epic rarity",

@@ -97,18 +97,18 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
                     try {
                         ConfigApiImpl.tomlAnnotations(value!!::class)
                     } catch (e: Throwable) {
-                        listOf()
+                        emptyList()
                     }
                 else
-                    listOf()
+                    emptyList()
                 val valueAnnotations = if (value != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(value!!::class)
                     } catch (e: Throwable) {
-                        listOf()
+                        emptyList()
                     }
                 else
-                    listOf()
+                    emptyList()
                 val keyEl = keyHandler.serializeEntry(key, errors, 1)
                 val valueEl = valueHandler.serializeEntry(value, errors, 1)
                 pairArray.element(keyEl, keyAnnotations)

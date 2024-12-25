@@ -26,7 +26,7 @@ class TestBasicConfigManager: UpdateManager {
     }
 
     override fun flush(): List<String> {
-        return listOf()
+        return emptyList()
     }
 
     override fun revert() {

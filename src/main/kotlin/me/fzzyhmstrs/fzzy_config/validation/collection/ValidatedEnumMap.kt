@@ -93,10 +93,10 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
                     try {
                         ConfigApiImpl.tomlAnnotations(value!!::class)
                     } catch (e: Throwable) {
-                        listOf()
+                        emptyList()
                     }
                 else
-                    listOf()
+                    emptyList()
                 val el = valueHandler.serializeEntry(value, errors, 1)
                 table.element(key, el, annotations)
             }

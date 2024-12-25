@@ -55,9 +55,9 @@ open class TextlessActionWidget(
             activeIcon
     }
 
-    override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = activeSupplier.get()
-        super.renderCustom(context, mouseX, mouseY, delta)
+        super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
         context.drawTex(getTex(), x, y, getWidth(), getHeight())
         if (this.active && activeNarration.string != "") {
             tooltip = Tooltip.of(activeNarration)
