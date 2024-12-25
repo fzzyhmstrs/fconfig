@@ -105,6 +105,7 @@ class PopupWidget
         guiNavigationPath?.setFocused(false)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun applyBlur(delta: Float) {
         MinecraftClient.getInstance().gameRenderer.renderBlur()
         MinecraftClient.getInstance().framebuffer.beginWrite(false)
@@ -124,7 +125,8 @@ class PopupWidget
         context.matrices.push()
         context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
         if (blurBackground) {
-            context.fill(0, 0, width, height, fillColor)
+            context.draw()
+            //context.fill(2, 2, width - 4, height - 4, fillColor)
             applyBlur(delta)
         }
         context.matrices.pop()
@@ -743,7 +745,7 @@ class PopupWidget
             val positioner: BiConsumer<Int, Int> = BiConsumer { x, y ->
                 layoutWidget.setPosition(x, y)
             }
-            layoutWidget.compute()
+            layoutWidget.compute(true)
             val children: MutableList<Element> = mutableListOf()
             val selectables: MutableList<Selectable> = mutableListOf()
             val drawables: MutableList<Drawable> = mutableListOf()

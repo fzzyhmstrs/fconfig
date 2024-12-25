@@ -723,7 +723,7 @@ internal object ConfigApiImpl {
         val toml = try {
             Toml.parseToTomlTable(configString)
         } catch (e:Exception) {
-            return ValidationResult.error(listOf(), "Update for $id is corrupted or improperly formatted for parsing")
+            return ValidationResult.error(emptyList(), "Update for $id is corrupted or improperly formatted for parsing")
         }
         val list: MutableList<String> = mutableListOf()
         val playerPermLevel = getPlayerPermissionLevel(player)

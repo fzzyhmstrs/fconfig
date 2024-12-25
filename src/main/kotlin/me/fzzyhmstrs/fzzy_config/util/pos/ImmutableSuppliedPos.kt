@@ -30,6 +30,6 @@ open class ImmutableSuppliedPos(protected val parent: Pos, protected val offset:
     override fun dec(amount: Int) {
     }
     override fun toString(): String {
-        return "[$parent + ${offset.get()}]"
+        return "[${parent::class.java.simpleName}$parent + ${offset.get()}]"
     }
 }

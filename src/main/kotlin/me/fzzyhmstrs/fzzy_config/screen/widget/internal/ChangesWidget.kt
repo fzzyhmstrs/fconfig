@@ -11,8 +11,10 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import com.mojang.blaze3d.systems.RenderSystem
+import jdk.internal.org.jline.utils.Colors.h
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
@@ -27,6 +29,7 @@ import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 import java.util.function.Supplier
+import java.util.function.UnaryOperator
 import kotlin.math.max
 
 //client
@@ -37,9 +40,9 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         private val changesHighlightedTex: Identifier = "widget/changes_highlighted".fcId()
     }
 
-    override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = manager.hasChanges() || manager.hasChangeHistory() || manager.hasRestores(scope)
-        super.renderCustom(context, mouseX, mouseY, delta)
+        super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
         RenderSystem.enableBlend()
         if (manager.hasChanges()) {
             if (isFocused || isHovered)
@@ -66,14 +69,16 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         val changelogText = "fc.button.changelog".translate()
         val popup = PopupWidget.Builder("fc.button.changes.title".translate())
             // Apply Changes
-            .addElement("apply", ActiveButtonWidget(applyText, client.textRenderer.getWidth(applyText) + 8, 20, { manager.hasChanges() }, { manager.apply(false) }), Position.BELOW, Position.ALIGN_JUSTIFY)
+            .add("apply", ActiveButtonWidget(applyText, client.textRenderer.getWidth(applyText) + 8, 20, { manager.hasChanges() }, { manager.apply(false) }), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
+            .pushSpacing(UnaryOperator.identity()) { _ -> 2 }
             // Revert Changes
-            .addElementSpacedH("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 20, { manager.hasChanges() }, { manager.revert() }), 2, Position.BELOW, Position.ALIGN_JUSTIFY)
+            .add("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 20, { manager.hasChanges() }, { manager.revert() }), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
             // Restore Defaults > confirm popup
-            .addElementSpacedH("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 20, { manager.hasRestores(scope) }, { b -> openRestoreConfirmPopup(b) }), 2, Position.BELOW, Position.ALIGN_JUSTIFY)
+            .add("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 20, { manager.hasRestores(scope) }, { b -> openRestoreConfirmPopup(b) }), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
             // Change History
-            .addElementSpacedH("changelog", ActiveButtonWidget(changelogText, client.textRenderer.getWidth(changelogText) + 8, 20, { manager.hasChangeHistory() }, { openChangelogPopup() }), 2, Position.BELOW, Position.ALIGN_JUSTIFY)
+            .add("changelog", ActiveButtonWidget(changelogText, client.textRenderer.getWidth(changelogText) + 8, 20, { manager.hasChangeHistory() }, { openChangelogPopup() }), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
             .addDoneWidget(spacingH = 2)
+            .popSpacing()
             .positionX(PopupWidget.Builder.at { this.x - 8 })
             .positionY(PopupWidget.Builder.popupContext { h -> this.y - h + 28 })
             .build()

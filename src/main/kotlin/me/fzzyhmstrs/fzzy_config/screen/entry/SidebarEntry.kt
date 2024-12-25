@@ -10,22 +10,23 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
+import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.Selectable
 import net.minecraft.text.Text
 
 class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, private val widget: SidebarWidget) :
     DynamicListWidget.Entry(parentElement, texts.name, texts.desc, DynamicListWidget.Scope(scope)) {
 
     override var h: Int = 16
-    private val selectables = listOf(widget)
+    private val selectables: List<SelectableElement> = listOf(widget).cast()
     private val children = mutableListOf(widget)
 
-    override fun selectableChildren(): List<Selectable> {
+    override fun selectableChildren(): List<SelectableElement> {
         return selectables
     }
 
@@ -49,11 +50,23 @@ class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Trans
             context.drawBorder(x, y, width, height, -6250336)
     }
 
+    override fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+        context.fill(x, y, x + width, y + height, -16777216)
+    }
 
-    class SidebarWidget(message: Text, private val onPress: Runnable) : CustomPressableWidget(0, 0, 110, 16, message) {
+
+    class SidebarWidget(message: Text, private val icon: Decorated, private val onPress: Runnable) : CustomPressableWidget(0, 0, 110, 16, message) {
 
         override fun onPress() {
             onPress.run()
+        }
+
+        override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+            icon.renderDecoration(context, x, y, delta)
+        }
+
+        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+            super.renderCustom(context, x + 18, y, width - 18, height, mouseX, mouseY, delta)
         }
     }
 }
