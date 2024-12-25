@@ -15,7 +15,7 @@ class ContextActionWidget(
     width: Int,
     activeProvider: Supplier<Boolean>
 ) : ActiveButtonWidget(action.texts.name, width, 14, activeProvider,
-    { _ -> action.action.run(); PopupWidget.pop() }, "widget/popup/button_right_click_highlighted".fcId()) {
+    { _ -> action.action.run(); PopupWidget.pop() }) {
 
     override fun renderCustom(
         context: DrawContext,

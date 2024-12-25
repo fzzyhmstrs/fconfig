@@ -93,10 +93,10 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
                     try {
                         ConfigApiImpl.tomlAnnotations(value!!::class)
                     } catch (e: Throwable) {
-                        listOf()
+                        emptyList()
                     }
                 else
-                    listOf()
+                    emptyList()
                 val el = valueHandler.serializeEntry(value, errors, 1)
                 table.element(key.toString(), el, annotations)
             }

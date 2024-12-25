@@ -17,7 +17,7 @@ import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Util
 
-class CustomMultilineTextWidget(message: Text, private val lineHeight: Int = 9) :
+class CustomMultilineTextWidget(message: Text, private val lineHeight: Int = 9, private val topPadding: Int = 0, private val bottomPadding: Int = topPadding) :
     AbstractTextWidget(0, 0, 50, 0, message, MinecraftClient.getInstance().textRenderer) {
 
     private val cache = Util.cachedMapper<Key, MultilineText> { _ ->
@@ -26,11 +26,11 @@ class CustomMultilineTextWidget(message: Text, private val lineHeight: Int = 9) 
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = cache.map(getKey())
-        text.drawWithShadow(context, x, y, lineHeight, textColor)
+        text.drawWithShadow(context, x, y + topPadding, lineHeight, textColor)
     }
 
     override fun getHeight(): Int {
-        return cache.map(getKey()).count() * lineHeight
+        return (cache.map(getKey()).count() * lineHeight) + topPadding + bottomPadding
     }
 
     override fun setHeight(height: Int) {

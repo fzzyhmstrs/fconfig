@@ -185,7 +185,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
             }
             SearchType.EXACT -> {
                 val result = searchExact[trimmedSearchInput.lowercase(Locale.ROOT)]
-                list = if(result != null) listOf(wholeList[result]) else listOf()
+                list = if(result != null) listOf(wholeList[result]) else emptyList()
             }
             SearchType.NEGATE_EXACT -> {
                 val result = searchExact[trimmedSearchInput.lowercase(Locale.ROOT)]

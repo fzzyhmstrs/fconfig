@@ -49,7 +49,7 @@ object TestConfig {
 
     val resultProvider = ConfigApi.result().createSimpleResultProvider(-666, Int::class)
 
-    val listProvider: ResultProvider<List<Int>> = ConfigApi.result().createSimpleResultProvider(listOf(), listOf<Int>().javaClass.kotlin)
+    val listProvider: ResultProvider<List<Int>> = ConfigApi.result().createSimpleResultProvider(emptyList(), listOf<Int>().javaClass.kotlin)
 
     var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
     var testConfig4 = ConfigApi.registerAndLoadConfig({ TestConfigImpl4() }, RegisterType.BOTH)

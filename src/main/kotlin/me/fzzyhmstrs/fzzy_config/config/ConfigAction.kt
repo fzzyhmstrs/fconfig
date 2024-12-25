@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
@@ -50,7 +51,7 @@ import kotlin.experimental.and
  * @param background [Identifier], nullable - if non-null, will provide a custom background for the widget rendering.
  * @param decoration [Decorated], nullable - if non-null, will render a "decoration" next to the widget. These are the typically white/wireframe icons shown next to certain settings like lists.
  * @author fzzyhmstrs
- * @since 0.5.0, Decorated incorporated 0.6.0
+ * @since 0.5.0, Decorated and PressableTextures incorporated 0.6.0
  */
 class ConfigAction @JvmOverloads constructor(
     private val titleSupplier: Supplier<Text>,
@@ -58,7 +59,7 @@ class ConfigAction @JvmOverloads constructor(
     private val pressAction: Runnable,
     private val decoration: Decorated?,
     private val description: Text? = null,
-    private val background: ActiveButtonWidget.Background? = null)
+    private val background: CustomPressableWidget.PressableTextures? = null)
 :
     EntryWidget<Any>,
     EntryFlag,
@@ -72,10 +73,10 @@ class ConfigAction @JvmOverloads constructor(
     pressAction: Runnable,
     decoration: Identifier?,
     description: Text? = null,
-    background: Identifier? = null): this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background)
+    background: Identifier? = null): this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background?.let { CustomPressableWidget.PressableTextures(it, it, it) })
 
     private var flags: Byte = 0
-    override var entryKey = "fc.config.generic.action"
+    override var translatableEntryKey = "fc.config.generic.action"
 
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<Any>): ClickableWidget {

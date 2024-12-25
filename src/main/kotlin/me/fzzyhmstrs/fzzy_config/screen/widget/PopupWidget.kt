@@ -736,7 +736,7 @@ class PopupWidget
             val positioner: BiConsumer<Int, Int> = BiConsumer { x, y ->
                 layoutWidget.setPosition(x, y)
             }
-            layoutWidget.compute()
+            layoutWidget.compute(true)
             val children: MutableList<Element> = mutableListOf()
             val selectables: MutableList<Selectable> = mutableListOf()
             val drawables: MutableList<Drawable> = mutableListOf()

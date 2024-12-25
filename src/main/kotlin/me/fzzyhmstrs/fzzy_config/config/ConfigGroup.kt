@@ -50,7 +50,7 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
                                                  private val offsetY: Int? = null): TranslatableEntry, EntryAnchor, EntryCreator, EntryPermissible {
 
     @Transient
-    override var entryKey = "fc.config.generic.group"
+    override var translatableEntryKey = "fc.config.generic.group"
 
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
         return anchor
@@ -124,7 +124,7 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
                 TextureIds.GROUP_EXPAND
         }
 
-        override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             val bl = list.groupIsVisible(group)
             val bl2 = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
             val t = if (bl2) title.copy().styled { s -> s.withUnderline(true) } else title

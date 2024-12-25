@@ -91,7 +91,7 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         val i = getWidth()
         val j = textRenderer.getWidth(text)
         val k = x + (horizontalAlignment * (max(i - j, 0)).toFloat()).roundToInt()
-        val l = y + (getHeight() - textRenderer.fontHeight) / 2
+        val l = y + (getHeight() - textRenderer.fontHeight + 1) / 2
         val orderedText = if (j > i) this.trim(text, i) else text.asOrderedText()
         context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
         if (overflowTooltip != null) {
@@ -106,9 +106,13 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
     }
 
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return false
+    }
+
     override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
         if (!parentSelected) return TooltipChild.EMPTY
-        return overflowTooltip?.let { listOf(it.get()) } ?: TooltipChild.EMPTY
+        return overflowTooltip?.let { listOf(it.get()) }?.takeIf { textRenderer.getWidth(it[0]) > getWidth() } ?: TooltipChild.EMPTY
     }
 
     override fun provideNarrationLines(): List<Text> {

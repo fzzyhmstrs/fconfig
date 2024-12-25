@@ -107,8 +107,8 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         for (entry in inFrameEntries()) {
             entry.render(context, mouseX, mouseY, delta)
         }
-        context.disableScissor()
 
+        //context.disableScissor()
         if (!noScroll() && (!hideScrollWhileNotHovered() || this.hovered)) {
             val sW = scrollWidth
             context.drawTex(scrollBarBackground, right - sW, y, sW, height)
@@ -142,6 +142,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
                 }
             }
         }
+        context.disableScissor()
     }
 
     abstract fun ensureVisible(entry: E)

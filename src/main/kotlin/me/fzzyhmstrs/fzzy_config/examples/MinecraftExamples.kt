@@ -10,12 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.examples
 
-import com.google.common.collect.ArrayListMultimap
-import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedEntityAttribute
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
-import net.minecraft.entity.attribute.EntityAttribute
-import net.minecraft.entity.attribute.EntityAttributeModifier
 import net.minecraft.recipe.Ingredient
 import net.minecraft.registry.tag.BlockTags
 import net.minecraft.registry.tag.ItemTags
@@ -80,29 +76,5 @@ object MinecraftExamples {
             "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
         }
         """
-    }
-
-    fun entityAttributes() {
-        // a Validated entity attrbute/entity attribute modifier pair
-        // the builder does not accept an EntityAttribute because it needs to serialize them,
-        // and the attribute might not be available at serialization time in the registry
-        // lockAttribute lets you constrain the attribute to the one chosen in the builder (Max Health in this case_
-        val exampleValidatedAttribute = ValidatedEntityAttribute.Builder("generic.max_health", true)
-            // supply a UUID and name, otherwise generic ones will be used for you
-            .uuid("f68e98a2-0599-11ef-9262-0242ac120002")
-            .name("My Example ValidatedEntityAttribute")
-            //set amount, and optionally provide a range restriction
-            .amount(1.0, 0.0, 8.0)
-            //set the operation for the modifier, and optionally lock the modifier to the operation chosen
-            .operation(EntityAttributeModifier.Operation.ADD_VALUE, true)
-            //build! gets you a ValidatedEntity Attribute
-            .build()
-
-        //easily add to an attribute map in e.g. Item#getAttributeModifiers using addToMap()
-        val attributeMap: ArrayListMultimap<EntityAttribute, EntityAttributeModifier> = ArrayListMultimap.create()
-        exampleValidatedAttribute.addToMap(attributeMap)
-
-        //if you need the modifier for something else, use attributeModifier()
-        val myModifier: EntityAttributeModifier = exampleValidatedAttribute.getModifier()
     }
 }

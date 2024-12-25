@@ -71,7 +71,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
 {
 
     private var pushedValue: T? = null
-    override var entryKey: String = ""
+    override var translatableEntryKey: String = ""
     private var updateManager: UpdateManager? = null
     private var listener: Consumer<Entry<T, *>>? = null
     protected var flags: Byte = 0
