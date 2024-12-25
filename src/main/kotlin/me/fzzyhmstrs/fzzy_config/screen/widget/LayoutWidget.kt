@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.*
 import me.fzzyhmstrs.fzzy_config.util.pos.*
@@ -22,6 +23,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.Consumer
 import java.util.function.UnaryOperator
+import kotlin.math.max
+import kotlin.math.min
 
 class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0), private val paddingW: Int = 8, private val paddingH: Int = paddingW, private val spacingW: Int = 4, private val spacingH: Int = spacingW): Widget, Scalable {
 
@@ -30,13 +33,17 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     private var manualWidth: Int = -1
     private var manualHeight: Int = -1
 
-    private val xPos = RelPos(ImmutableRelPos(x, paddingW), 0)
-    private val yPos = RelPos(ImmutableRelPos(y, paddingH), 0)
+    private val xPos = MutableReferencePos(x, paddingW)
+    private val yPos = MutableReferencePos(y, paddingH)
     private val wPos = RelPos(xPos, width - (2 * paddingW))
     private val hPos = RelPos(yPos, height - (2 * paddingH))
     private val sets: Deque<PosSet> = LinkedList(listOf(PosSet(xPos, yPos, wPos, hPos, spacingW, spacingH)))
 
     private val elements: MutableMap<String, PositionedElement<*>> = mutableMapOf()
+
+    fun getElement(string: String): PositionedElement<*>? {
+        return elements[string]
+    }
 
     fun getGeneralVerticalPadding(): Int {
         return paddingH
@@ -70,25 +77,31 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     }
 
     fun setPos(x: Pos, y: Pos): LayoutWidget {
-        this.x = x
-        this.y = y
+        this.x = RelPos(x)
+        this.y = RelPos(y)
+        xPos.parent = this.x
+        yPos.parent = this.y
         updateElements()
         return this
     }
 
     override fun setX(x: Int) {
-        this.x.set(x)
+        this.x = AbsPos(x)
+        xPos.parent = this.x
         updateElements()
     }
 
     override fun setY(y: Int) {
-        this.y.set(y)
+        this.y = AbsPos(y)
+        yPos.parent = this.y
         updateElements()
     }
 
     override fun setPosition(x: Int, y: Int) {
-        this.x.set(x)
-        this.y.set(y)
+        this.x = AbsPos(x)
+        this.y = AbsPos(y)
+        xPos.parent = this.x
+        yPos.parent = this.y
         updateElements()
     }
 
@@ -160,7 +173,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         }
     }
 
-    fun categorize(children: MutableList<Element>, drawables: MutableList<Drawable>, selectables: MutableList<Selectable>, other: Consumer<Widget>) {
+    fun categorize(children: MutableList<Element>, drawables: MutableList<Drawable>, selectables: MutableList<Selectable>, other: Consumer<Widget> = Consumer { _-> }) {
         for ((_, posEl) in elements) {
             if (posEl.element is LayoutWidget) { //child layouts ship their children flat, since layouts just position things, they don't actually manage them like parent elements
                 posEl.element.categorize(children, drawables, selectables, other)
@@ -283,40 +296,57 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         return add(id, element, lastEl, *positions)
     }
 
-    private fun attemptRecomputeDims() {
+    private fun attemptRecomputeDims(debug: Boolean = false) {
         if (manualHeight > 0 && manualWidth > 0) {
             updateWidth(manualWidth)
             updateHeight(manualHeight)
             return
         }
-        var maxW = 0
-        var maxH = 0
+        var minW = 1000000
+        var maxW = -1000000
+        var maxH = -1000000
+        if (debug) FC.DEVLOG.info("Els")
         for ((_, posEl) in elements) {
-            maxW = (posEl.getRight() + paddingW - ((posEl.getLeft() - paddingW).takeIf { it < 0 } ?: 0)).takeIf { it > maxW } ?: maxW
-            maxH = (posEl.getBottom() + paddingH).takeIf { it > maxH } ?: maxH
+            minW = min(max(posEl.getLeft(), paddingW), minW)
         }
-        if (manualWidth <= 0)
+        for ((_, posEl) in elements) {
+            if (debug) FC.DEVLOG.info(posEl.toString())
+            maxW = max(max(posEl.getRight() - minW, posEl.elWidth()), maxW)
+            maxH = max(posEl.getBottom(), maxH)
+        }
+        if (manualWidth <= 0) {
+            maxW += paddingW * 2
+            maxW -= this.x.get()
+            if (debug) FC.DEVLOG.info("W")
+            if (debug) FC.DEVLOG.info(maxW.toString())
+            if (debug) FC.DEVLOG.info(this.x.toString())
             updateWidth(maxW)
-        else
+        } else {
             updateWidth(manualWidth)
-        if (manualHeight <= 0)
+        }
+        if (manualHeight <= 0) {
+            maxH += paddingH
+            maxH -= this.y.get()
+            if (debug) FC.DEVLOG.info("H")
+            if (debug) FC.DEVLOG.info(maxH.toString())
+            if (debug) FC.DEVLOG.info(this.y.toString())
             updateHeight(maxH)
-        else
+        } else {
             updateHeight(manualHeight)
+        }
     }
 
     fun update() {
         updateElements()
     }
 
-    fun compute(): LayoutWidget {
+    fun compute(debug: Boolean = false): LayoutWidget {
         for (posEl in elements.values) {
             if (posEl.element is LayoutWidget) {
-                posEl.element.compute()
+                posEl.element.compute(debug)
             }
         }
-        attemptRecomputeDims()
-        attemptRecomputeDims()
+        attemptRecomputeDims(debug)
         for (posEl in elements.values) {
             if (posEl.alignment == Position.ALIGN_JUSTIFY) {
                 if (posEl.element is ClickableWidget) {
@@ -381,6 +411,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
                 }
             }
         }
+        attemptRecomputeDims(debug)
         return this
     }
 
@@ -517,19 +548,19 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         @Deprecated("Use Positions Impl values")
         BELOW {
             override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(prevX, RelPos(parent.y, globalSet.spacingH + parent.elHeight()))
+                return Pair(prevX, ImmutableSuppliedPos(parent.y) { globalSet.spacingH + parent.elHeight() })
             }
         },
         @Deprecated("Use Positions Impl values")
         LEFT {
             override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(parent.x, -el.width - globalSet.spacingW), prevY)
+                return Pair(ImmutableSuppliedPos(parent.x) { -el.width - globalSet.spacingW }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         RIGHT {
             override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(parent.x, parent.elWidth() + globalSet.spacingW), prevY)
+                return Pair(ImmutableSuppliedPos(parent.x) { parent.elWidth() + globalSet.spacingW }, prevY)
             }
         }
     }
@@ -646,7 +677,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     @Internal
     @Suppress("UNUSED")
     //client
-    class PositionedElement<T>(val element: T, val set: PosSet, var x: Pos, var y: Pos, val alignment: LayoutWidget.PositionGlobalAlignment) where T: Widget {
+    class PositionedElement<T>(val element: T, val set: PosSet, var x: Pos, var y: Pos, val alignment: PositionGlobalAlignment) where T: Widget {
         private fun upDown(): IntRange {
             return IntRange(getTop(), getBottom())
         }
@@ -679,7 +710,33 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
             return inUpDownBounds(element.upDown()) && element.getLeft() >= getRight()
         }
         private fun inUpDownBounds(chk: IntRange): Boolean {
-            return upDown().intersect(chk).isNotEmpty()
+            val ud = upDown()
+            return chk == ud || ud.contains(chk.first) || ud.contains(chk.last) || chk.contains(ud.first) || chk.contains(ud.last)
         }
+
+        override fun toString(): String {
+            return "PosEl(${element::class.java.simpleName} | x: $x, y: $y, w: ${elWidth()}, h: ${elHeight()} | $alignment)"
+        }
+    }
+
+    private class MutableReferencePos(var parent: Pos, val offset: Int): Pos {
+
+        override fun get(): Int {
+            return parent.get() + offset
+        }
+
+        override fun set(new: Int) {
+        }
+
+        override fun inc(amount: Int) {
+        }
+
+        override fun dec(amount: Int) {
+        }
+
+        override fun toString(): String {
+            return "[${parent::class.java.simpleName}$parent + $offset]"
+        }
+
     }
 }

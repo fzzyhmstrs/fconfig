@@ -88,10 +88,10 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
                     try {
                         ConfigApiImpl.tomlAnnotations(entry!!::class)
                     } catch (e: Throwable) {
-                        listOf()
+                        emptyList()
                     }
                 else
-                    listOf()
+                    emptyList()
                 toml.element(tomlEntry, annotations)
             }
         } catch (e: Throwable) {

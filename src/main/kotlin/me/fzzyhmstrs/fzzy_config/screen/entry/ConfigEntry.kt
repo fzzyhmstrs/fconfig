@@ -10,7 +10,10 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
+import com.ibm.icu.impl.CurrencyData.provider
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.nullCast
@@ -53,7 +56,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
     private val actions: List<AbstractDecorationWidget> = content.actionWidgets
     private val layout: LayoutWidget = if (content.groupTypes.isEmpty()) {
-        content.layoutWidget.setPos(this.x, this.top)
+        content.layoutWidget.setPos(this.x, this.top).compute()
     } else {
         val lo = LayoutWidget(paddingW = 0, spacingW = 0)
         for ((index, bl) in content.groupTypes.withIndex()) {
@@ -61,12 +64,13 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         }
         lo.add("layout", content.layoutWidget, LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         lo.setPos(this.x, this.top)
+        lo.compute()
     }
     private var children: MutableList<Element> = mutableListOf()
-    private var drawables: List<Drawable> = listOf()
-    private var selectables: List<Selectable> = listOf()
-    private var narratables: List<AbstractTextWidget> = listOf()
-    private var tooltipProviders: List<TooltipChild> = listOf()
+    private var drawables: List<Drawable> = emptyList()
+    private var selectables: List<SelectableElement> = emptyList()
+    private var narratables: List<AbstractTextWidget> = emptyList()
+    private var tooltipProviders: List<TooltipChild> = emptyList()
     private val tooltip: List<OrderedText> by lazy {
         createTooltip(desc ?: FcText.empty())
     }
@@ -101,7 +105,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         t.addAll(actions.mapNotNull { it.nullCast() })
         children = c
         drawables = d
-        selectables = s
+        selectables = s.filterNot { it is AbstractTextWidget }.filterIsInstance<Element>().cast()
         narratables = n
         tooltipProviders = t
     }
@@ -119,39 +123,61 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         for (drawable in drawables) {
             drawable.render(context, mouseX, mouseY, delta)
         }
+        val keyboardFocused = focused && MinecraftClient.getInstance().navigationType.isKeyboard
+
+        val tooltipList: MutableList<OrderedText> = mutableListOf()
+        for ((index, provider) in tooltipProviders.withIndex()) {
+            val tt = provider.provideTooltipLines(mouseX, mouseY, hovered || keyboardFocused, keyboardFocused)
+            for (t in tt) {
+                val ttt = createTooltip(t)
+                if (ttt.isNotEmpty())
+                    tooltipList.addAll(ttt)
+            }
+            if (tt.isNotEmpty() && index != tooltipProviders.lastIndex) {
+                tooltipList.add(OrderedText.EMPTY)
+            }
+        }
+
+        if ((hovered && !MinecraftClient.getInstance().navigationType.isKeyboard) || (focused && MinecraftClient.getInstance().navigationType.isKeyboard)) {
+            tooltipList.addAll(tooltip)
+        }
+        if (tooltipList.isNotEmpty()) {
+            if (tooltipList.last() == OrderedText.EMPTY) {
+                tooltipList.removeLast()
+            }
+            if (keyboardFocused) {
+                MinecraftClient.getInstance().currentScreen?.setTooltip(tooltipList, FocusedTooltipPositioner(ScreenRect(x + 2, y + 4, width, height)), true)
+            } else {
+                MinecraftClient.getInstance().currentScreen?.setTooltip(tooltipList, HoveredTooltipPositioner.INSTANCE, true)
+            }
+        }
+
+    }
+
+    override fun renderExtras(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float
+    ) {
         if (actions.isNotEmpty()) {
             var offset = -24
             val offsetIncrement = if(actions.size == 1) 19 else min(19, (x - 24) / (actions.size - 1))
             for (action in actions) {
                 action.x = x + offset
-                action.y = y
+                action.y = (layout.getElement("title")?.getTop() ?: y)
                 action.render(context, mouseX, mouseY, delta)
                 offset -= offsetIncrement
             }
         }
-        if (!(hovered || focused)) return
-        val keyboardFocused = focused && MinecraftClient.getInstance().navigationType.isKeyboard
-
-        val tooltipList: MutableList<OrderedText> = mutableListOf()
-        for (provider in tooltipProviders) {
-            for (t in provider.provideTooltipLines(mouseX, mouseY, true, keyboardFocused)) {
-                tooltipList.addAll(createTooltip(t))
-            }
-            tooltipList.add(OrderedText.EMPTY)
-        }
-        tooltipList.addAll(tooltip)
-        if (keyboardFocused) {
-            MinecraftClient.getInstance().currentScreen?.setTooltip(tooltipList, FocusedTooltipPositioner(ScreenRect(x, y, width, height)), true)
-        } else {
-            MinecraftClient.getInstance().currentScreen?.setTooltip(tooltipList, HoveredTooltipPositioner.INSTANCE, true)
-        }
     }
 
     override fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
-        if (hovered)
+        if ((hovered && !MinecraftClient.getInstance().navigationType.isKeyboard) || (focused && MinecraftClient.getInstance().navigationType.isKeyboard))
             context.drawBorder(x - 2, y - 2, width + 4, height + 4, -1)
-        else if (focused)
+        else if (focused || hovered)
             context.drawBorder(x - 2, y - 2, width + 4, height + 4, -6250336)
+    }
+
+    override fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+        if (hovered)
+            context.fill(x - 1, y, x + width, y + height, 1684300900)
     }
 
     override fun appendNarrations(builder: NarrationMessageBuilder) {
@@ -194,7 +220,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             layout.height = value
         }
 
-    override fun selectableChildren(): List<Selectable> {
+    override fun selectableChildren(): List<SelectableElement> {
         return selectables
     }
 
@@ -214,7 +240,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         init {
             val nameSupplier = { context.texts.name }
             val titleWidget = SuppliedTextWidget(nameSupplier, MinecraftClient.getInstance().textRenderer, 70, 20).supplyTooltipOnOverflow(nameSupplier).alignLeft()
-            val prefixWidget = context.texts.prefix?.let { CustomMultilineTextWidget(it, 10) }
+            val prefixWidget = context.texts.prefix?.let { CustomMultilineTextWidget(it, 10, 10, 4) }
             if (prefixWidget != null) {
                 mainLayout.add("prefix", prefixWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
                 mainLayout.add("title", titleWidget, "prefix", LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
@@ -256,7 +282,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
                 groupTypes.add(i >= popStart)
             }
             return BuildResult(
-                mainLayout.compute(),
+                mainLayout,
                 actionWidgets,
                 DynamicListWidget.Scope(context.scope, group, context.groups.stream().toList()),
                 groupTypes,
@@ -289,7 +315,11 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         }
 
         fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
-            return ((mouseX >= x.toDouble()) && (mouseY >= x.toDouble()) && (mouseX < (x + this.width).toDouble()) && (mouseY < (y + this.height).toDouble()))
+            return ((mouseX >= x.toDouble()) && (mouseY >= y.toDouble()) && (mouseX < (x + this.width).toDouble()) && (mouseY < (y + this.height).toDouble()))
+        }
+
+        override fun getWidth(): Int {
+            return 19
         }
 
         override fun forEachChild(consumer: Consumer<ClickableWidget>?) {}
@@ -299,20 +329,16 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         }
 
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
-            if (!isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && !keyboardFocused) return TooltipChild.EMPTY
+            val bl1 = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
+            if (! bl1 && !keyboardFocused) return TooltipChild.EMPTY
             return listOf(actionTooltip)
         }
     }
 
-    private class GroupLineWidget(private val end: Boolean): Drawable, Widget {
+    private inner class GroupLineWidget(private val end: Boolean): Drawable, Widget {
 
         private var x: Int = 0
         private var y: Int = 0
-        private var h: Supplier<Int>? = null
-
-        fun setH(h: Supplier<Int>) {
-            this.h = h
-        }
 
         override fun setX(x: Int) { this.x = x }
 
@@ -324,16 +350,19 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
         override fun getWidth(): Int { return 5 }
 
-        override fun getHeight(): Int { return h?.get() ?: 1 }
+        override fun getHeight(): Int { return this@ConfigEntry.h }
 
         override fun forEachChild(consumer: Consumer<ClickableWidget>?) {
         }
 
-
         override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            val p = DynamicListWidget.verticalPadding.get()
-            context.fill(x, y - p, x + 1, y + height, -1)
-            context.fill(x + 1, y - p, x + 2, y + height, -12698050)
+            val p = this@ConfigEntry.parentElement.verticalPadding
+            if (end) {
+                context.fill(x, y - p, x + 1, y + height, -1)
+            } else {
+                context.fill(x, y - p, x + 1, y + height, -1)
+                context.fill(x + 1, y - p, x + 2, y + height, -12698050)
+            }
         }
     }
 }

@@ -40,7 +40,7 @@ open class ActiveButtonWidget(
     height: Int,
     private val activeSupplier: Supplier<Boolean>,
     private val pressAction: Consumer<ActiveButtonWidget>,
-    protected val background: Identifier? = null)
+    protected val background: PressableTextures? = null)
     :
     CustomPressableWidget(0, 0, width, height, titleSupplier.get()) {
 
@@ -49,7 +49,7 @@ open class ActiveButtonWidget(
                 height: Int,
                 activeProvider: Supplier<Boolean>,
                 pressAction: Consumer<ActiveButtonWidget>,
-                background: Identifier? = null): this({title}, width, height, activeProvider, pressAction, background)
+                background: PressableTextures? = null): this({title}, width, height, activeProvider, pressAction, background)
 
     override fun getMessage(): Text {
         return titleSupplier.get()
@@ -80,11 +80,11 @@ open class ActiveButtonWidget(
         delta: Float
     ) {
         if (background != null) {
-            if (this.isSelected && active) {
-                RenderSystem.enableBlend()
-                RenderSystem.disableDepthTest()
-                context.drawTex(background, x, y, width, height, alpha)
-            }
+            RenderSystem.enableBlend()
+            RenderSystem.disableDepthTest()
+            context.drawTex(background.get(active, this.isSelected), x, y, width, height, alpha)
+        } else {
+            super.renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
         }
     }
 

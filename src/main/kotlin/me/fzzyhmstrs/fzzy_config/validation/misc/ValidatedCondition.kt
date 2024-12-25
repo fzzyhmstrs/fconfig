@@ -13,10 +13,12 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -31,6 +33,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.awt.SystemColor.text
 import java.util.*
 import java.util.function.Function
 import java.util.function.Supplier
@@ -427,6 +430,28 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
                 null
             } else {
                 if (!this.isFocused) GuiNavigationPath.of(this) else null
+            }
+        }
+
+        override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+            return if (active) {
+                delegateWidget.nullCast<TooltipChild>()?.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused) ?: TooltipChild.EMPTY
+            } else if (parentSelected) {
+                val messages = conditionMessages.get()
+                if (messages.isEmpty()) return TooltipChild.EMPTY
+                return messages
+            } else {
+                TooltipChild.EMPTY
+            }
+        }
+
+        override fun provideNarrationLines(): List<Text> {
+            return if (active) {
+                delegateWidget.nullCast<TooltipChild>()?.provideNarrationLines() ?: TooltipChild.EMPTY
+            } else {
+                val messages = conditionMessages.get()
+                if (messages.isEmpty()) return TooltipChild.EMPTY
+                return messages
             }
         }
     }

@@ -10,17 +10,16 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextProvider
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
-import me.fzzyhmstrs.fzzy_config.util.pos.ImmutableSuppliedPos
-import me.fzzyhmstrs.fzzy_config.util.pos.Pos
-import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
-import me.fzzyhmstrs.fzzy_config.util.pos.RelPos
+import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.navigation.GuiNavigation
@@ -53,19 +52,21 @@ class DynamicListWidget(
     x,
     y,
     width,
-    height), Neighbor, LastSelectable, SuggestionWindowListener
+    height), Neighbor, LastSelectable, SuggestionWindowListener, ContextHandler, ContextProvider
 {
 
     //// Widget ////
 
     companion object {
         val scrollMultiplier: Supplier<Double> = Supplier { 10.0 }
-        val verticalPadding: Supplier<Int> = Supplier { 2 }
     }
 
     private val entries: Entries by lazy {
         Entries(entryBuilders.map { it.apply(this) })
     }
+
+    val verticalPadding: Int
+        get() = spec.verticalPadding
 
     override val leftPadding: Int
         get() = spec.leftPadding
@@ -78,13 +79,7 @@ class DynamicListWidget(
     }
 
     override fun onReposition() {
-        resize()
-    }
-
-    private fun resize() {
-        entries.iterator().forEach {
-            it.onResize()
-        }
+        entries.onResize()
     }
 
     fun search(searchInput: String): Int {
@@ -186,6 +181,13 @@ class DynamicListWidget(
         (lastSelected as? Entry)?.let { focused = it }
     }
 
+    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        super.renderWidget(context, mouseX, mouseY, delta)
+        for (entry in inFrameEntries()) {
+            entry.renderExtras(context, mouseX, mouseY, delta)
+        }
+    }
+
     override val neighbor: EnumMap<NavigationDirection, Neighbor> = EnumMap(NavigationDirection::class.java)
 
     /*
@@ -228,8 +230,6 @@ class DynamicListWidget(
                             return null
                         }
                         guiNavigationPath = entry2.getNavigationPath(navigation)
-                        FC.DEVLOG.info("Nav1")
-                        FC.DEVLOG.info(guiNavigationPath.toString())
                         c++
                     } while (guiNavigationPath == null && c < 25)
                     return GuiNavigationPath.of(this, guiNavigationPath)
@@ -244,8 +244,6 @@ class DynamicListWidget(
                         return null
                     }
                     guiNavigationPath = entry2.getNavigationPath(navigation)
-                    FC.DEVLOG.info("Nav 2")
-                    FC.DEVLOG.info(guiNavigationPath.toString())
                 } while (guiNavigationPath == null)
 
                 return GuiNavigationPath.of(this, guiNavigationPath)
@@ -279,6 +277,37 @@ class DynamicListWidget(
         this.suggestionWindowElement = element
     }
 
+    override fun handleContext(contextType: ContextHandler.ContextType): Boolean {
+        return when (contextType) {
+            ContextHandler.ContextType.PAGE_UP -> {
+                page(true)
+                focused = inFrameEntries().firstOrNull() ?: focused
+                true
+            }
+            ContextHandler.ContextType.PAGE_DOWN -> {
+                page(false)
+                focused = inFrameEntries().lastOrNull() ?: focused
+                true
+            }
+            ContextHandler.ContextType.HOME -> {
+                scrollToTop()
+                focused = inFrameEntries().firstOrNull() ?: focused
+                true
+            }
+            ContextHandler.ContextType.END -> {
+                scrollToBottom()
+                focused = inFrameEntries().lastOrNull() ?: focused
+                true
+            }
+            else -> {
+                focusedElement?.handleContext(contextType) ?: false
+            }
+        }
+    }
+
+    override fun contextActions(): List<ContextAction> {
+        return focusedElement?.contextActions() ?: emptyList()
+    }
 
     //////////////////////////////
 
@@ -313,12 +342,19 @@ class DynamicListWidget(
             groups = groupMap
         }
 
-        private var inFrameEntries: List<Entry> = listOf()
-        private var selectableEntries: List<Entry> = listOf()
+        private var inFrameEntries: List<Entry> = emptyList()
+        private var selectableEntries: List<Entry> = emptyList()
         private var dirty = true
 
+        fun onResize() {
+            dirty = true
+            delegate.forEach {
+                it.onResize()
+            }
+        }
+
         fun selectableEntries(): List<Entry> {
-            if (delegate.isEmpty()) return listOf()
+            if (delegate.isEmpty()) return emptyList()
             refreshEntryLists()
             return selectableEntries
         }
@@ -347,7 +383,7 @@ class DynamicListWidget(
             }
             index2++
             inFrameEntries = if (index > index2) {
-                listOf()
+                emptyList()
             } else {
                 delegate.subList(index, index2).filter { it.visibility.visible }
             }
@@ -433,20 +469,35 @@ class DynamicListWidget(
         }
 
         fun top(): Int {
-            return firstSelectable()?.top?.get() ?: this@DynamicListWidget.top
+            return firstSelectable()?.top?.get()?.minus(this@DynamicListWidget.verticalPadding) ?: this@DynamicListWidget.top
         }
 
         fun bottom(): Int {
-            return lastSelectable()?.bottom?.get() ?: this@DynamicListWidget.bottom
+            return lastSelectable()?.bottom?.get()?.plus(this@DynamicListWidget.verticalPadding) ?: this@DynamicListWidget.bottom
         }
 
         fun scrollToTop(): Boolean {
-            delegate.firstOrNull()?.top?.set(0)?.also { dirty = true } ?: return false
+            delegate.firstOrNull()?.top?.let {
+                val before = it.get()
+                it.set(0)
+                val after = it.get()
+                if (after - before != 0) {
+                    dirty = true
+                    delegate.forEach { e -> e.onScroll(after - before) }
+                }
+            } ?: return false
             return true
         }
 
         fun scrollToBottom(): Boolean {
-            delegate.firstOrNull()?.scroll(-this@DynamicListWidget.bottomDelta())?.also { dirty = true } ?: return false
+            delegate.firstOrNull()?.let {
+                val delta = -this@DynamicListWidget.bottomDelta()
+                if (delta != 0) {
+                    it.scroll(delta)
+                    dirty = true
+                    delegate.forEach { e -> e.onScroll(delta) }
+                }
+            } ?: return false
             return true
         }
 
@@ -455,13 +506,16 @@ class DynamicListWidget(
             val groupPair = groups[g] ?: return
             if (this@DynamicListWidget.noScroll()) return
             val delta = this@DynamicListWidget.top - groupPair.groupEntry.top.get()
-            handleScrollByBar(delta)
+            this@DynamicListWidget.handleScrollByBar(delta)
         }
 
         fun scroll(amount: Int) {
             if (delegate.isEmpty()) return
             dirty = true
             delegate.first().scroll(amount)
+            if (amount != 0) {
+                delegate.forEach { it.onScroll(amount) }
+            }
         }
 
         fun entryAtY(mouseY: Int): Entry? {
@@ -500,20 +554,15 @@ class DynamicListWidget(
         }
 
         fun getNextEntry(direction: NavigationDirection, entry: Entry?): Entry? {
-            FC.DEVLOG.info("This Entry")
-            FC.DEVLOG.info(entry.toString())
-            FC.DEVLOG.info("Next Entry")
             return if (entry == null) {
-                FC.DEVLOG.info("NULL")
                 when (direction) {
                     NavigationDirection.UP -> lastSelectable()
                     NavigationDirection.DOWN -> firstSelectable()
                     NavigationDirection.LEFT -> firstSelectable()
                     NavigationDirection.RIGHT -> lastSelectable()
-                }.also { FC.DEVLOG.info(it.toString()) }
+                }
             } else {
-                FC.DEVLOG.info("NOT NULL")
-                entry.getNeighbor(!direction.isPositive)?.also { FC.DEVLOG.info(it.toString()) }
+                entry.getNeighbor(!direction.isPositive)
             }
         }
     }
@@ -521,7 +570,7 @@ class DynamicListWidget(
     private class GroupPair(val groupEntry: Entry, var visible: Boolean)
 
     abstract class Entry(parentElement: DynamicListWidget, override val name: Text, override val desc: Text?, val scope: Scope)
-        : CustomListWidget.Entry<DynamicListWidget>(parentElement), ParentElement, Searcher.SearchContent {
+        : CustomListWidget.Entry<DynamicListWidget>(parentElement), ParentElement, Searcher.SearchContent, ContextHandler, ContextProvider {
 
         var visibility = Visibility.VISIBLE
 
@@ -543,34 +592,34 @@ class DynamicListWidget(
         override val skip: Boolean
             get() = visibility.skip
 
-        abstract fun selectableChildren(): List<Selectable>
+        abstract fun selectableChildren(): List<SelectableElement>
 
         fun getNeighbor(up: Boolean): Entry? {
             return this.top.getSelectableNeighbor(up)
         }
 
         fun onAdd(parentPos: Pos, previous: Entry?) {
-            FC.DEVLOG.info("ON_ADD")
-            FC.DEVLOG.info(parentPos.toString())
-            FC.DEVLOG.info(previous.toString())
-            FC.DEVLOG.info(this.toString())
 
             if (previous == null) {
-                top = RelEntryPos(parentPos, null)
+                top = RelEntryPos(parentPos, null, offset = parentElement.verticalPadding)
             } else {
                 top = ImmutableSuppliedEntryPos(
                     previous.bottom,
-                    { if (visibility.visible) verticalPadding.get() else 0 },
+                    { if (visibility.visible) parentElement.verticalPadding else 0 },
                     previous.top
                 )
-
-                FC.DEVLOG.info(top.toString())
                 previous.top.next = top
-                FC.DEVLOG.info(previous.top.toString())
             }
             bottom = ImmutableSuppliedPos(top) { if (visibility.visible) h else 0 }
             init()
-            FC.DEVLOG.info("")
+        }
+
+        override fun contextActions(): List<ContextAction> {
+            return emptyList()
+        }
+
+        override fun handleContext(contextType: ContextHandler.ContextType): Boolean {
+            return false
         }
 
         open fun init() {}
@@ -581,7 +630,6 @@ class DynamicListWidget(
 
         fun scroll(dY: Int) {
             if (dY == 0) return
-            onScroll(dY)
             top.inc(dY)
         }
 
@@ -629,11 +677,18 @@ class DynamicListWidget(
         @Deprecated("Use renderEntry/renderBorder/renderHighlight for rendering instead")
         override fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             if (!visibility.visible) return
-            val t = top.get()
+            val xx = x.get()
+            val tt = top.get()
+            val ww = w.get()
+            val hh = h
             val bl = this.isMouseOver(mouseX.toDouble(), mouseY.toDouble())
-            renderEntry(context, x.get(), t, w.get(), h, mouseX, mouseY, bl, isFocused, delta)
-            renderBorder(context, x.get(), t, w.get(), h, mouseX, mouseY, bl, isFocused, delta)
-            renderHighlight(context, x.get(), t, w.get(), h, mouseX, mouseY, bl, isFocused, delta)
+            renderHighlight(context, xx, tt, ww, hh, mouseX, mouseY, bl, isFocused, delta)
+            renderBorder(context, xx, tt, ww, hh, mouseX, mouseY, bl, isFocused, delta)
+            renderEntry(context, xx, tt, ww, hh, mouseX, mouseY, bl, isFocused, delta)
+        }
+
+        fun renderExtras(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            renderExtras(context, x.get(), top.get(), w.get(), h, mouseX, mouseY, this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()), isFocused, delta)
         }
 
         abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float)
@@ -642,20 +697,22 @@ class DynamicListWidget(
 
         open fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
 
+        open fun renderExtras(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
+
         override fun getFocusedPath(): GuiNavigationPath? {
             return super<ParentElement>.getFocusedPath()
         }
 
         override fun getNavigationPath(navigation: GuiNavigation): GuiNavigationPath? {
-            if (children().isEmpty()) return null
+            if (selectableChildren().isEmpty()) return null
             if (navigation is Arrow) {
                 val i = if(navigation.direction().isPositive) 1 else -1
 
-                val j = MathHelper.clamp(i + children().indexOf(this.focused), 0, children().size - 1)
+                val j = MathHelper.clamp(i + selectableChildren().indexOf(this.focused), 0, selectableChildren().size - 1)
 
                 var k = j
-                while (k >= 0 && k < children().size) {
-                    val element = children()[k] as Element
+                while (k >= 0 && k < selectableChildren().size) {
+                    val element = selectableChildren()[k] as Element
                     val guiNavigationPath = element.getNavigationPath(navigation)
                     if (guiNavigationPath != null) {
                         return GuiNavigationPath.of(this, guiNavigationPath)
@@ -663,8 +720,7 @@ class DynamicListWidget(
                     k += i
                 }
             }
-
-            return super<ParentElement>.getNavigationPath(navigation)
+            return null
         }
 
         override fun getNavigationFocus(): ScreenRect {
@@ -697,6 +753,7 @@ class DynamicListWidget(
             return "Entry:$scope"
         }
 
+        interface SelectableElement: Selectable, Element
 
         interface EntryPos: Pos {
             val previous: EntryPos?
@@ -727,11 +784,12 @@ class DynamicListWidget(
                     override fun set(new: Int) {}
                     override fun inc(amount: Int) {}
                     override fun dec(amount: Int) {}
+                    override fun toString(): String {return "ZERO"}
                 }
             }
         }
 
-        inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null) : RelPos(parent), EntryPos {
+        inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null, offset: Int = 0) : SuppliedPos(parent, 0, Supplier { offset }), EntryPos {
 
             override fun getEntry(): Entry? {
                 return this@Entry.takeIf { it.visibility.selectable }
@@ -811,5 +869,8 @@ class DynamicListWidget(
         }
     }
 
-    data class ListSpec(val leftPadding: Int = 16, val rightPadding: Int = 10, val hideScrollBar: Boolean = false)
+    data class ListSpec(val leftPadding: Int = 16,
+                        val rightPadding: Int = 10,
+                        val verticalPadding: Int = 4,
+                        val hideScrollBar: Boolean = false)
 }

@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.*
 import me.fzzyhmstrs.fzzy_config.entry.*
@@ -57,7 +58,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
     private val manager: ConfigUpdateManager
 
-    private var screens: Map<String, ConfigScreenBuilder> = mapOf()
+    private var screens: Map<String, ConfigScreenBuilder2> = mapOf()
     private var copyBuffer: Any? = null
     private var cachedPermissionLevel = 0
     private var cachedPerms:  Map<String, Map<String, Boolean>> = mapOf()
@@ -171,11 +172,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     private fun prepareScreens() {
         val permLevel = ConfigApiImplClient.getPlayerPermissionLevel()
-        if (configs.size == 1) {
+        prepareConfigScreens(permLevel)
+        /*if (configs.size == 1) {
             prepareSingleConfigScreen(permLevel)
         } else {
             prepareMultiConfigScreens(permLevel)
-        }
+        }*/
     }
 
     private fun prepareSingleConfigScreen(playerPermLevel: Int) {
@@ -191,7 +193,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             val name = nameMap[scope] ?: continue
             builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, restartSet, entryBuilders.values.toList())
         }
-        this.screens = builders
+        this.screens = TODO()
     }
 
     private fun prepareMultiConfigScreens(playerPermLevel: Int) {
@@ -200,7 +202,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val actionMap: MutableMap<String, MutableSet<Action>> = mutableMapOf()
         nameMap[scope] = PlatformUtils.configName(this.scope, "Config Root").lit()
         for ((i, config) in configs.withIndex()) {
-            functionMap.computeIfAbsent(scope) { sortedMapOf() }[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(ConfigApiImplClient.getTranslation(config.active, "", config.active::class.annotations, listOf(), config.active::class.java.simpleName), ConfigApiImplClient.getDescription(config.active, "", config.active::class.annotations, listOf()), config.active.getId().toTranslationKey()))
+            functionMap.computeIfAbsent(scope) { sortedMapOf() }[i] = Pair(config.active.getId().toTranslationKey(), configOpenEntryBuilder(ConfigApiImplClient.getTranslation(config.active, "", config.active::class.annotations, emptyList(), config.active::class.java.simpleName), ConfigApiImplClient.getDescription(config.active, "", config.active::class.annotations, listOf()), config.active.getId().toTranslationKey()))
             walkConfig(config, functionMap, nameMap, actionMap, if(config.clientOnly) 4 else playerPermLevel)
         }
         val scopes = functionMap.keys.toList()
@@ -210,7 +212,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             val name = nameMap[scope] ?: continue
             builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, actionMap, entryBuilders.values.toList())
         }
-        this.screens = builders
+        this.screens = TODO()
     }
 
     @Deprecated("To Remove")
@@ -218,7 +220,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val config: Config = set.active
         val baseConfig: Config = set.base
         //putting the config buttons themselves, in the base scope. ex: "my_mod"
-        nameMap[config.getId().toTranslationKey()] = ConfigApiImplClient.getTranslation(config, "", config::class.annotations, listOf(), config::class.java.simpleName) //config.transLit(config::class.java.simpleName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+        nameMap[config.getId().toTranslationKey()] = ConfigApiImplClient.getTranslation(config, "", config::class.annotations, emptyList(), config::class.java.simpleName) //config.transLit(config::class.java.simpleName.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         var index = 0
         val prefix = config.getId().toTranslationKey()
@@ -342,11 +344,15 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
         val scopes = functionMap.keys.toList()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
-        val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
-        for((scope, entryBuilders) in functionMap) {
-            val name = nameMap[scope] ?: continue
+        val builders: MutableMap<String, ConfigScreenBuilder2> = mutableMapOf()
+        for((s, entryBuilders) in functionMap) {
+            builders[s] = buildBuilder2(entryBuilders)
             //builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, actionMap, entryBuilders.values.toList())
         }
+/*        for (entry in functionMap.entries) {
+            FC.DEVLOG.info(entry.toString())
+        }
+        FC.DEVLOG.info(builders.toString())*/
         this.screens = builders
     }
 
@@ -359,7 +365,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val config: Config = set.active
         val baseConfig: Config = set.base
         val prefix = config.getId().toTranslationKey()
-        val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, listOf(), config::class.java.simpleName)
+        val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, emptyList(), config::class.java.simpleName)
         val groups: LinkedList<String> = LinkedList()
 
         fun List<EntryCreator.Creator>.applyToMap(parent: String, functionMap: MutableMap<String, MutableList<EntryCreator.Creator>>) {
@@ -453,72 +459,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 }
 
                 ConfigGroup.pop(annotations, groups)
-
-                /*if (thing is ConfigSection) {
-                    val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
-                    nameMap[new] = name
-                    functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, sectionOpenEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, new))
-                    index++
-                } else if (thing is Updatable && thing is Entry<*, *>) {
-                    val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
-                    nameMap[new] = name
-                    val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
-                    if(perms.success) {
-                        thing.setUpdateManager(manager)
-                        manager.setUpdatableEntry(thing)
-                        if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
-                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, forwardableEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
-                        else
-                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
-                    } else if (perms == PermResult.OUT_OF_GAME) {
-                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), totalActions))
-                    } else {
-                        functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
-                    }
-                    index++
-                } else if (thing is ConfigAction) {
-                    val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
-                    nameMap[new] = name
-                    val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
-                    if (perms.success) {
-                        functionMap.computeIfAbsent(old) { sortedMapOf() }[index] = Pair(new, configActionEntryBuilder(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), totalActions, thing))
-                    } else if (perms == PermResult.OUT_OF_GAME) {
-                        functionMap.computeIfAbsent(old) { sortedMapOf() }[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), totalActions))
-                    } else {
-                        functionMap.computeIfAbsent(old) { sortedMapOf() }[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), totalActions))
-                    }
-
-                    index++
-                } else if (thing != null) {
-                    var basicValidation: ValidatedField<*>? = null
-                    val target = new.removePrefix("$prefix.")
-                    ConfigApiImpl.drill(baseConfig, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
-                        basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
-                    }
-                    val basicValidation2 = basicValidation
-                    if (basicValidation2 != null) {
-                        basicValidation2.trySet(thing)
-                        @Suppress("DEPRECATION")
-                        basicValidation2.setEntryKey(new)
-                        val name = ConfigApiImplClient.getTranslation(basicValidation2, fieldName, annotations, globalAnnotations)
-                        nameMap[new] = name
-                        val perms = hasNeededPermLevel(playerPermLevel, config, prefix, new, annotations, set.clientOnly, flags)
-                        if(perms.success) {
-                            @Suppress("DEPRECATION")
-                            basicValidation2.setUpdateManager(manager)
-                            manager.setUpdatableEntry(basicValidation2)
-                            if (ConfigApiImpl.isNonSync(annotations) || set.clientOnly)
-                                functionMap.computeIfAbsent(old) { sortedMapOf() } [index] = Pair(new, forwardableEntryBuilder(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), totalActions, basicValidation2))
-                            else
-                                functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, updatableEntryBuilder(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), totalActions, basicValidation2))
-                        } else if (perms == PermResult.OUT_OF_GAME) {
-                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, outOfGameEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
-                        } else {
-                            functionMap.computeIfAbsent(old) { sortedMapOf()}[index] = Pair(new, noPermsEntryBuilder(name, FcText.empty(), action?.let { setOf(it) } ?: setOf()))
-                        }
-                    }
-                    index++
-                }*/
             }
         }
     }
@@ -535,6 +475,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
                         .build()
                 }
             }
+    }
+
+    private fun buildBuilder2(entries: List<EntryCreator.Creator>): ConfigScreenBuilder2 {
+        val list = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 290, 290, DynamicListWidget.ListSpec(verticalPadding = 4))
+        return ConfigScreenBuilder2 { TestConfigScreen(FcText.EMPTY, this.manager, list) }
     }
 
     private fun buildBuilder(name: Text, scope: String, scopes: List<String>, scopeButtonFunctions: Map<String, Function<ConfigScreen, ClickableWidget>>, actionMap: MutableMap<String, MutableSet<Action>>, entryBuilders: List<Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>): ConfigScreenBuilder {
@@ -709,12 +654,13 @@ internal class ConfigScreenManager(private val scope: String, private val config
             .positionY(PopupWidget.Builder.at{ y })
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
-        popup.addElement("copy", ActiveButtonWidget(copyText, client.textRenderer.getWidth(copyText) + 8, 14, { true }, { pushToBuffer(entry.get()); PopupWidget.pop() }, "widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        popup.addElement("paste", ActiveButtonWidget(pasteText, client.textRenderer.getWidth(pasteText) + 8, 14, { entry.isValidEntry(copyBuffer) }, { entry.trySet(copyBuffer); PopupWidget.pop() }, "widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        popup.addElement("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 14, { entry.peekState() }, { entry.revert(); PopupWidget.pop() }, "widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
-        popup.addElement("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 14, { !entry.isDefault() }, { b -> openRestoreConfirmPopup(b, entry) }, "widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
+        /*"widget/popup/button_right_click_highlighted".fcId()*/
+        popup.addElement("copy", ActiveButtonWidget(copyText, client.textRenderer.getWidth(copyText) + 8, 14, { true }, { pushToBuffer(entry.get()); PopupWidget.pop() }), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("paste", ActiveButtonWidget(pasteText, client.textRenderer.getWidth(pasteText) + 8, 14, { entry.isValidEntry(copyBuffer) }, { entry.trySet(copyBuffer); PopupWidget.pop() }), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 14, { entry.peekState() }, { entry.revert(); PopupWidget.pop() }), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 14, { !entry.isDefault() }, { b -> openRestoreConfirmPopup(b, entry) }), Position.BELOW, Position.ALIGN_LEFT)
         if(withForwarding)
-            popup.addElement("forward", ActiveButtonWidget(forwardText, client.textRenderer.getWidth(forwardText) + 8, 14, { true }, { openEntryForwardingPopup(entry) }, "widget/popup/button_right_click_highlighted".fcId()), Position.BELOW, Position.ALIGN_LEFT)
+            popup.addElement("forward", ActiveButtonWidget(forwardText, client.textRenderer.getWidth(forwardText) + 8, 14, { true }, { openEntryForwardingPopup(entry) }), Position.BELOW, Position.ALIGN_LEFT)
         PopupWidget.push(popup.build())
     }
     private fun <T> openRestoreConfirmPopup(b: ActiveButtonWidget, entry: T) where T: Updatable, T: Entry<*, *> {
@@ -773,6 +719,10 @@ internal class ConfigScreenManager(private val scope: String, private val config
         SUCCESS(true),
         OUT_OF_GAME(false),
         FAILURE(false)
+    }
+
+    internal fun interface ConfigScreenBuilder2 {
+        fun build(): TestConfigScreen
     }
 
     internal fun interface ConfigScreenBuilder {

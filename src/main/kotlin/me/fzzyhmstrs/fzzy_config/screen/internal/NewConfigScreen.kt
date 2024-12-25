@@ -10,9 +10,12 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
+import me.fzzyhmstrs.fzzy_config.config.ConfigSpec
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.widget.ClickableTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
@@ -40,19 +43,23 @@ import org.lwjgl.glfw.GLFW
 import java.util.function.Function
 
 //client
-@Deprecated("To remove")
-internal class ConfigScreen(title: Text, private val scope: String, private val manager: UpdateManager, entriesWidget: Function<ConfigScreen, ConfigListWidget>, private val parentScopesButtons: List<Function<ConfigScreen, ClickableWidget>>) : PopupWidgetScreen(title) {
+internal class NewConfigScreen(
+    title: Text,
+    private val scope: String,
+    private val manager: UpdateManager,
+    private val spec: ConfigSpec,
+    private val layout2: ConfigScreenLayout) : PopupWidgetScreen(title) {
 
     private var parent: Screen? = null
 
     internal val layout = ThreePartsLayoutWidget(this)
     private var searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
     private var doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
-    private val configList: ConfigListWidget = entriesWidget.apply(this)
+    //private val configList: DynamicListWidget = builders.settingsList.apply(this)
 
     fun setParent(screen: Screen?) {
         this.parent = screen
-        if (screen !is ConfigScreen) {
+        if (screen !is NewConfigScreen) {
             doneButton.tooltip = Tooltip.of("fc.config.done.desc".translate())
             return
         }
@@ -61,7 +68,7 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
     }
 
     override fun close() {
-        if(this.parent == null || this.parent !is ConfigScreen) {
+        if(this.parent == null || this.parent !is NewConfigScreen) {
             manager.apply(true)
             this.client?.narratorManager?.clear()
         }
@@ -70,9 +77,9 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
 
     private fun shiftClose() {
         val p = this.parent
-        if(p is ConfigScreen) {
+        if(p is NewConfigScreen) {
             var parentParent = p.parent
-            while (parentParent is ConfigScreen) {
+            while (parentParent is NewConfigScreen) {
                 parentParent = parentParent.parent
             }
             this.parent = parentParent
@@ -92,23 +99,23 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         initLayout()
     }
     private fun initHeader() {
-        val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
+        /*val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
         for (scopeButton in parentScopesButtons) {
             directionalLayoutWidget.add(scopeButton.apply(this))
             directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(" > ".lit()), 20, " > ".lit(), this.textRenderer))
         }
-        directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(this.title), 20, this.title, this.textRenderer))
+        directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(this.title), 20, this.title, this.textRenderer))*/
 
     }
     private fun initBody() {
-        this.addDrawableChild(configList)
+        /*this.addDrawableChild(configList)
         layout.forEachChild { drawableElement: ClickableWidget? ->
             addDrawableChild(drawableElement)
         }
-        configList.scrollAmount = 0.0
+        configList.scrollAmount = 0.0*/
     }
     private fun initFooter() {
-        val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
+        /*val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //info button
         directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
@@ -134,37 +141,17 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
         doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
         doneButton.message = msg
         doneButton.tooltip = tt
-        directionalLayoutWidget.add(doneButton)
+        directionalLayoutWidget.add(doneButton)*/
     }
 
     private fun initLayout() {
-        layout.refreshPositions()
-        configList.position(width, layout)
+        /*layout.refreshPositions()
+        configList.position(width, layout)*/
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
-            configList.page(true)
-            return true
-        } else if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
-            configList.page(false)
-            return true
-        } else if (isCopy(keyCode)) {
-            configList.copy()
-            return true
-        } else if (isPaste(keyCode)) {
-            configList.paste()
-            return true
-        } else if (keyCode == GLFW.GLFW_KEY_Z && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
-            manager.revertLast()
-            return true
-        } else if (keyCode == GLFW.GLFW_KEY_F && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
-            this.focused = searchField
-            return true
-        } else if (keyCode == GLFW.GLFW_KEY_S && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
-            manager.apply(false)
-            return true
-        }
+        val type = ContextHandler.getRelevantContext(keyCode, hasControlDown(), hasShiftDown(), hasControlDown())
+        if (type != null && layout2.handleContext(type)) return true
         return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
@@ -194,4 +181,9 @@ internal class ConfigScreen(title: Text, private val scope: String, private val 
             .build()
         PopupWidget.push(popup)
     }
+
+    class ConfigScreenPartsBuilder(
+        val settingsList: Function<NewConfigScreen, DynamicListWidget>,
+        val sidebarList: Function<NewConfigScreen, DynamicListWidget>?,
+        val parentScopeButtons: List<Function<NewConfigScreen, ClickableWidget>>?)
 }
