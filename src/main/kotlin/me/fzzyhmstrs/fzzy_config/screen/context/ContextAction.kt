@@ -3,12 +3,14 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.text.Text
+import java.util.function.Consumer
+import java.util.function.Supplier
 
-class ContextAction(val texts: Translatable.Result, val active: Boolean, val icon: Decorated?, val action: Runnable) {
+class ContextAction(val texts: Translatable.Result, val active: Supplier<Boolean>, val forMenu: Boolean, val icon: Decorated?, val action: Consumer<Any?>) {
 
-    class Builder(private val name: Text, private val action: Runnable) {
+    class Builder(private val name: Text, private val action: Consumer<Any?>) {
         private var narration: Text? = null
-        private var active: Boolean = true
+        private var active: Supplier<Boolean> = Supplier { true }
         private var icon: Decorated? = null
 
         fun narration(narration: Text): Builder {
@@ -16,7 +18,7 @@ class ContextAction(val texts: Translatable.Result, val active: Boolean, val ico
             return this
         }
 
-        fun active(active: Boolean): Builder {
+        fun active(active: Supplier<Boolean>): Builder {
             this.active = active
             return this
         }
@@ -27,7 +29,11 @@ class ContextAction(val texts: Translatable.Result, val active: Boolean, val ico
         }
 
         fun build(): ContextAction {
-            return ContextAction(Translatable.Result(name, narration), active, icon, action)
+            return ContextAction(Translatable.Result(name, narration), active, false, icon, action)
+        }
+
+        fun buildMenu(): ContextAction {
+            return ContextAction(Translatable.Result(name, narration), active, true, icon, action)
         }
     }
 }

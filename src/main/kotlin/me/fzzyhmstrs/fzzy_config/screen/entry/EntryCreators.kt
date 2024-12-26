@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Ref
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import java.util.function.Consumer
@@ -29,6 +30,8 @@ import java.util.function.Function
 object EntryCreators {
 
     val OPEN_SCREEN = EntryCreator.CreatorContextKey<Consumer<String>>()
+
+    val COPY_BUFFER = EntryCreator.CreatorContextKey<Ref<Any?>>()
 
     fun createConfigEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
