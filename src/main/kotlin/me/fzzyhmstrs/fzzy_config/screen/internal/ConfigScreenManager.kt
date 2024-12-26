@@ -31,6 +31,7 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Ref
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -59,7 +60,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private val manager: ConfigUpdateManager
 
     private var screens: Map<String, ConfigScreenBuilder2> = mapOf()
-    private var copyBuffer: Any? = null
+    private var copyBuffer: Ref<Any?> = Ref(null)
     private var cachedPermissionLevel = 0
     private var cachedPerms:  Map<String, Map<String, Boolean>> = mapOf()
     private var cachedOutOfGame: Boolean = false
@@ -165,7 +166,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun pushToBuffer(input: Any?) {
-        copyBuffer = input
+        copyBuffer.set(input)
     }
 
     ////////////////////////////////////////////////
@@ -376,6 +377,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
         val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
             .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
+            .put(EntryCreators.COPY_BUFFER, copyBuffer)
 
         val skip = anchorPredicate.test(AnchorResult(prefix, config, configTexts))
 
@@ -600,7 +602,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 parent,
                 entry.widgetEntry(),
                 { pushToBuffer(entry.get()) },
-                { if (entry.isValidEntry(copyBuffer)) entry.trySet(copyBuffer) }
+                { if (entry.isValidEntry(copyBuffer.get())) entry.trySet(copyBuffer.get()) }
             ) { mX, mY, _ -> openRightClickPopup(mX, mY, entry, false) }
         }
     }
@@ -614,7 +616,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 parent,
                 entry.widgetEntry(),
                 { pushToBuffer(entry.get()) },
-                { if (entry.isValidEntry(copyBuffer)) entry.trySet(copyBuffer) }
+                { if (entry.isValidEntry(copyBuffer.get())) entry.trySet(copyBuffer.get()) }
             ) { mX, mY, _ -> openRightClickPopup(mX, mY, entry, true) }
         }
     }
@@ -656,7 +658,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             .noBlur()
         /*"widget/popup/button_right_click_highlighted".fcId()*/
         popup.addElement("copy", ActiveButtonWidget(copyText, client.textRenderer.getWidth(copyText) + 8, 14, { true }, { pushToBuffer(entry.get()); PopupWidget.pop() }), Position.BELOW, Position.ALIGN_LEFT)
-        popup.addElement("paste", ActiveButtonWidget(pasteText, client.textRenderer.getWidth(pasteText) + 8, 14, { entry.isValidEntry(copyBuffer) }, { entry.trySet(copyBuffer); PopupWidget.pop() }), Position.BELOW, Position.ALIGN_LEFT)
+        popup.addElement("paste", ActiveButtonWidget(pasteText, client.textRenderer.getWidth(pasteText) + 8, 14, { entry.isValidEntry(copyBuffer.get()) }, { entry.trySet(copyBuffer.get()); PopupWidget.pop() }), Position.BELOW, Position.ALIGN_LEFT)
         popup.addElement("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 14, { entry.peekState() }, { entry.revert(); PopupWidget.pop() }), Position.BELOW, Position.ALIGN_LEFT)
         popup.addElement("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 14, { !entry.isDefault() }, { b -> openRestoreConfirmPopup(b, entry) }), Position.BELOW, Position.ALIGN_LEFT)
         if(withForwarding)
