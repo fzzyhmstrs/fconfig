@@ -1,6 +1,5 @@
 package me.fzzyhmstrs.fzzy_config.screen.context
 
-import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.MinecraftClient
@@ -11,11 +10,11 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import java.util.function.Supplier
 
 class ContextActionWidget(
-    private val action: ContextAction,
+    private val applier: ContextApplier,
     width: Int,
-    activeProvider: Supplier<Boolean>
-) : ActiveButtonWidget(action.texts.name, width, 14, activeProvider,
-    { _ -> action.action.run(); PopupWidget.pop() }) {
+    activeProvider: Supplier<Boolean>)
+    :
+    ActiveButtonWidget(applier.action.texts.name, width, 14, activeProvider, { _ -> PopupWidget.pop(); applier.apply() }) {
 
     override fun renderCustom(
         context: DrawContext,
@@ -27,9 +26,9 @@ class ContextActionWidget(
         mouseY: Int,
         delta: Float
     ) {
-        if (action.icon != null) {
+        if (applier.action.icon != null) {
             super.renderCustom(context, x + 12, y, width - 12, height, mouseX, mouseY, delta)
-            action.icon.renderDecoration(context, x, y + 2, delta)
+            applier.action.icon.renderDecoration(context, x, y + 2, delta)
         } else {
             super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
         }
@@ -60,16 +59,16 @@ class ContextActionWidget(
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
         super.appendClickableNarrations(builder)
-        if (action.texts.desc != null) {
-            builder?.put(NarrationPart.HINT, action.texts.desc)
+        if (applier.action.texts.desc != null) {
+            builder?.put(NarrationPart.HINT, applier.action.texts.desc)
         }
     }
 
     fun getNeededWidth(): Int {
-        return if (action.icon != null) {
-            11 + MinecraftClient.getInstance().textRenderer.getWidth(action.texts.name) + 4
+        return if (applier.action.icon != null) {
+            11 + MinecraftClient.getInstance().textRenderer.getWidth(applier.action.texts.name) + 4
         } else {
-            MinecraftClient.getInstance().textRenderer.getWidth(action.texts.name) + 4
+            MinecraftClient.getInstance().textRenderer.getWidth(applier.action.texts.name) + 4
         }
     }
 }
