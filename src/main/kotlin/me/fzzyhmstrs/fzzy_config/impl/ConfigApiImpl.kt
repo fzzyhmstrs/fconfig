@@ -52,6 +52,7 @@ import java.io.File
 import java.io.Reader
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
+import java.util.SortedSet
 import java.util.function.Supplier
 import kotlin.experimental.and
 import kotlin.math.min
@@ -849,7 +850,7 @@ internal object ConfigApiImpl {
 
     internal fun getActions(thing: Any, flags: Byte): Set<Action> {
         val classAction = getAction(thing::class.annotations)
-        val propActions: MutableSet<Action> = mutableSetOf()
+        val propActions: SortedSet<Action> = sortedSetOf()
         walk(thing, "", flags) { _, _, _, v, _, annotations, _, _ ->
             val action = requiredAction(annotations, classAction)
             if (action != null) {
