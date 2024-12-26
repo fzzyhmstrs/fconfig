@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.LabelWrappedWidget
@@ -28,7 +29,6 @@ import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.UnaryOperator
-import javax.swing.LayoutStyle
 
 /**
  * A validated pair of values
@@ -210,7 +210,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
     }
 
     @Internal
-    override fun contentBuilder(): UnaryOperator<ConfigEntry.ContentBuilder> {
+    override fun contentBuilder(context: EntryCreator.CreatorContext): UnaryOperator<ConfigEntry.ContentBuilder> {
         return UnaryOperator { contentBuilder ->
             contentBuilder.layoutContent { contentLayout ->
                 val w = if (layoutStyle == LayoutStyle.SIDE_BY_SIDE)

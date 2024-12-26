@@ -10,13 +10,14 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
-import com.ibm.icu.impl.CurrencyData.provider
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextApplier
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.decoration.AbstractDecorationWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.DecorationWidget
@@ -42,7 +43,6 @@ import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import java.util.*
 import java.util.function.Consumer
-import java.util.function.Supplier
 import java.util.function.UnaryOperator
 import kotlin.math.min
 
@@ -54,7 +54,6 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         this.visibility = content.visibility
     }
 
-    private val actions: List<AbstractDecorationWidget> = content.actionWidgets
     private val layout: LayoutWidget = if (content.groupTypes.isEmpty()) {
         content.layoutWidget.setPos(this.x, this.top).compute()
     } else {
@@ -66,11 +65,15 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         lo.setPos(this.x, this.top)
         lo.compute()
     }
+
+    private val actions: List<AbstractDecorationWidget> = content.actionWidgets
+    private val context: Map<ContextHandler.ContextType, ContextAction> = content.contextActions
     private var children: MutableList<Element> = mutableListOf()
     private var drawables: List<Drawable> = emptyList()
     private var selectables: List<SelectableElement> = emptyList()
     private var narratables: List<AbstractTextWidget> = emptyList()
     private var tooltipProviders: List<TooltipChild> = emptyList()
+
     private val tooltip: List<OrderedText> by lazy {
         createTooltip(desc ?: FcText.empty())
     }
@@ -177,7 +180,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
     override fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         if (hovered)
-            context.fill(x - 1, y, x + width, y + height, 1684300900)
+            context.fill(x - 1, y - 1, x + width + 1, y + height + 1, 1684300900)
     }
 
     override fun appendNarrations(builder: NarrationMessageBuilder) {
@@ -224,6 +227,20 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         return selectables
     }
 
+    override fun contextActions(): List<ContextApplier> {
+        val content = layout.getElement("content")
+        return context.values.filter { it.forMenu }.map { ContextApplier(it, content) }
+    }
+
+    override fun handleContext(contextType: ContextHandler.ContextType): Boolean {
+        val action = context[contextType] ?: return false
+        val content = layout.getElement("content")
+        action.action.accept(content)
+        return true
+    }
+
+    //////////////////////////////////////
+
     class ContentBuilder(private val context: EntryCreator.CreatorContext, private val actionWidgets: List<AbstractDecorationWidget>) {
 
         constructor(context: EntryCreator.CreatorContext, actions: Set<Action>): this(context, actions.map { ActionDecorationWidget.setting(it) })
@@ -235,7 +252,9 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         private val decorationWidget = DecorationWidget()
         private var group: String = ""
         private var visibility: DynamicListWidget.Visibility = DynamicListWidget.Visibility.VISIBLE
+        private var contextActions: Map<ContextHandler.ContextType, ContextAction> = mapOf()
         private val popStart = context.groups.size - context.annotations.filterIsInstance<ConfigGroup.Pop>().size
+
 
         init {
             val nameSupplier = { context.texts.name }
@@ -276,6 +295,11 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             return this
         }
 
+        fun contextActions(contextActions: Map<ContextHandler.ContextType, ContextAction>): ContentBuilder {
+            this.contextActions = contextActions
+            return this
+        }
+
         fun build(): BuildResult {
             val groupTypes: MutableList<Boolean> = mutableListOf()
             for (i in 0 until context.groups.size) {
@@ -286,7 +310,8 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
                 actionWidgets,
                 DynamicListWidget.Scope(context.scope, group, context.groups.stream().toList()),
                 groupTypes,
-                visibility)
+                visibility,
+                contextActions)
         }
 
         class BuildResult(
@@ -294,9 +319,12 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             val actionWidgets: List<AbstractDecorationWidget>,
             val scope: DynamicListWidget.Scope,
             val groupTypes: List<Boolean>,
-            val visibility: DynamicListWidget.Visibility)
+            val visibility: DynamicListWidget.Visibility,
+            val contextActions: Map<ContextHandler.ContextType, ContextAction>)
 
     }
+
+    ////////////////////////////////
 
     class ActionDecorationWidget private constructor(private val action: Action, private val actionTooltip: Text = action.settingTooltip): AbstractDecorationWidget(), TooltipChild {
 
@@ -334,6 +362,8 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             return listOf(actionTooltip)
         }
     }
+
+    ////////////////////////////////
 
     private inner class GroupLineWidget(private val end: Boolean): Drawable, Widget {
 

@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.*
 import me.fzzyhmstrs.fzzy_config.util.pos.*
@@ -41,8 +42,16 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
 
     private val elements: MutableMap<String, PositionedElement<*>> = mutableMapOf()
 
-    fun getElement(string: String): PositionedElement<*>? {
-        return elements[string]
+    /**
+     * Recursively retrieves the named element. Starts with this layout's elements, then burrows into nested layouts' elements as applicable.
+     *
+     * If multiple elements in the layout tree happen to have the same id, it will return the first matching element encountered.
+     * @param name String element id
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun getElement(name: String): PositionedElement<*>? {
+        return elements[name] ?: elements.values.firstNotNullOfOrNull { it.element.nullCast<LayoutWidget>()?.getElement(name) }
     }
 
     fun getGeneralVerticalPadding(): Int {

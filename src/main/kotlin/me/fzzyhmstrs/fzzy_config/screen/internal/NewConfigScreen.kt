@@ -10,17 +10,13 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
-import me.fzzyhmstrs.fzzy_config.config.ConfigSpec
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextApplier
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
-import me.fzzyhmstrs.fzzy_config.screen.widget.ClickableTextWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
@@ -39,7 +35,6 @@ import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
-import org.lwjgl.glfw.GLFW
 import java.util.function.Function
 
 //client
@@ -47,15 +42,18 @@ internal class NewConfigScreen(
     title: Text,
     private val scope: String,
     private val manager: UpdateManager,
-    private val spec: ConfigSpec,
-    private val layout2: ConfigScreenLayout) : PopupWidgetScreen(title) {
+    entriesWidget: Function<NewConfigScreen, DynamicListWidget>,
+    private val parentScopesButtons: List<Function<NewConfigScreen, ClickableWidget>>)
+    :
+    PopupWidgetScreen(title), ContextHandler
+{
 
     private var parent: Screen? = null
 
     internal val layout = ThreePartsLayoutWidget(this)
     private var searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
     private var doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
-    //private val configList: DynamicListWidget = builders.settingsList.apply(this)
+    private val configList: DynamicListWidget = entriesWidget.apply(this)
 
     fun setParent(screen: Screen?) {
         this.parent = screen
@@ -99,23 +97,23 @@ internal class NewConfigScreen(
         initLayout()
     }
     private fun initHeader() {
-        /*val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
+        val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
         for (scopeButton in parentScopesButtons) {
             directionalLayoutWidget.add(scopeButton.apply(this))
             directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(" > ".lit()), 20, " > ".lit(), this.textRenderer))
         }
-        directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(this.title), 20, this.title, this.textRenderer))*/
+        directionalLayoutWidget.add(TextWidget(textRenderer.getWidth(this.title), 20, this.title, this.textRenderer))
 
     }
     private fun initBody() {
-        /*this.addDrawableChild(configList)
+        this.addDrawableChild(configList)
         layout.forEachChild { drawableElement: ClickableWidget? ->
             addDrawableChild(drawableElement)
         }
-        configList.scrollAmount = 0.0*/
+        configList.scrollToTop()
     }
     private fun initFooter() {
-        /*val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
+        val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //info button
         directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
@@ -128,7 +126,7 @@ internal class NewConfigScreen(
         searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
         searchField.setMaxLength(100)
         searchField.text = ""
-        searchField.setChangedListener { s -> setColor(configList.updateSearchedEntries(s)) }
+        searchField.setChangedListener { s -> setColor(configList.search(s)) }
         searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
         directionalLayoutWidget.add(searchField)
         //forward alert button
@@ -141,49 +139,106 @@ internal class NewConfigScreen(
         doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
         doneButton.message = msg
         doneButton.tooltip = tt
-        directionalLayoutWidget.add(doneButton)*/
+        directionalLayoutWidget.add(doneButton)
     }
 
     private fun initLayout() {
-        /*layout.refreshPositions()
-        configList.position(width, layout)*/
+        layout.refreshPositions()
+        configList.setDimensionsAndPosition(320, layout.contentHeight, (this.width / 2) - 160, layout.headerHeight)
+    }
+
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        val contextType = ContextHandler.getRelevantContext(button, ContextHandler.Input.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (contextType != null) {
+            return handleContext(contextType)
+        }
+        return super.mouseClicked(mouseX, mouseY, button)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val type = ContextHandler.getRelevantContext(keyCode, hasControlDown(), hasShiftDown(), hasControlDown())
-        if (type != null && layout2.handleContext(type)) return true
+        val contextType = ContextHandler.getRelevantContext(keyCode, ContextHandler.Input.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (contextType != null) {
+            return handleContext(contextType)
+        }
+        /*if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
+            configList.page(true)
+            return true
+        } else if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
+            configList.page(false)
+            return true
+        } else if (isCopy(keyCode)) {
+            //TODO configList.copy()
+            return true
+        } else if (isPaste(keyCode)) {
+            //TODO configList.paste()
+            return true
+        } else if (keyCode == GLFW.GLFW_KEY_Z && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
+            manager.revertLast()
+            return true
+        } else if (keyCode == GLFW.GLFW_KEY_F && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
+            this.focused = searchField
+            return true
+        } else if (keyCode == GLFW.GLFW_KEY_S && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
+            manager.apply(false)
+            return true
+        }*/
         return super.keyPressed(keyCode, scanCode, modifiers)
+    }
+
+    override fun handleContext(contextType: ContextHandler.ContextType): Boolean {
+        return when (contextType) {
+            ContextHandler.CONTEXT_KEYBOARD, ContextHandler.CONTEXT_MOUSE -> {
+                val actions = configList.contextActions()
+                openContextMenuPopup(actions)
+                true
+            }
+            ContextHandler.UNDO -> {
+                manager.revertLast()
+                true
+            }
+            ContextHandler.FIND -> {
+                this.focused = searchField
+                true
+            }
+            ContextHandler.SAVE -> {
+                manager.apply(false)
+                true
+            }
+            else -> {
+                configList.handleContext(contextType)
+            }
+        }
+
+    }
+
+    private fun openContextMenuPopup(actions: List<ContextApplier>) {
+
     }
 
     private fun openInfoPopup() {
         val textRenderer = MinecraftClient.getInstance().textRenderer
         val popup = PopupWidget.Builder("fc.button.info".translate())
             .addDivider()
-            .addElement("header", ClickableTextWidget(this, "fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
+            .add("header", ClickableTextWidget(this, "fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
                 style.withFormatting(Formatting.AQUA, Formatting.UNDERLINE)
                     .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://fzzyhmstrs.github.io/fconfig/"))
                     .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, "fc.button.info.fc.tip".translate()))
-            }), textRenderer), Position.BELOW, Position.ALIGN_CENTER)
+            }), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             .addDivider()
-            .addElement("undo", TextWidget("fc.button.info.undo".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("find", TextWidget("fc.button.info.find".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("copy", TextWidget("fc.button.info.copy".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("paste", TextWidget("fc.button.info.paste".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("save", TextWidget("fc.button.info.save".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("page", TextWidget("fc.button.info.page".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .add("undo", TextWidget("fc.button.info.undo".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("find", TextWidget("fc.button.info.find".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("copy", TextWidget("fc.button.info.copy".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("paste", TextWidget("fc.button.info.paste".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("save", TextWidget("fc.button.info.save".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("page", TextWidget("fc.button.info.page".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .addDivider()
-            .addElement("click", TextWidget("fc.button.info.click".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("click_kb", TextWidget("fc.button.info.click_kb".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("click_kb2", TextWidget("fc.button.info.click_kb2".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .add("click", TextWidget("fc.button.info.click".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("click_kb", TextWidget("fc.button.info.click_kb".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("click_kb2", TextWidget("fc.button.info.click_kb2".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .addDivider()
-            .addElement("alert", TextWidget("fc.button.info.alert".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
+            .add("alert", TextWidget("fc.button.info.alert".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .addDoneWidget()
             .build()
         PopupWidget.push(popup)
     }
-
-    class ConfigScreenPartsBuilder(
-        val settingsList: Function<NewConfigScreen, DynamicListWidget>,
-        val sidebarList: Function<NewConfigScreen, DynamicListWidget>?,
-        val parentScopeButtons: List<Function<NewConfigScreen, ClickableWidget>>?)
 }
