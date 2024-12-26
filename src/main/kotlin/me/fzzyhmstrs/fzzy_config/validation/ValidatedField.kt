@@ -17,13 +17,16 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
-import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
+import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
@@ -34,6 +37,7 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.Condition
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionImpl
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFieldPopups
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -451,13 +455,51 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    protected open fun contentBuilder(): UnaryOperator<ConfigEntry.ContentBuilder> {
+    protected open fun contentBuilder(context: EntryCreator.CreatorContext): UnaryOperator<ConfigEntry.ContentBuilder> {
         val deco = entryDeco()
         return UnaryOperator { builder ->
             if (deco != null)
                 builder.decoration(deco.decorated, deco.offsetX, deco.offsetY)
             builder
         }
+    }
+
+    /**
+     *
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    @Suppress("DEPRECATION")
+    protected open fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<ContextHandler.ContextType, ContextAction> {
+        val map: MutableMap<ContextHandler.ContextType, ContextAction> = mutableMapOf()
+        val copy = ContextAction.Builder("fc.button.copy".translate()) { context.misc.get(EntryCreators.COPY_BUFFER)?.set(this.get()) }
+            .icon(TextureDeco.CONTEXT_COPY)
+            .buildMenu()
+        val paste = ContextAction.Builder("fc.button.paste".translate()) { context.misc.get(EntryCreators.COPY_BUFFER)?.get()?.let { this.trySet(it) } }
+            .active { this.isValidEntry(context.misc.get(EntryCreators.COPY_BUFFER)?.get()) }
+            .icon(TextureDeco.CONTEXT_PASTE)
+            .buildMenu()
+        val revert = ContextAction.Builder("fc.button.revert".translate()) { this.revert() }
+            .active {  this.peekState() }
+            .icon(TextureDeco.CONTEXT_REVERT)
+            .buildMenu()
+        val restore = ContextAction.Builder("fc.button.restore".translate()) { b -> ValidatedFieldPopups.openRestoreConfirmPopup(b, this) }
+            .active {  !this.isDefault() }
+            .icon(TextureDeco.CONTEXT_RESTORE)
+            .buildMenu()
+
+        map[ContextHandler.COPY] = copy
+        map[ContextHandler.PASTE] = paste
+        map[ContextHandler.REVERT] = revert
+        map[ContextHandler.RESTORE] = restore
+
+        if (context.client) {
+            val forward = ContextAction.Builder("fc.button.forward".translate()) { ValidatedFieldPopups.openEntryForwardingPopup(this) }
+                .icon(TextureDeco.CONTEXT_COPY)
+                .buildMenu()
+            map[ContextHandler.FORWARD] = forward
+        }
+        return map
     }
 
     @Internal
@@ -471,7 +513,8 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
                     LayoutWidget.Position.ALIGN_JUSTIFY,
                     LayoutWidget.Position.BELOW)
             }
-            contentBuilder().apply(contentBuilder)
+            contentBuilder.contextActions(contextActionBuilder(context))
+            contentBuilder(context).apply(contentBuilder)
 
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
@@ -700,7 +743,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
          */
         fun<T, F: ValidatedField<T>> F.withListener(listener: Consumer<F>): F {
             @Suppress("UNCHECKED_CAST") //ok since Consumers type will be erased anyway, and the listener will always be provided with the receiver itself (F)
-            this.addListener(listener as Consumer<ValidatedField<T>>)
+            this.listenToEntry(listener as Consumer<Entry<T, *>>)
             return this
         }
 

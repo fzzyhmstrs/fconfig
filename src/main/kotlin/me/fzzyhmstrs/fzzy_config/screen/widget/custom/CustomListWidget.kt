@@ -70,22 +70,22 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     override fun setPosition(x: Int, y: Int) {
-        focusedElement?.let { ensureVisible(it) }
-        onReposition()
         super.setPosition(x, y)
+        onReposition()
+        focusedElement?.let { ensureVisible(it) }
     }
 
     override fun setDimensions(width: Int, height: Int) {
-        focusedElement?.let { ensureVisible(it) }
-        onReposition()
         super.setDimensions(width, height)
+        onReposition()
+        focusedElement?.let { ensureVisible(it) }
     }
 
     override fun setDimensionsAndPosition(width: Int, height: Int, x: Int, y: Int) {
-        focusedElement?.let { ensureVisible(it) }
-        onReposition()
         super.setPosition(x, y)
         super.setDimensions(width, height)
+        onReposition()
+        focusedElement?.let { ensureVisible(it) }
     }
 
     open fun onReposition() {}

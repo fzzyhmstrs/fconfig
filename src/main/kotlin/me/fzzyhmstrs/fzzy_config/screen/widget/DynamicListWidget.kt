@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextApplier
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextProvider
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
@@ -279,34 +279,35 @@ class DynamicListWidget(
 
     override fun handleContext(contextType: ContextHandler.ContextType): Boolean {
         return when (contextType) {
-            ContextHandler.ContextType.PAGE_UP -> {
+            ContextHandler.PAGE_UP -> {
                 page(true)
                 focused = inFrameEntries().firstOrNull() ?: focused
                 true
             }
-            ContextHandler.ContextType.PAGE_DOWN -> {
+            ContextHandler.PAGE_DOWN -> {
                 page(false)
                 focused = inFrameEntries().lastOrNull() ?: focused
                 true
             }
-            ContextHandler.ContextType.HOME -> {
+            ContextHandler.HOME -> {
                 scrollToTop()
                 focused = inFrameEntries().firstOrNull() ?: focused
                 true
             }
-            ContextHandler.ContextType.END -> {
+            ContextHandler.END -> {
                 scrollToBottom()
                 focused = inFrameEntries().lastOrNull() ?: focused
                 true
             }
             else -> {
-                focusedElement?.handleContext(contextType) ?: false
+                hoveredElement?.handleContext(contextType) ?: focusedElement?.handleContext(contextType) ?: false
             }
         }
     }
 
-    override fun contextActions(): List<ContextAction> {
-        return focusedElement?.contextActions() ?: emptyList()
+    override fun contextActions(): List<ContextApplier> {
+        //TODO handle keyboard vs mouse navigation?
+        return hoveredElement?.contextActions() ?: focusedElement?.contextActions() ?: emptyList()
     }
 
     //////////////////////////////
@@ -614,7 +615,7 @@ class DynamicListWidget(
             init()
         }
 
-        override fun contextActions(): List<ContextAction> {
+        override fun contextActions(): List<ContextApplier> {
             return emptyList()
         }
 
