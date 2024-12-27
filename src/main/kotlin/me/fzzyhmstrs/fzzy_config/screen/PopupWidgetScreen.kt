@@ -46,6 +46,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
     override val popupWidgets: LinkedList<PopupWidget> = LinkedList()
     override var justClosedWidget: Boolean = false
     override var lastSelected: Element? = null
+    protected var hoveredElement: Element? = null
 
     @Internal
     override fun blurElements() {
@@ -70,6 +71,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        hoveredElement = children().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
         if (popupWidgets.isEmpty())
             super.render(context, mouseX, mouseY, delta)
         else {

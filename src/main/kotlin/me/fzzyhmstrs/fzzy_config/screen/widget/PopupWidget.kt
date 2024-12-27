@@ -64,6 +64,7 @@ class PopupWidget
         private val positionY: BiFunction<Int, Int, Int>,
         private val positioner: BiConsumer<Int, Int>,
         private val onClose: Runnable,
+        private val onClick: Runnable,
         private val children: List<Element>,
         private val selectables: List<Selectable>,
         private val drawables: List<Drawable>)
@@ -132,7 +133,12 @@ class PopupWidget
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button)?.takeIf { it } ?: super.mouseClicked(mouseX, mouseY, button).takeIf { it } ?: isMouseOver(mouseX, mouseY)
+        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button)?.takeIf { it } ?: clickMouse(mouseX, mouseY, button)
+    }
+
+    private fun clickMouse(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        onClick.run()
+        return super.mouseClicked(mouseX, mouseY, button).takeIf { it } ?: isMouseOver(mouseX, mouseY)
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -296,6 +302,7 @@ class PopupWidget
         private var positionY: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
 
         private var onClose = Runnable { }
+        private var onClick = Runnable { }
         private var blurBackground = true
         private var closeOnOutOfBounds = true
         private var background = "widget/popup/background".fcId()
@@ -662,6 +669,7 @@ class PopupWidget
             this.positionY = positionY
             return this
         }
+
         /**
          * Defines an action to perform when this widget is closed
          * @param onClose [Runnable] - the action to be performed
@@ -673,6 +681,19 @@ class PopupWidget
             this.onClose = onClose
             return this
         }
+
+        /**
+         * Defines an action to perform when this widget is clicked on. This will run *before* any click actions of child elements, and will not run at all if a suggestion window is open.
+         * @param onClick [Runnable] - the action to be performed
+         * @return Builder - this builder for further use
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        fun onClick(onClick: Runnable): Builder {
+            this.onClick = onClick
+            return this
+        }
+
         /**
          * The widget won't apply a layer of blur behind it when rendering.
          * @return Builder - this builder for further use
@@ -749,7 +770,7 @@ class PopupWidget
                 }
             }
 
-            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, onClose, children, selectables, drawables)
+            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, onClose, onClick, children, selectables, drawables)
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
