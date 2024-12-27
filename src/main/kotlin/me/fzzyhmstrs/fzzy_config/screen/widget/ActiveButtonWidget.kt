@@ -30,61 +30,37 @@ import java.util.function.Supplier
  * @param pressAction [Consumer]&lt;ActiveButtonWidget&gt; - action to take when the button is pressed
  * @param background [Identifier], optional - a custom background identifier. needs to be a nine-patch sprite
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, implements TextureSet for backgrounds 0.6.0
  */
 //client
-open class ActiveButtonWidget(
+open class ActiveButtonWidget@JvmOverloads constructor(
     private val titleSupplier: Supplier<Text>,
     width: Int,
     height: Int,
     private val activeSupplier: Supplier<Boolean>,
     private val pressAction: Consumer<ActiveButtonWidget>,
-    protected val background: PressableTextures? = null)
+    override val textures: TextureSet = DEFAULT_TEXTURES)
     :
     CustomPressableWidget(0, 0, width, height, titleSupplier.get()) {
 
-    constructor(title: Text,
-                width: Int,
-                height: Int,
-                activeProvider: Supplier<Boolean>,
-                pressAction: Consumer<ActiveButtonWidget>,
-                background: PressableTextures? = null): this({ title }, width, height, activeProvider, pressAction, background)
+    @JvmOverloads
+    constructor(
+        title: Text,
+        width: Int,
+        height: Int,
+        activeProvider: Supplier<Boolean>,
+        pressAction: Consumer<ActiveButtonWidget>,
+        background: TextureSet? = null)
+            :
+            this(Supplier { title }, width, height, activeProvider, pressAction, background ?: DEFAULT_TEXTURES)
 
     override fun getMessage(): Text {
         return titleSupplier.get()
     }
 
-    override fun renderCustom(
-        context: DrawContext,
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-        mouseX: Int,
-        mouseY: Int,
-        delta: Float
-    ) {
+    override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = activeSupplier.get()
         super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
-    }
-
-    override fun renderBackground(
-        context: DrawContext,
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-        mouseX: Int,
-        mouseY: Int,
-        delta: Float
-    ) {
-        if (background != null) {
-            RenderSystem.enableBlend()
-            RenderSystem.disableDepthTest()
-            context.drawTex(background.get(active, this.isSelected), x, y, width, height, alpha)
-        } else {
-            super.renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
-        }
     }
 
     override fun onPress() {

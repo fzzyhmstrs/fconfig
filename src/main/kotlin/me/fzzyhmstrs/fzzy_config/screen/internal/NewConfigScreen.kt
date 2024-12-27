@@ -204,8 +204,8 @@ internal class NewConfigScreen(
     private fun openContextMenuPopup(actions: List<ContextApplier>, positionContext: Position) {
         val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
             .addDivider()
-            .positionX(PopupWidget.Builder.abs(positionContext.x))
-            .positionY(PopupWidget.Builder.abs(positionContext.y))
+            .positionX(PopupWidget.Builder.abs(if (positionContext.contextInput == ContextInput.KEYBOARD) positionContext.x else positionContext.mX))
+            .positionY(PopupWidget.Builder.abs(if (positionContext.contextInput == ContextInput.KEYBOARD) positionContext.y else positionContext.mY))
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
         for ((index, action) in actions.withIndex()) {
@@ -213,8 +213,10 @@ internal class NewConfigScreen(
                 "$index",
                 ContextActionWidget(action, ContextActionWidget.getNeededWidth(action)),
                 LayoutWidget.Position.BELOW,
-                LayoutWidget.Position.ALIGN_LEFT)
+                LayoutWidget.Position.ALIGN_LEFT
+            )
         }
+        PopupWidget.push(popup.build())
     }
 
     private fun openInfoPopup() {
