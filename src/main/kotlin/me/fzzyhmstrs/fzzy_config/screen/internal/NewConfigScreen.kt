@@ -11,10 +11,9 @@
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextApplier
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
+import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
@@ -54,6 +53,9 @@ internal class NewConfigScreen(
     private var searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
     private var doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
     private val configList: DynamicListWidget = entriesWidget.apply(this)
+
+    private var mX: Double = 0.0
+    private var mY: Double = 0.0
 
     fun setParent(screen: Screen?) {
         this.parent = screen
@@ -147,50 +149,39 @@ internal class NewConfigScreen(
         configList.setDimensionsAndPosition(320, layout.contentHeight, (this.width / 2) - 160, layout.headerHeight)
     }
 
+    override fun mouseMoved(mouseX: Double, mouseY: Double) {
+        this.mX = mouseX
+        this.mY = mouseY
+        super.mouseMoved(mouseX, mouseY)
+    }
+
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val contextType = ContextHandler.getRelevantContext(button, ContextHandler.Input.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
+        val contextType = ContextHandler.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextType != null) {
-            return handleContext(contextType)
+            return handleContext(contextType, Position(ContextInput.MOUSE, mouseX.toInt(), mouseY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }
         return super.mouseClicked(mouseX, mouseY, button)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val contextType = ContextHandler.getRelevantContext(keyCode, ContextHandler.Input.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
+        val contextType = ContextHandler.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextType != null) {
-            return handleContext(contextType)
+            val input = if(MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
+            return handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }
-        /*if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
-            configList.page(true)
-            return true
-        } else if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
-            configList.page(false)
-            return true
-        } else if (isCopy(keyCode)) {
-            //TODO configList.copy()
-            return true
-        } else if (isPaste(keyCode)) {
-            //TODO configList.paste()
-            return true
-        } else if (keyCode == GLFW.GLFW_KEY_Z && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
-            manager.revertLast()
-            return true
-        } else if (keyCode == GLFW.GLFW_KEY_F && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
-            this.focused = searchField
-            return true
-        } else if (keyCode == GLFW.GLFW_KEY_S && hasControlDown() && !hasShiftDown() && !hasAltDown()) {
-            manager.apply(false)
-            return true
-        }*/
         return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
-    override fun handleContext(contextType: ContextHandler.ContextType): Boolean {
+    override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
         return when (contextType) {
             ContextHandler.CONTEXT_KEYBOARD, ContextHandler.CONTEXT_MOUSE -> {
-                val actions = configList.contextActions()
-                openContextMenuPopup(actions)
-                true
+                val actions = hoveredElement?.nullCast<ContextProvider>()?.contextActions(position) ?: emptyList()
+                if (actions.isNotEmpty()) {
+                    openContextMenuPopup(actions, position)
+                    true
+                } else {
+                    false
+                }
             }
             ContextHandler.UNDO -> {
                 manager.revertLast()
@@ -205,14 +196,25 @@ internal class NewConfigScreen(
                 true
             }
             else -> {
-                configList.handleContext(contextType)
+                configList.handleContext(contextType, position)
             }
         }
-
     }
 
-    private fun openContextMenuPopup(actions: List<ContextApplier>) {
-
+    private fun openContextMenuPopup(actions: List<ContextApplier>, positionContext: Position) {
+        val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
+            .addDivider()
+            .positionX(PopupWidget.Builder.abs(positionContext.x))
+            .positionY(PopupWidget.Builder.abs(positionContext.y))
+            .background("widget/popup/background_right_click".fcId())
+            .noBlur()
+        for ((index, action) in actions.withIndex()) {
+            popup.add(
+                "$index",
+                ContextActionWidget(action, ContextActionWidget.getNeededWidth(action)),
+                LayoutWidget.Position.BELOW,
+                LayoutWidget.Position.ALIGN_LEFT)
+        }
     }
 
     private fun openInfoPopup() {

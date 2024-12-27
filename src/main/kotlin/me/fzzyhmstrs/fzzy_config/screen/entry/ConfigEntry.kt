@@ -15,9 +15,7 @@ import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.nullCast
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextApplier
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
+import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.decoration.AbstractDecorationWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.DecorationWidget
@@ -227,15 +225,29 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         return selectables
     }
 
-    override fun contextActions(): List<ContextApplier> {
+    override fun contextActions(position: Position): List<ContextApplier> {
         val content = layout.getElement("content")
-        return context.values.filter { it.forMenu }.map { ContextApplier(it, content) }
+        val newPosition = if (content != null && position.contextInput == ContextInput.KEYBOARD) {
+            position.copy(x = content.getLeft(), y = content.getTop(), width = content.elWidth(), height = content.elHeight() )
+        } else if (content != null) {
+            position.copy(width = content.elWidth(), height = content.elHeight())
+        } else {
+            position
+        }
+        return context.values.filter { it.forMenu }.map { ContextApplier(it, newPosition) }
     }
 
-    override fun handleContext(contextType: ContextHandler.ContextType): Boolean {
+    override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
         val action = context[contextType] ?: return false
         val content = layout.getElement("content")
-        action.action.accept(content)
+        val newPosition = if (content != null && position.contextInput == ContextInput.KEYBOARD) {
+            position.copy(x = content.getLeft(), y = content.getTop(), width = content.elWidth(), height = content.elHeight() )
+        } else if (content != null) {
+            position.copy(width = content.elWidth(), height = content.elHeight())
+        } else {
+            position
+        }
+        action.action.accept(newPosition)
         return true
     }
 
