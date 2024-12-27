@@ -86,7 +86,7 @@ internal open class BaseConfigEntry(
         widget.setPosition(parent.scrollbarX - widget.width - 10, y)
         widget.render(context, mouseX, mouseY, tickDelta)
         if (widget is SpriteDecorated)
-            widget.renderDecoration(context, widget.x - 22, widget.y + 2, tickDelta)
+            widget.renderDecoration(context, widget.x - 22, widget.y + 2, tickDelta, false, false)
         context.drawTextWithShadow(
             parent.getClient().textRenderer,
             truncatedName,

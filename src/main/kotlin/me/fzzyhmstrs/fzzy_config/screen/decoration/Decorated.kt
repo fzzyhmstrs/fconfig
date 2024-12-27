@@ -15,7 +15,7 @@ import net.minecraft.client.gui.DrawContext
 //client
 @FunctionalInterface
 fun interface Decorated {
-    fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float)
+    fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean)
 
     class DecoratedOffset(val decorated: Decorated, val offsetX: Int = 0, val offsetY: Int)
 

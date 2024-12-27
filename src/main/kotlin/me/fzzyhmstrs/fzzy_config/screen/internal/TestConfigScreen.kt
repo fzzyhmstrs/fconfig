@@ -58,7 +58,7 @@ internal class TestConfigScreen(
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         val contextType = ContextHandler.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextType != null) {
-            return handleContext(contextType,
+            return if(handleContext(contextType,
                 Position(
                     ContextInput.MOUSE,
                     mouseX.toInt(),
@@ -70,7 +70,7 @@ internal class TestConfigScreen(
                     this.width,
                     this.height
                 )
-            )
+            )) true else super.mouseClicked(mouseX, mouseY, button)
         }
         return super.mouseClicked(mouseX, mouseY, button)
     }
@@ -79,7 +79,7 @@ internal class TestConfigScreen(
         val contextType = ContextHandler.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextType != null) {
             val input = if(MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
-            return handleContext(contextType,
+            return if(handleContext(contextType,
                 Position(
                     input,
                     mX.toInt(),
@@ -91,7 +91,7 @@ internal class TestConfigScreen(
                     this.width,
                     this.height
                 )
-            )
+            )) true else super.keyPressed(keyCode, scanCode, modifiers)
         }
 
         return super.keyPressed(keyCode, scanCode, modifiers)
@@ -117,8 +117,16 @@ internal class TestConfigScreen(
     private fun openContextMenuPopup(actions: List<ContextApplier>, positionContext: Position) {
         val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
             .addDivider()
-            .positionX(PopupWidget.Builder.abs(if (positionContext.contextInput == ContextInput.KEYBOARD) positionContext.x else positionContext.mX))
-            .positionY(PopupWidget.Builder.abs(if (positionContext.contextInput == ContextInput.MOUSE) positionContext.y else positionContext.mY))
+            .positionX(PopupWidget.Builder.absScreen(
+                if (positionContext.contextInput == ContextInput.KEYBOARD)
+                    positionContext.x
+                else
+                    positionContext.mX))
+            .positionY(PopupWidget.Builder.absScreen(
+                if (positionContext.contextInput == ContextInput.KEYBOARD)
+                    positionContext.y
+                else
+                    positionContext.mY))
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
         for ((index, action) in actions.withIndex()) {
