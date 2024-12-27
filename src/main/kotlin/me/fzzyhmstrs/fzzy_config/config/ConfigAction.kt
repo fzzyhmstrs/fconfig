@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -44,7 +45,7 @@ import kotlin.experimental.and
  *
  * This could be used to link to a wiki, open another non-fzzy-config config, open a non-config screen, open a patchouli guide, run a command, and so on.
  * @param titleSupplier Supplier&lt;Text&gt; - supplies a name for the button widget. Will be checked every frame, so the button name will dynamically update as needed.
- * @param activeSupplier Supplier&lt;Boolean&gt; - supplies an active state; whether the button is insactive ("greyed out" and unclickable) or active (functioning normally)
+ * @param activeSupplier Supplier&lt;Boolean&gt; - supplies an active state; whether the button is inactive ("greyed out" and unclickable) or active (functioning normally)
  * @param pressAction [Runnable] - the action to execute on clicking the button
  * @param background [Identifier], nullable - if non-null, will provide a custom background for the widget rendering.
  * @param decoration [Decorated], nullable - if non-null, will render a "decoration" next to the widget. These are the typically white/wireframe icons shown next to certain settings like lists.
@@ -57,7 +58,7 @@ class ConfigAction @JvmOverloads constructor(
     private val pressAction: Runnable,
     private val decoration: Decorated?,
     private val description: Text? = null,
-    private val background: CustomPressableWidget.PressableTextures? = null)
+    private val background: TextureSet? = null)
 :
     EntryWidget<Any>,
     EntryFlag,
@@ -66,19 +67,21 @@ class ConfigAction @JvmOverloads constructor(
 {
 
     constructor(
-    titleSupplier: Supplier<Text>,
-    activeSupplier: Supplier<Boolean>,
-    pressAction: Runnable,
-    decoration: Identifier?,
-    description: Text? = null,
-    background: Identifier? = null): this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background?.let { CustomPressableWidget.PressableTextures(it, it, it) })
+        titleSupplier: Supplier<Text>,
+        activeSupplier: Supplier<Boolean>,
+        pressAction: Runnable,
+        decoration: Identifier?,
+        description: Text? = null,
+        background: Identifier? = null)
+            :
+            this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background?.let { TextureSet(it) })
 
     private var flags: Byte = 0
     override var translatableEntryKey = "fc.config.generic.action"
 
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<Any>): ClickableWidget {
-        return ActiveButtonWidget(titleSupplier, 110, 20, activeSupplier, { _ -> pressAction.run() }, background)
+        return ActiveButtonWidget(titleSupplier, 110, 20, activeSupplier, { _ -> pressAction.run() }, background ?: CustomPressableWidget.DEFAULT_TEXTURES)
     }
 
     @Internal

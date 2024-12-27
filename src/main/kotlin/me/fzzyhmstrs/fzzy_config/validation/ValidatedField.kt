@@ -472,18 +472,18 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     @Suppress("DEPRECATION")
     protected open fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<ContextHandler.ContextType, ContextAction> {
         val map: MutableMap<ContextHandler.ContextType, ContextAction> = mutableMapOf()
-        val copy = ContextAction.Builder("fc.button.copy".translate()) { context.misc.get(EntryCreators.COPY_BUFFER)?.set(this.get()) }
+        val copy = ContextAction.Builder("fc.button.copy".translate()) { context.misc.get(EntryCreators.COPY_BUFFER)?.set(this.get()); true }
             .icon(TextureDeco.CONTEXT_COPY)
             .buildMenu()
-        val paste = ContextAction.Builder("fc.button.paste".translate()) { context.misc.get(EntryCreators.COPY_BUFFER)?.get()?.let { this.trySet(it) } }
+        val paste = ContextAction.Builder("fc.button.paste".translate()) { context.misc.get(EntryCreators.COPY_BUFFER)?.get()?.let { this.trySet(it) }; true }
             .active { this.isValidEntry(context.misc.get(EntryCreators.COPY_BUFFER)?.get()) }
             .icon(TextureDeco.CONTEXT_PASTE)
             .buildMenu()
-        val revert = ContextAction.Builder("fc.button.revert".translate()) { this.revert() }
+        val revert = ContextAction.Builder("fc.button.revert".translate()) { this.revert(); true }
             .active {  this.peekState() }
             .icon(TextureDeco.CONTEXT_REVERT)
             .buildMenu()
-        val restore = ContextAction.Builder("fc.button.restore".translate()) { b -> ValidatedFieldPopups.openRestoreConfirmPopup(b, this) }
+        val restore = ContextAction.Builder("fc.button.restore".translate()) { b -> ValidatedFieldPopups.openRestoreConfirmPopup(b, this); true }
             .active {  !this.isDefault() }
             .icon(TextureDeco.CONTEXT_RESTORE)
             .buildMenu()
@@ -494,8 +494,8 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         map[ContextHandler.RESTORE] = restore
 
         if (context.client) {
-            val forward = ContextAction.Builder("fc.button.forward".translate()) { ValidatedFieldPopups.openEntryForwardingPopup(this) }
-                .icon(TextureDeco.CONTEXT_COPY)
+            val forward = ContextAction.Builder("fc.button.forward".translate()) { ValidatedFieldPopups.openEntryForwardingPopup(this); true }
+                .icon(TextureDeco.CONTEXT_FORWARD)
                 .buildMenu()
             map[ContextHandler.FORWARD] = forward
         }

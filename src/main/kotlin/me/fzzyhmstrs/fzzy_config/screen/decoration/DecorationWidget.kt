@@ -23,7 +23,7 @@ class DecorationWidget(private var decoration: Decorated? = null, private var of
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        decoration?.renderDecoration(context, x + offsetX, y + offsetY, delta)
+        decoration?.renderDecoration(context, x + offsetX, y + offsetY, delta, enabled = true, selected = false)
     }
 
     fun setDeco(newDecoration: Decorated, newOffsetX: Int = offsetX, newOffsetY: Int = offsetY) {
