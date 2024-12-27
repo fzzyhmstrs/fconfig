@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextInput
 import me.fzzyhmstrs.fzzy_config.screen.context.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
@@ -41,14 +42,16 @@ object ValidatedFieldPopups {
         val cancelText = "fc.button.cancel".translate()
         val cancelTextWidth = max(50, client.textRenderer.getWidth(cancelText) + 8)
         val buttonWidth = max(confirmTextWidth, cancelTextWidth)
+        val rX = if(b.contextInput == ContextInput.KEYBOARD) b.x else b.mX
+        val rY = if(b.contextInput == ContextInput.KEYBOARD) b.y else b.mY
 
         val popup = PopupWidget.Builder("fc.button.restore".translate())
             .addDivider()
             .add("confirm_text", MultilineTextWidget("fc.config.restore.confirm.desc".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             .add("confirm_button", CustomButtonWidget.builder(confirmText) { field.restore(); PopupWidget.pop() }.size(buttonWidth, 20).build(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("cancel_button", CustomButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "confirm_text", LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_RIGHT)
-            .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
-            .positionY(PopupWidget.Builder.popupContext { h -> b.y - h + 28 })
+            .positionX(PopupWidget.Builder.popupContext { w -> rX + b.width/2 - w/2 })
+            .positionY(PopupWidget.Builder.popupContext { h -> rY - h + 28 })
             .width(buttonWidth + 4 + buttonWidth + 16)
             .build()
         PopupWidget.push(popup)
