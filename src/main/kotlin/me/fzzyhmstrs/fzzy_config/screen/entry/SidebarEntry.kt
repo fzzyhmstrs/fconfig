@@ -62,7 +62,7 @@ class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Trans
         }
 
         override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
-            icon.renderDecoration(context, x, y, delta)
+            icon.renderDecoration(context, x, y, delta, false, false)
         }
 
         override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {

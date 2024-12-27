@@ -247,8 +247,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         } else {
             position
         }
-        action.action.accept(newPosition)
-        return true
+        return action.action.apply(newPosition)
     }
 
     //////////////////////////////////////

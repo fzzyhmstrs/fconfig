@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
@@ -33,7 +34,6 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.awt.SystemColor.text
 import java.util.*
 import java.util.function.Function
 import java.util.function.Supplier
@@ -256,13 +256,13 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
 
     private class ConditionDecoration(private val activeSupplier: Supplier<Boolean>): SpriteDecorated {
 
-        override fun decorationId(): Identifier {
-            return TextureIds.ENTRY_ERROR
+        override fun decorationId(): TextureSet {
+            return TextureSet(TextureIds.ENTRY_ERROR)
         }
 
-        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
+        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
             if (!activeSupplier.get())
-                super.renderDecoration(context, x, y, delta)
+                super.renderDecoration(context, x, y, delta, enabled, selected)
         }
     }
 
@@ -284,8 +284,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             width,
             height,
             activeSupplier,
-            { _ -> },
-            null)
+            { _ -> })
     {
 
         override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {

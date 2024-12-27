@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextProvider
@@ -175,10 +176,12 @@ class DynamicListWidget(
 
     override fun pushLast() {
         lastSelected = focused
+        lastSelected?.nullCast<LastSelectable>()?.pushLast()
     }
 
     override fun popLast() {
         (lastSelected as? Entry)?.let { focused = it }
+        lastSelected?.nullCast<LastSelectable>()?.popLast()
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -571,7 +574,14 @@ class DynamicListWidget(
     private class GroupPair(val groupEntry: Entry, var visible: Boolean)
 
     abstract class Entry(parentElement: DynamicListWidget, override val name: Text, override val desc: Text?, val scope: Scope)
-        : CustomListWidget.Entry<DynamicListWidget>(parentElement), ParentElement, Searcher.SearchContent, ContextHandler, ContextProvider {
+        :
+        CustomListWidget.Entry<DynamicListWidget>(parentElement),
+        ParentElement,
+        Searcher.SearchContent,
+        ContextHandler,
+        ContextProvider,
+        LastSelectable
+    {
 
         var visibility = Visibility.VISIBLE
 
@@ -586,6 +596,7 @@ class DynamicListWidget(
             return mouseY >= top.get() && mouseY < bottom.get()
         }
 
+        override var lastSelected: Element? = null
         private var focusedSelectable: Selectable? = null
         private var focusedElement: Element? = null
         private var dragging = false
@@ -636,6 +647,16 @@ class DynamicListWidget(
 
         fun applyVisibility(operator: UnaryOperator<Visibility>) {
             this.visibility = operator.apply(this.visibility)
+        }
+
+        override fun pushLast() {
+            lastSelected = focused
+            lastSelected?.nullCast<LastSelectable>()?.pushLast()
+        }
+
+        override fun popLast() {
+            (lastSelected as? Entry)?.let { focused = it }
+            lastSelected?.nullCast<LastSelectable>()?.popLast()
         }
 
         override fun isFocused(): Boolean {
