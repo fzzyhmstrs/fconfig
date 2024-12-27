@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
@@ -84,6 +85,8 @@ internal object NetworkEventsClient {
 
     fun registerClient() {
 
+        ContextHandler.init()
+
         ClientCommandRegistrationCallback.EVENT.register { dispatcher, _ ->
             registerClientCommands(dispatcher)
         }
@@ -103,25 +106,12 @@ internal object NetworkEventsClient {
             }
         }
 
-        /*ClientPlayNetworking.registerGlobalReceiver(ConfigPermissionsS2CCustomPayload.type) { payload, _ ->
-            ClientConfigRegistry.receivePerms(payload.id, payload.permissions)
-        }*/
-
-
         ClientConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.type) { payload, handler ->
             ClientConfigRegistry.receiveSync(
                 payload.id,
                 payload.serializedConfig
             ) { text -> handler.responseSender().disconnect(text) }
         }
-
-        /*ClientPlayNetworking.registerGlobalReceiver(ConfigUpdateS2CCustomPayload.type) { payload, context ->
-            ClientConfigRegistry.receiveUpdate(payload.updates, context.player())
-        }*/
-
-        /*ClientPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type) { payload, _ ->
-            ClientConfigRegistry.handleForwardedUpdate(payload.update, payload.player, payload.scope, payload.summary)
-        }*/
     }
 
     private fun registerClientCommands(dispatcher: CommandDispatcher<FabricClientCommandSource>) {
