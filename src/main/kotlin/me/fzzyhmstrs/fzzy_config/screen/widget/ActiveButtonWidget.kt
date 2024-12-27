@@ -49,7 +49,7 @@ open class ActiveButtonWidget(
                 height: Int,
                 activeProvider: Supplier<Boolean>,
                 pressAction: Consumer<ActiveButtonWidget>,
-                background: PressableTextures? = null): this({title}, width, height, activeProvider, pressAction, background)
+                background: PressableTextures? = null): this({ title }, width, height, activeProvider, pressAction, background)
 
     override fun getMessage(): Text {
         return titleSupplier.get()

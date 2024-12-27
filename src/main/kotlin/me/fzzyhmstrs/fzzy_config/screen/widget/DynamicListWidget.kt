@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextApplier
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextProvider
 import me.fzzyhmstrs.fzzy_config.screen.context.Position
@@ -306,9 +305,9 @@ class DynamicListWidget(
         }
     }
 
-    override fun contextActions(position: Position): List<ContextApplier> {
+    override fun provideContext(position: Position): ContextProvider.ContextResult {
         //TODO handle keyboard vs mouse navigation?
-        return hoveredElement?.contextActions(position) ?: focusedElement?.contextActions(position) ?: emptyList()
+        return hoveredElement?.provideContext(position) ?: focusedElement?.provideContext(position) ?: ContextProvider.empty(position)
     }
 
     //////////////////////////////
@@ -616,8 +615,8 @@ class DynamicListWidget(
             init()
         }
 
-        override fun contextActions(position: Position): List<ContextApplier> {
-            return emptyList()
+        override fun provideContext(position: Position): ContextProvider.ContextResult {
+            return ContextProvider.empty(position)
         }
 
         override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {

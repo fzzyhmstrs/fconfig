@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.context
 
+import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.MinecraftClient
@@ -13,7 +14,14 @@ class ContextActionWidget(
     private val applier: ContextApplier,
     width: Int)
     :
-    ActiveButtonWidget(applier.action.texts.name, width, 14, applier.action.active, { _ -> PopupWidget.pop(); applier.apply() }) {
+    ActiveButtonWidget(
+        applier.action.texts.name,
+        width,
+        14,
+        applier.action.active,
+        { _ -> PopupWidget.pop(); applier.apply() },
+        PressableTextures("widget/popup/button_right_click".fcId(), "widget/popup/button_right_click".fcId(), "widget/popup/button_right_click_highlighted".fcId())
+    ) {
 
     override fun renderCustom(
         context: DrawContext,
@@ -45,7 +53,7 @@ class ContextActionWidget(
     ) {
         val i = x + xMargin
         val j = x + width - xMargin
-        val k = y + ((height - 9) / 2)
+        val k = y + ((height - 9 + 1) / 2)
         val text = message
         val w1 = textRenderer.getWidth(text)
         val w2 = j - i

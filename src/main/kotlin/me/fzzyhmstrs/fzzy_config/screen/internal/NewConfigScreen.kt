@@ -175,9 +175,9 @@ internal class NewConfigScreen(
     override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
         return when (contextType) {
             ContextHandler.CONTEXT_KEYBOARD, ContextHandler.CONTEXT_MOUSE -> {
-                val actions = hoveredElement?.nullCast<ContextProvider>()?.contextActions(position) ?: emptyList()
-                if (actions.isNotEmpty()) {
-                    openContextMenuPopup(actions, position)
+                val contextResult = hoveredElement?.nullCast<ContextProvider>()?.provideContext(position) ?: ContextProvider.empty(position)
+                if (contextResult.appliers.isNotEmpty()) {
+                    openContextMenuPopup(contextResult.appliers, contextResult.position)
                     true
                 } else {
                     false

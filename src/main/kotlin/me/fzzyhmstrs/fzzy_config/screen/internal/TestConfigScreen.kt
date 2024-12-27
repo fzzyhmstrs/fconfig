@@ -10,35 +10,15 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
-import me.fzzyhmstrs.fzzy_config.config.ConfigSpec
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
-import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.DirectionalLayoutWidget
-import net.minecraft.client.gui.widget.TextWidget
-import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
-import net.minecraft.util.Colors
-import net.minecraft.util.Formatting
-import org.lwjgl.glfw.GLFW
-import java.util.function.Function
 
 //client
 internal class TestConfigScreen(
@@ -117,12 +97,12 @@ internal class TestConfigScreen(
         return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
-    override fun handleContext(contextType: ContextHandler.ContextType, position: me.fzzyhmstrs.fzzy_config.screen.context.Position): Boolean {
+    override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
         return when (contextType) {
             ContextHandler.CONTEXT_KEYBOARD, ContextHandler.CONTEXT_MOUSE -> {
-                val actions = hoveredElement?.nullCast<ContextProvider>()?.contextActions(position) ?: emptyList()
-                if (actions.isNotEmpty()) {
-                    openContextMenuPopup(actions, position)
+                val actions = hoveredElement?.nullCast<ContextProvider>()?.provideContext(position) ?: ContextProvider.empty(position)
+                if (actions.appliers.isNotEmpty()) {
+                    openContextMenuPopup(actions.appliers, actions.position)
                     true
                 } else {
                     false
@@ -134,11 +114,11 @@ internal class TestConfigScreen(
         }
     }
 
-    private fun openContextMenuPopup(actions: List<ContextApplier>, positionContext: me.fzzyhmstrs.fzzy_config.screen.context.Position) {
+    private fun openContextMenuPopup(actions: List<ContextApplier>, positionContext: Position) {
         val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
             .addDivider()
-            .positionX(PopupWidget.Builder.abs(positionContext.x))
-            .positionY(PopupWidget.Builder.abs(positionContext.y))
+            .positionX(PopupWidget.Builder.abs(if (positionContext.contextInput == ContextInput.KEYBOARD) positionContext.x else positionContext.mX))
+            .positionY(PopupWidget.Builder.abs(if (positionContext.contextInput == ContextInput.MOUSE) positionContext.y else positionContext.mY))
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
         for ((index, action) in actions.withIndex()) {
@@ -146,7 +126,9 @@ internal class TestConfigScreen(
                 "$index",
                 ContextActionWidget(action, ContextActionWidget.getNeededWidth(action)),
                 LayoutWidget.Position.BELOW,
-                LayoutWidget.Position.ALIGN_LEFT)
+                LayoutWidget.Position.ALIGN_LEFT
+            )
         }
+        PopupWidget.push(popup.build())
     }
 }
