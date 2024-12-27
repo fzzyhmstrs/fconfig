@@ -36,14 +36,16 @@ interface ContextHandler {
             return id.hashCode()
         }
 
+        override fun toString(): String {
+            return "ContextType($id)"
+        }
+
         @FunctionalInterface
         fun interface Relevant {
             fun relevant(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): Boolean
         }
 
         companion object {
-
-
 
             private val ids: Vector<String> = Vector(16)
 
@@ -152,5 +154,7 @@ interface ContextHandler {
             }
             return null
         }
+
+        fun init() {}
     }
 }

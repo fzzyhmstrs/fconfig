@@ -225,7 +225,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         return selectables
     }
 
-    override fun contextActions(position: Position): List<ContextApplier> {
+    override fun provideContext(position: Position): ContextProvider.ContextResult {
         val content = layout.getElement("content")
         val newPosition = if (content != null && position.contextInput == ContextInput.KEYBOARD) {
             position.copy(x = content.getLeft(), y = content.getTop(), width = content.elWidth(), height = content.elHeight() )
@@ -234,7 +234,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         } else {
             position
         }
-        return context.values.filter { it.forMenu }.map { ContextApplier(it, newPosition) }
+        return ContextProvider.ContextResult(context.values.filter { it.forMenu }.map { ContextApplier(it, newPosition) }, newPosition)
     }
 
     override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
