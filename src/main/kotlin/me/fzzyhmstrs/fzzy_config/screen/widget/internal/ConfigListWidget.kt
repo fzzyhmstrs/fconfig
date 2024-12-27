@@ -31,6 +31,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
 
     constructor(minecraftClient: MinecraftClient, parent: ConfigScreen, drawBackground: Boolean = true): this(minecraftClient, parent.width, parent.layout.contentHeight, parent.layout.headerHeight, drawBackground)
 
+    public var scrollAmount: Double = 0.0
     private var visibleElements = 5
 
     private var suggestionWindowElement: Element? = null
@@ -234,7 +235,7 @@ internal class ConfigListWidget(minecraftClient: MinecraftClient, width: Int, co
         return super.getScrollbarX()
     }
 
-    override fun isSelectButton(button: Int): Boolean {
+    fun isSelectButton(button: Int): Boolean {
         return button == 0 || button == 1
     }
 
