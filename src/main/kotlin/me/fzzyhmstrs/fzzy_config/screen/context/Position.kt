@@ -10,10 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.context
 
-class ContextApplier(val action: ContextAction, val actionSource: Position) {
-
-    fun apply() {
-        action.action.accept(actionSource)
-    }
-
-}
+data class Position(val contextInput: ContextInput,
+                    val mX: Int, val mY: Int, //mouse xy
+                    val x: Int, val y: Int, // element xy
+                    val width: Int, val height: Int, //element wh
+                    val screenWidth: Int, val screenHeight: Int) //screen wh

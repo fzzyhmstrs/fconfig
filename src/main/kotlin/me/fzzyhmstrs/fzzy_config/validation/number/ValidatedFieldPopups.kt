@@ -14,6 +14,8 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
+import me.fzzyhmstrs.fzzy_config.screen.context.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
@@ -24,7 +26,6 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.MultilineTextWidget
-import net.minecraft.client.gui.widget.Widget
 import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.command.CommandSource
 import java.util.*
@@ -33,8 +34,7 @@ import kotlin.math.max
 object ValidatedFieldPopups {
 
     @Suppress("DEPRECATION")
-    internal fun openRestoreConfirmPopup(b: Any?, field: ValidatedField<*>) {
-        if (b !is Widget) return
+    internal fun openRestoreConfirmPopup(b: Position, field: ValidatedField<*>) {
         val client = MinecraftClient.getInstance()
         val confirmText = "fc.button.restore.confirm".translate()
         val confirmTextWidth = max(50, client.textRenderer.getWidth(confirmText) + 8)

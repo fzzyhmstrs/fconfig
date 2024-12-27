@@ -6,9 +6,9 @@ import net.minecraft.text.Text
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-class ContextAction(val texts: Translatable.Result, val active: Supplier<Boolean>, val forMenu: Boolean, val icon: Decorated?, val action: Consumer<Any?>) {
+class ContextAction(val texts: Translatable.Result, val active: Supplier<Boolean>, val forMenu: Boolean, val icon: Decorated?, val action: Consumer<Position>) {
 
-    class Builder(private val name: Text, private val action: Consumer<Any?>) {
+    class Builder(private val name: Text, private val action: Consumer<Position>) {
         private var narration: Text? = null
         private var active: Supplier<Boolean> = Supplier { true }
         private var icon: Decorated? = null
