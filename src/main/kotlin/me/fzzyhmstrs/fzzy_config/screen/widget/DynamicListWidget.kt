@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextApplier
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextProvider
+import me.fzzyhmstrs.fzzy_config.screen.context.Position
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
@@ -277,7 +278,7 @@ class DynamicListWidget(
         this.suggestionWindowElement = element
     }
 
-    override fun handleContext(contextType: ContextHandler.ContextType): Boolean {
+    override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
         return when (contextType) {
             ContextHandler.PAGE_UP -> {
                 page(true)
@@ -300,14 +301,14 @@ class DynamicListWidget(
                 true
             }
             else -> {
-                hoveredElement?.handleContext(contextType) ?: focusedElement?.handleContext(contextType) ?: false
+                hoveredElement?.handleContext(contextType, position) ?: focusedElement?.handleContext(contextType, position) ?: false
             }
         }
     }
 
-    override fun contextActions(): List<ContextApplier> {
+    override fun contextActions(position: Position): List<ContextApplier> {
         //TODO handle keyboard vs mouse navigation?
-        return hoveredElement?.contextActions() ?: focusedElement?.contextActions() ?: emptyList()
+        return hoveredElement?.contextActions(position) ?: focusedElement?.contextActions(position) ?: emptyList()
     }
 
     //////////////////////////////
@@ -615,11 +616,11 @@ class DynamicListWidget(
             init()
         }
 
-        override fun contextActions(): List<ContextApplier> {
+        override fun contextActions(position: Position): List<ContextApplier> {
             return emptyList()
         }
 
-        override fun handleContext(contextType: ContextHandler.ContextType): Boolean {
+        override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
             return false
         }
 

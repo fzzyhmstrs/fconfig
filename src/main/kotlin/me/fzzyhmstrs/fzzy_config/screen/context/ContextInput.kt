@@ -10,10 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.context
 
-class ContextApplier(val action: ContextAction, val actionSource: Position) {
-
-    fun apply() {
-        action.action.accept(actionSource)
-    }
-
+enum class ContextInput {
+    KEYBOARD,
+    MOUSE
 }

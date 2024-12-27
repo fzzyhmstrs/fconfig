@@ -11,10 +11,9 @@ import java.util.function.Supplier
 
 class ContextActionWidget(
     private val applier: ContextApplier,
-    width: Int,
-    activeProvider: Supplier<Boolean>)
+    width: Int)
     :
-    ActiveButtonWidget(applier.action.texts.name, width, 14, activeProvider, { _ -> PopupWidget.pop(); applier.apply() }) {
+    ActiveButtonWidget(applier.action.texts.name, width, 14, applier.action.active, { _ -> PopupWidget.pop(); applier.apply() }) {
 
     override fun renderCustom(
         context: DrawContext,
@@ -64,11 +63,14 @@ class ContextActionWidget(
         }
     }
 
-    fun getNeededWidth(): Int {
-        return if (applier.action.icon != null) {
-            11 + MinecraftClient.getInstance().textRenderer.getWidth(applier.action.texts.name) + 4
-        } else {
-            MinecraftClient.getInstance().textRenderer.getWidth(applier.action.texts.name) + 4
+    companion object {
+
+        fun getNeededWidth(applier: ContextApplier): Int {
+            return if (applier.action.icon != null) {
+                11 + MinecraftClient.getInstance().textRenderer.getWidth(applier.action.texts.name) + 4
+            } else {
+                MinecraftClient.getInstance().textRenderer.getWidth(applier.action.texts.name) + 4
+            }
         }
     }
 }

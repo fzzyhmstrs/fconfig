@@ -12,13 +12,11 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.config.ConfigSpec
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
-import me.fzzyhmstrs.fzzy_config.screen.widget.ClickableTextWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.context.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ConfigListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
@@ -46,9 +44,13 @@ import java.util.function.Function
 internal class TestConfigScreen(
     title: Text,
     private val manager: UpdateManager,
-    private val list: DynamicListWidget) : PopupWidgetScreen(title) {
+    private val list: DynamicListWidget) : PopupWidgetScreen(title), ContextHandler
+{
 
     private val listWidth = 290
+
+    private var mX: Double = 0.0
+    private var mY: Double = 0.0
 
     override fun close() {
         manager.apply(true)
@@ -67,8 +69,84 @@ internal class TestConfigScreen(
         this.focused = list
     }
 
+    override fun mouseMoved(mouseX: Double, mouseY: Double) {
+        this.mX = mouseX
+        this.mY = mouseY
+        super.mouseMoved(mouseX, mouseY)
+    }
+
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        val contextType = ContextHandler.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (contextType != null) {
+            return handleContext(contextType,
+                Position(
+                    ContextInput.MOUSE,
+                    mouseX.toInt(),
+                    mouseY.toInt(),
+                    0,
+                    0,
+                    this.width,
+                    this.height,
+                    this.width,
+                    this.height
+                )
+            )
+        }
+        return super.mouseClicked(mouseX, mouseY, button)
+    }
+
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (list.keyPressed(keyCode, scanCode, modifiers)) return true
+        val contextType = ContextHandler.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (contextType != null) {
+            val input = if(MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
+            return handleContext(contextType,
+                Position(
+                    input,
+                    mX.toInt(),
+                    mY.toInt(),
+                    0,
+                    0,
+                    this.width,
+                    this.height,
+                    this.width,
+                    this.height
+                )
+            )
+        }
+
         return super.keyPressed(keyCode, scanCode, modifiers)
+    }
+
+    override fun handleContext(contextType: ContextHandler.ContextType, position: me.fzzyhmstrs.fzzy_config.screen.context.Position): Boolean {
+        return when (contextType) {
+            ContextHandler.CONTEXT_KEYBOARD, ContextHandler.CONTEXT_MOUSE -> {
+                val actions = hoveredElement?.nullCast<ContextProvider>()?.contextActions(position) ?: emptyList()
+                if (actions.isNotEmpty()) {
+                    openContextMenuPopup(actions, position)
+                    true
+                } else {
+                    false
+                }
+            }
+            else -> {
+                list.handleContext(contextType, position)
+            }
+        }
+    }
+
+    private fun openContextMenuPopup(actions: List<ContextApplier>, positionContext: me.fzzyhmstrs.fzzy_config.screen.context.Position) {
+        val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
+            .addDivider()
+            .positionX(PopupWidget.Builder.abs(positionContext.x))
+            .positionY(PopupWidget.Builder.abs(positionContext.y))
+            .background("widget/popup/background_right_click".fcId())
+            .noBlur()
+        for ((index, action) in actions.withIndex()) {
+            popup.add(
+                "$index",
+                ContextActionWidget(action, ContextActionWidget.getNeededWidth(action)),
+                LayoutWidget.Position.BELOW,
+                LayoutWidget.Position.ALIGN_LEFT)
+        }
     }
 }
