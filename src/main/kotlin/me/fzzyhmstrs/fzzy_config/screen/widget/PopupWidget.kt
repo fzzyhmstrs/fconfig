@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
@@ -64,7 +65,7 @@ class PopupWidget
         private val positionY: BiFunction<Int, Int, Int>,
         private val positioner: BiConsumer<Int, Int>,
         private val onClose: Runnable,
-        private val onClick: Runnable,
+        private val onClick: PopupParentElement.MouseClickResult,
         private val children: List<Element>,
         private val selectables: List<Selectable>,
         private val drawables: List<Drawable>)
@@ -80,7 +81,6 @@ class PopupWidget
     private var focused: Element? = null
     private var focusedSelectable: Selectable? = null
     private var dragging = false
-    private val fillColor = Color(30, 30, 30, 90).rgb
     private var suggestionWindowElement: Element? = null
 
     init {
@@ -133,12 +133,11 @@ class PopupWidget
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button)?.takeIf { it } ?: clickMouse(mouseX, mouseY, button)
+        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button)?.takeIf { it } ?: super.mouseClicked(mouseX, mouseY, button).takeIf { it } ?: isMouseOver(mouseX, mouseY)
     }
 
-    private fun clickMouse(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        onClick.run()
-        return super.mouseClicked(mouseX, mouseY, button).takeIf { it } ?: isMouseOver(mouseX, mouseY)
+    fun preClick(mouseX: Double, mouseY: Double, button: Int): PopupParentElement.ClickResult {
+        return onClick.onClick(mouseX, mouseY, isMouseOver(mouseX, mouseY), button)
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -302,7 +301,7 @@ class PopupWidget
         private var positionY: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
 
         private var onClose = Runnable { }
-        private var onClick = Runnable { }
+        private var onClick: PopupParentElement.MouseClickResult = PopupParentElement.MouseClickResult { _, _, _, _ -> PopupParentElement.ClickResult.USE }
         private var blurBackground = true
         private var closeOnOutOfBounds = true
         private var background = "widget/popup/background".fcId()
@@ -689,7 +688,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        fun onClick(onClick: Runnable): Builder {
+        fun onClick(onClick: PopupParentElement.MouseClickResult): Builder {
             this.onClick = onClick
             return this
         }
@@ -794,6 +793,7 @@ class PopupWidget
             fun abs(a: Int): BiFunction<Int, Int, Int> {
                 return BiFunction { _, _ -> a }
             }
+
             /**
              * Positions a Popup dimension at a specific location
              *
@@ -806,6 +806,7 @@ class PopupWidget
             fun at(a: Supplier<Int>): BiFunction<Int, Int, Int> {
                 return BiFunction { sd, d -> max(min(sd - d, a.get()), 0) }
             }
+
             /**
              * Positions a Popup dimension based on Popup dimension context
              *
@@ -818,6 +819,7 @@ class PopupWidget
             fun popupContext(f: Function<Int, Int>): BiFunction<Int, Int, Int> {
                 return BiFunction { sd, d -> max(min(sd - d, f.apply(d)), 0) }
             }
+
             /**
              * Positions a Popup dimension based on screen dimension context
              *
@@ -827,6 +829,20 @@ class PopupWidget
              * @author fzzyhmstrs
              * @since 0.2.0
              */
+
+            /**
+             * Positions a Popup dimention at an absolute location, bounded by the screen
+             *
+             * The position will not change on resize or other events, so use wisely.
+             * @param a Int - the position to apply
+             * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
+            fun absScreen(a: Int): BiFunction<Int, Int, Int> {
+                return BiFunction { sd, d -> max(min(sd - d, a), 0) }
+            }
+
             fun screenContext(f: Function<Int, Int>): BiFunction<Int, Int, Int> {
                 return BiFunction { sd, d -> max(min(sd - d, f.apply(sd)), 0) }
             }
@@ -838,6 +854,7 @@ class PopupWidget
              * @author fzzyhmstrs
              * @since 0.2.0
              */
+
             fun center(): BiFunction<Int, Int, Int> {
                 return BiFunction { sd, d -> sd/2 - d/2 }
             }

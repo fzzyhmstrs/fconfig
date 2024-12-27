@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.simpleId
 import net.minecraft.client.MinecraftClient
@@ -25,7 +26,7 @@ import net.minecraft.util.math.MathHelper
 
 open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message), TooltipChild {
 
-    protected open val textures: PressableTextures = DEFAULT_TEXTURES
+    protected open val textures: TextureSet = DEFAULT_TEXTURES
 
     open fun onPress() {}
 
@@ -84,21 +85,11 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         appendDefaultNarrations(builder)
     }
 
-    data class PressableTextures(private val tex: Identifier, private val disabled: Identifier, private val highlighted: Identifier) {
-        fun get(enabled: Boolean, focused: Boolean): Identifier {
-            return if (enabled) {
-                if (focused) highlighted else tex
-            } else {
-                disabled
-            }
-        }
-    }
+    companion object {
+        protected val tex =  "widget/button".simpleId()
+        protected val disabled = "widget/button_disabled".simpleId()
+        protected val highlighted = "widget/button_highlighted".simpleId()
 
-    protected companion object {
-        val tex =  "widget/button".simpleId()
-        val disabled = "widget/button_disabled".simpleId()
-        val highlighted = "widget/button_highlighted".simpleId()
-
-        val DEFAULT_TEXTURES = PressableTextures(tex, disabled, highlighted)
+        val DEFAULT_TEXTURES = TextureSet(tex, disabled, highlighted)
     }
 }

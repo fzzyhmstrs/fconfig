@@ -71,7 +71,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        hoveredElement = children().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
+        hoveredElement = if (popupWidgets.isNotEmpty()) null else children().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
         if (popupWidgets.isEmpty())
             super.render(context, mouseX, mouseY, delta)
         else {
