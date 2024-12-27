@@ -96,6 +96,10 @@ interface PopupParentElement: ParentElement, LastSelectable {
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         val popupWidget = activeWidget() ?: return super.mouseClicked(mouseX, mouseY, button)
+        val result = popupWidget.preClick(mouseX, mouseY, button)
+        if (result == ClickResult.PASS) {
+            return super.mouseClicked(mouseX, mouseY, button)
+        }
         if (popupWidget.mouseClicked(mouseX, mouseY, button) || popupWidget.isMouseOver(mouseX, mouseY)) {
             return true
         } else if(popupWidget.closesOnMissedClick()) {
@@ -134,4 +138,13 @@ interface PopupParentElement: ParentElement, LastSelectable {
         return activeWidget()?.charTyped(chr, modifiers) ?: super.charTyped(chr, modifiers)
     }
 
+    @FunctionalInterface
+    fun interface MouseClickResult {
+        fun onClick(mouseX: Double, mouseY: Double, isMouseOver: Boolean, button: Int): ClickResult
+    }
+
+    enum class ClickResult {
+        PASS,
+        USE
+    }
 }

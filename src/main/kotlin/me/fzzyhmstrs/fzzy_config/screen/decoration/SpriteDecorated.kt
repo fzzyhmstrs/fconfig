@@ -11,20 +11,20 @@
 package me.fzzyhmstrs.fzzy_config.screen.decoration
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.util.Identifier
 
 //client
 interface SpriteDecorated: Decorated {
-    fun decorationId(): Identifier
+    fun decorationId(): TextureSet
     val w: Int
         get() = 16
     val h: Int
         get() = 16
-    override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
+    override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawTex(decorationId(), x, y, w, h)
+        context.drawTex(decorationId().get(enabled, selected), x, y, w, h)
     }
 }

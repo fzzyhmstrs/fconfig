@@ -3,12 +3,12 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
-import java.util.function.Supplier
 
 class ContextActionWidget(
     private val applier: ContextApplier,
@@ -20,7 +20,7 @@ class ContextActionWidget(
         14,
         applier.action.active,
         { _ -> PopupWidget.pop(); applier.apply() },
-        PressableTextures("widget/popup/button_right_click".fcId(), "widget/popup/button_right_click".fcId(), "widget/popup/button_right_click_highlighted".fcId())
+        TextureSet("widget/popup/button_right_click".fcId(), "widget/popup/button_right_click".fcId(), "widget/popup/button_right_click_highlighted".fcId())
     ) {
 
     override fun renderCustom(
@@ -35,7 +35,7 @@ class ContextActionWidget(
     ) {
         if (applier.action.icon != null) {
             super.renderCustom(context, x + 12, y, width - 12, height, mouseX, mouseY, delta)
-            applier.action.icon.renderDecoration(context, x, y + 2, delta)
+            applier.action.icon.renderDecoration(context, x + 1, y + 2, delta, this.active, this.isSelected)
         } else {
             super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
         }
@@ -58,7 +58,7 @@ class ContextActionWidget(
         val w1 = textRenderer.getWidth(text)
         val w2 = j - i
         if (w2 > w1) {
-            drawScrollableText(context, textRenderer, (i + j) / 2, i, y, j, y + height, color)
+            super.drawScrollableText(context, textRenderer, (i + j) / 2, i, y, j, y + height, color)
         } else {
             context.drawTextWithShadow(textRenderer, text, i, k, color)
         }

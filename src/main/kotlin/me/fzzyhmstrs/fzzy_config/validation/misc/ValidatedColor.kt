@@ -692,8 +692,8 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
 
     private class ColorDecoration(private val colorSupplier: Supplier<Int>): Decorated {
 
-        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
-            TextureDeco.DECO_FRAME.renderDecoration(context, x, y, delta)
+        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
+            TextureDeco.DECO_FRAME.renderDecoration(context, x, y, delta, enabled, selected)
             RenderSystem.enableBlend()
             context.fill(x+2, y+2, x+14, y+14, colorSupplier.get())
         }
