@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.RequiresRestart
 import me.fzzyhmstrs.fzzy_config.annotations.Version
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
+import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -92,17 +93,23 @@ class TestConfigImpl: Config(Identifier("fzzy_config_test", "test_config"), subf
 
     var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
+    var group = ConfigGroup("test_group")
+
     var list1 = listOf(1, 3, 5, 7)
     var list2 = listOf(1, 3, 5, 7).validated()
 
     var color1 = Color(255, 128, 0).validated(true)
 
+    var group2 = ConfigGroup("test_group_2")
+
     var set1 = setOf(0.2, 0.4, 0.6)
+    @ConfigGroup.Pop
     var set2 = setOf(0.2, 0.4, 0.6).validated()
 
+    @ConfigGroup.Pop
     var map1 = mapOf(1 to "a", 2 to "c")
 
-    var id1 = ValidatedIdentifier.ofList(Identifier("stick"), listOf(Identifier("stick"), Identifier("blaze_rod"), Identifier("coal"), Identifier("charcoal")))
+    var id1 = ValidatedIdentifier.ofList(Identifier.of("stick"), listOf(Identifier.of("stick"), Identifier.of("blaze_rod"), Identifier.of("coal"), Identifier.of("charcoal")))
 
     var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices()
 

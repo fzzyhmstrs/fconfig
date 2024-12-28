@@ -9,6 +9,8 @@
   "fc.test.int2.name.desc": "A number between 0 and 16, that defines how cool the number is.",
 
   "fzzy_config_test.test_config.enum1" : "Very Cool Long Enum Name For Testing",
+  "fzzy_config_test.test_config.group" : "Test Group",
+
   "fzzy_config_test.test_config2.enum1" : "Very Cool Long Enum Name For Testing",
   "fzzy_config_test.test_config2.enum1.desc" : "Very cool long description for showing off that very cool long descriptions work in game.",
   "fzzy_config_test.test_config.ALPHA" : "Alpha",

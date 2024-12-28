@@ -13,12 +13,10 @@ package me.fzzyhmstrs.fzzy_config.config
 import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
+import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
-import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
-import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -90,6 +88,11 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
     :
     CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY)
     {
+
+        override fun onPress() {
+            list.toggleGroup(group)
+        }
+
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
             if (this.active) {
                 if (list.groupIsVisible(group)) {
@@ -129,8 +132,7 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
             val bl2 = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
             val t = if (bl2) title.copy().styled { s -> s.withUnderline(true) } else title
             val trimmed = trim(t, width - 17)
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, trimmed, x + 17, y + (getHeight() - (MinecraftClient.getInstance().textRenderer.fontHeight) / 2), -1)
-            context.drawTex(getTex(bl, bl2), x, y, 20, 20)
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, trimmed, x + 17, y + (getHeight() - (MinecraftClient.getInstance().textRenderer.fontHeight) + 1) / 2, -1)
             val h2 = y + height/2
             if (bl) { //vertical line
                 context.fill(x, h2, x + 1, y + height, -1)
@@ -143,7 +145,10 @@ open class ConfigGroup @JvmOverloads constructor(private val groupName: String =
                     context.fill(x1 + 1, h2, x2 + 1, h2 + 1, -12698050)
                 }
             }
+            context.drawTex(getTex(bl, bl2), x, y, 20, 20)
         }
+
+        override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
 
         private fun trim(text: Text, width: Int): OrderedText? {
             val stringVisitable = MinecraftClient.getInstance().textRenderer.trimToWidth(text, width - MinecraftClient.getInstance().textRenderer.getWidth(ScreenTexts.ELLIPSIS))

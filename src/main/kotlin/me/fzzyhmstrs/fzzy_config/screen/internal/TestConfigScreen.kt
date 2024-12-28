@@ -12,19 +12,22 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
+import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
 import net.minecraft.text.Text
+import org.lwjgl.glfw.GLFW
 
 //client
 internal class TestConfigScreen(
     title: Text,
     private val manager: UpdateManager,
-    private val list: DynamicListWidget) : PopupWidgetScreen(title), ContextHandler
+    private val list: DynamicListWidget) : PopupWidgetScreen(title), ContextHandler, ContextProvider
 {
 
     private val listWidth = 290
@@ -55,43 +58,25 @@ internal class TestConfigScreen(
         super.mouseMoved(mouseX, mouseY)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
         val contextType = ContextHandler.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextType != null) {
-            return if(handleContext(contextType,
-                Position(
-                    ContextInput.MOUSE,
-                    mouseX.toInt(),
-                    mouseY.toInt(),
-                    0,
-                    0,
-                    this.width,
-                    this.height,
-                    this.width,
-                    this.height
-                )
-            )) true else super.mouseClicked(mouseX, mouseY, button)
+            return if(handleContext(contextType, Position(ContextInput.MOUSE, mouseX.toInt(), mouseY.toInt(), 0, 0, this.width, this.height, this.width, this.height)))
+                true
+            else
+                super.onClick(mouseX, mouseY, button)
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.onClick(mouseX, mouseY, button)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         val contextType = ContextHandler.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextType != null) {
             val input = if(MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
-            return if(handleContext(contextType,
-                Position(
-                    input,
-                    mX.toInt(),
-                    mY.toInt(),
-                    0,
-                    0,
-                    this.width,
-                    this.height,
-                    this.width,
-                    this.height
-                )
-            )) true else super.keyPressed(keyCode, scanCode, modifiers)
+            return if(handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height)))
+                true
+            else
+                super.keyPressed(keyCode, scanCode, modifiers)
         }
 
         return super.keyPressed(keyCode, scanCode, modifiers)
@@ -100,9 +85,10 @@ internal class TestConfigScreen(
     override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
         return when (contextType) {
             ContextHandler.CONTEXT_KEYBOARD, ContextHandler.CONTEXT_MOUSE -> {
-                val actions = hoveredElement?.nullCast<ContextProvider>()?.provideContext(position) ?: ContextProvider.empty(position)
-                if (actions.appliers.isNotEmpty()) {
-                    openContextMenuPopup(actions.appliers, actions.position)
+                val builder = ContextProvider.empty(position)
+                this.provideContext(builder)
+                if (builder.isNotEmpty()) {
+                    openContextMenuPopup(builder)
                     true
                 } else {
                     false
@@ -114,9 +100,16 @@ internal class TestConfigScreen(
         }
     }
 
-    private fun openContextMenuPopup(actions: List<ContextApplier>, positionContext: Position) {
+    override fun provideContext(builder: ContextResultBuilder) {
+        hoveredElement?.nullCast<ContextProvider>()?.provideContext(builder)
+        val save = ContextAction.Builder("fc.button.save".translate()) { manager.apply(false); true }
+            .icon(TextureDeco.CONTEXT_SAVE)
+        builder.add("config", ContextHandler.SAVE, save)
+    }
+
+    private fun openContextMenuPopup(builder: ContextResultBuilder) {
+        val positionContext = builder.position()
         val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
-            .addDivider()
             .positionX(PopupWidget.Builder.absScreen(
                 if (positionContext.contextInput == ContextInput.KEYBOARD)
                     positionContext.x
@@ -129,13 +122,25 @@ internal class TestConfigScreen(
                     positionContext.mY))
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
-        for ((index, action) in actions.withIndex()) {
-            popup.add(
-                "$index",
-                ContextActionWidget(action, ContextActionWidget.getNeededWidth(action)),
-                LayoutWidget.Position.BELOW,
-                LayoutWidget.Position.ALIGN_LEFT
-            )
+            .onClick { mX, mY, over, button ->
+                if (ContextHandler.CONTEXT_MOUSE.relevant(button, ctrl = false, shift = false, alt = false) && !over) {
+                    PopupWidget.pop(mX, mY)
+                    PopupParentElement.ClickResult.PASS
+                } else {
+                    PopupParentElement.ClickResult.USE
+                }
+            }
+        for ((group, actions) in builder.apply()) {
+            if (actions.isEmpty()) continue
+            popup.addDivider()
+            for ((type, action) in actions) {
+                popup.add(
+                    "${group}_$type",
+                    ContextActionWidget(action, positionContext, ContextActionWidget.getNeededWidth(action)),
+                    LayoutWidget.Position.BELOW,
+                    LayoutWidget.Position.ALIGN_LEFT
+                )
+            }
         }
         PopupWidget.push(popup.build())
     }

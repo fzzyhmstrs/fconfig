@@ -11,15 +11,16 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 
 class ContextActionWidget(
-    private val applier: ContextApplier,
+    private val action: ContextAction,
+    position: Position,
     width: Int)
     :
     ActiveButtonWidget(
-        applier.action.texts.name,
+        action.texts.name,
         width,
         14,
-        applier.action.active,
-        { _ -> PopupWidget.pop(); applier.apply() },
+        action.active,
+        { _ -> PopupWidget.pop(); action.action.apply(position) },
         TextureSet("widget/popup/button_right_click".fcId(), "widget/popup/button_right_click".fcId(), "widget/popup/button_right_click_highlighted".fcId())
     ) {
 
@@ -33,9 +34,9 @@ class ContextActionWidget(
         mouseY: Int,
         delta: Float
     ) {
-        if (applier.action.icon != null) {
+        if (action.icon != null) {
             super.renderCustom(context, x + 12, y, width - 12, height, mouseX, mouseY, delta)
-            applier.action.icon.renderDecoration(context, x + 1, y + 2, delta, this.active, this.isSelected)
+            action.icon.renderDecoration(context, x + 1, y + 2, delta, this.active, this.isSelected)
         } else {
             super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
         }
@@ -66,18 +67,18 @@ class ContextActionWidget(
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
         super.appendClickableNarrations(builder)
-        if (applier.action.texts.desc != null) {
-            builder?.put(NarrationPart.HINT, applier.action.texts.desc)
+        if (action.texts.desc != null) {
+            builder?.put(NarrationPart.HINT, action.texts.desc)
         }
     }
 
     companion object {
 
-        fun getNeededWidth(applier: ContextApplier): Int {
-            return if (applier.action.icon != null) {
-                11 + MinecraftClient.getInstance().textRenderer.getWidth(applier.action.texts.name) + 4
+        fun getNeededWidth(action: ContextAction): Int {
+            return if (action.icon != null) {
+                11 + MinecraftClient.getInstance().textRenderer.getWidth(action.texts.name) + 4
             } else {
-                MinecraftClient.getInstance().textRenderer.getWidth(applier.action.texts.name) + 4
+                MinecraftClient.getInstance().textRenderer.getWidth(action.texts.name) + 4
             }
         }
     }
