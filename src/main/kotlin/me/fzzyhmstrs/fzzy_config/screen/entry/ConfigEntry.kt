@@ -19,10 +19,7 @@ import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.decoration.AbstractDecorationWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.DecorationWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
@@ -57,20 +54,24 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     } else {
         val lo = LayoutWidget(paddingW = 0, spacingW = 0)
         for ((index, bl) in content.groupTypes.withIndex()) {
-            lo.add("$index", GroupLineWidget(bl), LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            lo.add("$index", GroupLineWidget(bl), LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT_OF_AND_STRETCH, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         }
-        lo.add("layout", content.layoutWidget, LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+        lo.add("layout", content.layoutWidget, LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT_OF_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         lo.setPos(this.x, this.top)
         lo.compute()
     }
 
     private val actions: List<AbstractDecorationWidget> = content.actionWidgets
-    private val context: Map<ContextHandler.ContextType, ContextAction> = content.contextActions
     private var children: MutableList<Element> = mutableListOf()
     private var drawables: List<Drawable> = emptyList()
     private var selectables: List<SelectableElement> = emptyList()
     private var narratables: List<AbstractTextWidget> = emptyList()
     private var tooltipProviders: List<TooltipChild> = emptyList()
+
+    private val contextBuilders: Map<ContextHandler.ContextType, ContextAction.Builder> = content.contextActions
+    private val context: Map<ContextHandler.ContextType, ContextAction> by lazy {
+        contextBuilders.mapValues { it.value.build() }
+    }
 
     private val tooltip: List<OrderedText> by lazy {
         createTooltip(desc ?: FcText.empty())
@@ -225,16 +226,18 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         return selectables
     }
 
-    override fun provideContext(position: Position): ContextProvider.ContextResult {
+    override fun provideContext(builder: ContextResultBuilder) {
         val content = layout.getElement("content")
-        val newPosition = if (content != null && position.contextInput == ContextInput.KEYBOARD) {
-            position.copy(x = content.getLeft(), y = content.getTop(), width = content.elWidth(), height = content.elHeight() )
-        } else if (content != null) {
-            position.copy(width = content.elWidth(), height = content.elHeight())
-        } else {
-            position
+        builder.move { position ->
+            if (content != null && position.contextInput == ContextInput.KEYBOARD) {
+                position.copy(x = content.getLeft(), y = content.getTop(), width = content.elWidth(), height = content.elHeight())
+            } else if (content != null) {
+                position.copy(width = content.elWidth(), height = content.elHeight())
+            } else {
+                position
+            }
         }
-        return ContextProvider.ContextResult(context.values.filter { it.forMenu }.map { ContextApplier(it, newPosition) }, newPosition)
+        builder.addAll("entry", contextBuilders.filter { it.value.isForMenu() })
     }
 
     override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
@@ -263,7 +266,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         private val decorationWidget = DecorationWidget()
         private var group: String = ""
         private var visibility: DynamicListWidget.Visibility = DynamicListWidget.Visibility.VISIBLE
-        private var contextActions: Map<ContextHandler.ContextType, ContextAction> = mapOf()
+        private var contextActions: Map<ContextHandler.ContextType, ContextAction.Builder> = mapOf()
         private val popStart = context.groups.size - context.annotations.filterIsInstance<ConfigGroup.Pop>().size
 
 
@@ -306,7 +309,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             return this
         }
 
-        fun contextActions(contextActions: Map<ContextHandler.ContextType, ContextAction>): ContentBuilder {
+        fun contextActions(contextActions: Map<ContextHandler.ContextType, ContextAction.Builder>): ContentBuilder {
             this.contextActions = contextActions
             return this
         }
@@ -314,12 +317,14 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         fun build(): BuildResult {
             val groupTypes: MutableList<Boolean> = mutableListOf()
             for (i in 0 until context.groups.size) {
+                if (context.groups[i] == group) continue
                 groupTypes.add(i >= popStart)
             }
+
             return BuildResult(
                 mainLayout,
                 actionWidgets,
-                DynamicListWidget.Scope(context.scope, group, context.groups.stream().toList()),
+                DynamicListWidget.Scope(context.scope, group, context.groups),
                 groupTypes,
                 visibility,
                 contextActions)
@@ -331,7 +336,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             val scope: DynamicListWidget.Scope,
             val groupTypes: List<Boolean>,
             val visibility: DynamicListWidget.Visibility,
-            val contextActions: Map<ContextHandler.ContextType, ContextAction>)
+            val contextActions: Map<ContextHandler.ContextType, ContextAction.Builder>)
 
     }
 
@@ -376,10 +381,11 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
     ////////////////////////////////
 
-    private inner class GroupLineWidget(private val end: Boolean): Drawable, Widget {
+    private inner class GroupLineWidget(private val end: Boolean): Drawable, Widget, Scalable {
 
         private var x: Int = 0
         private var y: Int = 0
+        private var height = 20
 
         override fun setX(x: Int) { this.x = x }
 
@@ -389,9 +395,16 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
         override fun getY(): Int { return y }
 
-        override fun getWidth(): Int { return 5 }
+        override fun getWidth(): Int { return 7 }
 
-        override fun getHeight(): Int { return this@ConfigEntry.h }
+        override fun getHeight(): Int { return height }
+
+        override fun setWidth(width: Int) {
+        }
+
+        override fun setHeight(height: Int) {
+            this.height = height
+        }
 
         override fun forEachChild(consumer: Consumer<ClickableWidget>?) {
         }
@@ -399,11 +412,15 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             val p = this@ConfigEntry.parentElement.verticalPadding
             if (end) {
-                context.fill(x, y - p, x + 1, y + height, -1)
+                context.fill(x, y - p, x + 1, y + height - 1, -1)
+                context.fill(x + 1, y - p, x + 2, y + height - 2, -12698050)
+                context.fill(x + 1, y + height - 2, x + 3, y + height - 1, -1)
+                context.fill(x + 1, y + height - 1, x + 4, y + height, -12698050)
             } else {
                 context.fill(x, y - p, x + 1, y + height, -1)
                 context.fill(x + 1, y - p, x + 2, y + height, -12698050)
             }
         }
+
     }
 }

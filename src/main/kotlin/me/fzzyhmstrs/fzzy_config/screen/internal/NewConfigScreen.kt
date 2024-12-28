@@ -12,28 +12,32 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
+import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.DirectionalLayoutWidget
-import net.minecraft.client.gui.widget.TextWidget
-import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
+import net.minecraft.client.gui.widget.*
+import net.minecraft.client.render.RenderLayer
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
+import net.minecraft.util.Identifier
 import java.util.function.Function
 
 //client
@@ -41,10 +45,10 @@ internal class NewConfigScreen(
     title: Text,
     private val scope: String,
     private val manager: UpdateManager,
-    entriesWidget: Function<NewConfigScreen, DynamicListWidget>,
+    private val configList: DynamicListWidget,
     private val parentScopesButtons: List<Function<NewConfigScreen, ClickableWidget>>)
     :
-    PopupWidgetScreen(title), ContextHandler
+    PopupWidgetScreen(title), ContextHandler, ContextProvider
 {
 
     private var parent: Screen? = null
@@ -52,19 +56,22 @@ internal class NewConfigScreen(
     internal val layout = ThreePartsLayoutWidget(this)
     private var searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
     private var doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
-    private val configList: DynamicListWidget = entriesWidget.apply(this)
 
     private var mX: Double = 0.0
     private var mY: Double = 0.0
 
-    fun setParent(screen: Screen?) {
+    private val MENU_LIST_BACKGROUND_TEXTURE: Identifier = "textures/gui/menu_list_background.png".simpleId()
+    private val INWORLD_MENU_LIST_BACKGROUND_TEXTURE: Identifier = "textures/gui/inworld_menu_list_background.png".simpleId()
+
+    fun setParent(screen: Screen?): NewConfigScreen {
         this.parent = screen
         if (screen !is NewConfigScreen) {
             doneButton.tooltip = Tooltip.of("fc.config.done.desc".translate())
-            return
+            return this
         }
         doneButton.message = "fc.config.back".translate()
         doneButton.tooltip = Tooltip.of("fc.config.back.desc".translate(screen.title))
+        return this
     }
 
     override fun close() {
@@ -85,10 +92,6 @@ internal class NewConfigScreen(
             this.parent = parentParent
         }
         close()
-    }
-
-    override fun resize(client: MinecraftClient, width: Int, height: Int) {
-        super.resize(client, width, height)
     }
 
     override fun init() {
@@ -112,7 +115,7 @@ internal class NewConfigScreen(
         layout.forEachChild { drawableElement: ClickableWidget? ->
             addDrawableChild(drawableElement)
         }
-        configList.scrollToTop()
+        configList.onReposition()
     }
     private fun initFooter() {
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
@@ -149,43 +152,65 @@ internal class NewConfigScreen(
         configList.setDimensionsAndPosition(320, layout.contentHeight, (this.width / 2) - 160, layout.headerHeight)
     }
 
+    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        drawMenuListBackground(context)
+        super.render(context, mouseX, mouseY, delta)
+        drawHeaderAndFooterSeparators(context)
+    }
+
+    private fun drawHeaderAndFooterSeparators(context: DrawContext) {
+        val identifier = if (client?.world == null) HEADER_SEPARATOR_TEXTURE else INWORLD_HEADER_SEPARATOR_TEXTURE
+        val identifier2 = if (client?.world == null) FOOTER_SEPARATOR_TEXTURE else INWORLD_FOOTER_SEPARATOR_TEXTURE
+        context.drawTex(identifier, 0, layout.headerHeight - 2, 0.0f, 0.0f, this.width, 2, 32, 2)
+        context.drawTex(identifier2, 0, layout.headerHeight + layout.contentHeight, 0.0f, 0.0f, this.width, 2, 32, 2)
+    }
+
+    private fun drawMenuListBackground(context: DrawContext) {
+        val identifier = if (client?.world == null) MENU_LIST_BACKGROUND_TEXTURE else INWORLD_MENU_LIST_BACKGROUND_TEXTURE
+        context.drawTex(identifier, 0, layout.headerHeight, 0f, 0f, this.width, layout.contentHeight, 32, 32)
+    }
+
     override fun mouseMoved(mouseX: Double, mouseY: Double) {
         this.mX = mouseX
         this.mY = mouseY
         super.mouseMoved(mouseX, mouseY)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
         val contextType = ContextHandler.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextType != null) {
-            return handleContext(contextType, Position(ContextInput.MOUSE, mouseX.toInt(), mouseY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
+            return if(handleContext(contextType, Position(ContextInput.MOUSE, mouseX.toInt(), mouseY.toInt(), 0, 0, this.width, this.height, this.width, this.height)))
+                true
+            else
+                super.onClick(mouseX, mouseY, button)
         }
-        return super.mouseClicked(mouseX, mouseY, button)
+        return super.onClick(mouseX, mouseY, button)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         val contextType = ContextHandler.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextType != null) {
             val input = if(MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
-            return handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
+            return if(handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height)))
+                true
+            else
+                super.keyPressed(keyCode, scanCode, modifiers)
         }
+
         return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
     override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
         return when (contextType) {
             ContextHandler.CONTEXT_KEYBOARD, ContextHandler.CONTEXT_MOUSE -> {
-                val contextResult = hoveredElement?.nullCast<ContextProvider>()?.provideContext(position) ?: ContextProvider.empty(position)
-                if (contextResult.appliers.isNotEmpty()) {
-                    openContextMenuPopup(contextResult.appliers, contextResult.position)
+                val builder = ContextProvider.empty(position)
+                this.provideContext(builder)
+                if (builder.isNotEmpty()) {
+                    openContextMenuPopup(builder)
                     true
                 } else {
                     false
                 }
-            }
-            ContextHandler.UNDO -> {
-                manager.revertLast()
-                true
             }
             ContextHandler.FIND -> {
                 this.focused = searchField
@@ -195,26 +220,61 @@ internal class NewConfigScreen(
                 manager.apply(false)
                 true
             }
+            ContextHandler.UNDO -> {
+                manager.revertLast()
+                true
+            }
             else -> {
                 configList.handleContext(contextType, position)
             }
         }
     }
 
-    private fun openContextMenuPopup(actions: List<ContextApplier>, positionContext: Position) {
+    override fun provideContext(builder: ContextResultBuilder) {
+        hoveredElement?.nullCast<ContextProvider>()?.provideContext(builder)
+        val save = ContextAction.Builder("fc.button.save".translate()) { manager.apply(false); true }
+            .active { manager.hasChanges() }
+            .icon(TextureDeco.CONTEXT_SAVE)
+        val find = ContextAction.Builder("fc.config.search".translate()) { this.focused = searchField; true }
+            .icon(TextureDeco.CONTEXT_FIND)
+        builder.add("config", ContextHandler.SAVE, save)
+        builder.add("config", ContextHandler.FIND, find)
+    }
+
+    private fun openContextMenuPopup(builder: ContextResultBuilder) {
+        val positionContext = builder.position()
         val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
-            .addDivider()
-            .positionX(PopupWidget.Builder.abs(if (positionContext.contextInput == ContextInput.KEYBOARD) positionContext.x else positionContext.mX))
-            .positionY(PopupWidget.Builder.abs(if (positionContext.contextInput == ContextInput.KEYBOARD) positionContext.y else positionContext.mY))
+            .positionX(PopupWidget.Builder.absScreen(
+                if (positionContext.contextInput == ContextInput.KEYBOARD)
+                    positionContext.x
+                else
+                    positionContext.mX))
+            .positionY(PopupWidget.Builder.absScreen(
+                if (positionContext.contextInput == ContextInput.KEYBOARD)
+                    positionContext.y
+                else
+                    positionContext.mY))
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
-        for ((index, action) in actions.withIndex()) {
-            popup.add(
-                "$index",
-                ContextActionWidget(action, ContextActionWidget.getNeededWidth(action)),
-                LayoutWidget.Position.BELOW,
-                LayoutWidget.Position.ALIGN_LEFT
-            )
+            .onClick { mX, mY, over, button ->
+                if (ContextHandler.CONTEXT_MOUSE.relevant(button, ctrl = false, shift = false, alt = false) && !over) {
+                    PopupWidget.pop(mX, mY)
+                    PopupParentElement.ClickResult.PASS
+                } else {
+                    PopupParentElement.ClickResult.USE
+                }
+            }
+        for ((group, actions) in builder.apply()) {
+            if (actions.isEmpty()) continue
+            popup.addDivider()
+            for ((type, action) in actions) {
+                popup.add(
+                    "${group}_$type",
+                    ContextActionWidget(action, positionContext, ContextActionWidget.getNeededWidth(action)),
+                    LayoutWidget.Position.BELOW,
+                    LayoutWidget.Position.ALIGN_LEFT
+                )
+            }
         }
         PopupWidget.push(popup.build())
     }

@@ -10,6 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.screen
 
+import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement.ClickResult
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -60,6 +63,11 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         }
     }
 
+    override fun resetHover(mouseX: Double, mouseY: Double) {
+        hoveredElement = if (popupWidgets.isNotEmpty()) null else children().firstOrNull { it.isMouseOver(mouseX, mouseY) }
+        hoveredElement.nullCast<LastSelectable>()?.resetHover(mouseX, mouseY)
+    }
+
     override fun resize(client: MinecraftClient, width: Int, height: Int) {
         super.resize(client, width, height)
         initPopup()
@@ -71,6 +79,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
             super.render(context, mouseX, mouseY, delta)
         else
             super.render(context, 0, 0, delta)
+        context.matrices.push()
         if (popupWidgets.isNotEmpty())
             context.matrices.translate(0f, 0f, 500f)
         for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
@@ -80,6 +89,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
                 popup.render(context, 0, 0, delta)
             context.matrices.translate(0f, 0f, 500f)
         }
+        context.matrices.pop()
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
@@ -91,6 +101,19 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
             return true
         }
         return false
+    }
+
+    final override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        val popupWidget = activeWidget() ?: return onClick(mouseX, mouseY, button)
+        val result = popupWidget.preClick(mouseX, mouseY, button)
+        if (result == ClickResult.PASS) {
+            return onClick(mouseX, mouseY, button)
+        }
+        return super<PopupParentElement>.mouseClicked(mouseX, mouseY, button)
+    }
+
+    open fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return super<PopupParentElement>.mouseClicked(mouseX, mouseY, button)
     }
 
     override fun addScreenNarrations(messageBuilder: NarrationMessageBuilder) {

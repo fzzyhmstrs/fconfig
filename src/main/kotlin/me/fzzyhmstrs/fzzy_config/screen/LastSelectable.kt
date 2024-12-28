@@ -23,4 +23,6 @@ interface LastSelectable {
     var lastSelected: Element?
     fun pushLast()
     fun popLast()
+    fun resetHover(mouseX: Double, mouseY: Double) {
+    }
 }
