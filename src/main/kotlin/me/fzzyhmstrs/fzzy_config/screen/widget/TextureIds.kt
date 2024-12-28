@@ -142,6 +142,12 @@ object TextureIds {
     /** wireframe of two arrows pointing in a circular motion. 10x10 */
     val CONTEXT_RESTORE = TextureSet("widget/context/restore".fcId(), "widget/context/restore_disabled".fcId(), "widget/context/restore".fcId())
 
+    /** wireframe of a floppy disk. 10x10 */
+    val CONTEXT_SAVE = TextureSet("widget/context/save".fcId(), "widget/context/save_disabled".fcId(), "widget/context/save".fcId())
+
+    /** wireframe of a magnifying glass. 10x10 */
+    val CONTEXT_FIND = TextureSet("widget/context/find".fcId(), "widget/context/find_disabled".fcId(), "widget/context/find".fcId())
+
     /** up arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_UP = "widget/scroll/increment_up".fcId()
 

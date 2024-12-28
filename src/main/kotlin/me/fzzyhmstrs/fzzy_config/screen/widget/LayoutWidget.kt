@@ -314,21 +314,16 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         var minW = 1000000
         var maxW = -1000000
         var maxH = -1000000
-        if (debug) FC.DEVLOG.info("Els")
         for ((_, posEl) in elements) {
             minW = min(max(posEl.getLeft(), paddingW), minW)
         }
         for ((_, posEl) in elements) {
-            if (debug) FC.DEVLOG.info(posEl.toString())
             maxW = max(max(posEl.getRight() - minW, posEl.elWidth()), maxW)
             maxH = max(posEl.getBottom(), maxH)
         }
         if (manualWidth <= 0) {
             maxW += paddingW * 2
             maxW -= this.x.get()
-            if (debug) FC.DEVLOG.info("W")
-            if (debug) FC.DEVLOG.info(maxW.toString())
-            if (debug) FC.DEVLOG.info(this.x.toString())
             updateWidth(maxW)
         } else {
             updateWidth(manualWidth)
@@ -336,9 +331,6 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         if (manualHeight <= 0) {
             maxH += paddingH
             maxH -= this.y.get()
-            if (debug) FC.DEVLOG.info("H")
-            if (debug) FC.DEVLOG.info(maxH.toString())
-            if (debug) FC.DEVLOG.info(this.y.toString())
             updateHeight(maxH)
         } else {
             updateHeight(manualHeight)
@@ -363,7 +355,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
                 } else if (posEl.element is Scalable) {
                     posEl.element.setWidth(width - (2 * paddingW))
                 }
-            } else if (posEl.alignment == Position.ALIGN_LEFT_AND_JUSTIFY) {
+            } else if (posEl.alignment == Position.ALIGN_LEFT_AND_JUSTIFY || posEl.alignment == Position.ALIGN_LEFT_OF_AND_JUSTIFY) {
                 var closestRightEl: PositionedElement<*>? = null
                 var rightPos = 1000000000
                 for (posElRight in elements.values) {
@@ -416,6 +408,32 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
                         val prevRight = posEl.getRight()
                         posEl.x.dec(posEl.getLeft() - posEl.set.x.get())
                         posEl.element.setWidth(prevRight - posEl.getLeft())
+                    }
+                }
+            } else if (posEl.alignment == Position.ALIGN_LEFT_AND_STRETCH
+                || posEl.alignment == Position.ALIGN_RIGHT_AND_STRETCH
+                || posEl.alignment == Position.ALIGN_LEFT_OF_AND_STRETCH) {
+                var closestDownEl: PositionedElement<*>? = null
+                var downPos = 1000000000
+                for (posElDown in elements.values) {
+                    if (posEl.otherIsBelow(posElDown)) {
+                        if(posElDown.getTop() < downPos) {
+                            closestDownEl = posElDown
+                            downPos = posElDown.getTop()
+                        }
+                    }
+                }
+                if(closestDownEl != null) {
+                    if (posEl.element is ClickableWidget) {
+                        posEl.element.height = closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH
+                    } else if (posEl.element is Scalable) {
+                        posEl.element.setHeight(closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH)
+                    }
+                } else {
+                    if (posEl.element is ClickableWidget) {
+                        posEl.element.height = posEl.set.h.get() - posEl.getTop()
+                    } else if (posEl.element is Scalable) {
+                        posEl.element.setHeight(posEl.set.h.get() - posEl.getTop())
                     }
                 }
             }
@@ -508,6 +526,12 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
              */
             val ALIGN_LEFT: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT
             /**
+             * Aligns an element to the left side of the Popup widget. Does not define any other position or alignment.
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
+            val ALIGN_LEFT_OF: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_OF
+            /**
              * Aligns an element to the right side of the Popup widget. Does not define any other position or alignment.
              * @author fzzyhmstrs
              * @since 0.6.0
@@ -540,6 +564,16 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
              */
             val ALIGN_LEFT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY
             /**
+             * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             *
+             * Justification of this element WILL take elements to the right of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
+             *
+             * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
+            val ALIGN_LEFT_OF_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_OF_AND_JUSTIFY
+            /**
              * Aligns an element to the right side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
              *
              * Justification of this element WILL take elements to the left of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
@@ -549,6 +583,36 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
              * @since 0.6.0
              */
             val ALIGN_RIGHT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY
+            /**
+             * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             *
+             * Justification of this element WILL take elements to the right of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
+             *
+             * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
+            val ALIGN_LEFT_AND_STRETCH: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_AND_STRETCH
+            /**
+             * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             *
+             * Justification of this element WILL take elements to the right of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
+             *
+             * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
+            val ALIGN_LEFT_OF_AND_STRETCH: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_OF_AND_STRETCH
+            /**
+             * Aligns an element to the right side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             *
+             * Justification of this element WILL take elements to the left of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
+             *
+             * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
+            val ALIGN_RIGHT_AND_STRETCH: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT_AND_STRETCH
         }
     }
 
@@ -632,6 +696,16 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
             }
         },
         @Deprecated("Use Positions Impl values")
+        ALIGN_LEFT_OF {
+            override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(SuppliedPos(parent.x, globalSet.spacingW) { parent.elWidth() }, prevY)
+            }
+
+            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(RelPos(globalSet.x), prevY)
+            }
+        },
+        @Deprecated("Use Positions Impl values")
         ALIGN_RIGHT {
             override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
@@ -672,7 +746,47 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
             }
         },
         @Deprecated("Use Positions Impl values")
+        ALIGN_LEFT_OF_AND_JUSTIFY {
+            override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(SuppliedPos(parent.x, globalSet.spacingW) { parent.elWidth() }, prevY)
+            }
+
+            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(RelPos(globalSet.x), prevY)
+            }
+        },
+        @Deprecated("Use Positions Impl values")
         ALIGN_RIGHT_AND_JUSTIFY {
+            override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+            }
+
+            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+            }
+        },
+        @Deprecated("Use Positions Impl values")
+        ALIGN_LEFT_AND_STRETCH {
+            override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(RelPos(globalSet.x), prevY)
+            }
+
+            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(RelPos(globalSet.x), prevY)
+            }
+        },
+        @Deprecated("Use Positions Impl values")
+        ALIGN_LEFT_OF_AND_STRETCH {
+            override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(SuppliedPos(parent.x, globalSet.spacingW) { parent.elWidth() }, prevY)
+            }
+
+            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(RelPos(globalSet.x), prevY)
+            }
+        },
+        @Deprecated("Use Positions Impl values")
+        ALIGN_RIGHT_AND_STRETCH {
             override fun position(parent: PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
             }
@@ -689,6 +803,9 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     class PositionedElement<T>(val element: T, val set: PosSet, var x: Pos, var y: Pos, val alignment: PositionGlobalAlignment) where T: Widget {
         private fun upDown(): IntRange {
             return IntRange(getTop(), getBottom())
+        }
+        private fun leftRight(): IntRange {
+            return IntRange(getLeft(), getRight())
         }
         fun getLeft(): Int {
             return x.get()
@@ -721,6 +838,13 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         private fun inUpDownBounds(chk: IntRange): Boolean {
             val ud = upDown()
             return chk == ud || ud.contains(chk.first) || ud.contains(chk.last) || chk.contains(ud.first) || chk.contains(ud.last)
+        }
+        fun otherIsBelow(element: PositionedElement<*>): Boolean {
+            return inLeftRightBounds(element.leftRight()) && element.getTop() >= getBottom()
+        }
+        private fun inLeftRightBounds(chk: IntRange): Boolean {
+            val lr = leftRight()
+            return chk == lr || lr.contains(chk.first) || lr.contains(chk.last) || chk.contains(lr.first) || chk.contains(lr.last)
         }
 
         override fun toString(): String {

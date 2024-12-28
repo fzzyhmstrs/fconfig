@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.*
 import me.fzzyhmstrs.fzzy_config.entry.*
@@ -319,10 +318,15 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val anchors: MutableList<Function<DynamicListWidget, out DynamicListWidget.Entry>>
         val anchorPredicate: Predicate<AnchorResult> =
             if (configSpec.sidebar() == ConfigSpec.Sidebar.NONE) {
-                Predicate { _ -> false }
+                Predicate { result ->
+                    if (result.thing is EntryAnchor)
+                        nameMap[result.scope] = result.texts.name
+                    false
+                }
             } else {
                 Predicate { result ->
                     if (result.thing !is EntryAnchor) return@Predicate configSpec.sidebar() != ConfigSpec.Sidebar.KEEP_ENTRIES
+                    nameMap[result.scope] = result.texts.name
                     val layer = result.scope.split('.').filter { it != this.scope }.size
                     val anchor = result.thing.anchorEntry(EntryAnchor.Anchor(layer, result.texts.name))
                     val anchorId = result.thing.anchorId(result.scope)
@@ -347,7 +351,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val scopeButtonFunctions = buildScopeButtons(nameMap)
         val builders: MutableMap<String, ConfigScreenBuilder2> = mutableMapOf()
         for((s, entryBuilders) in functionMap) {
-            builders[s] = buildBuilder2(entryBuilders)
+            val name = nameMap[s] ?: FcText.EMPTY
+            builders[s] = buildBuilder2(name, scope, entryBuilders)
             //builders[scope] = buildBuilder(name, scope, scopes, scopeButtonFunctions, actionMap, entryBuilders.values.toList())
         }
 /*        for (entry in functionMap.entries) {
@@ -443,7 +448,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val skip2 = anchorPredicate.test(AnchorResult(new, thing, prepareResult.texts))
 
                 if (!skip2) {
-                    val context = EntryCreator.CreatorContext(new, groups, set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
+                    val context = EntryCreator.CreatorContext(new, LinkedList(groups), set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
 
                     //TODO(handling creating context actions)
 
@@ -479,9 +484,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
             }
     }
 
-    private fun buildBuilder2(entries: List<EntryCreator.Creator>): ConfigScreenBuilder2 {
-        val list = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 290, 290, DynamicListWidget.ListSpec(verticalPadding = 4))
-        return ConfigScreenBuilder2 { TestConfigScreen(FcText.EMPTY, this.manager, list) }
+    private fun buildBuilder2(name: Text, scope: String, entries: List<EntryCreator.Creator>): ConfigScreenBuilder2 {
+        return ConfigScreenBuilder2 {
+            val list = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 290, 290, DynamicListWidget.ListSpec(verticalPadding = 4))
+            NewConfigScreen(name, scope, this.manager, list, emptyList()).setParent(MinecraftClient.getInstance().currentScreen)
+        }
     }
 
     private fun buildBuilder(name: Text, scope: String, scopes: List<String>, scopeButtonFunctions: Map<String, Function<ConfigScreen, ClickableWidget>>, actionMap: MutableMap<String, MutableSet<Action>>, entryBuilders: List<Pair<String, Function<ConfigListWidget, BaseConfigEntry>>>): ConfigScreenBuilder {
@@ -724,7 +731,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     internal fun interface ConfigScreenBuilder2 {
-        fun build(): TestConfigScreen
+        fun build(): NewConfigScreen
     }
 
     internal fun interface ConfigScreenBuilder {

@@ -5,6 +5,7 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.text.Text
 import java.util.function.Function
 import java.util.function.Supplier
+import java.util.function.UnaryOperator
 
 class ContextAction(val texts: Translatable.Result, val active: Supplier<Boolean>, val forMenu: Boolean, val icon: Decorated?, val action: Function<Position, Boolean>) {
 
@@ -12,6 +13,11 @@ class ContextAction(val texts: Translatable.Result, val active: Supplier<Boolean
         private var narration: Text? = null
         private var active: Supplier<Boolean> = Supplier { true }
         private var icon: Decorated? = null
+        private var forMenu: Boolean = true
+
+        fun isForMenu(): Boolean {
+            return forMenu
+        }
 
         fun narration(narration: Text): Builder {
             this.narration = narration
@@ -23,17 +29,23 @@ class ContextAction(val texts: Translatable.Result, val active: Supplier<Boolean
             return this
         }
 
+        fun withActive(operator: UnaryOperator<Supplier<Boolean>>): Builder {
+            this.active = operator.apply(this.active)
+            return this
+        }
+
         fun icon(icon: Decorated): Builder {
             this.icon = icon
             return this
         }
 
-        fun build(): ContextAction {
-            return ContextAction(Translatable.Result(name, narration), active, false, icon, action)
+        fun notForMenu(): Builder {
+            this.forMenu = false
+            return this
         }
 
-        fun buildMenu(): ContextAction {
-            return ContextAction(Translatable.Result(name, narration), active, true, icon, action)
+        fun build(): ContextAction {
+            return ContextAction(Translatable.Result(name, narration), active, forMenu, icon, action)
         }
     }
 }

@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
@@ -152,8 +153,10 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     override fun setFocused(focused: Element?) {
+        FC.DEVLOG.info("Setting $focused as focused 1")
         val f = focused as? E
         if (f != null && !selectableEntries().contains(f)) return
+        FC.DEVLOG.info("Setting $focused as focused 2")
         focusedElement?.isFocused = false
         f?.isFocused = true
         this.focusedElement = f
@@ -315,16 +318,20 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
 
         val e = entryAtY(mouseY.toInt())
-        if (e != null && e.mouseClicked(mouseX, mouseY, button)) {
-            val e2 = focused
-            if (e2 != e && e2 is ParentElement) {
-
-                e2.focused = null
-            }
+        val e2 = focused
+        if (e != null) {
             focused = e
-            dragging = true
-            return true
+            if (e.mouseClicked(mouseX, mouseY, button)) {
+                if (e2 != e && e2 is ParentElement) {
+                    e2.focused = null
+                }
+                dragging = true
+                return true
+            } else {
+                focused = e2
+            }
         }
+
         return this.scrollingY >= 0.0
     }
 
