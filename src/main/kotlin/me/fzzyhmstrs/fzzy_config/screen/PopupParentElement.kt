@@ -10,10 +10,13 @@
 
 package me.fzzyhmstrs.fzzy_config.screen
 
+import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * A parent element that supports displaying "Popups" made via [PopupWidget].
@@ -65,7 +68,7 @@ interface PopupParentElement: ParentElement, LastSelectable {
      */
     fun initPopup(widget: PopupWidget)
 
-    fun setPopup(widget: PopupWidget?) {
+    fun setPopup(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
         if(widget == null) {
             if (popupWidgets.isEmpty())
                 return
@@ -74,6 +77,10 @@ interface PopupParentElement: ParentElement, LastSelectable {
             popupWidgets.peek()?.blur()
             if (popupWidgets.isEmpty()) {
                 (lastSelected as? LastSelectable)?.popLast()
+                if (mouseX != null && mouseY != null) {
+                    this.resetHover(mouseX, mouseY)
+                    lastSelected?.nullCast<LastSelectable>()?.resetHover(mouseX, mouseY)
+                }
                 popLast()
             }
         } else {
@@ -96,14 +103,10 @@ interface PopupParentElement: ParentElement, LastSelectable {
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         val popupWidget = activeWidget() ?: return super.mouseClicked(mouseX, mouseY, button)
-        val result = popupWidget.preClick(mouseX, mouseY, button)
-        if (result == ClickResult.PASS) {
-            return super.mouseClicked(mouseX, mouseY, button)
-        }
         if (popupWidget.mouseClicked(mouseX, mouseY, button) || popupWidget.isMouseOver(mouseX, mouseY)) {
             return true
         } else if(popupWidget.closesOnMissedClick()) {
-                setPopup(null)
+                setPopup(null, mouseX, mouseY)
         }
         return false
     }
@@ -147,4 +150,6 @@ interface PopupParentElement: ParentElement, LastSelectable {
         PASS,
         USE
     }
+
+    private data class Push(val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null)
 }

@@ -10,10 +10,10 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.context
 
-class ContextApplier(val action: ContextAction, val actionSource: Position) {
+class ContextApplier(val action: ContextAction, val position: Position) {
 
     fun apply(): Boolean {
-        return action.action.apply(actionSource)
+        return action.action.apply(position)
     }
 
 }

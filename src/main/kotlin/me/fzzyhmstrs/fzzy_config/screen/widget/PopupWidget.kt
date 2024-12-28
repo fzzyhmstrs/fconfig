@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
@@ -251,10 +252,11 @@ class PopupWidget
          * Sets a [PopupWidget] to the current screen, if the current screen is a [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen]
          * @param popup [PopupWidget] or null. If null, the widget will be cleared, otherwise the current widget will be set to the passed one.
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, added mouse overloads 0.6.0
          */
-        fun push(popup: PopupWidget?) {
-            (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.setPopup(popup)
+        @JvmOverloads
+        fun push(popup: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
+            MinecraftClient.getInstance().currentScreen?.nullCast<PopupParentElement>()?.setPopup(popup, mouseX, mouseY)
         }
 
         /**
@@ -266,6 +268,17 @@ class PopupWidget
          */
         fun pop() {
             push(null)
+        }
+
+        /**
+         * Removes the top widget from the current [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen] widget stack, if any
+         *
+         * The closed widget will have its [PopupWidget.onClose] method called
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        fun pop(mouseX: Double, mouseY: Double) {
+            push(null, mouseX, mouseY)
         }
 
         /**
