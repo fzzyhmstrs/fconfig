@@ -10,10 +10,12 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextProvider
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
 import me.fzzyhmstrs.fzzy_config.screen.context.Position
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
@@ -175,13 +177,22 @@ class DynamicListWidget(
     override var lastSelected: Element? = null
 
     override fun pushLast() {
+        FC.DEVLOG.info("List pushin' $focused")
         lastSelected = focused
         lastSelected?.nullCast<LastSelectable>()?.pushLast()
     }
 
     override fun popLast() {
+        FC.DEVLOG.info("List poppin $lastSelected")
         (lastSelected as? Entry)?.let { focused = it }
         lastSelected?.nullCast<LastSelectable>()?.popLast()
+    }
+
+    override fun resetHover(mouseX: Double, mouseY: Double) {
+        this.hoveredElement = if (isMouseOver(mouseX, mouseY))
+            inFrameEntries().firstOrNull { it.isMouseOver(mouseX, mouseY) }
+        else
+            null
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -308,9 +319,9 @@ class DynamicListWidget(
         }
     }
 
-    override fun provideContext(position: Position): ContextProvider.ContextResult {
+    override fun provideContext(builder: ContextResultBuilder) {
         //TODO handle keyboard vs mouse navigation?
-        return hoveredElement?.provideContext(position) ?: focusedElement?.provideContext(position) ?: ContextProvider.empty(position)
+        hoveredElement?.provideContext(builder) ?: focusedElement?.provideContext(builder)
     }
 
     //////////////////////////////
@@ -417,6 +428,8 @@ class DynamicListWidget(
                 val replacement = this@DynamicListWidget.focusedElement?.getNeighbor(true) ?: this@DynamicListWidget.focusedElement?.getNeighbor(false)
                 this@DynamicListWidget.focused = replacement
             }
+            delegate.forEach { it.onScroll(0) }
+            FC.LOGGER.info(this@DynamicListWidget.topDelta().toString())
             return foundEntries.size
         }
 
@@ -470,6 +483,7 @@ class DynamicListWidget(
                 }
                 this@DynamicListWidget.ensureVisible(last)
             }
+            delegate.forEach { it.onScroll(0) }
         }
 
         fun top(): Int {
@@ -615,20 +629,14 @@ class DynamicListWidget(
             if (previous == null) {
                 top = RelEntryPos(parentPos, null, offset = parentElement.verticalPadding)
             } else {
-                top = ImmutableSuppliedEntryPos(
-                    previous.bottom,
-                    { if (visibility.visible) parentElement.verticalPadding else 0 },
-                    previous.top
-                )
+                top = RelEntryPos(previous.bottom, previous.top)
                 previous.top.next = top
             }
-            bottom = ImmutableSuppliedPos(top) { if (visibility.visible) h else 0 }
+            bottom = ImmutableSuppliedPos(top) { if (visibility.visible) h + parentElement.verticalPadding else 0 }
             init()
         }
 
-        override fun provideContext(position: Position): ContextProvider.ContextResult {
-            return ContextProvider.empty(position)
-        }
+        override fun provideContext(builder: ContextResultBuilder) {}
 
         override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
             return false
@@ -656,6 +664,9 @@ class DynamicListWidget(
 
         override fun popLast() {
             (lastSelected as? Entry)?.let { focused = it }
+            if (lastSelected == null) {
+                focused = selectableChildren().firstOrNull()
+            }
             lastSelected?.nullCast<LastSelectable>()?.popLast()
         }
 

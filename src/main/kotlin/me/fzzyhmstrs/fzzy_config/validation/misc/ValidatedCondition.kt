@@ -12,8 +12,11 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
@@ -128,9 +131,19 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         return super.get()
     }
 
+
     @Internal
     override fun entryDeco(): Decorated.DecoratedOffset? {
         return Decorated.DecoratedOffset(ConditionDecoration{ checkConditions() }, 2, 2)
+    }
+
+    @Internal
+    override fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<ContextHandler.ContextType, ContextAction.Builder> {
+        val map = super.contextActionBuilder(context)
+        for ((_, builder) in map) {
+            builder.withActive { supplier -> Supplier{ supplier.get() && this.checkConditions() } }
+        }
+        return map
     }
 
     /**

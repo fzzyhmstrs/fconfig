@@ -176,6 +176,7 @@
 "fc.button.changes.desc": "Change management menu for applying and reverting changes.",
 "fc.button.copy": "Copy",
 "fc.button.paste": "Paste",
+"fc.button.save": "Save Config",
 "fc.button.delete": "Delete Entry",
 "fc.button.add": "Add New Entry",
 "fc.button.config": "Open Config",

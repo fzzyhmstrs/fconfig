@@ -84,4 +84,10 @@ object TextureDeco {
 
     /** wireframe of two arrows pointing in a circular motion */
     val CONTEXT_RESTORE = SmallSpriteDecoration(TextureIds.CONTEXT_RESTORE)
+
+    /** wireframe of a floppy disk. 10x10 */
+    val CONTEXT_SAVE = SmallSpriteDecoration(TextureIds.CONTEXT_SAVE)
+
+    /** wireframe of a magnifying glass. 10x10 */
+    val CONTEXT_FIND = SmallSpriteDecoration(TextureIds.CONTEXT_FIND)
 }
