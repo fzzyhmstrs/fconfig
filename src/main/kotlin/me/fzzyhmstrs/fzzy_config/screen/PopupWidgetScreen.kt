@@ -78,7 +78,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         initPopup()
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    final override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         hoveredElement = if (popupWidgets.isNotEmpty()) null else children().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
         if (popupWidgets.isEmpty())
             super.render(context, mouseX, mouseY, delta)
@@ -100,6 +100,13 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         context.matrices.pop()
         if (popupWidgets.isNotEmpty())
             RenderSystem.disableDepthTest()
+    }
+
+    open fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        if (popupWidgets.isEmpty())
+            super.render(context, mouseX, mouseY, delta)
+        else
+            super.render(context, 0, 0, delta)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {

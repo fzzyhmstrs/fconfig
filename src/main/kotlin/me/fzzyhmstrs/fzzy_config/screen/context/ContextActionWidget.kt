@@ -38,7 +38,7 @@ class ContextActionWidget(
             super.renderCustom(context, x + 12, y, width - 12, height, mouseX, mouseY, delta)
             action.icon.renderDecoration(context, x + 1, y + 2, delta, this.active, this.isSelected)
         } else {
-            super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
+            super.renderCustom(context, x + 12, y, width - 12, height, mouseX, mouseY, delta)
         }
     }
 
@@ -75,11 +75,12 @@ class ContextActionWidget(
     companion object {
 
         fun getNeededWidth(action: ContextAction): Int {
-            return if (action.icon != null) {
+            return 11 + MinecraftClient.getInstance().textRenderer.getWidth(action.texts.name) + 4
+/*            return if (action.icon != null) {
                 11 + MinecraftClient.getInstance().textRenderer.getWidth(action.texts.name) + 4
             } else {
                 MinecraftClient.getInstance().textRenderer.getWidth(action.texts.name) + 4
-            }
+            }*/
         }
     }
 }

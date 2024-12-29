@@ -844,7 +844,7 @@ class PopupWidget
              */
 
             /**
-             * Positions a Popup dimention at an absolute location, bounded by the screen
+             * Positions a Popup dimension at an absolute location, bounded by the screen
              *
              * The position will not change on resize or other events, so use wisely.
              * @param a Int - the position to apply

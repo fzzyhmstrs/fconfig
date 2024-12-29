@@ -25,10 +25,7 @@ import me.fzzyhmstrs.fzzy_config.config.*
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.VERSIONS
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
-import me.fzzyhmstrs.fzzy_config.entry.EntryParent
-import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
@@ -194,10 +191,6 @@ internal object ConfigApiImpl {
     internal fun isClientConfigLoaded(scope: String): Boolean {
         if (!isClient) return false
         return ConfigApiImplClient.isConfigLoaded(scope)
-    }
-
-    internal fun registerConfigSpec(namespace: String, configSpec: ConfigSpec) {
-        ClientConfigRegistry.registerConfigSpec(namespace, configSpec)
     }
 
     ///////////////// Flags //////////////////////////////////////////////////////////////
@@ -396,7 +389,7 @@ internal object ConfigApiImpl {
                 if (prop !is KMutableProperty<*>) continue
                 //get the actual [thing] from the property
                 val propVal = prop.get(config)
-                if (propVal is ConfigAction) continue
+                if (propVal is EntryTransient) continue
                 //if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 //things name
                 val name = prop.name
@@ -517,7 +510,7 @@ internal object ConfigApiImpl {
             }.sortedBy { orderById[it.name] }) {
                 if (prop !is KMutableProperty<*>) continue
                 val propVal = prop.get(config)
-                if (propVal is ConfigAction) continue
+                if (propVal is EntryTransient) continue
                 val name = prop.name
                 val tomlElement = if (toml.containsKey(name)) {
                     toml[name]

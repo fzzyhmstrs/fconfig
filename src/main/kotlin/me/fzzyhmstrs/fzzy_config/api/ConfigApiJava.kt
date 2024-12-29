@@ -56,6 +56,7 @@ object ConfigApiJava {
      */
     @JvmStatic
     @JvmOverloads
+    @Suppress("DEPRECATION")
     @Deprecated("Consider registerAndLoadConfig() instead, to perform automatic loading, registering, and validating in one step.")
     fun <T: Config> registerConfig(config: T, configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApi.registerConfig(config, configClass, registerType)
