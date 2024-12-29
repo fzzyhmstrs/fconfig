@@ -42,12 +42,8 @@ import java.util.function.UnaryOperator
 import kotlin.math.min
 
 class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.BuildResult, texts: Translatable.Result) :
-    DynamicListWidget.Entry(parentElement, texts.name, texts.desc, content.scope)
+    DynamicListWidget.Entry(parentElement, texts.name, texts.desc, content.scope, content.visibility)
 {
-
-    init {
-        this.visibility = content.visibility
-    }
 
     private val layout: LayoutWidget = if (content.groupTypes.isEmpty()) {
         content.layoutWidget.setPos(this.x, this.top).compute()
@@ -61,6 +57,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         lo.compute()
     }
 
+    private val groupOffset = content.groupTypes.size * 7
     private val actions: List<AbstractDecorationWidget> = content.actionWidgets
     private var children: MutableList<Element> = mutableListOf()
     private var drawables: List<Drawable> = emptyList()
@@ -68,9 +65,12 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     private var narratables: List<AbstractTextWidget> = emptyList()
     private var tooltipProviders: List<TooltipChild> = emptyList()
 
-    private val contextBuilders: Map<ContextHandler.ContextType, ContextAction.Builder> = content.contextActions
-    private val context: Map<ContextHandler.ContextType, ContextAction> by lazy {
-        contextBuilders.mapValues { it.value.build() }
+    private val contextBuilders: Map<String, Map<ContextType, ContextAction.Builder>> = content.contextActions
+    private val context: Map<ContextType, ContextAction> by lazy {
+        contextBuilders.entries.stream().collect(
+            { mutableMapOf() },
+            { map, entry -> map.putAll(entry.value.mapValues { it.value.build() }) },
+            { m1, m2 -> m1.putAll(m2) })
     }
 
     private val tooltip: List<OrderedText> by lazy {
@@ -172,14 +172,14 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
     override fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         if ((hovered && !MinecraftClient.getInstance().navigationType.isKeyboard) || (focused && MinecraftClient.getInstance().navigationType.isKeyboard))
-            context.drawBorder(x - 2, y - 2, width + 4, height + 4, -1)
+            context.drawBorder(x - 2 + groupOffset, y - 2, width + 4, height + 4, -1)
         else if (focused || hovered)
-            context.drawBorder(x - 2, y - 2, width + 4, height + 4, -6250336)
+            context.drawBorder(x - 2 + groupOffset, y - 2, width + 4, height + 4, -6250336)
     }
 
     override fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         if (hovered)
-            context.fill(x - 1, y - 1, x + width + 1, y + height + 1, 1684300900)
+            context.fill(x - 1 + groupOffset, y - 1, x + width + 1, y + height + 1, 1684300900)
     }
 
     override fun appendNarrations(builder: NarrationMessageBuilder) {
@@ -237,10 +237,12 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
                 position
             }
         }
-        builder.addAll("entry", contextBuilders.filter { it.value.isForMenu() })
+        for ((g, actions) in contextBuilders) {
+            builder.addAll(g, actions)
+        }
     }
 
-    override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
+    override fun handleContext(contextType: ContextType, position: Position): Boolean {
         val action = context[contextType] ?: return false
         val content = layout.getElement("content")
         val newPosition = if (content != null && position.contextInput == ContextInput.KEYBOARD) {
@@ -266,7 +268,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         private val decorationWidget = DecorationWidget()
         private var group: String = ""
         private var visibility: DynamicListWidget.Visibility = DynamicListWidget.Visibility.VISIBLE
-        private var contextActions: Map<ContextHandler.ContextType, ContextAction.Builder> = mapOf()
+        private var contextActions: Map<String,Map<ContextType, ContextAction.Builder>> = mapOf()
         private val popStart = context.groups.size - context.annotations.filterIsInstance<ConfigGroup.Pop>().size
 
 
@@ -309,7 +311,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             return this
         }
 
-        fun contextActions(contextActions: Map<ContextHandler.ContextType, ContextAction.Builder>): ContentBuilder {
+        fun contextActions(contextActions: Map<String,Map<ContextType, ContextAction.Builder>>): ContentBuilder {
             this.contextActions = contextActions
             return this
         }
@@ -336,7 +338,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             val scope: DynamicListWidget.Scope,
             val groupTypes: List<Boolean>,
             val visibility: DynamicListWidget.Visibility,
-            val contextActions: Map<ContextHandler.ContextType, ContextAction.Builder>)
+            val contextActions: Map<String,Map<ContextType, ContextAction.Builder>>)
 
     }
 

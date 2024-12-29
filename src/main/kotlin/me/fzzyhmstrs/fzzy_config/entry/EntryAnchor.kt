@@ -10,10 +10,16 @@
 
 package me.fzzyhmstrs.fzzy_config.entry
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import net.minecraft.client.MinecraftClient
 import net.minecraft.text.Text
 import org.jetbrains.annotations.ApiStatus.Experimental
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.Consumer
 
 /**
  * Handles marking an entry as a visitable "layer". The layer itself is defined by the builder, and the layers default name as defined by translation key or annotation is also passed in by default
@@ -54,8 +60,25 @@ interface EntryAnchor {
     }
 
     enum class AnchorType {
-        CONFIG,
-        SECTION,
-        INLINE
+        CONFIG {
+            override fun action(scope: String, anchorId: String): Runnable {
+                return Runnable { ConfigApi.openScreen(anchorId) }
+            }
+        },
+        SECTION {
+            override fun action(scope: String, anchorId: String): Runnable {
+                return Runnable { ConfigApi.openScreen(anchorId) }
+            }
+        },
+        INLINE {
+            override fun action(scope: String, anchorId: String): Runnable {
+                return Runnable {
+                    ConfigApi.openScreen(scope)
+                    MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.scrollToGroup(anchorId)
+                }
+            }
+        };
+
+        abstract fun action(scope: String, anchorId: String): Runnable
     }
 }

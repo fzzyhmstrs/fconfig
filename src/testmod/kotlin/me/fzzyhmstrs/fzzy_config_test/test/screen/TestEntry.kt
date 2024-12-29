@@ -14,14 +14,8 @@ import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
 class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, index: Int, private val n: Text) :
-    DynamicListWidget.Entry(parentElement, scope.lit(), FcText.empty(), DynamicListWidget.Scope(scope, if (group == index) group.toString() else "", listOf(group.toString())))
+    DynamicListWidget.Entry(parentElement, scope.lit(), FcText.empty(), DynamicListWidget.Scope(scope, if (group == index) group.toString() else "", listOf(group.toString())), if (group == index) DynamicListWidget.Visibility.GROUP_VISIBLE else DynamicListWidget.Visibility.VISIBLE)
     {
-
-        init {
-            if (group == index) {
-                this.visibility = DynamicListWidget.Visibility.GROUP_VISIBLE
-            }
-        }
 
         private val button: ButtonWidget =
             ButtonWidget.builder(n) { _ -> FC.LOGGER.info("I Pressed {} for height {}", n, h); h += 5 }.size(75, 20).build()

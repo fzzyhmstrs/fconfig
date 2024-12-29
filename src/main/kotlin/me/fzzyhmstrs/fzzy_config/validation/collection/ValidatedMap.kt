@@ -12,8 +12,12 @@ package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -28,6 +32,7 @@ import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
+import java.util.function.Supplier
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -206,6 +211,17 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
     @Internal
     override fun entryDeco(): Decorated.DecoratedOffset? {
         return Decorated.DecoratedOffset(TextureDeco.DECO_MAP, 2, 2)
+    }
+
+    @Internal
+    override fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> {
+        val map = super.contextActionBuilder(context)
+        val clear = ContextAction.Builder("fc.validated_field.map.clear".translate()) { p ->
+            Popups.openConfirmPopup(p, "fc.validated_field.map.clear.desc".translate()) { this.accept(emptyMap()) }
+            true }
+            .withActive { s -> Supplier { s.get() && this.isNotEmpty() } }
+        map["collection"] = mutableMapOf(ContextType.CLEAR to clear)
+        return map
     }
 
     @Suppress("UNCHECKED_CAST")
