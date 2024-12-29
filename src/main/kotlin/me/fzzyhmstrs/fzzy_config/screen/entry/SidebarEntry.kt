@@ -13,16 +13,21 @@ package me.fzzyhmstrs.fzzy_config.screen.entry
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Translatable
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.text.Text
 
-class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, private val widget: SidebarWidget) :
+class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, icon: Decorated, onPress: Runnable, layer: Int) :
     DynamicListWidget.Entry(parentElement, texts.name, texts.desc, DynamicListWidget.Scope(scope)) {
 
     override var h: Int = 16
+    private val widget = SidebarWidget(texts, icon, onPress, layer)
     private val selectables: List<SelectableElement> = listOf(widget).cast()
     private val children = mutableListOf(widget)
 
@@ -44,29 +49,45 @@ class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Trans
     }
 
     override fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
-        if (hovered)
+        if (focused && MinecraftClient.getInstance().navigationType.isKeyboard) {
             context.drawBorder(x, y, width, height, -1)
-        else if (focused)
-            context.drawBorder(x, y, width, height, -6250336)
+        }
     }
 
-    override fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
-        context.fill(x, y, x + width, y + height, -16777216)
+    companion object {
+        fun neededWidth(texts: Translatable.Result, layer: Int): Int {
+            return 16 + layer * 4 + 2 + MinecraftClient.getInstance().textRenderer.getWidth(texts.name) + 2
+        }
     }
 
+    class SidebarWidget(
+        private val texts: Translatable.Result,
+        private val icon: Decorated,
+        private val onPress: Runnable,
+        private val layer: Int)
+        :
+        CustomPressableWidget(
+            0, 0,
+            16 + layer * 4 + 2 + MinecraftClient.getInstance().textRenderer.getWidth(texts.name) + 2, 16,
+            FcText.EMPTY) {
 
-    class SidebarWidget(message: Text, private val icon: Decorated, private val onPress: Runnable) : CustomPressableWidget(0, 0, 110, 16, message) {
+        init {
+            if (texts.desc != null) {
+                this.tooltip = Tooltip.of(texts.desc)
+            }
+        }
 
         override fun onPress() {
+            PopupWidget.pop()
             onPress.run()
         }
 
         override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
-            icon.renderDecoration(context, x, y, delta, false, false)
+            val offset = if (isSelected) 2 else 0
+            icon.renderDecoration(context, x + offset + layer * 4, y, delta, this.active, this.isSelected)
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, texts.name, x + offset + layer * 4 + 18, y + 3, -1)
         }
 
-        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
-            super.renderCustom(context, x + 18, y, width - 18, height, mouseX, mouseY, delta)
-        }
+        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
     }
 }

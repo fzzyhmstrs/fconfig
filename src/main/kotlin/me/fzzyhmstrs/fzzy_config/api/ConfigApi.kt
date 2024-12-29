@@ -18,7 +18,6 @@ import me.fzzyhmstrs.fzzy_config.annotations.Version
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.deserializeFromToml
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
-import me.fzzyhmstrs.fzzy_config.config.ConfigSpec
 import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
 import me.fzzyhmstrs.fzzy_config.event.api.EventApi
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
@@ -131,24 +130,6 @@ object ConfigApi {
     @JvmOverloads
     fun <T: Config> registerAndLoadConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApiImpl.registerAndLoadConfig({ configClass.get() }, registerType)
-    }
-
-    /**
-     * Registers a [ConfigSpec] for a namespaced set of configs. This should be applied to the entire config namespace, **behavior may be undefined if you apply divergent specs to different configs in your namespace, especially with a sidebar-based layout**
-     *
-     * If a spec isn't registered, Fzzy Config will use [ConfigSpec.DEFAULT]
-     *
-     * ConfigSpecs are experimental, with planned stabilization by 0.7.0. **Until 0.7.0 it is recommended to wrap this registration in a try block to handle unexpected changes in a fail-soft way**
-     * @param namespace String id of the config set. Generally your mod id.
-     * @param configSpec [ConfigSpec] defined spec instance with features you desire.
-     * @see ConfigSpec
-     * @author fzzyhmstrs
-     * @since 0.6.0
-     */
-    @JvmStatic
-    @ApiStatus.Experimental
-    fun registerConfigSpec(namespace: String, configSpec: ConfigSpec) {
-        ConfigApiImpl.registerConfigSpec(namespace, configSpec)
     }
 
     /**

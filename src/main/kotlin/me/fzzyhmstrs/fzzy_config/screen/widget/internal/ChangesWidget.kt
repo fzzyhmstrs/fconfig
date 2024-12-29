@@ -11,12 +11,9 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import com.mojang.blaze3d.systems.RenderSystem
-import jdk.internal.org.jline.utils.Colors.h
 import me.fzzyhmstrs.fzzy_config.fcId
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
+import me.fzzyhmstrs.fzzy_config.screen.context.Position
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
@@ -24,13 +21,11 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.widget.MultilineTextWidget
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
-import kotlin.math.max
 
 //client
 internal class ChangesWidget(private val scope: String, private val widthSupplier: Supplier<Int>, private val manager: UpdateManager): CustomPressableWidget(0, 0, 80, 20, "fc.button.changes".translate()) {
@@ -69,14 +64,26 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         val changelogText = "fc.button.changelog".translate()
         val popup = PopupWidget.Builder("fc.button.changes.title".translate())
             // Apply Changes
-            .add("apply", ActiveButtonWidget(applyText, client.textRenderer.getWidth(applyText) + 8, 20, { manager.hasChanges() }, { manager.apply(false) }), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
+            .add("apply",
+                ActiveButtonWidget(applyText, client.textRenderer.getWidth(applyText) + 8, 20, { manager.hasChanges() }, { manager.apply(false) }),
+                LayoutWidget.Position.BELOW,
+                LayoutWidget.Position.ALIGN_JUSTIFY)
             .pushSpacing(UnaryOperator.identity()) { _ -> 2 }
             // Revert Changes
-            .add("revert", ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 20, { manager.hasChanges() }, { manager.revert() }), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
+            .add("revert",
+                ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 20, { manager.hasChanges() }, { manager.revert() }),
+                LayoutWidget.Position.BELOW,
+                LayoutWidget.Position.ALIGN_JUSTIFY)
             // Restore Defaults > confirm popup
-            .add("restore", ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 20, { manager.hasRestores(scope) }, { b -> openRestoreConfirmPopup(b) }), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
+            .add("restore",
+                ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 20, { manager.hasRestores(scope) }, { b -> Popups.openConfirmPopup(Position.fromWidget(b), "fc.config.restore.confirm.desc".translate()) { manager.restore(scope) } }),
+                LayoutWidget.Position.BELOW,
+                LayoutWidget.Position.ALIGN_JUSTIFY)
             // Change History
-            .add("changelog", ActiveButtonWidget(changelogText, client.textRenderer.getWidth(changelogText) + 8, 20, { manager.hasChangeHistory() }, { openChangelogPopup() }), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
+            .add("changelog",
+                ActiveButtonWidget(changelogText, client.textRenderer.getWidth(changelogText) + 8, 20, { manager.hasChangeHistory() }, { openChangelogPopup() }),
+                LayoutWidget.Position.BELOW,
+                LayoutWidget.Position.ALIGN_JUSTIFY)
             .addDoneWidget(spacingH = 2)
             .popSpacing()
             .positionX(PopupWidget.Builder.at { this.x - 8 })
@@ -85,31 +92,17 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         PopupWidget.push(popup)
     }
 
-    private fun openRestoreConfirmPopup(b: ActiveButtonWidget) {
-        val client = MinecraftClient.getInstance()
-        val confirmText = "fc.button.restore.confirm".translate()
-        val confirmTextWidth = max(50, client.textRenderer.getWidth(confirmText) + 8)
-        val cancelText = "fc.button.cancel".translate()
-        val cancelTextWidth = max(50, client.textRenderer.getWidth(cancelText) + 8)
-        val buttonWidth = max(confirmTextWidth, cancelTextWidth)
-
-        val popup = PopupWidget.Builder("fc.button.restore".translate())
-            .addDivider()
-            .addElement("confirm_text", MultilineTextWidget("fc.button.restore.confirm.desc".translate(), client.textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), Position.BELOW, Position.ALIGN_CENTER)
-            .addElement("confirm_button", CustomButtonWidget.builder(confirmText) { manager.restore(scope); PopupWidget.pop() }.size(buttonWidth, 20).build(), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("cancel_button", CustomButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "confirm_text", Position.BELOW, Position.ALIGN_RIGHT)
-            .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width / 2 - w / 2 })
-            .positionY(PopupWidget.Builder.popupContext { h -> b.y - h + 28 })
-            .width(buttonWidth + 4 + buttonWidth + 16)
-            .build()
-        PopupWidget.push(popup)
-    }
-
     private fun openChangelogPopup() {
         val changes = manager.changeHistory()
         val popup = PopupWidget.Builder("fc.button.changelog".translate())
-            .addElement("changelog", ChangelogListWidget(changes, widthSupplier), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("done_button", CustomButtonWidget.builder(ScreenTexts.DONE) { PopupWidget.pop() }.size(50, 20).build(), Position.BELOW, Position.ALIGN_JUSTIFY)
+            .add("changelog",
+                ChangelogListWidget(changes, widthSupplier),
+                LayoutWidget.Position.BELOW,
+                LayoutWidget.Position.ALIGN_LEFT)
+            .add("done_button",
+                CustomButtonWidget.builder(ScreenTexts.DONE) { PopupWidget.pop() }.size(50, 20).build(),
+                LayoutWidget.Position.BELOW,
+                LayoutWidget.Position.ALIGN_JUSTIFY)
             .positionX(PopupWidget.Builder.at { 0 })
             .build()
         PopupWidget.push(popup)

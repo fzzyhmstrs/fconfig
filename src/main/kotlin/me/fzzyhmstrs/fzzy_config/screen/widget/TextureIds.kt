@@ -56,6 +56,18 @@ object TextureIds {
 
     /////////////////////////
 
+    /** a gray button with a green plus sign in the middle */
+    val GOTO = "widget/action/goto".fcId()
+
+    /** same as above but with the "inactive" button texture */
+    val GOTO_INACTIVE = "widget/action/goto_inactive".fcId()
+
+    /** same as above but with a white highlighted border */
+    val GOTO_HIGHLIGHTED = "widget/action/goto_highlighted".fcId()
+    val GOTO_LANG = "fc.button.goto".translate()
+
+    /////////////////////////
+
     /** a gray button texture with the fzzy config logo in the middle */
     val CONFIG = "widget/action/config".fcId()
 
@@ -66,6 +78,8 @@ object TextureIds {
     val CONFIG_HIGHLIGHTED = "widget/action/config_highlighted".fcId()
     val CONFIG_LANG = "fc.button.config".translate()
     val CONFIG_INACTIVE_LANG = "fc.button.config_inactive".translate()
+
+    ////////////////////////
 
     /** white wireframe box with a plus sign in the middle and cutouts in the top and bottom of the box */
     val GROUP_EXPAND = "widget/action/group_expand".fcId()

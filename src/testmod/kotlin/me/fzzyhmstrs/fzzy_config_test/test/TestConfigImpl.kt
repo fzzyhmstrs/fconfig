@@ -106,6 +106,8 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
     @ConfigGroup.Pop
     var set2 = setOf(0.2, 0.4, 0.6).validated()
 
+    val pair1 = ValidatedInt(1, 10, 0).pairWith(ValidatedInt(1, 10, 0))
+
     @ConfigGroup.Pop
     var map1 = mapOf(1 to "a", 2 to "c")
 
