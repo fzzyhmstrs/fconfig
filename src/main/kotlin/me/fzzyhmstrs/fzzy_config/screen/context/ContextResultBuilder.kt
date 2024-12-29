@@ -13,24 +13,24 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 import java.util.function.UnaryOperator
 
 class ContextResultBuilder(private var position: Position) {
-    private val actions: LinkedHashMap<String, MutableMap<ContextHandler.ContextType, ContextAction.Builder>> = linkedMapOf()
+    private val actions: LinkedHashMap<String, MutableMap<ContextType, ContextAction.Builder>> = linkedMapOf()
 
-    fun add(group: String, type: ContextHandler.ContextType, builder: ContextAction.Builder) {
+    fun add(group: String, type: ContextType, builder: ContextAction.Builder) {
         actions.computeIfAbsent(group) { _-> mutableMapOf() }[type] = builder
     }
 
-    fun addAll(group: String, builders: Map<ContextHandler.ContextType, ContextAction.Builder>) {
+    fun addAll(group: String, builders: Map<ContextType, ContextAction.Builder>) {
         actions.computeIfAbsent(group) { _-> mutableMapOf() }.putAll(builders)
     }
 
-    fun apply(group: String, type: ContextHandler.ContextType, operator: UnaryOperator<ContextAction.Builder>) {
+    fun apply(group: String, type: ContextType, operator: UnaryOperator<ContextAction.Builder>) {
         val result = actions[group]?.get(type)?.let { operator.apply(it) }
         if (result != null) {
             add(group, type, result)
         }
     }
 
-    fun apply(group: String, operator: UnaryOperator<MutableMap<ContextHandler.ContextType, ContextAction.Builder>>) {
+    fun apply(group: String, operator: UnaryOperator<MutableMap<ContextType, ContextAction.Builder>>) {
         val result = actions[group]?.let { operator.apply(it) }
         if (result != null) {
             actions[group] = result
@@ -45,7 +45,7 @@ class ContextResultBuilder(private var position: Position) {
         return actions.isNotEmpty()
     }
 
-    internal fun apply(): Map<String, Map<ContextHandler.ContextType, ContextAction>> {
+    internal fun apply(): Map<String, Map<ContextType, ContextAction>> {
         return actions.mapValues { m -> m.value.mapValues { m2 -> m2.value.build() } }
     }
 

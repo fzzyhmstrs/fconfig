@@ -16,7 +16,6 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
-import me.fzzyhmstrs.fzzy_config.config.ConfigSpec
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
@@ -44,7 +43,6 @@ internal object ClientConfigRegistry {
     private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
     private val configScreenManagers: MutableMap<String, ConfigScreenManager> = mutableMapOf()
     private val customPermissions: MutableMap<String, Map<String, Boolean>> = mutableMapOf()
-    private val configSpecs: MutableMap<String, ConfigSpec> = mutableMapOf()
     private var validScopes: MutableSet<String> = Collections.synchronizedSet(mutableSetOf()) //configs are sorted into Managers by namespace
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
     private var hasScrapedMetadata: AtomicBoolean = AtomicBoolean(false)
@@ -55,11 +53,6 @@ internal object ClientConfigRegistry {
 
     internal fun getClientConfig(scope: String): Config? {
         return clientConfigs[scope]?.active
-    }
-
-    internal fun getConfigSpec(scope: String): ConfigSpec {
-        val validScope = getValidScope(scope) ?: return ConfigSpec.DEFAULT
-        return configSpecs[validScope] ?: ConfigSpec.DEFAULT
     }
 
     //client
@@ -133,6 +126,7 @@ internal object ClientConfigRegistry {
     }
 
     //client
+    @Suppress("UNUSED_PARAMETER")
     internal fun receiveUpdate(serializedConfigs: Map<String, String>, player: PlayerEntity) {
         for ((id, configString) in serializedConfigs) {
             if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
@@ -257,12 +251,6 @@ internal object ClientConfigRegistry {
         UpdateManager.applyKeys(config)
         clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config, baseConfig)
         EventApiImpl.fireOnRegisteredClient(config.getId(), config)
-    }
-
-    //client
-    internal fun registerConfigSpec(namespace: String, configSpec: ConfigSpec) {
-        if (configSpecs.containsKey(namespace)) throw IllegalStateException("Config Spec for namespace $namespace already registered! Duplicate spec registration not allowed.")
-        configSpecs[namespace] = configSpec
     }
 
     private class ConfigPair(val active: Config, val base: Config)

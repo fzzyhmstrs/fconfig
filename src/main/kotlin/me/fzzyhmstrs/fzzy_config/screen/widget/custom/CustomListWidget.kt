@@ -153,10 +153,8 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     override fun setFocused(focused: Element?) {
-        FC.DEVLOG.info("Setting $focused as focused 1")
         val f = focused as? E
         if (f != null && !selectableEntries().contains(f)) return
-        FC.DEVLOG.info("Setting $focused as focused 2")
         focusedElement?.isFocused = false
         f?.isFocused = true
         this.focusedElement = f
