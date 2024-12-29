@@ -8,19 +8,16 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.validation.number
+package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextInput
 import me.fzzyhmstrs.fzzy_config.screen.context.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -29,13 +26,15 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.MultilineTextWidget
 import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.command.CommandSource
+import net.minecraft.text.Text
 import java.util.*
+import java.util.function.Function
 import kotlin.math.max
 
-object ValidatedFieldPopups {
+//client
+object Popups {
 
-    @Suppress("DEPRECATION")
-    internal fun openRestoreConfirmPopup(b: Position, field: ValidatedField<*>) {
+    internal fun openConfirmPopup(b: Position, desc: Text, restore: Runnable) {
         val client = MinecraftClient.getInstance()
         val confirmText = "fc.button.restore.confirm".translate()
         val confirmTextWidth = max(50, client.textRenderer.getWidth(confirmText) + 8)
@@ -47,8 +46,8 @@ object ValidatedFieldPopups {
 
         val popup = PopupWidget.Builder("fc.button.restore".translate())
             .addDivider()
-            .add("confirm_text", MultilineTextWidget("fc.config.restore.confirm.desc".translate(), MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
-            .add("confirm_button", CustomButtonWidget.builder(confirmText) { field.restore(); PopupWidget.pop() }.size(buttonWidth, 20).build(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("confirm_text", MultilineTextWidget(desc, MinecraftClient.getInstance().textRenderer).setCentered(true).setMaxWidth(buttonWidth + 4 + buttonWidth), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
+            .add("confirm_button", CustomButtonWidget.builder(confirmText) { restore.run(); PopupWidget.pop() }.size(buttonWidth, 20).build(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("cancel_button", CustomButtonWidget.builder(cancelText) { PopupWidget.pop() }.size(buttonWidth, 20).build(), "confirm_text", LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_RIGHT)
             .positionX(PopupWidget.Builder.popupContext { w -> rX + b.width/2 - w/2 })
             .positionY(PopupWidget.Builder.popupContext { h -> rY - h + 28 })
@@ -109,6 +108,33 @@ object ValidatedFieldPopups {
         val key = field.getEntryKey()
         val summary = field.get().toString()
         NetworkEventsClient.forwardSetting(update, id, key, summary)
+    }
+
+    internal fun openGotoPopup(entryBuilders: List<Function<DynamicListWidget, out Entry>>, neededWidth: Int, screenHeight: Int) {
+        //height - padding * 2 - text spacing - text - divider spacing - divider
+        val client = MinecraftClient.getInstance()
+        val anchors = DynamicListWidget(
+            client,
+            entryBuilders,
+            0, 0,
+            neededWidth, 100,
+            DynamicListWidget.ListSpec(
+                leftPadding = 0,
+                rightPadding = -4,
+                verticalPadding = 0,
+                hideScrollBar = true))
+        val maxHeight = screenHeight - 16 - 4 - 9 - 4 - 5
+        anchors.fitToContent(maxHeight)
+
+        val popup = PopupWidget.Builder("fc.button.goto".translate())
+            .addDivider()
+            .add("anchors", anchors, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .positionX(PopupWidget.Builder.absScreen(0))
+            .positionY(PopupWidget.Builder.popupContext { h -> screenHeight - h })
+            .background("widget/popup/background_right_click".fcId())
+            .noBlur()
+            .build()
+        PopupWidget.push(popup)
     }
 
 }

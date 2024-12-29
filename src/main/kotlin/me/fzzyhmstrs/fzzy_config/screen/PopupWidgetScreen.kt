@@ -73,13 +73,12 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         initPopup()
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    final override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         hoveredElement = if (popupWidgets.isNotEmpty()) null else children().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
-        if (popupWidgets.isEmpty())
-            super.render(context, mouseX, mouseY, delta)
-        else
-            super.render(context, 0, 0, delta)
         context.matrices.push()
+        if (popupWidgets.isNotEmpty())
+            context.matrices.translate(0f, 0f, -500f * popupWidgets.size)
+        renderContents(context, mouseX, mouseY, delta)
         if (popupWidgets.isNotEmpty())
             context.matrices.translate(0f, 0f, 500f)
         for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
@@ -90,6 +89,13 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
             context.matrices.translate(0f, 0f, 500f)
         }
         context.matrices.pop()
+    }
+
+    open fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        if (popupWidgets.isEmpty())
+            super.render(context, mouseX, mouseY, delta)
+        else
+            super.render(context, 0, 0, delta)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {

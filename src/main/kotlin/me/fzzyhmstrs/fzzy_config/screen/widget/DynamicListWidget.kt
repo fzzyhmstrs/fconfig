@@ -13,10 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextProvider
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
-import me.fzzyhmstrs.fzzy_config.screen.context.Position
+import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
@@ -35,9 +32,10 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 import java.util.*
+import java.util.function.Consumer
 import java.util.function.Function
+import java.util.function.Predicate
 import java.util.function.Supplier
-import java.util.function.UnaryOperator
 import kotlin.math.max
 import kotlin.math.min
 
@@ -112,6 +110,10 @@ class DynamicListWidget(
     private val top
         get() = y
 
+    fun fitToContent(max: Int) {
+        this.height = min(max, this.contentHeight())
+        onReposition()
+    }
 
     override fun ensureVisible(entry: Entry) {
         if (entry.top.get() < top) {
@@ -122,7 +124,6 @@ class DynamicListWidget(
             entries.scroll(scrollAmount)
         }
     }
-
 
     override fun topDelta(): Int {
         return entries.top() - top
@@ -177,13 +178,11 @@ class DynamicListWidget(
     override var lastSelected: Element? = null
 
     override fun pushLast() {
-        FC.DEVLOG.info("List pushin' $focused")
         lastSelected = focused
         lastSelected?.nullCast<LastSelectable>()?.pushLast()
     }
 
     override fun popLast() {
-        FC.DEVLOG.info("List poppin $lastSelected")
         (lastSelected as? Entry)?.let { focused = it }
         lastSelected?.nullCast<LastSelectable>()?.popLast()
     }
@@ -197,9 +196,11 @@ class DynamicListWidget(
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         super.renderWidget(context, mouseX, mouseY, delta)
+        context.enableScissor(0, this.top, MinecraftClient.getInstance().currentScreen?.width ?: 320, this.bottom)
         for (entry in inFrameEntries()) {
             entry.renderExtras(context, mouseX, mouseY, delta)
         }
+        context.disableScissor()
     }
 
     override val neighbor: EnumMap<NavigationDirection, Neighbor> = EnumMap(NavigationDirection::class.java)
@@ -291,24 +292,24 @@ class DynamicListWidget(
         this.suggestionWindowElement = element
     }
 
-    override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
+    override fun handleContext(contextType: ContextType, position: Position): Boolean {
         return when (contextType) {
-            ContextHandler.PAGE_UP -> {
+            ContextType.PAGE_UP -> {
                 page(true)
                 focused = inFrameEntries().firstOrNull() ?: focused
                 true
             }
-            ContextHandler.PAGE_DOWN -> {
+            ContextType.PAGE_DOWN -> {
                 page(false)
                 focused = inFrameEntries().lastOrNull() ?: focused
                 true
             }
-            ContextHandler.HOME -> {
+            ContextType.HOME -> {
                 scrollToTop()
                 focused = inFrameEntries().firstOrNull() ?: focused
                 true
             }
-            ContextHandler.END -> {
+            ContextType.END -> {
                 scrollToBottom()
                 focused = inFrameEntries().lastOrNull() ?: focused
                 true
@@ -342,13 +343,14 @@ class DynamicListWidget(
 
             for (e in delegate) {
                 e.onAdd(pos, previousEntry)
-                if (!e.visibility.skip) {
+                val v = e.getVisibility()
+                if (!(v.skip xor v.group)) {
                     for (g in e.scope.inGroups) {
+                        if (v.group && e.scope.group == g) continue
                         entryMap.computeIfAbsent(g) { _ -> mutableMapOf() }[e.scope.scope] = e
                     }
-
                 }
-                if (e.visibility.group) {
+                if (e.getVisibility().group) {
                     groupMap[e.scope.group] = GroupPair(e, true)
                 }
                 previousEntry = e
@@ -400,9 +402,9 @@ class DynamicListWidget(
             inFrameEntries = if (index > index2) {
                 emptyList()
             } else {
-                delegate.subList(index, index2).filter { it.visibility.visible }
+                delegate.subList(index, index2).filter { it.getVisibility().visible }
             }
-            selectableEntries = delegate.filter { it.visibility.selectable }.toMutableList()
+            selectableEntries = delegate.filter { it.getVisibility().selectable }.toMutableList()
             dirty = false
         }
 
@@ -410,7 +412,7 @@ class DynamicListWidget(
             dirty = true
             val foundEntries = searcher.search(searchInput)
             for (e in delegate) {
-                if (e.visibility.skip) continue
+                if (e.getVisibility().skip) continue
                 e.applyVisibility(Visibility::filter)
             }
             for (e in foundEntries) {
@@ -419,12 +421,12 @@ class DynamicListWidget(
             for (e in groups.values) {
                 val groupEntries = delegateMap[e.groupEntry.scope.group]?.values
                 if (groupEntries == null) {
-                    e.groupEntry.applyVisibility { _ -> Visibility.GROUP_DISABLED }
+                    e.groupEntry.applyVisibility { l -> l.push(Visibility.GROUP_DISABLED) }
                     continue
                 }
-                e.groupEntry.applyVisibility { v -> v.group(groupEntries) }
+                e.groupEntry.applyVisibility(Visibility.groupFilter(groupEntries))
             }
-            if (this@DynamicListWidget.focusedElement?.visibility?.selectable != true) {
+            if (this@DynamicListWidget.focusedElement?.getVisibility()?.selectable != true) {
                 val replacement = this@DynamicListWidget.focusedElement?.getNeighbor(true) ?: this@DynamicListWidget.focusedElement?.getNeighbor(false)
                 this@DynamicListWidget.focused = replacement
             }
@@ -443,10 +445,13 @@ class DynamicListWidget(
             val groupEntries = delegateMap[g] ?: return
             val groupPair = groups[g] ?: return
             if (groupPair.visible) {
-                for (e in groupEntries.values) {
+                for ((s, e) in groupEntries) {
                     e.applyVisibility(Visibility::hide)
+                    if (e.getVisibility().group) {
+                        groups[s]?.visible = false
+                    }
                 }
-                if (this@DynamicListWidget.focusedElement?.visibility?.selectable != true) {
+                if (this@DynamicListWidget.focusedElement?.getVisibility()?.selectable != true) {
                     val replacement = this@DynamicListWidget.focusedElement?.getNeighbor(true) ?: this@DynamicListWidget.focusedElement?.getNeighbor(false)
                     this@DynamicListWidget.focused = replacement
                 }
@@ -455,22 +460,14 @@ class DynamicListWidget(
                 }
                 groupPair.visible = false
             } else {
-                val otherGroups: MutableSet<String> = mutableSetOf()
-                for (e in groupEntries.values) {
-                    val g2 = e.scope.group
-                    if (g2 != "" && g2 != g) {
-                        otherGroups.add(g2)
-                    }
-                }
-                outer@
-                for (e in groupEntries.values) {
-                    if (!e.visibility.group) {
-                        for (g2 in otherGroups) {
-                            if (e.scope.inGroups.contains(g2))
-                                continue@outer //skip changing visibility of nested groups, except for the nested group headers
+                for ((s, e) in groupEntries) {
+                    e.applyVisibility(Visibility::unhide)
+                    if (e.getVisibility().group) {
+                        val otherGroup = delegateMap[s] ?: continue
+                        if (otherGroup.values.any { it.getVisibility().visible }) {
+                            groups[s]?.visible = true
                         }
                     }
-                    e.applyVisibility(Visibility::unhide)
                 }
                 groupPair.visible = true
             }
@@ -557,7 +554,7 @@ class DynamicListWidget(
 
         private fun firstSelectable(): Entry? {
             for (e in delegate) {
-                if (e.visibility.selectable) return e
+                if (e.getVisibility().selectable) return e
             }
             return null
         }
@@ -566,7 +563,7 @@ class DynamicListWidget(
             val iterator = delegate.listIterator(delegate.size)
             while (iterator.hasPrevious()) {
                 val e = iterator.previous()
-                if (e.visibility.selectable) return e
+                if (e.getVisibility().selectable) return e
             }
             return null
         }
@@ -587,7 +584,7 @@ class DynamicListWidget(
 
     private class GroupPair(val groupEntry: Entry, var visible: Boolean)
 
-    abstract class Entry(parentElement: DynamicListWidget, override val name: Text, override val desc: Text?, val scope: Scope)
+    abstract class Entry(parentElement: DynamicListWidget, override val name: Text, override val desc: Text?, val scope: Scope, visibility: Visibility = Visibility.VISIBLE)
         :
         CustomListWidget.Entry<DynamicListWidget>(parentElement),
         ParentElement,
@@ -597,7 +594,11 @@ class DynamicListWidget(
         LastSelectable
     {
 
-        var visibility = Visibility.VISIBLE
+        private val visibilityStack: VisibilityStack = VisibilityStack(visibility, LinkedList())
+
+        fun getVisibility(): Visibility {
+            return visibilityStack.get()
+        }
 
         protected open val x: Pos = ReferencePos { parentElement.rowX() }
         protected open val w: Pos = ReferencePos { parentElement.rowWidth() }
@@ -616,7 +617,7 @@ class DynamicListWidget(
         private var dragging = false
 
         override val skip: Boolean
-            get() = visibility.skip
+            get() = getVisibility().skip
 
         abstract fun selectableChildren(): List<SelectableElement>
 
@@ -632,13 +633,13 @@ class DynamicListWidget(
                 top = RelEntryPos(previous.bottom, previous.top)
                 previous.top.next = top
             }
-            bottom = ImmutableSuppliedPos(top) { if (visibility.visible) h + parentElement.verticalPadding else 0 }
+            bottom = ImmutableSuppliedPos(top) { if (getVisibility().visible) h + parentElement.verticalPadding else 0 }
             init()
         }
 
         override fun provideContext(builder: ContextResultBuilder) {}
 
-        override fun handleContext(contextType: ContextHandler.ContextType, position: Position): Boolean {
+        override fun handleContext(contextType: ContextType, position: Position): Boolean {
             return false
         }
 
@@ -653,8 +654,8 @@ class DynamicListWidget(
             top.inc(dY)
         }
 
-        fun applyVisibility(operator: UnaryOperator<Visibility>) {
-            this.visibility = operator.apply(this.visibility)
+        fun applyVisibility(consumer: Consumer<VisibilityStack>) {
+            consumer.accept(this.visibilityStack)
         }
 
         override fun pushLast() {
@@ -709,7 +710,7 @@ class DynamicListWidget(
 
         @Deprecated("Use renderEntry/renderBorder/renderHighlight for rendering instead")
         override fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            if (!visibility.visible) return
+            if (!getVisibility().visible) return
             val xx = x.get()
             val tt = top.get()
             val ww = w.get()
@@ -825,74 +826,49 @@ class DynamicListWidget(
         inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null, offset: Int = 0) : SuppliedPos(parent, 0, Supplier { offset }), EntryPos {
 
             override fun getEntry(): Entry? {
-                return this@Entry.takeIf { it.visibility.selectable }
-            }
-        }
-
-        inner class ImmutableSuppliedEntryPos(parent: Pos, offset: Supplier<Int>, override val previous: EntryPos?, override var next: EntryPos? = null) : ImmutableSuppliedPos(parent, offset),
-                                                                                                                                                           EntryPos {
-            override fun getEntry(): Entry? {
-                return this@Entry.takeIf { it.visibility.selectable }
-            }
-
-            override fun toString(): String {
-                return "[${parent.get()} + ${offset.get()}](${previous?.getEntry()}|${next?.getEntry()})"
+                return this@Entry.takeIf { it.getVisibility().selectable }
             }
         }
     }
 
-    enum class Visibility(val visible: Boolean, val skip: Boolean, val selectable: Boolean, val group: Boolean) {
-        VISIBLE(true, false, true, false),
-        HIDDEN(false, false, false, false),
-        FILTERED(false, false, false, false),
-        FILTERED_HIDDEN(false, false, false, false),
-        GROUP_VISIBLE(true, true, true, true),
-        GROUP_FILTERED(false, true, false, true), //filtering handled externally
-        GROUP_DISABLED(false, true, false, false), //errored group with no entries
-        HEADER_VISIBLE(true, true, false, false);
+    enum class Visibility(val visible: Boolean, val skip: Boolean, val selectable: Boolean, val group: Boolean, val repeatable: Boolean, val affectedBy: Predicate<Visibility>) {
+        VISIBLE(true, false, true, false, false, { v -> !v.group }),
+        HIDDEN(false, false, false, false, true, { v -> !v.group }),
+        FILTERED(false, false, false, false, false, { v -> !v.group }),
+        GROUP_VISIBLE(true, true, true, true, false, { v -> v.group }),
+        GROUP_FILTERED(false, true, false, true, false, { v -> v.group }), //filtering handled externally
+        GROUP_HIDDEN(false, true, false, true, true, { v -> v.group }), //hiding handled externally
+        GROUP_DISABLED(false, true, false, true, false, { _ -> false }), //errored group with no entries
+        HEADER_VISIBLE(true, true, false, false, false, { _ -> false });
 
-        fun filter(): Visibility {
-            return when (this) {
-                VISIBLE -> FILTERED
-                HIDDEN -> FILTERED_HIDDEN
-                else -> this
+        companion object {
+            fun filter(visibilityStack: VisibilityStack) {
+                visibilityStack.push(FILTERED)
             }
-        }
 
-        fun unfilter(): Visibility {
-            return when (this) {
-                FILTERED -> VISIBLE
-                FILTERED_HIDDEN -> HIDDEN
-                else -> this
+            fun unfilter(visibilityStack: VisibilityStack) {
+                visibilityStack.remove(FILTERED)
             }
-        }
 
-        fun hide(): Visibility {
-            return when (this) {
-                FILTERED -> FILTERED_HIDDEN
-                VISIBLE -> HIDDEN
-                else -> this
+            fun hide(visibilityStack: VisibilityStack) {
+                visibilityStack.push(HIDDEN)
+                visibilityStack.push(GROUP_HIDDEN)
             }
-        }
 
-        fun unhide(): Visibility {
-            return when (this) {
-                HIDDEN -> VISIBLE
-                FILTERED_HIDDEN -> FILTERED
-                else -> this
+            fun unhide(visibilityStack: VisibilityStack) {
+                visibilityStack.remove(HIDDEN)
+                visibilityStack.remove(GROUP_HIDDEN)
             }
-        }
 
-        fun group(groupEntries: Collection<Entry>): Visibility {
-            return if (this.group) {
-                if (groupEntries.any { it.visibility.visible }) {
-                    GROUP_VISIBLE
+            fun groupFilter(groupEntries: Collection<Entry>): Consumer<VisibilityStack> {
+                return if (!groupEntries.any { it.getVisibility().visible }) {
+                    Consumer { list -> list.push(GROUP_FILTERED) }
                 } else {
-                    GROUP_FILTERED
+                    Consumer { list -> list.remove(GROUP_FILTERED) }
                 }
-            } else {
-                this
             }
+
+            val EMPTY: Consumer<LinkedList<Visibility>> = Consumer { _-> }
         }
     }
 
@@ -906,4 +882,18 @@ class DynamicListWidget(
                         val rightPadding: Int = 10,
                         val verticalPadding: Int = 4,
                         val hideScrollBar: Boolean = false)
+
+    data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>) {
+        fun get(): Visibility {
+            return visibilityStack.firstOrNull() ?: baseVisibility
+        }
+
+        fun push(v: Visibility) {
+            if (baseVisibility.affectedBy.test(v) && (v.repeatable || !visibilityStack.contains(v))) visibilityStack.push(v)
+        }
+
+        fun remove(v: Visibility) {
+            if (baseVisibility.affectedBy.test(v)) visibilityStack.removeFirstOccurrence(v)
+        }
+    }
 }
