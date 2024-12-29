@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
@@ -138,9 +139,10 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
     }
 
     @Internal
-    override fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<ContextHandler.ContextType, ContextAction.Builder> {
+    override fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> {
         val map = super.contextActionBuilder(context)
-        for ((_, builder) in map) {
+        val map2 = map["entry"] ?: return map
+        for ((_, builder) in map2) {
             builder.withActive { supplier -> Supplier{ supplier.get() && this.checkConditions() } }
         }
         return map

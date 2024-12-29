@@ -14,6 +14,7 @@ import com.google.common.collect.Sets
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
+import me.fzzyhmstrs.fzzy_config.entry.EntryTransient
 import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
@@ -65,6 +66,7 @@ class ConfigAction @JvmOverloads constructor(
     EntryWidget<Any>,
     EntryFlag,
     EntryCreator,
+    EntryTransient,
     TranslatableEntry
 {
 

@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.config
 import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
+import me.fzzyhmstrs.fzzy_config.entry.EntryTransient
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
@@ -42,10 +43,14 @@ import java.util.*
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-open class ConfigGroup @JvmOverloads constructor(private val groupName: String = "",
-                                                 private val decoration: Decorated? = null,
-                                                 private val offsetX: Int? = null,
-                                                 private val offsetY: Int? = null): TranslatableEntry, EntryAnchor, EntryCreator, EntryPermissible {
+open class ConfigGroup @JvmOverloads constructor(
+    private val groupName: String = "",
+    private val decoration: Decorated? = null,
+    private val offsetX: Int? = null,
+    private val offsetY: Int? = null)
+    :
+    TranslatableEntry, EntryAnchor, EntryCreator, EntryPermissible, EntryTransient
+{
 
     @Transient
     override var translatableEntryKey = "fc.config.generic.group"

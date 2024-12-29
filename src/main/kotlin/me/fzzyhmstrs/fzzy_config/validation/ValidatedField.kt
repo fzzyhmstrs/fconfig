@@ -18,7 +18,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
@@ -37,7 +37,7 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.Condition
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionImpl
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
-import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFieldPopups
+import me.fzzyhmstrs.fzzy_config.screen.widget.Popups
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -442,7 +442,8 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     /////////////// ENTRY CREATION ////////////////
 
     /**
-     *
+     * Defines a decoration for the entry
+     * @return [Decorated.DecoratedOffset] containing the decoration and pixel xy alignment offsets.
      * @author fzzyhmstrs
      * @since 0.6.0
      */
@@ -451,7 +452,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     }
 
     /**
-     *
+     * Allows for modification of the entry content. If you want to add onto the super calls operator, consider [UnaryOperator.andThen] or [UnaryOperator.compose]
+     * @param context [EntryCreator.CreatorContext] context specific to the entry being built
+     * @return [UnaryOperator]&lt;[ConfigEntry.ContentBuilder]&gt;
      * @author fzzyhmstrs
      * @since 0.6.0
      */
@@ -465,36 +468,51 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     }
 
     /**
+     * Builds a set of grouped context actions to pass into this fields GUI entry
      *
+     * Call super first and add into the returned result if you want to add new content to the base actions. (Unless you specifically don't want the super-actions of course)
+     * - Group: string id used to cluster similar context actions together in a context menu
+     * - [ContextType]: key for the action, used simply as map keys here for organization
+     * - [ContextAction.Builder]: builder of the action to perform. This is a builder for 2 reasons; most aspects of FCs GUIs use a lazy instantiation pattern, and this allows subclasses or parents to modify the builder as needed.
+     * @param context [EntryCreator.CreatorContext] context specific to the entry being built
+     * @return Map of groups to Maps of [ContextType] to [ContextAction.Builder]
      * @author fzzyhmstrs
      * @since 0.6.0
      */
     @Suppress("DEPRECATION")
-    protected open fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<ContextHandler.ContextType, ContextAction.Builder> {
-        val map: MutableMap<ContextHandler.ContextType, ContextAction.Builder> = mutableMapOf()
-        val copy = ContextAction.Builder("fc.button.copy".translate()) { context.misc.get(EntryCreators.COPY_BUFFER)?.set(this.get()); true }
+    protected open fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> {
+        val map: MutableMap<ContextType, ContextAction.Builder> = mutableMapOf()
+        val copy = ContextAction.Builder("fc.button.copy".translate()) {
+            context.misc.get(EntryCreators.COPY_BUFFER)?.set(this.get())
+            true }
             .icon(TextureDeco.CONTEXT_COPY)
-        val paste = ContextAction.Builder("fc.button.paste".translate()) { context.misc.get(EntryCreators.COPY_BUFFER)?.get()?.let { this.trySet(it) }; true }
+        val paste = ContextAction.Builder("fc.button.paste".translate()) {
+            context.misc.get(EntryCreators.COPY_BUFFER)?.get()?.let { this.trySet(it) }
+            true }
             .active { this.isValidEntry(context.misc.get(EntryCreators.COPY_BUFFER)?.get()) }
             .icon(TextureDeco.CONTEXT_PASTE)
         val revert = ContextAction.Builder("fc.button.revert".translate()) { this.revert(); true }
             .active {  this.peekState() }
             .icon(TextureDeco.CONTEXT_REVERT)
-        val restore = ContextAction.Builder("fc.button.restore".translate()) { b -> ValidatedFieldPopups.openRestoreConfirmPopup(b, this); true }
+        val restore = ContextAction.Builder("fc.button.restore".translate()) { b ->
+            Popups.openConfirmPopup(b, "fc.config.restore.confirm.desc".translate()) { this.restore() }
+            true }
             .active {  !this.isDefault() }
             .icon(TextureDeco.CONTEXT_RESTORE)
 
-        map[ContextHandler.COPY] = copy
-        map[ContextHandler.PASTE] = paste
-        map[ContextHandler.REVERT] = revert
-        map[ContextHandler.RESTORE] = restore
+        map[ContextType.COPY] = copy
+        map[ContextType.PASTE] = paste
+        map[ContextType.REVERT] = revert
+        map[ContextType.RESTORE] = restore
 
         if (context.client) {
-            val forward = ContextAction.Builder("fc.button.forward".translate()) { ValidatedFieldPopups.openEntryForwardingPopup(this); true }
+            val forward = ContextAction.Builder("fc.button.forward".translate()) { Popups.openEntryForwardingPopup(this); true }
                 .icon(TextureDeco.CONTEXT_FORWARD)
-            map[ContextHandler.FORWARD] = forward
+            map[ContextType.FORWARD] = forward
         }
-        return map
+        val map2: MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> = mutableMapOf()
+        map2["entry"] = map
+        return map2
     }
 
     @Internal
