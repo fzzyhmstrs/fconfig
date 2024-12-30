@@ -68,6 +68,7 @@ interface PopupParentElement: ParentElement, LastSelectable {
      */
     fun initPopup(widget: PopupWidget)
 
+    //TODO
     fun setPopup(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
         if(widget == null) {
             if (popupWidgets.isEmpty())
@@ -141,15 +142,17 @@ interface PopupParentElement: ParentElement, LastSelectable {
         return activeWidget()?.charTyped(chr, modifiers) ?: super.charTyped(chr, modifiers)
     }
 
+    //TODO
     @FunctionalInterface
     fun interface MouseClickResult {
         fun onClick(mouseX: Double, mouseY: Double, isMouseOver: Boolean, button: Int): ClickResult
     }
 
+    //TODO
     enum class ClickResult {
+        //TODO
         PASS,
+        //TODO
         USE
     }
-
-    private data class Push(val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null)
 }

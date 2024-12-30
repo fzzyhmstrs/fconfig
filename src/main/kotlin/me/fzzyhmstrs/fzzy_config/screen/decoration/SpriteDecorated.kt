@@ -16,10 +16,14 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.gui.DrawContext
 
 //client
+//TODO
 interface SpriteDecorated: Decorated {
+    //TODO
     fun decorationId(): TextureSet
+    //TODO
     val w: Int
         get() = 16
+    //TODO
     val h: Int
         get() = 16
     override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {

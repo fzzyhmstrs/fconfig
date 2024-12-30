@@ -12,6 +12,7 @@
 
 package me.fzzyhmstrs.fzzy_config.api
 
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.readOrCreateAndValidate
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.registerAndLoadConfig
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.registerConfig
@@ -99,6 +100,8 @@ object ConfigApiJava {
 
     /**
      * Whether a config corresponding to the provided scope is registered
+     * @author fzzyhmstrs
+     * @since 0.5.3
      */
     @JvmStatic
     @Deprecated("Only polls synced configs. Use newer overload with RegisterType param")
@@ -154,6 +157,7 @@ object ConfigApiJava {
      * @since 0.5.3
      */
     @JvmStatic
+    //TODO fully test for promotion to stable
     fun result(): ResultApiJava {
         return ResultApiJavaImpl
     }

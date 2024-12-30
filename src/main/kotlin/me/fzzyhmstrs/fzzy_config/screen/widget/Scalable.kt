@@ -14,6 +14,8 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
  * Provides a set width/height method for parents of implementing widgets
  *
  * Expectation is that the set methods actually change the dimensions of the widget, much like [net.minecraft.client.gui.widget.ClickableWidget]
+ * @author fzzyhmstrs
+ * @since 0.2.0
  */
 //client
 interface Scalable {

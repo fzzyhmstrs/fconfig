@@ -5,7 +5,7 @@ import net.minecraft.client.gui.navigation.NavigationDirection
 import java.util.*
 
 //client
-@JvmDefaultWithCompatibility
+@JvmDefaultWithoutCompatibility
 interface Neighbor: Element {
     val neighbor: EnumMap<NavigationDirection, Neighbor>
 

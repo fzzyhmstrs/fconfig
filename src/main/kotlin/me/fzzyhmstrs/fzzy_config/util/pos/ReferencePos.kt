@@ -29,6 +29,6 @@ class ReferencePos constructor(private val reference: Supplier<Int>): Pos {
     override fun dec(amount: Int) {
     }
     override fun toString(): String {
-        return "[${reference.get()}]"
+        return "Reference[${reference.get()}]"
     }
 }

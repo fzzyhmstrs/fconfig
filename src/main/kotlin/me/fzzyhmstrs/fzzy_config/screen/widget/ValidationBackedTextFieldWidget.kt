@@ -34,7 +34,6 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Suppress("LeakingThis")
 //client
 open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected val wrappedValue: Supplier<String>, protected val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, protected val applier: Consumer<String>):
     TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY)
@@ -100,12 +99,29 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         }
     }
 
+    /**
+     * @suppress
+     */
     override fun getInnerWidth(): Int {
         return super.getInnerWidth() - 11
     }
 
     protected fun isChanged(): Boolean {
         return storedValue != wrappedValue.get()
+    }
+
+    /**
+     * @suppress
+     */
+    final override fun setChangedListener(changedListener: Consumer<String>?) {
+        super.setChangedListener(changedListener)
+    }
+
+    /**
+     * @suppress
+     */
+    final override fun setMaxLength(maxLength: Int) {
+        super.setMaxLength(maxLength)
     }
 
     init {

@@ -167,7 +167,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     protected fun validator(): Function<Double, ValidationResult<T>> {
         return Function { d ->
             val result = convert(d)
-            this.validateEntry(result.get(), EntryValidator.ValidationType.STRONG).also(result.isValid(), result.getError())
+            this.correctEntry(result.get(), EntryValidator.ValidationType.STRONG).also(result.isValid(), result.getError())
         }
     }
 
@@ -203,14 +203,15 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
         layout.add(
             "textbox",
-            ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) }, 99, false),
+            ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) }, 99, false, increment),
             LayoutWidget.Position.LEFT,
             LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
         layout.add(
             "up",
-            CustomButtonWidget.builder(FcText.EMPTY) {
+            CustomButtonWidget.builder("fc.button.up".translate()) {
                 val n = this.convert(MathHelper.clamp(this.get().toDouble() + increment, this.minValue.toDouble(), this.maxValue.toDouble())).get()
                 this.setAndUpdate(n) }
+                .noMessage()
                 .size(11, 10)
                 .active(this.maxValue != this.minValue)
                 .textures(TextureIds.INCREMENT_UP, TextureIds.INCREMENT_UP_DISABLED, TextureIds.INCREMENT_UP_HIGHLIGHTED)
@@ -220,9 +221,10 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         layout.add(
             "down",
-            CustomButtonWidget.builder(FcText.EMPTY) {
+            CustomButtonWidget.builder("fc.button.down".translate()) {
                 val n = this.convert(MathHelper.clamp(this.get().toDouble() - increment, this.minValue.toDouble(), this.maxValue.toDouble())).get()
                 this.setAndUpdate(n) }
+                .noMessage()
                 .size(11, 10)
                 .active(this.maxValue != this.minValue)
                 .textures(TextureIds.INCREMENT_DOWN, TextureIds.INCREMENT_DOWN_DISABLED, TextureIds.INCREMENT_DOWN_HIGHLIGHTED)
@@ -230,7 +232,6 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             LayoutWidget.Position.BELOW,
             LayoutWidget.Position.ALIGN_RIGHT,
             LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
-        layout.compute()
         return LayoutClickableWidget(0, 0, 110, 20, layout)
     }
 
@@ -327,7 +328,9 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             builder.put(NarrationPart.TITLE, this.narrationMessage as Text?)
             if (active) {
                 if (this.isFocused) {
-                    builder.put(NarrationPart.USAGE, "fc.validated_field.number.slider.usage".translate())
+                    builder.put(NarrationPart.USAGE,
+                        "fc.validated_field.number.slider.usage".translate(),
+                        "fc.validated_field.number.slider.usage2".translate())
                 } else {
                     builder.put(NarrationPart.USAGE, "fc.validated_field.number.slider.usage.unfocused".translate())
                 }
@@ -390,7 +393,16 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         validationProvider: Function<Double, ValidationResult<T>>,
         valueApplier: Consumer<T>,
         width: Int = 110,
-        renderStatus: Boolean = true)
+        renderStatus: Boolean = true,
+        increment: Double = 0.0)
         :
-        ValidationBackedNumberFieldWidget<T>(width, 20, wrappedValue, choiceValidator, validationProvider, valueApplier, renderStatus)
+        ValidationBackedNumberFieldWidget<T>(
+            width,
+            20,
+            wrappedValue,
+            choiceValidator,
+            validationProvider,
+            valueApplier,
+            renderStatus,
+            increment)
 }

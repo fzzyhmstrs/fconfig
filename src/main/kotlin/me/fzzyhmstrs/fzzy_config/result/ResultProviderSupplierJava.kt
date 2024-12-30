@@ -22,7 +22,7 @@ import java.util.function.Supplier
  * @since 0.5.3
  */
 @FunctionalInterface
-@ApiStatus.Experimental
+@ApiStatus.Experimental //TODO fully test for promotion to stable
 fun interface ResultProviderSupplierJava<T: Any> {
 
     /**
@@ -32,7 +32,6 @@ fun interface ResultProviderSupplierJava<T: Any> {
      *
      * Using this general strategy ensures that fresh values are supplied on every call.
      * @param scope String representation of a config setting. See [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation) for an overview of how scopes work.
-     * @param args List&lt;String&gt; optionally provided args appended to the provided scope. The scope parameter also technically contains these, pre-processing
      * @param config [Config] the config instance providing results
      * @param thing [Any] the candidate result to potentially use to create the supplier with.
      * @param property [Field], nullable - reflection field instance for the [thing]
@@ -40,6 +39,6 @@ fun interface ResultProviderSupplierJava<T: Any> {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun supplierJava(scope: String, config: Config, thing: Any, property: Field?): Supplier<T>
 }

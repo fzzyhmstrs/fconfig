@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
  * Base Config class for use with FzzyConfig
@@ -40,6 +41,8 @@ import net.minecraft.util.Identifier
  * @param subfolder String, optional - puts the config into a sub-subfolder inside the subfolder specified in [folder]. Does not affect ID or GUI layout
  * @see ConfigApi
  * @see ConfigSection
+ * @see ConfigAction
+ * @see ConfigGroup
  * @see getId
  * @see me.fzzyhmstrs.fzzy_config.validation.ValidatedField
  * @author fzzyhmstrs
@@ -139,14 +142,13 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      */
     open fun onUpdateServer(playerEntity: ServerPlayerEntity){}
 
-    /**
-     * @suppress
-     */
+    //TODO
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
         return anchor.decoration(TextureDeco.DECO_FOLDER)
     }
 
-    override fun anchorId(scope: String): String {
+    @Internal
+    final override fun anchorId(scope: String): String {
         return translationKey()
     }
 

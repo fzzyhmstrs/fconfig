@@ -10,7 +10,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 
-class ContextActionWidget(
+internal class ContextActionWidget(
     private val action: ContextAction,
     position: Position,
     width: Int)

@@ -43,7 +43,7 @@ class TestConfigImpl: Config(Identifier("fzzy_config_test", "test_config"), subf
     var bl2 = ValidatedBoolean()
 
     var int1 = 6
-    var int2 = ValidatedInt(6, 10, 1)
+    var int2 = ValidatedInt(6, 10, 1, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS)
 
     @RequiresRestart
     var enum1 = TestEnum.ALPHA
@@ -106,7 +106,7 @@ class TestConfigImpl: Config(Identifier("fzzy_config_test", "test_config"), subf
     @ConfigGroup.Pop
     var set2 = setOf(0.2, 0.4, 0.6).validated()
 
-    val pair1 = ValidatedInt(1, 10, 0).pairWith(ValidatedInt(1, 10, 0))
+    var pair1 = ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS).pairWith(ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS))
 
     @ConfigGroup.Pop
     var map1 = mapOf(1 to "a", 2 to "c")

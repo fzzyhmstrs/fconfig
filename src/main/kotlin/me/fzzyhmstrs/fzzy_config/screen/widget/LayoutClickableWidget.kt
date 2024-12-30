@@ -26,15 +26,15 @@ import net.minecraft.util.Identifier
 /**
  * Clickable widget that contains a LayoutWidget which provides and lays out children of this widget. The layout will be automatically constrained to the dimensions of the widget, and updated as the position and size changes.
  * @param x X position of the widget in pixels
- * @param y Y position of the widget in pxels
+ * @param y Y position of the widget in pixels
  * @param width width of the widget in pixels
  * @param height height of the widget in pixels
  * @param layout [LayoutWidget] the layout wrapped by this widget
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val layout: LayoutWidget): ClickableWidget(x, y, width, height, FcText.empty()),
-                                                                                                        ParentElement, TooltipChild {
+class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val layout: LayoutWidget)
+    : ClickableWidget(x, y, width, height, FcText.empty()), ParentElement, TooltipChild {
 
     private var children: MutableList<Element> = mutableListOf()
     private var drawables: List<Drawable> = emptyList()
@@ -45,6 +45,8 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
     private var dragging: Boolean = false
 
     init {
+        layout.setPos(ReferencePos { this.x }, ReferencePos { this.y })
+        layout.setDimensions(width, height)
         val c: MutableList<Element> = mutableListOf()
         val d: MutableList<Drawable> = mutableListOf()
         val s: MutableList<Selectable> = mutableListOf()
@@ -57,8 +59,47 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         drawables = d
         selectables = s
         tooltipProviders = t
-        layout.setPos(ReferencePos { this.x }, ReferencePos { this.y })
+    }
+
+    override fun setX(x: Int) {
+        super.setX(x)
+        layout.update()
+    }
+
+    override fun setY(y: Int) {
+        super.setY(y)
+        layout.update()
+    }
+
+    override fun setPosition(x: Int, y: Int) {
+        super.setX(x)
+        super.setY(y)
+        layout.update()
+    }
+
+    override fun setWidth(width: Int) {
+        super.setWidth(width)
+        layout.width = width
+    }
+
+    override fun setHeight(height: Int) {
+        super.setHeight(height)
+        layout.height = height
+    }
+
+    override fun setDimensions(width: Int, height: Int) {
+        super.setWidth(width)
+        super.setHeight(height)
         layout.setDimensions(width, height)
+    }
+
+    override fun setDimensionsAndPosition(width: Int, height: Int, x: Int, y: Int) {
+        super.setWidth(width)
+        super.setHeight(height)
+        super.setX(x)
+        super.setY(y)
+        layout.setDimensions(width, height)
+        layout.update()
     }
 
     override fun children(): MutableList<out Element> {
@@ -104,8 +145,13 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         return super<ParentElement>.charTyped(chr, modifiers)
     }
 
+    override fun getFocusedPath(): GuiNavigationPath? {
+        return super<ParentElement>.getFocusedPath()
+    }
+
     override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
-        return super<ParentElement>.getNavigationPath(navigation)
+        val nav = super<ParentElement>.getNavigationPath(navigation)
+        return nav
     }
 
     override fun setFocused(focused: Boolean) {
@@ -151,21 +197,6 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
                 }
             }
             selectedElementNarrationData.selectable.appendNarrations(builder.nextMessage())
-        }
-    }
-
-    private companion object {
-
-        private val tex =  "widget/button".simpleId()
-        private val disabled = "widget/button_disabled".simpleId()
-        private val highlighted = "widget/button_highlighted".simpleId()
-
-        fun get(enabled: Boolean, focused: Boolean): Identifier {
-            return if (enabled) {
-                if (focused) highlighted else tex
-            } else {
-                disabled
-            }
         }
     }
 }

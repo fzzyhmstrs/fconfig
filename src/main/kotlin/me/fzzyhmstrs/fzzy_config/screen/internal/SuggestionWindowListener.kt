@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import net.minecraft.client.gui.Element
 
+@Deprecated("Moving out of internal package by 0.7.0")
 interface SuggestionWindowListener {
     fun setSuggestionWindowElement(element: Element?)
 }

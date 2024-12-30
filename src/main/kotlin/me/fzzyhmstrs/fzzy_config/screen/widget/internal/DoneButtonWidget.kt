@@ -16,7 +16,7 @@ import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import java.util.function.Consumer
 
-class DoneButtonWidget(onPress: Consumer<CustomButtonWidget>): CustomButtonWidget(0, 0, 78, 20, ScreenTexts.DONE, onPress, DEFAULT_NARRATION_SUPPLIER) {
+internal class DoneButtonWidget(onPress: Consumer<CustomButtonWidget>): CustomButtonWidget(0, 0, 78, 20, ScreenTexts.DONE, onPress, DEFAULT_NARRATION_SUPPLIER) {
 
     override fun getMessage(): Text {
         return if (Screen.hasShiftDown()) {
