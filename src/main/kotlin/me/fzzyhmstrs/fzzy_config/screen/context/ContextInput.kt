@@ -10,7 +10,10 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.context
 
+//TODO
 enum class ContextInput {
+    //TODO
     KEYBOARD,
+    //TODO
     MOUSE
 }

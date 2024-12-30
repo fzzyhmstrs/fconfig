@@ -23,58 +23,16 @@ import net.minecraft.util.math.MathHelper
 import kotlin.math.roundToInt
 
 /**
- * A [AbstractTextWidget] that can process click and hover actions on rendered text
+ * An [AbstractTextWidget] that can process click and hover actions on rendered text
  * @param parent Screen - this widgets parent screen
  * @param message Text - the text to render with this widget
- * @param textRenderer [TextRenderer] - textrenderer instance
+ * @param textRenderer [TextRenderer] - text renderer instance
  * @author fzzyhmstrs
  * @since 0.2.0
  */
 class ClickableTextWidget(private val parent: Screen, message: Text, textRenderer: TextRenderer): AbstractTextWidget(0, 0, textRenderer.getWidth(message.asOrderedText()), textRenderer.fontHeight, message, textRenderer) {
 
-    private var horizontalAlignment = 0.5f
-    /**
-     * Aligns the widget text to the alignment fraction provided
-     * @param horizontalAlignment Float - fraction between 0f and 1f specifying the horizontal alignment. 0f = fully left-aligned, 1f = fully right-aligned
-     * @return [ClickableTextWidget] this widget
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @Deprecated("Scheduled for removal 0.6.0")
-    private fun align(horizontalAlignment: Float): ClickableTextWidget {
-        this.horizontalAlignment = horizontalAlignment
-        return this
-    }
-    /**
-     * Aligns the widget text to the left
-     * @return [ClickableTextWidget] this widget
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @Deprecated("Scheduled for removal 0.6.0")
-    fun alignLeft(): ClickableTextWidget {
-        return this.align(0.0f)
-    }
-    /**
-     * Aligns the widget text to the center
-     * @return [ClickableTextWidget] this widget
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @Deprecated("Scheduled for removal 0.6.0")
-    fun alignCenter(): ClickableTextWidget {
-        return this.align(0.5f)
-    }
-    /**
-     * Aligns the widget text to the right
-     * @return [ClickableTextWidget] this widget
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @Deprecated("Scheduled for removal 0.6.0")
-    fun alignRight(): ClickableTextWidget {
-        return this.align(1.0f)
-    }
+    private val horizontalAlignment = 0.5f
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = message

@@ -28,8 +28,10 @@ import net.minecraft.screen.ScreenTexts
 import net.minecraft.sound.SoundEvents
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Supplier
 
+//TODO
 abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int)
     : ClickableWidget(
     x,
@@ -61,27 +63,38 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     protected val scrollBarUpHighlighted: Identifier = "widget/scroll/vanilla/scroll_up_highlighted".fcId()
 
 
+    //TODO
     fun rowWidth(): Int {
         return width - leftPadding - rightPadding - scrollWidth
     }
 
+    //TODO
     fun rowX(): Int {
 
         return x + leftPadding
     }
 
+    /**
+     * @suppress
+     */
     override fun setPosition(x: Int, y: Int) {
         super.setPosition(x, y)
         onReposition()
         focusedElement?.let { ensureVisible(it) }
     }
 
+    /**
+     * @suppress
+     */
     override fun setDimensions(width: Int, height: Int) {
         super.setDimensions(width, height)
         onReposition()
         focusedElement?.let { ensureVisible(it) }
     }
 
+    /**
+     * @suppress
+     */
     override fun setDimensionsAndPosition(width: Int, height: Int, x: Int, y: Int) {
         super.setPosition(x, y)
         super.setDimensions(width, height)
@@ -89,12 +102,16 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         focusedElement?.let { ensureVisible(it) }
     }
 
+    //TODO
     open fun onReposition() {}
-
+    //TODO
     abstract fun selectableEntries(): List<E>
-
+    //TODO
     abstract fun inFrameEntries(): List<E>
 
+    /**
+     * @suppress
+     */
     override fun children(): List<Element> {
         return selectableEntries()
     }
@@ -146,6 +163,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         context.disableScissor()
     }
 
+    //TODO
     abstract fun ensureVisible(entry: E)
 
     override fun getFocused(): Element? {
@@ -163,34 +181,44 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
     }
 
+    @Internal
     override fun isDragging(): Boolean {
         return this.dragging
     }
 
+    @Internal
     override fun setDragging(dragging: Boolean) {
         this.dragging = dragging
     }
 
+    //TODO
     override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
         return super<ParentElement>.getNavigationPath(navigation)
     }
 
+    //TODO
     abstract fun topDelta(): Int
 
+    //TODO
     abstract fun bottomDelta(): Int
 
+    //TODO
     abstract fun contentHeight(): Int
 
+    //TODO
     abstract fun entryAtY(mouseY: Int): E?
 
+    //TODO
     protected open fun isSelectButton(button: Int): Boolean {
         return button == 0 || button == 1
     }
 
+    //TODO
     protected fun noScroll(): Boolean {
         return contentHeight() <= height
     }
 
+    //TODO
     open fun hideScrollWhileNotHovered(): Boolean {
         return false
     }
@@ -374,6 +402,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return false
     }
 
+    //TODO
     fun page(up: Boolean) {
         if (up) {
             handleScrollByBar(scrollHeight())
@@ -382,12 +411,16 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
     }
 
+    //TODO
     abstract fun scrollToTop(): Boolean
 
+    //TODO
     abstract fun scrollToBottom(): Boolean
 
+    //TODO
     abstract fun handleScroll(verticalAmount: Double): Boolean
 
+    //TODO
     abstract fun handleScrollByBar(scrollAmount: Int): Boolean
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -424,8 +457,11 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
     }
 
+    //TODO
     protected enum class ScrollBarType {
+        //TODO
         DYNAMIC,
+        //TODO
         FIXED
     }
 
@@ -555,6 +591,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
 
     private class ScrollBarPosition(val top: Int, val bot: Int, val over: Boolean)
 
+    //TODO
     abstract class Entry<P: ParentElement>(val parentElement: P): Element {
 
         override fun isFocused(): Boolean {
@@ -564,10 +601,11 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         override fun setFocused(focused: Boolean) {
         }
 
+        //TODO
         abstract fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float)
 
+        //TODO
         open fun appendNarrations(builder: NarrationMessageBuilder) {
-
         }
     }
 }

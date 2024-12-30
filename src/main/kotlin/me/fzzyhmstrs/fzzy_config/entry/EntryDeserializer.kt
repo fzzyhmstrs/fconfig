@@ -19,11 +19,13 @@ import net.peanuuutz.tomlkt.TomlElement
  * SAM: [deserializeEntry] takes a TomlElement, errorBuilder list, fieldName, and ignoreNonSync boolean, returns [ValidationResult]<T> with the deserialized or fallback value
  * @param T the type of the Entry stored value
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, added [deserializedChanged] 0.6.0
  */
 @FunctionalInterface
 fun interface EntryDeserializer<T> {
+    //TODO
     fun deserializeEntry(toml: TomlElement, errorBuilder: MutableList<String>, fieldName: String, flags: Byte): ValidationResult<T>
+    //TODO
     fun deserializedChanged(old: Any?, new: Any?): Boolean {
         return old != new
     }

@@ -461,6 +461,13 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     protected open fun contentBuilder(context: EntryCreator.CreatorContext): UnaryOperator<ConfigEntry.ContentBuilder> {
         val deco = entryDeco()
         return UnaryOperator { builder ->
+            builder.layoutContent { contentLayout ->
+                contentLayout.add(
+                    "widget",
+                    widgetEntry(),
+                    LayoutWidget.Position.ALIGN_JUSTIFY,
+                    LayoutWidget.Position.BELOW)
+            }
             if (deco != null)
                 builder.decoration(deco.decorated, deco.offsetX, deco.offsetY)
             builder
@@ -519,16 +526,8 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
             val contentBuilder = ConfigEntry.ContentBuilder(context)
-            contentBuilder.layoutContent { contentLayout ->
-                contentLayout.add(
-                    "widget",
-                    widgetEntry(),
-                    LayoutWidget.Position.ALIGN_JUSTIFY,
-                    LayoutWidget.Position.BELOW)
-            }
             contentBuilder.contextActions(contextActionBuilder(context))
             contentBuilder(context).apply(contentBuilder)
-
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))

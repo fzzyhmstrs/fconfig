@@ -10,4 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+/**
+ * Marks an object as readable by the Fzzy Config serializer. Needs to be used in plain old java objects added to configs that aren't wrapped in [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny]
+ * @author fzzyhmstrs
+ * @since 0.1.0
+ */
 interface Walkable

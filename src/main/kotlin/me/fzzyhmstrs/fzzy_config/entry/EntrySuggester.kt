@@ -24,5 +24,6 @@ import java.util.concurrent.CompletableFuture
  */
 @FunctionalInterface
 fun interface EntrySuggester<T> {
+    //TODO
     fun getSuggestions(input: String, cursor: Int, choiceValidator: ChoiceValidator<T>): CompletableFuture<Suggestions>
 }
