@@ -13,7 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.decoration
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import net.minecraft.util.Identifier
 
-
+//TODO
 open class SpriteDecoration @JvmOverloads constructor(
     private val tex: TextureSet,
     override val h: Int = 16,
@@ -21,6 +21,7 @@ open class SpriteDecoration @JvmOverloads constructor(
     : SpriteDecorated
 {
 
+    //TODO
     @JvmOverloads
     constructor(id: Identifier, h: Int = 16, w: Int = 16): this(TextureSet(id), h, w)
 

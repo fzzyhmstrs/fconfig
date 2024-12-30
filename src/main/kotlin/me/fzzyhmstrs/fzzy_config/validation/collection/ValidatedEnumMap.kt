@@ -258,7 +258,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
          return "Validated Enum Map[value=$storedValue, keyHandler=$keyHandler, valueHandler=$valueHandler]"
      }
 
-    companion object {
+    internal companion object {
         @Suppress("UNCHECKED_CAST")
         internal fun<K:Enum<*>, V> tryMake(map: Map<K, V>, keyHandler: Entry<*, *>, valueHandler: Entry<*, *>): ValidatedEnumMap<K, V>? {
             return try {

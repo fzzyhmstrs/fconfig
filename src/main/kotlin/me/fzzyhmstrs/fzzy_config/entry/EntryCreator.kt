@@ -19,7 +19,7 @@ import java.util.*
 import java.util.function.Function
 
 /**
- * Handles creating ConfigListWidget Entries (from a Config entry), not to be confusing
+ * Handles creating [DynamicListWidget.Entry], separate and distinct from a config-level Entry
  * @author fzzyhmstrs
  * @since 0.6.0
  */
@@ -28,10 +28,13 @@ import java.util.function.Function
 @JvmDefaultWithoutCompatibility
 fun interface EntryCreator {
 
+    //TODO
     fun createEntry(context: CreatorContext): List<Creator>
 
+    //TODO
     fun prepare(scope: String, groups: LinkedList<String>, annotations: List<Annotation>, globalAnnotations: List<Annotation>) {}
 
+    //TODO
     class CreatorContext(val scope: String,
                          val groups: LinkedList<String>,
                          val client: Boolean,
@@ -40,21 +43,24 @@ fun interface EntryCreator {
                          val actions: Set<Action>,
                          val misc: CreatorContextMisc)
 
-    class CreatorContextMisc {
+    class CreatorContextMisc internal constructor() {
 
         private val map: MutableMap<CreatorContextKey<*>, Any> = mutableMapOf()
 
+        //TODO
         fun <T> get(key: CreatorContextKey<T>): T? {
             return map[key] as? T
         }
-
+        //TODO
         fun <T: Any> put(key: CreatorContextKey<T>, value: T): CreatorContextMisc {
             map[key] = value
             return this
         }
     }
 
+    //TODO
     open class CreatorContextKey<T>
 
+    //TODO
     class Creator(val scope: String, val texts: Translatable.Result, val entry: Function<DynamicListWidget, out DynamicListWidget.Entry>)
 }

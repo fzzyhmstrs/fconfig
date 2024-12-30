@@ -34,6 +34,6 @@ open class SuppliedPos(private val parent: Pos, private var p: Int, private val 
         p -= amount
     }
     override fun toString(): String {
-        return "[${parent::class.java.simpleName}$parent + $p + ${offset.get()}]"
+        return "Supplied(${get()})[$parent + $p + ${offset.get()}]"
     }
 }

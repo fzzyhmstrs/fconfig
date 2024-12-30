@@ -286,7 +286,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
          return "Validated Map[value=$storedValue, keyHandler=$keyHandler, valueHandler=$valueHandler]"
      }
 
-    companion object {
+    internal companion object {
         @Suppress("UNCHECKED_CAST")
         internal fun<K, V> tryMake(map: Map<K, V>, keyHandler: Entry<*, *>, valueHandler: Entry<*, *>): ValidatedMap<K, V>? {
             return try {

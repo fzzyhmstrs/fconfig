@@ -120,7 +120,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
-        return ActiveButtonWidget("fc.validated_field.object".translate(), 110, 20, { true }, { openObjectPopup2() })
+        return ActiveButtonWidget("fc.validated_field.object".translate(), 110, 20, { true }, { openObjectPopup() })
     }
 
     @Internal
@@ -140,65 +140,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     //client
-    /*private fun openObjectPopup() {
-        val newThing = copyStoredValue()
-        val newNewThing = try{ createInstance() } catch (e: Throwable) { defaultValue }
-        val manager = ValidatedObjectUpdateManager(newThing, getEntryKey())
-        val entryList = ConfigListWidget(MinecraftClient.getInstance(), 298, 160, 0, false)
-        ConfigApiImpl.walk(newThing, getEntryKey(), 1){_, _, new, thing, _, annotations, globalAnnotations, _ ->
-            val action = ConfigApiImpl.requiredAction(annotations, globalAnnotations)?.let { setOf(it) } ?: setOf()
-            if (thing is Updatable && thing is Entry<*, *>) {
-                val fieldName = new.substringAfterLast('.')
-                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
-                thing.setEntryKey(new)
-                thing.setUpdateManager(manager)
-                manager.setUpdatableEntry(thing)
-                entryList.add(SettingConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry(), null, null, null))
-
-            } else if (thing is ConfigAction) {
-                val fieldName = new.substringAfterLast('.')
-                val name = ConfigApiImplClient.getTranslation(thing, fieldName, annotations, globalAnnotations)
-                entryList.add(BaseConfigEntry(name, ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations), action, entryList, thing.widgetEntry()))
-            } else if (thing is Walkable) {
-                val validation = ValidatedAny(thing)
-                validation.setEntryKey(new)
-                validation.setUpdateManager(manager)
-                manager.setUpdatableEntry(validation)
-                val fieldName = new.substringAfterLast('.')
-                val name = ConfigApiImplClient.getTranslation(validation, fieldName, annotations, globalAnnotations)
-                val actions = ConfigApiImpl.getActions(thing, 1)
-                entryList.add(ValidatedAnyConfigEntry(name, ConfigApiImplClient.getDescription(validation, fieldName, annotations, globalAnnotations), actions, entryList, validation.widgetEntry(), null, null, null))
-            } else if (thing != null) {
-                var basicValidation: ValidatedField<*>? = null
-                val target = new.removePrefix("${getEntryKey()}.")
-                ConfigApiImpl.drill(newNewThing, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
-                    basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
-                }
-                val basicValidation2 = basicValidation
-                if (basicValidation2 != null) {
-                    basicValidation2.trySet(thing)
-                    basicValidation2.setEntryKey(new)
-                    basicValidation2.setUpdateManager(manager)
-                    manager.setUpdatableEntry(basicValidation2)
-                    val fieldName = new.substringAfterLast('.')
-                    val name = ConfigApiImplClient.getTranslation(basicValidation2, fieldName, annotations, globalAnnotations)
-                    entryList.add(BaseConfigEntry(name, if(thing is Translatable) ConfigApiImplClient.getDescription(thing, fieldName, annotations, globalAnnotations) else ConfigApiImplClient.getDescription(basicValidation2, fieldName, annotations, globalAnnotations), action, entryList, basicValidation2.widgetEntry()))
-                }
-            }
-        }
-        manager.pushUpdatableStates()
-        val popup = PopupWidget.Builder(translation())
-            .addElement("list", entryList, Position.BELOW, Position.ALIGN_CENTER)
-            .addElement("revert", ActiveButtonWidget("fc.button.revert".translate(), 147, 20, { manager.hasChanges() }, { manager.revert() }), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("restore", ActiveButtonWidget("fc.button.restore".translate(), 147, 20, { manager.hasRestores("") }, { manager.restore("") }), Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addDoneWidget()
-            .onClose { manager.apply(true); if(manager.hasChanges()) setAndUpdate(newThing) }
-            .build()
-        PopupWidget.push(popup)
-    }*/
-
-    //client
-    private fun openObjectPopup2() {
+    private fun openObjectPopup() {
         val newThing = copyStoredValue()
         val newNewThing = try{ createInstance() } catch (e: Throwable) { defaultValue }
         val prefix = getEntryKey()
@@ -258,8 +200,6 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                 }
 
                 val context = EntryCreator.CreatorContext(new, groups, false, prepareResult.texts, annotations, prepareResult.actions, misc)
-
-                //TODO(handling creating context actions)
 
                 when (prepareResult.perms) {
                     ConfigApiImplClient.PermResult.FAILURE -> {

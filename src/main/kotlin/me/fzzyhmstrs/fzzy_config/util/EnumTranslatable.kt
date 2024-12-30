@@ -20,6 +20,8 @@ import net.minecraft.text.MutableText
  * The default [translationKey] will be in the form `"<prefix>.CONSTANT"`. Example: `TestEnum.TEST`
  *
  * The default [descriptionKey] will be in the form `"<prefix>.CONSTANT.desc"`. Example: `TestEnum.TEST.desc`
+ *
+ *  The default [prefixKey] will be in the form `"<prefix>.CONSTANT.prefix"`. Example: `TestEnum.TEST.prefix`
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -53,6 +55,14 @@ interface EnumTranslatable: Translatable {
      */
     override fun descriptionKey(): String {
         return "${prefix()}.${(this as Enum<*>).name}.desc"
+    }
+    /**
+     * Override of [descriptionKey][me.fzzyhmstrs.fzzy_config.util.Translatable.prefixKey] that utilized the [prefix] and enum constant name
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun prefixKey(): String {
+        return "${prefix()}.${(this as Enum<*>).name}.prefix"
     }
 
     /**

@@ -64,6 +64,11 @@ interface Pos: Supplier<Int> {
     }
 
     companion object {
+        /**
+         * Reference zero position, good for a default value
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val ZERO = ImmutablePos(0)
     }
 }

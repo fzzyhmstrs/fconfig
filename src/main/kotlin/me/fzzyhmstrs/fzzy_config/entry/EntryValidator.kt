@@ -26,8 +26,10 @@ import java.util.function.Predicate
  */
 @FunctionalInterface
 fun interface EntryValidator<T> {
+    //TODO
     fun validateEntry(input: T, type: ValidationType): ValidationResult<T>
 
+    //TODO
     class Builder<T: Any>: AbstractBuilder<T, Builder<T>>() {
         override fun builder(): Builder<T> {
             return this

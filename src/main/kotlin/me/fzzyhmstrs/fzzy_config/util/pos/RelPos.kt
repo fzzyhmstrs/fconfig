@@ -30,6 +30,6 @@ open class RelPos @JvmOverloads constructor(private val parent: Pos, private var
         p -= amount
     }
     override fun toString(): String {
-        return "[${parent::class.java.simpleName}$parent + $p]"
+        return "Rel(${get()})[$parent + $p]"
     }
 }

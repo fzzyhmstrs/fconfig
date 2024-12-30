@@ -899,7 +899,7 @@ class PopupWidget
         //client
         @Deprecated("Moved to LayoutWidget in 0.6.0")
         sealed interface Position: LayoutWidget.Position {
-            override fun position(parent: LayoutWidget.PositionedElement<*>, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
+            override fun position(parent: LayoutWidget.LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
 
             /**
              * Collection of all implemented [Position]. Preferred practice is to use this collection rather than referring directly to the underlying Enums

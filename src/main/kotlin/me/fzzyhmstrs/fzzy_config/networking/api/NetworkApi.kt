@@ -57,7 +57,7 @@ interface NetworkApi {
     fun send(payload: FzzyPayload, playerEntity: PlayerEntity?)
 
     /**
-     * registers a clientbound (S2C) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
+     * registers a client-bound (S2C) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
      * @param T the payload type to register
      * @param id [Identifier] the id of the custom payload
      * @param clazz [Class]&lt;[T]&gt; class type of the registered payload
@@ -68,7 +68,7 @@ interface NetworkApi {
      */
     fun <T: FzzyPayload> registerS2C(id: Identifier, clazz: Class<T>, function: Function<PacketByteBuf, T>, handler: S2CPayloadHandler<T>)
     /**
-     * registers a serverbound (C2S) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
+     * registers a server-bound (C2S) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
      * @param T the payload type to register
      * @param id [Identifier] the id of the custom payload
      * @param clazz [Class]&lt;[T]&gt; class type of the registered payload

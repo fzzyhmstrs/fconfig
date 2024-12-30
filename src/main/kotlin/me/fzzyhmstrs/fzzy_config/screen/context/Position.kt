@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 
 import net.minecraft.client.gui.widget.Widget
 
+//TODO
 //client
 data class Position(val contextInput: ContextInput,
                     val mX: Int, val mY: Int, //mouse xy
@@ -20,6 +21,7 @@ data class Position(val contextInput: ContextInput,
                     val screenWidth: Int, val screenHeight: Int) { //screen wh
 
     companion object {
+        //TODO
         fun fromWidget(widget: Widget): Position {
             return Position(ContextInput.KEYBOARD,
                 0, 0,

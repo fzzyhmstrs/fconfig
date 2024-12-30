@@ -19,11 +19,15 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
-import me.fzzyhmstrs.fzzy_config.util.pos.*
+import me.fzzyhmstrs.fzzy_config.util.pos.ImmutableSuppliedPos
+import me.fzzyhmstrs.fzzy_config.util.pos.Pos
+import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
+import me.fzzyhmstrs.fzzy_config.util.pos.SuppliedPos
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.navigation.GuiNavigation
 import net.minecraft.client.gui.navigation.GuiNavigation.Arrow
+import net.minecraft.client.gui.navigation.GuiNavigation.Tab
 import net.minecraft.client.gui.navigation.GuiNavigationPath
 import net.minecraft.client.gui.navigation.NavigationDirection
 import net.minecraft.client.gui.screen.Screen
@@ -32,10 +36,8 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 import java.util.*
-import java.util.function.Consumer
+import java.util.function.*
 import java.util.function.Function
-import java.util.function.Predicate
-import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
 
@@ -752,6 +754,38 @@ class DynamicListWidget(
                         return GuiNavigationPath.of(this, guiNavigationPath)
                     }
                     k += i
+                }
+            } else if (navigation is Tab) {
+                return computeNavigationPath(navigation)
+            }
+            return null
+        }
+
+        private fun computeNavigationPath(navigation: Tab): GuiNavigationPath? {
+            val bl = navigation.forward()
+            val element = this.focused
+            val focusedPath = element?.getNavigationPath(navigation)
+            if (focusedPath != null) return GuiNavigationPath.of(this, focusedPath)
+            val list: List<Element?> = ArrayList(this.selectableChildren())
+            Collections.sort(list, Comparator.comparingInt { elementx: Element -> elementx.navigationOrder })
+            val i = list.indexOf(element)
+            val j = if (element != null && i >= 0) {
+                i + (if (bl) 1 else 0)
+            } else if (bl) {
+                0
+            } else {
+                list.size
+            }
+
+            val listIterator = list.listIterator(j)
+            val booleanSupplier = if (bl) listIterator::hasNext else listIterator::hasPrevious
+            val supplier =
+                if (bl) listIterator::next else listIterator::previous
+
+            while (booleanSupplier()) {
+                val guiNavigationPath = supplier()?.getNavigationPath(navigation)
+                if (guiNavigationPath != null) {
+                    return GuiNavigationPath.of(this, guiNavigationPath)
                 }
             }
             return null

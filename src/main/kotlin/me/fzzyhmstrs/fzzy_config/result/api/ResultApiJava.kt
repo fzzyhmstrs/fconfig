@@ -19,6 +19,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.5.3
  */
+//TODO fully test for promotion to stable
 interface ResultApiJava {
 
     /**
@@ -34,6 +35,7 @@ interface ResultApiJava {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
+    //TODO fully test for promotion to stable
     fun <T: Any> createResultProvider(fallback: Supplier<T>, clazz: Class<T>): ResultProvider<T>
 
     /**
@@ -49,6 +51,7 @@ interface ResultApiJava {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
+    //TODO fully test for promotion to stable
     fun <T: Any> createResultProvider(fallback: Supplier<T>, drillFunction: ResultProviderSupplierJava<T>): ResultProvider<T>
 
     /**
@@ -64,6 +67,7 @@ interface ResultApiJava {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
+    //TODO fully test for promotion to stable
     fun <T: Any> createSimpleResultProvider(fallback: T, clazz: Class<T>): ResultProvider<T>
 
     /**
@@ -79,6 +83,7 @@ interface ResultApiJava {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
+    //TODO fully test for promotion to stable
     fun <T: Any> createSimpleResultProvider(fallback: T, drillFunction: ResultProviderSupplierJava<T>): ResultProvider<T>
 
 }

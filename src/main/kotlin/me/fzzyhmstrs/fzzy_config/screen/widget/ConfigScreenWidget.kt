@@ -15,6 +15,11 @@ import net.minecraft.client.MinecraftClient
 
 
 //client
+/**
+ * A widget that will open a fzzy config screen directly on press.
+ * @author fzzyhmstrs
+ * @since 0.5.7
+ */
 class ConfigScreenWidget private constructor(
     private val scope: String,
     position: Position)

@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 
+//TODO
 @JvmDefaultWithoutCompatibility
 interface TranslatableEntry: Translatable, EntryKeyed {
 
