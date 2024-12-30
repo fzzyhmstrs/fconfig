@@ -31,7 +31,7 @@ import kotlin.math.roundToInt
  * @param width Int - width of the widget in pixels
  * @param height Int - height of the widget in pixels
  * @author fzzyhmstrs
- * @since 0.3.1, removed alignCenter and now implements TooltipChild in 0.6.0
+ * @since 0.3.1, removed align:direction: methods and now implements TooltipChild in 0.6.0
  */
 class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): AbstractTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer), TooltipChild {
 
@@ -47,28 +47,9 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
      * @author fzzyhmstrs
      * @since 0.3.1
      */
-    private fun align(horizontalAlignment: Float): SuppliedTextWidget {
+    fun align(horizontalAlignment: Float): SuppliedTextWidget {
         this.horizontalAlignment = horizontalAlignment
         return this
-    }
-
-    /**
-     * Aligns the widget text to the left
-     * @return [SuppliedTextWidget] this widget
-     * @author fzzyhmstrs
-     * @since 0.3.1
-     */
-    fun alignLeft(): SuppliedTextWidget {
-        return this.align(0.0f)
-    }
-    /**
-     * Aligns the widget text to the right
-     * @return [SuppliedTextWidget] this widget
-     * @author fzzyhmstrs
-     * @since 0.3.1
-     */
-    fun alignRight(): SuppliedTextWidget {
-        return this.align(1.0f)
     }
 
     /**

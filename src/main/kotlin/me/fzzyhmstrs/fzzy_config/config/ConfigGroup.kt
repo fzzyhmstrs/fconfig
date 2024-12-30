@@ -34,6 +34,7 @@ import net.minecraft.text.StringVisitable
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Language
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 
 /**
@@ -53,8 +54,10 @@ open class ConfigGroup @JvmOverloads constructor(
 {
 
     @Transient
-    override var translatableEntryKey = "fc.config.generic.group"
+    @Internal
+    final override var translatableEntryKey = "fc.config.generic.group"
 
+    //TODO
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
         return anchor
             .decoration(decoration ?: TextureDeco.DECO_LIST,
@@ -63,7 +66,7 @@ open class ConfigGroup @JvmOverloads constructor(
             .type(EntryAnchor.AnchorType.INLINE)
     }
 
-    override fun anchorId(scope: String): String {
+    final override fun anchorId(scope: String): String {
         return if (groupName != "") groupName else scope.substringAfterLast('.')
     }
 

@@ -257,7 +257,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
          return "Validated Identifier Map[value=$storedValue, keyHandler=$keyHandler, valueHandler=$valueHandler]"
      }
 
-    companion object {
+    internal companion object {
         @Suppress("UNCHECKED_CAST")
         internal fun<V> tryMake(map: Map<Identifier, V>, keyHandler: Entry<*, *>, valueHandler: Entry<*, *>): ValidatedIdentifierMap<V>? {
             return try {

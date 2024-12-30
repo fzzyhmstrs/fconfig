@@ -24,7 +24,7 @@ import java.util.function.Consumer
  * @author fzzyhmstrs
  * @since 0.5.3
  */
-@ApiStatus.Experimental
+@ApiStatus.Experimental //TODO fully test for promotion to stable
 abstract class ResultArg<V, R> @JvmOverloads constructor(internal val arg: String, internal val fallback: R, noValueArg: Boolean = false) {
 
     init {
@@ -32,7 +32,7 @@ abstract class ResultArg<V, R> @JvmOverloads constructor(internal val arg: Strin
             noValueArgs.add(arg)
     }
 
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     protected fun getFallback(): R {
         return fallback
     }
@@ -45,7 +45,7 @@ abstract class ResultArg<V, R> @JvmOverloads constructor(internal val arg: Strin
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     abstract fun applyArg(scopeValue: V, argValue: String): R
 
     /**
@@ -55,7 +55,7 @@ abstract class ResultArg<V, R> @JvmOverloads constructor(internal val arg: Strin
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun to(consumer: Consumer<R>): Processor {
         return Processor(consumer)
     }
@@ -68,7 +68,7 @@ abstract class ResultArg<V, R> @JvmOverloads constructor(internal val arg: Strin
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     inner class Processor internal constructor(private val consumer: Consumer<R>):
         ResultArg<V, R>(this@ResultArg.arg, this@ResultArg.fallback) {
 
@@ -90,7 +90,7 @@ abstract class ResultArg<V, R> @JvmOverloads constructor(internal val arg: Strin
          * @author fzzyhmstrs
          * @since 0.5.3
          */
-        @ApiStatus.Experimental
+        @ApiStatus.Experimental //TODO fully test for promotion to stable
         @JvmStatic
         fun getArgs(scope: String): Map<String, String> {
             if (!scope.contains('?')) return mapOf()
@@ -123,7 +123,7 @@ abstract class ResultArg<V, R> @JvmOverloads constructor(internal val arg: Strin
          * @author fzzyhmstrs
          * @since 0.5.3
          */
-        @ApiStatus.Experimental
+        @ApiStatus.Experimental //TODO fully test for promotion to stable
         @JvmStatic
         fun stripArgs(scope: String): String {
             return scope.substringBefore('?')

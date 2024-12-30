@@ -160,12 +160,14 @@ class SuggestionBackedTextFieldWidget(
         return if(bl) true else super.keyPressed(keyCode, scanCode, modifiers)
     }
 
+    //TODO
     fun pushChanges() {
         if(isChanged() && !needsUpdating) {
             applier.accept(storedValue)
         }
     }
 
+    //TODO
     fun interface SuggestionProvider {
         fun getSuggestions(s: String, cursor: Int, choiceValidator: ChoiceValidator<String>): CompletableFuture<Suggestions>
     }

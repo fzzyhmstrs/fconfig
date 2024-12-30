@@ -242,7 +242,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
 
     /////////// END MAP ///////////////////////////
 
-    companion object {
+    internal companion object {
         @Suppress("UNCHECKED_CAST")
         internal fun<V> tryMake(map: Map<String, V>, keyHandler: Entry<*, *>, valueHandler: Entry<*, *>): ValidatedStringMap<V>? {
             return try {

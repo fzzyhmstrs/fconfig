@@ -47,7 +47,7 @@ interface NetworkApi {
     fun send(payload: CustomPayload, playerEntity: PlayerEntity?)
 
     /**
-     * registers a clientbound (S2C) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
+     * registers a client-bound (S2C) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
      * @param T the payload type to register
      * @param id [CustomPayload.Id] the id of the custom payload
      * @param codec [PacketCodec] the packet codec for serializing the custom payload
@@ -57,7 +57,7 @@ interface NetworkApi {
      */
     fun <T: CustomPayload> registerS2C(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: S2CPayloadHandler<T>)
     /**
-     * registers a serverbound (C2S) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
+     * registers a server-bound (C2S) payload type and receipt handler. This must be done on both logical sides (client and server). A common entrypoint is typically the best place for this.
      * @param T the payload type to register
      * @param id [CustomPayload.Id] the id of the custom payload
      * @param codec [PacketCodec] the packet codec for serializing the custom payload

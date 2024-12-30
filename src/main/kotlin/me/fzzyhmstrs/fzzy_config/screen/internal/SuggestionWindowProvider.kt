@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
+@Deprecated("Moving out of internal package by 0.7.0")
 interface SuggestionWindowProvider {
     fun addListener(listener: SuggestionWindowListener)
 }

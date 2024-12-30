@@ -10,8 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.context
 
-
+//TODO
 interface ContextHandler {
 
+    //TODO
     fun handleContext(contextType: ContextType, position: Position): Boolean
 }

@@ -19,7 +19,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 /**
  * Defines standard widget sprites used throughout Fzzy Config. May be useful for custom widgets, popups, etc.
  * @author fzzyhmstrs
- * @since 0.1.0
+ * @since 0.6.0
  */
 object TextureDeco {
 

@@ -23,7 +23,7 @@ import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.text.Text
 
-class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, icon: Decorated, onPress: Runnable, layer: Int) :
+internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, icon: Decorated, onPress: Runnable, layer: Int) :
     DynamicListWidget.Entry(parentElement, texts.name, texts.desc, DynamicListWidget.Scope(scope)) {
 
     override var h: Int = 16

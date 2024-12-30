@@ -79,6 +79,7 @@ class ConfigAction @JvmOverloads constructor(
             this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background?.let { TextureSet(it) })
 
     private var flags: Byte = 0
+    @Internal
     override var translatableEntryKey = "fc.config.generic.action"
 
     @Internal
@@ -100,6 +101,7 @@ class ConfigAction @JvmOverloads constructor(
         return (this.flags and flag) == flag
     }
 
+    @Internal
     override fun hasFlag(flag: EntryFlag.Flag): Boolean {
         return this.hasFlag(flag.flag)
     }
@@ -299,10 +301,12 @@ class ConfigAction @JvmOverloads constructor(
         }
     }
 
+    @Internal
     override fun hasDescription(): Boolean {
         return description != null || super.hasDescription()
     }
 
+    @Internal
     override fun description(fallback: String?): MutableText {
         return description?.copy() ?: super.description(fallback)
     }

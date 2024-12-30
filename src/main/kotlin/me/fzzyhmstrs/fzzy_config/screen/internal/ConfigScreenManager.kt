@@ -99,13 +99,16 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private fun checkForRebuild() {
         if(cachedPermissionLevel != ConfigApiImplClient.getPlayerPermissionLevel()
             || cachedPerms != ConfigApiImplClient.getPerms()
-            || cachedOutOfGame != outOfGame()
-            || MinecraftClient.getInstance().currentScreen !is ConfigScreen) {
+            || cachedOutOfGame != outOfGame()) {
             cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
             cachedPerms = ConfigApiImplClient.getPerms()
             cachedOutOfGame = outOfGame()
             manager.flush()
             prepareScreens()
+        }
+        if (MinecraftClient.getInstance().currentScreen !is ConfigScreen) {
+            manager.flush()
+            manager.pushUpdatableStates()
         }
     }
 

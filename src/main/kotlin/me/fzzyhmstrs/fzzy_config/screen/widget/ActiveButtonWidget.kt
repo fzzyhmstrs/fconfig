@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget.Companion.DEFAULT_TEXTURES
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -28,7 +29,7 @@ import java.util.function.Supplier
  * @param height Int - height of the widget
  * @param activeSupplier [Supplier]&lt;Boolean&gt; - Supplies whether this button is active or not
  * @param pressAction [Consumer]&lt;ActiveButtonWidget&gt; - action to take when the button is pressed
- * @param background [Identifier], optional - a custom background identifier. needs to be a nine-patch sprite
+ * @param textures [TextureSet], optional - a custom background texture set; defaults to [DEFAULT_TEXTURES]
  * @author fzzyhmstrs
  * @since 0.2.0, implements TextureSet for backgrounds 0.6.0
  */
@@ -43,6 +44,7 @@ open class ActiveButtonWidget@JvmOverloads constructor(
     :
     CustomPressableWidget(0, 0, width, height, titleSupplier.get()) {
 
+    //TODO
     @JvmOverloads
     constructor(
         title: Text,
@@ -54,6 +56,9 @@ open class ActiveButtonWidget@JvmOverloads constructor(
             :
             this(Supplier { title }, width, height, activeProvider, pressAction, background ?: DEFAULT_TEXTURES)
 
+    /**
+     * @suppress
+     */
     override fun getMessage(): Text {
         return titleSupplier.get()
     }
@@ -63,6 +68,9 @@ open class ActiveButtonWidget@JvmOverloads constructor(
         super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
     }
 
+    /**
+     * @suppress
+     */
     override fun onPress() {
         pressAction.accept(this)
     }

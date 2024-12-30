@@ -35,7 +35,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
 open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, TranslatableEntry, EntryParent, EntryAnchor, EntryCreator {
 
     @Transient
-    override var translatableEntryKey: String = "fc.config.generic.section"
+    @Internal
+    final override var translatableEntryKey: String = "fc.config.generic.section"
 
     @Internal
     override fun serializeEntry(
@@ -56,11 +57,12 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
         return ConfigApi.deserializeFromToml(this, toml, errorBuilder, flags).contextualize()
     }
 
+    //TODO
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
         return anchor.decoration(TextureDeco.DECO_MAP).type(EntryAnchor.AnchorType.SECTION)
     }
 
-    override fun anchorId(scope: String): String {
+    final override fun anchorId(scope: String): String {
         return translatableEntryKey
     }
 
