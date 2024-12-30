@@ -32,12 +32,12 @@ import java.util.*
  * For most intents and purposes, treat this screen like a standard [Screen], with a couple caveats:
  * - Make sure to call super on [resize], [render], and [keyPressed] otherwise popup functionality will break
  * - call super.render AFTER any custom rendering, or popups may appear improperly below custom elements
- * - call super.keyPressed BEFORE custom keypresses, otherwise clicks may improperly propagate through popups to elements underneath them
+ * - call super.keyPressed BEFORE custom key presses, otherwise clicks may improperly propagate through popups to elements underneath them
  * @param title Text, the screen title
  * @see PopupParentElement
  * @see PopupWidget.Api
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, made render final and added renderContents 0.6.0
  */
 //client
 open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
@@ -73,6 +73,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         initPopup()
     }
 
+    //TODO
     final override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         hoveredElement = if (popupWidgets.isNotEmpty()) null else children().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
         context.matrices.push()
@@ -91,6 +92,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         context.matrices.pop()
     }
 
+    //TODO
     open fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if (popupWidgets.isEmpty())
             super.render(context, mouseX, mouseY, delta)

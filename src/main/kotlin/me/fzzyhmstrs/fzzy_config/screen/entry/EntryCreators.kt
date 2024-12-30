@@ -29,10 +29,13 @@ import java.util.function.Function
 
 object EntryCreators {
 
+    //TODO
     val OPEN_SCREEN = EntryCreator.CreatorContextKey<Consumer<String>>()
 
+    //TODO
     val COPY_BUFFER = EntryCreator.CreatorContextKey<Ref<Any?>>()
 
+    //TODO
     fun createConfigEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, context.actions.map { ConfigEntry.ActionDecorationWidget.config(it) })
@@ -53,6 +56,7 @@ object EntryCreators {
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
     }
 
+    //TODO
     fun createSectionEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, context.actions.map { ConfigEntry.ActionDecorationWidget.section(it) })
@@ -73,6 +77,7 @@ object EntryCreators {
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
     }
 
+    //TODO
     fun createNoPermsEntry(context: EntryCreator.CreatorContext, type: String): List<EntryCreator.Creator> {
         val child: TooltipChild = object: TooltipChild {
             override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
@@ -104,6 +109,7 @@ object EntryCreators {
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
     }
 
+    //TODO
     fun createHeaderEntry(context: EntryCreator.CreatorContext, prefix: Text): List<EntryCreator.Creator> {
         val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
@@ -121,6 +127,7 @@ object EntryCreators {
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
     }
 
+    //TODO
     fun createGroupEntry(context: EntryCreator.CreatorContext, group: String): List<EntryCreator.Creator> {
         val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
@@ -139,6 +146,7 @@ object EntryCreators {
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
     }
 
+    //TODO
     fun createActionEntry(context: EntryCreator.CreatorContext, decoration: Decorated?, widget: ClickableWidget): List<EntryCreator.Creator> {
         val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())

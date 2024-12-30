@@ -21,7 +21,7 @@ import kotlin.reflect.KClass
  * @author fzzyhmstrs
  * @since 0.5.3
  */
-@ApiStatus.Experimental
+@ApiStatus.Experimental //TODO fully test for promotion to stable
 interface ResultApi {
 
     /**
@@ -39,7 +39,7 @@ interface ResultApi {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun <T: Any> createResultProvider(fallback: Supplier<T>, clazz: KClass<T>): ResultProvider<T>
 
     /**
@@ -57,7 +57,7 @@ interface ResultApi {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun <T: Any> createResultProvider(fallback: Supplier<T>, drillFunction: ResultProviderSupplier<T>): ResultProvider<T>
 
     /**
@@ -75,7 +75,7 @@ interface ResultApi {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun <T: Any> createSimpleResultProvider(fallback: T, clazz: KClass<T>): ResultProvider<T>
 
     /**
@@ -93,7 +93,7 @@ interface ResultApi {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun <T: Any> createSimpleResultProvider(fallback: T, drillFunction: ResultProviderSupplier<T>): ResultProvider<T>
 
 }

@@ -30,6 +30,6 @@ class AbsPos(private var p: Int = 0): Pos {
         p -= amount
     }
     override fun toString(): String {
-        return "[$p]"
+        return "Abs[$p]"
     }
 }

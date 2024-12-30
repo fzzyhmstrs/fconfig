@@ -12,17 +12,21 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import net.minecraft.text.Text
 
+//TODO
 @JvmDefaultWithoutCompatibility
 interface TooltipChild {
+    //TODO
     fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
         return EMPTY
     }
 
+    //TODO
     fun provideNarrationLines(): List<Text> {
         return EMPTY
     }
 
     companion object {
+        //TODO
         val EMPTY = listOf<Text>()
     }
 }

@@ -12,5 +12,9 @@ package me.fzzyhmstrs.fzzy_config.entry
 
 import org.jetbrains.annotations.ApiStatus.Internal
 
-@Internal
+/**
+ * Marks an entry as always transient in the java sense; not considered by a serializer.
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
 interface EntryTransient

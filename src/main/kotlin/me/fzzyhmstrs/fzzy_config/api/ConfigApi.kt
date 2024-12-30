@@ -12,6 +12,7 @@
 
 package me.fzzyhmstrs.fzzy_config.api
 
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.annotations.NonSync
 import me.fzzyhmstrs.fzzy_config.annotations.TomlHeaderComment
 import me.fzzyhmstrs.fzzy_config.annotations.Version
@@ -376,6 +377,8 @@ object ConfigApi {
 
     /**
      * Whether a config corresponding to the provided scope is registered
+     * @author fzzyhmstrs
+     * @since 0.5.3
      */
     @JvmStatic
     @Deprecated("Only polls synced configs. Use newer overload with RegisterType param")
@@ -406,6 +409,19 @@ object ConfigApi {
     @JvmStatic
     fun parseReader(reader: Reader): TomlElement {
         return ConfigApiImpl.parseReader(reader)
+    }
+
+    /**
+     * Returns a set of [Action] annotated onto the provided input
+     * @param thing Any non-null input for checking
+     * @return Set&lt;[Action]&gt;
+     * @see [me.fzzyhmstrs.fzzy_config.entry.EntryParent]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    @JvmStatic
+    fun actions(thing: Any): Set<Action> {
+        return ConfigApiImpl.getActions(thing, ConfigApiImpl.IGNORE_NON_SYNC)
     }
 
     /**
@@ -443,7 +459,7 @@ object ConfigApi {
      * @since 0.5.3
      */
     @JvmStatic
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun result(): ResultApi {
         return ResultApiImpl
     }
