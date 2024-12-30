@@ -27,6 +27,6 @@ class ImmutablePos(private val p: Int = 0): Pos {
     override fun dec(amount: Int) {
     }
     override fun toString(): String {
-        return "[$p]"
+        return "Immutable[$p]"
     }
 }

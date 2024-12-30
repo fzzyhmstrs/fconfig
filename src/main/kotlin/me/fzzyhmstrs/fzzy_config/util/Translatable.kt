@@ -20,7 +20,7 @@ import net.minecraft.text.TranslatableTextContent
  * Classes that implement [Translatable] can be automatically utilized by many FzzyConfig systems for generating translatable text in-game
  * @sample me.fzzyhmstrs.fzzy_config.examples.TranslatableExample.translatable
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, added prefixes 0.6.0
  */
 @JvmDefaultWithCompatibility
 interface Translatable {
@@ -100,17 +100,11 @@ interface Translatable {
         return I18n.hasTranslation(prefixKey())
     }
 
+    //TODO
     class Result(val name: Text, val desc: Text? = null, val prefix: Text? = null) {
 
-        fun getKeys(): List<String> {
-            val list: MutableList<String> = mutableListOf()
-            name.content.nullCast<TranslatableTextContent>()?.let { list.add(it.key) }
-            desc?.content.nullCast<TranslatableTextContent>()?.let { list.add(it.key) }
-            prefix?.content.nullCast<TranslatableTextContent>()?.let { list.add(it.key) }
-            return list
-        }
-
         companion object {
+            //TODO
             val EMPTY = Result(FcText.empty(), null, null)
         }
     }

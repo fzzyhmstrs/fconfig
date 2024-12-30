@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+//TODO
 class Ref<T>(private var value: T) {
     fun get(): T {
         return this.value

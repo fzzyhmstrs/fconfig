@@ -153,6 +153,7 @@ class Searcher<C: Searcher.SearchContent>(private val searchEntries: List<C>) {
         return list
     }
 
+    //TODO
     interface SearchContent {
         val name: Text
         val desc: Text?

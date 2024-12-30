@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.networking.api
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.packet.CustomPayload
 
+//TODO
 interface PayloadHandler<T: CustomPayload, P: PlayerEntity, C: NetworkContext<P>> {
+    //TODO
     fun handle(payload: T, context: C)
 }

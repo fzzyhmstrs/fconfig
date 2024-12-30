@@ -21,21 +21,16 @@ import org.jetbrains.annotations.ApiStatus.Experimental
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 
-/**
- * Handles marking an entry as a visitable "layer". The layer itself is defined by the builder, and the layers default name as defined by translation key or annotation is also passed in by default
- * @author fzzyhmstrs
- * @since 0.6.0
- */
 @Internal
-@Experimental
-@JvmDefaultWithCompatibility
 interface EntryAnchor {
 
     fun anchorEntry(anchor: Anchor): Anchor {
         return anchor
     }
 
-    fun anchorId(scope: String): String
+    fun anchorId(scope: String): String {
+        return scope
+    }
 
     class Anchor internal constructor(internal var layer: Int, internal var name: Text) {
         internal var type: AnchorType = AnchorType.CONFIG

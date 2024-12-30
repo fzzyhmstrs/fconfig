@@ -25,8 +25,10 @@ import net.minecraft.client.gui.widget.ClickableWidget
 //client
 interface EntryWidget<T> {
 
+    //TODO
     fun widgetEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget
 
+    //TODO
     fun widgetAndTooltipEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget {
         val widget = widgetEntry(choicePredicate)
         if (this is Translatable && this.hasDescription()) {

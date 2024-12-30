@@ -12,11 +12,14 @@ package me.fzzyhmstrs.fzzy_config.screen.decoration
 
 import net.minecraft.client.gui.DrawContext
 
+//TODO
 //client
 @FunctionalInterface
 fun interface Decorated {
+    //TODO
     fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean)
 
+    //TODO
     class DecoratedOffset(val decorated: Decorated, val offsetX: Int = 0, val offsetY: Int)
 
 }

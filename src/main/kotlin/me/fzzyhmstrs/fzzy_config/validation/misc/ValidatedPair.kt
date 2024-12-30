@@ -28,6 +28,7 @@ import net.peanuuutz.tomlkt.TomlNull
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.UnaryOperator
 
 /**
@@ -42,7 +43,7 @@ import java.util.function.UnaryOperator
  * @author fzzyhmstrs
  * since 0.6.0
  */
-open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, B>, private val leftHandler: Entry<A, *>, private val rightHandler: Entry<B, *>, private val layoutStyle: LayoutStyle = LayoutStyle.SIDE_BY_SIDE): ValidatedField<ValidatedPair.Tuple<A, B>>(defaultValue) {
+open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, B>, private val leftHandler: Entry<A, *>, private val rightHandler: Entry<B, *>, private val layoutStyle: LayoutStyle = LayoutStyle.SIDE_BY_SIDE): ValidatedField<Tuple<A, B>>(defaultValue) {
 
     @Internal
     companion object {
@@ -75,14 +76,20 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         }
     }
 
+    private val lock: AtomicBoolean = AtomicBoolean(false)
+
     init {
         leftHandler.listenToEntry { e ->
-            onLeftChanged(e)
-            accept(storedValue.withLeft(e.get()))
+            if (!lock.get()) {
+                onLeftChanged(e)
+                accept(storedValue.withLeft(e.get()))
+            }
         }
         rightHandler.listenToEntry { e ->
-            onRightChanged(e)
-            accept(storedValue.withRight(e.get()))
+            if (!lock.get()) {
+                onRightChanged(e)
+                accept(storedValue.withRight(e.get()))
+            }
         }
     }
 
@@ -210,6 +217,15 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
     }
 
     @Internal
+    override fun set(input: Tuple<A, B>) {
+        super.set(input)
+        lock.set(true)
+        leftHandler.accept(input.left)
+        rightHandler.accept(input.right)
+        lock.set(false)
+    }
+
+    @Internal
     override fun contentBuilder(context: EntryCreator.CreatorContext): UnaryOperator<ConfigEntry.ContentBuilder> {
         return UnaryOperator { contentBuilder ->
             contentBuilder.layoutContent { contentLayout ->
@@ -230,7 +246,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
                         "right",
                         right,
                         LayoutWidget.Position.RIGHT,
-                        LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
+                        LayoutWidget.Position.ALIGN_LEFT_OF_AND_JUSTIFY,
                         LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
                 else
                     contentLayout.add(
@@ -239,9 +255,14 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
                         LayoutWidget.Position.ALIGN_LEFT,
                         LayoutWidget.Position.BELOW)
             }
+            val deco = entryDeco()
+            if (deco != null)
+                contentBuilder.decoration(deco.decorated, deco.offsetX, deco.offsetY)
+            contentBuilder
         }
     }
 
+    //TODO test this
     private fun ClickableWidget.wrap(label: Text?): ClickableWidget {
         return if (label == null) this else LabelWrappedWidget(this, label)
     }
@@ -277,6 +298,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         STACKED
     }
 
+    //TODO
     data class Tuple<X, Y>(val left: X, val right: Y) {
 
         private constructor(left: X, right: Y, side: Boolean): this(left, right) {
@@ -284,15 +306,16 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         }
 
         private var side: Boolean? = null
-
+        //TODO
         fun withLeft(newLeft: X): Tuple<X, Y> {
             return Tuple(newLeft, right, false)
         }
-
+        //TODO
         fun withRight(newRight: Y): Tuple<X, Y> {
             return Tuple(left, newRight, true)
         }
 
+        //TODO
         fun lastSide(): Boolean? {
             return side
         }
