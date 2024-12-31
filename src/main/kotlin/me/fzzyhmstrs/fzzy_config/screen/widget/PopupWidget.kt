@@ -38,7 +38,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
-import java.awt.Color
 import java.util.function.*
 import java.util.function.Function
 import kotlin.math.max
@@ -65,7 +64,7 @@ class PopupWidget
         private val positionY: BiFunction<Int, Int, Int>,
         private val positioner: BiConsumer<Int, Int>,
         private val onClose: Runnable,
-        private val onClick: PopupParentElement.MouseClickResult,
+        private val onClick: MouseClickResult,
         private val children: List<Element>,
         private val selectables: List<Selectable>,
         private val drawables: List<Drawable>)
@@ -146,7 +145,7 @@ class PopupWidget
         return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button)?.takeIf { it } ?: super.mouseClicked(mouseX, mouseY, button).takeIf { it } ?: isMouseOver(mouseX, mouseY)
     }
 
-    fun preClick(mouseX: Double, mouseY: Double, button: Int): PopupParentElement.ClickResult {
+    fun preClick(mouseX: Double, mouseY: Double, button: Int): ClickResult {
         return onClick.onClick(mouseX, mouseY, isMouseOver(mouseX, mouseY), button)
     }
 
@@ -323,7 +322,7 @@ class PopupWidget
         private var positionY: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
 
         private var onClose = Runnable { }
-        private var onClick: PopupParentElement.MouseClickResult = PopupParentElement.MouseClickResult { _, _, _, _ -> PopupParentElement.ClickResult.USE }
+        private var onClick: MouseClickResult = MouseClickResult { _, _, _, _ -> ClickResult.USE }
         private var blurBackground = true
         private var closeOnOutOfBounds = true
         private var background = "widget/popup/background".fcId()
@@ -710,7 +709,7 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        fun onClick(onClick: PopupParentElement.MouseClickResult): Builder {
+        fun onClick(onClick: MouseClickResult): Builder {
             this.onClick = onClick
             return this
         }
@@ -841,17 +840,6 @@ class PopupWidget
             fun popupContext(f: Function<Int, Int>): BiFunction<Int, Int, Int> {
                 return BiFunction { sd, d -> max(min(sd - d, f.apply(d)), 0) }
             }
-
-            /**
-             * Positions a Popup dimension based on screen dimension context
-             *
-             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off-screen")
-             * @param f Function<Int, Int> - function to provide the dimension. Supplies the corresponding screen size in the relevant dimension (PositionX -> screen width, etc)
-             * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
-             * @author fzzyhmstrs
-             * @since 0.2.0
-             */
-
             /**
              * Positions a Popup dimension at an absolute location, bounded by the screen
              *
@@ -864,7 +852,15 @@ class PopupWidget
             fun absScreen(a: Int): BiFunction<Int, Int, Int> {
                 return BiFunction { sd, d -> max(min(sd - d, a), 0) }
             }
-
+            /**
+             * Positions a Popup dimension based on screen dimension context
+             *
+             * The position will be bound to the screen dimensions automatically (the popup won't overflow "off-screen")
+             * @param f Function<Int, Int> - function to provide the dimension. Supplies the corresponding screen size in the relevant dimension (PositionX -> screen width, etc)
+             * @return BiFunction<Int, Int, Int> - the positioner function to apply to positionX or positionY in the Builder
+             * @author fzzyhmstrs
+             * @since 0.2.0
+             */
             fun screenContext(f: Function<Int, Int>): BiFunction<Int, Int, Int> {
                 return BiFunction { sd, d -> max(min(sd - d, f.apply(sd)), 0) }
             }
@@ -1044,5 +1040,48 @@ class PopupWidget
         @Internal
         //client
         data class PosSet(val x: Pos, val y: Pos, val w: Pos, val h: Pos, val spacingW: Int, val spacingH: Int)
+    }
+
+
+    /**
+     * Applies a click action from provided inputs and returns a [ClickResult]. Used to perform an action in a Popup besides actions laid-out widgets may trigger, such as a special action if a click misses the popup.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    @FunctionalInterface
+    fun interface MouseClickResult {
+
+        /**
+         * Apply a click and return a result.
+         * @param mouseX Double - x position of the mouse click
+         * @param mouseY Double - y position of the mouse click
+         * @param isMouseOver whether the click is over this popup or missing it
+         * @param button Int code of the button click
+         * @return [ClickResult] for the action.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        fun onClick(mouseX: Double, mouseY: Double, isMouseOver: Boolean, button: Int): ClickResult
+    }
+
+    /**
+     * A result of a click action.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    enum class ClickResult {
+
+        /**
+         * Indicates that the action is "passing" the click to the screen underneath rather than using it on the popup. This should typically not be returned if isMouseOver is true in [MouseClickResult.onClick]
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        PASS,
+        /**
+         * Indicates that the action has been "consumed" by the click, the screen will do nothing. The default return
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        USE
     }
 }

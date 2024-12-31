@@ -440,18 +440,18 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
                         posEl.element.width = posEl.getRight() - closestLeftEl.getRight() - posEl.set.spacingW
                     } else if (posEl.element is Scalable) {
                         val prevRight = posEl.getRight()
-                        posEl.x.dec(posEl.getLeft() - closestLeftEl.getRight())
-                        posEl.x.inc(posEl.set.spacingW)
+                        posEl.getX().dec(posEl.getLeft() - closestLeftEl.getRight())
+                        posEl.getX().inc(posEl.set.spacingW)
                         posEl.element.setWidth(prevRight - posEl.getLeft())
                     }
                 } else {
                     if (posEl.element is ClickableWidget) {
                         val prevRight = posEl.getRight()
-                        posEl.x.dec(posEl.getLeft() - posEl.set.x.get())
+                        posEl.getX().dec(posEl.getLeft() - posEl.set.x.get())
                         posEl.element.width = prevRight - posEl.getLeft()
                     } else if (posEl.element is Scalable) {
                         val prevRight = posEl.getRight()
-                        posEl.x.dec(posEl.getLeft() - posEl.set.x.get())
+                        posEl.getX().dec(posEl.getLeft() - posEl.set.x.get())
                         posEl.element.setWidth(prevRight - posEl.getLeft())
                     }
                 }
@@ -851,7 +851,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     @Internal
     @Suppress("UNUSED")
     //client
-    internal class PositionedElement<T: Widget>(val element: T, val set: PosSet, var x: Pos, var y: Pos, val alignment: PositionGlobalAlignment): LayoutElement {
+    internal class PositionedElement<T: Widget>(val element: T, val set: PosSet, private var x: Pos, private var y: Pos, val alignment: PositionGlobalAlignment): LayoutElement {
         private fun upDown(): IntRange {
             return IntRange(getTop(), getBottom())
         }

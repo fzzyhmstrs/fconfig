@@ -16,12 +16,17 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.text.Text
+import org.jetbrains.annotations.ApiStatus.Internal
 
 internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, icon: Decorated, onPress: Runnable, layer: Int) :
     DynamicListWidget.Entry(parentElement, texts.name, texts.desc, DynamicListWidget.Scope(scope)) {
@@ -52,6 +57,10 @@ internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, tex
         if (focused && MinecraftClient.getInstance().navigationType.isKeyboard) {
             context.drawBorder(x, y, width, height, -1)
         }
+    }
+
+    override fun appendTitleNarrations(builder: NarrationMessageBuilder) {
+        builder.put(NarrationPart.TITLE, "fc.button.goto.narration".translate(name))
     }
 
     companion object {

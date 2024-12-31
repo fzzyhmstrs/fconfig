@@ -191,7 +191,7 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
                 focusedSelectable = selectedElementNarrationData.selectable
             }
             if (list.size > 1) {
-                builder.put(NarrationPart.POSITION, Text.translatable("narrator.position.object_list", selectedElementNarrationData.index + 1, list.size))
+                builder.put(NarrationPart.POSITION, Text.translatable("fc.narrator.position.child", selectedElementNarrationData.index + 1, list.size))
                 if (selectedElementNarrationData.selectType.isFocused) {
                     builder.put(NarrationPart.USAGE, Text.translatable("narration.component_list.usage"))
                 }

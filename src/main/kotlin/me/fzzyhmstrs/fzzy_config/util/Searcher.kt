@@ -22,11 +22,11 @@ import java.util.*
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-class Searcher<C: Searcher.SearchContent>(private val searchEntries: List<C>) {
+class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
 
     private val search: SuffixArray<C> by lazy {
         val array = SuffixArray<C>()
-        for (entry in searchEntries.filter{ !it.skip }) {
+        for (entry in searchEntries) {
             array.add(entry, entry.name.string.lowercase(Locale.ROOT))
         }
         array.build()
@@ -35,7 +35,7 @@ class Searcher<C: Searcher.SearchContent>(private val searchEntries: List<C>) {
 
     private val searchExact: Map<String, C> by lazy {
         val map: MutableMap<String, C> = mutableMapOf()
-        for (entry in searchEntries.filter { !it.skip }) {
+        for (entry in searchEntries) {
             map[entry.name.string.lowercase(Locale.ROOT)] = entry
         }
         map
@@ -43,7 +43,7 @@ class Searcher<C: Searcher.SearchContent>(private val searchEntries: List<C>) {
 
     private val searchDesc: SuffixArray<C> by lazy {
         val array = SuffixArray<C>()
-        for (entry in searchEntries.filter{ it.desc != null && !it.skip }) {
+        for (entry in searchEntries.filter{ it.desc != null }) {
             array.add(entry, entry.desc?.string?.lowercase(Locale.ROOT))
         }
         array.build()
@@ -131,32 +131,51 @@ class Searcher<C: Searcher.SearchContent>(private val searchEntries: List<C>) {
             }
             SearchType.NEGATION -> {
                 val results = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
-                list = searchEntries.filter { e -> !results.contains(e) }
+                list = searchEntries.filter { e -> !results.contains(e) && !e.skip }
             }
             SearchType.NEGATE_DESCRIPTION -> {
                 val results = searchDesc.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
-                list = searchEntries.filter { e -> !results.contains(e) }
+                list = searchEntries.filter { e -> !results.contains(e) && !e.skip }
             }
             SearchType.EXACT -> {
                 val result = searchExact[trimmedSearchInput.lowercase(Locale.ROOT)]
-                list = if(result != null) listOf(result) else emptyList()
+                list = if(result != null && !result.skip) listOf(result) else emptyList()
             }
             SearchType.NEGATE_EXACT -> {
                 val result = searchExact[trimmedSearchInput.lowercase(Locale.ROOT)]
-                list = searchEntries.filter { e -> e != result }
+                list = searchEntries.filter { e -> e != result  && !e.skip }
             }
             SearchType.NORMAL -> {
-                val results = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
+                val results = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT)).filter{ !it.skip }
                 list = results
             }
         }
         return list
     }
 
-    //TODO
+    /**
+     * A searchable item. It can provide a name, an optional description, and whether it should be skipped in the current search.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     interface SearchContent {
+        /**
+         * The "plain" name of the search content, example "Setting 1"
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val name: Text
+        /**
+         * The optional description of the content. This is akin to tooltip text or some other extended description.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val desc: Text?
+        /**
+         * Whether the search should exclude this content from search results. This is active state, so can change between true and false as needed.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val skip: Boolean
     }
 

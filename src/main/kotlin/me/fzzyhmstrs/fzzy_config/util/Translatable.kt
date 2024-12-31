@@ -100,11 +100,17 @@ interface Translatable {
         return I18n.hasTranslation(prefixKey())
     }
 
-    //TODO
+    /**
+     * A translation result from a [Translatable] instance. This is generated internally, but is passed into many builder methods for config GUIs. Think of it, as the name implies, as the result of Fzzy Config generating a translation set for the relevant element.
+     * @param name [Text] the title of the element, such as "Particle Count"
+     * @param desc [Text], nullable. the tooltip description. Null means no description is present.
+     * @param prefix [Text], nullable. the inline prefix text of a config entry. Null means no prefix.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     class Result(val name: Text, val desc: Text? = null, val prefix: Text? = null) {
 
         companion object {
-            //TODO
             val EMPTY = Result(FcText.empty(), null, null)
         }
     }
