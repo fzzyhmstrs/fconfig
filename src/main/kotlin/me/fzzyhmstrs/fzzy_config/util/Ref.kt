@@ -10,12 +10,29 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-//TODO
-class Ref<T>(private var value: T) {
+/**
+ * A mutable reference to a value. About as simple as it gets. The value stored is volatile
+ * @param T the type of value referenced by this
+ * @param value stored value to reference to and update as needed
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
+class Ref<T>(@Volatile private var value: T) {
+
+    /**
+     * Retrieves the stored value
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun get(): T {
         return this.value
     }
 
+    /**
+     * Updates the stored value with the provided input
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun set(value: T) {
         this.value = value
     }

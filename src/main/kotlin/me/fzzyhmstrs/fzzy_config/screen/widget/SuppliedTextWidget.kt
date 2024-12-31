@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.google.common.base.Supplier
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.screen.ScreenTexts
@@ -95,7 +97,8 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         return overflowTooltip?.let { listOf(it.get()) }?.takeIf { textRenderer.getWidth(it[0]) > getWidth() } ?: TooltipChild.EMPTY
     }
 
-    override fun provideNarrationLines(): List<Text> {
-        return overflowTooltip?.let { listOf(it.get()) } ?: TooltipChild.EMPTY
+    override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+        overflowTooltip?.let { builder?.put(NarrationPart.TITLE, it.get()) }
     }
+
 }

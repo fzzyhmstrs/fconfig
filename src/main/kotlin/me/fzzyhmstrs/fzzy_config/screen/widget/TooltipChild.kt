@@ -20,9 +20,8 @@ interface TooltipChild {
         return EMPTY
     }
 
-    //TODO
     fun provideNarrationLines(): List<Text> {
-        return EMPTY
+        return provideTooltipLines(0, 0, parentSelected = true, keyboardFocused = true)
     }
 
     companion object {

@@ -122,7 +122,8 @@ object Popups {
                 leftPadding = 0,
                 rightPadding = -4,
                 verticalPadding = 0,
-                hideScrollBar = true))
+                hideScrollBar = true,
+                listNarrationKey = "fc.narrator.position.list"))
         val maxHeight = screenHeight - 16 - 4 - 9 - 4 - 5
         anchors.fitToContent(maxHeight)
 

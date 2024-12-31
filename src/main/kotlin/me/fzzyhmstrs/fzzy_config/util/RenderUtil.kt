@@ -65,7 +65,20 @@ object RenderUtil {
         this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, PortingUtils.getWhite(alpha))
     }
 
-    //TODO
+    /**
+     * Extension function to draw a texture, replacing drawtexture. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * @param id Identifier - The sprite identifier for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param u Float - the horizontal position of the texture region
+     * @param v Float - the vertical position of the texture region
+     * @param width - the width of the drawn region in pixels
+     * @param height - the height of the drawn region in pixels
+     * @param texWidth - the width of the texture in pixels
+     * @param texHeight - the height of the texture in pixels
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, u: Float, v: Float, width: Int, height: Int, texWidth: Int, texHeight: Int) {
         this.drawTexture(RenderLayer::getGuiTextured, id, x, y, u, v, width, height, texWidth, texHeight)
     }

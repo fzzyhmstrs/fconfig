@@ -172,7 +172,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
     }
 
-    protected fun prepareTextboxWithButtons(choicePredicate: ChoiceValidator<T>, incr: T?): ClickableWidget {
+    private fun prepareTextboxWithButtons(choicePredicate: ChoiceValidator<T>, incr: T?): ClickableWidget {
         fun isIntType(): Boolean {
             return maxValue is Int || maxValue is Long || maxValue is Short || maxValue is Byte
         }
@@ -202,9 +202,11 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         )
 
         val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
+        val numberWidget = ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) }, 99, false, increment)
+
         layout.add(
             "textbox",
-            ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) }, 99, false, increment),
+            numberWidget,
             LayoutWidget.Position.LEFT,
             LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
         layout.add(
@@ -213,6 +215,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
                 val n = this.convert(MathHelper.clamp(this.get().toDouble() + increment, this.minValue.toDouble(), this.maxValue.toDouble())).get()
                 this.setAndUpdate(n) }
                 .noMessage()
+                .narrationAppender { builder -> numberWidget.appendValueNarrations(builder) }
                 .size(11, 10)
                 .active(this.maxValue != this.minValue)
                 .textures(TextureIds.INCREMENT_UP, TextureIds.INCREMENT_UP_DISABLED, TextureIds.INCREMENT_UP_HIGHLIGHTED)
