@@ -218,6 +218,10 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return contentHeight() <= height
     }
 
+    open fun listNarrationKey(): String {
+        return "fc.narrator.position.list"
+    }
+
     //TODO
     open fun hideScrollWhileNotHovered(): Boolean {
         return false
@@ -439,18 +443,14 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         if (client.navigationType.isKeyboard) {
             focusedElement?.appendNarrations(builder.nextMessage())
             val i = selectableEntries().indexOf(focusedElement)
-            if (i > 0) {
-                builder.nextMessage().put(NarrationPart.POSITION, FcText.translatable("fc.narrator.position.list.focused", i + 1, selectableEntries().size))
+            if (i >= 0) {
+                builder.put(NarrationPart.POSITION, FcText.translatable("fc.narrator.position.list", i + 1, selectableEntries().size))
             }
         } else {
             hoveredElement?.appendNarrations(builder.nextMessage().nextMessage())
             val i = selectableEntries().indexOf(hoveredElement)
-            val j = selectableEntries().indexOf(focusedElement)
-            if (i > 0) {
-                builder.nextMessage().put(NarrationPart.POSITION, FcText.translatable("fc.narrator.position.list.hovered", i + 1, selectableEntries().size))
-            }
-            if (j > 0 && i != j) {
-                builder.put(NarrationPart.POSITION, FcText.translatable("fc.narrator.position.list.focused", j + 1, selectableEntries().size))
+            if (i >= 0) {
+                builder.put(NarrationPart.POSITION, FcText.translatable("fc.narrator.position.list", i + 1, selectableEntries().size))
             }
         }
 

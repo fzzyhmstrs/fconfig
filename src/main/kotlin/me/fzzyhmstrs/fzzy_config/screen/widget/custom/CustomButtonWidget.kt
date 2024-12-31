@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.text.MutableText
@@ -30,6 +31,7 @@ open class CustomButtonWidget protected constructor(
     message: Text,
     private val pressAction: Consumer<CustomButtonWidget>,
     private val narrationSupplier: ButtonWidget.NarrationSupplier,
+    private val narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> },
     override val textures: TextureSet = DEFAULT_TEXTURES,
     private val child: TooltipChild? = null,
     private val renderMessage: Boolean = true)
@@ -54,8 +56,10 @@ open class CustomButtonWidget protected constructor(
         return child?.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused) ?: super.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused)
     }
 
-    override fun provideNarrationLines(): List<Text> {
-        return child?.provideNarrationLines() ?: super.provideNarrationLines()
+    override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+        super.appendClickableNarrations(builder)
+        if (builder != null)
+            narrationAppender.accept(builder)
     }
 
     //TODO
@@ -67,6 +71,7 @@ open class CustomButtonWidget protected constructor(
         private var w = 150
         private var h = 20
         private var narrationSupplier: ButtonWidget.NarrationSupplier = DEFAULT_NARRATION_SUPPLIER
+        private var narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> }
         private var active = true
         private var textures: TextureSet = DEFAULT_TEXTURES
         private var child: TooltipChild? = null
@@ -110,6 +115,12 @@ open class CustomButtonWidget protected constructor(
         }
 
         //TODO
+        fun narrationAppender(narrationAppender: Consumer<NarrationMessageBuilder>): Builder {
+            this.narrationAppender = narrationAppender
+            return this
+        }
+
+        //TODO
         fun active(active: Boolean): Builder {
             this.active = active
             return this
@@ -141,7 +152,7 @@ open class CustomButtonWidget protected constructor(
 
         //TODO
         fun build(): CustomButtonWidget {
-            val widget = CustomButtonWidget(x, y, w, h, message, onPress, narrationSupplier, textures, child, renderMessage)
+            val widget = CustomButtonWidget(x, y, w, h, message, onPress, narrationSupplier, narrationAppender, textures, child, renderMessage)
             widget.tooltip = tooltip
             widget.active = active
             return widget

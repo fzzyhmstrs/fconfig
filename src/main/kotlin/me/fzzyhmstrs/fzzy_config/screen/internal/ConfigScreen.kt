@@ -16,7 +16,6 @@ import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
-import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
@@ -29,14 +28,20 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.*
+import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.DirectionalLayoutWidget
+import net.minecraft.client.gui.widget.TextWidget
+import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
+import net.minecraft.util.Util
+import java.util.concurrent.TimeUnit
 import java.util.function.Function
 import java.util.function.Supplier
 
@@ -55,12 +60,16 @@ internal class ConfigScreen(
 
     private var parent: Screen? = null
 
-    internal val layout = ThreePartsLayoutWidget(this)
+    internal var layout = ThreePartsLayoutWidget(this)
     private var searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
     private var doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
 
     private var mX: Double = 0.0
     private var mY: Double = 0.0
+
+    private val narrator: ConfigScreenNarrator = ConfigScreenNarrator()
+    private var elementNarrationStartTime = Long.MIN_VALUE
+    private var screenNarrationStartTime = Long.MAX_VALUE
 
     private val MENU_LIST_BACKGROUND_TEXTURE: Identifier = "textures/gui/menu_list_background.png".simpleId()
     private val INWORLD_MENU_LIST_BACKGROUND_TEXTURE: Identifier = "textures/gui/inworld_menu_list_background.png".simpleId()
@@ -101,11 +110,13 @@ internal class ConfigScreen(
     }
 
     override fun init() {
+        layout = ThreePartsLayoutWidget(this)
         super.init()
         initHeader()
         initFooter()
         initBody()
         initLayout()
+        initNarrator()
     }
     private fun initHeader() {
         val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
@@ -158,6 +169,87 @@ internal class ConfigScreen(
     private fun initLayout() {
         layout.refreshPositions()
         configList.setDimensionsAndPosition(320, layout.contentHeight, (this.width / 2) - 160, layout.headerHeight)
+    }
+
+    private fun initNarrator() {
+        narrator.resetNarrateOnce()
+        setElementNarrationDelay(TimeUnit.SECONDS.toMillis(2L))
+    }
+
+    private fun setScreenNarrationDelay(delayMs: Long, restartElementNarration: Boolean) {
+        this.screenNarrationStartTime = Util.getMeasuringTimeMs() + delayMs
+        if (restartElementNarration) {
+            this.elementNarrationStartTime = Long.MIN_VALUE
+        }
+    }
+
+    private fun setElementNarrationDelay(delayMs: Long) {
+        this.elementNarrationStartTime = Util.getMeasuringTimeMs() + delayMs
+    }
+
+    override fun applyMouseMoveNarratorDelay() {
+        this.setScreenNarrationDelay(750L, false)
+    }
+
+    override fun applyMousePressScrollNarratorDelay() {
+        this.setScreenNarrationDelay(200L, true)
+    }
+
+    override fun applyKeyPressNarratorDelay() {
+        this.setScreenNarrationDelay(200L, true)
+    }
+
+    private fun isNarratorActive(): Boolean {
+        return client?.narratorManager?.isActive == true
+    }
+
+    private var introUsage = true
+
+    override fun hasUsageText(): Boolean {
+        val bl = introUsage
+        introUsage = false
+        return bl
+    }
+
+    override fun refreshNarrator(previouslyDisabled: Boolean) {
+        if (previouslyDisabled) {
+            this.setScreenNarrationDelay(TimeUnit.SECONDS.toMillis(2L), false)
+        }
+
+        if (this.narratorToggleButton != null) {
+            narratorToggleButton?.setValue(client?.options?.narrator?.value)
+        }
+    }
+
+    override fun updateNarrator() {
+        if (this.isNarratorActive()) {
+            val l = Util.getMeasuringTimeMs()
+            if (l > this.screenNarrationStartTime && l > this.elementNarrationStartTime) {
+                this.narrateScreen(true)
+                this.screenNarrationStartTime = Long.MAX_VALUE
+            }
+        }
+    }
+
+    override fun narrateScreenIfNarrationEnabled(onlyChangedNarrations: Boolean) {
+        if (this.isNarratorActive()) {
+            this.narrateScreen(onlyChangedNarrations)
+        }
+    }
+
+    private fun narrateScreen(onlyChangedNarrations: Boolean) {
+        this.narrator.buildNarrations { messageBuilder: NarrationMessageBuilder -> this.addScreenNarrations(messageBuilder) }
+        val string = this.narrator.buildNarratorText(!onlyChangedNarrations)
+        if (string.isNotEmpty()) {
+            client?.narratorManager?.narrate(string)
+        }
+    }
+
+    override fun getUsageNarrationText(): Text {
+        return if (client?.navigationType?.isKeyboard == true)
+            super.getUsageNarrationText()
+        else
+            "narrator.screen.usage".translate()
     }
 
     override fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -293,9 +385,9 @@ internal class ConfigScreen(
             .onClick { mX, mY, over, button ->
                 if (ContextType.CONTEXT_MOUSE.relevant(button, ctrl = false, shift = false, alt = false) && !over) {
                     PopupWidget.pop(mX, mY)
-                    PopupParentElement.ClickResult.PASS
+                    PopupWidget.ClickResult.PASS
                 } else {
-                    PopupParentElement.ClickResult.USE
+                    PopupWidget.ClickResult.USE
                 }
             }
         for ((group, actions) in builder.apply()) {

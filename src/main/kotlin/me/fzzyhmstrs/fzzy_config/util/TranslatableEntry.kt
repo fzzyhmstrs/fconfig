@@ -12,7 +12,11 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 
-//TODO
+/**
+ * A [Translatable] object that uses it's [EntryKeyed] key to build the translation/description/prefix keys.
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
 @JvmDefaultWithoutCompatibility
 interface TranslatableEntry: Translatable, EntryKeyed {
 
