@@ -13,10 +13,13 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.MutableText
@@ -130,7 +133,22 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         setChangedListener { s -> isValid = isValidTest(s) }
     }
 
+    /**
+     * @suppress
+     */
     override fun getNarrationMessage(): MutableText {
-        return text.lit()
+        return "gui.narrate.editBox".translate("", "")
+    }
+
+    //TODO Is this usage narration layout good?
+    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
+        builder.put(NarrationPart.TITLE, this.narrationMessage)
+        builder.nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
+        //builder.nextMessage().put(NarrationPart.USAGE, "fc.validated_field.number.editBox.usage".translate())
+    }
+
+    fun appendValueNarrations(builder: NarrationMessageBuilder) {
+        builder.nextMessage().put(NarrationPart.TITLE, "fc.validated_field.current".translate(""))
+        builder.nextMessage().nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
     }
 }

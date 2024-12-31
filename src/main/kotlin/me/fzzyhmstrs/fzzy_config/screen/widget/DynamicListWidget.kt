@@ -77,6 +77,10 @@ class DynamicListWidget(
     override val rightPadding: Int
         get() = spec.rightPadding
 
+    override fun listNarrationKey(): String {
+        return spec.listNarrationKey
+    }
+
     override fun hideScrollWhileNotHovered(): Boolean {
         return spec.hideScrollBar
     }
@@ -207,17 +211,6 @@ class DynamicListWidget(
 
     override val neighbor: EnumMap<NavigationDirection, Neighbor> = EnumMap(NavigationDirection::class.java)
 
-    /*
-        https://webaim.org/techniques/keyboard/
-
-        Navigation strategy will be broadly based on the information provided in the link above
-
-        https://accessibleweb.com/question-answer/navigate-website-keyboard/
-        https://www.w3.org/TR/WCAG22/
-
-        Navigation goal is to fully comply in a standardized way with the above accesibleweb information.
-
-    */
     override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
         if (this.entries.isEmpty()) {
             return null
@@ -524,6 +517,7 @@ class DynamicListWidget(
             if (this@DynamicListWidget.noScroll()) return
             val delta = this@DynamicListWidget.top - groupPair.groupEntry.top.get()
             this@DynamicListWidget.handleScrollByBar(delta)
+            this@DynamicListWidget.focused = groupPair.groupEntry
         }
 
         fun scroll(amount: Int) {
@@ -796,6 +790,7 @@ class DynamicListWidget(
         }
 
         override fun appendNarrations(builder: NarrationMessageBuilder) {
+            appendTitleNarrations(builder)
             val list: List<Selectable?> = this.selectableChildren()
             val selectedElementNarrationData = Screen.findSelectedElementData(list, this.focusedSelectable)
             if (selectedElementNarrationData != null) {
@@ -806,7 +801,7 @@ class DynamicListWidget(
                 if (list.size > 1) {
                     builder.put(
                         NarrationPart.POSITION,
-                        FcText.translatable("narrator.position.object_list", selectedElementNarrationData.index + 1, list.size)
+                        FcText.translatable("fc.narrator.position.entry", selectedElementNarrationData.index + 1, list.size)
                     )
                     if (selectedElementNarrationData.selectType == Selectable.SelectionType.FOCUSED) {
                         builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
@@ -815,6 +810,10 @@ class DynamicListWidget(
 
                 selectedElementNarrationData.selectable.appendNarrations(builder.nextMessage())
             }
+        }
+
+        open fun appendTitleNarrations(builder: NarrationMessageBuilder) {
+            builder.put(NarrationPart.TITLE, name)
         }
 
         override fun toString(): String {
@@ -915,7 +914,8 @@ class DynamicListWidget(
     data class ListSpec(val leftPadding: Int = 16,
                         val rightPadding: Int = 10,
                         val verticalPadding: Int = 4,
-                        val hideScrollBar: Boolean = false)
+                        val hideScrollBar: Boolean = false,
+                        val listNarrationKey: String = "fc.narrator.position.config")
 
     data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>) {
         fun get(): Visibility {

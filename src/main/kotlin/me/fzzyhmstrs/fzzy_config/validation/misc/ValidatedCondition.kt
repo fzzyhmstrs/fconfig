@@ -10,13 +10,13 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import com.sun.org.apache.xml.internal.serializer.utils.Utils.messages
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
@@ -33,10 +33,10 @@ import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.navigation.GuiNavigation
 import net.minecraft.client.gui.navigation.GuiNavigationPath
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.Function
@@ -416,10 +416,13 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            if (active)
+            if (active) {
                 delegateWidget.appendNarrations(builder)
-            else
-                super.appendClickableNarrations(builder)
+            } else {
+                builder?.put(NarrationPart.TITLE, this.narrationMessage)
+                val messages = conditionMessages.get()
+                builder?.put(NarrationPart.HINT, *messages.toTypedArray())
+            }
         }
 
         private fun makeTooltip(): Tooltip? {
@@ -456,16 +459,6 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
                 return messages
             } else {
                 TooltipChild.EMPTY
-            }
-        }
-
-        override fun provideNarrationLines(): List<Text> {
-            return if (active) {
-                delegateWidget.nullCast<TooltipChild>()?.provideNarrationLines() ?: TooltipChild.EMPTY
-            } else {
-                val messages = conditionMessages.get()
-                if (messages.isEmpty()) return TooltipChild.EMPTY
-                return messages
             }
         }
     }

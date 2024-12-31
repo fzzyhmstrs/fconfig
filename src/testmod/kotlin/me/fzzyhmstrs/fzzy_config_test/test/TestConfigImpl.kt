@@ -27,6 +27,7 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.Companion.withLabels
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
@@ -106,7 +107,11 @@ class TestConfigImpl: Config(Identifier("fzzy_config_test", "test_config"), subf
     @ConfigGroup.Pop
     var set2 = setOf(0.2, 0.4, 0.6).validated()
 
-    var pair1 = ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS).pairWith(ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS))
+    var pair1 = ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS)
+        .pairWith(ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS)).withLabels("Min".lit(), "Max".lit())
+
+    var pair2 = ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS)
+        .pairWith(ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS))
 
     @ConfigGroup.Pop
     var map1 = mapOf(1 to "a", 2 to "c")

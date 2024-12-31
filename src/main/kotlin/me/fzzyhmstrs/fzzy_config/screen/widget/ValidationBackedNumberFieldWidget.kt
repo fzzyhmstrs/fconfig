@@ -54,7 +54,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     private val renderStatus: Boolean = true,
     private val increment: Double = 0.0)
     :
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY)
+    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY), TooltipChild
 {
 
     private var cachedWrappedValue: T = wrappedValue.get()
@@ -62,6 +62,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     private var lastChangedTime: Long = 0L
     private var isValid = true
     private var confirmActive = false
+    private var error: Text? = null
 
     private fun ongoingChanges(): Boolean {
         return System.currentTimeMillis() - lastChangedTime <= 350L
@@ -104,20 +105,20 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     private fun isValidTest(s: String): Boolean {
         val test = s.toDoubleOrNull()
         if (test == null) {
-            this.tooltip = Tooltip.of("fc.validated_field.number.textbox.invalid".translate())
+            this.error = "fc.validated_field.number.textbox.invalid".translate()
             setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
             return false
         }
         val result = validationProvider.apply(test)
         return if(result.isError()) {
-            this.tooltip = Tooltip.of(result.getError().lit())
+            this.error = result.getError().lit()
             setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
             false
         } else {
-            this.tooltip = null
+            this.error = null
             val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
             if (result2.isError()) {
-                this.tooltip = Tooltip.of(result.getError().lit())
+                this.error = result.getError().lit()
                 setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
                 false
             } else {
@@ -166,18 +167,40 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
         super.setChangedListener(changedListener)
     }
 
+    /**
+     * @suppress
+     */
+    override fun getNarrationMessage(): MutableText {
+        return "gui.narrate.editBox".translate("", "")
+    }
+
+    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
+        builder.put(NarrationPart.TITLE, this.narrationMessage)
+        builder.nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
+        if (increment != 0.0) {
+            if (isFocused) {
+                builder.nextMessage().put(NarrationPart.USAGE,
+                    "fc.validated_field.number.editBox.usage".translate(),
+                    "fc.validated_field.number.slider.usage".translate())
+            } else {
+                builder.nextMessage().put(NarrationPart.USAGE,
+                    "fc.validated_field.number.editBox.usage".translate())
+            }
+        }
+    }
+
+    fun appendValueNarrations(builder: NarrationMessageBuilder) {
+        builder.nextMessage().put(NarrationPart.TITLE, "fc.validated_field.current".translate(""))
+        builder.nextMessage().nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
+    }
+
+    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+        if (!parentSelected || error == null) return TooltipChild.EMPTY
+        return error?.let { listOf(it) } ?: return TooltipChild.EMPTY
+    }
+
     init {
         text = wrappedValue.get().toString()
         setChangedListener { s -> isValid = isValidTest(s) }
-    }
-
-    //TODO Is this usage narration layout good?
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        super.appendClickableNarrations(builder)
-        if (increment != 0.0) {
-            builder.nextMessage().put(NarrationPart.USAGE,
-                "fc.validated_field.number.editBox.usage".translate(),
-                "fc.validated_field.number.slider.usage".translate())
-        }
     }
 }
