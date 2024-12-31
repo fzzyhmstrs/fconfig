@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.LabelWrappedWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutClickableWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -157,8 +158,8 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Tuple<A, B>>): ClickableWidget {
-        val left = leftHandler.widgetEntry().wrap(leftLabel)
-        val right = rightHandler.widgetEntry().wrap(rightLabel)
+        val left = leftHandler.widgetEntry().wrap(leftLabel, "left")
+        val right = rightHandler.widgetEntry().wrap(rightLabel, "right")
         if (layoutStyle == LayoutStyle.SIDE_BY_SIDE) {
             left.width = 53
             right.width = 53
@@ -233,8 +234,8 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
                     (contentLayout.width - contentLayout.getGeneralHorizontalSpacing()) / 2
                 else
                     contentLayout.width
-                val left = leftHandler.widgetEntry().wrap(leftLabel)
-                val right = rightHandler.widgetEntry().wrap(rightLabel)
+                val left = leftHandler.widgetEntry().wrap(leftLabel, "left")
+                val right = rightHandler.widgetEntry().wrap(rightLabel, "right")
                 left.width = w
                 right.width = w
                 contentLayout.add(
@@ -262,9 +263,8 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         }
     }
 
-    //TODO test this
-    private fun ClickableWidget.wrap(label: Text?): ClickableWidget {
-        return if (label == null) this else LabelWrappedWidget(this, label)
+    private fun ClickableWidget.wrap(label: Text?, side: String): ClickableWidget {
+        return if (label == null) LabelWrappedWidget(this, "fc.validated_field.pair.$side".translate(), false) else LabelWrappedWidget(this, label)
     }
 
     /**
@@ -298,7 +298,15 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         STACKED
     }
 
-    //TODO
+    /**
+     * Simple pair data class for storing and interacting with arbitrary pairs of types.
+     * @param X left element type
+     * @param Y right element type
+     * @param left [X] instance
+     * @param right [Y] instance
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     data class Tuple<X, Y>(val left: X, val right: Y) {
 
         private constructor(left: X, right: Y, side: Boolean): this(left, right) {
@@ -306,16 +314,35 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         }
 
         private var side: Boolean? = null
-        //TODO
+
+        /**
+         * Constructs a new [Tuple] with an updated left side only, using the existing right side
+         * @param newLeft [X] the new left element
+         * @return new [Tuple] instance with new left element and existing right element
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun withLeft(newLeft: X): Tuple<X, Y> {
             return Tuple(newLeft, right, false)
         }
-        //TODO
+
+        /**
+         * Constructs a new [Tuple] with an updated right side only, using the existing left side
+         * @param newRight [Y] the new right element
+         * @return new [Tuple] instance with existing right element and new right element
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun withRight(newRight: Y): Tuple<X, Y> {
             return Tuple(left, newRight, true)
         }
 
-        //TODO
+        /**
+         * (Currently unused) which side of this tuple was the most recently updated
+         * @return Boolean, nullable. The last side that received an update. This is a TriState, effectively. false = left, true = right, null = both sides updated at the same time
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun lastSide(): Boolean? {
             return side
         }
