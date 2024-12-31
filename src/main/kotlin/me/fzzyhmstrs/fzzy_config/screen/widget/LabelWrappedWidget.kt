@@ -10,11 +10,15 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.nullCast
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
+import net.minecraft.client.gui.navigation.GuiNavigation
+import net.minecraft.client.gui.navigation.GuiNavigationPath
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
@@ -31,13 +35,13 @@ import net.minecraft.text.Text
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-class LabelWrappedWidget(private val child: ClickableWidget, private val label: Text?)
-    : ClickableWidget(child.x, child.y, child.width, child.height, label ?: FcText.EMPTY) {
+class LabelWrappedWidget(private val child: ClickableWidget, private val label: Text, private val showLabel: Boolean = true)
+    : ClickableWidget(child.x, child.y, child.width, child.height, label), TooltipChild {
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         child.render(context, mouseX, mouseY, delta)
-        if (label != null) {
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, label.asOrderedText(), x, y + height - 9, -1)
+        if (showLabel) {
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, label.asOrderedText(), x, y + getHeight() - 9, -1)
         }
     }
 
@@ -60,6 +64,10 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
     }
     override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         return child.keyReleased(keyCode, scanCode, modifiers)
+    }
+
+    override fun charTyped(chr: Char, modifiers: Int): Boolean {
+        return child.charTyped(chr, modifiers)
     }
 
     override fun setFocused(focused: Boolean) {
@@ -104,7 +112,7 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
     }
 
     override fun getHeight(): Int {
-        return if (label == null) child.height else child.height + 11
+        return if (showLabel) child.height + 11 else child.height
     }
 
     override fun setWidth(width: Int) {
@@ -115,7 +123,29 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         child.height = height
     }
 
+    override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
+        val childPath = child.getNavigationPath(navigation)
+        return if(childPath != null) Layered(this, childPath) else null
+    }
+
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        child.appendNarrations(builder)
+        builder.put(NarrationPart.TITLE, this.label)
+        child.appendNarrations(builder.nextMessage())
+    }
+
+    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+        return child.nullCast<TooltipChild>()?.provideTooltipLines(mouseX, mouseY, parentSelected, keyboardFocused) ?: TooltipChild.EMPTY
+    }
+
+    private class Layered(private val element: Element, private val childPath: GuiNavigationPath): GuiNavigationPath {
+
+        override fun component(): Element {
+            return element
+        }
+
+        override fun setFocused(focused: Boolean) {
+            element.isFocused = focused
+            childPath.setFocused(focused)
+        }
     }
 }

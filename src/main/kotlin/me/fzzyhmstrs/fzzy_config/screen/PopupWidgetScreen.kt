@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.screen
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.nullCast
-import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement.ClickResult
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -78,7 +77,10 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         initPopup()
     }
 
-    //TODO
+    /**
+     * Marked final to preserve proper popup ordering and rendering
+     * @since 0.6.0
+     */
     final override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         hoveredElement = if (popupWidgets.isNotEmpty()) null else children().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
         if (popupWidgets.isEmpty())
@@ -103,7 +105,11 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
             RenderSystem.disableDepthTest()
     }
 
-    //TODO
+    /**
+     * Render call that should be used to render the main contents of a subclass. This is used instead of overriding [render] for proper positioning of the popup stack.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     open fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if (popupWidgets.isEmpty())
             super.render(context, mouseX, mouseY, delta)
@@ -125,7 +131,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
     final override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         val popupWidget = activeWidget() ?: return onClick(mouseX, mouseY, button)
         val result = popupWidget.preClick(mouseX, mouseY, button)
-        if (result == ClickResult.PASS) {
+        if (result == PopupWidget.ClickResult.PASS) {
             return onClick(mouseX, mouseY, button)
         }
         return super<PopupParentElement>.mouseClicked(mouseX, mouseY, button)
@@ -139,7 +145,5 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         activeWidget()?.appendNarrations(messageBuilder) ?: super.addScreenNarrations(messageBuilder)
     }
 
-    override fun setTooltip(tooltip: Tooltip?, positioner: TooltipPositioner?, focused: Boolean) {
-        super.setTooltip(tooltip, positioner, focused)
-    }
+
 }

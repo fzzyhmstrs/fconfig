@@ -14,7 +14,6 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.entry.EntryTransient
-import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
@@ -166,15 +165,15 @@ open class ConfigGroup @JvmOverloads constructor(
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
             if (!parentSelected) return TooltipChild.EMPTY
             return if (list.groupIsVisible(group)) {
-                collapse
+                listOf(expanded)
             } else {
-                expand
+                listOf(collapsed)
             }
         }
 
         companion object {
-            private val collapse = listOf("fc.validated_field.collapse".translate())
-            private val expand = listOf("fc.validated_field.expand".translate())
+            private val collapsed = "fc.validated_field.collapse".translate()
+            private val expanded = "fc.validated_field.expand".translate()
             private val collapseUsageFocused = "fc.validated_field.collapse.usage.focused".translate()
             private val expandUsageFocused = "fc.validated_field.expand.usage.focused".translate()
             private val collapseUsageHovered = "fc.validated_field.collapse.usage.hovered".translate()

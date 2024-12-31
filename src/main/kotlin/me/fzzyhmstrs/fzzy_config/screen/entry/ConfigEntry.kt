@@ -78,17 +78,6 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     private val tooltip: List<OrderedText> by lazy {
         createTooltip(desc ?: FcText.empty())
     }
-    private val narrationPrefix by lazy {
-        val b = StringBuilder()
-        for (provider in tooltipProviders) {
-            val ts = provider.provideNarrationLines()
-            for (t in ts) {
-                t.visit { s -> b.append(s); Optional.empty<Unit>() }
-            }
-            b.append(". ")
-        }
-        b.toString()
-    }
 
     override fun init() {
         layout.setPos(this.x, this.top)
@@ -186,11 +175,12 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     @Internal
     override fun appendNarrations(builder: NarrationMessageBuilder) {
         super.appendNarrations(builder)
-        builder.put(NarrationPart.TITLE, name)
-        if (MinecraftClient.getInstance().navigationType.isKeyboard) {
-            builder.put(NarrationPart.HINT, narrationPrefix + createTooltipString(tooltip))
-        } else {
-            builder.put(NarrationPart.HINT, createTooltipString(tooltip))
+        val childNarrations = tooltipProviders.flatMap { it.provideNarrationLines() }.map { it.asOrderedText() }
+        val str = createTooltipString(childNarrations + tooltip)
+        if (str.isNotEmpty()) {
+            builder.put(NarrationPart.HINT, str)
+            if (childNarrations.isNotEmpty())
+                builder.put(NarrationPart.HINT, str) //put twice to force re-narration even if the message between two settings is the same
         }
     }
 
@@ -279,13 +269,13 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         private val decorationWidget = DecorationWidget()
         private var group: String = ""
         private var visibility: DynamicListWidget.Visibility = DynamicListWidget.Visibility.VISIBLE
-        private var contextActions: Map<String,Map<ContextType, ContextAction.Builder>> = mapOf()
+        private var contextActions: Map<String, Map<ContextType, ContextAction.Builder>> = mapOf()
         private val popStart = context.groups.size - context.annotations.filterIsInstance<ConfigGroup.Pop>().size
 
 
         init {
             val nameSupplier = { context.texts.name }
-            val titleWidget = SuppliedTextWidget(nameSupplier, MinecraftClient.getInstance().textRenderer, 70, 20).supplyTooltipOnOverflow(nameSupplier).align(0.0)
+            val titleWidget = SuppliedTextWidget(nameSupplier, MinecraftClient.getInstance().textRenderer, 70, 20).supplyTooltipOnOverflow(nameSupplier).align(0.0f)
             val prefixWidget = context.texts.prefix?.let { CustomMultilineTextWidget(it, 10, 10, 4) }
             if (prefixWidget != null) {
                 mainLayout.add("prefix", prefixWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
@@ -328,7 +318,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         }
 
         //TODO
-        fun contextActions(contextActions: Map<String,Map<ContextType, ContextAction.Builder>>): ContentBuilder {
+        fun contextActions(contextActions: Map<String, Map<ContextType, ContextAction.Builder>>): ContentBuilder {
             this.contextActions = contextActions
             return this
         }
@@ -357,7 +347,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             val scope: DynamicListWidget.Scope,
             val groupTypes: List<Boolean>,
             val visibility: DynamicListWidget.Visibility,
-            val contextActions: Map<String,Map<ContextType, ContextAction.Builder>>)
+            val contextActions: Map<String, Map<ContextType, ContextAction.Builder>>)
 
     }
 
@@ -409,7 +399,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
          */
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
             val bl1 = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
-            if (! bl1 && !keyboardFocused) return TooltipChild.EMPTY
+            if (!bl1 && !keyboardFocused) return TooltipChild.EMPTY
             return listOf(actionTooltip)
         }
     }
