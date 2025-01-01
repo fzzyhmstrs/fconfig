@@ -10,15 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget.Companion.DEFAULT_TEXTURES
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.MathHelper
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -44,17 +40,49 @@ open class ActiveButtonWidget@JvmOverloads constructor(
     :
     CustomPressableWidget(0, 0, width, height, titleSupplier.get()) {
 
-    //TODO
+    /**
+     * A Button Widget that can supply its message and active state, and render a custom background
+     * @param title [Text] - The message/label for this button
+     * @param width Int - width of the widget
+     * @param height Int - height of the widget
+     * @param activeSupplier [Supplier]&lt;Boolean&gt; - Supplies whether this button is active or not
+     * @param pressAction [Consumer]&lt;ActiveButtonWidget&gt; - action to take when the button is pressed
+     * @param background [TextureSet], Nullable - a custom background texture set; defaults to [DEFAULT_TEXTURES] if null is passed (default)
+     * @author fzzyhmstrs
+     * @since 0.2.0, implements TextureSet for backgrounds 0.6.0
+     */
     @JvmOverloads
     constructor(
         title: Text,
         width: Int,
         height: Int,
-        activeProvider: Supplier<Boolean>,
+        activeSupplier: Supplier<Boolean>,
         pressAction: Consumer<ActiveButtonWidget>,
         background: TextureSet? = null)
             :
-            this(Supplier { title }, width, height, activeProvider, pressAction, background ?: DEFAULT_TEXTURES)
+            this(Supplier { title }, width, height, activeSupplier, pressAction, background ?: DEFAULT_TEXTURES)
+
+    /**
+     * A Button Widget that can supply its message and active state, and render a custom background
+     * @param title [Text] - The message/label for this button
+     * @param width Int - width of the widget
+     * @param height Int - height of the widget
+     * @param activeSupplier [Supplier]&lt;Boolean&gt; - Supplies whether this button is active or not
+     * @param pressAction [Consumer]&lt;ActiveButtonWidget&gt; - action to take when the button is pressed
+     * @param background [Identifier], Nullable - a custom background texture which will be used for all rendering circumstances; defaults to the "normal" texture for [DEFAULT_TEXTURES] if null is passed (default)
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    @JvmOverloads
+    constructor(
+        title: Text,
+        width: Int,
+        height: Int,
+        activeSupplier: Supplier<Boolean>,
+        pressAction: Consumer<ActiveButtonWidget>,
+        background: Identifier? = null)
+            :
+            this(Supplier { title }, width, height, activeSupplier, pressAction, TextureSet(background ?: DEFAULT_TEXTURES.get(enabled = true, focused = false)))
 
     /**
      * @suppress

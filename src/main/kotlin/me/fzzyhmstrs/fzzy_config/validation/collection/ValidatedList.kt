@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
@@ -193,7 +194,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
             Popups.openConfirmPopup(p, "fc.validated_field.list.clear.desc".translate()) { this.accept(emptyList()) }
             true }
             .withActive { s -> Supplier { s.get() && this.isNotEmpty() } }
-        map["collection"] = mutableMapOf(ContextType.CLEAR to clear)
+        map[ContextResultBuilder.COLLECTION] = mutableMapOf(ContextType.CLEAR to clear)
         return map
     }
 
