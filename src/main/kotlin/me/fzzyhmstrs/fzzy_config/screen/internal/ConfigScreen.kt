@@ -285,34 +285,42 @@ internal class ConfigScreen(
         return configList.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
+    //TODO test again
     override fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val contextType = ContextType.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
-        if (contextType != null) {
-            return if(handleContext(contextType, Position(ContextInput.MOUSE, mouseX.toInt(), mouseY.toInt(), 0, 0, this.width, this.height, this.width, this.height)))
-                true
-            else
-                super.onClick(mouseX, mouseY, button)
+        val contextTypes = ContextType.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (contextTypes.isEmpty()) return super.onClick(mouseX, mouseY, button)
+        var bl = false
+        for (contextType in contextTypes) {
+            bl = bl || handleContext(contextType, Position(ContextInput.MOUSE, mouseX.toInt(), mouseY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }
-        return super.onClick(mouseX, mouseY, button)
+        return if(bl)
+            true
+        else
+            super.onClick(mouseX, mouseY, button)
+
     }
 
+    //TODO test again
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val contextType = ContextType.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
-        if (contextType != null) {
-            val input = if(MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
-            return if(handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))) {
+        val contextTypes = ContextType.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (contextTypes.isEmpty()) return super.keyPressed(keyCode, scanCode, modifiers)
+        var bl = false
+        val input = if(MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
+
+        for (contextType in contextTypes) {
+            bl = bl || handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
+        }
+        return if(bl) {
+            true
+        } else {
+            val bl2 = super.keyPressed(keyCode, scanCode, modifiers)
+            if (!bl2 && contextTypes.contains(ContextType.BACK) && parent is ConfigScreen) {
+                this.close()
                 true
             } else {
-                val bl = super.keyPressed(keyCode, scanCode, modifiers)
-                if (!bl && contextType == ContextType.BACK && parent is ConfigScreen) {
-                    this.close()
-                    true
-                } else {
-                    bl
-                }
+                bl2
             }
         }
-        return super.keyPressed(keyCode, scanCode, modifiers)
     }
 
     override fun handleContext(contextType: ContextType, position: Position): Boolean {
@@ -364,8 +372,8 @@ internal class ConfigScreen(
             .icon(TextureDeco.CONTEXT_SAVE)
         val find = ContextAction.Builder("fc.config.search".translate()) { this.focused = searchField; true }
             .icon(TextureDeco.CONTEXT_FIND)
-        builder.add("config", ContextType.SAVE, save)
-        builder.add("config", ContextType.FIND, find)
+        builder.add(ContextResultBuilder.CONFIG, ContextType.SAVE, save)
+        builder.add(ContextResultBuilder.CONFIG, ContextType.FIND, find)
     }
 
     private fun openContextMenuPopup(builder: ContextResultBuilder) {

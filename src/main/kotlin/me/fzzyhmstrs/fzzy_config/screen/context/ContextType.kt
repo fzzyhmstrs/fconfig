@@ -3,9 +3,23 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 import org.lwjgl.glfw.GLFW
 import java.util.*
 
-//TODO
+/**
+ * A context action key, that doubles as a "keybind", presenting itself as relevant for context handling if key/mouse input is relevant to it.
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
 class ContextType private constructor(private val id: String, private val relevantCheck: Relevant) {
 
+    /**
+     * Determines whether this type is relevant to the user inputs provided. In general, only the key state you care about should be checked. For example, if your keybind is "X", check that the inputCode is correct but ignore ctrl/shift/alt entirely, unless it is specifically important that they not be pressed.
+     * @param inputCode Integer code. For keyboard inputs, will be the keyboard code, for mouse inputs, will be the mouse button code.
+     * @param ctrl whether the Ctrl key is pressed
+     * @param shift whether the Shift key is pressed
+     * @param alt whether the Alt key is pressed
+     * @return true if the type is relevant to the current user input, false otherwise
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun relevant(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): Boolean {
         return relevantCheck.relevant(inputCode, ctrl, shift, alt)
     }
@@ -27,8 +41,23 @@ class ContextType private constructor(private val id: String, private val releva
         return "ContextType($id)"
     }
 
+    /**
+     *
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     @FunctionalInterface
     fun interface Relevant {
+        /**
+         * Determines whether this is relevant to the user inputs provided. In general, only the state you care about should be checked. For example, if your keybind is "X", check that the inputCode is correct but ignore ctrl/shift/alt entirely, unless it is specifically important that they not be pressed.
+         * @param inputCode Integer code. For keyboard inputs, will be the keyboard code, for mouse inputs, will be the mouse button code.
+         * @param ctrl whether the Ctrl key is pressed
+         * @param shift whether the Shift key is pressed
+         * @param alt whether the Alt key is pressed
+         * @return true if the type is relevant to the current user input, false otherwise
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun relevant(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): Boolean
     }
 
@@ -39,10 +68,29 @@ class ContextType private constructor(private val id: String, private val releva
         private val keyboardCreated: Vector<ContextType> = Vector(16)
         private val mouseCreated: Vector<ContextType> = Vector(4)
 
+        /**
+         * Creates a new [ContextType] and adds it to the context list for checking context inputs.
+         * @param id Unique string id for this type. Duplicate ids will throw an exception.
+         * @param inputType [ContextInput] what type of input this type monitors.
+         * @param relevantCheck [Relevant] instance that checks inputs for type relevance.
+         * @return [ContextType] instance
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun create(id: String, inputType: ContextInput, relevantCheck: Relevant): ContextType {
             return create(id, inputType, true, relevantCheck)
         }
 
+        /**
+         * Creates a new [ContextType]
+         * @param id Unique string id for this type. Duplicate ids will throw an exception.
+         * @param inputType [ContextInput] what type of input this type monitors.
+         * @param addToContextList If true, will be added to the type list for monitoring inputs; if false, will act only as a map Key, and won't ever present itself as relevant when using [getRelevantContext]
+         * @param relevantCheck [Relevant] instance that checks inputs for type relevance.
+         * @return [ContextType] instance
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun create(id: String, inputType: ContextInput, addToContextList: Boolean, relevantCheck: Relevant): ContextType {
             if (ids.contains(id))
                 throw IllegalStateException("Duplicate context types not allowed; $id already created for input $inputType")
@@ -69,82 +117,126 @@ class ContextType private constructor(private val id: String, private val releva
             }
         }
 
-        //TODO
         val PAGE_UP = create("page_up", ContextInput.KEYBOARD) { inputCode: Int, _, _, _ ->
             inputCode == GLFW.GLFW_KEY_PAGE_UP
         }
 
-        //TODO
         val PAGE_DOWN = create("page_down", ContextInput.KEYBOARD) { inputCode: Int, _, _, _ ->
             inputCode == GLFW.GLFW_KEY_PAGE_DOWN
         }
 
-        //TODO
         val HOME = create("home", ContextInput.KEYBOARD) { inputCode: Int, _, _, _ ->
             inputCode == GLFW.GLFW_KEY_HOME
         }
 
-        //TODO
         val END = create("end", ContextInput.KEYBOARD) { inputCode: Int, _, _, _ ->
             inputCode == GLFW.GLFW_KEY_END
         }
 
-        //TODO
+        /**
+         * Ctrl-C, should move the context object to a copy buffer in some way
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val COPY = create("copy", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
             inputCode == GLFW.GLFW_KEY_C && ctrl && !shift && !alt
         }
 
-        //TODO
+        /**
+         * Ctrl-V, should take something from a copy buffer of some kind and move it into the context object
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val PASTE = create("paste", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
             inputCode == GLFW.GLFW_KEY_V && ctrl && !shift && !alt
         }
 
-        //TODO
+        /**
+         * Ctrl-X should move the context object to a copy buffer in some way and clear the object
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val CUT = create("cut", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
             inputCode == GLFW.GLFW_KEY_X && ctrl && !shift && !alt
         }
 
-        //TODO
+        /**
+         * Ctrl-F, should open or focus a search box in some way
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val FIND = create("find", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
             ((inputCode == GLFW.GLFW_KEY_F && ctrl && !shift && !alt) || inputCode == GLFW.GLFW_KEY_F3)
         }
 
-        //TODO
+        /**
+         * Ctrl-S, should save context object state
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val SAVE = create("save", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
             inputCode == GLFW.GLFW_KEY_S && ctrl && !shift && !alt
         }
 
-        //TODO
+        /**
+         * Ctrl-Z, should revert the last action taken (total across the whole context object), as opposed to revert, which should focus on the scoped context object only.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val UNDO = create("undo", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
             inputCode == GLFW.GLFW_KEY_Z && ctrl && !shift && !alt
         }
 
-        //TODO
+        /**
+         * Shift-F10 or Menu key, should open a context menu (right click menu)
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val CONTEXT_KEYBOARD = create("keyboard_context_menu", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
             ((inputCode == GLFW.GLFW_KEY_F10 && !ctrl && shift && !alt) || inputCode == GLFW.GLFW_KEY_MENU)
         }
 
-        //TODO
+        /**
+         * Right click, should open a context menu (right click menu)
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val CONTEXT_MOUSE = create("mouse_context_menu", ContextInput.MOUSE) { inputCode: Int, _, _, _ ->
             inputCode == GLFW.GLFW_MOUSE_BUTTON_RIGHT
         }
 
-        //TODO
+        /**
+         * Enter, should, well, act on something.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val ACT = create("act", ContextInput.KEYBOARD) { inputCode: Int, _: Boolean, _: Boolean, _: Boolean ->
             inputCode == GLFW.GLFW_KEY_ENTER || inputCode == GLFW.GLFW_KEY_KP_ENTER
         }
 
-        //TODO
+        /**
+         * Backspace, should back out to a previous context (such as backing out a screen)
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val BACK = create("back", ContextInput.KEYBOARD) { inputCode: Int, _: Boolean, _: Boolean, _: Boolean ->
             inputCode == GLFW.GLFW_KEY_BACKSPACE
         }
 
-        //TODO
+        /**
+         * Ctrl-E, should open a navigation menu, as opposed to find which opens text-based finding this should open a "goto" style menu.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val SEARCH = create("search", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
             ((inputCode == GLFW.GLFW_KEY_E && ctrl && !shift && !alt))
         }
 
-        //TODO
+        /**
+         * F1, should open information window/popup/text etc.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val INFO = create("info", ContextInput.KEYBOARD) { inputCode: Int, _: Boolean, _: Boolean, _: Boolean ->
             inputCode == GLFW.GLFW_KEY_F1
         }
@@ -152,28 +244,48 @@ class ContextType private constructor(private val id: String, private val releva
 
         //////// map keys only /////////////
 
-        //TODO
+        /**
+         * Does not listen to user input. used as a map key for forwarding context to another user.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val FORWARD = create("forward", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
 
-        //TODO
+        /**
+         * Does not listen to user input. Used to revert the current input change of the scoped context object, as oppoed to undo which should act on the whole context object (screen)
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val REVERT = create("revert", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
 
-        //TODO
+        /**
+         * Does not listen to user input. Fully reverts the scoped context object to defaults.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val RESTORE = create("restore", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
 
-        //TODO
+        /**
+         * Does not listen to user input. Clears the context object of content.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val CLEAR = create("clear", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
 
-        //TODO
-        fun getRelevantContext(inputCode: Int, contextInput: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean): ContextType? {
-            for (type in types(contextInput)) {
-                if (type.relevant(inputCode, ctrl, shift, alt)) {
-                    return type
-                }
-            }
-            return null
+        /**
+         * Returns a list of [ContextType] that are relevant to the provided input. This can return multiple inputs, which can be handled separately or together.
+         * @param inputCode Integer code. For keyboard inputs, will be the keyboard code, for mouse inputs, will be the mouse button code.
+         * @param contextInput [ContextInput] what type of input event is being triggered.
+         * @param ctrl whether the Ctrl key is pressed
+         * @param shift whether the Shift key is pressed
+         * @param alt whether the Alt key is pressed
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        fun getRelevantContext(inputCode: Int, contextInput: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean): List<ContextType> {
+            return types(contextInput).filter { it.relevant(inputCode, ctrl, shift, alt) }
         }
 
-        fun init() {}
+        internal fun init() {}
     }
 }

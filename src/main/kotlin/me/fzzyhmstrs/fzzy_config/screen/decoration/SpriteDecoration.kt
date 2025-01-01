@@ -13,19 +13,33 @@ package me.fzzyhmstrs.fzzy_config.screen.decoration
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import net.minecraft.util.Identifier
 
-//TODO
+/**
+ * Implementation of a [SpriteDecorated] for rendering a [TextureSet] as a decoration
+ * @param tex [TextureSet]
+ * @param w Decoration height in pixels, default 16
+ * @param h Decoration width in pixels, default 16
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
 open class SpriteDecoration @JvmOverloads constructor(
     private val tex: TextureSet,
-    override val h: Int = 16,
-    override val w: Int = 16)
+    override val w: Int = 16,
+    override val h: Int = 16)
     : SpriteDecorated
 {
 
-    //TODO
+    /**
+     * [SpriteDecorated] that uses one texture in all circumstances
+     * @param id [Identifier] Sprite id to render
+     * @param w Decoration height in pixels, default 16
+     * @param h Decoration width in pixels, default 16
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     @JvmOverloads
-    constructor(id: Identifier, h: Int = 16, w: Int = 16): this(TextureSet(id), h, w)
+    constructor(id: Identifier, w: Int = 16, h: Int = 16): this(TextureSet(id), w, h)
 
-    override fun decorationId(): TextureSet {
+    override fun textureSet(): TextureSet {
         return tex
     }
 }

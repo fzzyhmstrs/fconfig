@@ -16,7 +16,13 @@ import net.minecraft.client.gui.widget.Widget
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 
-//TODO
+/**
+ * Base class for a non-interactable widget used simply for rendering information. In Fzzy Config this is used for Decoration-based rendering, but it can be used elsewhere.
+ *
+ * The width and height of this widget are locked to 20, override if you need variable or different dimensions.
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
 abstract class AbstractDecorationWidget: Widget, Drawable {
 
     private var x: Int = 0

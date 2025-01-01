@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextHandler
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
@@ -218,7 +219,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
             Popups.openConfirmPopup(p, "fc.validated_field.map.clear.desc".translate()) { this.accept(emptyMap()) }
             true }
             .withActive { s -> Supplier { s.get() && this.isNotEmpty() } }
-        map["collection"] = mutableMapOf(ContextType.CLEAR to clear)
+        map[ContextResultBuilder.COLLECTION] = mutableMapOf(ContextType.CLEAR to clear)
         return map
     }
 

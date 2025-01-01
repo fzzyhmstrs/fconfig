@@ -272,7 +272,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
 
     private class ConditionDecoration(private val activeSupplier: Supplier<Boolean>): SpriteDecorated {
 
-        override fun decorationId(): TextureSet {
+        override fun textureSet(): TextureSet {
             return TextureSet(TextureIds.ENTRY_ERROR)
         }
 

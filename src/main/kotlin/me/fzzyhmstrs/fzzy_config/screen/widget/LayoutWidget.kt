@@ -10,9 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.nullCast
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.*
 import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.minecraft.client.gui.Drawable
@@ -27,8 +26,21 @@ import java.util.function.UnaryOperator
 import kotlin.math.max
 import kotlin.math.min
 
-//TODO
-class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0), private val paddingW: Int = 8, private val paddingH: Int = paddingW, private val spacingW: Int = 4, private val spacingH: Int = spacingW): Widget, Scalable {
+/**
+ * A powerful widget used to heuristically layout out multiple element widgets in a manner akin to web DOM layout. Widgets stored in a layout can be automatically repositioned, scaled, queried, and categorized. **NOTE:** LayoutWidget is not a [ParentElement][net.minecraft.client.gui.ParentElement], it is expected that you extract the elements from the layout and add them as children to a parent that contains this layout. The layout is only for positioning.
+ * @param x [Pos], optional. The x position of this widget. Default is [AbsPos] of 0. This initial position can be overwritten later with [setPos]
+ * @param y [Pos], optional. The y position of this widget. Default is [AbsPos] of 0. This initial position can be overwritten later with [setPos]
+ * @param paddingW Int, optional. Default 8px. The horizontal space given around the left/right edge of the layout (where the border would go visually). Unlike the DOM, there is no margin/padding duo, just padding.
+ * @param paddingH Int, optional. Default whatever [paddingW] is. The vertical space given around the top/bottom edge of the layout (where the border would go visually). Unlike the DOM, there is no margin/padding duo, just padding.
+ * @param spacingW Int, optional. Default 4. The horizontal space between elements. This can be modified per element as needed with [pushSpacing] and [popSpacing]
+ * @param spacingH Int, optional. Default whatever [spacingW] is. The vertical space between elements. This can be modified per element as needed with [pushSpacing] and [popSpacing]
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
+class LayoutWidget @JvmOverloads constructor(
+    private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0),
+    private val paddingW: Int = 8, private val paddingH: Int = paddingW,
+    private val spacingW: Int = 4, private val spacingH: Int = spacingW): Widget, Scalable {
 
     private var width: Int = 0
     private var height: Int = 0
@@ -55,19 +67,39 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         return elements[name] ?: elements.values.firstNotNullOfOrNull { it.element.nullCast<LayoutWidget>()?.getElement(name) }
     }
 
-    //TODO
+    /**
+     * The vertical padding of this layout.
+     * @return [paddingH]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun getGeneralVerticalPadding(): Int {
         return paddingH
     }
-    //TODO
+    /**
+     * The horizontal padding of this layout.
+     * @return [paddingW]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun getGeneralHorizontalPadding(): Int {
         return paddingW
     }
-    //TODO
+    /**
+     * The general vertical spacing of this layout. Does not take into account the current state of the spacing stack.
+     * @return [spacingH]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun getGeneralVerticalSpacing(): Int {
         return spacingH
     }
-    //TODO
+    /**
+     * The general horizontal spacing of this layout. Does not take into account the current state of the spacing stack.
+     * @return [spacingW]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun getGeneralHorizontalSpacing(): Int {
         return spacingW
     }
@@ -93,7 +125,14 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         hPos.set(newHeight - (2 * paddingH))
     }
 
-    //TODO
+    /**
+     * Sets the X and Y anchor positions this layout is positioned against. The widget will wrap the positions in a [RelPos] to avoid mutating external position state.
+     * @param x [Pos] new X/Left position anchor
+     * @param y [Pos] new Y/Top position anchor
+     * @return this widget
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun setPos(x: Pos, y: Pos): LayoutWidget {
         this.x = RelPos(x)
         this.y = RelPos(y)
@@ -103,21 +142,43 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         return this
     }
 
-    //TODO
+    /**
+     * Sets the X coordinate of this layout. This updates the [x] [Pos], so will overwrite and reference made with [setPos] in the X dimension.
+     *
+     * If you don't want this to happen, update the referenced [Pos] instead of using this method. The whole point of [Pos] in the first place! This still may be used, especially by parent elements (including parent layouts) that automatically manipulate this widgets position.
+     * @param x horizontal screen position in pixels
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun setX(x: Int) {
         this.x = AbsPos(x)
         xPos.parent = this.x
         updateElements()
     }
 
-    //TODO
+    /**
+     * Sets the Y coordinate of this layout. This updates the [y] [Pos], so will overwrite and reference made with [setPos] in the Y dimension.
+     *
+     * If you don't want this to happen, update the referenced [Pos] instead of using this method. The whole point of [Pos] in the first place! This still may be used, especially by parent elements (including parent layouts) that automatically manipulate this widgets position.
+     * @param y vertical screen position in pixels
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun setY(y: Int) {
         this.y = AbsPos(y)
         yPos.parent = this.y
         updateElements()
     }
 
-    //TODO
+    /**
+     * Sets the X and Y coordinate of this layout. This updates the [x] and [y] [Pos], so will overwrite and reference made with [setPos].
+     *
+     * If you don't want this to happen, update the referenced [Pos] instead of using this method. The whole point of [Pos] in the first place! This still may be used, especially by parent elements (including parent layouts) that automatically manipulate this widgets position.
+     * @param x horizontal screen position in pixels
+     * @param y vertical screen position in pixels
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun setPosition(x: Int, y: Int) {
         this.x = AbsPos(x)
         this.y = AbsPos(y)
@@ -126,27 +187,50 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         updateElements()
     }
 
-    //TODO
+    /**
+     * Returns the current X screen position of this widget. Uses the position from the [x] [Pos]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun getX(): Int {
         return x.get()
     }
 
-    //TODO
+    /**
+     * Returns the current Y screen position of this widget. Uses the position from the [y] [Pos]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun getY(): Int {
         return y.get()
     }
 
-    //TODO
+    /**
+     * Returns the width of this widget. If width has been clamped, will return that manual width, otherwise the automatically computed width.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun getWidth(): Int {
         return if(manualWidth != -1) manualWidth else width
     }
 
-    //TODO
+    /**
+     * Returns the height of this widget. If height has been clamped, will return that manual height, otherwise the automatically computed height.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun getHeight(): Int {
         return if (manualHeight != -1) manualHeight else height
     }
 
-    //TODO
+    /**
+     * Sets a manual width for this layout. Will override any automatically computed widths.
+     *
+     * If the width is different from the previous/automatic width, the layout will recompute
+     * @param width Int width in pixels
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun setWidth(width: Int) {
         val bl = manualWidth != width
         val oldWidth = if (bl && this.width != 0) getWidth() else width
@@ -154,7 +238,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         if (bl) {
             updateElementWidths(width - oldWidth)
             this.width = width
-            compute(true)
+            compute()
         }
     }
 
@@ -162,7 +246,14 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         manualWidth = width
     }
 
-    //TODO
+    /**
+     * Sets a manual height for this layout. Will override any automatically computed height
+     * 
+     * If the height is different from the previous/automatic height, the layout will recompute.
+     * @param height Int height in pixels
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun setHeight(height: Int) {
         val bl = manualHeight != height
         manualHeight = height
@@ -176,7 +267,15 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         manualHeight = height
     }
 
-    //TODO
+    /**
+     * Sets a manual width and height for this layout. Will override any automatically computed dimensions.
+     *
+     * If either dimension is different from the previous/automatic version, the layout will recompute.
+     * @param width Int height in pixels
+     * @param height Int height in pixels
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun setDimensions(width: Int, height: Int) {
         val bl1 = manualWidth != width
         val oldWidth = if (bl1 && this.width != 0) getWidth() else width
@@ -195,7 +294,13 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         }
     }
 
-    //TODO
+    /**
+     * Same as [setWidth] but returns itself, and won't recompute if the layout is empty. This is often used up front to, as the name implies, clamp the allowable width of a new layout before adding elements.
+     * @param width Int width in pixels
+     * @return this layout
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun clampWidth(width: Int): LayoutWidget {
         val bl = manualWidth != width
         val oldWidth = if (bl && this.width != 0) getWidth() else width
@@ -208,7 +313,13 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         return this
     }
 
-    //TODO
+    /**
+     * Same as [setHeight] but returns itself, and won't recompute if the layout is empty. This is often used up front to, as the name implies, clamp the allowable height of a new layout before adding elements.
+     * @param height Int height in pixels
+     * @return this layout
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun clampHeight(height: Int): LayoutWidget {
         val bl = manualHeight != height
         manualHeight = height
@@ -226,7 +337,19 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         }
     }
 
-    //TODO
+    /**
+     * Categorizes the elements in this layout into the three constituent components many screens/parents care about, as well as providing a method for arbitrary categorization
+     *
+     * List of widgets -> List of elements, drawables, and selectables as applicable to each.
+     *
+     * This method will recursively categorize elements from contained layouts.
+     * @param children MutableList&lt;[Element]&gt; list to populate with each widget entry that is also an Element (most are)
+     * @param drawables MutableList&lt;[Drawable]&gt; list to populate with each widget entry that is also a Drawable (again, most are)
+     * @param selectables MutableList&lt;[Selectable]&gt; list to populate with each widget entry that is also a Selectable (surprise! most are)
+     * @param other [Consumer]&lt;[Widget]&gt; consumes each widget entry and can do whatever you want with them. In Fzzy Config this is usually used to categorize elements into more niche interfaces like [TooltipChild]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun categorize(children: MutableList<Element>, drawables: MutableList<Drawable>, selectables: MutableList<Selectable>, other: Consumer<Widget> = Consumer { _-> }) {
         for ((_, posEl) in elements) {
             if (posEl.element is LayoutWidget) { //child layouts ship their children flat, since layouts just position things, they don't actually manage them like parent elements
@@ -250,6 +373,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         if (parentEl == null) { //initial element
             var newX: Pos = RelPos(set.x)
             var newY: Pos = RelPos(set.y)
+            @Suppress("DEPRECATION")
             var alignment: PositionGlobalAlignment = PositionGlobalAlignment.ALIGN_CENTER
             for (pos in positions) {
                 if (pos is PositionAlignment) {
@@ -318,7 +442,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     }
 
     /**
-     * Adds an element, keyed off a manually defined parent element. Uses the default padding.
+     * Adds an element, keyed off a manually defined parent element.
      *
      * NOTE: "element" here refers to a piece of a layout. "Elements" do NOT necessarily have to be minecraft [Element]
      * @param E - Any subclass of [Widget]
@@ -337,7 +461,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         return this
     }
     /**
-     * Adds an element, automatically keyed off the last added element (or "title" if this is the first added element). Uses the default padding.
+     * Adds an element, automatically keyed off the last added element (or "" if this is the first added element).
      * @param E - Any subclass of [Widget]
      * @param id String - the id of this element, used when an element refers to this one as a parent
      * @param element E - the widget
@@ -350,7 +474,8 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
         return add(id, element, lastEl, *positions)
     }
 
-    private fun attemptRecomputeDims(debug: Boolean = false) {
+
+    private fun attemptRecomputeDims(@Suppress("UNUSED_PARAMETER") debug: Boolean = false) {
         if (manualHeight > 0 && manualWidth > 0) {
             updateWidth(manualWidth)
             updateHeight(manualHeight)
@@ -572,11 +697,10 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
              */
             val ALIGN_LEFT: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT
             /**
-             * Aligns an element to the left side of the Popup widget. Does not define any other position or alignment.
+             * Aligns an element to the left side of the previous element. Does not define any other position or alignment.
              * @author fzzyhmstrs
              * @since 0.6.0
              */
-            //TODO
             val ALIGN_LEFT_OF: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_OF
             /**
              * Aligns an element to the right side of the Popup widget. Does not define any other position or alignment.
@@ -611,7 +735,7 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
              */
             val ALIGN_LEFT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY
             /**
-             * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             * Aligns an element to the left side of previous element and justifies it (fits to width). Does not define any other position or alignment.
              *
              * Justification of this element WILL take elements to the right of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
              *
@@ -619,7 +743,6 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
              * @author fzzyhmstrs
              * @since 0.6.0
              */
-            //TODO
             val ALIGN_LEFT_OF_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_OF_AND_JUSTIFY
             /**
              * Aligns an element to the right side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
@@ -632,42 +755,40 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
              */
             val ALIGN_RIGHT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY
             /**
-             * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             * Aligns an element to the left side of the Popup widget and stretches it (fits to height). Does not define any other position or alignment.
              *
-             * Justification of this element WILL take elements to the right of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
+             * Justification of this element WILL take elements below this one into account; it will stretch to fit up to the next element or bottom of the widget, allowing for the default padding in between elements.
              *
              * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
              * @author fzzyhmstrs
              * @since 0.6.0
              */
-            //TODO
             val ALIGN_LEFT_AND_STRETCH: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_AND_STRETCH
             /**
-             * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             * Aligns an element to the left side of the previous element and stretches it (fits to height). Does not define any other position or alignment.
              *
-             * Justification of this element WILL take elements to the right of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
+             * Justification of this element WILL take elements below this one into account; it will stretch to fit up to the next element or bottom of the widget, allowing for the default padding in between elements.
              *
              * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
              * @author fzzyhmstrs
              * @since 0.6.0
              */
-            //TODO
             val ALIGN_LEFT_OF_AND_STRETCH: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_OF_AND_STRETCH
             /**
-             * Aligns an element to the right side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             * Aligns an element to the right side of the Popup widget and stretches it (fits to height). Does not define any other position or alignment.
              *
-             * Justification of this element WILL take elements to the left of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
+             * Justification of this element WILL take elements below this one into account; it will stretch to fit up to the next element or bottom of the widget, allowing for the default padding in between elements.
              *
              * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
              * @author fzzyhmstrs
              * @since 0.6.0
              */
-            //TODO
             val ALIGN_RIGHT_AND_STRETCH: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT_AND_STRETCH
         }
     }
 
     //client
+    @Suppress("DEPRECATION")
     internal enum class PositionRelativePos: PopupWidget.Builder.Position, Position {
         @Deprecated("Use Positions Impl values")
         BELOW {
@@ -690,7 +811,8 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     }
 
     //client
-    internal enum class PositionRelativeAlignment: Builder.Position, Position {
+    @Suppress("DEPRECATION")
+    internal enum class PositionRelativeAlignment: PopupWidget.Builder.Position, Position {
         @Deprecated("Use Positions Impl values")
         HORIZONTAL_TO_TOP_EDGE {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
@@ -730,7 +852,8 @@ class LayoutWidget(private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0
     }
 
     //client
-    sealed interface PositionAlignment: Builder.Position, Position {
+    @Suppress("DEPRECATION")
+    sealed interface PositionAlignment: PopupWidget.Builder.Position, Position {
         fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
     }
 

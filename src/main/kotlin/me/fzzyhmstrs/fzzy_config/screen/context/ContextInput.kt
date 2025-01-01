@@ -10,10 +10,22 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.context
 
-//TODO
+/**
+ * Defines the type of input that triggered a context action.
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
 enum class ContextInput {
-    //TODO
+    /**
+     * Context event triggered with keyboard input
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     KEYBOARD,
-    //TODO
+    /**
+     * Context event triggered with mouse input
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     MOUSE
 }
