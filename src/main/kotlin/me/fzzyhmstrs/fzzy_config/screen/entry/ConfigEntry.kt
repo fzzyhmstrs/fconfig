@@ -42,7 +42,16 @@ import java.util.function.Consumer
 import java.util.function.UnaryOperator
 import kotlin.math.min
 
-//TODO
+/**
+ * An entry for a config setting list. Presents the setting name, any prefix text, as well as content buttons and decorations.
+ * @param parentElement [DynamicListWidget] the settings widget the entry is being added to. This is provided internally; Fzzy Config asks for instances of Function$lt;[DynamicListWidget], [ConfigEntry]&gt; so it can finish construction lazily when needed.
+ * @param content [ContentBuilder.BuildResult] built contents of this entry.
+ * @param texts [Translatable.Result] translation information for this entry. This is provided by [EntryCreator.CreatorContext]
+ * @see [ContentBuilder]
+ * @sample me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators.createConfigEntry
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
 class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.BuildResult, texts: Translatable.Result) :
     DynamicListWidget.Entry(parentElement, texts.name, texts.desc, content.scope, content.visibility)
 {
@@ -222,7 +231,6 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         return selectables
     }
 
-    //TODO
     override fun provideContext(builder: ContextResultBuilder) {
         val content = layout.getElement("content")
         builder.move { position ->
@@ -239,7 +247,6 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         }
     }
 
-    //TODO
     override fun handleContext(contextType: ContextType, position: Position): Boolean {
         val action = context[contextType] ?: return false
         val content = layout.getElement("content")
@@ -255,13 +262,30 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
     //////////////////////////////////////
 
-    //TODO
+    /**
+     * Builds content information for constructing a [ConfigEntry]
+     * @param context [EntryCreator.CreatorContext] creator context used by this builder for a variety of information
+     * @param actionWidgets List$lt;[AbstractDecorationWidget]$gt; decorations drawn on the left side of the screen to provide usage alerts (requires restart etc.). the creator context provides a list of actions that can be converted into [ActionDecorationWidget] for this purpose. See [ActionDecorationWidget.setting] and other methods for details.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     class ContentBuilder(private val context: EntryCreator.CreatorContext, private val actionWidgets: List<AbstractDecorationWidget>) {
 
-        //TODO
+        /**
+         * Builds content information for constructing a [ConfigEntry]
+         * @param context [EntryCreator.CreatorContext] creator context used by this builder for a variety of information
+         * @param actions Set&lt;[Action]&gt; set of actions to transform into [ActionDecorationWidget] using the [ActionDecorationWidget.setting] method. See the constructor overload with just context for automatically passing actions from the context itself.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         constructor(context: EntryCreator.CreatorContext, actions: Set<Action>): this(context, actions.map { ActionDecorationWidget.setting(it) })
 
-        //TODO
+        /**
+         * Builds content information for constructing a [ConfigEntry]. Automatically uses the set of [Action] inside the context to build action widgets.
+         * @param context [EntryCreator.CreatorContext] creator context used by this builder for a variety of information
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         constructor(context: EntryCreator.CreatorContext): this(context, context.actions.map { ActionDecorationWidget.setting(it) })
 
         private var mainLayout: LayoutWidget = LayoutWidget(paddingW = 0, spacingW = 0)
@@ -287,43 +311,86 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             mainLayout.add("deco", decorationWidget, "content", LayoutWidget.Position.LEFT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         }
 
-        //TODO
+        /**
+         * Modify the main layout of the entry. This should only be used if the structure of the entry needs to change substantially. For most circumstances, [layoutContent] is proper
+         * @param layoutOperations [UnaryOperator]&lt;[LayoutWidget]&gt; modifiers to apply to the main layout of the entry. This can fully replace the layout; doing so will invalidate any changes to the content layout made before or after this replacement.
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        @Deprecated("Consider layoutContent unless total structural change of the entry is needed")
         fun layoutMain(layoutOperations: UnaryOperator<LayoutWidget>): ContentBuilder {
             mainLayout = layoutOperations.apply(mainLayout)
             return this
         }
 
-        //TODO
+        /**
+         * Modify the content area of the entry. The content area is the "button" area of a standard entry layout. It is common to apply one widget to this area, which is the entire "setting button" for the entry.
+         *
+         * The content area is bounded to 110 pixels wide, and can be an arbitrary height, but the standard is 20px.
+         * ```
+         * [Prefix text goes above the entry]
+         * [Title here       ][Deco][Content] <- lays out here
+         * ```
+         * @param layoutOperations [UnaryOperator]&lt;[LayoutWidget]&gt; modifiers to apply to the content layout of the entry. This can fully replace the layout; though that doesn't serve particularly much purpose as the content layout starts empty already
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since
+         */
         fun layoutContent(layoutOperations: UnaryOperator<LayoutWidget>): ContentBuilder {
             contentLayout = layoutOperations.apply(contentLayout)
             return this
         }
 
-        //TODO
+        /**
+         * Applies a decoration to this entry.
+         * @param decoration [Decorated] deco to render. [TextureDeco] has some builtin options.
+         * @param offsetX horizontal offset for rendering. Many standard decos need 2 pixels of offset, as they are 16x and this area is 20x
+         * @param offsetY vertical offset for rendering. Many standard decos need 2 pixels of offset, as they are 16x and this area is 20x
+         * @return this builder
+         * @see [TextureDeco]
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun decoration(decoration: Decorated, offsetX: Int = 0, offsetY: Int = 0): ContentBuilder {
             this.decorationWidget.setDeco(decoration, offsetX, offsetY)
             return this
         }
 
-        //TODO
-        fun group(group: String): ContentBuilder {
+        internal fun group(group: String): ContentBuilder {
             this.group = group
             return this
         }
 
-        //TODO
+        /**
+         * Defines a starting visibility for the entry. Default is [DynamicListWidget.Visibility.VISIBLE]
+         * @param visibility [DynamicListWidget.Visibility.VISIBLE] new starting visibility to apply
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun visibility(visibility: DynamicListWidget.Visibility): ContentBuilder {
             this.visibility = visibility
             return this
         }
 
-        //TODO
+        /**
+         * A map of context actions for the entry to use in context handling. These are the right-click and keybind actions relevant to the setting.
+         * @param contextActions Map&lt;String, Map&lt;[ContextType], [ContextAction.Builder]&gt;&gt; - context action map. This is the same used in a [ContextResultBuilder], and like the builder this map should be linked ([LinkedHashMap] etc.)
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun contextActions(contextActions: Map<String, Map<ContextType, ContextAction.Builder>>): ContentBuilder {
             this.contextActions = contextActions
             return this
         }
 
-        //TODO
+        /**
+         * Builds a [BuildResult] for construction of an Entry
+         * @return [BuildResult]
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun build(): BuildResult {
             val groupTypes: MutableList<Boolean> = mutableListOf()
             for (i in 0 until context.groups.size) {
@@ -340,31 +407,60 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
                 contextActions)
         }
 
-        //TODO
+        /**
+         * Built entry content for construction of a [ConfigEntry]. These values are used internally by the entry during instantiation.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         class BuildResult internal constructor(
-            val layoutWidget: LayoutWidget,
-            val actionWidgets: List<AbstractDecorationWidget>,
-            val scope: DynamicListWidget.Scope,
-            val groupTypes: List<Boolean>,
-            val visibility: DynamicListWidget.Visibility,
-            val contextActions: Map<String, Map<ContextType, ContextAction.Builder>>)
+            internal val layoutWidget: LayoutWidget,
+            internal val actionWidgets: List<AbstractDecorationWidget>,
+            internal val scope: DynamicListWidget.Scope,
+            internal val groupTypes: List<Boolean>,
+            internal val visibility: DynamicListWidget.Visibility,
+            internal val contextActions: Map<String, Map<ContextType, ContextAction.Builder>>)
 
     }
 
     ////////////////////////////////
 
+    /**
+     * A decoration widget that renders an action icon from an [Action] and displays its tooltip
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     class ActionDecorationWidget private constructor(private val action: Action, private val actionTooltip: Text = action.settingTooltip): AbstractDecorationWidget(), TooltipChild {
 
         companion object {
-            //TODO
+            /**
+             * Creates a [ActionDecorationWidget] that uses the setting tooltip for the given action
+             * @param action [Action] the config action to render
+             * @return [ActionDecorationWidget]
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
             fun setting(action: Action): ActionDecorationWidget {
                 return ActionDecorationWidget(action)
             }
-            //TODO
+
+            /**
+             * Creates a [ActionDecorationWidget] that uses the section tooltip for the given action
+             * @param action [Action] the config action to render
+             * @return [ActionDecorationWidget]
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
             fun section(action: Action): ActionDecorationWidget {
                 return ActionDecorationWidget(action, action.sectionTooltip)
             }
-            //TODO
+
+            /**
+             * Creates a [ActionDecorationWidget] that uses the config tooltip for the given action
+             * @param action [Action] the config action to render
+             * @return [ActionDecorationWidget]
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
             fun config(action: Action): ActionDecorationWidget {
                 return ActionDecorationWidget(action, action.configTooltip)
             }

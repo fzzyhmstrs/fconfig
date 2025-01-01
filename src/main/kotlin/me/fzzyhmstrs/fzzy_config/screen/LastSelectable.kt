@@ -19,14 +19,37 @@ import net.minecraft.client.gui.Element
  * @since 0.2.0, added [resetHover] 0.6.0
  */
 //client
+@JvmDefaultWithoutCompatibility
 interface LastSelectable {
-    //TODO
+
+    /**
+     * getter and setter for the cached element.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     var lastSelected: Element?
-    //TODO
+
+    /**
+     * Indicates to the parent element to cache it's current focused element. The current focused element should be stored in [lastSelected]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun pushLast()
-    //TODO
+
+    /**
+     * Indicates that the overlay has been removed and the parent should return focus to the cached element, if any, in [lastSelected]
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun popLast()
-    //TODO
+
+    /**
+     * When called the parent element should reselect a hovered element based on the supplied mouse positions, if it tracks such things
+     * @param mouseX scaled position of the mouse horizontally
+     * @param mouseY scaled position of the mouse vertically
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun resetHover(mouseX: Double, mouseY: Double) {
     }
 }
