@@ -140,7 +140,6 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         return "gui.narrate.editBox".translate("", "")
     }
 
-    //TODO Is this usage narration layout good?
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
         builder.put(NarrationPart.TITLE, this.narrationMessage)
         builder.nextMessage().put(NarrationPart.TITLE, "${this.text}. ")

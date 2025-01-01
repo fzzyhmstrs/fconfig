@@ -24,6 +24,14 @@ import java.util.concurrent.CompletableFuture
  */
 @FunctionalInterface
 fun interface EntrySuggester<T> {
-    //TODO
+    /**
+     * Return a future of suggestions based on inputs and validation
+     * @param input the raw text input to build suggestions from
+     * @param cursor the cursor position relative to the input string. 0 is the start of the string, the string size would be a cursor "live" at the end of the input.
+     * @param choiceValidator [ChoiceValidator] validates possible choices, providing a mechanism for filtering from whatever base set of information this suggester is pulling from.
+     * @return [CompletableFuture]&lt;[Suggestions]&gt; a future with the total set of suggestions applicable to the input request.
+     * @author fzzyhmstrs
+     * @since 0.2.6
+     */
     fun getSuggestions(input: String, cursor: Int, choiceValidator: ChoiceValidator<T>): CompletableFuture<Suggestions>
 }

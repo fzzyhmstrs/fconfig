@@ -49,16 +49,15 @@ open class ActiveButtonWidget@JvmOverloads constructor(
      * @param pressAction [Consumer]&lt;ActiveButtonWidget&gt; - action to take when the button is pressed
      * @param background [TextureSet], Nullable - a custom background texture set; defaults to [DEFAULT_TEXTURES] if null is passed (default)
      * @author fzzyhmstrs
-     * @since 0.2.0, implements TextureSet for backgrounds 0.6.0
+     * @since 0.6.0
      */
-    @JvmOverloads
     constructor(
         title: Text,
         width: Int,
         height: Int,
+        background: TextureSet?,
         activeSupplier: Supplier<Boolean>,
-        pressAction: Consumer<ActiveButtonWidget>,
-        background: TextureSet? = null)
+        pressAction: Consumer<ActiveButtonWidget>)
             :
             this(Supplier { title }, width, height, activeSupplier, pressAction, background ?: DEFAULT_TEXTURES)
 
@@ -71,7 +70,7 @@ open class ActiveButtonWidget@JvmOverloads constructor(
      * @param pressAction [Consumer]&lt;ActiveButtonWidget&gt; - action to take when the button is pressed
      * @param background [Identifier], Nullable - a custom background texture which will be used for all rendering circumstances; defaults to the "normal" texture for [DEFAULT_TEXTURES] if null is passed (default)
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.2.0, demoted to tertiary constructor 0.6.0 for [TextureSet] constructors
      */
     @JvmOverloads
     constructor(
@@ -82,7 +81,7 @@ open class ActiveButtonWidget@JvmOverloads constructor(
         pressAction: Consumer<ActiveButtonWidget>,
         background: Identifier? = null)
             :
-            this(Supplier { title }, width, height, activeSupplier, pressAction, TextureSet(background ?: DEFAULT_TEXTURES.get(enabled = true, focused = false)))
+            this(title, width, height, background?.let { TextureSet(it) }, activeSupplier, pressAction)
 
     /**
      * @suppress

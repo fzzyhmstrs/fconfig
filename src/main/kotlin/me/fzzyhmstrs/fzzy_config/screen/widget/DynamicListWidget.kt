@@ -36,8 +36,10 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 import java.util.*
-import java.util.function.*
+import java.util.function.Consumer
 import java.util.function.Function
+import java.util.function.Predicate
+import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
 
@@ -144,6 +146,7 @@ class DynamicListWidget(
     }
 
     override fun entryAtY(mouseY: Int): Entry? {
+        if (mouseY < this.top || mouseY > this.bottom) return null
         return entries.entryAtY(mouseY)
     }
 
@@ -316,8 +319,10 @@ class DynamicListWidget(
     }
 
     override fun provideContext(builder: ContextResultBuilder) {
-        //TODO handle keyboard vs mouse navigation?
-        hoveredElement?.provideContext(builder) ?: focusedElement?.provideContext(builder)
+        if (MinecraftClient.getInstance().navigationType.isKeyboard)
+            focusedElement?.provideContext(builder) ?: hoveredElement?.provideContext(builder)
+        else
+            hoveredElement?.provideContext(builder) ?: focusedElement?.provideContext(builder)
     }
 
     //////////////////////////////
@@ -660,9 +665,10 @@ class DynamicListWidget(
         }
 
         override fun popLast() {
-            (lastSelected as? Entry)?.let { focused = it }
+            lastSelected?.let { focused = it }
             if (lastSelected == null) {
                 focused = selectableChildren().firstOrNull()
+                focused?.isFocused = true
             }
             lastSelected?.nullCast<LastSelectable>()?.popLast()
         }
@@ -697,7 +703,7 @@ class DynamicListWidget(
         }
 
         override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
-            return mouseX >= x.get() && mouseY >= top.get() && mouseX < (x + w) && mouseY < bottom.get()
+            return parentElement.isMouseOver(mouseX, mouseY) && mouseX >= x.get() && mouseY >= top.get() && mouseX < (x + w) && mouseY < bottom.get()
         }
 
         override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
