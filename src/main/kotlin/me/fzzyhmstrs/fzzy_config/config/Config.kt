@@ -142,7 +142,15 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      */
     open fun onUpdateServer(playerEntity: ServerPlayerEntity){}
 
-    //TODO
+    /**
+     * Anchor modifier method for a config. By default, provides a folder icon decoration to the base anchor. You can provide a custom icon if you want a special icon for the config in the goto menu. If your config has a long name, you may also want to create and provide a shortened "summary" name for a goto link.
+     * @param anchor [EntryAnchor.Anchor] automatically generated input Anchor for modification.
+     * @return Anchor with any desired modifications. If you still want the folder deco, call super
+     * @see [TextureDeco] for other built in icons
+     * @see [me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration] for a simple class to build your own icon
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
         return anchor.decoration(TextureDeco.DECO_FOLDER)
     }

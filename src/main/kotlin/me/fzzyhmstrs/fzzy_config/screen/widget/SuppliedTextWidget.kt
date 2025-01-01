@@ -22,7 +22,6 @@ import net.minecraft.text.OrderedText
 import net.minecraft.text.StringVisitable
 import net.minecraft.text.Text
 import net.minecraft.util.Language
-import java.awt.SystemColor.text
 import kotlin.math.max
 import kotlin.math.roundToInt
 

@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.nullCast
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.*
 import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.minecraft.client.gui.Drawable
@@ -248,7 +247,7 @@ class LayoutWidget @JvmOverloads constructor(
 
     /**
      * Sets a manual height for this layout. Will override any automatically computed height
-     * 
+     *
      * If the height is different from the previous/automatic height, the layout will recompute.
      * @param height Int height in pixels
      * @author fzzyhmstrs
