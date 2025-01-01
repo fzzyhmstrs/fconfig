@@ -25,10 +25,22 @@ import net.minecraft.client.gui.widget.ClickableWidget
 //client
 interface EntryWidget<T> {
 
-    //TODO
+    /**
+     * Builds a new [ClickableWidget] for use in a config GUI. If the widget is presenting options that could be filtered by the optional [ChoiceValidator], those possible selections should be filtered in some way by the validator before presenting to the user.
+     * @param choicePredicate [ChoiceValidator], optional. Default allows any option.
+     * @return [ClickableWidget] instance; should be a new instance on every call.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun widgetEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget
 
-    //TODO
+    /**
+     * Builds a new [ClickableWidget] and applies a tooltip to it. This shouldn't need to be overridden in most cases
+     * @param choicePredicate [ChoiceValidator], optional. Default allows any option.
+     * @return [ClickableWidget] instance; should be a new instance on every call.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun widgetAndTooltipEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget {
         val widget = widgetEntry(choicePredicate)
         if (this is Translatable && this.hasDescription()) {

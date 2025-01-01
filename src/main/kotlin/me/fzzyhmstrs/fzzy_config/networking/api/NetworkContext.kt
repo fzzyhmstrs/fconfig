@@ -17,20 +17,12 @@ import net.minecraft.network.packet.CustomPayload
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 
-//TODO
 interface NetworkContext<T: PlayerEntity> {
-    //TODO
     fun execute(runnable: Runnable)
-    //TODO
     fun disconnect(reason: Text)
-    //TODO
     fun canReply(id: Identifier): Boolean
-    //TODO
     fun reply(payload: CustomPayload)
-    //TODO
     fun player(): T
-    //TODO
     fun networkPhase(): NetworkPhase
-    //TODO
     fun networkSide(): NetworkSide
 }
