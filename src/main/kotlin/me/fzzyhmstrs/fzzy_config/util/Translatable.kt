@@ -10,11 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import me.fzzyhmstrs.fzzy_config.nullCast
 import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
-import net.minecraft.text.TranslatableTextContent
 
 /**
  * Classes that implement [Translatable] can be automatically utilized by many FzzyConfig systems for generating translatable text in-game

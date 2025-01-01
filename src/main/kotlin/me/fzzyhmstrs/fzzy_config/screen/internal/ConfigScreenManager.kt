@@ -10,15 +10,22 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
-import me.fzzyhmstrs.fzzy_config.config.*
-import me.fzzyhmstrs.fzzy_config.entry.*
+import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
+import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
+import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.nullCast
-import me.fzzyhmstrs.fzzy_config.screen.entry.*
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
+import me.fzzyhmstrs.fzzy_config.screen.entry.SidebarEntry
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager.ConfigScreenBuilder
-import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -191,7 +198,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                         list,
                         result.scope,
                         anchorTexts,
-                        anchor.decoration ?: TextureDeco.DECO_QUESTION,
+                        Decorated.DecoratedOffset(anchor.decoration ?: TextureDeco.DECO_QUESTION, anchor.offsetX, anchor.offsetY),
                         action,
                         anchor.layer)
                 }

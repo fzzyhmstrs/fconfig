@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.screen.decoration
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.Widget
-import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 
 /**

@@ -23,9 +23,25 @@ import net.peanuuutz.tomlkt.TomlElement
  */
 @FunctionalInterface
 fun interface EntryDeserializer<T> {
-    //TODO
+    /**
+     * Deserializes the provided [TomlElement]. This deserialization should store the result within this deserializer (deserialize "in-place") as well as returning the result. The return has to have a fallback value.
+     * @param toml [TomlElement] incoming data to deserialize. This should be deserialized both into this object and returned
+     * @param errorBuilder List of error strings. Deserialization should fail softly, returning a fallback and reporting error messages to this builder instead of crashing
+     * @param fieldName String scope of the field being deserialized
+     * @param flags deserialization flags for use with built-in deserialization methods if needed.
+     * @return [ValidationResult]&lt;[T]&gt; wrapped deserialization result or a fallback value on total failure, with any applicable direct error messages stored in the result. The [errorBuilder] can be used for populating detail error information while providing a general alert in this error.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun deserializeEntry(toml: TomlElement, errorBuilder: MutableList<String>, fieldName: String, flags: Byte): ValidationResult<T>
-    //TODO
+
+    /**
+     * Specialized `equals` method for determining if a newly deserialized value is *effectively* equal to its old counterpart.
+     *
+     * This method should evaluate inputs as if they are being compared with `A.equals(B)`, *even if they don't implement equals themselves*. This method should include mechanisms for providing equals like behavior for inputs either way. For example, the method might re-serialize both inputs to check the serialized forms for structural equality.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun deserializedChanged(old: Any?, new: Any?): Boolean {
         return old != new
     }

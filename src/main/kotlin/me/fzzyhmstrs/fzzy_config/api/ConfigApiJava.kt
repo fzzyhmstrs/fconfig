@@ -12,7 +12,6 @@
 
 package me.fzzyhmstrs.fzzy_config.api
 
-import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.readOrCreateAndValidate
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.registerAndLoadConfig
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.registerConfig

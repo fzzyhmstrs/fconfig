@@ -14,14 +14,12 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.entry.EntryKeyed
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import net.minecraft.text.Text
-import org.jetbrains.annotations.ApiStatus.Internal
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-//TODO
 open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
 
 

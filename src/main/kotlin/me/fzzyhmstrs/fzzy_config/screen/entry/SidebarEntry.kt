@@ -16,7 +16,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
@@ -25,10 +24,8 @@ import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.text.Text
-import org.jetbrains.annotations.ApiStatus.Internal
 
-internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, icon: Decorated, onPress: Runnable, layer: Int) :
+internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, icon: Decorated.DecoratedOffset, onPress: Runnable, layer: Int) :
     DynamicListWidget.Entry(parentElement, texts.name, texts.desc, DynamicListWidget.Scope(scope)) {
 
     override var h: Int = 16
@@ -71,7 +68,7 @@ internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, tex
 
     class SidebarWidget(
         private val texts: Translatable.Result,
-        private val icon: Decorated,
+        private val icon: Decorated.DecoratedOffset,
         private val onPress: Runnable,
         private val layer: Int)
         :
@@ -93,7 +90,7 @@ internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, tex
 
         override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             val offset = if (isSelected) 2 else 0
-            icon.renderDecoration(context, x + offset + layer * 4, y, delta, this.active, this.isSelected)
+            icon.decorated.renderDecoration(context, x + offset + icon.offsetX + layer * 4, y + icon.offsetY, delta, this.active, this.isSelected)
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, texts.name, x + offset + layer * 4 + 18, y + 3, -1)
         }
 
