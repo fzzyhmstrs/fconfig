@@ -238,7 +238,9 @@ open class CustomButtonWidget protected constructor(
 
         /**
          * Defines the texture set used for rendering the button background
-         * @param
+         * @param tex [Identifier] the "normal" texture, rendered when the button is active but not focused
+         * @param disabled [Identifier] rendered when the button is disabled. This has higher priority than [highlighted], so will render focused or not.
+         * @param highlighted [Identifier] rendered then the button is active and focused.
          * @return this builder
          * @author fzzyhmstrs
          * @since 0.6.0
@@ -248,13 +250,24 @@ open class CustomButtonWidget protected constructor(
             return this
         }
 
-        //TODO
+        /**
+         * Defines the texture for rendering the button background. The sprite rendered will not change based on object state.
+         * @param tex [Identifier] the "normal" texture, rendered under any circumstance
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun texture(tex: Identifier): Builder {
             this.textures = TextureSet(tex)
             return this
         }
 
-        //TODO
+        /**
+         * Builds a [CustomButtonWidget] instance
+         * @return [CustomButtonWidget]
+         * @author fzzyhmstrs
+         * @since 0.5.?
+         */
         fun build(): CustomButtonWidget {
             val widget = CustomButtonWidget(x, y, w, h, message, onPress, narrationSupplier, narrationAppender, textures, child, renderMessage)
             widget.tooltip = tooltip
@@ -265,13 +278,23 @@ open class CustomButtonWidget protected constructor(
     }
 
     companion object {
-        //TODO
+        /**
+         * Creates a [Builder] instance
+         * @param message [Text] the button label. Rendering this can be disabled in the builder.
+         * @param onPress [Consumer]&lt;[CustomButtonWidget]&gt; action to invoke when the button is clicked or activated
+         * @author fzzyhmstrs
+         * @since 0.5.?
+         */
         @JvmStatic
         fun builder(message: Text, onPress: Consumer<CustomButtonWidget>): Builder {
             return Builder(message, onPress)
         }
 
-        //TODO
+        /**
+         * A default instance of narration supplier. Simply returns the supplied test unchanged.
+         * @author fzzyhmstrs
+         * @since 0.5.?
+         */
         @JvmStatic
         protected val DEFAULT_NARRATION_SUPPLIER: ButtonWidget.NarrationSupplier = ButtonWidget.NarrationSupplier { textSupplier: Supplier<MutableText?> -> textSupplier.get() }
     }
