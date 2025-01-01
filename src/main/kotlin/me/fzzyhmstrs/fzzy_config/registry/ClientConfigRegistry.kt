@@ -45,6 +45,7 @@ internal object ClientConfigRegistry {
     private val customPermissions: MutableMap<String, Map<String, Boolean>> = mutableMapOf()
     private var validScopes: MutableSet<String> = Collections.synchronizedSet(mutableSetOf()) //configs are sorted into Managers by namespace
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
+    private var validCustomScopes: MutableSet<String> = mutableSetOf()
     private var hasScrapedMetadata: AtomicBoolean = AtomicBoolean(false)
 
     internal fun hasClientConfig(scope: String): Boolean {
@@ -162,11 +163,11 @@ internal object ClientConfigRegistry {
     internal fun getScreenScopes(): Set<String> {
         if (!hasScrapedMetadata.get()) {
             for (scope in PlatformUtils.customScopes()) {
-                validScopes.add(scope)
+                validCustomScopes.add(scope)
             }
             hasScrapedMetadata.set(true)
         }
-        return validScopes
+        return validScopes + validCustomScopes
     }
 
     //client

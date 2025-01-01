@@ -15,20 +15,41 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.gui.DrawContext
 
+/**
+ * [Decorated] based on a sprite [TextureSet]
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
 //client
-//TODO
+@JvmDefaultWithoutCompatibility
 interface SpriteDecorated: Decorated {
-    //TODO
-    fun decorationId(): TextureSet
-    //TODO
+
+    /**
+     * [TextureSet] this decoration will render from
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun textureSet(): TextureSet
+
+    /**
+     * Width of the texture set in pixels
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     val w: Int
         get() = 16
-    //TODO
+
+    /**
+     * Height of the texture set in pixels
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     val h: Int
         get() = 16
+
     override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawTex(decorationId().get(enabled, selected), x, y, w, h)
+        context.drawTex(textureSet().get(enabled, selected), x, y, w, h)
     }
 }

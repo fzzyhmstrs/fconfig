@@ -22,7 +22,23 @@ import net.minecraft.util.Identifier
 import java.util.function.Consumer
 import java.util.function.Supplier
 
-//TODO
+/**
+ * A custom [ButtonWidget] implementation with builder and rendering improvements (and more features in general)
+ *
+ * This constructor is for subclasses of this widget only. Buttons should be constructed with the builder, like vanilla buttons.
+ * @param x button X position
+ * @param y button Y position
+ * @param width button width in pixels
+ * @param height button height in pixels
+ * @param pressAction [Consumer]&lt;[CustomButtonWidget]&gt; action to invoke when the button is clicked or activated
+ * @param narrationSupplier [ButtonWidget.NarrationSupplier] same use as in vanilla; converts a provided input text into a narration text.
+ * @param narrationAppender [Consumer]&lt;[NarrationMessageBuilder]&gt; unlike the supplier, this is used to directly append additional narrations as needed to the message builder.
+ * @param textures [TextureSet], default [CustomPressableWidget.DEFAULT_TEXTURES]. The textures for this button
+ * @param child [TooltipChild], used to pass additional tooltip context. This button will pass and tooltip from this child out to its own parent (this button is also a [TooltipChild])
+ * @param renderMessage If false, the label won't be rendered
+ * @author fzzyhmstrs
+ * @since 0.5.?
+ */
 open class CustomButtonWidget protected constructor(
     x: Int,
     y: Int,
@@ -62,7 +78,13 @@ open class CustomButtonWidget protected constructor(
             narrationAppender.accept(builder)
     }
 
-    //TODO
+    /**
+     * Builds a [CustomButtonWidget]
+     * @param message [Text] the button label
+     * @param onPress [Consumer]&lt;[CustomButtonWidget]&gt; action to invoke when the button is clicked or activated
+     * @author fzzyhmstrs
+     * @since 0.5.?
+     */
     class Builder(private val message: Text, private val onPress: Consumer<CustomButtonWidget>) {
 
         private var tooltip: Tooltip? = null
@@ -77,68 +99,150 @@ open class CustomButtonWidget protected constructor(
         private var child: TooltipChild? = null
         private var renderMessage: Boolean = true
 
-        //TODO
+        /**
+         * Positions the widget in both x and y. Default is 0, 0
+         * @param x horizontal position
+         * @param y vertical position
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.5.?
+         */
         fun position(x: Int, y: Int): Builder {
             this.x = x
             this.y = y
             return this
         }
 
-        //TODO
+        /**
+         * Sets the width of this widget. Default value is 150
+         * @param width Int width in pixels
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.5.?
+         */
         fun width(width: Int): Builder {
             this.w = width
             return this
         }
 
-        //TODO
+        /**
+         * Sets the height of this widget. Default value is 20
+         * @param height Int height in pixels
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        fun height(height: Int): Builder {
+            this.h = height
+            return this
+        }
+
+        /**
+         * Sets the width and height of this widget. Default is 150w x 20h
+         * @param width Int width in pixels
+         * @param height Int height in pixels
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun size(width: Int, height: Int): Builder {
             this.w = width
             this.h = height
             return this
         }
 
-        //TODO
+        /**
+         * Sets the XY position and width/height of this widget. Defaults are position 0, 0 and 150w x 20h
+         * @param x horizontal position
+         * @param y vertical position
+         * @param width Int width in pixels
+         * @param height Int height in pixels
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun dimensions(x: Int, y: Int, width: Int, height: Int): Builder {
             return position(x, y).size(width, height)
         }
 
-        //TODO
+        /**
+         * Applies a [Tooltip] to this widget. Default is null
+         * @param tooltip [Tooltip], nullable
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.5.?
+         */
         fun tooltip(tooltip: Tooltip?): Builder {
             this.tooltip = tooltip
             return this
         }
 
-        //TODO
+        /**
+         * Applies a narration supplier to this widget. Default is the standard supplier for buttons, which narrates the button as "Message button"
+         * @param narrationSupplier [ButtonWidget.NarrationSupplier]
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.5.?
+         */
         fun narrationSupplier(narrationSupplier: ButtonWidget.NarrationSupplier): Builder {
             this.narrationSupplier = narrationSupplier
             return this
         }
 
-        //TODO
+        /**
+         * Applies a narration appender to this widget for adding narrations on top of the standard button narrations. Default is none.
+         * @param narrationAppender [Consumer]&lt;[NarrationMessageBuilder]&gt; unlike the supplier, this is used to directly append additional narrations as needed to the message builder.
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun narrationAppender(narrationAppender: Consumer<NarrationMessageBuilder>): Builder {
             this.narrationAppender = narrationAppender
             return this
         }
 
-        //TODO
+        /**
+         * Sets the active state of this button.
+         * @param active true for active, false for inactive
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.5.?
+         */
         fun active(active: Boolean): Builder {
             this.active = active
             return this
         }
 
-        //TODO
+        /**
+         * Applies a [TooltipChild] to this button for passing additional tooltip info
+         * @param child [TooltipChild], used to pass additional tooltip context. This button will pass and tooltip from this child out to its own parent (this button is also a [TooltipChild])
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.5.9
+         */
         fun child(child: TooltipChild): Builder {
             this.child = child
             return this
         }
 
-        //TODO
+        /**
+         * Disables rendering of the label provided to the button
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun noMessage(): Builder {
             this.renderMessage = false
             return this
         }
 
-        //TODO
+        /**
+         * Defines the texture set used for rendering the button background
+         * @param
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         fun textures(tex: Identifier, disabled: Identifier, highlighted: Identifier): Builder {
             this.textures = TextureSet(tex, disabled, highlighted)
             return this
