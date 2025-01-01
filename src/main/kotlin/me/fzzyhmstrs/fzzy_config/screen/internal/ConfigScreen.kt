@@ -12,7 +12,6 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
-import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
@@ -285,7 +284,6 @@ internal class ConfigScreen(
         return configList.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    //TODO test again
     override fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
         val contextTypes = ContextType.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextTypes.isEmpty()) return super.onClick(mouseX, mouseY, button)
@@ -300,7 +298,6 @@ internal class ConfigScreen(
 
     }
 
-    //TODO test again
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         val contextTypes = ContextType.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextTypes.isEmpty()) return super.keyPressed(keyCode, scanCode, modifiers)

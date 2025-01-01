@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
@@ -31,15 +30,24 @@ import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Supplier
 
-//TODO
+/**
+ * A custom list widget implementation with improved scrolling, positioning, and interaction mechanics
+ * @param client [MinecraftClient] the client instance
+ * @param x Widgets x screen position
+ * @param y Widgets y screen position
+ * @param width Widget width in pixels
+ * @param height Widget height in pixels
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
+@Suppress("MemberVisibilityCanBePrivate")
 abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int)
     : ClickableWidget(
     x,
     y,
     width,
     height,
-    ScreenTexts.EMPTY
-), ParentElement {
+    ScreenTexts.EMPTY), ParentElement {
 
     //// Widget ////
 
@@ -63,12 +71,20 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     protected val scrollBarUpHighlighted: Identifier = "widget/scroll/vanilla/scroll_up_highlighted".fcId()
 
 
-    //TODO
+    /**
+     * The content width of the row, excluding padding and space for the scroll bar
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun rowWidth(): Int {
         return width - leftPadding - rightPadding - scrollWidth
     }
 
-    //TODO
+    /**
+     * The X position of the row content, after padding
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun rowX(): Int {
 
         return x + leftPadding
@@ -102,11 +118,23 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         focusedElement?.let { ensureVisible(it) }
     }
 
-    //TODO
+    /**
+     * This is run when the widget is moved or resized. List elements should be repositioned when this is called.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     open fun onReposition() {}
-    //TODO
+    /**
+     * List entries tht are currently selectable. Hidden or otherwise disabled entries should not be counted in this list.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun selectableEntries(): List<E>
-    //TODO
+    /**
+     * Entries that are currently visible in the list frame. These entries will be rendered as applicable. Entries partially in frame should be included.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun inFrameEntries(): List<E>
 
     /**
@@ -163,7 +191,12 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         context.disableScissor()
     }
 
-    //TODO
+    /**
+     * Ensures that the provided entry is in frame. Implementations should scroll as needed to fully incorporate the entry into the widget frame.
+     * @param entry [E]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun ensureVisible(entry: E)
 
     override fun getFocused(): Element? {
@@ -171,6 +204,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     override fun setFocused(focused: Element?) {
+        @Suppress("UNCHECKED_CAST")
         val f = focused as? E
         if (f != null && !selectableEntries().contains(f)) return
         focusedElement?.isFocused = false
@@ -191,29 +225,64 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         this.dragging = dragging
     }
 
-    //TODO
+    /**
+     * Return a navigation path leading through this list and to an entry, as applicable. The default implementation will likely not function properly; see [DynamicListWidget][me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget] for an example implementation
+     * @param navigation [GuiNavigation], nullable. The navigation type and direction.
+     * @return [GuiNavigationPath], nullable. Return a navigation path through this widget to the entry that needs to be focused, or null if the navigation won't land on the widget.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {
         return super<ParentElement>.getNavigationPath(navigation)
     }
 
-    //TODO
+    /**
+     * The length in pixels that the top of the list is out of frame above the top of the widget.
+     *
+     * For example, if five 20 pixel entries are scrolled above the top border of the widget, the top delta will be -100
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun topDelta(): Int
 
-    //TODO
+    /**
+     * The length in pixels that the bottom of the list is out of frame below the bottom of the widget.
+     *
+     * If the bottom of the entries are at y: 1000 and the widget bottom is y: 100, bottom delta = 900
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun bottomDelta(): Int
 
-    //TODO
+    /**
+     * The height of the entries in the list. If the list contains twenty 20px entries, content height is 400
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun contentHeight(): Int
 
-    //TODO
+    /**
+     * The entry underneath the mouse, if any.
+     * @param mouseY: Int
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun entryAtY(mouseY: Int): E?
 
-    //TODO
+    /**
+     * Defines mouse buttons that are valid selection buttons. Default is either left or right click
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     protected open fun isSelectButton(button: Int): Boolean {
         return button == 0 || button == 1
     }
 
-    //TODO
+    /**
+     * If this widget doesn't need scrolling. Will return true if the current [contentHeight] is smaller or equal to the widget [height]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     protected fun noScroll(): Boolean {
         return contentHeight() <= height
     }
@@ -222,7 +291,11 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return "fc.narrator.position.list"
     }
 
-    //TODO
+    /**
+     * Whether the scroll bar should not render if the widget isn't hovered. Default false.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     open fun hideScrollWhileNotHovered(): Boolean {
         return false
     }
@@ -406,7 +479,11 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return false
     }
 
-    //TODO
+    /**
+     * "Pages" the list up or down as if Page Up/Down has been pressed.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     fun page(up: Boolean) {
         if (up) {
             handleScrollByBar(scrollHeight())
@@ -415,16 +492,34 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
     }
 
-    //TODO
+    /**
+     * Scroll to the top of the list content. [topDelta] should be 0 after this scroll.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun scrollToTop(): Boolean
 
-    //TODO
+    /**
+     * Scroll to the bottom of the list content. [bottomDelta] should be 0 or negative after this scroll
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun scrollToBottom(): Boolean
 
-    //TODO
+    /**
+     * Handles a scroll input. This is scroll from a mouse, so the input should be multiplied by a factor to make scroll distance reasonable.
+     * @param verticalAmount Double scroll amount from the mouse input.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun handleScroll(verticalAmount: Double): Boolean
 
-    //TODO
+    /**
+     * Handles "direct" scroll input. This amount is not scaled, so the amount input should be the amount scrolled.
+     * @param scrollAmount Int scroll amount from a widget-based input (such as the scroll bar).
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract fun handleScrollByBar(scrollAmount: Int): Boolean
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -457,11 +552,23 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
     }
 
-    //TODO
+    /**
+     * The visual style of the scroll bar itself
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     protected enum class ScrollBarType {
-        //TODO
+        /**
+         * The scroll bar changes height based on the amount of scroll available.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         DYNAMIC,
-        //TODO
+        /**
+         * The scroll bar is a set height no matter the scroll amount.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         FIXED
     }
 
@@ -591,7 +698,14 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
 
     private class ScrollBarPosition(val top: Int, val bot: Int, val over: Boolean)
 
-    //TODO
+    /**
+     * A list entry. This is responsible for managing its own position, rendering of the list row, management of any children widgets, providing correct navigation, narration, and so on.
+     *
+     * In particular, the [CustomListWidget] does not provide any mechanism to manage individual entry positions itself. Positions of entries must either be managed by list implementations, or in the entry itself. See [DynamicListWidget][me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget] for a (very in-depth) implementation example.
+     * @param parentElement [P] a parent to attach to this entry. This is an indirect way of making this entry "inner", without actually doing that.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract class Entry<P: ParentElement>(val parentElement: P): Element {
 
         override fun isFocused(): Boolean {
@@ -601,10 +715,22 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         override fun setFocused(focused: Boolean) {
         }
 
-        //TODO
+        /**
+         * Renders this entry. Works exactly as one would expect for any other render call.
+         * @param context [DrawContext]
+         * @param mouseX horizontal screen position of the mouse
+         * @param mouseY vertical screen position of the mouse
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         abstract fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float)
 
-        //TODO
+        /**
+         * Append narration messages to current [NarrationMessageBuilder]. The list will handle list position and navigation, the entry should focus on providing title and description information, and internal navigation information as applicable (if there are multiple children in one entry for example)
+         * @param builder [NarrationMessageBuilder]
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         open fun appendNarrations(builder: NarrationMessageBuilder) {
         }
     }

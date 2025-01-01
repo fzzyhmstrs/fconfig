@@ -19,9 +19,9 @@ internal class ContextActionWidget(
         action.texts.name,
         width,
         14,
-        action.active,
-        { _ -> PopupWidget.pop(); action.action.apply(position) },
-        TextureSet("widget/popup/button_right_click".fcId(), "widget/popup/button_right_click".fcId(), "widget/popup/button_right_click_highlighted".fcId())
+        TextureSet("widget/popup/button_right_click".fcId(), "widget/popup/button_right_click".fcId(), "widget/popup/button_right_click_highlighted".fcId()),
+                action.active,
+        { _ -> PopupWidget.pop(); action.action.apply(position) }
     ) {
 
     override fun renderCustom(

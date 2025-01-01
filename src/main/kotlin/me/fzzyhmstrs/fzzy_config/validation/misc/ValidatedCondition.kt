@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import com.sun.org.apache.xml.internal.serializer.utils.Utils.messages
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator

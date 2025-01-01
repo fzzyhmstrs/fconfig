@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.decoration.AbstractDecorationWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.DecorationWidget
+import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry.ContentBuilder
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -37,7 +38,6 @@ import net.minecraft.client.gui.widget.Widget
 import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.*
 import java.util.function.Consumer
 import java.util.function.UnaryOperator
 import kotlin.math.min

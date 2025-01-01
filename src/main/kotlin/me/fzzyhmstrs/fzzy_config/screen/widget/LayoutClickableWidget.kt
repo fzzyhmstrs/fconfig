@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
 import net.minecraft.client.gui.*
@@ -21,7 +20,6 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 
 /**
  * Clickable widget that contains a LayoutWidget which provides and lays out children of this widget. The layout will be automatically constrained to the dimensions of the widget, and updated as the position and size changes.

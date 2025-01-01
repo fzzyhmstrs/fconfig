@@ -265,8 +265,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, this.message)
-            //builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+            builder?.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.message).append(". "))
         }
 
         private fun constructTooltip() {
@@ -306,7 +305,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             }
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
             builder.positionY(PopupWidget.Builder.popupContext { this.y - 20 })
-            builder.additionalNarration("fc.validated_field.enum.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey())))
+            builder.additionalNarration("fc.validated_field.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey())))
             PopupWidget.push(builder.build())
         }
     }
@@ -360,7 +359,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         }
 
         override fun getNarrationMessage(): MutableText {
-            return entry.translationProvider.apply(entry.get(), entry.translationKey())
+            return "fc.validated_field.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey()).append(". "))
         }
 
         override fun onPress() {

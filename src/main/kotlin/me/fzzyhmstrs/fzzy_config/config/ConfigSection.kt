@@ -57,7 +57,17 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
         return ConfigApi.deserializeFromToml(this, toml, errorBuilder, flags).contextualize()
     }
 
-    //TODO
+    /**
+     * Anchor modifier method for a section. By default, provides a "map" icon decoration to the base anchor. You can provide a custom icon if you want a special icon for the config in the goto menu. If your config has a long name, you may also want to create and provide a shortened "summary" name for a goto link.
+     *
+     * Super should be used to generate the anchor you modify, like: `return super.anchorEntry(anchor).name(myNewName).decoration(myNewDecoration)`
+     * @param anchor [EntryAnchor.Anchor] automatically generated input Anchor for modification.
+     * @return Anchor with any desired modifications.
+     * @see [TextureDeco] for other built in icons
+     * @see [me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration] for a simple class to build your own icon
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
         return anchor.decoration(TextureDeco.DECO_MAP).type(EntryAnchor.AnchorType.SECTION)
     }
