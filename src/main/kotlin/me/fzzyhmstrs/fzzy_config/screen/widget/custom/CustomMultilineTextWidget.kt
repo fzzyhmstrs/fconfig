@@ -17,8 +17,16 @@ import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Util
 
-//TODO
-class CustomMultilineTextWidget(message: Text, private val lineHeight: Int = 9, private val topPadding: Int = 0, private val bottomPadding: Int = topPadding) :
+/**
+ * Multiline text widget that aligns its text to the left and has a resizable width.
+ * @param message [Text] the text to split and display
+ * @param lineHeight space between lines, default 9 (MC standard)
+ * @param topPadding pixels of padding above the text. Will add to the widget's height.
+ * @param bottomPadding pixels of padding below the text. Will add to the widget's height.
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
+class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private val lineHeight: Int = 9, private val topPadding: Int = 0, private val bottomPadding: Int = topPadding) :
     AbstractTextWidget(0, 0, 50, 0, message, MinecraftClient.getInstance().textRenderer) {
 
     private val cache = Util.cachedMapper<Key, MultilineText> { _ ->
