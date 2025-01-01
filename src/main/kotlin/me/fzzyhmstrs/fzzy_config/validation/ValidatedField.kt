@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
@@ -518,7 +519,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
             map[ContextType.FORWARD] = forward
         }
         val map2: MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> = mutableMapOf()
-        map2["entry"] = map
+        map2[ContextResultBuilder.ENTRY] = map
         return map2
     }
 

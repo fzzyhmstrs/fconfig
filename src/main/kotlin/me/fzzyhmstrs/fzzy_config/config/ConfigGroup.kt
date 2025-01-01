@@ -39,11 +39,11 @@ import java.util.*
 /**
  * Defines the start of a config group
  *
- * Groups organize a grouping of settings into one unit that can be collapsed and expanded in the
+ * Groups organize a grouping of settings into one unit that can be collapsed and expanded in the GUI
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-open class ConfigGroup @JvmOverloads constructor(
+class ConfigGroup @JvmOverloads constructor(
     private val groupName: String = "",
     private val decoration: Decorated? = null,
     private val offsetX: Int? = null,
@@ -54,9 +54,8 @@ open class ConfigGroup @JvmOverloads constructor(
 
     @Transient
     @Internal
-    final override var translatableEntryKey = "fc.config.generic.group"
+    override var translatableEntryKey = "fc.config.generic.group"
 
-    //TODO
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
         return anchor
             .decoration(decoration ?: TextureDeco.DECO_LIST,
@@ -65,7 +64,7 @@ open class ConfigGroup @JvmOverloads constructor(
             .type(EntryAnchor.AnchorType.INLINE)
     }
 
-    final override fun anchorId(scope: String): String {
+    override fun anchorId(scope: String): String {
         return if (groupName != "") groupName else scope.substringAfterLast('.')
     }
 
@@ -79,12 +78,18 @@ open class ConfigGroup @JvmOverloads constructor(
         return EntryCreators.createGroupEntry(context, fieldName)
     }
 
+    /**
+     * Marks the end of a group. Any group that is created by adding a [ConfigGroup] should be terminated by adding a Pop on the last entry in that group. This annotation is repeatable, Annotate a setting multiple times if it is the end of multiple nested groups simultaneously.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD)
     @Repeatable
     annotation class Pop
 
     companion object {
-        fun pop(annotations: List<Annotation>, groups: LinkedList<String>) {
+
+        internal fun pop(annotations: List<Annotation>, groups: LinkedList<String>) {
             if (annotations.firstOrNull { it is Pop } != null) {
                 groups.poll()
             }
@@ -93,8 +98,7 @@ open class ConfigGroup @JvmOverloads constructor(
 
     internal class GroupButtonWidget(private val list: DynamicListWidget, private val group: String, private val title: Text)
     :
-    CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY)
-    {
+    CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
 
         override fun onPress() {
             list.toggleGroup(group)

@@ -25,22 +25,59 @@ import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus.Internal
 
-//TODO
+/**
+ * Custom implementation of a [PressableWidget][net.minecraft.client.gui.widget.PressableWidget] that provides several improvements to rendering.
+ * @param x X position of the widget
+ * @param y Y position of the widget
+ * @param width Width in pixels of the widget
+ * @param height Height in pixels of the widget
+ * @param message [Text] label to draw over the center of the button.
+ * @author fzzyhmstrs
+ * @since 0.5.?
+ */
 open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message), TooltipChild {
 
     protected open val textures: TextureSet = DEFAULT_TEXTURES
 
-    //TODO
+    /**
+     * Action invoked whenever the button is clicked on or activated with Enter.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     open fun onPress() {}
 
-    //TODO
+    /**
+     * Custom foreground rendering for the widget. By default, will render the label.
+     * @param context [DrawContext]
+     * @param x X position for rendering. This is *not* necessarily the widgets x position. Subclasses can shift this position, to, for example, shift the label over to make room for an icon.
+     * @param y Y position for rendering. This is *not* necessarily the widgets y position. Subclasses can shift this position, to, for example, shift the label up to fit something underneath it.
+     * @param width render width. Not necessarily widget width. If you modify [x], it's recommended to counter-modify this to keep rendered space consistent with the background
+     * @param height render height. Not necessarily widget height. If you modify [y], it's recommended to counter-modify this to keep rendered space consistent with the background
+     * @param mouseX current horizontal screen position of the mouse
+     * @param mouseY current vertical screen position of the mouse
+     * @param delta screen frame delta
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     open fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         val minecraftClient = MinecraftClient.getInstance()
         val i = if (this.active) 16777215 else 10526880
         this.drawMessage(context, minecraftClient.textRenderer, x, y, width, height, i or (MathHelper.ceil(this.alpha * 255.0f) shl 24))
     }
 
-    //TODO
+    /**
+     * Custom background rendering for the widget. By default, will render the standard MC button texture set.
+     * @param context [DrawContext]
+     * @param x X position for rendering. This is *not* necessarily the widgets x position.
+     * @param y Y position for rendering. This is *not* necessarily the widgets y position.
+     * @param width render width. Not necessarily widget width. If you modify [x], it's recommended to counter-modify this to keep rendered space consistent with the foreground as applicable
+     * @param height render height. Not necessarily widget height. If you modify [y], it's recommended to counter-modify this to keep rendered space consistent with the foreground as applicable
+     * @param mouseX current horizontal screen position of the mouse
+     * @param mouseY current vertical screen position of the mouse
+     * @param delta screen frame delta
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     open fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
@@ -60,12 +97,35 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
     }
 
-    //TODO
+    /**
+     * Draws the widgets message with standard edge padding and positioning.
+     * @param context [DrawContext]
+     * @param textRenderer [TextRenderer]
+     * @param x X position for rendering. This is *not* necessarily the widgets x position. Subclasses can shift this position, to, for example, shift the label over to make room for an icon.
+     * @param y Y position for rendering. This is *not* necessarily the widgets y position. Subclasses can shift this position, to, for example, shift the label up to fit something underneath it.
+     * @param width render width. Not necessarily widget width. If you modify [x], it's recommended to counter-modify this to keep rendered space consistent with the background
+     * @param height render height. Not necessarily widget height. If you modify [y], it's recommended to counter-modify this to keep rendered space consistent with the background
+     * @param color Int representation of text color
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     open fun drawMessage(context: DrawContext, textRenderer: TextRenderer, x: Int, y: Int, width: Int, height: Int, color: Int) {
         this.drawScrollableText(context, textRenderer, x, y, width, height, 2, color)
     }
 
-    //TODO
+    /**
+     * Draws the positioned text of this widget with supplied edge padding and positioning.
+     * @param context [DrawContext]
+     * @param textRenderer [TextRenderer]
+     * @param x X position for rendering. This is *not* necessarily the widgets x position. Subclasses can shift this position, to, for example, shift the label over to make room for an icon.
+     * @param y Y position for rendering. This is *not* necessarily the widgets y position. Subclasses can shift this position, to, for example, shift the label up to fit something underneath it.
+     * @param width render width. Not necessarily widget width. If you modify [x], it's recommended to counter-modify this to keep rendered space consistent with the background
+     * @param height render height. Not necessarily widget height. If you modify [y], it's recommended to counter-modify this to keep rendered space consistent with the background
+     * @param xMargin pixels of padding left and right for the text cutoff
+     * @param color Int representation of text color
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     protected open fun drawScrollableText(context: DrawContext, textRenderer: TextRenderer, x: Int, y: Int, width: Int, height: Int, xMargin: Int, color: Int) {
         val i = x + xMargin
         val j = x + width - xMargin
@@ -100,7 +160,11 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         protected val disabled = "widget/button_disabled".simpleId()
         protected val highlighted = "widget/button_highlighted".simpleId()
 
-        //TODO
+        /**
+         * The default texture set of the widget. The same textures used by MC buttons.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         val DEFAULT_TEXTURES = TextureSet(tex, disabled, highlighted)
     }
 }
