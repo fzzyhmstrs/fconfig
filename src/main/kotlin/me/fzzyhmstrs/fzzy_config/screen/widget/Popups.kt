@@ -28,7 +28,7 @@ import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.command.CommandSource
 import net.minecraft.text.Text
 import java.util.*
-import java.util.function.Function
+import java.util.function.BiFunction
 import kotlin.math.max
 
 //client
@@ -110,7 +110,7 @@ object Popups {
         NetworkEventsClient.forwardSetting(update, id, key, summary)
     }
 
-    internal fun openGotoPopup(entryBuilders: List<Function<DynamicListWidget, out Entry>>, neededWidth: Int, screenHeight: Int) {
+    internal fun openGotoPopup(entryBuilders: List<BiFunction<DynamicListWidget, Int, out Entry>>, neededWidth: Int, screenHeight: Int) {
         //height - padding * 2 - text spacing - text - divider spacing - divider
         val client = MinecraftClient.getInstance()
         val anchors = DynamicListWidget(

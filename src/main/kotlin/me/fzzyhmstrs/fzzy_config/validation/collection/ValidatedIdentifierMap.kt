@@ -286,7 +286,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
          * @since 0.2.0
          */
         fun keyHandler(handler: ValidatedIdentifier): BuilderWithKey<V> {
-            return BuilderWithKey<V>(handler)
+            return BuilderWithKey(handler)
         }
 
         class BuilderWithKey<V: Any> internal constructor(private val keyHandler: ValidatedIdentifier) {

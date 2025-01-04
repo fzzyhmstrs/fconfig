@@ -16,6 +16,7 @@ package me.fzzyhmstrs.fzzy_config.util.pos
  * @author fzzyhmstrs
  * @since 0.2.0
  */
+@Deprecated("Scheduled for removal by 0.7.0; use ImmutableSuppliedPos instead")
 open class ImmutableRelPos @JvmOverloads constructor(private val parent: Pos, private val p: Int = 0): Pos {
     override fun get(): Int {
         return parent.get() + p

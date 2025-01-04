@@ -4,6 +4,7 @@ import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config_test.FC
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -14,7 +15,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
 class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, index: Int, private val n: Text) :
-    DynamicListWidget.Entry(parentElement, scope.lit(), FcText.empty(), DynamicListWidget.Scope(scope, if (group == index) group.toString() else "", listOf(group.toString())), if (group == index) DynamicListWidget.Visibility.GROUP_VISIBLE else DynamicListWidget.Visibility.VISIBLE)
+    DynamicListWidget.Entry(parentElement, Translatable.Result(scope.lit()), DynamicListWidget.Scope(scope, if (group == index) group.toString() else "", listOf(group.toString())), if (group == index) DynamicListWidget.Visibility.GROUP_VISIBLE else DynamicListWidget.Visibility.VISIBLE)
     {
 
         private val button: ButtonWidget =

@@ -110,13 +110,6 @@ class ContextType private constructor(private val id: String, private val releva
             return ct
         }
 
-        fun types(inputType: ContextInput): List<ContextType> {
-            return when (inputType) {
-                ContextInput.KEYBOARD -> keyboardCreated
-                ContextInput.MOUSE -> mouseCreated
-            }
-        }
-
         val PAGE_UP = create("page_up", ContextInput.KEYBOARD) { inputCode: Int, _, _, _ ->
             inputCode == GLFW.GLFW_KEY_PAGE_UP
         }
@@ -271,6 +264,14 @@ class ContextType private constructor(private val id: String, private val releva
          * @since 0.6.0
          */
         val CLEAR = create("clear", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
+
+
+        private fun types(inputType: ContextInput): List<ContextType> {
+            return when (inputType) {
+                ContextInput.KEYBOARD -> keyboardCreated
+                ContextInput.MOUSE -> mouseCreated
+            }
+        }
 
         /**
          * Returns a list of [ContextType] that are relevant to the provided input. This can return multiple inputs, which can be handled separately or together.

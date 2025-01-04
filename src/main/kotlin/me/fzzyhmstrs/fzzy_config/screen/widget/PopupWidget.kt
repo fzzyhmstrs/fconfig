@@ -571,7 +571,7 @@ class PopupWidget
         @JvmOverloads
         fun addDivider(parent: String? = null): Builder {
             val trueParent = parent ?: layoutWidget.lastElement()
-            addElement("divider_for_$trueParent", DividerWidget(10), trueParent, Position.BELOW, Position.ALIGN_JUSTIFY)
+            add("divider_for_$trueParent", DividerWidget(10), trueParent, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
             return this
         }
         /**
@@ -589,24 +589,24 @@ class PopupWidget
         fun addDoneButton(pressAction: ButtonWidget.PressAction = ButtonWidget.PressAction{ pop() }, parent: String? = null, spacingH: Int = 4): Builder {
             val bw = ButtonWidget.builder(ScreenTexts.DONE, pressAction).build()
             val trueParent = parent ?: layoutWidget.lastElement()
-            addElementSpacedH(
-                "done_for_$trueParent",
-                CustomButtonWidget.builder(ScreenTexts.DONE) { cbw ->
-                    bw.setDimensions(cbw.width, cbw.height)
-                    bw.setPosition(cbw.x, cbw.y)
-                    bw.tooltip = cbw.tooltip
-                    bw.message = cbw.message
-                    pressAction.onPress(bw)
-                    cbw.tooltip = bw.tooltip
-                    cbw.message = bw.message
-                    cbw.setDimensions(bw.width, bw.height)
-                    cbw.setPosition(bw.x, bw.y)
-                }.size(50, 20).build(),
+            layoutWidget.pushSpacing(UnaryOperator.identity()) { _ -> spacingH }
+            add("done_for_$trueParent",
+            CustomButtonWidget.builder(ScreenTexts.DONE) { cbw ->
+                bw.setDimensions(cbw.width, cbw.height)
+                bw.setPosition(cbw.x, cbw.y)
+                bw.tooltip = cbw.tooltip
+                bw.message = cbw.message
+                pressAction.onPress(bw)
+                cbw.tooltip = bw.tooltip
+                cbw.message = bw.message
+                cbw.setDimensions(bw.width, bw.height)
+                cbw.setPosition(bw.x, bw.y) }
+                .size(50, 20)
+                .build(),
                 trueParent,
-                spacingH,
-                Position.BELOW,
-                Position.ALIGN_JUSTIFY
-            )
+                LayoutWidget.Position.BELOW,
+                LayoutWidget.Position.ALIGN_JUSTIFY)
+            layoutWidget.popSpacing()
             return this
         }
         /**
@@ -622,14 +622,15 @@ class PopupWidget
         @JvmOverloads
         fun addDoneWidget(pressAction: Consumer<CustomButtonWidget> = Consumer { pop() }, parent: String? = null, spacingH: Int = 4): Builder {
             val trueParent = parent ?: layoutWidget.lastElement()
-            addElementSpacedH(
+            layoutWidget.pushSpacing(UnaryOperator.identity()) { _ -> spacingH }
+            add(
                 "done_for_$trueParent",
                 CustomButtonWidget.builder(ScreenTexts.DONE, pressAction).size(50, 20).build(),
                 trueParent,
-                spacingH,
-                Position.BELOW,
-                Position.ALIGN_JUSTIFY
+                LayoutWidget.Position.BELOW,
+                LayoutWidget.Position.ALIGN_JUSTIFY
             )
+            layoutWidget.popSpacing()
             return this
         }
         /**

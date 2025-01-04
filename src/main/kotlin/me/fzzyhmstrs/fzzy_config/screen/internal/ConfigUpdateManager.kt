@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
@@ -19,8 +20,9 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
@@ -28,16 +30,23 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
+import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.Selectable
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
+import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.util.Colors
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.Toml
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.BiFunction
 import java.util.function.Supplier
 
 //client
@@ -81,8 +90,10 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
     }
 
     override fun forwardsHandler() {
+        val entries: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = forwardedUpdates.map { BiFunction { list, _ -> ForwardEntry(list, it, this) } }
+        val list = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, 190, 120)
         val popup = PopupWidget.Builder("fc.config.forwarded".translate())
-            .addElement("list", ForwardedEntryListWidget(forwardedUpdates, this), Position.BELOW, Position.ALIGN_CENTER)
+            .add("list", list, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             .addDoneWidget()
             .build()
         PopupWidget.push(popup)
@@ -209,77 +220,56 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             pushUpdatableStates()
     }
 
-    private class ForwardedEntryListWidget(forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, manager: ConfigUpdateManager): ElementListWidget<ForwardedEntryListWidget.ForwardEntry>(MinecraftClient.getInstance(), 190, 120, 0, 22) {
+    private class ForwardEntry(parentElement: DynamicListWidget, private val forwardedUpdate: ConfigScreenManager.ForwardedUpdate, private val manager: ConfigUpdateManager)
+        : DynamicListWidget.Entry(parentElement, Translatable.Result(forwardedUpdate.entry.transLit(forwardedUpdate.scope), forwardedUpdate.summary.lit()), DynamicListWidget.Scope(forwardedUpdate.scope))
+    {
 
-        override fun drawHeaderAndFooterSeparators(context: DrawContext?) {
-        }
-        override fun drawMenuListBackground(context: DrawContext?) {
-        }
-        override fun getRowWidth(): Int {
-            return 170
+        override var h: Int = 20
+        private val tooltip = Tooltip.of(texts.desc)
+
+        val acceptForwardWidget = TextlessActionWidget(
+            "widget/action/accept".fcId(),
+            "widget/action/accept_inactive".fcId(),
+            "widget/action/accept_highlighted".fcId(),
+            "fc.button.accept".translate(),
+            "fc.button.accept".translate(),
+            { true },
+            { manager.acceptForward(forwardedUpdate); applyVisibility { stack -> stack.push(DynamicListWidget.Visibility.HIDDEN) } }
+        )
+        val denyForwardWidget = TextlessActionWidget(
+            "widget/action/delete".fcId(),
+            "widget/action/delete_inactive".fcId(),
+            "widget/action/delete_highlighted".fcId(),
+            "fc.button.deny".translate(),
+            "fc.button.deny".translate(),
+            { true },
+            { manager.rejectForward(forwardedUpdate); applyVisibility { stack -> stack.push(DynamicListWidget.Visibility.HIDDEN) } }
+        )
+
+        override fun selectableChildren(): List<SelectableElement> {
+            return listOf(acceptForwardWidget, denyForwardWidget).cast()
         }
 
-        override fun getScrollbarX(): Int {
-            return this.x + this.width / 2 + this.rowWidth / 2 + 4
+        override fun children(): MutableList<out Element> {
+            return mutableListOf(acceptForwardWidget, denyForwardWidget)
         }
 
-        init {
-            for (forwardedUpdate in forwardedUpdates) {
-                this.addEntry(ForwardEntry(forwardedUpdate, this, manager))
+        override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+            if (hovered) {
+                MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, HoveredTooltipPositioner.INSTANCE, true)
+            } else if (focused) {
+                MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, FocusedTooltipPositioner(ScreenRect(x + 2, y + 4, width, height)), true)
             }
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, texts.name, x, y + 5, -1)
+            acceptForwardWidget.setPosition(x + 126, y)
+            acceptForwardWidget.render(context, mouseX, mouseY, delta)
+            denyForwardWidget.setPosition(x + 150, y)
+            denyForwardWidget.render(context, mouseX, mouseY, delta)
         }
 
-        private class ForwardEntry(private val forwardedUpdate: ConfigScreenManager.ForwardedUpdate, private val parent: ForwardedEntryListWidget, manager: ConfigUpdateManager): Entry<ForwardEntry>() {
-
-            val name = forwardedUpdate.entry.transLit(forwardedUpdate.scope)
-            val tooltip = Tooltip.of(forwardedUpdate.summary.lit())
-
-            val acceptForwardWidget = TextlessActionWidget(
-                "widget/action/accept".fcId(),
-                "widget/action/accept_inactive".fcId(),
-                "widget/action/accept_highlighted".fcId(),
-                "fc.button.accept".translate(),
-                "fc.button.accept".translate(),
-                { true },
-                { manager.acceptForward(forwardedUpdate); parent.removeEntry(this) }
-            )
-            val denyForwardWidget = TextlessActionWidget(
-                "widget/action/delete".fcId(),
-                "widget/action/delete_inactive".fcId(),
-                "widget/action/delete_highlighted".fcId(),
-                "fc.button.deny".translate(),
-                "fc.button.deny".translate(),
-                { true },
-                { manager.rejectForward(forwardedUpdate); parent.removeEntry(this) }
-            )
-            override fun render(
-                context: DrawContext,
-                index: Int,
-                y: Int,
-                x: Int,
-                entryWidth: Int,
-                entryHeight: Int,
-                mouseX: Int,
-                mouseY: Int,
-                hovered: Boolean,
-                tickDelta: Float
-            ) {
-                if (isMouseOver(mouseX.toDouble(), mouseY.toDouble()))
-                    parent.client.currentScreen?.setTooltip(tooltip.getLines(parent.client))
-                context.drawTextWithShadow(parent.client.textRenderer, name, x, y+5, Colors.WHITE)
-                acceptForwardWidget.setPosition(x + 126, y)
-                acceptForwardWidget.render(context, mouseX, mouseY, tickDelta)
-                denyForwardWidget.setPosition(x + 150, y)
-                denyForwardWidget.render(context, mouseX, mouseY, tickDelta)
-            }
-
-            override fun children(): MutableList<out Element> {
-                return mutableListOf(acceptForwardWidget, denyForwardWidget)
-            }
-
-            override fun selectableChildren(): MutableList<out Selectable> {
-                return mutableListOf(acceptForwardWidget, denyForwardWidget)
-            }
+        override fun appendNarrations(builder: NarrationMessageBuilder) {
+            builder.put(NarrationPart.HINT, texts.desc)
         }
+
     }
 }

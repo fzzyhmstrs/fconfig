@@ -46,7 +46,7 @@ import net.peanuuutz.tomlkt.TomlInteger
  */
 @SerialInfo
 @Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY)
-public annotation class Comment(val value: String)
+annotation class Comment(val value: String)
 
 /**
  * Java field-friendly version of [TomlInline](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-inline/index.html)
@@ -112,7 +112,7 @@ annotation class Inline
  */
 @SerialInfo
 @Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY)
-public annotation class BlockArray(val itemsPerLine: Int = 1)
+annotation class BlockArray(val itemsPerLine: Int = 1)
 
 /**
  * Java field-friendly version of [TomlMultilimeString](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-multiline-string/index.html)
@@ -167,7 +167,7 @@ annotation class MultilineString
  */
 @SerialInfo
 @Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY)
-public annotation class LiteralString
+annotation class LiteralString
 
 /**
  * Java field-friendly version of [TomlInteger](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-integer/index.html)
@@ -199,7 +199,7 @@ public annotation class LiteralString
  */
 @SerialInfo
 @Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY)
-public annotation class Integer(
+annotation class Integer(
     val base: TomlInteger.Base = TomlInteger.Base.Dec,
     val group: Int = 0
 )

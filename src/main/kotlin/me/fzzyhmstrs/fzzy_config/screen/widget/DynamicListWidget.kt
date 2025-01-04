@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.pos.ImmutableSuppliedPos
 import me.fzzyhmstrs.fzzy_config.util.pos.Pos
 import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
@@ -33,11 +34,10 @@ import net.minecraft.client.gui.navigation.NavigationDirection
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 import java.util.*
+import java.util.function.BiFunction
 import java.util.function.Consumer
-import java.util.function.Function
 import java.util.function.Predicate
 import java.util.function.Supplier
 import kotlin.math.max
@@ -45,7 +45,7 @@ import kotlin.math.min
 
 class DynamicListWidget(
     client: MinecraftClient,
-    entryBuilders: List<Function<DynamicListWidget, out Entry>>,
+    entryBuilders: List<BiFunction<DynamicListWidget, Int, out Entry>>,
     x: Int,
     y: Int,
     width: Int,
@@ -67,7 +67,7 @@ class DynamicListWidget(
     }
 
     private val entries: Entries by lazy {
-        Entries(entryBuilders.map { it.apply(this) })
+        Entries(entryBuilders.mapIndexed { index, biFunction -> biFunction.apply(this, index) })
     }
 
     val verticalPadding: Int
@@ -585,7 +585,7 @@ class DynamicListWidget(
 
     private class GroupPair(val groupEntry: Entry, var visible: Boolean)
 
-    abstract class Entry(parentElement: DynamicListWidget, override val name: Text, override val desc: Text?, val scope: Scope, visibility: Visibility = Visibility.VISIBLE)
+    abstract class Entry(parentElement: DynamicListWidget, override val texts: Translatable.Result, val scope: Scope, visibility: Visibility = Visibility.VISIBLE)
         :
         CustomListWidget.Entry<DynamicListWidget>(parentElement),
         ParentElement,
@@ -767,7 +767,7 @@ class DynamicListWidget(
             val focusedPath = element?.getNavigationPath(navigation)
             if (focusedPath != null) return GuiNavigationPath.of(this, focusedPath)
             val list: List<Element?> = ArrayList(this.selectableChildren())
-            Collections.sort(list, Comparator.comparingInt { elementx: Element -> elementx.navigationOrder })
+            Collections.sort(list, Comparator.comparingInt { e: Element -> e.navigationOrder })
             val i = list.indexOf(element)
             val j = if (element != null && i >= 0) {
                 i + (if (bl) 1 else 0)
@@ -819,7 +819,7 @@ class DynamicListWidget(
         }
 
         open fun appendTitleNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.TITLE, name)
+            builder.put(NarrationPart.TITLE, texts.name)
         }
 
         override fun toString(): String {
@@ -877,7 +877,7 @@ class DynamicListWidget(
         GROUP_VISIBLE(true, true, true, true, false, { v -> v.group }),
         GROUP_FILTERED(false, true, false, true, false, { v -> v.group }), //filtering handled externally
         GROUP_HIDDEN(false, true, false, true, true, { v -> v.group }), //hiding handled externally
-        GROUP_DISABLED(false, true, false, true, false, { _ -> false }), //errored group with no entries
+        GROUP_DISABLED(false, true, false, true, false, { _ -> false }), //problem group with no entries
         HEADER_VISIBLE(true, true, false, false, false, { _ -> false });
 
         companion object {
