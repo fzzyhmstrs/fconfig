@@ -41,7 +41,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.Util
 import java.util.concurrent.TimeUnit
-import java.util.function.Function
+import java.util.function.BiFunction
 import java.util.function.Supplier
 
 //client
@@ -51,7 +51,7 @@ internal class ConfigScreen(
     private val manager: UpdateManager,
     private val configList: DynamicListWidget,
     private val parentScopesButtons: List<Supplier<ClickableWidget>>,
-    private val anchors: List<Function<DynamicListWidget, out DynamicListWidget.Entry>>,
+    private val anchors: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>>,
     private val anchorWidth: Int)
     :
     PopupWidgetScreen(title), ContextHandler, ContextProvider

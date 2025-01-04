@@ -39,7 +39,7 @@ internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, 
         if (this.text.isEmpty() && !this.isFocused) {
             val k = if (this.drawsBackground()) this.x + 4 else this.x
             val l = if (this.drawsBackground()) this.y + (this.height - 8) / 2 else this.y
-            context.drawTextWithShadow(this.textRenderer, searchText, k, l, -1);
+            context.drawTextWithShadow(this.textRenderer, searchText, k, l, -1)
         }
     }
 }

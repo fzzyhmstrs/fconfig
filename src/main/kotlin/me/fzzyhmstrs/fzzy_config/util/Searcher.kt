@@ -12,7 +12,6 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.util.Searcher.SearchContent
 import net.minecraft.client.search.SuffixArray
-import net.minecraft.text.Text
 import java.util.*
 
 /**
@@ -27,7 +26,7 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
     private val search: SuffixArray<C> by lazy {
         val array = SuffixArray<C>()
         for (entry in searchEntries) {
-            array.add(entry, entry.name.string.lowercase(Locale.ROOT))
+            array.add(entry, entry.texts.name.string.lowercase(Locale.ROOT))
         }
         array.build()
         array
@@ -36,15 +35,24 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
     private val searchExact: Map<String, C> by lazy {
         val map: MutableMap<String, C> = mutableMapOf()
         for (entry in searchEntries) {
-            map[entry.name.string.lowercase(Locale.ROOT)] = entry
+            map[entry.texts.name.string.lowercase(Locale.ROOT)] = entry
         }
         map
     }
 
     private val searchDesc: SuffixArray<C> by lazy {
         val array = SuffixArray<C>()
-        for (entry in searchEntries.filter{ it.desc != null }) {
-            array.add(entry, entry.desc?.string?.lowercase(Locale.ROOT))
+        for (entry in searchEntries.filter{ it.texts.desc != null || it.texts.prefix != null }) {
+            val prefix = entry.texts.prefix?.string?.lowercase(Locale.ROOT)
+            val desc = entry.texts.desc?.string?.lowercase(Locale.ROOT)
+            val str = if (prefix == null) {
+                desc ?: ""
+            } else if (desc == null) {
+                prefix
+            } else {
+                "$desc $prefix"
+            }
+            array.add(entry, str)
         }
         array.build()
         array
@@ -160,17 +168,11 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
      */
     interface SearchContent {
         /**
-         * The "plain" name of the search content, example "Setting 1"
+         * The searchable texts. Both desc and prefix of the result are searched as "description"
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val name: Text
-        /**
-         * The optional description of the content. This is akin to tooltip text or some other extended description.
-         * @author fzzyhmstrs
-         * @since 0.6.0
-         */
-        val desc: Text?
+        val texts: Translatable.Result
         /**
          * Whether the search should exclude this content from search results. This is active state, so can change between true and false as needed.
          * @author fzzyhmstrs

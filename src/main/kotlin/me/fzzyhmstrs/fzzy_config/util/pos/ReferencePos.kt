@@ -18,7 +18,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-class ReferencePos constructor(private val reference: Supplier<Int>): Pos {
+class ReferencePos(private val reference: Supplier<Int>): Pos {
     override fun get(): Int {
         return reference.get()
     }

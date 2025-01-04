@@ -46,10 +46,8 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.function.Consumer
+import java.util.function.*
 import java.util.function.Function
-import java.util.function.Supplier
-import java.util.function.UnaryOperator
 import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.reflect.KType
@@ -527,7 +525,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
 
     @Internal
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
-        val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
+        val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context)
             contentBuilder.contextActions(contextActionBuilder(context))
             contentBuilder(context).apply(contentBuilder)

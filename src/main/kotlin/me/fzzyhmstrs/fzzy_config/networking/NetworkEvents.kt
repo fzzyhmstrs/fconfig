@@ -41,6 +41,7 @@ internal object NetworkEvents {
             payload.updates,
             context.player().cast<ServerPlayerEntity>().server,
             context.player().cast(),
+            payload.playerPerm,
             payload.changeHistory,
             { player, id -> canSend(player, id) },
             { player, pl -> send(player, pl) }

@@ -53,7 +53,7 @@ import kotlin.math.min
  * @since 0.6.0
  */
 class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.BuildResult, texts: Translatable.Result) :
-    DynamicListWidget.Entry(parentElement, texts.name, texts.desc, content.scope, content.visibility)
+    DynamicListWidget.Entry(parentElement, texts, content.scope, content.visibility)
 {
 
     private val layout: LayoutWidget = if (content.groupTypes.isEmpty()) {
@@ -85,7 +85,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     }
 
     private val tooltip: List<OrderedText> by lazy {
-        createTooltip(desc ?: FcText.empty())
+        createTooltip(texts.desc ?: FcText.empty())
     }
 
     override fun init() {
@@ -102,13 +102,12 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             if (w is TooltipChild)
                 t.add(w)
         }
-        narratables = n.filter { widget -> widget.message != name }
+        narratables = n.filter { widget -> widget.message != texts.name }
         c.addAll(actions.mapNotNull { it.nullCast() })
         t.addAll(actions.mapNotNull { it.nullCast() })
         children = c
         drawables = d
         selectables = s.filterNot { it is AbstractTextWidget }.filterIsInstance<Element>().cast()
-        narratables = n
         tooltipProviders = t
     }
 
@@ -184,8 +183,9 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     @Internal
     override fun appendNarrations(builder: NarrationMessageBuilder) {
         super.appendNarrations(builder)
+        val narratablesNarrations = narratables.filter { it.isNarratable }.map { it.message.asOrderedText() }
         val childNarrations = tooltipProviders.flatMap { it.provideNarrationLines() }.map { it.asOrderedText() }
-        val str = createTooltipString(childNarrations + tooltip)
+        val str = createTooltipString( narratablesNarrations + childNarrations + tooltip)
         if (str.isNotEmpty()) {
             builder.put(NarrationPart.HINT, str)
             if (childNarrations.isNotEmpty())
@@ -300,13 +300,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         init {
             val nameSupplier = { context.texts.name }
             val titleWidget = SuppliedTextWidget(nameSupplier, MinecraftClient.getInstance().textRenderer, 70, 20).supplyTooltipOnOverflow(nameSupplier).align(0.0f)
-            val prefixWidget = context.texts.prefix?.let { CustomMultilineTextWidget(it, 10, 10, 4) }
-            if (prefixWidget != null) {
-                mainLayout.add("prefix", prefixWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
-                mainLayout.add("title", titleWidget, "prefix", LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
-            } else {
-                mainLayout.add("title", titleWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
-            }
+            mainLayout.add("title", titleWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
             mainLayout.add("content", contentLayout, "title", LayoutWidget.Position.ALIGN_RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             mainLayout.add("deco", decorationWidget, "content", LayoutWidget.Position.LEFT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         }
@@ -392,6 +386,18 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
          * @since 0.6.0
          */
         fun build(): BuildResult {
+            val prefixWidget = context.texts.prefix?.let { CustomMultilineTextWidget(it, 10, 10, 4) }
+            val finalLayout = if (prefixWidget != null) {
+                val fl = LayoutWidget(paddingW = 0, spacingW = 0)
+                fl.add("prefix", prefixWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
+                if (!mainLayout.isEmpty()) {
+                    fl.add("main", mainLayout, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
+                }
+                fl
+            } else {
+                mainLayout
+            }
+
             val groupTypes: MutableList<Boolean> = mutableListOf()
             for (i in 0 until context.groups.size) {
                 if (context.groups[i] == group) continue
@@ -399,7 +405,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             }
 
             return BuildResult(
-                mainLayout,
+                finalLayout,
                 actionWidgets,
                 DynamicListWidget.Scope(context.scope, group, context.groups),
                 groupTypes,
