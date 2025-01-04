@@ -67,11 +67,21 @@ class LayoutWidget @JvmOverloads constructor(
     }
 
     /**
+     * Returns whether this layout has no elements yet.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun isEmpty(): Boolean {
+        return elements.isEmpty()
+    }
+
+    /**
      * The vertical padding of this layout.
      * @return [paddingH]
      * @author fzzyhmstrs
      * @since 0.6.0
      */
+    @Suppress("unused")
     fun getGeneralVerticalPadding(): Int {
         return paddingH
     }
@@ -81,6 +91,7 @@ class LayoutWidget @JvmOverloads constructor(
      * @author fzzyhmstrs
      * @since 0.6.0
      */
+    @Suppress("unused")
     fun getGeneralHorizontalPadding(): Int {
         return paddingW
     }
@@ -90,6 +101,7 @@ class LayoutWidget @JvmOverloads constructor(
      * @author fzzyhmstrs
      * @since 0.6.0
      */
+    @Suppress("unused")
     fun getGeneralVerticalSpacing(): Int {
         return spacingH
     }
@@ -319,6 +331,7 @@ class LayoutWidget @JvmOverloads constructor(
      * @author fzzyhmstrs
      * @since 0.6.0
      */
+    @Suppress("unused")
     fun clampHeight(height: Int): LayoutWidget {
         val bl = manualHeight != height
         manualHeight = height

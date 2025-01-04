@@ -53,6 +53,7 @@ internal object NetworkEvents {
             payload.updates,
             context.player().server,
             context.player(),
+            payload.playerPerm,
             payload.changeHistory,
             { _, id -> context.canReply(id) },
             { _, pl -> context.reply(pl) }

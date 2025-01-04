@@ -13,22 +13,20 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.context.Position
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.Popups
-import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.entry.ChangelogEntry
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
+import java.util.function.BiFunction
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
+import kotlin.math.min
 
 //client
 internal class ChangesWidget(private val scope: String, private val widthSupplier: Supplier<Int>, private val manager: UpdateManager): CustomPressableWidget(0, 0, 80, 20, "fc.button.changes".translate()) {
@@ -97,16 +95,15 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
 
     private fun openChangelogPopup() {
         val changes = manager.changeHistory()
+        val changeEntries: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = changes.map { BiFunction { list, index -> ChangelogEntry(list, it, index) } }
+        val changeWidget = DynamicListWidget(MinecraftClient.getInstance(), changeEntries, 0, 0, widthSupplier.get() - 16, 180, DynamicListWidget.ListSpec(leftPadding = 4, rightPadding = 4, verticalPadding = 2, listNarrationKey = "fc.narrator.position.list"))
         val popup = PopupWidget.Builder("fc.button.changelog".translate())
             .add("changelog",
-                ChangelogListWidget(changes, widthSupplier),
+                changeWidget,
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_LEFT)
-            .add("done_button",
-                CustomButtonWidget.builder(ScreenTexts.DONE) { PopupWidget.pop() }.size(50, 20).build(),
-                LayoutWidget.Position.BELOW,
-                LayoutWidget.Position.ALIGN_JUSTIFY)
-            .positionX(PopupWidget.Builder.at { 0 })
+            .addDoneWidget()
+            .positionX { sw, w -> changeWidget.width = min(sw - 16, w - 16); sw/2 - w/2 }
             .build()
         PopupWidget.push(popup)
         //
