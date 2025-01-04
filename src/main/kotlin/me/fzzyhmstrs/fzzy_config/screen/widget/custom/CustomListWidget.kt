@@ -539,13 +539,13 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
             focusedElement?.appendNarrations(builder.nextMessage())
             val i = selectableEntries().indexOf(focusedElement)
             if (i >= 0) {
-                builder.put(NarrationPart.POSITION, FcText.translatable("fc.narrator.position.list", i + 1, selectableEntries().size))
+                builder.put(NarrationPart.POSITION, FcText.translatable(listNarrationKey(), i + 1, selectableEntries().size))
             }
         } else {
             hoveredElement?.appendNarrations(builder.nextMessage().nextMessage())
             val i = selectableEntries().indexOf(hoveredElement)
             if (i >= 0) {
-                builder.put(NarrationPart.POSITION, FcText.translatable("fc.narrator.position.list", i + 1, selectableEntries().size))
+                builder.put(NarrationPart.POSITION, FcText.translatable(listNarrationKey(), i + 1, selectableEntries().size))
             }
         }
 

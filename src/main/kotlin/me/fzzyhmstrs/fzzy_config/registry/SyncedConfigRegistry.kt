@@ -136,7 +136,7 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    internal fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayerEntity, changes: List<String>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
+    internal fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayerEntity, clientPerm: Int, changes: List<String>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
         val successfulUpdates: MutableMap<String, String> = mutableMapOf()
         val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
@@ -148,7 +148,7 @@ internal object SyncedConfigRegistry {
             }
 
             if (!server.isSingleplayer) {
-                val validationResult = ConfigApiImpl.validatePermissions(serverPlayer, id, config, configString)
+                val validationResult = ConfigApiImpl.validatePermissions(serverPlayer, id, config, configString, clientPerm)
 
                 if(validationResult.isError()) {
 

@@ -271,7 +271,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
          * @since 0.2.0
          */
         fun keyHandler(handler: Entry<String, *>): BuilderWithKey<V> {
-            return BuilderWithKey<V>(handler)
+            return BuilderWithKey(handler)
         }
 
         class BuilderWithKey<V: Any> internal constructor(private val keyHandler: Entry<String, *>) {

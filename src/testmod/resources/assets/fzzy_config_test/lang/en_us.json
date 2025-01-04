@@ -10,6 +10,7 @@
 
   "fzzy_config_test.test_config.enum1" : "Very Cool Long Enum Name For Testing",
   "fzzy_config_test.test_config.group" : "Test Group",
+  "fzzy_config_test.test_config.group.prefix" : "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
 
   "fzzy_config_test.test_config2.enum1" : "Very Cool Long Enum Name For Testing",
   "fzzy_config_test.test_config2.enum1.desc" : "Very cool long description for showing off that very cool long descriptions work in game.",
@@ -46,6 +47,7 @@
   "test.prefix.bl2.desc" : "Test Boolean Translation Description",
 
   "java.prefix" : "Java Config (Translated)",
+  "java.prefix.prefix" : "This java config has a cool translated header",
   "java.prefix.anInt" : "Class-Translated Int",
   "java.prefix.aBoolean" : "Class-Translated Boolean",
   "java.prefix.validatedDouble" : "Translated Val. Double"

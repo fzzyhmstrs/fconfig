@@ -24,11 +24,8 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
+import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.Companion.withLabels
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
@@ -113,6 +110,10 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
     var pair2 = ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS)
         .pairWith(ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS))
 
+    var pair3 = ValidatedPair.of(ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS))
+
+    var tupleProcess = ConfigAction.Builder().title("Tuple Process".lit()).build { openTuplePopup() }
+
     @ConfigGroup.Pop
     var map1 = mapOf(1 to "a", 2 to "c")
 
@@ -127,5 +128,9 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
             int1 /= 10
             println(int1)
         }
+    }
+
+    private fun openTuplePopup() {
+
     }
 }

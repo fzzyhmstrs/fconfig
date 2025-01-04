@@ -71,7 +71,7 @@ annotation class ClientModifiable
  * 6. [WithCustomPerms] (Annotating config class itself)
  * 7. [WithPerms] (Annotating config class itself)
  * 8. [Config.defaultPermLevel][me.fzzyhmstrs.fzzy_config.config.Config.defaultPermLevel]
- * @param opLevel the Operator Level required for modification. 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
+ * @param opLevel the Operator Level required for modification. 1 = moderator, 2 = game master, 3 = admin, 4 = owner
  * @author fzzyhmstrs
  * @since 0.2.0
  */
@@ -96,7 +96,7 @@ annotation class WithPerms(val opLevel: Int = 3)
  * 7. [WithPerms] (Annotating config class itself)
  * 8. [Config.defaultPermLevel][me.fzzyhmstrs.fzzy_config.config.Config.defaultPermLevel]
  * @param perms Array&lt;String&gt; - permission groups allowed to access this setting. Groups need to be compatible with LuckPerms or similar.
- * @param fallback Int - Default -1 = no custom fallback behavior; it will use the default permissions of the class. If provided, uses vanilla logic: 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
+ * @param fallback Int - Default -1 = no custom fallback behavior; it will use the default permissions of the class. If provided, uses vanilla logic: 1 = moderator, 2 = game master, 3 = admin, 4 = owner
  * @author fzzyhmstrs
  * @since 0.3.8
  */
@@ -112,7 +112,7 @@ annotation class WithCustomPerms(val perms: Array<String>, val fallback: Int = -
  *
  * If [WithCustomPerms] is used in the config class, this should be paired with it; otherwise the system will consider any server admin or owner (level 3+ perms) as an admin.
  * @param perms Array&lt;String&gt; - permission groups allowed to access this setting. Groups need to be compatible with LuckPerms or similar.
- * @param fallback Int - Default -1 = no custom fallback behavior; it will check for permission level of 3+. If provided, uses vanilla logic: 1 = moderator, 2 = gamemaster, 3 = admin, 4 = owner
+ * @param fallback Int - Default -1 = no custom fallback behavior; it will check for permission level of 3+. If provided, uses vanilla logic: 1 = moderator, 2 = game master, 3 = admin, 4 = owner
  * @author fzzyhmstrs
  * @since 0.4.0
  */
@@ -139,12 +139,12 @@ annotation class AdminAccess(val perms: Array<String>, val fallback: Int = -1)
  * @since 0.2.0
  */
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD)
-annotation class NonSync()
+annotation class NonSync
 
 /**
  * Defines the version of the config file.
  *
- * Config serialization will prepend a 'version' key with the integer version of a config. defaults to 0, even if a Version annotation is not used. This number is passed to [Config]
+ * Config serialization will prepend a 'version' key with the integer version of a config. defaults to 0, even if a Version annotation is not used. This number is passed to [Config][me.fzzyhmstrs.fzzy_config.config.Config]
  *
  * @param version the version number of the config. 0-indexed.
  * @author fzzyhmstrs
@@ -268,7 +268,7 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         "fc.config.reload_resources.warning.config".translate().formatted(Formatting.GOLD));
 
 
-    fun priorityOf(other: Action): Action {
+    private fun priorityOf(other: Action): Action {
         return if (this == other) {
             this
         } else if(this.ordinal < other.ordinal) {
@@ -278,7 +278,7 @@ enum class Action(val restartPrompt: Boolean, val sprite: Identifier, val client
         }
     }
 
-    fun isPriority(other: Action): Boolean {
+    internal fun isPriority(other: Action): Boolean {
         return priorityOf(other) == this
     }
 }
@@ -327,7 +327,7 @@ annotation class TomlHeaderComment(val text: String)
  *
  * This is used to define "standard" translations that can be reused regardless of the relative position in a config tree
  *
- * For example, in a typical config, if you have a repeating element `my_mod.config.element1`, `my_mod.config.element2`, `my_mod.config.element3`, and so on, you would have to write corresponding lang for each subelement of each element. Tedious. With this annotation, you can define a custom prefix for the field or property (or all fields/properties within the annotated class), and all annotated instances will refer to the common translation.
+ * For example, in a typical config, if you have a repeating element `my_mod.config.element1`, `my_mod.config.element2`, `my_mod.config.element3`, and so on, you would have to write corresponding lang for each sub-element of each element. Tedious. With this annotation, you can define a custom prefix for the field or property (or all fields/properties within the annotated class), and all annotated instances will refer to the common translation.
  * - From: `"my_mod.config.element1.subElement1": "Element 1"`, `"my_mod.config.element2.subElement1": "Element 1"` etc.
  * - To:  `"my_mod.config.prefix.element1": "Element 1"` for all element instances
  * @param prefix String - the translation key prefix. Will be appended with `".elementName"`. `"my.prefix"` annotated on a field called `myElement` will yield a translation key `"my.prefix.myElement"`

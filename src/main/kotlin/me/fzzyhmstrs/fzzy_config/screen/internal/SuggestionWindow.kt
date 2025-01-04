@@ -203,10 +203,9 @@ internal class SuggestionWindow(
             val sHeight = MinecraftClient.getInstance().currentScreen?.height ?: Int.MAX_VALUE
             val x = max(min(windowX, sWidth - w), 0)
             var h = min(suggestions.list.size * 12, 120)
-            val up = windowY
             val down = sHeight - (windowY + 20)
             val upBl: Boolean
-            val y = if(up >= down) {
+            val y = if (windowY >= down) {
                 upBl = true
                 while (windowY - h < 0) {
                     h -= 12

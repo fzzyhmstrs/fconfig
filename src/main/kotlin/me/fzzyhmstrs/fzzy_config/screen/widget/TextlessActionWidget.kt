@@ -107,9 +107,4 @@ open class TextlessActionWidget(
     override fun onPress() {
        pressAction.accept(this)
     }
-
-    override fun getFocusedPath(): GuiNavigationPath? {
-        return super.getFocusedPath()
-    }
-
 }

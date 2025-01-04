@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.LayoutStyle
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.Tuple
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
@@ -39,6 +40,7 @@ import java.util.function.UnaryOperator
  * @param defaultValue [Tuple] default pair of values
  * @param leftHandler [Entry]&lt;[A]&gt; handler for left side of the tuple
  * @param rightHandler [Entry]&lt;[B]&gt; handler for right side of the tuple
+ * @param layoutStyle [LayoutStyle], optional. Whether the two handlers' widgets are laid-out side by side with half the space for each, or stacked like two "normal" settings on top of each other. Default is side-by-side.
  * @see me.fzzyhmstrs.fzzy_config.validation.ValidatedField.pairWith
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.pairs
  * @author fzzyhmstrs
@@ -52,16 +54,17 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
         /**
          * Convenience method for creating a pair of one type
          * @param A stored type of the both sides of the tuple
-         * @param defaultValue [Tuple] default pair of values
-         * @param handler [Entry]&lt;[A]&gt; handler for both sides of the tuple
+         * @param handler [Entry]&lt;[A]&gt; handler for both sides of the tuple. This method will instance this handler, so it can't be used for direct inspection of pair internals
+         * @param defaultValue [Tuple], optional. default value pair. If not defined will use the current value of the handler for both sides of a tuple. Values are deep-copied.
+         * @param layoutStyle [LayoutStyle], optional. Whether the two handlers' widgets are laid-out side by side with half the space for each, or stacked like two "normal" settings on top of each other. Default is side-by-side.
          * @return [ValidatedPair]&lt;[A], [A]&gt;
          * @author fzzyhmstrs
          * since 0.6.0
          */
         @JvmStatic
         @JvmOverloads
-        fun <A> of(defaultValue: Tuple<A, A>, handler: Entry<A, *>, layoutStyle: LayoutStyle = LayoutStyle.SIDE_BY_SIDE): ValidatedPair<A, A> {
-            return ValidatedPair(defaultValue, handler, handler, layoutStyle)
+        fun <A, E: Entry<A, E>> of(handler: Entry<A, E>, defaultValue: Tuple<A, A> = Tuple(handler.copyValue(handler.get()), handler.copyValue(handler.get())), layoutStyle: LayoutStyle = LayoutStyle.SIDE_BY_SIDE): ValidatedPair<A, A> {
+            return ValidatedPair(defaultValue, handler.instanceEntry(), handler.instanceEntry(), layoutStyle)
         }
 
         /**

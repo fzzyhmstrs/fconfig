@@ -317,7 +317,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
          * @since 0.2.0
          */
         fun keyHandler(handler: Entry<K, *>): BuilderWithKey<K, V> {
-            return BuilderWithKey<K, V>(handler)
+            return BuilderWithKey(handler)
         }
 
         class BuilderWithKey<K: Any, V: Any> internal constructor(private val keyHandler: Entry<K, *>) {
@@ -328,7 +328,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
              * @since 0.2.0
              */
             fun valueHandler(handler: Entry<V, *>): BuilderWithValue<K, V> {
-                return BuilderWithValue<K, V>(handler, keyHandler)
+                return BuilderWithValue(handler, keyHandler)
             }
 
             class BuilderWithValue<K: Any, V: Any> internal constructor(private val valueHandler: Entry<V, *>, private val keyHandler: Entry<K, *>) {
