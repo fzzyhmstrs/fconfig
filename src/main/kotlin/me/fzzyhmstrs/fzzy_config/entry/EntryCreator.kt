@@ -16,7 +16,7 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import org.jetbrains.annotations.ApiStatus.Experimental
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
-import java.util.function.Function
+import java.util.function.BiFunction
 
 /**
  * Handles creating [DynamicListWidget.Entry], separate and distinct from a config-level Entry
@@ -106,9 +106,9 @@ fun interface EntryCreator {
      * Wrapper of information needed to create a new GUI entry.
      * @param scope The scope of the entry. Obtained from the [CreatorContext] during creation
      * @param texts [Translatable.Result]. Translation result for the entry. Obtained from the [CreatorContext] during creation
-     * @param entry [Function]&lt;[DynamicListWidget], out [DynamicListWidget.Entry]&gt; the entry builder function. This should create new entries on every call.
+     * @param entry [BiFunction]&lt;[DynamicListWidget], Int, out [DynamicListWidget.Entry]&gt; the entry builder function. This should create new entries on every call.
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    class Creator(val scope: String, val texts: Translatable.Result, val entry: Function<DynamicListWidget, out DynamicListWidget.Entry>)
+    class Creator(val scope: String, val texts: Translatable.Result, val entry: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>)
 }

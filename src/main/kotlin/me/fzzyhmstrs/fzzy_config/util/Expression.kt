@@ -164,7 +164,7 @@ fun interface Expression {
         fun tryTest(str: String, vars: Set<Char>): ValidationResult<Expression?> {
             val result = tryParse(str)
             if (result.isError() || vars.isEmpty()) return result
-            val varMap = vars.associate { it -> it to 0.0 }
+            val varMap = vars.associateWith { 0.0 }
             return try {
                 result.get()?.eval(varMap)
                 result

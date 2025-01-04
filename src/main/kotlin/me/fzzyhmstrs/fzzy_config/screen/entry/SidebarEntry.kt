@@ -26,7 +26,7 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 
 internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, icon: Decorated.DecoratedOffset, onPress: Runnable, layer: Int) :
-    DynamicListWidget.Entry(parentElement, texts.name, texts.desc, DynamicListWidget.Scope(scope)) {
+    DynamicListWidget.Entry(parentElement, texts, DynamicListWidget.Scope(scope)) {
 
     override var h: Int = 16
     private val widget = SidebarWidget(texts, icon, onPress, layer)
@@ -57,7 +57,7 @@ internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, tex
     }
 
     override fun appendTitleNarrations(builder: NarrationMessageBuilder) {
-        builder.put(NarrationPart.TITLE, "fc.button.goto.narration".translate(name))
+        builder.put(NarrationPart.TITLE, "fc.button.goto.narration".translate(texts.name))
     }
 
     companion object {

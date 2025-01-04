@@ -158,7 +158,7 @@ internal object SyncedConfigRegistry {
             }
 
             if (!server.isSingleplayer) {
-                val validationResult = ConfigApiImpl.validatePermissions(serverPlayer, id, config, configString)
+                val validationResult = ConfigApiImpl.validatePermissions(serverPlayer, id, config, configString, clientPerm)
 
                 if(validationResult.isError()) {
 

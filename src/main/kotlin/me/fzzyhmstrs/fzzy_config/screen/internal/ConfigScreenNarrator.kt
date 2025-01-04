@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import com.google.common.collect.Maps
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import net.fabricmc.api.EnvType
@@ -88,9 +87,9 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
                 }
             }
         }
-        FC.DEVLOG.info("Narrations")
+        //FC.DEVLOG.info("Narrations")
         narrations.forEach { (index, message) ->
-            FC.DEVLOG.info("$index > $message")
+            //FC.DEVLOG.info("$index > $message")
             if (message.index == this.currentMessageIndex && (includeUnchanged || !message.used)) {
                 message.narration.forEachSentence(consumer)
                 message.used = true
@@ -108,7 +107,7 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
 
         fun setNarration(index: Int, narration: Narration<*>): Message {
             if (this.narration != narration) {
-                FC.DEVLOG.info("Non-equal narrations! old:${printNarration(this.narration)}, new:${printNarration(narration)}")
+                //FC.DEVLOG.info("Non-equal narrations! old:${printNarration(this.narration)}, new:${printNarration(narration)}")
                 this.narration = narration
                 this.used = false
             } else if (this.index + 1 != index) {

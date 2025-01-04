@@ -18,14 +18,13 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Ref
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
+import java.util.function.BiFunction
 import java.util.function.Consumer
-import java.util.function.Function
 
 /**
  * Built in entry creators (except for [ValidatedField][me.fzzyhmstrs.fzzy_config.validation.ValidatedField]) The methods themselves are internal to FC, but can be used as reference.
@@ -49,7 +48,7 @@ object EntryCreators {
     val COPY_BUFFER = EntryCreator.CreatorContextKey<Ref<Any?>>()
 
     internal fun createConfigEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
-        val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
+        val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, context.actions.map { ConfigEntry.ActionDecorationWidget.config(it) })
             contentBuilder.decoration(TextureDeco.DECO_OPEN_SCREEN, 2, 2)
             contentBuilder.layoutContent { contentLayout ->
@@ -69,7 +68,7 @@ object EntryCreators {
     }
 
     internal fun createSectionEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
-        val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
+        val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, context.actions.map { ConfigEntry.ActionDecorationWidget.section(it) })
             contentBuilder.decoration(TextureDeco.DECO_OPEN_SCREEN, 2, 2)
             contentBuilder.layoutContent { contentLayout ->
@@ -98,7 +97,7 @@ object EntryCreators {
                 }
             }
         }
-        val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
+        val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context)
             contentBuilder.decoration(TextureDeco.DECO_LOCKED, 2, 2)
             contentBuilder.layoutContent { contentLayout ->
@@ -119,16 +118,12 @@ object EntryCreators {
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
     }
 
-    internal fun createHeaderEntry(context: EntryCreator.CreatorContext, prefix: Text): List<EntryCreator.Creator> {
-        val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
+    internal fun createHeaderEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
+        val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
             @Suppress("DEPRECATION")
             contentBuilder.layoutMain { _ ->
-                LayoutWidget(paddingW = 0, spacingW = 0).add(
-                    "header",
-                    CustomMultilineTextWidget(prefix, 10),
-                    LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
-                    LayoutWidget.Position.BELOW)
+                LayoutWidget(paddingW = 0, spacingW = 0)
             }
             .visibility(DynamicListWidget.Visibility.HEADER_VISIBLE)
 
@@ -138,7 +133,7 @@ object EntryCreators {
     }
 
     internal fun createGroupEntry(context: EntryCreator.CreatorContext, group: String): List<EntryCreator.Creator> {
-        val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
+        val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
             @Suppress("DEPRECATION")
             contentBuilder.layoutMain { _ ->
@@ -159,7 +154,7 @@ object EntryCreators {
     }
 
     internal fun createActionEntry(context: EntryCreator.CreatorContext, decoration: Decorated?, widget: ClickableWidget): List<EntryCreator.Creator> {
-        val function: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { listWidget ->
+        val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
             contentBuilder.layoutContent { content ->
                 content.add(

@@ -484,7 +484,7 @@ internal object ConfigApiImpl {
         val restartRecords: MutableSet<String> = mutableSetOf()
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
-            return ValidationResult.error(ConfigContext(config).withContext(ACTIONS, mutableSetOf<Action>()), "Improper TOML format passed to deserializeFromToml")
+            return ValidationResult.error(ConfigContext(config).withContext(ACTIONS, mutableSetOf()), "Improper TOML format passed to deserializeFromToml")
         }
         val clazz = config::class
         try {
@@ -710,7 +710,7 @@ internal object ConfigApiImpl {
         return map
     }
 
-    internal fun validatePermissions(player: ServerPlayerEntity, id: String, config: Config, configString: String): ValidationResult<List<String>> {
+    internal fun validatePermissions(player: ServerPlayerEntity, id: String, config: Config, configString: String, clientPermissions: Int): ValidationResult<List<String>> {
         val toml = try {
             Toml.parseToTomlTable(configString)
         } catch (e:Exception) {
@@ -718,6 +718,10 @@ internal object ConfigApiImpl {
         }
         val list: MutableList<String> = mutableListOf()
         val playerPermLevel = getPlayerPermissionLevel(player)
+
+        if (playerPermLevel != clientPermissions) {
+            return ValidationResult.error(emptyList(), "Client permission level does not match server permission level!")
+        }
 
         try {
             walk(config, id, CHECK_NON_SYNC) { _, _, str, _, _, annotations, _, _ ->
@@ -935,7 +939,7 @@ internal object ConfigApiImpl {
     private fun hasNeededPermLevel(player: ServerPlayerEntity, playerPermLevel: Int, config: Config, annotations: List<Annotation>): Boolean {
         if (player.server.isSingleplayer) return true
         // 1. NonSync wins over everything, even whole config annotations
-        if (ConfigApiImpl.isNonSync(annotations)) return true
+        if (isNonSync(annotations)) return true
         val configAnnotations = config::class.annotations
         // 2. whole-config ClientModifiable
         for (annotation in configAnnotations) {
