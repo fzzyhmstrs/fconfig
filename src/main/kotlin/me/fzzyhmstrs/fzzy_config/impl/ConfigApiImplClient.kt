@@ -37,27 +37,8 @@ import java.util.function.Supplier
 
 internal object ConfigApiImplClient {
 
-    private val ellipses by lazy {
-        FcText.literal("...")
-    }
-
-    private val ellipsesWidth by lazy {
-        MinecraftClient.getInstance().textRenderer.getWidth(ellipses)
-    }
-
-    internal fun ellipses(input: Text, maxWidth: Int): Text {
-        return if (MinecraftClient.getInstance().textRenderer.getWidth(input) <= maxWidth)
-            input
-        else
-            MinecraftClient.getInstance().textRenderer.trimToWidth(input.string, maxWidth - ellipsesWidth).trimEnd().lit().append(ellipses)
-    }
-
     internal fun getPerms(): Map<String, Map<String, Boolean>> {
         return ClientConfigRegistry.getPerms()
-    }
-
-    internal fun updatePerms(id: String, perms: Map<String, Boolean>) {
-        ClientConfigRegistry.updatePerms(id, perms)
     }
 
     internal fun registerConfig(config: Config, baseConfig: Config) {
@@ -98,10 +79,6 @@ internal object ConfigApiImplClient {
         if (MinecraftClient.getInstance().currentScreen is RestartScreen) return false
         MinecraftClient.getInstance().setScreen(RestartScreen())
         return true
-    }
-
-    internal fun handleForwardedUpdate(update: String, player: UUID, scope: String, summary: String) {
-        ClientConfigRegistry.handleForwardedUpdate(update, player, scope, summary)
     }
 
     internal fun getPlayerPermissionLevel(): Int {
@@ -178,65 +155,18 @@ internal object ConfigApiImplClient {
             null
     }
 
-    internal fun getTranslation(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String = fieldName): MutableText {
-        for (annotation in annotations) {
-            if (annotation is Translation) {
-                for (ga in globalAnnotations) {
-                    if (ga is Translation && ga.negate) {
-                        return thing.transSupplied { fallback.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
-                    }
-                }
-                if (annotation.negate) {
-                    return thing.transSupplied { fallback.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
-                }
-                val key = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName" else annotation.prefix
-                if (I18n.hasTranslation(key)) return key.translate()
-                break
-            }
-        }
-        for (annotation in globalAnnotations) {
-            if (annotation is Translation) {
-                val key = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName" else annotation.prefix
-                if (I18n.hasTranslation(key)) return key.translate()
-                break
-            }
-        }
-        return thing.transSupplied { fallback.split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } } }
-    }
-
-    internal fun getDescription(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): MutableText {
-        for (annotation in annotations) {
-            if (annotation is Translation) {
-                if (annotation.negate) {
-                    return thing.descSupplied { getComments(annotations) }
-                }
-                val key = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.desc" else "${annotation.prefix}.desc"
-                if (I18n.hasTranslation(key)) return key.translate()
-                break
-            }
-        }
-        for (annotation in globalAnnotations) {
-            if (annotation is Translation) {
-                val key = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.desc" else "${annotation.prefix}.desc"
-                if (I18n.hasTranslation(key)) return key.translate()
-                break
-            }
-        }
-        return thing.descSupplied { getComments(annotations) }
-    }
-
-    private val spacer = ". "
+    private const val SPACER = ". "
 
     private fun getComments(annotations: List<Annotation>): String {
         val comment = StringBuilder()
         for (annotation in annotations) {
             if (annotation is TomlComment) {
                 if (comment.isNotEmpty())
-                    comment.append(spacer)
+                    comment.append(SPACER)
                 comment.append(annotation.text)
             } else if(annotation is Comment) {
                 if (comment.isNotEmpty())
-                    comment.append(spacer)
+                    comment.append(SPACER)
                 comment.append(annotation.value)
             }
         }

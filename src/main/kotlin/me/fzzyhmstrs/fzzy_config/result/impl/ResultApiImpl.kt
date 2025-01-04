@@ -61,11 +61,11 @@ object ResultApiImpl: ResultApi {
         clazz: KClass<T>,
         drillFunction: ResultProviderSupplier<T> = ResultProviderSupplier { s, config, thing, thingProp ->
             if (thing is ValidatedField<*> && thing.argumentType()?.jvmErasure?.isSuperclassOf(clazz) == true) {
-                Supplier { (thing.get() as T) }
+                Supplier { @Suppress("UNCHECKED_CAST") (thing.get() as T) }
             }
             else if (clazz.isInstance(thing)) {
 
-                Supplier { (thingProp.call(config) as T) }
+                Supplier { @Suppress("UNCHECKED_CAST") (thingProp.call(config) as T) }
             }
             else {
                 FC.LOGGER.error("Error encountered while reading value for $s. Value is not a number! Default value $fallback used.")

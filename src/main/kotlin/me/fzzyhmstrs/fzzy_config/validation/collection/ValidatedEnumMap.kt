@@ -290,7 +290,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
          */
         @Deprecated("For basic ValidatedEnum implementation, see keyHandler(defaultValue: K)")
         fun keyHandler(handler: Entry<K, *>): BuilderWithKey<K, V> {
-            return BuilderWithKey<K, V>(handler)
+            return BuilderWithKey(handler)
         }
         /**
          * Defines the Entry used to handle validation, serialization, etc. for map values
@@ -301,7 +301,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
          * @since 0.2.0
          */
         fun keyHandler(defaultValue: K): BuilderWithKey<K, V> {
-            return BuilderWithKey<K, V>(ValidatedEnum(defaultValue))
+            return BuilderWithKey(ValidatedEnum(defaultValue))
         }
 
         class BuilderWithKey<K, V: Any> internal constructor (private val keyHandler: Entry<K, *>)where K: Enum<*> {

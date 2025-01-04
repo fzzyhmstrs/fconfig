@@ -39,8 +39,8 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import java.util.*
+import java.util.function.BiFunction
 import java.util.function.Consumer
-import java.util.function.Function
 import java.util.function.Predicate
 import java.util.function.Supplier
 import kotlin.math.max
@@ -174,7 +174,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private fun prepareConfigScreens(playerPermLevel: Int) {
         val functionMap: MutableMap<String, MutableList<EntryCreator.Creator>> = mutableMapOf()
         val nameMap: MutableMap<String, Text> = mutableMapOf()
-        val anchors: MutableList<Function<DynamicListWidget, out DynamicListWidget.Entry>> = mutableListOf()
+        val anchors: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
         var anchorWidth = 0
         val anchorPredicate: Predicate<AnchorResult> =
             Predicate { result ->
@@ -191,7 +191,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     anchor.layer++
                 }
                 anchorWidth = max(anchorWidth, SidebarEntry.neededWidth(anchorTexts, anchor.layer))
-                val anchorFunction: Function<DynamicListWidget, out DynamicListWidget.Entry> = Function { list ->
+                val anchorFunction: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { list, _ ->
                     val anchorId = result.thing.anchorId(result.scope)
                     val action = anchor.type.action(result.scope, anchorId)
                     SidebarEntry(
@@ -252,7 +252,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             }
             //Header entry injected into function map at top of config
             if (configTexts.prefix != null) {
-                EntryCreators.createHeaderEntry(context, configTexts.prefix).applyToMap(prefix, functionMap)
+                EntryCreators.createHeaderEntry(context).applyToMap(prefix, functionMap)
             }
         }
 
@@ -344,7 +344,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                              scopes: List<String>,
                              scopeButtonFunctions: Map<String, Supplier<ClickableWidget>>,
                              entries: List<EntryCreator.Creator>,
-                             anchors: List<Function<DynamicListWidget, out DynamicListWidget.Entry>>,
+                             anchors: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>>,
                              anchorWidth: Int): ConfigScreenBuilder {
         val scopeSplit = scope.split(".")
         val parentScopes = scopes.filter { scopeSplit.containsAll(it.split(".")) && it != scope }.sortedBy { it.length }

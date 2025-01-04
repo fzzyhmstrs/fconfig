@@ -64,7 +64,7 @@ internal class RestartScreen: PopupWidgetScreen(FcText.EMPTY) {
         }
     }
 
-    fun initLayout() {
+    private fun initLayout() {
         layout.refreshPositions()
     }
 
