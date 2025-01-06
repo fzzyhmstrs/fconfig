@@ -141,7 +141,7 @@ object RenderUtil {
         }
         if (width == textureWidth) {
             this.drawTexture(texture, x, y, u, v, width, topSliceHeight, textureWidth, textureHeight)
-            drawRepeatingTexture(this, texture, x, y + topSliceHeight, width, height - bottomSliceHeight - topSliceHeight, u, v + topSliceHeight, textureWidth, textureHeight, centerWidth, centerHeight)
+            drawRepeatingTexture(this, texture, x, y + topSliceHeight, width, height - bottomSliceHeight - topSliceHeight, u, v + topSliceHeight, textureWidth, textureHeight, textureWidth, centerHeight)
             this.drawTexture(texture, x, y + height - bottomSliceHeight, u, v + textureHeight - bottomSliceHeight, width, bottomSliceHeight, textureWidth, textureHeight)
             return
         }

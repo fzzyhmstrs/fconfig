@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -31,7 +32,7 @@ import java.util.function.Consumer
 import java.util.function.Supplier
 
 /**
- * A vertically oriented SliderWidget, works as one would expect a sldier widget to work, but doesn't render the slider value that needs to be done separately via the [valueApplier]
+ * A vertically oriented SliderWidget, works as one would expect a slider widget to work, but doesn't render the slider value that needs to be done separately via the [valueApplier]
  * @param wrappedValue [Supplier]&lt;Double&gt; - supplier of value to display
  * @param x Int - x position of the widget
  * @param y Int - y position of the widget
@@ -52,6 +53,13 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
         private val TEXTURE_HIGHLIGHTED = "widget/vertical_slider_highlighted".fcId()
         private val HANDLE = "widget/vertical_slider_handle".fcId()
         private val HANDLE_HIGHLIGHTED = "widget/vertical_slider_handle_highlighted".fcId()
+
+        init {
+            RenderUtil.addBackground("widget/vertical_slider".fcId(), RenderUtil.Background(1, 1, 20, 200))
+            RenderUtil.addBackground("widget/vertical_slider_highlighted".fcId(), RenderUtil.Background(1, 1, 20, 200))
+            RenderUtil.addBackground("widget/vertical_slider_handle".fcId(), RenderUtil.Background(2, 2, 20, 8))
+            RenderUtil.addBackground("widget/vertical_slider_handle_highlighted".fcId(), RenderUtil.Background(2, 2, 20, 8))
+        }
     }
 
     private var mouseHasBeenClicked = false
@@ -79,8 +87,8 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
         context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawNineSlice(getTexture(), x, y, getWidth(), getHeight(), 1, 1, 200, 20)
-        context.drawNineSlice(getHandlerTexture(), x, y + (value * (height - 8).toDouble()).toInt(), getWidth(), 8, 2, 2, 20, 8)
+        context.drawNineSlice(getTexture(), x, y, getWidth(), getHeight())
+        context.drawNineSlice(getHandlerTexture(), x, y + (value * (height - 8).toDouble()).toInt(), getWidth(), 8)
     }
 
     override fun setFocused(focused: Boolean) {
