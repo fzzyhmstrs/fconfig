@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient.IngredientProvider
@@ -329,9 +330,9 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         override fun provide(): Ingredient {
             val item = Registries.ITEM.get(id)
             return if (item == Items.AIR) {
-                Ingredient.empty()
+                PortingUtils.emptyIngredient(id.toString())
             } else {
-                Ingredient.ofItems(item)
+                PortingUtils.itemIngredient(item)
             }
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
@@ -364,7 +365,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         }
         override fun provide(): Ingredient {
             if (ids.isEmpty() && tags.isEmpty())
-                return Ingredient.empty()
+                return PortingUtils.emptyIngredient()
             val items = ids.map { Registries.ITEM.get(it) }.filter { it != Items.AIR }.map { ItemStack(it) }
             val tagItems: MutableList<ItemStack> = mutableListOf()
             for (tag in tags) {
@@ -372,7 +373,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
                     tagItems.add(ItemStack(it))
                 }
             }
-            return Ingredient.ofStacks((items + tagItems).stream())
+            return PortingUtils.listIngredient(items + tagItems)
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
             val array = toml.asTomlArray()
@@ -432,7 +433,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
             return ProviderType.TAG
         }
         override fun provide(): Ingredient {
-            return Ingredient.fromTag(TagKey.of(RegistryKeys.ITEM, tag))
+            return PortingUtils.tagIngredient(TagKey.of(RegistryKeys.ITEM, tag))
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
             return TagProvider(toml.asTomlLiteral().toString().replace("#", "").simpleId())
