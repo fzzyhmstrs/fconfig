@@ -24,13 +24,13 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
+import me.fzzyhmstrs.fzzy_config.util.FocusedTooltipPositioner
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -90,7 +90,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
     override fun init() {
         layout.setPos(this.x, this.top)
-        layout.setWidth(this.w.get())
+        layout.setW(this.w.get())
         val c: MutableList<Element> = mutableListOf()
         val d: MutableList<Drawable> = mutableListOf()
         val s: MutableList<Selectable> = mutableListOf()
@@ -112,7 +112,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     }
 
     override fun onResize() {
-        layout.setWidth(this.w.get())
+        layout.setW(this.w.get())
         layout.update()
     }
 
@@ -223,7 +223,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     override var h: Int
         get() = layout.height
         set(value) {
-            layout.height = value
+            layout.setH(value)
         }
 
     @Internal
@@ -527,10 +527,10 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
         override fun getHeight(): Int { return height }
 
-        override fun setWidth(width: Int) {
+        override fun setW(width: Int) {
         }
 
-        override fun setHeight(height: Int) {
+        override fun setH(height: Int) {
             this.height = height
         }
 

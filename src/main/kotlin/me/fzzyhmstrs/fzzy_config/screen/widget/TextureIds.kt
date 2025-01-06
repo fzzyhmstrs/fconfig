@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil
 
 /**
  * Defines standard widget sprites used throughout Fzzy Config. May be useful for custom widgets, popups, etc.
@@ -179,4 +180,14 @@ object TextureIds {
 
     /** greyed-out down arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_DOWN_DISABLED = "widget/scroll/increment_down_disabled".fcId()
+
+    init {
+        val smolBg = RenderUtil.Background(0, 0, 11, 10)
+        RenderUtil.addBackground("widget/scroll/increment_up".fcId(), smolBg)
+        RenderUtil.addBackground("widget/scroll/increment_up_highlighted".fcId(), smolBg)
+        RenderUtil.addBackground("widget/scroll/increment_up_disabled".fcId(), smolBg)
+        RenderUtil.addBackground("widget/scroll/increment_down".fcId(), smolBg)
+        RenderUtil.addBackground("widget/scroll/increment_down_highlighted".fcId(), smolBg)
+        RenderUtil.addBackground("widget/scroll/increment_down_disabled".fcId(), smolBg)
+    }
 }

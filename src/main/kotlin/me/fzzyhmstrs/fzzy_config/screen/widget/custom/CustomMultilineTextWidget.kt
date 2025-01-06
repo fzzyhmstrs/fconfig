@@ -33,16 +33,13 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
         MultilineText.create(textRenderer, getMessage(), width)
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = cache.map(getKey())
         text.drawWithShadow(context, x, y + topPadding, lineHeight, textColor)
     }
 
     override fun getHeight(): Int {
         return (cache.map(getKey()).count() * lineHeight) + topPadding + bottomPadding
-    }
-
-    override fun setHeight(height: Int) {
     }
 
     private fun getKey(): Key {

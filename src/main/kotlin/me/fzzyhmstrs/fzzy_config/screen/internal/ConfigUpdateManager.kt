@@ -29,6 +29,7 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.FocusedTooltipPositioner
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
@@ -38,13 +39,8 @@ import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.ElementListWidget
-import net.minecraft.client.gui.widget.Widget
-import net.minecraft.util.Colors
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.Toml
 import org.jetbrains.annotations.ApiStatus.Internal

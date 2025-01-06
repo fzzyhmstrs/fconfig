@@ -30,10 +30,10 @@ import java.awt.Color
 object RenderUtil {
 
     /**
-     * * Extension function to replicate drawGuiTexture from 1.20.2+. Will brute force render the texture passed as a "standard" texture by adding the necessary identifier path information (such as the .png).
-     *      *
-     *      * This method is surely not very efficient. It is designed to be a porting feature.
-     *      * @param id Identier - The sprite identifier (1.20.2+ style) for the image.
+     * Extension function to replicate drawGuiTexture from 1.20.2+. Will brute force render the texture passed as a "standard" texture by adding the necessary identifier path information (such as the .png).
+     *
+     * This method is surely not very efficient. It is designed to be a porting feature.
+     * @param id Identifier - The sprite identifier (1.20.2+ style) for the image.
      * @param x Int - the x location of the texture
      * @param y Int - the y location of the texture
      * @param width - the width of the texture
@@ -46,7 +46,7 @@ object RenderUtil {
     }
 
     /**
-     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1.
      * @param id Identifier - The sprite identifier for the image.
      * @param x Int - the x location of the texture
      * @param y Int - the y location of the texture
@@ -64,7 +64,7 @@ object RenderUtil {
     }
 
     /**
-     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1.
      * @param id Identifier - The sprite identifier for the image.
      * @param x Int - the x location of the texture
      * @param y Int - the y location of the texture
@@ -84,7 +84,24 @@ object RenderUtil {
      * Extension function to replicate the nine-slice functionality drawGuiTexture from 1.20.2+. Will brute force render the texture passed as a "standard" texture by adding the necessary identifier path information (such as the .png).
      *
      * This method is surely not very efficient. It is designed to be a porting feature.
-     * @param id Identier - The sprite identifier (1.20.2+ style) for the image.
+     * @param id Identifier - The sprite identifier (1.20.2+ style) for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width Int - the width of the drawn texture
+     * @param height Int - the height of the drawn texture
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        val bg = getBackground(id)
+        this.drawNineSlice(id, x, y, width, height, bg.outerWidth, bg.outerHeight, bg.width, bg.height)
+    }
+
+    /**
+     * Extension function to replicate the nine-slice functionality drawGuiTexture from 1.20.2+. Will brute force render the texture passed as a "standard" texture by adding the necessary identifier path information (such as the .png).
+     *
+     * This method is surely not very efficient. It is designed to be a porting feature.
+     * @param id Identifier - The sprite identifier (1.20.2+ style) for the image.
      * @param x Int - the x location of the texture
      * @param y Int - the y location of the texture
      * @param width Int - the width of the drawn texture
@@ -97,6 +114,8 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int, outerWidth: Int, outerHeight: Int, textureWidth: Int, textureHeight: Int) {
+        val texture = Identifier(id.namespace, "textures/gui/sprites/${id.path}.png")
+        if (outerHeight == 0 && outerWidth == 0) drawTex(texture, x, y, 0f, 0f, width, height, textureWidth, textureHeight)
         var leftSliceWidth = outerWidth
         var topSliceHeight = outerHeight
         var rightSliceWidth = outerWidth
@@ -109,7 +128,7 @@ object RenderUtil {
         val centerHeight = textureHeight - topSliceHeight - bottomSliceHeight
         val u = 0f
         val v = 0f
-        val texture = Identifier(id.namespace, "textures/gui/sprites/${id.path}.png")
+
         if (width == textureWidth && height == textureHeight) {
             this.drawTexture(texture, x, y, u, v, width, height, textureWidth, textureHeight)
             return
@@ -193,18 +212,7 @@ object RenderUtil {
     }
 
     /**
-     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
-     * @param id Identifier - The sprite identifier for the image.
-     * @param x Int - the x location of the texture
-     * @param y Int - the y location of the texture
-     * @param width - the width of the texture
-     * @param height - the height of the texture
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    //TODO
-    /**
-     * Extension function to draw a texture, replacing drawtexture. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * Extension function to draw a texture, replacing drawtexture.
      * @param id Identifier - The sprite identifier for the image.
      * @param x Int - the x location of the texture
      * @param y Int - the y location of the texture
@@ -231,6 +239,19 @@ object RenderUtil {
      * @since 0.6.0
      */
     fun renderBlur() {
-        MinecraftClient.getInstance().gameRenderer.renderBlur(0f)
     }
+
+
+    private val backgrounds: MutableMap<Identifier, Background> = mutableMapOf()
+    private val defaultBg = Background(20, 4, 200, 20)
+
+    fun getBackground(id: Identifier): Background {
+        return backgrounds[id] ?: defaultBg
+    }
+
+    fun addBackground(id: Identifier, background: Background) {
+        backgrounds[id] = background
+    }
+
+    class Background(val outerWidth: Int, val outerHeight: Int,  val width: Int, val height: Int)
 }

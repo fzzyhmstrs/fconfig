@@ -18,7 +18,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.lwjgl.glfw.GLFW
 
-internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, width: Int, height: Int, text: Text) : TextFieldWidget(textRenderer, width, height, text) {
+internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, width: Int, height: Int, text: Text) : TextFieldWidget(textRenderer, 0, 0, width, height, text) {
 
     private val searchText = "fc.config.search".translate().formatted(Formatting.DARK_GRAY, Formatting.ITALIC)
 
@@ -37,8 +37,8 @@ internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         super.renderButton(context, mouseX, mouseY, delta)
         if (this.text.isEmpty() && !this.isFocused) {
-            val k = if (this.drawsBackground()) this.x + 4 else this.x
-            val l = if (this.drawsBackground()) this.y + (this.height - 8) / 2 else this.y
+            val k = if (this.innerWidth != this.width) this.x + 4 else this.x
+            val l = if (this.innerWidth != this.width) this.y + (this.height - 8) / 2 else this.y
             context.drawTextWithShadow(this.textRenderer, searchText, k, l, -1)
         }
     }

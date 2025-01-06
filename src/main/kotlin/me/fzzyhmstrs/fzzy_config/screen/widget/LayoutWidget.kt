@@ -243,7 +243,7 @@ class LayoutWidget @JvmOverloads constructor(
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    override fun setWidth(width: Int) {
+    override fun setW(width: Int) {
         val bl = manualWidth != width
         val oldWidth = if (bl && this.width != 0) getWidth() else width
         manualWidth = width
@@ -266,7 +266,7 @@ class LayoutWidget @JvmOverloads constructor(
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    override fun setHeight(height: Int) {
+    override fun setH(height: Int) {
         val bl = manualHeight != height
         manualHeight = height
         if (bl) {
@@ -307,7 +307,7 @@ class LayoutWidget @JvmOverloads constructor(
     }
 
     /**
-     * Same as [setWidth] but returns itself, and won't recompute if the layout is empty. This is often used up front to, as the name implies, clamp the allowable width of a new layout before adding elements.
+     * Same as [setW] but returns itself, and won't recompute if the layout is empty. This is often used up front to, as the name implies, clamp the allowable width of a new layout before adding elements.
      * @param width Int width in pixels
      * @return this layout
      * @author fzzyhmstrs
@@ -326,7 +326,7 @@ class LayoutWidget @JvmOverloads constructor(
     }
 
     /**
-     * Same as [setHeight] but returns itself, and won't recompute if the layout is empty. This is often used up front to, as the name implies, clamp the allowable height of a new layout before adding elements.
+     * Same as [setH] but returns itself, and won't recompute if the layout is empty. This is often used up front to, as the name implies, clamp the allowable height of a new layout before adding elements.
      * @param height Int height in pixels
      * @return this layout
      * @author fzzyhmstrs
@@ -540,7 +540,7 @@ class LayoutWidget @JvmOverloads constructor(
                     if (posEl.element is ClickableWidget) {
                         posEl.element.width = width - (2 * paddingW)
                     } else if (posEl.element is Scalable) {
-                        posEl.element.setWidth(width - (2 * paddingW))
+                        posEl.element.setW(width - (2 * paddingW))
                     }
                 } else if (posEl.alignment == Position.ALIGN_LEFT_AND_JUSTIFY || posEl.alignment == Position.POSITION_RIGHT_OF_AND_JUSTIFY) {
                     var closestRightEl: PositionedElement<*>? = null
@@ -558,13 +558,13 @@ class LayoutWidget @JvmOverloads constructor(
                         if (posEl.element is ClickableWidget) {
                             posEl.element.width = closestRightEl.getLeft() - posEl.getLeft() - posEl.set.spacingW
                         } else if (posEl.element is Scalable) {
-                            posEl.element.setWidth(closestRightEl.getLeft() - posEl.getLeft() - posEl.set.spacingW)
+                            posEl.element.setW(closestRightEl.getLeft() - posEl.getLeft() - posEl.set.spacingW)
                         }
                     } else {
                         if (posEl.element is ClickableWidget) {
                             posEl.element.width = posEl.set.w.get() - posEl.getLeft()
                         } else if (posEl.element is Scalable) {
-                            posEl.element.setWidth(posEl.set.w.get() - posEl.getLeft())
+                            posEl.element.setW(posEl.set.w.get() - posEl.getLeft())
                         }
                     }
 
@@ -591,7 +591,7 @@ class LayoutWidget @JvmOverloads constructor(
                             val prevRight = posEl.getRight()
                             posEl.getX().dec(posEl.getLeft() - closestLeftEl.getRight())
                             posEl.getX().inc(posEl.set.spacingW)
-                            posEl.element.setWidth(prevRight - posEl.getLeft())
+                            posEl.element.setW(prevRight - posEl.getLeft())
                         }
                     } else {
                         if (posEl.element is ClickableWidget) {
@@ -601,7 +601,7 @@ class LayoutWidget @JvmOverloads constructor(
                         } else if (posEl.element is Scalable) {
                             val dec = posEl.getLeft() - posEl.set.x.get()
                             posEl.getX().dec(dec)
-                            posEl.element.setWidth(posEl.element.width + dec)
+                            posEl.element.setW(posEl.element.width + dec)
                         }
                     }
                     if (debug) FC.DEVLOG.info("Element After: $posEl")
@@ -621,16 +621,12 @@ class LayoutWidget @JvmOverloads constructor(
                         }
                     }
                     if (closestDownEl != null) {
-                        if (posEl.element is ClickableWidget) {
-                            posEl.element.height = closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH
-                        } else if (posEl.element is Scalable) {
-                            posEl.element.setHeight(closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH)
+                        if (posEl.element is Scalable) {
+                            posEl.element.setH(closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH)
                         }
                     } else {
-                        if (posEl.element is ClickableWidget) {
-                            posEl.element.height = posEl.set.h.get() - posEl.getTop()
-                        } else if (posEl.element is Scalable) {
-                            posEl.element.setHeight(posEl.set.h.get() - posEl.getTop())
+                        if (posEl.element is Scalable) {
+                            posEl.element.setH(posEl.set.h.get() - posEl.getTop())
                         }
                     }
                 }
@@ -1084,7 +1080,7 @@ class LayoutWidget @JvmOverloads constructor(
                 if (element is ClickableWidget) {
                     element.width = 0
                 } else if (element is Scalable) {
-                    element.setWidth(0)
+                    element.setW(0)
                 }
             }
         }
@@ -1102,7 +1098,7 @@ class LayoutWidget @JvmOverloads constructor(
                 if (element is ClickableWidget) {
                     element.width += delta
                 } else if (element is Scalable) {
-                    element.setWidth(elWidth() + delta)
+                    element.setW(elWidth() + delta)
                 }
             }
         }

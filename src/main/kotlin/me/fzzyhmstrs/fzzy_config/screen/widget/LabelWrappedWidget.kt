@@ -36,9 +36,9 @@ import net.minecraft.text.Text
  * @since 0.6.0
  */
 class LabelWrappedWidget(private val child: ClickableWidget, private val label: Text, private val showLabel: Boolean = true)
-    : ClickableWidget(child.x, child.y, child.width, child.height, label), TooltipChild {
+    : ClickableWidget(child.x, child.y, child.width, child.height, label), TooltipChild, Scalable {
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         child.render(context, mouseX, mouseY, delta)
         if (showLabel) {
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, label.asOrderedText(), x, y + getHeight() - 9, -1)
@@ -55,8 +55,8 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         return child.mouseReleased(mouseX, mouseY, button)
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        return child.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
+        return child.mouseScrolled(mouseX, mouseY, verticalAmount)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
@@ -119,8 +119,12 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         child.width = width
     }
 
-    override fun setHeight(height: Int) {
-        child.height = height
+    override fun setW(width: Int) {
+        child.width = width
+    }
+
+    override fun setH(height: Int) {
+        child.nullCast<Scalable>()?.setH(height)
     }
 
     override fun getNavigationPath(navigation: GuiNavigation?): GuiNavigationPath? {

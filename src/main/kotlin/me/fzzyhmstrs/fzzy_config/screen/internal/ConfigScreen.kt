@@ -10,15 +10,14 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
-import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DirectionalLayoutWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
@@ -30,9 +29,10 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.world.CreateWorldScreen.FOOTER_SEPARATOR_TEXTURE
+import net.minecraft.client.gui.screen.world.CreateWorldScreen.HEADER_SEPARATOR_TEXTURE
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.gui.widget.DirectionalLayoutWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
 import net.minecraft.text.ClickEvent
@@ -169,7 +169,8 @@ internal class ConfigScreen(
 
     private fun initLayout() {
         layout.refreshPositions()
-        configList.setDimensionsAndPosition(320, layout.contentHeight, (this.width / 2) - 160, layout.headerHeight)
+        val contentHeight = this.height - layout.headerHeight - layout.footerHeight
+        configList.setDimensionsAndPosition(320, contentHeight, (this.width / 2) - 160, layout.headerHeight)
     }
 
     private fun initNarrator() {
@@ -212,16 +213,6 @@ internal class ConfigScreen(
         return bl
     }
 
-    override fun refreshNarrator(previouslyDisabled: Boolean) {
-        if (previouslyDisabled) {
-            this.setScreenNarrationDelay(TimeUnit.SECONDS.toMillis(2L), false)
-        }
-
-        if (this.narratorToggleButton != null) {
-            narratorToggleButton?.setValue(client?.options?.narrator?.value)
-        }
-    }
-
     override fun updateNarrator() {
         if (this.isNarratorActive()) {
             val l = Util.getMeasuringTimeMs()
@@ -246,13 +237,6 @@ internal class ConfigScreen(
         }
     }
 
-    override fun getUsageNarrationText(): Text {
-        return if (client?.navigationType?.isKeyboard == true)
-            super.getUsageNarrationText()
-        else
-            "narrator.screen.usage".translate()
-    }
-
     override fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         drawMenuListBackground(context)
         super.renderContents(context, mouseX, mouseY, delta)
@@ -260,15 +244,22 @@ internal class ConfigScreen(
     }
 
     private fun drawHeaderAndFooterSeparators(context: DrawContext) {
-        val identifier = if (client?.world == null) HEADER_SEPARATOR_TEXTURE else INWORLD_HEADER_SEPARATOR_TEXTURE
-        val identifier2 = if (client?.world == null) FOOTER_SEPARATOR_TEXTURE else INWORLD_FOOTER_SEPARATOR_TEXTURE
+        val identifier = if (client?.world == null) HEADER_SEPARATOR_TEXTURE else HEADER_SEPARATOR_TEXTURE
+        val identifier2 = if (client?.world == null) FOOTER_SEPARATOR_TEXTURE else FOOTER_SEPARATOR_TEXTURE
+        val contentHeight = this.height - layout.headerHeight - layout.footerHeight
         context.drawTex(identifier, 0, layout.headerHeight - 2, 0.0f, 0.0f, this.width, 2, 32, 2)
-        context.drawTex(identifier2, 0, layout.headerHeight + layout.contentHeight, 0.0f, 0.0f, this.width, 2, 32, 2)
+        context.drawTex(identifier2, 0, layout.headerHeight + contentHeight, 0.0f, 0.0f, this.width, 2, 32, 2)
     }
 
     private fun drawMenuListBackground(context: DrawContext) {
-        val identifier = if (client?.world == null) MENU_LIST_BACKGROUND_TEXTURE else INWORLD_MENU_LIST_BACKGROUND_TEXTURE
-        context.drawTex(identifier, 0, layout.headerHeight, 0f, 0f, this.width, layout.contentHeight, 32, 32)
+        renderBackgroundTexture(context)
+        context.setShaderColor(0.125f, 0.125f, 0.125f, 1.0f);
+        val contentHeight = this.height - layout.headerHeight - layout.footerHeight
+        context.drawTex(OPTIONS_BACKGROUND_TEXTURE, 0, configList.y, 0.0f, 0.0f + configList.topDelta(), this.width, contentHeight, 32, 32)
+        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
+        /*val identifier = if (client?.world == null) MENU_LIST_BACKGROUND_TEXTURE else INWORLD_MENU_LIST_BACKGROUND_TEXTURE
+        val contentHeight = this.height - layout.headerHeight - layout.footerHeight
+        context.drawTex(identifier, 0, layout.headerHeight, 0f, 0f, this.width, contentHeight, 32, 32)*/
     }
 
     override fun mouseMoved(mouseX: Double, mouseY: Double) {
@@ -277,12 +268,12 @@ internal class ConfigScreen(
         super.mouseMoved(mouseX, mouseY)
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
         val popup = activeWidget()
         if (popup != null) {
-            return popup.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+            return popup.mouseScrolled(mouseX, mouseY, verticalAmount)
         }
-        return configList.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+        return configList.mouseScrolled(mouseX, mouseY, verticalAmount)
     }
 
     override fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -345,7 +336,7 @@ internal class ConfigScreen(
                     false
                 }
             }
-            ContextType.INFO ->{
+            ContextType.INFO -> {
                 openInfoPopup()
                 true
             }

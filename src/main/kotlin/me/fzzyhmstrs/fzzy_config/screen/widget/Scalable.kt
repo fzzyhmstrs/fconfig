@@ -15,10 +15,10 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
  *
  * Expectation is that the set methods actually change the dimensions of the widget, much like [net.minecraft.client.gui.widget.ClickableWidget]
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, updated method names 0.6.0
  */
 //client
 interface Scalable {
-    fun setWidth(width: Int)
-    fun setHeight(height: Int)
+    fun setW(width: Int)
+    fun setH(height: Int)
 }

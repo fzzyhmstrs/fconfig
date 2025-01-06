@@ -203,8 +203,8 @@ class DynamicListWidget(
             null
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        super.renderWidget(context, mouseX, mouseY, delta)
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        super.renderButton(context, mouseX, mouseY, delta)
         context.enableScissor(0, this.top, MinecraftClient.getInstance().currentScreen?.width ?: 320, this.bottom)
         for (entry in inFrameEntries()) {
             entry.renderExtras(context, mouseX, mouseY, delta)
@@ -276,8 +276,8 @@ class DynamicListWidget(
         return entries.scrollToBottom()
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: super<CustomListWidget>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
+        return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, verticalAmount) ?: super<CustomListWidget>.mouseScrolled(mouseX, mouseY, verticalAmount)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
