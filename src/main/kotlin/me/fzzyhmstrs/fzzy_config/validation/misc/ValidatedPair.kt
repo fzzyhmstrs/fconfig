@@ -250,7 +250,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
                         "right",
                         right,
                         LayoutWidget.Position.RIGHT,
-                        LayoutWidget.Position.ALIGN_LEFT_OF_AND_JUSTIFY,
+                        LayoutWidget.Position.POSITION_RIGHT_OF_AND_JUSTIFY,
                         LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
                 else
                     contentLayout.add(
