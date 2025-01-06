@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.MouseClickResult
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.pos.Pos
 import net.minecraft.client.MinecraftClient
@@ -109,7 +110,7 @@ class PopupWidget
 
     @Suppress("UNUSED_PARAMETER")
     private fun applyBlur(delta: Float) {
-        MinecraftClient.getInstance().gameRenderer.renderBlur()
+        RenderUtil.renderBlur()
         MinecraftClient.getInstance().framebuffer.beginWrite(false)
     }
 
