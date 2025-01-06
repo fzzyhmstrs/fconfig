@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.Scalable
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
@@ -58,11 +59,15 @@ internal class DividerWidget(width: Int): Widget, Drawable, Scalable {
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        context.drawNineSlice(DIVIDER, xx, yy - 3, ww, hh + 6, 3, 3, 64, 7)
+        context.drawNineSlice(DIVIDER, xx, yy - 3, ww, hh + 6)
     }
 
     companion object {
         private val DIVIDER = "widget/popup/divider".fcId()
+
+        init {
+            RenderUtil.addBackground("widget/popup/divider".fcId(), RenderUtil.Background(3, 3, 64, 7))
+        }
     }
 
 
