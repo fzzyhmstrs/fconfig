@@ -83,22 +83,18 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
      */
     final override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         hoveredElement = if (popupWidgets.isNotEmpty()) null else children().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
-        if (popupWidgets.isEmpty())
-            super.render(context, mouseX, mouseY, delta)
-        else {
-            context.matrices.push()
-            context.matrices.translate(0f, 0f, -450f*popupWidgets.size)
-            super.render(context, 0, 0, delta)
-            context.matrices.pop()
-        }
         context.matrices.push()
-        context.matrices.translate(0f, 0f, -450f*popupWidgets.size + 450f)
+        if (popupWidgets.isNotEmpty())
+            context.matrices.translate(0f, 0f, -500f * popupWidgets.size)
+        renderContents(context, mouseX, mouseY, delta)
+        if (popupWidgets.isNotEmpty())
+            context.matrices.translate(0f, 0f, 500f)
         for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
             if(index == popupWidgets.lastIndex)
                 popup.render(context, mouseX, mouseY, delta)
             else
                 popup.render(context, 0, 0, delta)
-            context.matrices.translate(0f, 0f, 450f)
+            context.matrices.translate(0f, 0f, 500f)
         }
         context.matrices.pop()
         if (popupWidgets.isNotEmpty())

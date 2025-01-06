@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
@@ -117,8 +118,8 @@ class ConfigAction @JvmOverloads constructor(
         private var titleSupplier: Supplier<Text> = Supplier { FcText.EMPTY }
         private var activeSupplier: Supplier<Boolean> = Supplier { true }
         private var desc: Text? = null
-        private var background: ActiveButtonWidget.Background? = null
-        private var decoration: Identifier? = null
+        private var background: TextureSet? = null
+        private var decoration: Decorated? = null
         private var flags: Byte = 0
 
         /**
@@ -164,7 +165,7 @@ class ConfigAction @JvmOverloads constructor(
          * @author fzzyhmstrs
          * @since 0.5.0
          */
-        fun background(background: ActiveButtonWidget.Background): Builder {
+        fun background(background: TextureSet): Builder {
             this.background = background
             return this
         }
@@ -178,7 +179,7 @@ class ConfigAction @JvmOverloads constructor(
          * @since 0.5.0
          */
         fun decoration(id: Identifier): Builder {
-            this.decoration = id
+            this.decoration = SpriteDecoration(id)
             return this
         }
 
@@ -214,7 +215,7 @@ class ConfigAction @JvmOverloads constructor(
          * @since 0.5.0
          */
         fun build(action: Runnable): ConfigAction {
-            val q = ConfigAction(titleSupplier, activeSupplier, action, decoration ?: TextureIds.DECO_BUTTON_CLICK, desc, background)
+            val q = ConfigAction(titleSupplier, activeSupplier, action, decoration ?: TextureDeco.DECO_BUTTON_CLICK, desc, background)
             q.flags = flags
             return q
         }
@@ -288,12 +289,12 @@ class ConfigAction @JvmOverloads constructor(
             }
             if (decoration == null  && action != null) {
                 decoration = when(action) {
-                    ClickEvent.Action.OPEN_URL -> TextureIds.DECO_LINK
-                    ClickEvent.Action.OPEN_FILE -> TextureIds.DECO_FOLDER
-                    ClickEvent.Action.RUN_COMMAND -> TextureIds.DECO_COMMAND
-                    ClickEvent.Action.SUGGEST_COMMAND -> TextureIds.DECO_BUTTON_CLICK
-                    ClickEvent.Action.CHANGE_PAGE -> TextureIds.DECO_BUTTON_CLICK
-                    ClickEvent.Action.COPY_TO_CLIPBOARD -> TextureIds.DECO_BUTTON_CLICK
+                    ClickEvent.Action.OPEN_URL -> TextureDeco.DECO_LINK
+                    ClickEvent.Action.OPEN_FILE -> TextureDeco.DECO_FOLDER
+                    ClickEvent.Action.RUN_COMMAND -> TextureDeco.DECO_COMMAND
+                    ClickEvent.Action.SUGGEST_COMMAND -> TextureDeco.DECO_BUTTON_CLICK
+                    ClickEvent.Action.CHANGE_PAGE -> TextureDeco.DECO_BUTTON_CLICK
+                    ClickEvent.Action.COPY_TO_CLIPBOARD -> TextureDeco.DECO_BUTTON_CLICK
                 }
             }
             when(action) {
@@ -301,7 +302,7 @@ class ConfigAction @JvmOverloads constructor(
                 ClickEvent.Action.SUGGEST_COMMAND -> this.flag(EntryFlag.Flag.REQUIRES_WORLD)
                 else -> {}
             }
-            val q = ConfigAction(titleSupplier, activeSupplier, runnable, decoration ?: TextureIds.DECO_BUTTON_CLICK, desc, background)
+            val q = ConfigAction(titleSupplier, activeSupplier, runnable, decoration ?: TextureDeco.DECO_BUTTON_CLICK, desc, background)
             q.flags = flags
             return q
         }

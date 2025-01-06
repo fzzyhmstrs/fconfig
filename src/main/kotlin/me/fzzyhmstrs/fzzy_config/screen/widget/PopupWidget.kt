@@ -39,6 +39,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
+import java.awt.Color
 import java.util.function.*
 import java.util.function.Function
 import kotlin.math.max
@@ -81,6 +82,7 @@ class PopupWidget
     private var focused: Element? = null
     private var focusedSelectable: Selectable? = null
     private var dragging = false
+    private val fillColor = Color(30, 30, 30, 90).rgb
     private var suggestionWindowElement: Element? = null
 
     init {
@@ -322,10 +324,11 @@ class PopupWidget
         private val titleElement: TextWidget
 
         init {
-            val tw = TextWidget(title, MinecraftClient.getInstance().textRenderer)
-            if (spacingH < 4) {
-                tw.height += ((4 - spacingH) * 2)
-            }
+            val hh = if(spacingH < 4)
+                MinecraftClient.getInstance().textRenderer.fontHeight + ((4 - spacingH) * 2)
+            else
+                MinecraftClient.getInstance().textRenderer.fontHeight
+            val tw = TextWidget(MinecraftClient.getInstance().textRenderer.getWidth(title), hh, title, MinecraftClient.getInstance().textRenderer)
             titleElement = tw
 
             layoutWidget.add("title", tw, LayoutWidget.Position.ALIGN_CENTER)
@@ -582,14 +585,14 @@ class PopupWidget
             layoutWidget.pushSpacing(UnaryOperator.identity()) { _ -> spacingH }
             add("done_for_$trueParent",
             CustomButtonWidget.builder(ScreenTexts.DONE) { cbw ->
-                bw.setDimensions(cbw.width, cbw.height)
+                bw.width = cbw.width
                 bw.setPosition(cbw.x, cbw.y)
                 bw.tooltip = cbw.tooltip
                 bw.message = cbw.message
                 pressAction.onPress(bw)
                 cbw.tooltip = bw.tooltip
                 cbw.message = bw.message
-                cbw.setDimensions(bw.width, bw.height)
+                cbw.width = bw.width
                 cbw.setPosition(bw.x, bw.y) }
                 .size(50, 20)
                 .build(),

@@ -117,7 +117,7 @@ class TestConfigImpl: Config(Identifier("fzzy_config_test", "test_config"), subf
     @ConfigGroup.Pop
     var map1 = mapOf(1 to "a", 2 to "c")
 
-    var id1 = ValidatedIdentifier.ofList(Identifier.of("stick"), listOf(Identifier.of("stick"), Identifier.of("blaze_rod"), Identifier.of("coal"), Identifier.of("charcoal")))
+    var id1 = ValidatedIdentifier.ofList(Identifier("stick"), listOf(Identifier("stick"), Identifier("blaze_rod"), Identifier("coal"), Identifier("charcoal")))
 
     var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices()
 

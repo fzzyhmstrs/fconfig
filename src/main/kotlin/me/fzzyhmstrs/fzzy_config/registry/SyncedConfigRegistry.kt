@@ -144,7 +144,7 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    internal fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayerEntity, changes: List<String>, canSender: BiPredicate<ServerPlayerEntity, Identifier>, sender: BiConsumer<ServerPlayerEntity, FzzyPayload>) {
+    internal fun receiveConfigUpdate(serializedConfigs: Map<String, String>, server: MinecraftServer, serverPlayer: ServerPlayerEntity, clientPerm: Int, changes: List<String>, canSender: BiPredicate<ServerPlayerEntity, Identifier>, sender: BiConsumer<ServerPlayerEntity, FzzyPayload>) {
         val successfulUpdates: MutableMap<String, String> = mutableMapOf()
         val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 

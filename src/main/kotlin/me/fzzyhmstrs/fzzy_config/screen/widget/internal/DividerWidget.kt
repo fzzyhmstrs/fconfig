@@ -43,14 +43,14 @@ internal class DividerWidget(width: Int): Widget, Drawable, Scalable {
     override fun getWidth(): Int {
         return ww
     }
-    override fun setWidth(width: Int) {
+    override fun setW(width: Int) {
         ww = width
     }
 
     override fun getHeight(): Int {
         return hh
     }
-    override fun setHeight(height: Int) {
+    override fun setH(height: Int) {
         hh = height
     }
 

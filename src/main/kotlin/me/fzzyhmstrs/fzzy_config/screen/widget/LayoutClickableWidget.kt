@@ -32,7 +32,7 @@ import net.minecraft.text.Text
  * @since 0.6.0
  */
 class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val layout: LayoutWidget)
-    : ClickableWidget(x, y, width, height, FcText.empty()), ParentElement, TooltipChild {
+    : ClickableWidget(x, y, width, height, FcText.empty()), ParentElement, TooltipChild, Scalable {
 
     private var children: MutableList<Element> = mutableListOf()
     private var drawables: List<Drawable> = emptyList()
@@ -77,23 +77,27 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
 
     override fun setWidth(width: Int) {
         super.setWidth(width)
-        layout.width = width
+        layout.setW(width)
     }
 
-    override fun setHeight(height: Int) {
-        super.setHeight(height)
-        layout.height = height
+    override fun setW(width: Int) {
+        this.width = width
     }
 
-    override fun setDimensions(width: Int, height: Int) {
+    override fun setH(height: Int) {
+        this.height = height
+        layout.setH(height)
+    }
+
+    fun setDimensions(width: Int, height: Int) {
         super.setWidth(width)
-        super.setHeight(height)
+        this.setH(height)
         layout.setDimensions(width, height)
     }
 
-    override fun setDimensionsAndPosition(width: Int, height: Int, x: Int, y: Int) {
+    fun setDimensionsAndPosition(width: Int, height: Int, x: Int, y: Int) {
         super.setWidth(width)
-        super.setHeight(height)
+        this.setH(height)
         super.setX(x)
         super.setY(y)
         layout.setDimensions(width, height)
@@ -113,7 +117,7 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
     }
 
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         for (d in drawables) {
             d.render(context, mouseX, mouseY, delta)
         }
@@ -131,8 +135,8 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         return super<ParentElement>.mouseReleased(mouseX, mouseY, button)
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        return super<ParentElement>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
+        return super<ParentElement>.mouseScrolled(mouseX, mouseY, verticalAmount)
     }
 
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {

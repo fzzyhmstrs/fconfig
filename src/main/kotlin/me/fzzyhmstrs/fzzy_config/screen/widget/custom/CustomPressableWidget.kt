@@ -11,9 +11,12 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -21,7 +24,6 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.KeyCodes
 import net.minecraft.text.Text
-import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus.Internal
 
@@ -81,20 +83,21 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     open fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawNineSlicedTexture(
+        context.drawNineSlice(
             textures.get(active, this.isSelected),
             this.x,
             this.y,
             this.getWidth(),
-            this.getHeight(), 20, 4, 200, 20, 0, 0)
-        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
-        val i = if (this.active) 16777215 else 10526880
-        this.drawMessage(context, MinecraftClient.getInstance().textRenderer, i or (MathHelper.ceil(this.alpha * 255.0f) shl 24))
+            this.getHeight())
     }
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
         renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
+    }
+
+    open fun drawMessage(context: DrawContext?, textRenderer: TextRenderer?, color: Int) {
+        this.drawScrollableText(context, textRenderer, 2, color)
     }
 
     /**
@@ -156,9 +159,9 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     }
 
     companion object {
-        protected val tex =  "widget/button".simpleId()
-        protected val disabled = "widget/button_disabled".simpleId()
-        protected val highlighted = "widget/button_highlighted".simpleId()
+        protected val tex =  "widget/button".fcId()
+        protected val disabled = "widget/button_disabled".fcId()
+        protected val highlighted = "widget/button_highlighted".fcId()
 
         /**
          * The default texture set of the widget. The same textures used by MC buttons.

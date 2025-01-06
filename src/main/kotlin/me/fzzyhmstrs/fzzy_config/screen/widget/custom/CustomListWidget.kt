@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.widget.Scalable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
@@ -47,7 +48,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     y,
     width,
     height,
-    ScreenTexts.EMPTY), ParentElement {
+    ScreenTexts.EMPTY), ParentElement, Scalable {
 
     //// Widget ////
 
@@ -70,6 +71,11 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     protected val scrollBarUp: Identifier = "widget/scroll/vanilla/scroll_up".fcId()
     protected val scrollBarUpHighlighted: Identifier = "widget/scroll/vanilla/scroll_up_highlighted".fcId()
 
+    protected val right
+        get() = this.x + this.width
+
+    protected val bottom
+        get() = this.y + this.height
 
     /**
      * The content width of the row, excluding padding and space for the scroll bar
@@ -90,6 +96,14 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return x + leftPadding
     }
 
+    override fun setW(width: Int) {
+        this.width = width
+    }
+
+    override fun setH(height: Int) {
+        this.height = height
+    }
+
     /**
      * @suppress
      */
@@ -102,8 +116,9 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     /**
      * @suppress
      */
-    override fun setDimensions(width: Int, height: Int) {
-        super.setDimensions(width, height)
+    fun setDimensions(width: Int, height: Int) {
+        super.setWidth(width)
+        this.setH(height)
         onReposition()
         focusedElement?.let { ensureVisible(it) }
     }
@@ -111,9 +126,10 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     /**
      * @suppress
      */
-    override fun setDimensionsAndPosition(width: Int, height: Int, x: Int, y: Int) {
+    fun setDimensionsAndPosition(width: Int, height: Int, x: Int, y: Int) {
         super.setPosition(x, y)
-        super.setDimensions(width, height)
+        super.setWidth(width)
+        this.setH(height)
         onReposition()
         focusedElement?.let { ensureVisible(it) }
     }
@@ -144,7 +160,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return selectableEntries()
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         this.hoveredElement = if (isMouseOver(mouseX.toDouble(), mouseY.toDouble()))
             inFrameEntries().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
         else
@@ -522,7 +538,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
      */
     abstract fun handleScrollByBar(scrollAmount: Int): Boolean
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
         return handleScroll(verticalAmount)
     }
 
