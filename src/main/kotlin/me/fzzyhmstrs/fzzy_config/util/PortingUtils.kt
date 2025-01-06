@@ -12,13 +12,15 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import io.netty.buffer.ByteBuf
 import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.namedEntryList
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.item.Item
+import net.minecraft.item.ItemConvertible
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.encoding.StringEncoding
 import net.minecraft.network.encoding.VarInts
-import net.minecraft.registry.Registry
-import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.RegistryWrapper
+import net.minecraft.recipe.Ingredient
+import net.minecraft.registry.*
 import net.minecraft.registry.entry.RegistryEntryList
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.server.network.ServerPlayerEntity
@@ -82,6 +84,22 @@ object PortingUtils {
 
     fun TagKey<*>.regRefId(): Identifier {
         return this.registryRef.value
+    }
+
+    fun emptyIngredient(id: String = ""): Ingredient {
+        throw UnsupportedOperationException("Ingredients can't be empty; item ID [$id] not found in the Items Registry.")
+    }
+
+    fun itemIngredient(item: ItemConvertible): Ingredient {
+        return Ingredient.ofItem(item)
+    }
+
+    fun listIngredient(stacks: List<ItemConvertible>): Ingredient {
+        return Ingredient.ofItems(stacks.stream())
+    }
+
+    fun tagIngredient(tag: TagKey<Item>): Ingredient {
+        return Ingredient.fromTag(Registries.ITEM.namedEntryList(tag).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
     }
 
     object Codecs {

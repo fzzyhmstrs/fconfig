@@ -17,7 +17,7 @@ import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.PortingUtils.namedEntryList
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient.IngredientProvider
@@ -332,9 +332,9 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         override fun provide(): Ingredient {
             val item = Registries.ITEM.get(id)
             return if (item == Items.AIR) {
-                throw UnsupportedOperationException("Ingredients can't be empty; item ID [$id] not found in the Items Registry.")
+                PortingUtils.emptyIngredient(id.toString())
             } else {
-                Ingredient.ofItems(item)
+                PortingUtils.itemIngredient(item)
             }
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
@@ -375,7 +375,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
                     tagItems.add(it.value())
                 }
             }
-            return Ingredient.ofItems((items + tagItems).stream())
+            return PortingUtils.listIngredient(items + tagItems)
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
             val array = toml.asTomlArray()
@@ -435,7 +435,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
             return ProviderType.TAG
         }
         override fun provide(): Ingredient {
-            return Ingredient.fromTag(Registries.ITEM.namedEntryList(TagKey.of(RegistryKeys.ITEM, tag)).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
+            return PortingUtils.tagIngredient(TagKey.of(RegistryKeys.ITEM, tag))
         }
         override fun deserialize(toml: TomlElement): IngredientProvider {
             return TagProvider(toml.asTomlLiteral().toString().replace("#", "").simpleId())
