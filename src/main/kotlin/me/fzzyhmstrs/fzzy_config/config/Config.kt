@@ -11,10 +11,13 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
+import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
  * Base Config class for use with FzzyConfig
@@ -38,13 +41,15 @@ import net.minecraft.util.Identifier
  * @param subfolder String, optional - puts the config into a sub-subfolder inside the subfolder specified in [folder]. Does not affect ID or GUI layout
  * @see ConfigApi
  * @see ConfigSection
+ * @see ConfigAction
+ * @see ConfigGroup
  * @see getId
  * @see me.fzzyhmstrs.fzzy_config.validation.ValidatedField
  * @author fzzyhmstrs
  * @since 0.2.0
  */
 @Suppress("unused")
-open class Config @JvmOverloads constructor(protected val identifier: Identifier, val subfolder: String = "", val folder: String = identifier.namespace, val name: String = identifier.path): Walkable, Translatable {
+open class Config @JvmOverloads constructor(protected val identifier: Identifier, val subfolder: String = "", val folder: String = identifier.namespace, val name: String = identifier.path): Walkable, Translatable, EntryAnchor {
 
 
     /**
@@ -136,6 +141,24 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @since 0.5.0
      */
     open fun onUpdateServer(playerEntity: ServerPlayerEntity){}
+
+    /**
+     * Anchor modifier method for a config. By default, provides a folder icon decoration to the base anchor. You can provide a custom icon if you want a special icon for the config in the goto menu. If your config has a long name, you may also want to create and provide a shortened "summary" name for a goto link.
+     * @param anchor [EntryAnchor.Anchor] automatically generated input Anchor for modification.
+     * @return Anchor with any desired modifications. If you still want the folder deco, call super
+     * @see [TextureDeco] for other built in icons
+     * @see [me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration] for a simple class to build your own icon
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
+        return anchor.decoration(TextureDeco.DECO_FOLDER)
+    }
+
+    @Internal
+    final override fun anchorId(scope: String): String {
+        return translationKey()
+    }
 
     /**
      * @suppress

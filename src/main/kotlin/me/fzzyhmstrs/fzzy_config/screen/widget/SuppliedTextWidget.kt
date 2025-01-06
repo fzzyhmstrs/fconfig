@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.google.common.base.Supplier
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.screen.ScreenTexts
@@ -30,9 +32,9 @@ import kotlin.math.roundToInt
  * @param width Int - width of the widget in pixels
  * @param height Int - height of the widget in pixels
  * @author fzzyhmstrs
- * @since 0.3.1
+ * @since 0.3.1, removed align:direction: methods and now implements TooltipChild in 0.6.0
  */
-class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): AbstractTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer) {
+class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): AbstractTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer), TooltipChild {
 
     constructor(messageSupplier: Supplier<Text>, textRenderer: TextRenderer): this(messageSupplier, textRenderer, textRenderer.getWidth(messageSupplier.get().asOrderedText()), textRenderer.fontHeight)
 
@@ -46,37 +48,9 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
      * @author fzzyhmstrs
      * @since 0.3.1
      */
-    private fun align(horizontalAlignment: Float): SuppliedTextWidget {
+    fun align(horizontalAlignment: Float): SuppliedTextWidget {
         this.horizontalAlignment = horizontalAlignment
         return this
-    }
-
-    /**
-     * Aligns the widget text to the left
-     * @return [SuppliedTextWidget] this widget
-     * @author fzzyhmstrs
-     * @since 0.3.1
-     */
-    fun alignLeft(): SuppliedTextWidget {
-        return this.align(0.0f)
-    }
-    /**
-     * Aligns the widget text to the center
-     * @return [SuppliedTextWidget] this widget
-     * @author fzzyhmstrs
-     * @since 0.3.1
-     */
-    fun alignCenter(): SuppliedTextWidget {
-        return this.align(0.5f)
-    }
-    /**
-     * Aligns the widget text to the right
-     * @return [SuppliedTextWidget] this widget
-     * @author fzzyhmstrs
-     * @since 0.3.1
-     */
-    fun alignRight(): SuppliedTextWidget {
-        return this.align(1.0f)
     }
 
     /**
@@ -98,7 +72,7 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         val i = getWidth()
         val j = textRenderer.getWidth(text)
         val k = x + (horizontalAlignment * (max(i - j, 0)).toFloat()).roundToInt()
-        val l = y + (getHeight() - textRenderer.fontHeight) / 2
+        val l = y + (getHeight() - textRenderer.fontHeight + 1) / 2
         val orderedText = if (j > i) this.trim(text, i) else text.asOrderedText()
         context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
         if (overflowTooltip != null) {
@@ -112,4 +86,18 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         val stringVisitable = textRenderer.trimToWidth(text, width - textRenderer.getWidth(ScreenTexts.ELLIPSIS))
         return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
     }
+
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return false
+    }
+
+    override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
+        if (!parentSelected) return TooltipChild.EMPTY
+        return overflowTooltip?.let { listOf(it.get()) }?.takeIf { textRenderer.getWidth(it[0]) > getWidth() } ?: TooltipChild.EMPTY
+    }
+
+    override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+        overflowTooltip?.let { builder?.put(NarrationPart.TITLE, it.get()) }
+    }
+
 }

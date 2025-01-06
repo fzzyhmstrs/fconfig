@@ -12,21 +12,17 @@ package me.fzzyhmstrs.fzzy_config.util.platform.impl
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
-import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.lucko.fabric.api.permissions.v0.Permissions
 import net.fabricmc.api.EnvType
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.fabricmc.loader.api.FabricLoader
-import net.fabricmc.loader.api.ModContainer
 import net.fabricmc.loader.api.metadata.CustomValue
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.server.command.CommandManager
 import net.minecraft.server.command.ServerCommandSource
 import java.io.File
-import java.util.function.BiFunction
 
 internal object PlatformUtils {
 
@@ -71,11 +67,6 @@ internal object PlatformUtils {
     fun hasPermission(player: PlayerEntity, permission: String): Boolean {
         return Permissions.check(player, permission)
     } //COnfigApiImpl, elsewhere??
-
-    @JvmStatic
-    fun createConfigFactoryProvider(): Map<String, BiFunction<Screen, ModContainer, Screen?>> {
-        return ClientConfigRegistry.getScreenScopes().associateWith { scope -> BiFunction { _: Screen, _: ModContainer -> ClientConfigRegistry.provideScreen(scope) } }
-    }
 
     fun registerCommands() {
         /*ArgumentTypeRegistry.registerArgumentType(

@@ -16,8 +16,8 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.Position
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -38,14 +38,12 @@ import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.MutableText
-import net.minecraft.text.Text
 import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
-import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.function.Supplier
 
@@ -53,10 +51,6 @@ import java.util.function.Supplier
  * A validated color value
  *
  * This is a [ValidatedField] of type [ColorHolder], a basic Color data class.
- * @param r the default red component, 0 to 255
- * @param g the default green component, 0 to 255
- * @param b the default blue component, 0 to 255
- * @param a the default alpha(transparency) component, 0 to 255 or Int.MIN_VALUE to set the color as opaque. Defaults to Int.MIN_VALUE
  * @see [validatedColor]
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.colors
  * @throws IllegalStateException if the input RGBA values aren't in bounds (not in the range 0..255)
@@ -65,6 +59,20 @@ import java.util.function.Supplier
  */
 open class ValidatedColor: ValidatedField<ColorHolder> {
 
+    /**
+     * A validated color value
+     *
+     * This is a [ValidatedField] of type [ColorHolder], a basic Color data class.
+     * @param r the default red component, 0 to 255
+     * @param g the default green component, 0 to 255
+     * @param b the default blue component, 0 to 255
+     * @param a the default alpha(transparency) component, 0 to 255 or Int.MIN_VALUE to set the color as opaque. Defaults to Int.MIN_VALUE
+     * @see [validatedColor]
+     * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.colors
+     * @throws IllegalStateException if the input RGBA values aren't in bounds (not in the range 0..255)
+     * @author fzzyhmstrs
+     * @since 0.1.2
+     */
     @JvmOverloads
     constructor(r: Int, g: Int, b: Int, a: Int = Int.MIN_VALUE): super(ColorHolder(r, g, b, if(a > Int.MIN_VALUE) a else 255, a > Int.MIN_VALUE)) {
         if(r<0 || r>255) throw IllegalArgumentException("Red portion of validated color not provided a default value between 0 and 255")
@@ -94,10 +102,23 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
 
     private constructor(r: Int, g: Int, b: Int, a: Int, alphaMode: Boolean): super(ColorHolder(r, g, b, a, alphaMode))
 
+    /**
+     * Convert this [ValidatedColor] to an ARGB hex string if this color supports transparency (0xFFFFFFFF), or to a RGB hex string otherwise (0xFFFFFF)
+     * @return Hex string representation of this color
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     @Suppress("MemberVisibilityCanBePrivate")
     fun toHexString(): String {
         return get().toHexString()
     }
+
+    /**
+     * Sets the value of this [ValidatedColor] using the passed hex string (0xFFFFFFFF)
+     * @param s String value representing a hex color
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     @Suppress("unused")
     fun setFromHexString(s: String) {
         val colorInt = try {
@@ -108,6 +129,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         }
         validateAndSet(get().fromInt(colorInt))
     }
+
     /**
      * returns ARGB color int representing this color
      * @return Int - ARGB formatted integer storing this color
@@ -117,6 +139,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     fun toInt(): Int {
         return get().argb()
     }
+
     /**
      * Updates this color with a new holder representing the color passed in integer form
      * @param i Int - the ARGB int representing the new color holder
@@ -167,33 +190,25 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         return get().a
     }
 
-
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<ColorHolder> {
         return storedValue.deserializeEntry(toml, mutableListOf(), fieldName, ConfigApiImpl.IGNORE_NON_SYNC)
     }
+
     @Internal
     override fun serialize(input: ColorHolder): ValidationResult<TomlElement> {
         val errors: MutableList<String> = mutableListOf()
         return ValidationResult.predicated(storedValue.serializeEntry(input, errors, ConfigApiImpl.IGNORE_NON_SYNC), errors.isEmpty(), errors.toString())
     }
+
     @Internal
     override fun correctEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
         return storedValue.correctEntry(input, type)
     }
+
     @Internal
     override fun validateEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
         return storedValue.validateEntry(input, type)
-    }
-
-    /**
-     * Creates a deep copy of the stored value and returns it
-     * @return ColorHolder - deep copy of the currently stored color
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun copyStoredValue(): ColorHolder {
-        return storedValue.copy()
     }
 
     /**
@@ -205,14 +220,32 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     override fun instanceEntry(): ValidatedColor {
         return storedValue.instance()
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         return input is ColorHolder && validateEntry(input, EntryValidator.ValidationType.STRONG).isValid()
     }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input [ColorHolder] input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: ColorHolder): ColorHolder {
+        return input.copy()
+    }
+
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): ClickableWidget {
-        return ColorButtonWidget({get().argb()}, {this.toHexString().lit()}, {openColorEditPopup()})
+        return ActiveButtonWidget({ this.toHexString().lit() }, 110, 20, { true }, { openColorEditPopup() })
+    }
+
+    @Internal
+    override fun entryDeco(): Decorated.DecoratedOffset? {
+        return Decorated.DecoratedOffset(ColorDecoration { get().argb() }, 2, 2)
     }
 
     /**
@@ -233,24 +266,23 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         val textRenderer = MinecraftClient.getInstance().textRenderer
         val mutableColor = this.get().mutable(validatedString())
         val popup = PopupWidget.Builder(translation())
-            .addElement("r_name", TextWidget(12, 20, "fc.validated_field.color.r".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("g_name", TextWidget(12, 20, "fc.validated_field.color.g".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("b_name", TextWidget(12, 20, "fc.validated_field.color.b".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("a_name", TextWidget(12, 20, "fc.validated_field.color.a".translate(), textRenderer), Position.BELOW, Position.ALIGN_LEFT)
-            .addElement("r_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.r }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { r -> mutableColor.updateRGB(r, mutableColor.g, mutableColor.b)}), "r_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("g_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.g }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { g -> mutableColor.updateRGB(mutableColor.r, g, mutableColor.b)}), "g_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("b_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.b }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { b -> mutableColor.updateRGB(mutableColor.r, mutableColor.g, b)}), "b_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("hl_map", HLMapWidget(mutableColor), "r_box", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("s_slider", VerticalSliderWidget({mutableColor.s.toDouble()}, 0, 0, 20, 68, FcText.empty(), {d -> mutableColor.updateHSL(mutableColor.h, d.toFloat(), mutableColor.l)}), "hl_map", Position.RIGHT, Position.HORIZONTAL_TO_TOP_EDGE)
-            .addElement("hex_box", ValidationBackedTextFieldWidget(84, 20, {mutableColor.hex.get()}, ChoiceValidator.any(), mutableColor.hex, {s -> mutableColor.updateHex(s) }), "hl_map", Position.BELOW, Position.VERTICAL_TO_LEFT_EDGE)
+            .add("r_name", TextWidget(12, 20, "fc.validated_field.color.r".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("g_name", TextWidget(12, 20, "fc.validated_field.color.g".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("b_name", TextWidget(12, 20, "fc.validated_field.color.b".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("a_name", TextWidget(12, 20, "fc.validated_field.color.a".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("r_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.r }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { r -> mutableColor.updateRGB(r, mutableColor.g, mutableColor.b)}), "r_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("g_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.g }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { g -> mutableColor.updateRGB(mutableColor.r, g, mutableColor.b)}), "g_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("b_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.b }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { b -> mutableColor.updateRGB(mutableColor.r, mutableColor.g, b)}), "b_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("hl_map", HLMapWidget(mutableColor), "r_box", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("s_slider", VerticalSliderWidget({mutableColor.s.toDouble()}, 0, 0, 20, 68, FcText.EMPTY, {d -> mutableColor.updateHSL(mutableColor.h, d.toFloat(), mutableColor.l)}), "hl_map", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("hex_box", ValidationBackedTextFieldWidget(84, 20, {mutableColor.hex.get()}, ChoiceValidator.any(), mutableColor.hex, {s -> mutableColor.updateHex(s) }), "hl_map", LayoutWidget.Position.BELOW, LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
             .addDoneWidget ({ this.setAndUpdate(mutableColor.createHolder()); PopupWidget.pop()})
             .onClose { this.setAndUpdate(mutableColor.createHolder()) }
             .noCloseOnClick()
             .build()
         PopupWidget.push(popup)
     }
-
 
     private fun validatedString(): ValidatedString {
         return validatedString(toHexString(), this.get().opaque())
@@ -350,6 +382,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         fun transparent(): Boolean {
             return alphaMode
         }
+
         /**
          * If this color holder does NOT support transparency
          * @return Boolean - false if transparency is supported
@@ -382,6 +415,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                     ((g and 0xFF) shl 8) or
                     ((b and 0xFF) shl 0)
         }
+
         /**
          * returns ARGB color int representing this color
          * @return Int - ARGB formatted integer storing this color
@@ -391,6 +425,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         fun toInt(): Int {
             return argb()
         }
+
         /**
          * converts this color holder into a new one representing the color integer passed. AlphaMode is maintained
          * @param i Int - the ARGB int representing the new color holder
@@ -427,6 +462,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         fun instance(): ValidatedColor {
             return ValidatedColor(r, g, b, a, alphaMode)
         }
+
         @Internal
         override fun serializeEntry(
             input: ColorHolder?,
@@ -444,6 +480,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             }
             return toml.build()
         }
+
         @Internal
         override fun deserializeEntry(
             toml: TomlElement,
@@ -463,6 +500,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                 ValidationResult.error(this, "Critical error encountered deserializing color [$fieldName], using previous value.")
             }
         }
+
         @Internal
         override fun validateEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
             val errors: MutableList<String> = mutableListOf()
@@ -480,6 +518,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                 ValidationResult.success(input)
             }
         }
+
         @Internal
         override fun correctEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
             val errors: MutableList<String> = mutableListOf()
@@ -504,6 +543,9 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             }
         }
 
+        /**
+         * @suppress
+         */
         override fun toString(): String {
             return "[r=$r, g=$g, b=$b, a=$a]"
         }
@@ -540,6 +582,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                     ((g and 0xFF) shl 8) or
                     ((b and 0xFF) shl 0)
         }
+
         /**
          * Hex string representation of this color
          * @param prefix String, optional - prefix to prepend to the hex string ("#" or "0x" for example)
@@ -571,11 +614,12 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             this.b = bb
             hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
         }
+
         /**
          * updates this Mutable Color with new RGB values. HSL values automatically updated to match
-         * @param r Float - red component, 0..255
-         * @param g Float - green component, 0..255
-         * @param b Float - blue component, 0..255
+         * @param r Int - red component, 0..255
+         * @param g Int - green component, 0..255
+         * @param b Int - blue component, 0..255
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -589,11 +633,10 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             this.l = hsl[2]
             hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
         }
+
         /**
          * updates this Mutable Color with new Alpha value
-         * @param h Float - hue component, 0f..1f
-         * @param s Float - saturation component, 0f..1f
-         * @param l Float - light component, 0f..1f
+         * @param a Int - alpha component 0..255
          * @author fzzyhmstrs
          * @since 0.2.0
          */
@@ -628,6 +671,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             this.s = hsl[1]
             this.l = hsl[2]
         }
+
         @Internal
         fun validate(input: Int): ValidationResult<Int> {
             return ValidationResult.predicated(input, validator.test(input), "Out of bounds [0-255]")
@@ -646,10 +690,10 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
 
     //////////////////////////////////////////
 
-    //client
-    private class ColorButtonWidget(private val colorSupplier: Supplier<Int>, titleSupplier: Supplier<Text>, pressAction: Consumer<ActiveButtonWidget>): DecoratedActiveButtonWidget(titleSupplier, 110, 20, "widget/decoration/frame".fcId(), {true}, pressAction) {
-        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float) {
-            super.renderDecoration(context, x, y, delta)
+    private class ColorDecoration(private val colorSupplier: Supplier<Int>): Decorated {
+
+        override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
+            TextureDeco.DECO_FRAME.renderDecoration(context, x, y, delta, enabled, selected)
             RenderSystem.enableBlend()
             context.fill(x+2, y+2, x+14, y+14, colorSupplier.get())
         }
@@ -665,8 +709,8 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             private val CENTER_DESAT = "widget/validation/color/hsl_center_desat".fcId()
             private val CROSSHAIR = "widget/validation/color/hsl_crosshair".fcId()
 
-            private const val horizontalInc = 1f/52f
-            private const val verticalInc = 1f/60f
+            private const val HORIZONTAL_INC = 1f/52f
+            private const val VERTICAL_INC = 1f/60f
         }
 
         private var mouseHasBeenClicked = false
@@ -716,19 +760,19 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
             return when(keyCode) {
                 GLFW.GLFW_KEY_LEFT -> {
-                    incrementL(-horizontalInc)
+                    incrementL(-HORIZONTAL_INC)
                     true
                 }
                 GLFW.GLFW_KEY_RIGHT -> {
-                    incrementL(horizontalInc)
+                    incrementL(HORIZONTAL_INC)
                     true
                 }
                 GLFW.GLFW_KEY_UP -> {
-                    incrementH(-verticalInc)
+                    incrementH(-VERTICAL_INC)
                     true
                 }
                 GLFW.GLFW_KEY_DOWN -> {
-                    incrementH(verticalInc)
+                    incrementH(VERTICAL_INC)
                     true
                 }
                 else -> super.keyPressed(keyCode, scanCode, modifiers)
@@ -739,6 +783,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             val hue = MathHelper.clamp(mutableColor.h+amount, 0f, 1f)
             mutableColor.updateHSL(hue, mutableColor.s, mutableColor.l)
         }
+
         private fun incrementL(amount: Float) {
             val light = MathHelper.clamp(mutableColor.l+amount, 0f, 1f)
             mutableColor.updateHSL(mutableColor.h, mutableColor.s, light)

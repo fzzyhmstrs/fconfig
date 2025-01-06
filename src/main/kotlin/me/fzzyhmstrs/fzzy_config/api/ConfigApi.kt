@@ -12,6 +12,7 @@
 
 package me.fzzyhmstrs.fzzy_config.api
 
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.annotations.NonSync
 import me.fzzyhmstrs.fzzy_config.annotations.TomlHeaderComment
 import me.fzzyhmstrs.fzzy_config.annotations.Version
@@ -32,6 +33,7 @@ import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus
 import java.io.File
+import java.io.Reader
 import java.util.function.Supplier
 
 /**
@@ -375,6 +377,8 @@ object ConfigApi {
 
     /**
      * Whether a config corresponding to the provided scope is registered
+     * @author fzzyhmstrs
+     * @since 0.5.3
      */
     @JvmStatic
     @Deprecated("Only polls synced configs. Use newer overload with RegisterType param")
@@ -392,6 +396,32 @@ object ConfigApi {
     @JvmStatic
     fun isConfigLoaded(scope: String, type: RegisterType): Boolean {
         return ConfigApiImpl.isConfigLoaded(scope, type)
+    }
+
+    /**
+     * Parses a resource reader into a TomlElement for use in Codecs or other things.
+     * @param reader [Reader] input reader containing a toml file
+     * @return [TomlElement] parsed from the input reader
+     * @throws kotlinx.serialization.SerializationException if parsing fails
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    @JvmStatic
+    fun parseReader(reader: Reader): TomlElement {
+        return ConfigApiImpl.parseReader(reader)
+    }
+
+    /**
+     * Returns a set of [Action] annotated onto the provided input
+     * @param thing Any non-null input for checking
+     * @return Set&lt;[Action]&gt;
+     * @see [me.fzzyhmstrs.fzzy_config.entry.EntryParent]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    @JvmStatic
+    fun actions(thing: Any): Set<Action> {
+        return ConfigApiImpl.getActions(thing, ConfigApiImpl.IGNORE_NON_SYNC)
     }
 
     /**
@@ -429,7 +459,7 @@ object ConfigApi {
      * @since 0.5.3
      */
     @JvmStatic
-    @ApiStatus.Experimental
+    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun result(): ResultApi {
         return ResultApiImpl
     }

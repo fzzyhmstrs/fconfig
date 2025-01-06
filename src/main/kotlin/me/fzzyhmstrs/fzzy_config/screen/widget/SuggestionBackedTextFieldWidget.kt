@@ -160,13 +160,42 @@ class SuggestionBackedTextFieldWidget(
         return if(bl) true else super.keyPressed(keyCode, scanCode, modifiers)
     }
 
+    /**
+     * Pushes changes stored in this widget into the linked [applier]. This is typically used to force immediate visual updates in the GUI.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun pushChanges() {
         if(isChanged() && !needsUpdating) {
             applier.accept(storedValue)
         }
     }
 
+    /**
+     * Interface for providing suggestions into the widget based on current widget and validator state.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun interface SuggestionProvider {
+        /**
+         * Provide suggestions for the widget based on current widget state. The typical approach involves using either [AllowableStrings][me.fzzyhmstrs.fzzy_config.util.AllowableStrings] or [AllowableIdentifiers][me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers], both of which have a convenient built-in method for generating suggestions.
+         *
+         * For example:
+         * ```
+         * //this assumes the ChoiceValidator is a ChoiceValidator<String>
+         * val suggestionProvider = SuggestionProvider {s, c, cv -> allowableIdentifiers.getSuggestions(s, c, cv))}
+         * ```
+         *
+         * But of course you can implement a totally custom way to get suggestions as needed.
+         * @param s current string input for this widget
+         * @param cursor integer position of the cursor relative to the text (0 being the start, and whatever the end index is being the cursor "active" at the end of the string for more typing)
+         * @param choiceValidator [ChoiceValidator]&lt;String&gt; a validator to filter allowable inputs from a set of string sources.
+         * @return [CompletableFuture]&lt;[Suggestions]&lt;
+         * @see [me.fzzyhmstrs.fzzy_config.util.AllowableStrings]
+         * @see [me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers]
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         fun getSuggestions(s: String, cursor: Int, choiceValidator: ChoiceValidator<String>): CompletableFuture<Suggestions>
     }
 }

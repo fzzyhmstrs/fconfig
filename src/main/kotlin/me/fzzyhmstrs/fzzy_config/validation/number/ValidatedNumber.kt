@@ -12,7 +12,11 @@ package me.fzzyhmstrs.fzzy_config.validation.number
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutClickableWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -22,8 +26,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
-import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.SLIDER
-import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX
+import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.*
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -56,6 +59,8 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         if (minValue >= maxValue) throw IllegalStateException("Min value $minValue can't be >= Max value $maxValue")
     }
 
+    protected abstract var increment: T?
+
     @Internal
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
@@ -64,6 +69,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             return ValidationResult.error(maxValue, "Validated number [$input] above the valid range [$minValue] to [$maxValue]")
         return ValidationResult.success(input)
     }
+
     @Internal
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
@@ -80,17 +86,22 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType) {
             SLIDER -> {
-                ConfirmButtonSliderWidget(this, this.minValue, this.maxValue, choicePredicate, {d -> convert(d).get() }, { setAndUpdate(it) })
+                ConfirmButtonSliderWidget(this, this.increment, this.minValue, this.maxValue, choicePredicate, {d -> convert(d).get() }, { setAndUpdate(it) })
             }
             TEXTBOX -> {
-                ConfirmButtonTextFieldWidget(this, choicePredicate, {d -> val result = convert(d); this.validateEntry(result.get(), EntryValidator.ValidationType.STRONG).also(result.isValid(), result.getError())}, { setAndUpdate(it) })
+                ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) })
+            }
+            TEXTBOX_WITH_BUTTONS -> {
+                prepareTextboxWithButtons(choicePredicate, this.increment)
             }
         }
     }
 
+    @Internal
     override fun description(fallback: String?): MutableText {
         return if(I18n.hasTranslation(descriptionKey())) super.description(fallback) else genericDescription()
     }
+
     private fun genericDescription(): MutableText {
         return if (minValue.compareTo(minBound()) == 0) {
             if (maxValue.compareTo(maxBound()) == 0) {
@@ -111,8 +122,16 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     @Internal
     protected abstract fun minBound(): T
+
     @Internal
     protected abstract fun maxBound(): T
+
+    companion object {
+        fun <T, F: ValidatedNumber<T>>F.withIncrement(increment: T): F {
+            this.increment = increment
+            return this
+        }
+    }
 
     /**
      * Determines which type of selector widget will be used for the Number selection
@@ -134,11 +153,94 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        TEXTBOX
+        TEXTBOX,
+
+        /**
+         * A textbox-style widget that lets you enter the number directly, throwing error if outside of range; with two small buttons on the right side for incrementing up and down
+         *
+         * by default, the buttons will pick an increment based on the allowable range. Use [withIncrement] to define a custom increment amount
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
+        TEXTBOX_WITH_BUTTONS
+    }
+
+    protected fun validator(): Function<Double, ValidationResult<T>> {
+        return Function { d ->
+            val result = convert(d)
+            this.correctEntry(result.get(), EntryValidator.ValidationType.STRONG).also(result.isValid(), result.getError())
+        }
+    }
+
+    private fun prepareTextboxWithButtons(choicePredicate: ChoiceValidator<T>, incr: T?): ClickableWidget {
+        fun isIntType(): Boolean {
+            return maxValue is Int || maxValue is Long || maxValue is Short || maxValue is Byte
+        }
+
+        fun split(range: Double): Double {
+            var d = range
+            while (d < 16.0) {
+                d *= 100.0
+            }
+            d = round(d)
+            return if (d.toInt() % 16 == 0) {
+                (range / 16.0)
+            } else if (d.toInt() % 12 == 0) {
+                (range / 12.0)
+            } else {
+                (range / 10.0)
+            }
+        }
+
+        val increment = incr?.toDouble() ?: max(
+            (maxValue.toDouble() - minValue.toDouble())/ 100.0,
+            if (isIntType()) {
+                max(1.0, split(maxValue.toDouble() - minValue.toDouble()))
+            } else {
+                min(1.0, split(maxValue.toDouble() - minValue.toDouble()))
+            }
+        )
+
+        val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
+        val numberWidget = ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) }, 99, false, increment)
+
+        layout.add(
+            "textbox",
+            numberWidget,
+            LayoutWidget.Position.LEFT,
+            LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
+        layout.add(
+            "up",
+            CustomButtonWidget.builder("fc.button.up".translate()) {
+                val n = this.convert(MathHelper.clamp(this.get().toDouble() + increment, this.minValue.toDouble(), this.maxValue.toDouble())).get()
+                this.setAndUpdate(n) }
+                .noMessage()
+                .narrationAppender { builder -> numberWidget.appendValueNarrations(builder) }
+                .size(11, 10)
+                .active(this.maxValue != this.minValue)
+                .textures(TextureIds.INCREMENT_UP, TextureIds.INCREMENT_UP_DISABLED, TextureIds.INCREMENT_UP_HIGHLIGHTED)
+                .build(),
+            LayoutWidget.Position.RIGHT,
+            LayoutWidget.Position.ALIGN_RIGHT,
+            LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+        layout.add(
+            "down",
+            CustomButtonWidget.builder("fc.button.down".translate()) {
+                val n = this.convert(MathHelper.clamp(this.get().toDouble() - increment, this.minValue.toDouble(), this.maxValue.toDouble())).get()
+                this.setAndUpdate(n) }
+                .noMessage()
+                .size(11, 10)
+                .active(this.maxValue != this.minValue)
+                .textures(TextureIds.INCREMENT_DOWN, TextureIds.INCREMENT_DOWN_DISABLED, TextureIds.INCREMENT_DOWN_HIGHLIGHTED)
+                .build(),
+            LayoutWidget.Position.BELOW,
+            LayoutWidget.Position.ALIGN_RIGHT,
+            LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
+        return LayoutClickableWidget(0, 0, 110, 20, layout)
     }
 
     //client
-    protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
+    protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, incr: T?, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
         ClickableWidget(0, 0, 110, 20, DECIMAL_FORMAT.format(wrappedValue.get()).lit()) {
         companion object {
             private val TEXTURE = "widget/slider".simpleId()
@@ -170,7 +272,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         private var confirmActive = false
         private var cachedWrappedValue: T = wrappedValue.get()
         private var value: T = wrappedValue.get()
-        private val increment = max(
+        private val increment = incr?.toDouble() ?: max(
             (maxValue.toDouble() - minValue.toDouble())/ 102.0,
             if (isIntType()) {
                 max(1.0, split(maxValue.toDouble() - minValue.toDouble()))
@@ -234,7 +336,9 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             builder.put(NarrationPart.TITLE, this.narrationMessage as Text?)
             if (active) {
                 if (this.isFocused) {
-                    builder.put(NarrationPart.USAGE, "fc.validated_field.number.slider.usage".translate())
+                    builder.put(NarrationPart.USAGE,
+                        "fc.validated_field.number.slider.usage".translate(),
+                        "fc.validated_field.number.slider.usage2".translate())
                 } else {
                     builder.put(NarrationPart.USAGE, "fc.validated_field.number.slider.usage.unfocused".translate())
                 }
@@ -295,7 +399,18 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         wrappedValue: Supplier<T>,
         choiceValidator: ChoiceValidator<T>,
         validationProvider: Function<Double, ValidationResult<T>>,
-        valueApplier: Consumer<T>)
+        valueApplier: Consumer<T>,
+        width: Int = 110,
+        renderStatus: Boolean = true,
+        increment: Double = 0.0)
         :
-        ValidationBackedNumberFieldWidget<T>(110, 20, wrappedValue, choiceValidator, validationProvider, valueApplier)
+        ValidationBackedNumberFieldWidget<T>(
+            width,
+            20,
+            wrappedValue,
+            choiceValidator,
+            validationProvider,
+            valueApplier,
+            renderStatus,
+            increment)
 }

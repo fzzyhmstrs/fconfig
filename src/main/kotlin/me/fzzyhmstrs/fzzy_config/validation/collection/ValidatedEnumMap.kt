@@ -14,10 +14,8 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
@@ -60,28 +58,6 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
         compositeFlags(valueHandler)
     }
 
-    @Internal
-    override fun serialize(input: Map<K, V>): ValidationResult<TomlElement> {
-        val table = TomlTableBuilder()
-        val errors: MutableList<String> = mutableListOf()
-        return try {
-            for ((key, value) in input) {
-                val annotations = if (value != null)
-                    try {
-                        ConfigApiImpl.tomlAnnotations(value!!::class)
-                    } catch (e: Throwable) {
-                        listOf()
-                    }
-                else
-                    listOf()
-                val el = valueHandler.serializeEntry(value, errors, 1)
-                table.element(key, el, annotations)
-            }
-            return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
-        } catch (e: Throwable) {
-            ValidationResult.predicated(table.build(), errors.isEmpty(), "Critical exception encountered while serializing map: ${e.localizedMessage}")
-        }
-    }
 
     //((?![a-z0-9_-]).) in case I need it...
     @Internal
@@ -105,6 +81,49 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
             ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
         }
     }
+
+    @Internal
+    @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
+    override fun serialize(input: Map<K, V>): ValidationResult<TomlElement> {
+        val table = TomlTableBuilder()
+        val errors: MutableList<String> = mutableListOf()
+        return try {
+            for ((key, value) in input) {
+                val annotations = if (value != null)
+                    try {
+                        ConfigApiImpl.tomlAnnotations(value!!::class)
+                    } catch (e: Throwable) {
+                        emptyList()
+                    }
+                else
+                    emptyList()
+                val el = valueHandler.serializeEntry(value, errors, 1)
+                table.element(key, el, annotations)
+            }
+            return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
+        } catch (e: Throwable) {
+            ValidationResult.predicated(table.build(), errors.isEmpty(), "Critical exception encountered while serializing map: ${e.localizedMessage}")
+        }
+    }
+
+    @Internal
+    @Suppress("SafeCastWithReturn", "UNCHECKED_CAST")
+    override fun deserializedChanged(old: Any?, new: Any?): Boolean {
+        old as? Map<K, V> ?: return true
+        new as? Map<K, V> ?: return true
+        val checked: MutableList<K> = mutableListOf()
+        for ((k, v) in old) {
+            if (!new.containsKey(k)) return true
+            if (valueHandler.deserializedChanged(v, new[k])) return true
+            checked.add(k)
+        }
+        for ((k, _) in new) {
+            if (checked.contains(k)) continue
+            return true
+        }
+        return false
+    }
+
     @Internal
     override fun validateEntry(input: Map<K, V>, type: EntryValidator.ValidationType): ValidationResult<Map<K, V>> {
         val keyErrors: MutableList<String> = mutableListOf()
@@ -115,6 +134,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
         }
         return ValidationResult.predicated(input, keyErrors.isEmpty() && valueErrors.isEmpty(), "Map validation had errors: key=${keyErrors}, value=$valueErrors")
     }
+
     @Internal
     override fun correctEntry(input: Map<K, V>, type: EntryValidator.ValidationType): ValidationResult<Map<K, V>> {
         val map: MutableMap<K, V> = mutableMapOf()
@@ -131,29 +151,47 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
     }
 
     /**
-     * Creates a deep copy of the stored value and returns it
-     * @return Map&lt;K, V&gt; - copy of the currently stored map
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    override fun copyStoredValue(): Map<K, V> {
-        return storedValue.toMap()
-    }
-
-    /**
      * creates a deep copy of this ValidatedEnumMap
      * return ValidatedEnumMap wrapping a deep copy of the currently stored map and handlers
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedEnumMap<K, V> {
-        return ValidatedEnumMap(storedValue, keyHandler, valueHandler)
+        return ValidatedEnumMap(copyStoredValue(), keyHandler, valueHandler)
     }
+
+    @Internal
+    @Suppress("UNCHECKED_CAST")
+    override fun isValidEntry(input: Any?): Boolean {
+        if (input !is Map<*, *>) return false
+        return try {
+            validateEntry(input as Map<K, V>, EntryValidator.ValidationType.STRONG).isValid()
+        } catch (e: Throwable) {
+            false
+        }
+    }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input Map&lt;[K], [V]%gt; input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: Map<K, V>): Map<K, V> {
+        return input.toMap()
+    }
+
 
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
-        return DecoratedActiveButtonWidget(TextureIds.MAP_LANG, 110, 20, TextureIds.DECO_MAP, {true}, { b: ActiveButtonWidget -> openMapEditPopup(b) })
+        return ActiveButtonWidget(TextureIds.MAP_LANG, 110, 20, { true }, { b: ActiveButtonWidget -> openMapEditPopup(b) })
+    }
+
+    @Internal
+    override fun entryDeco(): Decorated.DecoratedOffset? {
+        return Decorated.DecoratedOffset(TextureDeco.DECO_MAP, 2, 2)
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -171,7 +209,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
             }
             val mapWidget = MapListWidget(map, keyHandler, valueHandler, choiceValidator)
             val popup = PopupWidget.Builder(this.translation())
-                .addElement("map", mapWidget, PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT)
+                .add("map", mapWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
                 .addDoneWidget()
                 .onClose { this.setAndUpdate(mapWidget.getMap()) }
                 .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
@@ -184,15 +222,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
         }
     }
 
-    @Internal
-    override fun isValidEntry(input: Any?): Boolean {
-        if (input !is Map<*, *>) return false
-        return try {
-            validateEntry(input as Map<K, V>, EntryValidator.ValidationType.STRONG).isValid()
-        } catch (e: Throwable) {
-            false
-        }
-    }
+    /////////////// MAP ///////////////////////////
 
     override val entries: Set<Map.Entry<K, V>>
         get() = get().entries
@@ -219,6 +249,8 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
         return get().containsKey(key)
     }
 
+    /////////// END MAP ///////////////////////////
+
     /**
      * @suppress
      */
@@ -226,7 +258,8 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
          return "Validated Enum Map[value=$storedValue, keyHandler=$keyHandler, valueHandler=$valueHandler]"
      }
 
-    companion object {
+    internal companion object {
+        @Suppress("UNCHECKED_CAST")
         internal fun<K:Enum<*>, V> tryMake(map: Map<K, V>, keyHandler: Entry<*, *>, valueHandler: Entry<*, *>): ValidatedEnumMap<K, V>? {
             return try {
                 ValidatedEnumMap(map, keyHandler as Entry<K, *>, valueHandler as Entry<V, *>)
@@ -257,7 +290,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
          */
         @Deprecated("For basic ValidatedEnum implementation, see keyHandler(defaultValue: K)")
         fun keyHandler(handler: Entry<K, *>): BuilderWithKey<K, V> {
-            return BuilderWithKey<K, V>(handler)
+            return BuilderWithKey(handler)
         }
         /**
          * Defines the Entry used to handle validation, serialization, etc. for map values
@@ -268,12 +301,12 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
          * @since 0.2.0
          */
         fun keyHandler(defaultValue: K): BuilderWithKey<K, V> {
-            return BuilderWithKey<K, V>(ValidatedEnum(defaultValue))
+            return BuilderWithKey(ValidatedEnum(defaultValue))
         }
 
         class BuilderWithKey<K, V: Any> internal constructor (private val keyHandler: Entry<K, *>)where K: Enum<*> {
             /**
-             * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.validation.entry.EntryHandler] used on map values
+             * Defines the [EntryHandler][me.fzzyhmstrs.fzzy_config.entry.EntryHandler] used on map values
              * @param valueHandler an [Entry] used as a handler for values.
              * @author fzzyhmstrs
              * @since 0.2.0

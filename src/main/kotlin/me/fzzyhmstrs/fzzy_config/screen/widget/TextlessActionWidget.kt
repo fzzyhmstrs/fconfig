@@ -10,11 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.navigation.GuiNavigationPath
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -31,8 +31,9 @@ import java.util.function.Supplier
  * @param inactiveNarration Text - narration and tooltip to display if the button is inactive
  * @param activeSupplier [Supplier]&lt;Boolean&gt; - supplies whether this widget should be active
  * @param pressAction [Consumer]&lt;TextlessActionWidget&gt; - action to take on press
+ * @param renderBackground Default false. If true, will render a standard MC button background behind your icon.
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, added optional bg rendering 0.6.0
  */
 //client
 open class TextlessActionWidget(
@@ -42,10 +43,39 @@ open class TextlessActionWidget(
     private val activeNarration: Text,
     private val inactiveNarration: Text,
     private val activeSupplier: Supplier<Boolean>,
-    private val pressAction: Consumer<TextlessActionWidget>)
+    private val pressAction: Consumer<TextlessActionWidget>,
+    private val renderBackground: Boolean)
     :
-    CustomPressableWidget(0, 0, 20, 20, FcText.empty())
+    CustomPressableWidget(0, 0, 20, 20, FcText.EMPTY)
 {
+
+    constructor(
+        activeIcon: Identifier,
+        inactiveIcon: Identifier,
+        highlightedIcon: Identifier,
+        activeNarration: Text,
+        inactiveNarration: Text,
+        activeSupplier: Supplier<Boolean>,
+        pressAction: Consumer<TextlessActionWidget>
+    ): this(
+        activeIcon, inactiveIcon, highlightedIcon,
+        activeNarration, inactiveNarration,
+        activeSupplier,
+        pressAction,
+        false)
+
+    constructor(
+        icon: Identifier,
+        activeNarration: Text,
+        inactiveNarration: Text,
+        activeSupplier: Supplier<Boolean>,
+        pressAction: Consumer<TextlessActionWidget>
+    ): this(
+        icon, icon, icon,
+        activeNarration, inactiveNarration,
+        activeSupplier,
+        pressAction,
+        true)
 
     private fun getTex(): Identifier {
         if(!active)
@@ -56,9 +86,12 @@ open class TextlessActionWidget(
             activeIcon
     }
 
-    override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = activeSupplier.get()
-        super.renderCustom(context, mouseX, mouseY, delta)
+        super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
+        if (renderBackground) {
+            context.drawTex(DEFAULT_TEXTURES.get(active, hovered || isFocused), x, y, getWidth(), getHeight())
+        }
         context.drawTex(getTex(), x, y, getWidth(), getHeight())
         if (this.active && activeNarration.string != "") {
             tooltip = Tooltip.of(activeNarration)
@@ -71,13 +104,7 @@ open class TextlessActionWidget(
         return if(active) activeNarration.copy() else inactiveNarration.copy()
     }
 
-    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-        appendDefaultNarrations(builder)
-    }
-
     override fun onPress() {
        pressAction.accept(this)
     }
-
-
 }

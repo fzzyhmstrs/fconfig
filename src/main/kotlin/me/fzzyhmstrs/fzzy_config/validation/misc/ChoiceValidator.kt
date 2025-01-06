@@ -30,6 +30,7 @@ open class ChoiceValidator<T>(private val predicate: ValuesPredicate<T>): EntryV
         return ValidationResult.predicated(input, predicate.test(input), "Value not allowed")
     }
 
+
     fun<N> convert(disallowedConverter: Function<in T, N>?, allowableConverter: Function<in T, N>?): ChoiceValidator<N> {
         return ChoiceValidator(predicate.convert(disallowedConverter, allowableConverter))
     }

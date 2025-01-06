@@ -56,6 +56,18 @@ object TextureIds {
 
     /////////////////////////
 
+    /** a gray button with a green plus sign in the middle */
+    val GOTO = "widget/action/goto".fcId()
+
+    /** same as above but with the "inactive" button texture */
+    val GOTO_INACTIVE = "widget/action/goto_inactive".fcId()
+
+    /** same as above but with a white highlighted border */
+    val GOTO_HIGHLIGHTED = "widget/action/goto_highlighted".fcId()
+    val GOTO_LANG = "fc.button.goto".translate()
+
+    /////////////////////////
+
     /** a gray button texture with the fzzy config logo in the middle */
     val CONFIG = "widget/action/config".fcId()
 
@@ -66,6 +78,16 @@ object TextureIds {
     val CONFIG_HIGHLIGHTED = "widget/action/config_highlighted".fcId()
     val CONFIG_LANG = "fc.button.config".translate()
     val CONFIG_INACTIVE_LANG = "fc.button.config_inactive".translate()
+
+    ////////////////////////
+
+    /** white wireframe box with a plus sign in the middle and cutouts in the top and bottom of the box */
+    val GROUP_EXPAND = "widget/action/group_expand".fcId()
+    val GROUP_EXPAND_HIGHLIGHTED = "widget/action/group_expand_highlighted".fcId()
+
+    /** white wireframe box with a minus sign in the middle */
+    val GROUP_COLLAPSE = "widget/action/group_collapse".fcId()
+    val GROUP_COLLAPSE_HIGHLIGHTED = "widget/action/group_collapse_highlighted".fcId()
 
     /////////////////////////
 
@@ -116,4 +138,45 @@ object TextureIds {
 
     val MAP_LANG = "fc.validated_field.map".translate()
     val MAP_ARROW = ">".lit()
+
+    //////////// SMALL (10/11x10) /////////////
+
+    /** wireframe "copy" symbol of two pieces of paper overlapping. 10x10 */
+    val CONTEXT_COPY = TextureSet("widget/context/copy".fcId(), "widget/context/copy_disabled".fcId(), "widget/context/copy".fcId())
+
+    /** wireframe "paste" symbol of a clipboard. 10x10 */
+    val CONTEXT_PASTE = TextureSet("widget/context/paste".fcId(), "widget/context/paste_disabled".fcId(), "widget/context/paste".fcId())
+
+    /** wireframe arrow pointing right. 10x10 */
+    val CONTEXT_FORWARD = TextureSet("widget/context/forward".fcId(), "widget/context/forward_disabled".fcId(), "widget/context/forward".fcId())
+
+    /** wireframe "undo" symbol of an arrow lopping left to right and pointing back left. 10x10 */
+    val CONTEXT_REVERT = TextureSet("widget/context/revert".fcId(), "widget/context/revert_disabled".fcId(), "widget/context/revert".fcId())
+
+    /** wireframe of two arrows pointing in a circular motion. 10x10 */
+    val CONTEXT_RESTORE = TextureSet("widget/context/restore".fcId(), "widget/context/restore_disabled".fcId(), "widget/context/restore".fcId())
+
+    /** wireframe of a floppy disk. 10x10 */
+    val CONTEXT_SAVE = TextureSet("widget/context/save".fcId(), "widget/context/save_disabled".fcId(), "widget/context/save".fcId())
+
+    /** wireframe of a magnifying glass. 10x10 */
+    val CONTEXT_FIND = TextureSet("widget/context/find".fcId(), "widget/context/find_disabled".fcId(), "widget/context/find".fcId())
+
+    /** up arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_UP = "widget/scroll/increment_up".fcId()
+
+    /** highlighted up arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_UP_HIGHLIGHTED = "widget/scroll/increment_up_highlighted".fcId()
+
+    /** greyed-out up arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_UP_DISABLED = "widget/scroll/increment_up_disabled".fcId()
+
+    /** down arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_DOWN = "widget/scroll/increment_down".fcId()
+
+    /** highlighted down arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_DOWN_HIGHLIGHTED = "widget/scroll/increment_down_highlighted".fcId()
+
+    /** greyed-out down arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_DOWN_DISABLED = "widget/scroll/increment_down_disabled".fcId()
 }

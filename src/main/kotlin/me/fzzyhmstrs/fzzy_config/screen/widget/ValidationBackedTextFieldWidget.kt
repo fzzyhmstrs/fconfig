@@ -13,10 +13,13 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.MutableText
@@ -34,10 +37,9 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Suppress("LeakingThis")
 //client
 open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected val wrappedValue: Supplier<String>, protected val choiceValidator: ChoiceValidator<String>, private val validator: EntryValidator<String>, protected val applier: Consumer<String>):
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.empty())
+    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY)
 {
 
     protected var cachedWrappedValue: String = wrappedValue.get()
@@ -67,15 +69,15 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
             }
         }
         super.renderWidget(context, mouseX, mouseY, delta)
-        if(isValid) {
+        val id = if(isValid) {
             if (ongoingChanges())
-                context.drawTex(TextureIds.ENTRY_ONGOING, x + width - 20, y, 20, 20)
+                TextureIds.ENTRY_ONGOING
             else
-                context.drawTex(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
+                TextureIds.ENTRY_OK
         } else {
-            context.drawTex(TextureIds.ENTRY_ERROR, x + width - 20, y, 20, 20)
+            TextureIds.ENTRY_ERROR
         }
-
+        context.drawTex(id, x + width - 20, y, 20, 20)
     }
 
     protected open fun isValidTest(s: String): Boolean {
@@ -100,6 +102,9 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         }
     }
 
+    /**
+     * @suppress
+     */
     override fun getInnerWidth(): Int {
         return super.getInnerWidth() - 11
     }
@@ -108,13 +113,41 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         return storedValue != wrappedValue.get()
     }
 
+    /**
+     * @suppress
+     */
+    final override fun setChangedListener(changedListener: Consumer<String>?) {
+        super.setChangedListener(changedListener)
+    }
+
+    /**
+     * @suppress
+     */
+    final override fun setMaxLength(maxLength: Int) {
+        super.setMaxLength(maxLength)
+    }
+
     init {
         setMaxLength(1000)
         text = wrappedValue.get()
         setChangedListener { s -> isValid = isValidTest(s) }
     }
 
+    /**
+     * @suppress
+     */
     override fun getNarrationMessage(): MutableText {
-        return text.lit()
+        return "gui.narrate.editBox".translate("", "")
+    }
+
+    override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
+        builder.put(NarrationPart.TITLE, this.narrationMessage)
+        builder.nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
+        //builder.nextMessage().put(NarrationPart.USAGE, "fc.validated_field.number.editBox.usage".translate())
+    }
+
+    fun appendValueNarrations(builder: NarrationMessageBuilder) {
+        builder.nextMessage().put(NarrationPart.TITLE, "fc.validated_field.current".translate(""))
+        builder.nextMessage().nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
     }
 }

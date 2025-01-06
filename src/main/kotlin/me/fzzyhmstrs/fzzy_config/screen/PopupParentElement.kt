@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen
 
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
@@ -41,9 +42,11 @@ interface PopupParentElement: ParentElement, LastSelectable {
     var justClosedWidget: Boolean
 
     override fun pushLast() {
+        this.focused?.isFocused = false
         this.lastSelected = focused
     }
     override fun popLast() {
+        lastSelected?.isFocused = true
         focused = lastSelected
     }
 
@@ -65,7 +68,15 @@ interface PopupParentElement: ParentElement, LastSelectable {
      */
     fun initPopup(widget: PopupWidget)
 
-    fun setPopup(widget: PopupWidget?) {
+    /**
+     * Applies a popup widget to this parent. If null is passed, removes the top (newest) popup instead
+     * @param widget [PopupWidget], nullable. If not null, will be added to the top of this parent's popup stack, otherwise the top element will be popped
+     * @param mouseX Double, nullable. If not null, will be used to reset mouse hover context when the last popup is removed.
+     * @param mouseY Double, nullable. If not null, will be used to reset mouse hover context when the last popup is removed.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun setPopup(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
         if(widget == null) {
             if (popupWidgets.isEmpty())
                 return
@@ -74,6 +85,10 @@ interface PopupParentElement: ParentElement, LastSelectable {
             popupWidgets.peek()?.blur()
             if (popupWidgets.isEmpty()) {
                 (lastSelected as? LastSelectable)?.popLast()
+                if (mouseX != null && mouseY != null) {
+                    this.resetHover(mouseX, mouseY)
+                    lastSelected?.nullCast<LastSelectable>()?.resetHover(mouseX, mouseY)
+                }
                 popLast()
             }
         } else {
@@ -95,11 +110,30 @@ interface PopupParentElement: ParentElement, LastSelectable {
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val popupWidget = activeWidget() ?: return super.mouseClicked(mouseX, mouseY, button)
+        val popupWidget = activeWidget() ?: return mouseClick(mouseX, mouseY, button)
         if (popupWidget.mouseClicked(mouseX, mouseY, button) || popupWidget.isMouseOver(mouseX, mouseY)) {
             return true
         } else if(popupWidget.closesOnMissedClick()) {
-                setPopup(null)
+                setPopup(null, mouseX, mouseY)
+        }
+        return false
+    }
+
+    private fun mouseClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        for (element in this.children()) {
+            if (element.isMouseOver(mouseX, mouseY))
+                this.focused = element
+            if (!element.mouseClicked(mouseX, mouseY, button)) {
+                this.focused = null
+            } else {
+                if (this.focused != element) {
+                    this.focused = element
+                }
+                if (button == 0) {
+                    this.isDragging = true
+                }
+                return true
+            }
         }
         return false
     }
@@ -133,5 +167,4 @@ interface PopupParentElement: ParentElement, LastSelectable {
     override fun charTyped(chr: Char, modifiers: Int): Boolean {
         return activeWidget()?.charTyped(chr, modifiers) ?: super.charTyped(chr, modifiers)
     }
-
 }

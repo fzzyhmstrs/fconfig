@@ -18,7 +18,7 @@ import net.minecraft.text.Text
  * Classes that implement [Translatable] can be automatically utilized by many FzzyConfig systems for generating translatable text in-game
  * @sample me.fzzyhmstrs.fzzy_config.examples.TranslatableExample.translatable
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, added prefixes 0.6.0
  */
 @JvmDefaultWithCompatibility
 interface Translatable {
@@ -35,6 +35,17 @@ interface Translatable {
      */
     fun descriptionKey(): String
     /**
+     * translation key of this Translatable's inline prefix text. Unlike descriptions, which are usually displayed in-tooltips, prefixes are displayed inline in the config screen itself
+     *
+     * Both descriptions and prefixes are narrated like "hints" (tooltips), so usage of either and/or both is equivalent for narration except that prefixes are narrated before descriptions.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun prefixKey(): String {
+        return ""
+    }
+
+    /**
      * The translated [Text] name from the [translationKey]. Falls back to the implementing classes Simple Name (non-translated)
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -49,6 +60,14 @@ interface Translatable {
      */
     fun description(fallback: String? = null): MutableText {
         return FcText.translatableWithFallback(descriptionKey(), fallback ?: "")
+    }
+    /**
+     * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun prefix(fallback: String? = null): MutableText {
+        return FcText.translatableWithFallback(prefixKey(), fallback ?: "")
     }
 
     /**
@@ -68,5 +87,29 @@ interface Translatable {
      */
     fun hasDescription(): Boolean {
         return I18n.hasTranslation(descriptionKey())
+    }
+    /**
+     * Whether this Translatable has a valid prefix
+     * @return Boolean - If there is a valid prefix.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun hasPrefix(): Boolean {
+        return I18n.hasTranslation(prefixKey())
+    }
+
+    /**
+     * A translation result from a [Translatable] instance. This is generated internally, but is passed into many builder methods for config GUIs. Think of it, as the name implies, as the result of Fzzy Config generating a translation set for the relevant element.
+     * @param name [Text] the title of the element, such as "Particle Count"
+     * @param desc [Text], nullable. the tooltip description. Null means no description is present.
+     * @param prefix [Text], nullable. the inline prefix text of a config entry. Null means no prefix.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    class Result(val name: Text, val desc: Text? = null, val prefix: Text? = null) {
+
+        companion object {
+            val EMPTY = Result(FcText.empty(), null, null)
+        }
     }
 }

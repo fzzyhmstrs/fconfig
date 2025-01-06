@@ -18,7 +18,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.lwjgl.glfw.GLFW
 
-class NavigableTextFieldWidget(private val textRenderer: TextRenderer, width: Int, height: Int, text: Text) : TextFieldWidget(textRenderer, width, height, text) {
+internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, width: Int, height: Int, text: Text) : TextFieldWidget(textRenderer, width, height, text) {
 
     private val searchText = "fc.config.search".translate().formatted(Formatting.DARK_GRAY, Formatting.ITALIC)
 
@@ -39,7 +39,7 @@ class NavigableTextFieldWidget(private val textRenderer: TextRenderer, width: In
         if (this.text.isEmpty() && !this.isFocused) {
             val k = if (this.drawsBackground()) this.x + 4 else this.x
             val l = if (this.drawsBackground()) this.y + (this.height - 8) / 2 else this.y
-            context.drawTextWithShadow(this.textRenderer, searchText, k, l, -1);
+            context.drawTextWithShadow(this.textRenderer, searchText, k, l, -1)
         }
     }
 }

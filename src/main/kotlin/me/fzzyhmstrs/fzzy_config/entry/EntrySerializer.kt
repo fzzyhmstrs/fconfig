@@ -22,5 +22,16 @@ import net.peanuuutz.tomlkt.TomlElement
  */
 @FunctionalInterface
 fun interface EntrySerializer<T> {
+    /**
+     * Serializes either the provided input or stored value to a [TomlElement]
+     *
+     * If the input is not null, it should be serialized, otherwise the stored value of this serializer (or a fallback value) should be serialized. Serialization of the correct type should occur either way.
+     * @param input [T], nullable. The optional external value to serialize
+     * @param errorBuilder List for appending error messages. Serialization should fail soft, returning a fallback TomlElement or [TomlNull][net.peanuuutz.tomlkt.TomlNull] as a last resort instead of crashing. Problems should be appended to the builder.
+     * @param flags serialization flags for passing to built in serialization methods as needed.
+     * @return [TomlElement] with the serialized result.
+     * @author fzzyhmstrs
+     * @since 0.1.1
+     */
     fun serializeEntry(input: T?, errorBuilder: MutableList<String>, flags: Byte): TomlElement
 }

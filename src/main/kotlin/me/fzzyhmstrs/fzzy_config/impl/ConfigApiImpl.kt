@@ -22,15 +22,12 @@ import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.VERSIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.entry.EntryDeserializer
-import me.fzzyhmstrs.fzzy_config.entry.EntrySerializer
+import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.updates.BasicValidationProvider
@@ -48,10 +45,12 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
-import org.apache.commons.lang3.mutable.MutableLong
+import java.io.BufferedReader
 import java.io.File
+import java.io.Reader
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
+import java.util.*
 import java.util.function.Supplier
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -193,6 +192,7 @@ internal object ConfigApiImpl {
         return ConfigApiImplClient.isConfigLoaded(id)
     }
 
+    @Suppress("MemberVisibilityCanBePrivate")
     internal fun isClientConfigLoaded(scope: String): Boolean {
         if (!isClient) return false
         return ConfigApiImplClient.isConfigLoaded(scope)
@@ -209,7 +209,6 @@ internal object ConfigApiImpl {
         //wrap entire method in a try-catch. don't need to have config problems causing a hard crash, just fall back
         try {
             val start = System.currentTimeMillis()
-            val stageTime = MutableLong(System.currentTimeMillis())
             //create our directory, or bail if we can't for some reason
             val (dir, dirCreated) = makeDir(folder, subfolder)
             if (!dirCreated) {
@@ -353,6 +352,13 @@ internal object ConfigApiImpl {
         save(configClass.name, configClass.folder, configClass.subfolder, configClass)
     }
 
+    internal fun parseReader(reader: Reader): TomlElement {
+        val r = (if (reader is BufferedReader) reader else BufferedReader(reader))
+        return r.use {
+            Toml.parseToTomlTable(TomlNativeReader(r))
+        }
+    }
+
     ///////////////// END Read, Create, Save /////////////////////////////////////////////
 
     ///////////////// Serialize //////////////////////////////////////////////////////////
@@ -388,7 +394,7 @@ internal object ConfigApiImpl {
                 if (prop !is KMutableProperty<*>) continue
                 //get the actual [thing] from the property
                 val propVal = prop.get(config)
-                if (propVal is ConfigAction) continue
+                if (propVal is EntryTransient) continue
                 //if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 //things name
                 val name = prop.name
@@ -482,7 +488,7 @@ internal object ConfigApiImpl {
         val restartRecords: MutableSet<String> = mutableSetOf()
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
-            return ValidationResult.error(ConfigContext(config).withContext(ACTIONS, mutableSetOf<Action>()), "Improper TOML format passed to deserializeFromToml")
+            return ValidationResult.error(ConfigContext(config).withContext(ACTIONS, mutableSetOf()), "Improper TOML format passed to deserializeFromToml")
         }
         val clazz = config::class
         try {
@@ -509,7 +515,7 @@ internal object ConfigApiImpl {
             }.sortedBy { orderById[it.name] }) {
                 if (prop !is KMutableProperty<*>) continue
                 val propVal = prop.get(config)
-                if (propVal is ConfigAction) continue
+                if (propVal is EntryTransient) continue
                 val name = prop.name
                 val tomlElement = if (toml.containsKey(name)) {
                     toml[name]
@@ -527,7 +533,7 @@ internal object ConfigApiImpl {
                         val before = propVal.get()
                         val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
                         propVal.deserializeEntry(tomlElement, errorBuilder, name, newFlags).also { r ->
-                            if(r.get() != before) {
+                            if(propVal.deserializedChanged(before, r.get()) ) {
                                 restartNeeded.add(action)
                                 if(recordRestarts && action.restartPrompt) {
                                     restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
@@ -549,13 +555,13 @@ internal object ConfigApiImpl {
                         try {
                             val action = requiredAction(prop.annotations, globalAction)
                             if(checkActions && action != null)
-                                if (propVal != thing.get()) {
+                                if (basicValidation.deserializedChanged(propVal, thing.get())) {
                                     restartNeeded.add(action)
                                     if(recordRestarts && action.restartPrompt) {
                                         restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                                     }
                                 }
-                            if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                            if(ignoreVisibility) trySetAccessible(prop)
                             prop.setter.call(config, thing.get())
                         } catch(e: Throwable) {
                             errorBuilder.add("Error deserializing basic validation [$name]: ${e.localizedMessage}")
@@ -564,7 +570,7 @@ internal object ConfigApiImpl {
                         try {
                             val action = requiredAction(prop.annotations, globalAction)
                             if(checkActions && action != null) {
-                                if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                                if(ignoreVisibility) trySetAccessible(prop)
                                 prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop).also {
                                     if (propVal != it) {
                                         restartNeeded.add(action)
@@ -574,7 +580,7 @@ internal object ConfigApiImpl {
                                     }
                                 })
                             } else {
-                                if(ignoreVisibility) (prop.javaField?.trySetAccessible())
+                                if(ignoreVisibility) trySetAccessible(prop)
                                 prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop))
                             }
                         } catch (e: Throwable) {
@@ -621,13 +627,13 @@ internal object ConfigApiImpl {
                 errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
                 return ValidationResult.error(ConfigContext(config), "Improper TOML format passed to deserializeDirtyFromToml")
             }
-            walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, str, v, prop, annotations, _, _ -> toml[str]?.let {
+            walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { c, _, str, v, prop, annotations, _, _ -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
                     val action = requiredAction(prop.annotations, globalAction)
                     if(checkActions && v is Supplier<*> && action != null) {
                         val before = v.get()
                         v.deserializeEntry(it, errorBuilder, str, flags).also { r ->
-                            if(r.get() != before) {
+                            if(v.deserializedChanged(before, r.get())) {
                                 actionsNeeded.add(action)
                                 if(recordRestarts && action.restartPrompt) {
                                     restartRecords.add(str)
@@ -645,15 +651,15 @@ internal object ConfigApiImpl {
                         try {
                             val action = requiredAction(prop.annotations, globalAction)
                             if(checkActions && action != null)
-                                if (v != thing.get()) {
+                                if (basicValidation.deserializedChanged(v, thing.get())) {
                                     actionsNeeded.add(action)
                                     if(recordRestarts && action.restartPrompt) {
                                         restartRecords.add(str)
                                     }
                                 }
-                            prop.setter.call(config, thing.get()) //change?
+                            prop.setter.call(c, thing.get()) //change?
                         } catch(e: Throwable) {
-                            errorBuilder.add("Error deserializing basic validation [$str]: ${e.localizedMessage}")
+                            errorBuilder.add("Error during update while deserializing basic validation [$str]: ${e.localizedMessage}")
                         }
                     }
                 }
@@ -708,14 +714,18 @@ internal object ConfigApiImpl {
         return map
     }
 
-    internal fun validatePermissions(player: ServerPlayerEntity, id: String, config: Config, configString: String): ValidationResult<List<String>> {
+    internal fun validatePermissions(player: ServerPlayerEntity, id: String, config: Config, configString: String, clientPermissions: Int): ValidationResult<List<String>> {
         val toml = try {
             Toml.parseToTomlTable(configString)
         } catch (e:Exception) {
-            return ValidationResult.error(listOf(), "Update for $id is corrupted or improperly formatted for parsing")
+            return ValidationResult.error(emptyList(), "Update for $id is corrupted or improperly formatted for parsing")
         }
         val list: MutableList<String> = mutableListOf()
         val playerPermLevel = getPlayerPermissionLevel(player)
+
+        if (playerPermLevel != clientPermissions) {
+            return ValidationResult.error(emptyList(), "Client permission level does not match server permission level!")
+        }
 
         try {
             walk(config, id, CHECK_NON_SYNC) { _, _, str, _, _, annotations, _, _ ->
@@ -843,11 +853,14 @@ internal object ConfigApiImpl {
 
     internal fun getActions(thing: Any, flags: Byte): Set<Action> {
         val classAction = getAction(thing::class.annotations)
-        val propActions: MutableSet<Action> = mutableSetOf()
-        walk(thing, "", flags) { _, _, _, _, _, annotations, _, _ ->
+        val propActions: SortedSet<Action> = sortedSetOf()
+        walk(thing, "", flags) { _, _, _, v, _, annotations, _, _ ->
             val action = requiredAction(annotations, classAction)
             if (action != null) {
                 propActions.add(action)
+            }
+            if (v is EntryParent) {
+                propActions.addAll(v.actions())
             }
         }
         return propActions
@@ -937,7 +950,7 @@ internal object ConfigApiImpl {
     private fun hasNeededPermLevel(player: ServerPlayerEntity, playerPermLevel: Int, config: Config, annotations: List<Annotation>): Boolean {
         if (player.server.isSingleplayer) return true
         // 1. NonSync wins over everything, even whole config annotations
-        if (ConfigApiImpl.isNonSync(annotations)) return true
+        if (isNonSync(annotations)) return true
         val configAnnotations = config::class.annotations
         // 2. whole-config ClientModifiable
         for (annotation in configAnnotations) {

@@ -26,8 +26,23 @@ import java.util.function.Predicate
  */
 @FunctionalInterface
 fun interface EntryValidator<T> {
+    /**
+     * Validates an input per the provided validation type.
+     * - [ValidationType.WEAK] the validator should not interact with game state; this validation is being requested before the game is fully set up.
+     * - [ValidationType.STRONG] validation is happening in-game, so can make use of game state as needed.
+     * @param input Input object to validate
+     * @param type The current [ValidationType]
+     * @return [ValidationResult]&lt;[T]&gt; the input wrapped with either success or failure plus applicable error message, if any. If validation fails, the error should attempt to indicate how validation can be achieved. For example, in a number range 1 to 10, if the user enters 12 the message could be something like "12 outside the valid range 1 to 10"
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     fun validateEntry(input: T, type: ValidationType): ValidationResult<T>
 
+    /**
+     * Builder subclass for this validator. Builds a validator from predicates for weak and strong validation circumstances.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     class Builder<T: Any>: AbstractBuilder<T, Builder<T>>() {
         override fun builder(): Builder<T> {
             return this
@@ -71,8 +86,23 @@ fun interface EntryValidator<T> {
         }
     }
 
+    /**
+     * Validation strategy relative to game state.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
     enum class ValidationType {
+        /**
+         * The game is not prepared yet, validation should not interact with game state.
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         WEAK,
+        /**
+         * The game is running, validation can use game state as needed.
+         * @author fzzyhmstrs
+         * @since 0.2.0
+         */
         STRONG
     }
 }

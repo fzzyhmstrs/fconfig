@@ -16,7 +16,7 @@ package me.fzzyhmstrs.fzzy_config.util.pos
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class RelPos @JvmOverloads constructor(private val parent: Pos, private var p: Int = 0): Pos {
+open class RelPos @JvmOverloads constructor(private val parent: Pos, private var p: Int = 0): Pos {
     override fun get(): Int {
         return parent.get() + p
     }
@@ -30,6 +30,6 @@ class RelPos @JvmOverloads constructor(private val parent: Pos, private var p: I
         p -= amount
     }
     override fun toString(): String {
-        return "[$parent + $p]"
+        return "Rel(${get()})[$parent + $p]"
     }
 }

@@ -11,13 +11,20 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
+import me.fzzyhmstrs.fzzy_config.entry.EntryTransient
 import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.DecoratedActiveButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
+import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
+import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ConfirmLinkScreen
@@ -39,31 +46,50 @@ import kotlin.experimental.and
  *
  * This could be used to link to a wiki, open another non-fzzy-config config, open a non-config screen, open a patchouli guide, run a command, and so on.
  * @param titleSupplier Supplier&lt;Text&gt; - supplies a name for the button widget. Will be checked every frame, so the button name will dynamically update as needed.
- * @param activeSupplier Supplier&lt;Boolean&gt; - supplies an active state; whether the button is insactive ("greyed out" and unclickable) or active (functioning normally)
+ * @param activeSupplier Supplier&lt;Boolean&gt; - supplies an active state; whether the button is inactive ("greyed out" and unclickable) or active (functioning normally)
  * @param pressAction [Runnable] - the action to execute on clicking the button
  * @param background [Identifier], nullable - if non-null, will provide a custom background for the widget rendering.
- * @param decoration [Identifier], nullable - if non-null, will render a "decoration" next to the widget. These are the typically white/wireframe icons shown next to certain settings like lists.
+ * @param decoration [Decorated], nullable - if non-null, will render a "decoration" next to the widget. These are the typically white/wireframe icons shown next to certain settings like lists.
  * @author fzzyhmstrs
- * @since 0.5.0
+ * @since 0.5.0, Decorated and PressableTextures incorporated 0.6.0
  */
 class ConfigAction @JvmOverloads constructor(
     private val titleSupplier: Supplier<Text>,
     private val activeSupplier: Supplier<Boolean>,
     private val pressAction: Runnable,
-    private val decoration: Identifier,
+    private val decoration: Decorated?,
     private val description: Text? = null,
-    private val background: Identifier? = null)
+    private val background: TextureSet? = null)
 :
     EntryWidget<Any>,
     EntryFlag,
-    Translatable
+    EntryCreator,
+    EntryTransient,
+    TranslatableEntry
 {
 
+    constructor(
+        titleSupplier: Supplier<Text>,
+        activeSupplier: Supplier<Boolean>,
+        pressAction: Runnable,
+        decoration: Identifier?,
+        description: Text? = null,
+        background: Identifier? = null)
+            :
+            this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background?.let { TextureSet(it) })
+
     private var flags: Byte = 0
+    @Internal
+    override var translatableEntryKey = "fc.config.generic.action"
 
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<Any>): ClickableWidget {
-        return DecoratedActiveButtonWidget(titleSupplier, 110, 20, decoration, activeSupplier, { _ -> pressAction.run() }, background)
+        return ActiveButtonWidget(titleSupplier, 110, 20, activeSupplier, { _ -> pressAction.run() }, background ?: CustomPressableWidget.DEFAULT_TEXTURES)
+    }
+
+    @Internal
+    override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
+        return EntryCreators.createActionEntry(context, decoration, this.widgetEntry())
     }
 
     internal fun setFlag(flag: Byte) {
@@ -75,6 +101,7 @@ class ConfigAction @JvmOverloads constructor(
         return (this.flags and flag) == flag
     }
 
+    @Internal
     override fun hasFlag(flag: EntryFlag.Flag): Boolean {
         return this.hasFlag(flag.flag)
     }
@@ -85,7 +112,7 @@ class ConfigAction @JvmOverloads constructor(
      * @since 0.5.0
      */
     class Builder {
-        private var titleSupplier: Supplier<Text> = Supplier { FcText.empty() }
+        private var titleSupplier: Supplier<Text> = Supplier { FcText.EMPTY }
         private var activeSupplier: Supplier<Boolean> = Supplier { true }
         private var desc: Text? = null
         private var background: Identifier? = null
@@ -274,23 +301,13 @@ class ConfigAction @JvmOverloads constructor(
         }
     }
 
-    override fun translationKey(): String {
-        return ""
-    }
-
-    override fun hasTranslation(): Boolean {
-        return false
-    }
-
-    override fun descriptionKey(): String {
-        return ""
-    }
-
+    @Internal
     override fun hasDescription(): Boolean {
-        return description != null
+        return description != null || super.hasDescription()
     }
 
+    @Internal
     override fun description(fallback: String?): MutableText {
-        return description?.copy() ?: FcText.literal(fallback ?: "")
+        return description?.copy() ?: super.description(fallback)
     }
 }

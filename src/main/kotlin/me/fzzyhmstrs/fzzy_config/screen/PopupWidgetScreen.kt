@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen
 
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -29,12 +30,12 @@ import java.util.*
  * For most intents and purposes, treat this screen like a standard [Screen], with a couple caveats:
  * - Make sure to call super on [resize], [render], and [keyPressed] otherwise popup functionality will break
  * - call super.render AFTER any custom rendering, or popups may appear improperly below custom elements
- * - call super.keyPressed BEFORE custom keypresses, otherwise clicks may improperly propagate through popups to elements underneath them
+ * - call super.keyPressed BEFORE custom key presses, otherwise clicks may improperly propagate through popups to elements underneath them
  * @param title Text, the screen title
  * @see PopupParentElement
  * @see PopupWidget.Api
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, made render final and added renderContents 0.6.0
  */
 //client
 open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
@@ -42,6 +43,7 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
     override val popupWidgets: LinkedList<PopupWidget> = LinkedList()
     override var justClosedWidget: Boolean = false
     override var lastSelected: Element? = null
+    protected var hoveredElement: Element? = null
 
     @Internal
     override fun blurElements() {
@@ -59,16 +61,26 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         }
     }
 
+    override fun resetHover(mouseX: Double, mouseY: Double) {
+        hoveredElement = if (popupWidgets.isNotEmpty()) null else children().firstOrNull { it.isMouseOver(mouseX, mouseY) }
+        hoveredElement.nullCast<LastSelectable>()?.resetHover(mouseX, mouseY)
+    }
+
     override fun resize(client: MinecraftClient, width: Int, height: Int) {
         super.resize(client, width, height)
         initPopup()
     }
 
-    override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        if (popupWidgets.isEmpty())
-            super.render(context, mouseX, mouseY, delta)
-        else
-            super.render(context, 0, 0, delta)
+    /**
+     * Marked final to preserve proper popup ordering and rendering
+     * @since 0.6.0
+     */
+    final override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        hoveredElement = if (popupWidgets.isNotEmpty()) null else children().firstOrNull { it.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) }
+        context.matrices.push()
+        if (popupWidgets.isNotEmpty())
+            context.matrices.translate(0f, 0f, -500f * popupWidgets.size)
+        renderContents(context, mouseX, mouseY, delta)
         if (popupWidgets.isNotEmpty())
             context.matrices.translate(0f, 0f, 500f)
         for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
@@ -78,6 +90,19 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
                 popup.render(context, 0, 0, delta)
             context.matrices.translate(0f, 0f, 500f)
         }
+        context.matrices.pop()
+    }
+
+    /**
+     * Render call that should be used to render the main contents of a subclass. This is used instead of overriding [render] for proper positioning of the popup stack.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    open fun renderContents(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        if (popupWidgets.isEmpty())
+            super.render(context, mouseX, mouseY, delta)
+        else
+            super.render(context, 0, 0, delta)
     }
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
@@ -91,7 +116,22 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         return false
     }
 
+    final override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        val popupWidget = activeWidget() ?: return onClick(mouseX, mouseY, button)
+        val result = popupWidget.preClick(mouseX, mouseY, button)
+        if (result == PopupWidget.ClickResult.PASS) {
+            return onClick(mouseX, mouseY, button)
+        }
+        return super<PopupParentElement>.mouseClicked(mouseX, mouseY, button)
+    }
+
+    open fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return super<PopupParentElement>.mouseClicked(mouseX, mouseY, button)
+    }
+
     override fun addScreenNarrations(messageBuilder: NarrationMessageBuilder) {
         activeWidget()?.appendNarrations(messageBuilder) ?: super.addScreenNarrations(messageBuilder)
     }
+
+
 }

@@ -40,6 +40,7 @@ internal class SuggestionWindow(
     private val suggestionSize = h / 12
     private var index = 0
 
+    @Suppress("UNUSED_PARAMETER")
     fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.matrices.push()
         context.matrices.translate(0f, 0f, 5f)
@@ -126,6 +127,7 @@ internal class SuggestionWindow(
         return !(mouseX < x || mouseX > x + w || mouseY < y || mouseY > y + h)
     }
 
+    @Suppress("UNUSED_PARAMETER")
     fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         when (keyCode) {
             GLFW.GLFW_KEY_UP -> {
@@ -201,10 +203,9 @@ internal class SuggestionWindow(
             val sHeight = MinecraftClient.getInstance().currentScreen?.height ?: Int.MAX_VALUE
             val x = max(min(windowX, sWidth - w), 0)
             var h = min(suggestions.list.size * 12, 120)
-            val up = windowY
             val down = sHeight - (windowY + 20)
             val upBl: Boolean
-            val y = if(up >= down) {
+            val y = if (windowY >= down) {
                 upBl = true
                 while (windowY - h < 0) {
                     h -= 12
@@ -222,13 +223,12 @@ internal class SuggestionWindow(
                 applier,
                 closer)
         }
-        fun sortSuggestions(suggestions: Suggestions, text: String, cursor: Int): List<Suggestion> {
-            val string: String = text.substring(0, cursor)
-            val string2 = string.lowercase()
+        private fun sortSuggestions(suggestions: Suggestions, text: String, cursor: Int): List<Suggestion> {
+            val string: String = (if(text.isNotEmpty()) text.substring(0, cursor) else text).lowercase()
             val list = Lists.newArrayList<Suggestion>()
             val list2 = Lists.newArrayList<Suggestion>()
             for (suggestion in suggestions.list) {
-                if (suggestion.text.startsWith(string2) || suggestion.text.startsWith("minecraft:$string2")) {
+                if (suggestion.text.startsWith(string) || suggestion.text.startsWith("minecraft:$string")) {
                     list.add(suggestion)
                     continue
                 }

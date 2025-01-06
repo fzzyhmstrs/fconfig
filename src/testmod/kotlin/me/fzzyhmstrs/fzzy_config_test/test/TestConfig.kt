@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.result.ResultProvider
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
 
 
 object TestConfig {
@@ -49,7 +50,9 @@ object TestConfig {
 
     val resultProvider = ConfigApi.result().createSimpleResultProvider(-666, Int::class)
 
-    val listProvider: ResultProvider<List<Int>> = ConfigApi.result().createSimpleResultProvider(listOf(), listOf<Int>().javaClass.kotlin)
+    val listProvider: ResultProvider<List<Int>> = ConfigApi.result().createSimpleResultProvider(emptyList(), listOf<Int>().javaClass.kotlin)
+
+    val tupleProvider: ResultProvider<ValidatedPair.Tuple<Int, Int>> = ConfigApi.result().createSimpleResultProvider(ValidatedPair.Tuple(0, 0), ValidatedPair.Tuple(0, 0).javaClass.kotlin)
 
     var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
     var testConfig4 = ConfigApi.registerAndLoadConfig({ TestConfigImpl4() }, RegisterType.BOTH)

@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
+import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.MutableText
@@ -30,7 +31,8 @@ import java.util.function.Supplier
  */
 object FcText {
 
-    internal val regex = Regex("(?=\\p{Lu})")
+    internal val regex = Regex("(?=\\p{Lu}\\p{Ll})")
+    internal val EMPTY: Text = empty()
 
     /**
      * Wrapper method around Text.translatable. A backwards compatibility holdover from porting older versions
@@ -249,7 +251,6 @@ object FcText {
         else
             empty()
     }
-
     /**
      * Describes anything (In enchantment description style, or for tooltips, for example). If the thing is [Translatable], it will use the built-in description, otherwise it will use the fallback literally
      * @receiver Anything, null or not. [Translatable] will provide its description.
@@ -272,6 +273,41 @@ object FcText {
             else
                 empty()
         }
+    }
+
+    internal fun Any?.prefix(fallback: String): Text? {
+        if(this is Translatable) {
+            if (this.hasPrefix()) {
+                return this.prefix()
+            }
+        }
+        return if (I18n.hasTranslation(fallback))
+            translatable(fallback).formatted(Formatting.ITALIC)
+        else
+            null
+    }
+    internal fun Any?.prefixLit(literalFallback: String = ""): Text? {
+        if(this is Translatable) {
+            if (this.hasPrefix()) {
+                return this.prefix(literalFallback)
+            }
+        }
+        return if(literalFallback != "")
+            literal(literalFallback).formatted(Formatting.ITALIC)
+        else
+            null
+    }
+    internal fun Any?.prefixSupplied(fallbackSupplier: Supplier<String>): MutableText? {
+        if(this is Translatable) {
+            if (this.hasPrefix()) {
+                return this.prefix(fallbackSupplier.get())
+            }
+        }
+        val fallback = fallbackSupplier.get()
+        return if (fallback != "")
+            literal(fallback).formatted(Formatting.ITALIC)
+        else
+            null
     }
 
     /**

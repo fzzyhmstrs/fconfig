@@ -15,23 +15,19 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
-import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.withListener
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
-import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedEntityAttribute
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
-import me.fzzyhmstrs.fzzy_config_test.FC
 import me.fzzyhmstrs.fzzy_config_test.FC.TEST_PERMISSION_BAD
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
-import net.minecraft.entity.attribute.EntityAttributeModifier
-import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.item.Items
 import net.minecraft.loot.LootTables
@@ -92,26 +88,6 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
 
     var testLootIdentifierPredicated = ValidatedIdentifier.ofRegistryKey(LootTables.IGLOO_CHEST_CHEST.value, RegistryKeys.LOOT_TABLE) { entry -> entry.value().type == LootContextTypes.CHEST }
 
-    var exampleValidatedAttribute1 = ValidatedEntityAttribute.Builder("generic.max_health", true)
-        // supply a UUID and name, otherwise generic ones will be used for you
-        .id(Identifier.of(FC.MOD_ID, "test_attribute_1"))
-        //set amount, and optionally provide a range restriction
-        .amount(1.0, 0.0, 8.0)
-        //set the operation for the modifier, and optionally lock the modifier to the operation chosen
-        .operation(EntityAttributeModifier.Operation.ADD_VALUE, true)
-        //build! gets you a ValidatedEntity Attribute
-        .build()
-
-    var exampleValidatedAttribute2 = ValidatedEntityAttribute.Builder("generic.max_health", false)
-        // supply a UUID and name, otherwise generic ones will be used for you
-        .id(Identifier.of(FC.MOD_ID, "test_attribute_2"))
-        //set amount, and optionally provide a range restriction
-        .amount(0.1, 0.0, 1.0)
-        //set the operation for the modifier, and optionally lock the modifier to the operation chosen
-        .operation(EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL, false)
-        //build! gets you a ValidatedEntity Attribute
-        .build()
-
     var validatedItem = ValidatedIdentifier.ofRegistry(Registries.ITEM).map(
         Items.EGG,
         { id -> Registries.ITEM.get(id) },
@@ -125,6 +101,16 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
     ) }) }
 
     var validatedBlock = ValidatedRegistryType.of(Registries.BLOCK)
+
+    class MyTestAny {
+        var test: Int = 5
+        var test2: Double = 4.5
+        var test3: String = "ggg"
+    }
+
+    var myMap: ValidatedStringMap<MyTestAny> = ValidatedStringMap(mapOf("a" to MyTestAny(), "b" to MyTestAny()), ValidatedString(), ValidatedAny(MyTestAny()))
+
+
     /*
     {
      "bl1": false,

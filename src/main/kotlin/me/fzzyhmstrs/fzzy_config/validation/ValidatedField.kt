@@ -13,13 +13,25 @@ package me.fzzyhmstrs.fzzy_config.validation
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
+import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.Popups
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
@@ -28,14 +40,14 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.Condition
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionImpl
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.function.Consumer
+import java.util.function.*
 import java.util.function.Function
-import java.util.function.Supplier
 import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.reflect.KType
@@ -59,13 +71,14 @@ import kotlin.reflect.jvm.jvmErasure
 abstract class ValidatedField<T>(protected open var storedValue: T, protected var defaultValue: T = storedValue):
     Entry<T, ValidatedField<T>>,
     Updatable,
-    Translatable
+    TranslatableEntry,
+    EntryCreator
 {
 
     private var pushedValue: T? = null
-    private var updateKey = ""
+    override var translatableEntryKey: String = ""
     private var updateManager: UpdateManager? = null
-    private var listener: Consumer<ValidatedField<T>>? = null
+    private var listener: Consumer<Entry<T, *>>? = null
     protected var flags: Byte = 0
 
     /**
@@ -75,100 +88,25 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @author fzzyhmstrs
      * @since 0.5.0
      */
+    @Deprecated("Use listenToEntry instead")
     open fun addListener(listener: Consumer<ValidatedField<T>>) {
+        this.listener = listener as? Consumer<Entry<T, *>>
+    }
+
+    /**
+     * Attaches a listener to this field. This listener will be called any time the field is written to ("set"). `accept`, `validateAndSet`, `setAndUpdate` and so on will all call the listener.
+     *
+     * Note that Validated Fields are Entry&lt;T, *&gt;
+     * @param listener [Consumer]&lt;[Entry]&lt;[T], *&gt;&gt; called whenever the field changes. This should, generally speaking, not try to further modify the fields state unless there is a method to prevent infinite recursion.
+     * @see withListener for an extension function that "passes through"
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun listenToEntry(listener: Consumer<Entry<T, *>>) {
         this.listener = listener
     }
 
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun getUpdateManager(): UpdateManager? {
-        return updateManager
-    }
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun setUpdateManager(manager: UpdateManager) {
-        this.updateManager = manager
-    }
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun getEntryKey(): String {
-        return updateKey
-    }
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun setEntryKey(key: String) {
-        updateKey = key
-    }
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun isDefault(): Boolean {
-        return defaultValue == get()
-    }
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun restore() {
-        reset()
-        updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.default", translation(), defaultValue.toString()))
-    }
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun revert() {
-        if(pushedValue != null) {
-            try {
-                pushedValue?.let {
-                    updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert", translation(), get().toString(), pushedValue.toString()))
-                    set(it)
-                }
-            } catch (e: Throwable) {
-                updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert.error", translation(), e.localizedMessage))
-            }
-        } else {
-            updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert.error", translation(), "Unexpected null PushedState."))
-        }
-    }
-    /**
-     * @suppress
-     */
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun pushState() {
-        pushedValue = copyStoredValue()
-    }
-    /**
-     * @suppress
-     */
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun peekState(): Boolean {
-        return pushedValue != get()
-    }
-    /**
-     * @suppress
-     */
-    @Internal
-    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
-    override fun popState(): Boolean {
-        if (pushedValue == null) return false
-        val updated = pushedValue != get()
-        pushedValue = null
-        return updated
-    }
-
-    /**
-     * Copies the stored value and returns it.
-     *
-     * In the default implementation, the value isn't actually copied; there is no way to copy in a generic fashion. Many subclasses of ValidatedField do truly make copies in varying levels of deep and shallow.
-     * @return [T] copied value instance
-     * @author fzzyhmstrs
-     * @since 0.5.0
-     */
-    open fun copyStoredValue(): T {
-        return get()
-    }
-
-    private fun updateDefault(newDefault: T) {
-        this.defaultValue = newDefault
-    }
+    /////////////// SERIALIZATION /////////////////
 
     /**
      * @suppress
@@ -244,8 +182,83 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return ValidationResult.success(input)
     }
 
-    protected open fun reset() {
-        setAndUpdate(defaultValue)
+    /////////// END SERIALIZATION /////////////////
+
+    /////////////// FLAGS /////////////////////////
+
+    internal open fun setFlag(flag: Byte) {
+        if (hasFlag(flag)) return
+        this.flags = (this.flags + flag).toByte()
+    }
+
+    private fun hasFlag(flag: Byte): Boolean {
+        return (this.flags and flag) == flag
+    }
+
+    protected fun compositeFlags(other: EntryFlag) {
+        this.flags = this.flags or other.flags()
+    }
+
+    override fun hasFlag(flag: EntryFlag.Flag): Boolean {
+        return this.hasFlag(flag.flag)
+    }
+
+    override fun flags(): Byte {
+        return flags
+    }
+
+    /////////// END FLAGS /////////////////////////
+
+    /////////////// GET & SET /////////////////////
+
+    /**
+     * supplies the wrapped value
+     *
+     * This method is implemented from [java.util.function.Supplier].
+     * @return This field wrapped value
+     * @author fzzyhmstrs
+     * @since 0.1.0
+     */
+    override fun get(): T {
+        return storedValue
+    }
+
+    /**
+     * Provides this validations default value
+     * @return the default value
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    fun getDefault(): T {
+        return defaultValue
+    }
+
+    @Internal
+    protected open fun set(input: T) {
+        storedValue = input
+        listener?.accept(this)
+    }
+
+    /**
+     * updates the wrapped value. NOTE: this method will push updates to an UpdateManager, if any. For in-game updating consider [validateAndSet]
+     *
+     * This method is implemented from [java.util.function.Consumer].
+     * @param input new value to wrap
+     * @see validateAndSet
+     * @author fzzyhmstrs
+     * @since 0.1.0
+     */
+    override fun accept(input: T) {
+        setAndUpdate(input)
+    }
+
+    override fun trySet(input: Any?) {
+        try {
+            @Suppress("UNCHECKED_CAST")
+            setAndUpdate(input as T)
+        } catch (e: Throwable) {
+            //
+        }
     }
 
     /**
@@ -319,76 +332,214 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         update(message)
     }
 
-    override fun trySet(input: Any?) {
-        try {
-            @Suppress("UNCHECKED_CAST")
-            setAndUpdate(input as T)
-        } catch (e: Throwable) {
-            //
+    /////////// END GET & SET /////////////////////
+
+    /////////////// UPDATES ///////////////////////
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun getUpdateManager(): UpdateManager? {
+        return updateManager
+    }
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun setUpdateManager(manager: UpdateManager) {
+        this.updateManager = manager
+    }
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun isDefault(): Boolean {
+        return defaultValue == get()
+    }
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun restore() {
+        reset()
+        updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.default", translation(), defaultValue.toString()))
+    }
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun revert() {
+        if(pushedValue != null) {
+            try {
+                pushedValue?.let {
+                    updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert", translation(), get().toString(), pushedValue.toString()))
+                    set(it)
+                }
+            } catch (e: Throwable) {
+                updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert.error", translation(), e.localizedMessage))
+            }
+        } else {
+            updateManager?.addUpdateMessage(this, FcText.translatable("fc.validated_field.revert.error", translation(), "Unexpected null PushedState."))
         }
+    }
+    /**
+     * @suppress
+     */
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun pushState() {
+        pushedValue = copyStoredValue()
+    }
+    /**
+     * @suppress
+     */
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun peekState(): Boolean {
+        return pushedValue != get()
+    }
+    /**
+     * @suppress
+     */
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun popState(): Boolean {
+        if (pushedValue == null) return false
+        val updated = pushedValue != get()
+        pushedValue = null
+        return updated
+    }
+
+    /**
+     * Copies the stored value and returns it.
+     *
+     * In the default implementation, the value isn't actually copied; there is no way to copy in a generic fashion. Many subclasses of ValidatedField do truly make copies in varying levels of deep and shallow.
+     * @return [T] copied value instance
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    open fun copyStoredValue(): T {
+        return copyValue(get())
+    }
+
+    private fun updateDefault(newDefault: T) {
+        this.defaultValue = newDefault
+    }
+
+    protected open fun reset() {
+        setAndUpdate(defaultValue)
     }
 
     protected open fun updateMessage(old: T, new: T): Text {
         return FcText.translatable("fc.validated_field.update", translation(), old.toString(), new.toString())
     }
 
-    /**
-     * supplies the wrapped value
-     *
-     * This method is implemented from [java.util.function.Supplier].
-     * @return This field wrapped value
-     * @author fzzyhmstrs
-     * @since 0.1.0
-     */
-    override fun get(): T {
-        return storedValue
-    }
+    /////////// END UPDATES ///////////////////////
 
-    /**
-     * Provides this validations default value
-     * @return the default value
-     * @author fzzyhmstrs
-     * @since 0.5.0
-     */
-    fun getDefault(): T {
-        return defaultValue
-    }
+    /////////////// TRANSLATION ///////////////////
 
     @Internal
-    protected open fun set(input: T) {
-        storedValue = input
-        listener?.accept(this)
-    }
-
-    /**
-     * updates the wrapped value. NOTE: this method will push updates to an UpdateManager, if any. For in-game updating consider [validateAndSet]
-     *
-     * This method is implemented from [java.util.function.Consumer].
-     * @param input new value to wrap
-     * @see validateAndSet
-     * @author fzzyhmstrs
-     * @since 0.1.0
-     */
-    override fun accept(input: T) {
-        setAndUpdate(input)
-    }
-
-    override fun translationKey(): String {
-        @Suppress("DEPRECATION")
-        return getEntryKey()
-    }
-
-    override fun descriptionKey(): String {
-        @Suppress("DEPRECATION")
-        return getEntryKey() + ".desc"
-    }
-
     override fun translation(fallback: String?): MutableText {
         return FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
     }
 
+    /////////// END TRANSLATION ///////////////////
+
+    /////////////// ENTRY CREATION ////////////////
+
     /**
-     * wraps the provided values into a [ValidatedList] with this field as validation
+     * Defines a decoration for the entry
+     * @return [Decorated.DecoratedOffset] containing the decoration and pixel xy alignment offsets.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    protected open fun entryDeco(): Decorated.DecoratedOffset? {
+        return null
+    }
+
+    /**
+     * Allows for modification of the entry content. If you want to add onto the super calls operator, consider [UnaryOperator.andThen] or [UnaryOperator.compose]
+     * @param context [EntryCreator.CreatorContext] context specific to the entry being built
+     * @return [UnaryOperator]&lt;[ConfigEntry.ContentBuilder]&gt;
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    protected open fun contentBuilder(context: EntryCreator.CreatorContext): UnaryOperator<ConfigEntry.ContentBuilder> {
+        val deco = entryDeco()
+        return UnaryOperator { builder ->
+            builder.layoutContent { contentLayout ->
+                contentLayout.add(
+                    "widget",
+                    widgetEntry(),
+                    LayoutWidget.Position.ALIGN_JUSTIFY,
+                    LayoutWidget.Position.BELOW)
+            }
+            if (deco != null)
+                builder.decoration(deco.decorated, deco.offsetX, deco.offsetY)
+            builder
+        }
+    }
+
+    /**
+     * Builds a set of grouped context actions to pass into this fields GUI entry
+     *
+     * Call super first and add into the returned result if you want to add new content to the base actions. (Unless you specifically don't want the super-actions of course)
+     * - Group: string id used to cluster similar context actions together in a context menu
+     * - [ContextType]: key for the action, used simply as map keys here for organization
+     * - [ContextAction.Builder]: builder of the action to perform. This is a builder for 2 reasons; most aspects of FCs GUIs use a lazy instantiation pattern, and this allows subclasses or parents to modify the builder as needed.
+     * @param context [EntryCreator.CreatorContext] context specific to the entry being built
+     * @return Map of groups to Maps of [ContextType] to [ContextAction.Builder]
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    @Suppress("DEPRECATION")
+    protected open fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> {
+        val map: MutableMap<ContextType, ContextAction.Builder> = mutableMapOf()
+        val copy = ContextAction.Builder("fc.button.copy".translate()) {
+            context.misc.get(EntryCreators.COPY_BUFFER)?.set(this.get())
+            true }
+            .icon(TextureDeco.CONTEXT_COPY)
+        val paste = ContextAction.Builder("fc.button.paste".translate()) {
+            context.misc.get(EntryCreators.COPY_BUFFER)?.get()?.let { this.trySet(it) }
+            true }
+            .active { this.isValidEntry(context.misc.get(EntryCreators.COPY_BUFFER)?.get()) }
+            .icon(TextureDeco.CONTEXT_PASTE)
+        val revert = ContextAction.Builder("fc.button.revert".translate()) { this.revert(); true }
+            .active {  this.peekState() }
+            .icon(TextureDeco.CONTEXT_REVERT)
+        val restore = ContextAction.Builder("fc.button.restore".translate()) { b ->
+            Popups.openConfirmPopup(b, "fc.config.restore.confirm.desc".translate()) { this.restore() }
+            true }
+            .active {  !this.isDefault() }
+            .icon(TextureDeco.CONTEXT_RESTORE)
+
+        map[ContextType.COPY] = copy
+        map[ContextType.PASTE] = paste
+        map[ContextType.REVERT] = revert
+        map[ContextType.RESTORE] = restore
+
+        if (context.client) {
+            val forward = ContextAction.Builder("fc.button.forward".translate()) { Popups.openEntryForwardingPopup(this); true }
+                .icon(TextureDeco.CONTEXT_FORWARD)
+            map[ContextType.FORWARD] = forward
+        }
+        val map2: MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> = mutableMapOf()
+        map2[ContextResultBuilder.ENTRY] = map
+        return map2
+    }
+
+    @Internal
+    override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
+        val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
+            val contentBuilder = ConfigEntry.ContentBuilder(context)
+            contentBuilder.contextActions(contextActionBuilder(context))
+            contentBuilder(context).apply(contentBuilder)
+            ConfigEntry(listWidget, contentBuilder.build(), context.texts)
+        }
+        return listOf(EntryCreator.Creator(context.scope, context.texts, function))
+    }
+
+    /////////// END ENTRY CREATION ////////////////
+
+    /////////////// MAPPING ///////////////////////
+
+    /**
+     * Wraps the provided values into a [ValidatedList] with this field as validation
      * @param elements the inputs for the list generation. Same type as this field
      * @return [ValidatedList] wrapping the provided values and this field as validation
      * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.lists
@@ -398,8 +549,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     fun toList(vararg elements: T): ValidatedList<T> {
         return ValidatedList(listOf(*elements), this)
     }
+
     /**
-     * wraps the provided collection into a [ValidatedList] with this field as validation
+     * Wraps the provided collection into a [ValidatedList] with this field as validation
      * @param collection the collection to wrap. Same type as this field
      * @return [ValidatedList] wrapping the collection and this field as validation
      * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.lists
@@ -409,8 +561,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     fun toList(collection: Collection<T>): ValidatedList<T> {
         return ValidatedList(collection.toList(), this)
     }
+
     /**
-     * wraps the provided values into a [ValidatedSet] with this field as validation
+     * Wraps the provided values into a [ValidatedSet] with this field as validation
      * @param elements the inputs for the set generation. Same type as this field
      * @return [ValidatedSet] wrapping the provided values and this field as validation
      * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.sets
@@ -420,8 +573,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     fun toSet(vararg elements: T): ValidatedSet<T> {
         return ValidatedSet(setOf(*elements), this)
     }
+
     /**
-     * wraps the provided collection into a [ValidatedSet] with this field as validation
+     * Wraps the provided collection into a [ValidatedSet] with this field as validation
      * @param collection the collection to wrap. Same type as this field
      * @return [ValidatedSet] wrapping the collection and this field as validation
      * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.sets
@@ -430,6 +584,17 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      */
     fun toSet(collection: Collection<T>): ValidatedSet<T> {
         return ValidatedSet(collection.toSet(), this)
+    }
+
+    /**
+     * Pairs this validation with another validation into one [ValidatedPair]
+     *
+     * Note that the resulting entry in the GUI will have two widgets "squashed" next to each other with the default pair layout, making each widget 53 px wide instead of the normal 110. Pick widgets that work within that constraint, or consider using the ValidatedPair constructor that lets you pick the layout type.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun <B> pairWith(other: Entry<B, *>): ValidatedPair<T, B> {
+        return ValidatedPair(ValidatedPair.Tuple(this.storedValue, other.get()), this, other)
     }
 
     /**
@@ -571,30 +736,13 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return newField.withCondition(scope, failMessage)
     }
 
+    /////////// END MAPPING ///////////////////////
+
     internal fun argumentType(): KType? {
         var superType: KType? = null
         this::class.allSupertypes.filter { it.jvmErasure == ValidatedField::class }.forEach { superType = it }
         return superType?.arguments?.get(0)?.type
     }
-
-    internal open fun setFlag(flag: Byte) {
-        if (hasFlag(flag)) return
-        this.flags = (this.flags + flag).toByte()
-    }
-
-    private fun hasFlag(flag: Byte): Boolean {
-        return (this.flags and flag) == flag
-    }
-
-    protected fun compositeFlags(other: EntryFlag) {
-        this.flags = this.flags or other.flags()
-    }
-
-    override fun hasFlag(flag: EntryFlag.Flag): Boolean {
-        return this.hasFlag(flag.flag)
-    }
-
-
 
     companion object {
 
@@ -608,7 +756,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
          */
         fun<T, F: ValidatedField<T>> F.withListener(listener: Consumer<F>): F {
             @Suppress("UNCHECKED_CAST") //ok since Consumers type will be erased anyway, and the listener will always be provided with the receiver itself (F)
-            this.addListener(listener as Consumer<ValidatedField<T>>)
+            this.listenToEntry(listener as Consumer<Entry<T, *>>)
             return this
         }
 

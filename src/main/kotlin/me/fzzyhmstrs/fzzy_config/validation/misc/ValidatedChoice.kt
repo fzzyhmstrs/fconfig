@@ -12,8 +12,9 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -123,38 +124,6 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     }
 
     @Internal
-    companion object {
-
-        /**
-         * Helper method for creating Choice translations from the base key and the choice value string.
-         *
-         * For example, if the [ValidatedChoice] has three entries `"a"`, `"b"`, `"c"`, we can use this method to create lang keys like the following
-         *
-         * - Translation: `"my_mod.my_config.choiceField.a"`
-         * - Description: `"my_mod.my_config.choiceField.desc.a"`
-         * - With Suffix: `"my_mod.my_config.choiceField.a.suffix"`
-         *
-         * Which will be used to create a Translatable Text.
-         * @param suffix Optional string to add to the end of the created lang key.
-         * @return [BiFunction] [T], String, [MutableText] the composed BiFunction for providing to a [ValidatedChoice] constructor.
-         * @author fzzyhmstrs
-         * @since 0.3.7
-         */
-        @JvmStatic
-        @JvmOverloads
-        fun <T> translate(suffix: String = ""): BiFunction<T, String, MutableText> {
-            return if(suffix.isEmpty())
-                BiFunction { t, u -> FcText.translatable(u + "." + t.toString()) }
-            else
-                BiFunction { t, u -> FcText.translatable(u + "." + t.toString() + "." + suffix) }
-        }
-
-    }
-
-    override fun copyStoredValue(): T {
-        return storedValue
-    }
-    @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
             val errors = mutableListOf<String>()
@@ -168,25 +137,15 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             ValidationResult.error(storedValue, "Critical error deserializing choices [$fieldName]: ${e.localizedMessage}")
         }
     }
+
     @Internal
     override fun serialize(input: T): ValidationResult<TomlElement> {
         return ValidationResult.success(handler.serializeEntry(input, mutableListOf(), 1))
     }
+
     @Internal
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         return handler.validateEntry(input, type).also(choices.contains(input), "[$input] not a valid choice: [$choices]")
-    }
-    @Internal
-    //client
-    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
-        return when(widgetType) {
-            WidgetType.POPUP -> {
-                ChoicePopupButtonWidget(translation(), choicePredicate, this)
-            }
-            WidgetType.CYCLING -> {
-                CyclingOptionsWidget(choicePredicate, this)
-            }
-        }
     }
 
     /**
@@ -198,13 +157,39 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     override fun instanceEntry(): ValidatedChoice<T> {
         return ValidatedChoice(copyStoredValue(), this.choices, this.handler, this.translationProvider, this.descriptionProvider, this.widgetType)
     }
+
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
         if (input == null) return false
         return try {
+            @Suppress("UNCHECKED_CAST")
             input::class.java == defaultValue!!::class.java && validateEntry(input as T, EntryValidator.ValidationType.STRONG).isValid()
         } catch (e: Throwable) {
             false
+        }
+    }
+
+    /**
+     * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
+     * @param input [T] input to be copied
+     * @return copied output
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    override fun copyValue(input: T): T {
+        return handler.copyValue(input)
+    }
+
+    @Internal
+    //client
+    override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
+        return when(widgetType) {
+            WidgetType.POPUP -> {
+                ChoicePopupButtonWidget(translation(), choicePredicate, this)
+            }
+            WidgetType.CYCLING -> {
+                CyclingOptionsWidget(choicePredicate, this)
+            }
         }
     }
 
@@ -235,6 +220,35 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         CYCLING
     }
 
+    @Internal
+    companion object {
+
+        /**
+         * Helper method for creating Choice translations from the base key and the choice value string.
+         *
+         * For example, if the [ValidatedChoice] has three entries `"a"`, `"b"`, `"c"`, we can use this method to create lang keys like the following
+         *
+         * - Translation: `"my_mod.my_config.choiceField.a"`
+         * - Description: `"my_mod.my_config.choiceField.desc.a"`
+         * - With Suffix: `"my_mod.my_config.choiceField.a.suffix"`
+         *
+         * Which will be used to create a Translatable Text.
+         * @param suffix Optional string to add to the end of the created lang key.
+         * @return [BiFunction] [T], String, [MutableText] the composed BiFunction for providing to a [ValidatedChoice] constructor.
+         * @author fzzyhmstrs
+         * @since 0.3.7
+         */
+        @JvmStatic
+        @JvmOverloads
+        fun <T> translate(suffix: String = ""): BiFunction<T, String, MutableText> {
+            return if(suffix.isEmpty())
+                BiFunction { t, u -> FcText.translatable(u + "." + t.toString()) }
+            else
+                BiFunction { t, u -> FcText.translatable(u + "." + t.toString() + "." + suffix) }
+        }
+
+    }
+
     //client
     private class ChoicePopupButtonWidget<T>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
 
@@ -250,13 +264,8 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             return entry.translationProvider.apply(entry.get(), entry.translationKey())
         }
 
-        override fun getNarrationMessage(): MutableText {
-            return this.message.copy()
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.TITLE, this.narrationMessage)
-            //builder.put(NarrationPart.USAGE, FcText.translatable("narration.component_list.usage"))
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+            builder?.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.message).append(". "))
         }
 
         private fun constructTooltip() {
@@ -291,12 +300,12 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
                     { c: T -> c != entry.get() },
                     entry,
                     { entry.accept(it); constructTooltip(); PopupWidget.pop() })
-                builder.addElement("choice$index", button, prevParent, PopupWidget.Builder.PositionRelativePos.BELOW)
+                builder.add("choice$index", button, prevParent, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
                 prevParent = "choice$index"
             }
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
             builder.positionY(PopupWidget.Builder.popupContext { this.y - 20 })
-            builder.additionalNarration("fc.validated_field.enum.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey())))
+            builder.additionalNarration("fc.validated_field.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey())))
             PopupWidget.push(builder.build())
         }
     }
@@ -308,17 +317,13 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
             entry.descriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
         }
 
-        override fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activePredicate.test(thisVal)
-            super.renderCustom(context, mouseX, mouseY, delta)
+            super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
         }
 
         override fun getNarrationMessage(): MutableText {
             return entry.translationProvider.apply(thisVal, entry.translationKey())
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            appendDefaultNarrations(builder)
         }
 
         override fun onPress() {
@@ -354,11 +359,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
         }
 
         override fun getNarrationMessage(): MutableText {
-            return entry.translationProvider.apply(entry.get(), entry.translationKey())
-        }
-
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            appendDefaultNarrations(builder)
+            return "fc.validated_field.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey()).append(". "))
         }
 
         override fun onPress() {

@@ -10,18 +10,20 @@
 
 package me.fzzyhmstrs.fzzy_config.util.pos
 
+import java.util.function.Supplier
+
 /**
  * Defines the mutable position of something
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-interface Pos {
+interface Pos: Supplier<Int> {
     /**
      * Returns the position of this pos
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, originates from the Supplier interface as of 0.5.9
      */
-    fun get(): Int
+    override fun get(): Int
     /**
      * Sets the position of this pos
      * @author fzzyhmstrs
@@ -40,4 +42,33 @@ interface Pos {
      * @since 0.2.0
      */
     fun dec(amount: Int)
+
+    operator fun plus(other: Pos): Int {
+        return this.get() + other.get()
+    }
+
+    operator fun minus(other: Pos): Int {
+        return this.get() - other.get()
+    }
+
+    operator fun times(other: Pos): Int {
+        return this.get() * other.get()
+    }
+
+    operator fun div(other: Pos): Int {
+        return this.get() / other.get()
+    }
+
+    operator fun rem(other: Pos): Int {
+        return this.get() % other.get()
+    }
+
+    companion object {
+        /**
+         * Reference zero position, good for a default value
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        val ZERO = ImmutablePos(0)
+    }
 }

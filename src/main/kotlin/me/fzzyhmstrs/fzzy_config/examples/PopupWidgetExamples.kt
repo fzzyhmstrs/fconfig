@@ -11,8 +11,9 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
@@ -46,19 +47,19 @@ object PopupWidgetExamples {
             .addDivider()
             //adds a basic element. give it a unique name, and position it
             //this element is positioned below the last added element (the divider in this case), and aligned centered in the popup
-            .addElement("text_element", TextWidget(Text.translatable("my.cool.popup.text"), MinecraftClient.getInstance().textRenderer).alignCenter(),
-                PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_CENTER)
+            .add("text_element", TextWidget(Text.translatable("my.cool.popup.text"), MinecraftClient.getInstance().textRenderer).alignCenter(),
+                LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             //adds a button, this element is below the "text_element" one, and aligned left in the popup bounds
-            .addElement("button_1", CustomButtonWidget.builder(Text.translatable("my.cool.popup.button1")) { b-> }.size(50, 44).build(),
-                PopupWidget.Builder.Position.BELOW, PopupWidget.Builder.Position.ALIGN_LEFT )
+            .add("button_1", CustomButtonWidget.builder(Text.translatable("my.cool.popup.button1")) { b-> }.size(50, 44).build(),
+                LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT )
             //a second button, this one is aligned horizontal to the top edge of the "button_1" element,
             //aligns to the right of the widget window and is stretched to meet the closest element to its left ("button_1" in this case)
-            .addElement("button_2", CustomButtonWidget.builder(Text.translatable("my.cool.popup.button2")) { b-> }.size(50, 20).build(),
-                PopupWidget.Builder.Position.ALIGN_RIGHT_AND_JUSTIFY, PopupWidget.Builder.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("button_2", CustomButtonWidget.builder(Text.translatable("my.cool.popup.button2")) { b-> }.size(50, 20).build(),
+                LayoutWidget.Position.ALIGN_RIGHT_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             //repeat that with button 3, this time aligned to "button_1" bottom edge
             //this element has a defined parent (button_1), instead of automatically picking the last element
-            .addElement("button_3", CustomButtonWidget.builder(Text.translatable("my.cool.popup.button3")) { b-> }.size(50, 20).build(), "button_1",
-                PopupWidget.Builder.Position.ALIGN_RIGHT_AND_JUSTIFY, PopupWidget.Builder.Position.HORIZONTAL_TO_BOTTOM_EDGE)
+            .add("button_3", CustomButtonWidget.builder(Text.translatable("my.cool.popup.button3")) { b-> }.size(50, 20).build(), "button_1",
+                LayoutWidget.Position.ALIGN_RIGHT_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_BOTTOM_EDGE)
             //there is a special method for adding a "Done" button, this also takes "button_1" as its parent in this case
             //it will automatically align below the parent element and justify across the entire width of the widget
             .addDoneWidget(parent = "button_1")

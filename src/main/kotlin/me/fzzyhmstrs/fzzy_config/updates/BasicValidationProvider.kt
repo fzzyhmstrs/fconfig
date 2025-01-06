@@ -46,7 +46,7 @@ internal interface BasicValidationProvider {
                     val argument = type.arguments[0]
                     val argumentType = argument.type ?: return null
                     val projectionValidation = basicValidationStrategy(null, argumentType, annotations) ?: return null
-                    return ValidatedList.tryMake(if (input != null) input as List<*> else listOf(), projectionValidation)
+                    return ValidatedList.tryMake(if (input != null) input as List<*> else emptyList(), projectionValidation)
                 } else if (clazz.isSubclassOf(Set::class)) {
                     val argument = type.arguments[0]
                     val argumentType = argument.type ?: return null

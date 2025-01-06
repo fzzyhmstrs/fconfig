@@ -77,7 +77,6 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
             value = wrappedValue.get()
         }
         RenderSystem.enableBlend()
-        RenderSystem.defaultBlendFunc()
         RenderSystem.enableDepthTest()
         context.drawTex(getTexture(), x, y, getWidth(), getHeight())
         context.drawTex(getHandlerTexture(), x, y + (value * (height - 8).toDouble()).toInt(), getWidth(), 8)

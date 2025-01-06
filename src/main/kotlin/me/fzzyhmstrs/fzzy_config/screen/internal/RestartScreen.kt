@@ -12,7 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.MinecraftClient
@@ -22,7 +22,7 @@ import net.minecraft.client.gui.widget.*
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 
 //client
-internal class RestartScreen: PopupWidgetScreen(FcText.empty()) {
+internal class RestartScreen: PopupWidgetScreen(FcText.EMPTY) {
 
     private val layout = ThreePartsLayoutWidget(this)
 
@@ -64,7 +64,7 @@ internal class RestartScreen: PopupWidgetScreen(FcText.empty()) {
         }
     }
 
-    fun initLayout() {
+    private fun initLayout() {
         layout.refreshPositions()
     }
 

@@ -56,6 +56,7 @@ object ConfigApiJava {
      */
     @JvmStatic
     @JvmOverloads
+    @Suppress("DEPRECATION")
     @Deprecated("Consider registerAndLoadConfig() instead, to perform automatic loading, registering, and validating in one step.")
     fun <T: Config> registerConfig(config: T, configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T{
         return ConfigApi.registerConfig(config, configClass, registerType)
@@ -98,6 +99,8 @@ object ConfigApiJava {
 
     /**
      * Whether a config corresponding to the provided scope is registered
+     * @author fzzyhmstrs
+     * @since 0.5.3
      */
     @JvmStatic
     @Deprecated("Only polls synced configs. Use newer overload with RegisterType param")
@@ -153,6 +156,7 @@ object ConfigApiJava {
      * @since 0.5.3
      */
     @JvmStatic
+    //TODO fully test for promotion to stable
     fun result(): ResultApiJava {
         return ResultApiJavaImpl
     }
