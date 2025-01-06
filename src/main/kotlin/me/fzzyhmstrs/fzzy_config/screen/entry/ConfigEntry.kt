@@ -63,7 +63,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         for ((index, bl) in content.groupTypes.withIndex()) {
             lo.add("$index", GroupLineWidget(bl), LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT_OF_AND_STRETCH, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         }
-        lo.add("layout", content.layoutWidget, LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT_OF_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+        lo.add("layout", content.layoutWidget, LayoutWidget.Position.RIGHT, LayoutWidget.Position.POSITION_RIGHT_OF_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         lo.setPos(this.x, this.top)
         lo.compute()
     }
@@ -300,9 +300,10 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         init {
             val nameSupplier = { context.texts.name }
             val titleWidget = SuppliedTextWidget(nameSupplier, MinecraftClient.getInstance().textRenderer, 70, 20).supplyTooltipOnOverflow(nameSupplier).align(0.0f)
-            mainLayout.add("title", titleWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
-            mainLayout.add("content", contentLayout, "title", LayoutWidget.Position.ALIGN_RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            mainLayout.add("deco", decorationWidget, "content", LayoutWidget.Position.LEFT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+
+            mainLayout.add("content", contentLayout, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_RIGHT)
+            mainLayout.add("deco", decorationWidget, "content", LayoutWidget.Position.LEFT)
+            mainLayout.add("title", titleWidget, "deco", LayoutWidget.Position.POSITION_LEFT_OF_AND_JUSTIFY, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         }
 
         /**

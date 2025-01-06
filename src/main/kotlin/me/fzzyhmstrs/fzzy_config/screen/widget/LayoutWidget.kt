@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.*
 import me.fzzyhmstrs.fzzy_config.util.pos.*
@@ -249,7 +250,7 @@ class LayoutWidget @JvmOverloads constructor(
         if (bl) {
             updateElementWidths(width - oldWidth)
             this.width = width
-            compute()
+            compute(true)
         }
     }
 
@@ -497,15 +498,15 @@ class LayoutWidget @JvmOverloads constructor(
         var maxW = -1000000
         var maxH = -1000000
         for ((_, posEl) in elements) {
-            minW = min(max(posEl.getLeft(), paddingW), minW)
+            minW = min(posEl.getLeft() - paddingW, minW)
         }
         for ((_, posEl) in elements) {
-            maxW = max(max(posEl.getRight() - minW, posEl.elWidth()), maxW)
+            if (posEl.alignment != Position.ALIGN_JUSTIFY_WEAK) {
+                maxW = max(max((posEl.getRight() + paddingW) - minW, posEl.elWidth() + (paddingW * 2)), maxW)
+            }
             maxH = max(posEl.getBottom(), maxH)
         }
         if (manualWidth <= 0) {
-            maxW += paddingW * 2
-            maxW -= this.x.get()
             updateWidth(maxW)
         } else {
             updateWidth(manualWidth)
@@ -525,102 +526,119 @@ class LayoutWidget @JvmOverloads constructor(
 
     fun compute(debug: Boolean = false): LayoutWidget {
         for (posEl in elements.values) {
+            if (debug) FC.DEVLOG.info("E $posEl")
             if (posEl.element is LayoutWidget) {
                 posEl.element.compute(debug)
             }
         }
         attemptRecomputeDims(debug)
-        for (posEl in elements.values) {
-            if (posEl.alignment == Position.ALIGN_JUSTIFY) {
-                if (posEl.element is ClickableWidget) {
-                    posEl.element.width = width - (2 * paddingW)
-                } else if (posEl.element is Scalable) {
-                    posEl.element.setWidth(width - (2 * paddingW))
-                }
-            } else if (posEl.alignment == Position.ALIGN_LEFT_AND_JUSTIFY || posEl.alignment == Position.ALIGN_LEFT_OF_AND_JUSTIFY) {
-                var closestRightEl: PositionedElement<*>? = null
-                var rightPos = 1000000000
-                for (posElRight in elements.values) {
-                    if (posEl.otherIsRightwards(posElRight)) {
-                        if(posElRight.getLeft() < rightPos) {
-                            closestRightEl = posElRight
-                            rightPos = posElRight.getLeft()
+        val w = this.getWidth()
+        var redo = 2
+        do {
+            for (posEl in elements.values) {
+                if (posEl.alignment == Position.ALIGN_JUSTIFY || posEl.alignment == Position.ALIGN_JUSTIFY_WEAK) {
+                    if (posEl.element is ClickableWidget) {
+                        posEl.element.width = width - (2 * paddingW)
+                    } else if (posEl.element is Scalable) {
+                        posEl.element.setWidth(width - (2 * paddingW))
+                    }
+                } else if (posEl.alignment == Position.ALIGN_LEFT_AND_JUSTIFY || posEl.alignment == Position.POSITION_RIGHT_OF_AND_JUSTIFY) {
+                    var closestRightEl: PositionedElement<*>? = null
+                    var rightPos = 1000000000
+                    for (posElRight in elements.values) {
+                        if (posElRight == posEl) continue
+                        if (posEl.otherIsRightwards(posElRight)) {
+                            if (posElRight.getLeft() < rightPos) {
+                                closestRightEl = posElRight
+                                rightPos = posElRight.getLeft()
+                            }
                         }
                     }
-                }
-                if(closestRightEl != null) {
-                    if (posEl.element is ClickableWidget) {
-                        posEl.element.width = closestRightEl.getLeft() - posEl.getLeft() - posEl.set.spacingW
-                    } else if (posEl.element is Scalable) {
-                        posEl.element.setWidth(closestRightEl.getLeft() - posEl.getLeft() - posEl.set.spacingW)
-                    }
-                } else {
-                    if (posEl.element is ClickableWidget) {
-                        posEl.element.width = posEl.set.w.get() - posEl.getLeft()
-                    } else if (posEl.element is Scalable) {
-                        posEl.element.setWidth(posEl.set.w.get() - posEl.getLeft())
-                    }
-                }
-            } else if (posEl.alignment == Position.ALIGN_RIGHT_AND_JUSTIFY) {
-                var closestLeftEl: PositionedElement<*>? = null
-                var leftPos = -1000000000
-                for (posElLeft in elements.values) {
-                    if (posEl.otherIsLeftwards(posElLeft)) {
-                        if(posElLeft.getRight() > leftPos) {
-                            closestLeftEl = posElLeft
-                            leftPos = posElLeft.getLeft()
+                    if (closestRightEl != null) {
+                        if (posEl.element is ClickableWidget) {
+                            posEl.element.width = closestRightEl.getLeft() - posEl.getLeft() - posEl.set.spacingW
+                        } else if (posEl.element is Scalable) {
+                            posEl.element.setWidth(closestRightEl.getLeft() - posEl.getLeft() - posEl.set.spacingW)
+                        }
+                    } else {
+                        if (posEl.element is ClickableWidget) {
+                            posEl.element.width = posEl.set.w.get() - posEl.getLeft()
+                        } else if (posEl.element is Scalable) {
+                            posEl.element.setWidth(posEl.set.w.get() - posEl.getLeft())
                         }
                     }
-                }
-                if(closestLeftEl != null) {
-                    if (posEl.element is ClickableWidget) {
-                        posEl.element.width = posEl.getRight() - closestLeftEl.getRight() - posEl.set.spacingW
-                    } else if (posEl.element is Scalable) {
-                        val prevRight = posEl.getRight()
-                        posEl.getX().dec(posEl.getLeft() - closestLeftEl.getRight())
-                        posEl.getX().inc(posEl.set.spacingW)
-                        posEl.element.setWidth(prevRight - posEl.getLeft())
-                    }
-                } else {
-                    if (posEl.element is ClickableWidget) {
-                        val prevRight = posEl.getRight()
-                        posEl.getX().dec(posEl.getLeft() - posEl.set.x.get())
-                        posEl.element.width = prevRight - posEl.getLeft()
-                    } else if (posEl.element is Scalable) {
-                        val prevRight = posEl.getRight()
-                        posEl.getX().dec(posEl.getLeft() - posEl.set.x.get())
-                        posEl.element.setWidth(prevRight - posEl.getLeft())
-                    }
-                }
-            } else if (posEl.alignment == Position.ALIGN_LEFT_AND_STRETCH
-                || posEl.alignment == Position.ALIGN_RIGHT_AND_STRETCH
-                || posEl.alignment == Position.ALIGN_LEFT_OF_AND_STRETCH) {
-                var closestDownEl: PositionedElement<*>? = null
-                var downPos = 1000000000
-                for (posElDown in elements.values) {
-                    if (posEl.otherIsBelow(posElDown)) {
-                        if(posElDown.getTop() < downPos) {
-                            closestDownEl = posElDown
-                            downPos = posElDown.getTop()
+
+                } else if (posEl.alignment == Position.ALIGN_RIGHT_AND_JUSTIFY || posEl.alignment == Position.POSITION_LEFT_OF_AND_JUSTIFY) {
+                    if (debug) FC.DEVLOG.info("Element Before: $posEl")
+                    var closestLeftEl: PositionedElement<*>? = null
+                    var leftPos = -1000000000
+                    for (posElLeft in elements.values) {
+                        if (posElLeft == posEl) continue
+                        if (posEl.otherIsLeftwards(posElLeft)) {
+                            if (posElLeft.getRight() > leftPos) {
+                                closestLeftEl = posElLeft
+                                leftPos = posElLeft.getLeft()
+                            }
                         }
                     }
-                }
-                if(closestDownEl != null) {
-                    if (posEl.element is ClickableWidget) {
-                        posEl.element.height = closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH
-                    } else if (posEl.element is Scalable) {
-                        posEl.element.setHeight(closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH)
+                    if (debug) FC.DEVLOG.info("Closest Right Element: $closestLeftEl")
+                    if (closestLeftEl != null) {
+                        if (posEl.element is ClickableWidget) {
+                            posEl.getX().dec(posEl.getLeft() - closestLeftEl.getRight())
+                            posEl.getX().inc(posEl.set.spacingW)
+                            posEl.element.width = posEl.getRight() - closestLeftEl.getRight() - posEl.set.spacingW
+                        } else if (posEl.element is Scalable) {
+                            val prevRight = posEl.getRight()
+                            posEl.getX().dec(posEl.getLeft() - closestLeftEl.getRight())
+                            posEl.getX().inc(posEl.set.spacingW)
+                            posEl.element.setWidth(prevRight - posEl.getLeft())
+                        }
+                    } else {
+                        if (posEl.element is ClickableWidget) {
+                            val dec = posEl.getLeft() - posEl.set.x.get()
+                            posEl.getX().dec(dec)
+                            posEl.element.width += dec
+                        } else if (posEl.element is Scalable) {
+                            val dec = posEl.getLeft() - posEl.set.x.get()
+                            posEl.getX().dec(dec)
+                            posEl.element.setWidth(posEl.element.width + dec)
+                        }
                     }
-                } else {
-                    if (posEl.element is ClickableWidget) {
-                        posEl.element.height = posEl.set.h.get() - posEl.getTop()
-                    } else if (posEl.element is Scalable) {
-                        posEl.element.setHeight(posEl.set.h.get() - posEl.getTop())
+                    if (debug) FC.DEVLOG.info("Element After: $posEl")
+                } else if (posEl.alignment == Position.ALIGN_LEFT_AND_STRETCH
+                    || posEl.alignment == Position.ALIGN_RIGHT_AND_STRETCH
+                    || posEl.alignment == Position.ALIGN_LEFT_OF_AND_STRETCH
+                ) {
+                    var closestDownEl: PositionedElement<*>? = null
+                    var downPos = 1000000000
+                    for (posElDown in elements.values) {
+                        if (posElDown == posEl) continue
+                        if (posEl.otherIsBelow(posElDown)) {
+                            if (posElDown.getTop() < downPos) {
+                                closestDownEl = posElDown
+                                downPos = posElDown.getTop()
+                            }
+                        }
+                    }
+                    if (closestDownEl != null) {
+                        if (posEl.element is ClickableWidget) {
+                            posEl.element.height = closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH
+                        } else if (posEl.element is Scalable) {
+                            posEl.element.setHeight(closestDownEl.getTop() - posEl.getTop() - posEl.set.spacingH)
+                        }
+                    } else {
+                        if (posEl.element is ClickableWidget) {
+                            posEl.element.height = posEl.set.h.get() - posEl.getTop()
+                        } else if (posEl.element is Scalable) {
+                            posEl.element.setHeight(posEl.set.h.get() - posEl.getTop())
+                        }
                     }
                 }
             }
-        }
-        attemptRecomputeDims(debug)
+            redo--
+            attemptRecomputeDims(debug)
+            if (getWidth() == w) break
+        } while (redo > 0)
         updateElements()
         return this
     }
@@ -737,6 +755,18 @@ class LayoutWidget @JvmOverloads constructor(
              */
             val ALIGN_JUSTIFY: Position = PositionGlobalAlignment.ALIGN_JUSTIFY
             /**
+             * Centers an element relative to the width of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             *
+             * Justification of this element won't take any overlapping elemnts into consideration, it will justify to the global left and right edges of the Popup regardless.
+             *
+             * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
+             *
+             * This alignment *won't* contribute to computing layout width. This should be used for elements that strictly want to map to the width of the other elements, not contribute any dimensional information.
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
+            val ALIGN_JUSTIFY_WEAK: Position = PositionGlobalAlignment.ALIGN_JUSTIFY_WEAK
+            /**
              * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
              *
              * Justification of this element WILL take elements to the right of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
@@ -755,9 +785,9 @@ class LayoutWidget @JvmOverloads constructor(
              * @author fzzyhmstrs
              * @since 0.6.0
              */
-            val ALIGN_LEFT_OF_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_OF_AND_JUSTIFY
+            val POSITION_RIGHT_OF_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.POSITION_RIGHT_OF_AND_JUSTIFY
             /**
-             * Aligns an element to the right side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             * Positions an element to the right side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
              *
              * Justification of this element WILL take elements to the left of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
              *
@@ -770,6 +800,16 @@ class LayoutWidget @JvmOverloads constructor(
              * Aligns an element to the left side of the Popup widget and stretches it (fits to height). Does not define any other position or alignment.
              *
              * Justification of this element WILL take elements below this one into account; it will stretch to fit up to the next element or bottom of the widget, allowing for the default padding in between elements.
+             *
+             * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
+             * @author fzzyhmstrs
+             * @since 0.6.0
+             */
+            val POSITION_LEFT_OF_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.POSITION_LEFT_OF_AND_JUSTIFY
+            /**
+             * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
+             *
+             * Justification of this element WILL take elements to the left of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
              *
              * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
              * @author fzzyhmstrs
@@ -922,6 +962,16 @@ class LayoutWidget @JvmOverloads constructor(
             }
         },
         @Deprecated("Use Positions Impl values")
+        ALIGN_JUSTIFY_WEAK {
+            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
+            }
+
+            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
+            }
+        },
+        @Deprecated("Use Positions Impl values")
         ALIGN_LEFT_AND_JUSTIFY {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(RelPos(globalSet.x), prevY)
@@ -932,7 +982,7 @@ class LayoutWidget @JvmOverloads constructor(
             }
         },
         @Deprecated("Use Positions Impl values")
-        ALIGN_LEFT_OF_AND_JUSTIFY {
+        POSITION_RIGHT_OF_AND_JUSTIFY {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(parent.getX(), globalSet.spacingW) { parent.elWidth() }, prevY)
             }
@@ -945,6 +995,16 @@ class LayoutWidget @JvmOverloads constructor(
         ALIGN_RIGHT_AND_JUSTIFY {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+            }
+
+            override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+            }
+        },
+        @Deprecated("Use Positions Impl values")
+        POSITION_LEFT_OF_AND_JUSTIFY {
+            override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
+                return Pair(ImmutableSuppliedPos(parent.getX()) { -el.width -globalSet.spacingW }, prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
@@ -1013,10 +1073,20 @@ class LayoutWidget @JvmOverloads constructor(
             return y.get() + element.height
         }
         override fun elWidth(): Int {
+            if (alignment == Position.ALIGN_JUSTIFY_WEAK) return 0
             return element.width
         }
         override fun elHeight(): Int {
             return element.height
+        }
+        fun resetWidth() {
+            if (elWidth() < 0) {
+                if (element is ClickableWidget) {
+                    element.width = 0
+                } else if (element is Scalable) {
+                    element.setWidth(0)
+                }
+            }
         }
 
         fun update() {
@@ -1026,7 +1096,7 @@ class LayoutWidget @JvmOverloads constructor(
         fun updateWidth(delta: Int) {
             if (alignment == Position.ALIGN_JUSTIFY
                 || alignment == Position.ALIGN_LEFT_AND_JUSTIFY
-                || alignment == Position.ALIGN_LEFT_OF_AND_JUSTIFY
+                || alignment == Position.POSITION_RIGHT_OF_AND_JUSTIFY
                 || alignment == Position.ALIGN_RIGHT_AND_JUSTIFY)
             {
                 if (element is ClickableWidget) {
