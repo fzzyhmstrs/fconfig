@@ -42,12 +42,6 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
     val testBooleanWidget = testBoolean.widgetEntry(ChoiceValidator.any())
     val listTestWidget = configWidget(size)
     val groupButton = ButtonWidget.builder("Toggle".lit()) { _ -> listTestWidget.toggleGroup("2") }.size(50, 20).build()
-    val layout = TestLayoutContainerWidget { builder ->
-        builder.add("first", ButtonWidget.builder("First".lit()) { _ -> }.size(100, 20).build(), LayoutWidget.Position.ALIGN_CENTER, LayoutWidget.Position.BELOW)
-        builder.add("second", ButtonWidget.builder("Second".lit()) { _ -> }.size(100, 20).build(), LayoutWidget.Position.ALIGN_CENTER, LayoutWidget.Position.BELOW)
-        builder.add("third", ButtonWidget.builder("Third".lit()) { _ -> }.size(100, 20).build(), LayoutWidget.Position.ALIGN_CENTER, LayoutWidget.Position.BELOW)
-        builder.add("fourth", ButtonWidget.builder("Fourth".lit()) { _ -> }.size(100, 20).build(), LayoutWidget.Position.ALIGN_CENTER, LayoutWidget.Position.BELOW)
-    }
 
     override fun close() {
         super.close()
@@ -79,8 +73,6 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
         addDrawableChild(listTestWidget)
         groupButton.setPosition(260, 80)
         addDrawableChild(groupButton)
-        layout.setPosition(320, 0)
-        addDrawableChild(layout)
 
         addDrawableChild(ConfigScreenWidget.of("fzzy_config_test", ConfigScreenWidget.Position.Corner.TOP_LEFT))
     }
