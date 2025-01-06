@@ -91,15 +91,15 @@ object PortingUtils {
     }
 
     fun itemIngredient(item: ItemConvertible): Ingredient {
-        return Ingredient.ofItem(item)
+        return Ingredient.ofItems(item)
     }
 
     fun listIngredient(stacks: List<ItemConvertible>): Ingredient {
-        return Ingredient.ofItems(stacks.stream())
+        return Ingredient.ofStacks(stacks.map { it.asItem().defaultStack }.stream())
     }
 
     fun tagIngredient(tag: TagKey<Item>): Ingredient {
-        return Ingredient.fromTag(Registries.ITEM.namedEntryList(tag).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
+        return Ingredient.fromTag(tag)
     }
 
     object Codecs {

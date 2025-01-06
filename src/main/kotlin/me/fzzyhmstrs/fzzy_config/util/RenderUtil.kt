@@ -88,7 +88,9 @@ object RenderUtil {
      * @since 0.6.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, u: Float, v: Float, width: Int, height: Int, texWidth: Int, texHeight: Int) {
-        this.drawTexture(RenderLayer::getGuiTextured, id, x, y, u, v, width, height, texWidth, texHeight)
+        RenderSystem.enableBlend()
+        this.drawTexture(id, x, y, u, v, width, height, texWidth, texHeight)
+        RenderSystem.disableBlend()
     }
 
     /**
@@ -99,6 +101,6 @@ object RenderUtil {
      * @since 0.6.0
      */
     fun renderBlur() {
-        MinecraftClient.getInstance().gameRenderer.renderBlur()
+        MinecraftClient.getInstance().gameRenderer.renderBlur(0f)
     }
 }

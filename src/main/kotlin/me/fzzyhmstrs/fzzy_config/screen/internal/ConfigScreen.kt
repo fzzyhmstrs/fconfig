@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
+import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen

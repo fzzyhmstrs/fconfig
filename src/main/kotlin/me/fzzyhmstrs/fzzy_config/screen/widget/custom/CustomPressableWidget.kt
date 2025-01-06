@@ -82,7 +82,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     open fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawTex(textures.get(active, this.isSelected), x, y, width, height, ColorHelper.getWhite(this.alpha))
+        context.drawTex(textures.get(active, this.isSelected), x, y, width, height, this.alpha)
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
