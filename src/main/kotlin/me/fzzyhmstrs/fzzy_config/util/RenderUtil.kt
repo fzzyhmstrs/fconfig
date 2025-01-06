@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.blaze3d.systems.RenderSystem
 import it.unimi.dsi.fastutil.ints.IntIterator
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
@@ -220,4 +221,14 @@ object RenderUtil {
         this.drawTexture(id, x, y, u, v, width, height, texWidth, texHeight)
     }
 
+    /**
+     * Applies the blur shader to the current drawn elements. This is used to blur stuff behind guis, but can be used for whatever else.
+     *
+     * You'll still have to write to the buffers after using this.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun renderBlur() {
+        MinecraftClient.getInstance().gameRenderer.renderBlur()
+    }
 }
