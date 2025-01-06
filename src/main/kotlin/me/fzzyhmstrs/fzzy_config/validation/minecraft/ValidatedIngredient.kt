@@ -366,11 +366,11 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         override fun provide(): Ingredient {
             if (ids.isEmpty() && tags.isEmpty())
                 return PortingUtils.emptyIngredient()
-            val items = ids.map { Registries.ITEM.get(it) }.filter { it != Items.AIR }.map { ItemStack(it) }
-            val tagItems: MutableList<ItemStack> = mutableListOf()
+            val items = ids.map { Registries.ITEM.get(it) }.filter { it != Items.AIR }
+            val tagItems: MutableList<Item> = mutableListOf()
             for (tag in tags) {
                 Registries.ITEM.iterateEntries(TagKey.of(RegistryKeys.ITEM, tag)).forEach {
-                    tagItems.add(ItemStack(it))
+                    tagItems.add(it.value())
                 }
             }
             return PortingUtils.listIngredient(items + tagItems)
