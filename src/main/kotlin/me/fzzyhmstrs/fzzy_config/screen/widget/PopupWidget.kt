@@ -562,7 +562,7 @@ class PopupWidget
         /**
          * Adds a horizontal divider below the last element, or defined parent
          *
-         * The divider automatically uses the layout BELOW, ALIGN_JUSTIFY
+         * The divider automatically uses the layout BELOW, ALIGN_JUSTIFY_WEAK
          * @param parent String?, optional - default value is null. If parent isn't null, the divider will be keyed off the defined parent
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
@@ -571,13 +571,13 @@ class PopupWidget
         @JvmOverloads
         fun addDivider(parent: String? = null): Builder {
             val trueParent = parent ?: layoutWidget.lastElement()
-            add("divider_for_$trueParent", DividerWidget(10), trueParent, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
+            add("divider_for_$trueParent", DividerWidget(10), trueParent, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
             return this
         }
         /**
          * Adds a "Done" button below the previously added element, or below the defined parent
          *
-         * The button automatically uses the layout BELOW, ALIGN_JUSTIFY
+         * The button automatically uses the layout BELOW, ALIGN_JUSTIFY_WEAK
          * @param pressAction [ButtonWidget.PressAction] - defines the buttons action when clicked
          * @param parent String, optional. defines the parent element for this button. by default (null), will be the previously added element.
          * @return Builder - this builder for further use
@@ -605,14 +605,14 @@ class PopupWidget
                 .build(),
                 trueParent,
                 LayoutWidget.Position.BELOW,
-                LayoutWidget.Position.ALIGN_JUSTIFY)
+                LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
             layoutWidget.popSpacing()
             return this
         }
         /**
          * Adds a "Done" button below the previously added element, or below the defined parent
          *
-         * The button automatically uses the layout BELOW, ALIGN_JUSTIFY
+         * The button automatically uses the layout BELOW, ALIGN_JUSTIFY_WEAK
          * @param pressAction [ButtonWidget.PressAction] - defines the buttons action when clicked
          * @param parent String, optional. defines the parent element for this button. by default (null), will be the previously added element.
          * @return Builder - this builder for further use
@@ -628,7 +628,7 @@ class PopupWidget
                 CustomButtonWidget.builder(ScreenTexts.DONE, pressAction).size(50, 20).build(),
                 trueParent,
                 LayoutWidget.Position.BELOW,
-                LayoutWidget.Position.ALIGN_JUSTIFY
+                LayoutWidget.Position.ALIGN_JUSTIFY_WEAK
             )
             layoutWidget.popSpacing()
             return this
