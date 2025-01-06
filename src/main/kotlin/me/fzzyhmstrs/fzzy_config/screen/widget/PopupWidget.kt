@@ -24,7 +24,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.pos.*
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.navigation.GuiNavigation
