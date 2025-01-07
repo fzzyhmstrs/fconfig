@@ -1,0 +1,337 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>PortingUtils</title>
+    <link href="../../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../../images/fc_banner.png">
+<link href="../../../images/discord_banner.png">
+<link href="../../../images/discord_small_banner.png">
+<link href="../../../images/wiki_banner.png">
+<link href="../../../images/wiki_small_banner.png">
+<link href="../../../images/docs_banner.png">
+<link href="../../../images/docs_small_banner.png">
+<link href="../../../images/cf_banner.png">
+<link href="../../../images/modrinth_banner.png">
+<link href="../../../images/icon.png">
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.util/-porting-utils/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.6.0+1.21</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.6.0+1.21.3</a><a href="index.html">0.6.0+1.21</a><a href="..\..\..\..\0.6.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.6.0+1.20.1</a><a href="..\..\..\..\0.5.9+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.9+1.21.3</a><a href="..\..\..\..\0.5.9+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.9+1.21</a><a href="..\..\..\..\0.5.9+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.9+1.20.6</a><a href="..\..\..\..\0.5.9+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.9+1.20.4</a><a href="..\..\..\..\0.5.9+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.9+1.20.1</a><a href="..\..\..\..\0.5.7+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.7+1.21.2</a><a href="..\..\..\..\0.5.7+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.7+1.21</a><a href="..\..\..\..\0.5.7+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.7+1.20.6</a><a href="..\..\..\..\0.5.7+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.7+1.20.4</a><a href="..\..\..\..\0.5.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.7+1.20.1</a><a href="..\..\..\..\0.5.6+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.6+1.21.2</a><a href="..\..\..\..\0.5.6+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.6+1.21</a><a href="..\..\..\..\0.5.6+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.6+1.20.6</a><a href="..\..\..\..\0.5.6+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.6+1.20.4</a><a href="..\..\..\..\0.5.6+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.6+1.20.1</a><a href="..\..\..\..\0.5.5+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.5+1.21.2</a><a href="..\..\..\..\0.5.4+1.21.2-pre4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.4+1.21.2-pre4</a><a href="..\..\..\..\0.5.4+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.4+1.21</a><a href="..\..\..\..\0.5.4+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.4+1.20.6</a><a href="..\..\..\..\0.5.4+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.4+1.20.4</a><a href="..\..\..\..\0.5.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.4+1.20.1</a><a href="..\..\..\..\0.5.3+24w40a\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.3+24w40a</a><a href="..\..\..\..\0.5.3+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.3+1.21</a><a href="..\..\..\..\0.5.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.3+1.20.6</a><a href="..\..\..\..\0.5.3+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.3+1.20.4</a><a href="..\..\..\..\0.5.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.util\-porting-utils\index.html">0.5.3+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.0%2B24w34a">0.5.0+24w34a</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.0%2B1.21">0.5.0+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.0%2B1.20.6">0.5.0+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.0%2B1.20.4">0.5.0+1.20.4</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.0%2B1.20.1">0.5.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.util/PortingUtils///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Fzzy Config</a><span class="delimiter">/</span><a href="../index.html">me.fzzyhmstrs.fzzy_config.util</a><span class="delimiter">/</span><span class="current">PortingUtils</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Porting</span><wbr><span><span>Utils</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="index.html">PortingUtils</a></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-2003399035%2FClasslikes%2F769193423" anchor-label="Codecs" id="-2003399035%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-codecs/index.html"><span><span>Codecs</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2003399035%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">object </span><a href="-codecs/index.html">Codecs</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-1280509308%2FFunctions%2F769193423" anchor-label="anyOptional" id="-1280509308%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="any-optional.html"><span>any</span><wbr><span><span>Optional</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1280509308%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="net.minecraft.registry/RegistryWrapper.WrapperLookup///PointingToDeclaration/">RegistryWrapper.WrapperLookup</span><span class="token punctuation">.</span><a href="any-optional.html"><span class="token function">anyOptional</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><span data-unresolved-link="net.minecraft.registry/RegistryKey///PointingToDeclaration/">RegistryKey</span><span class="token operator">&lt;</span><span class="token keyword">out </span><span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword">out </span><span data-unresolved-link="net.minecraft.registry/RegistryWrapper.Impl///PointingToDeclaration/">RegistryWrapper.Impl</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-511738443%2FFunctions%2F769193423" anchor-label="emptyIngredient" id="-511738443%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="empty-ingredient.html"><span>empty</span><wbr><span><span>Ingredient</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-511738443%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="empty-ingredient.html"><span class="token function">emptyIngredient</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator"> = </span><span class="token string">""</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.recipe/Ingredient///PointingToDeclaration/">Ingredient</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1117241209%2FFunctions%2F769193423" anchor-label="getDynamicManager" id="1117241209%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-dynamic-manager.html"><span>get</span><wbr><span>Dynamic</span><wbr><span><span>Manager</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1117241209%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-dynamic-manager.html"><span class="token function">getDynamicManager</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">player<span class="token operator">: </span><span data-unresolved-link="net.minecraft.server.network/ServerPlayerEntity///PointingToDeclaration/">ServerPlayerEntity</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.registry/RegistryWrapper.WrapperLookup///PointingToDeclaration/">RegistryWrapper.WrapperLookup</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-727976949%2FFunctions%2F769193423" anchor-label="getWhite" id="-727976949%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-white.html"><span>get</span><wbr><span><span>White</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-727976949%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-white.html"><span class="token function">getWhite</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">alpha<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-float/index.html">Float</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1084520160%2FFunctions%2F769193423" anchor-label="itemIngredient" id="-1084520160%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="item-ingredient.html"><span>item</span><wbr><span><span>Ingredient</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1084520160%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="item-ingredient.html"><span class="token function">itemIngredient</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">item<span class="token operator">: </span><span data-unresolved-link="net.minecraft.item/ItemConvertible///PointingToDeclaration/">ItemConvertible</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.recipe/Ingredient///PointingToDeclaration/">Ingredient</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1721070471%2FFunctions%2F769193423" anchor-label="listIngredient" id="1721070471%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="list-ingredient.html"><span>list</span><wbr><span><span>Ingredient</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1721070471%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="list-ingredient.html"><span class="token function">listIngredient</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">stacks<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.item/ItemConvertible///PointingToDeclaration/">ItemConvertible</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.recipe/Ingredient///PointingToDeclaration/">Ingredient</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1709048434%2FFunctions%2F769193423" anchor-label="namedEntryList" id="1709048434%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="named-entry-list.html"><span>named</span><wbr><span>Entry</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1709048434%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="named-entry-list.html">T</a><span class="token operator">&gt; </span><span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span><span class="token operator">&lt;</span><a href="named-entry-list.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="named-entry-list.html"><span class="token function">namedEntryList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tagKey<span class="token operator">: </span><span data-unresolved-link="net.minecraft.registry.tag/TagKey///PointingToDeclaration/">TagKey</span><span class="token operator">&lt;</span><a href="named-entry-list.html">T</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.registry.entry/RegistryEntryList.Named///PointingToDeclaration/">RegistryEntryList.Named</span><span class="token operator">&lt;</span><a href="named-entry-list.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-179928220%2FFunctions%2F769193423" anchor-label="optional" id="-179928220%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="optional.html"><span><span>optional</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-179928220%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="optional.html">T</a><span class="token operator">&gt; </span><span data-unresolved-link="net.minecraft.registry/RegistryWrapper.WrapperLookup///PointingToDeclaration/">RegistryWrapper.WrapperLookup</span><span class="token punctuation">.</span><a href="optional.html"><span class="token function">optional</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">key<span class="token operator">: </span><span data-unresolved-link="net.minecraft.registry/RegistryKey///PointingToDeclaration/">RegistryKey</span><span class="token operator">&lt;</span><span class="token keyword">out </span><span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span><span class="token operator">&lt;</span><a href="optional.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><span class="token keyword">out </span><span data-unresolved-link="net.minecraft.registry/RegistryWrapper.Impl///PointingToDeclaration/">RegistryWrapper.Impl</span><span class="token operator">&lt;</span><a href="optional.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="optional.html">T</a><span class="token operator">&gt; </span><span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span><span class="token operator">&lt;</span><a href="optional.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="optional.html"><span class="token function">optional</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html">Optional</a><span class="token operator">&lt;</span><a href="optional.html">T</a><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2053489366%2FFunctions%2F769193423" anchor-label="regRef" id="-2053489366%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="reg-ref.html"><span>reg</span><wbr><span><span>Ref</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2053489366%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="reg-ref.html">T</a><span class="token operator">&gt; </span><span data-unresolved-link="net.minecraft.registry.tag/TagKey///PointingToDeclaration/">TagKey</span><span class="token operator">&lt;</span><a href="reg-ref.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="reg-ref.html"><span class="token function">regRef</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.registry/RegistryKey///PointingToDeclaration/">RegistryKey</span><span class="token operator">&lt;</span><span class="token keyword">out </span><span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span><span class="token operator">&lt;</span><a href="reg-ref.html">T</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-698758359%2FFunctions%2F769193423" anchor-label="regRefId" id="-698758359%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="reg-ref-id.html"><span>reg</span><wbr><span>Ref</span><wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-698758359%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="net.minecraft.registry.tag/TagKey///PointingToDeclaration/">TagKey</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="reg-ref-id.html"><span class="token function">regRefId</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2063413567%2FFunctions%2F769193423" anchor-label="sendChat" id="-2063413567%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="send-chat.html"><span>send</span><wbr><span><span>Chat</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2063413567%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="net.minecraft.entity.player/PlayerEntity///PointingToDeclaration/">PlayerEntity</span><span class="token punctuation">.</span><a href="send-chat.html"><span class="token function">sendChat</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">message<span class="token operator">: </span><span data-unresolved-link="net.minecraft.text/Text///PointingToDeclaration/">Text</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1476623155%2FFunctions%2F769193423" anchor-label="tagIdList" id="-1476623155%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tag-id-list.html"><span>tag</span><wbr><span>Id</span><wbr><span><span>List</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1476623155%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="tag-id-list.html">T</a><span class="token operator">&gt; </span><span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span><span class="token operator">&lt;</span><a href="tag-id-list.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="tag-id-list.html"><span class="token function">tagIdList</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="tag-id-list.html">T</a><span class="token operator">&gt; </span><span data-unresolved-link="net.minecraft.registry/RegistryWrapper.Impl///PointingToDeclaration/">RegistryWrapper.Impl</span><span class="token operator">&lt;</span><a href="tag-id-list.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="tag-id-list.html"><span class="token function">tagIdList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">predicate<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html">Predicate</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token operator">&gt;</span></div><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="tag-id-list.html">T</a><span class="token operator">&gt; </span><span data-unresolved-link="net.minecraft.registry/Registry///PointingToDeclaration/">Registry</span><span class="token operator">&lt;</span><a href="tag-id-list.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">.</span><a href="tag-id-list.html"><span class="token function">tagIdList</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">predicate<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Predicate.html">Predicate</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token operator">&gt;</span><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.util/Identifier///PointingToDeclaration/">Identifier</span><span class="token operator">&gt;</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="126683646%2FFunctions%2F769193423" anchor-label="tagIngredient" id="126683646%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="tag-ingredient.html"><span>tag</span><wbr><span><span>Ingredient</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="126683646%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="tag-ingredient.html"><span class="token function">tagIngredient</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">tag<span class="token operator">: </span><span data-unresolved-link="net.minecraft.registry.tag/TagKey///PointingToDeclaration/">TagKey</span><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.item/Item///PointingToDeclaration/">Item</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.recipe/Ingredient///PointingToDeclaration/">Ingredient</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
