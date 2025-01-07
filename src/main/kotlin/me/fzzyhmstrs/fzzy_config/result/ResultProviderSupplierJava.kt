@@ -22,7 +22,6 @@ import java.util.function.Supplier
  * @since 0.5.3
  */
 @FunctionalInterface
-@ApiStatus.Experimental //TODO fully test for promotion to stable
 fun interface ResultProviderSupplierJava<T: Any> {
 
     /**
@@ -39,6 +38,5 @@ fun interface ResultProviderSupplierJava<T: Any> {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun supplierJava(scope: String, config: Config, thing: Any, property: Field?): Supplier<T>
 }
