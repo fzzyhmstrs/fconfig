@@ -13,8 +13,6 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 import com.google.common.collect.Maps
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
-import net.fabricmc.api.EnvType
-import net.fabricmc.api.Environment
 import net.minecraft.client.gui.screen.narration.Narration
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
@@ -98,7 +96,6 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
         return stringBuilder.toString()
     }
 
-    @Environment(EnvType.CLIENT)
     private class Message {
 
         var narration: Narration<*> = Narration.EMPTY
@@ -123,7 +120,6 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
         }
     }
 
-    @Environment(EnvType.CLIENT)
     inner class MessageBuilder internal constructor(private val depth: Int) : NarrationMessageBuilder {
 
         override fun put(part: NarrationPart, narration: Narration<*>) {
