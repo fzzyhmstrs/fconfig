@@ -156,7 +156,6 @@ object ConfigApiJava {
      * @since 0.5.3
      */
     @JvmStatic
-    //TODO fully test for promotion to stable
     fun result(): ResultApiJava {
         return ResultApiJavaImpl
     }
