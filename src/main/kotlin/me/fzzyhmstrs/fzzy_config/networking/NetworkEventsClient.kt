@@ -175,7 +175,7 @@ internal object NetworkEventsClient {
     }
 
     fun registerClient() {
-        ContextHandler.init()
+        ContextType.init()
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands)
         MinecraftForge.EVENT_BUS.addListener(this::handleTick)
         MinecraftForge.EVENT_BUS.addListener(this::registerConfigs)

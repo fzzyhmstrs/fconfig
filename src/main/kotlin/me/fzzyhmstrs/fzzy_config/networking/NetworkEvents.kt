@@ -48,6 +48,7 @@ internal object NetworkEvents {
             payload.updates,
             serverPlayer.server,
             serverPlayer,
+            payload.playerPerm,
             payload.changeHistory,
             { player, id -> canSend(player, id) },
             { player, pl ->
