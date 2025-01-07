@@ -18,7 +18,6 @@ import org.jetbrains.annotations.ApiStatus
  * @author fzzyhmstrs
  * @since 0.5.3
  */
-@ApiStatus.Experimental //TODO fully test for promotion to stable
 @JvmDefaultWithoutCompatibility
 interface ResultProvider<T: Any> {
 
@@ -31,18 +30,15 @@ interface ResultProvider<T: Any> {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun getResult(scope: String): T
 
 
-    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun <R> getArgResult(scope: String, arg: ResultArg<in T, out R>): R {
         val argMap = ResultArg.getArgs(scope)
         val argVal = argMap[arg.arg] ?: return arg.fallback
         return arg.applyArg(getResult(ResultArg.stripArgs(scope)), argVal)
     }
 
-    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun processArgResults(scope: String, vararg arg: ResultArg<in T, *>.Processor) {
         val argMap = ResultArg.getArgs(scope)
         val result = getResult(ResultArg.stripArgs(scope))

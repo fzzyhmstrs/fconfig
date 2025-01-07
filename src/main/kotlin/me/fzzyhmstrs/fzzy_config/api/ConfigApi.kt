@@ -459,7 +459,6 @@ object ConfigApi {
      * @since 0.5.3
      */
     @JvmStatic
-    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun result(): ResultApi {
         return ResultApiImpl
     }

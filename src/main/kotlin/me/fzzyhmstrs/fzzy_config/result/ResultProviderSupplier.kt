@@ -22,7 +22,6 @@ import kotlin.reflect.KMutableProperty
  * @since 0.5.3
  */
 @FunctionalInterface
-@ApiStatus.Experimental //TODO fully test for promotion to stable
 fun interface ResultProviderSupplier<T: Any> {
     /**
      * Creates a result supplier from config values. Since configs are by design mutable in-game, the result should freshly inspect the value on every `get()`.
@@ -38,6 +37,5 @@ fun interface ResultProviderSupplier<T: Any> {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    @ApiStatus.Experimental //TODO fully test for promotion to stable
     fun supplier(scope: String, config: Config, thing: Any, property: KMutableProperty<*>): Supplier<T>
 }
