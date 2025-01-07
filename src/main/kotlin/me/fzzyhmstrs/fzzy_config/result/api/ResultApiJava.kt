@@ -19,12 +19,11 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.5.3
  */
-//TODO fully test for promotion to stable
 interface ResultApiJava {
 
     /**
      * Creates a result provider that will return values of the given type from valid config scopes matching that type.
-     * 
+     *
      * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
      *
      * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
@@ -35,12 +34,11 @@ interface ResultApiJava {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    //TODO fully test for promotion to stable
     fun <T: Any> createResultProvider(fallback: Supplier<T>, clazz: Class<T>): ResultProvider<T>
 
     /**
      * Creates a result provider that will return values of the given type from valid config scopes matching that type, with a custom Supplier generator instance.
-     * 
+     *
      * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
      *
      * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
@@ -51,12 +49,11 @@ interface ResultApiJava {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    //TODO fully test for promotion to stable
     fun <T: Any> createResultProvider(fallback: Supplier<T>, drillFunction: ResultProviderSupplierJava<T>): ResultProvider<T>
 
     /**
      * Creates a result provider that will return values of the given type from valid config scopes matching that type.
-     * 
+     *
      * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
      *
      * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
@@ -67,12 +64,11 @@ interface ResultApiJava {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    //TODO fully test for promotion to stable
     fun <T: Any> createSimpleResultProvider(fallback: T, clazz: Class<T>): ResultProvider<T>
 
     /**
      * Creates a result provider that will return values of the given type from valid config scopes matching that type, with a custom Supplier generator instance.
-     * 
+     *
      * This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
      *
      * Results are cached per scope provided. The cache is cleared automatically at the end of data pack reload.
@@ -83,7 +79,6 @@ interface ResultApiJava {
      * @author fzzyhmstrs
      * @since 0.5.3
      */
-    //TODO fully test for promotion to stable
     fun <T: Any> createSimpleResultProvider(fallback: T, drillFunction: ResultProviderSupplierJava<T>): ResultProvider<T>
 
 }
