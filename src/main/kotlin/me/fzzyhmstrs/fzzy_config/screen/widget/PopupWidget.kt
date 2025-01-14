@@ -121,11 +121,11 @@ class PopupWidget
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if (blurBackground) {
-            context.fill(0, 0, MinecraftClient.getInstance().currentScreen?.width ?: 0, MinecraftClient.getInstance().currentScreen?.height ?: 0, fillColor)
+            renderBlur(context, x.toFloat(), y.toFloat(), delta)
         }
         RenderSystem.enableBlend()
         RenderSystem.disableDepthTest()
-        context.drawNineSlice(background, x, y, width, height, 4, 4, 64, 64)
+        context.drawNineSlice(background, x, y, width, height)
         for (drawable in drawables) {
             /*RenderSystem.disableDepthTest()
             RenderSystem.disableBlend()*/
