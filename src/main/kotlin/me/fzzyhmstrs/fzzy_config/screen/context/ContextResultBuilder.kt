@@ -88,15 +88,44 @@ class ContextResultBuilder(private var position: Position) {
         position = operator.apply(position)
     }
 
-    internal fun isNotEmpty(): Boolean {
+    /**
+     * Determines if this builder has content yet.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun isNotEmpty(): Boolean {
         return actions.isNotEmpty()
     }
 
-    internal fun apply(): Map<String, Map<ContextType, ContextAction>> {
+    /**
+     * Builds the group map of context actions. This map is two-tiered, with the defined groups as tier 1, and then each groups map of key -> action underneath.
+     * @see flatBuild
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun build(): Map<String, Map<ContextType, ContextAction>> {
         return actions.mapValues { m -> m.value.mapValues { m2 -> m2.value.build() } }
     }
 
-    internal fun position(): Position {
+    /**
+     * Builds and flattens the output of this builder, returning a single map of key -> action, maintaining the general ordering of keys when possible. If a key was used in more than one group, the last instance of that key added to the last group it was added to will be used.
+     * @see build
+     * @author fzzyhmstrs
+     * @since 0.6.1
+     */
+    fun flatBuild(): Map<ContextType, ContextAction> {
+        return actions.entries.stream().collect(
+            { mutableMapOf() },
+            { map, entry -> map.putAll(entry.value.mapValues { it.value.build() }) },
+            { m1, m2 -> m1.putAll(m2) })
+    }
+
+    /**
+     * Provides the current [Position] of the builder
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    fun position(): Position {
         return position
     }
 

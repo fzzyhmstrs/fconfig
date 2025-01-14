@@ -70,8 +70,8 @@ internal class ConfigScreen(
     private var elementNarrationStartTime = Long.MIN_VALUE
     private var screenNarrationStartTime = Long.MAX_VALUE
 
-    private val MENU_LIST_BACKGROUND_TEXTURE: Identifier = "textures/gui/menu_list_background.png".simpleId()
-    private val INWORLD_MENU_LIST_BACKGROUND_TEXTURE: Identifier = "textures/gui/inworld_menu_list_background.png".simpleId()
+    private val menuListBackground: Identifier = "textures/gui/menu_list_background.png".simpleId()
+    private val inWorldMenuListBackground: Identifier = "textures/gui/inworld_menu_list_background.png".simpleId()
 
     fun setParent(screen: Screen?): ConfigScreen {
         this.parent = screen
@@ -265,7 +265,7 @@ internal class ConfigScreen(
     }
 
     private fun drawMenuListBackground(context: DrawContext) {
-        val identifier = if (client?.world == null) MENU_LIST_BACKGROUND_TEXTURE else INWORLD_MENU_LIST_BACKGROUND_TEXTURE
+        val identifier = if (client?.world == null) menuListBackground else inWorldMenuListBackground
         context.drawTex(identifier, 0, layout.headerHeight, 0f, 0f, this.width, layout.contentHeight, 32, 32)
     }
 
@@ -325,7 +325,7 @@ internal class ConfigScreen(
                 val builder = ContextProvider.empty(position)
                 this.provideContext(builder)
                 if (builder.isNotEmpty()) {
-                    openContextMenuPopup(builder)
+                    Popups.openContextMenuPopup(builder)
                     true
                 } else {
                     false
@@ -343,7 +343,7 @@ internal class ConfigScreen(
                     false
                 }
             }
-            ContextType.INFO ->{
+            ContextType.INFO -> {
                 openInfoPopup()
                 true
             }
@@ -370,44 +370,6 @@ internal class ConfigScreen(
             .icon(TextureDeco.CONTEXT_FIND)
         builder.add(ContextResultBuilder.CONFIG, ContextType.SAVE, save)
         builder.add(ContextResultBuilder.CONFIG, ContextType.FIND, find)
-    }
-
-    private fun openContextMenuPopup(builder: ContextResultBuilder) {
-        val positionContext = builder.position()
-        val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
-            .positionX(PopupWidget.Builder.absScreen(
-                if (positionContext.contextInput == ContextInput.KEYBOARD)
-                    positionContext.x
-                else
-                    positionContext.mX))
-            .positionY(PopupWidget.Builder.absScreen(
-                if (positionContext.contextInput == ContextInput.KEYBOARD)
-                    positionContext.y
-                else
-                    positionContext.mY))
-            .background("widget/popup/background_right_click".fcId())
-            .noBlur()
-            .onClick { mX, mY, over, button ->
-                if (ContextType.CONTEXT_MOUSE.relevant(button, ctrl = false, shift = false, alt = false) && !over) {
-                    PopupWidget.pop(mX, mY)
-                    PopupWidget.ClickResult.PASS
-                } else {
-                    PopupWidget.ClickResult.USE
-                }
-            }
-        for ((group, actions) in builder.apply()) {
-            if (actions.isEmpty()) continue
-            popup.addDivider()
-            for ((type, action) in actions) {
-                popup.add(
-                    "${group}_$type",
-                    ContextActionWidget(action, positionContext, ContextActionWidget.getNeededWidth(action)),
-                    LayoutWidget.Position.BELOW,
-                    LayoutWidget.Position.ALIGN_LEFT
-                )
-            }
-        }
-        PopupWidget.push(popup.build())
     }
 
     private fun openInfoPopup() {
