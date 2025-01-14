@@ -15,8 +15,8 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.simpleId
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -83,12 +83,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     open fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawNineSlice(
-            textures.get(active, this.isSelected),
-            this.x,
-            this.y,
-            this.getWidth(),
-            this.getHeight())
+        context.drawNineSlice(textures.get(active, this.isSelected), x, y, width, height, this.alpha)
     }
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
