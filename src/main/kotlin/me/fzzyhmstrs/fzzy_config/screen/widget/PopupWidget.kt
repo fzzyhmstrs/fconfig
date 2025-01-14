@@ -22,8 +22,8 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.MouseClickResult
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.renderBlur
 import me.fzzyhmstrs.fzzy_config.util.pos.Pos
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
@@ -108,12 +108,6 @@ class PopupWidget
         guiNavigationPath?.setFocused(false)
     }
 
-    @Suppress("UNUSED_PARAMETER")
-    private fun applyBlur(delta: Float) {
-        RenderUtil.renderBlur()
-        MinecraftClient.getInstance().framebuffer.beginWrite(false)
-    }
-
     fun position(screenWidth: Int, screenHeight: Int) {
         this.x = positionX.apply(screenWidth, width) //screenWidth/2 - width/2
         this.y = positionY.apply(screenHeight, height) //screenHeight/2 - height/2
@@ -125,17 +119,12 @@ class PopupWidget
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        context.matrices.push()
-        context.matrices.translate(x.toFloat(), y.toFloat(), 0f)
         if (blurBackground) {
-            context.draw()
-            //context.fill(2, 2, width - 4, height - 4, fillColor)
-            applyBlur(delta)
+            renderBlur(context, x.toFloat(), y.toFloat(), delta)
         }
-        context.matrices.pop()
         RenderSystem.enableBlend()
         RenderSystem.disableDepthTest()
-        context.drawTex(background, x, y, width, height)
+        context.drawNineSlice(background, x, y, width, height)
         for (drawable in drawables) {
             RenderSystem.disableDepthTest()
             drawable.render(context, mouseX, mouseY, delta)

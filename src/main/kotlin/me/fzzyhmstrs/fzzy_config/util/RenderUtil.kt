@@ -86,6 +86,23 @@ object RenderUtil {
     }
 
     /**
+     * Extension function to replicate the nine-slice functionality drawGuiTexture from 1.20.2+.
+     *
+     * __in 1.20.2+ this is a compat method; maintained as-is to avoid needing to alter mod code elsewhere.__
+     * @param id Identifier - The sprite identifier (1.20.2+ style) for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width Int - the width of the drawn texture
+     * @param height Int - the height of the drawn texture
+     * @param color Int - the ARGB packed color int
+     * @author fzzyhmstrs
+     * @since 0.6.1
+     */
+    fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
+        this.drawTex(id, x, y, width, height, color)
+    }
+
+    /**
      * Extension function to draw a texture, replacing drawtexture. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
      * @param id Identifier - The sprite identifier for the image.
      * @param x Int - the x location of the texture
@@ -110,7 +127,29 @@ object RenderUtil {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Planned for removal 0.7.0, use applyBlur(DrawContextFFF) instead")
     fun renderBlur() {
         MinecraftClient.getInstance().gameRenderer.renderBlur()
+    }
+
+    /**
+     * Applies the blur shader to the current drawn elements. This is used to blur stuff behind guis, but can be used for whatever else.
+     *
+     * You'll still have to write to the buffers after using this.
+     * @param context [DrawContext]
+     * @param x horizontal position of element, or 0 for blank screen/blur rendered at the start of whole-screen rendering
+     * @param y vertical position of element, or 0 for blank screen/blur rendered at the start of whole-screen rendering
+     * @param delta the tickDelta (unused in 1.21.x)
+     * @author fzzyhmstrs
+     * @since 0.6.1
+     */
+    fun renderBlur(context: DrawContext, x: Float, y: Float, delta: Float) {
+        context.matrices.push()
+        context.matrices.translate(x, y, 0f)
+        context.draw()
+        MinecraftClient.getInstance().gameRenderer.renderBlur()
+        MinecraftClient.getInstance().framebuffer.beginWrite(false)
+        context.matrices.pop()
     }
 }
