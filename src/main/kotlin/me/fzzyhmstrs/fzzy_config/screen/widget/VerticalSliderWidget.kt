@@ -13,7 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.navigation.GuiNavigationType
@@ -79,8 +79,8 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
         context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f)
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawTex(getTexture(), x, y, getWidth(), getHeight())
-        context.drawTex(getHandlerTexture(), x, y + (value * (height - 8).toDouble()).toInt(), getWidth(), 8)
+        context.drawNineSlice(getTexture(), x, y, getWidth(), getHeight())
+        context.drawNineSlice(getHandlerTexture(), x, y + (value * (height - 8).toDouble()).toInt(), getWidth(), 8)
     }
 
     override fun setFocused(focused: Boolean) {
