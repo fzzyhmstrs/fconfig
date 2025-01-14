@@ -15,8 +15,8 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextInput
-import me.fzzyhmstrs.fzzy_config.screen.context.Position
+import me.fzzyhmstrs.fzzy_config.screen.context.*
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -33,6 +33,54 @@ import kotlin.math.max
 
 //client
 object Popups {
+
+    /**
+     * Opens a context menu (aka. "right click menu") at the specified position and with the specified context action information as provided by the [ContextResultBuilder]
+     *
+     * Element position context should be applied to the builder [Position] when possible (e.g. the x/y and width/height of the current focused element). When the position context provided is:
+     * - [ContextInput.KEYBOARD]: The popup will appear inline with the x position of the element data of the Position, and slightly below the bottom of the element, unless bounded by the bottom of the screen
+     * - [ContextInput.MOUSE]: The popup will appear below and to the right of the mouse position unless bounded by the screen.
+     * @param builder [ContextResultBuilder] - a populated builder of context actions. Groups and entries will be displayed in the order they were applied to the builder.
+     * @author fzzyhmstrs
+     * @since 0.6.1
+     */
+    fun openContextMenuPopup(builder: ContextResultBuilder) {
+        val positionContext = builder.position()
+        val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
+            .positionX(PopupWidget.Builder.absScreen(
+                if (positionContext.contextInput == ContextInput.KEYBOARD)
+                    positionContext.x
+                else
+                    positionContext.mX))
+            .positionY(PopupWidget.Builder.absScreen(
+                if (positionContext.contextInput == ContextInput.KEYBOARD)
+                    positionContext.y
+                else
+                    positionContext.mY))
+            .background("widget/popup/background_right_click".fcId())
+            .noBlur()
+            .onClick { mX, mY, over, button ->
+                if (ContextType.CONTEXT_MOUSE.relevant(button, ctrl = false, shift = false, alt = false) && !over) {
+                    PopupWidget.pop(mX, mY)
+                    PopupWidget.ClickResult.PASS
+                } else {
+                    PopupWidget.ClickResult.USE
+                }
+            }
+        for ((group, actions) in builder.build()) {
+            if (actions.isEmpty()) continue
+            popup.addDivider()
+            for ((type, action) in actions) {
+                popup.add(
+                    "${group}_$type",
+                    ContextActionWidget(action, positionContext, ContextActionWidget.getNeededWidth(action)),
+                    LayoutWidget.Position.BELOW,
+                    LayoutWidget.Position.ALIGN_LEFT
+                )
+            }
+        }
+        PopupWidget.push(popup.build())
+    }
 
     internal fun openConfirmPopup(b: Position, desc: Text, restore: Runnable) {
         val client = MinecraftClient.getInstance()
