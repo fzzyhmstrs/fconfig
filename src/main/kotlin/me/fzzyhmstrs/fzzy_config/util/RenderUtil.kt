@@ -14,6 +14,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
+import javax.swing.text.StyleConstants.getBackground
 
 /**
  * Render utils for DrawContext to provide functionality similar to 1.20.2+ sprite rendering
@@ -64,6 +65,22 @@ object RenderUtil {
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
         this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, PortingUtils.getWhite(alpha))
+    }
+
+    /**
+     * Extension function to replicate the nine-slice functionality drawGuiTexture from 1.20.2+.
+     *
+     * __in 1.20.2+ this is a compat method; maintained as-is to avoid needing to alter mod code elsewhere.__
+     * @param id Identifier - The sprite identifier (1.20.2+ style) for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width Int - the width of the drawn texture
+     * @param height Int - the height of the drawn texture
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        this.drawTex(id, x, y, width, height)
     }
 
     /**
