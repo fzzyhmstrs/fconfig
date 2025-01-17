@@ -291,6 +291,8 @@ object RenderUtil {
 
     class Background(val outerWidth: Int, val outerHeight: Int,  val width: Int, val height: Int)
 
+    private val fillColor = Color(30, 30, 30, 90).rgb
+
     /**
      * Applies the blur shader to the current drawn elements. This is used to blur stuff behind guis, but can be used for whatever else.
      *
