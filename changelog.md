@@ -12,13 +12,10 @@
 -------------------------------------
 
 ### Additions
-* New `drawNineSlice` and `renderBlur` methods in `RenderUtil` for matching method signatures across versions. Part of an ongoing effort to unify the API across all versions.
-* Added `open  ContextMenuPopup` to `Popups` for easy third party creation of context menus.
-* New `flatBuild` in `ContextResultBuilder` that flattens the context map groups into one map.
-
-### Changes
 * None.
 
+### Changes
+* `Registrar` and it's implementations now expect `Supplier<? extends T>` instead of `Supplier<T>`
+
 ### Fixes
-* `ContextResultBuilder` build and other utility methods no longer accidentally internal.
-* (1.21.4) fixed the included version of Fabric Permissions API being outdated.
+* None.
