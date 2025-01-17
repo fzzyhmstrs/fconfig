@@ -14,7 +14,7 @@ internal class RegistrarImpl<T>(private val namespace: String, private val regis
         //fabric needs nothing
     }
 
-    override fun register(name: String, entrySupplier: Supplier<T>): RegistrySupplier<T> {
+    override fun register(name: String, entrySupplier: Supplier<out T>): RegistrySupplier<T> {
         return RegistrySupplierImpl(Registry.registerReference(registry, namespace.nsId(name), entrySupplier.get()))
     }
 
