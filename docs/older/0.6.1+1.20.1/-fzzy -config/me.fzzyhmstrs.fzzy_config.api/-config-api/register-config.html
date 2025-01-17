@@ -1,0 +1,148 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>registerConfig</title>
+    <link href="../../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../../images/fc_banner.png">
+<link href="../../../images/discord_banner.png">
+<link href="../../../images/discord_small_banner.png">
+<link href="../../../images/wiki_banner.png">
+<link href="../../../images/wiki_small_banner.png">
+<link href="../../../images/docs_banner.png">
+<link href="../../../images/docs_small_banner.png">
+<link href="../../../images/cf_banner.png">
+<link href="../../../images/modrinth_banner.png">
+<link href="../../../images/icon.png">
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.api/-config-api/register-config.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.6.1+1.20.1</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.6.1+1.21.3</a><a href="..\..\..\..\0.6.1+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.6.1+1.21</a><a href="register-config.html">0.6.1+1.20.1</a><a href="..\..\..\..\0.6.0+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.6.0+1.21.3</a><a href="..\..\..\..\0.6.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.6.0+1.21</a><a href="..\..\..\..\0.6.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.6.0+1.20.1</a><a href="..\..\..\..\0.5.9+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.9+1.21.3</a><a href="..\..\..\..\0.5.9+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.9+1.21</a><a href="..\..\..\..\0.5.9+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.9+1.20.6</a><a href="..\..\..\..\0.5.9+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.9+1.20.4</a><a href="..\..\..\..\0.5.9+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.9+1.20.1</a><a href="..\..\..\..\0.5.7+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.7+1.21.2</a><a href="..\..\..\..\0.5.7+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.7+1.21</a><a href="..\..\..\..\0.5.7+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.7+1.20.6</a><a href="..\..\..\..\0.5.7+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.7+1.20.4</a><a href="..\..\..\..\0.5.7+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.7+1.20.1</a><a href="..\..\..\..\0.5.6+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.6+1.21.2</a><a href="..\..\..\..\0.5.6+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.6+1.21</a><a href="..\..\..\..\0.5.6+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.6+1.20.6</a><a href="..\..\..\..\0.5.6+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.6+1.20.4</a><a href="..\..\..\..\0.5.6+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.6+1.20.1</a><a href="..\..\..\..\0.5.5+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.5+1.21.2</a><a href="..\..\..\..\0.5.4+1.21.2-pre4\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.4+1.21.2-pre4</a><a href="..\..\..\..\0.5.4+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.4+1.21</a><a href="..\..\..\..\0.5.4+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.4+1.20.6</a><a href="..\..\..\..\0.5.4+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.4+1.20.4</a><a href="..\..\..\..\0.5.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.4+1.20.1</a><a href="..\..\..\..\0.5.3+24w40a\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.3+24w40a</a><a href="..\..\..\..\0.5.3+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.3+1.21</a><a href="..\..\..\..\0.5.3+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.3+1.20.6</a><a href="..\..\..\..\0.5.3+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.3+1.20.4</a><a href="..\..\..\..\0.5.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.3+1.20.1</a><a href="..\..\..\..\0.5.0+24w34a\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.0+24w34a</a><a href="..\..\..\..\0.5.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.0+1.21</a><a href="..\..\..\..\0.5.0+1.20.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.0+1.20.6</a><a href="..\..\..\..\0.5.0+1.20.4\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.0+1.20.4</a><a href="..\..\..\..\0.5.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.api\-config-api\register-config.html">0.5.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="member" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.api/ConfigApi/registerConfig/#TypeParam(bounds=[me.fzzyhmstrs.fzzy_config.config.Config])#kotlin.Function0[TypeParam(bounds=[me.fzzyhmstrs.fzzy_config.config.Config])]#me.fzzyhmstrs.fzzy_config.api.RegisterType/PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Fzzy Config</a><span class="delimiter">/</span><a href="../index.html">me.fzzyhmstrs.fzzy_config.api</a><span class="delimiter">/</span><a href="index.html">ConfigApi</a><span class="delimiter">/</span><span class="current">registerConfig</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>register</span><wbr><span><span>Config</span></span></h1>
+  </div>
+  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="register-config.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="register-config.html"><span class="token function"><strike>registerConfig</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="register-config.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">configClass<span class="token operator">: </span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator"> -&gt; </span><a href="register-config.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">registerType<span class="token operator">: </span><a href="../-register-type/index.html">RegisterType</a><span class="token operator"> = </span>RegisterType.BOTH</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="register-config.html">T</a></div><div class="deprecation-content"><h3 class="">Deprecated</h3><p class="paragraph">Consider registerAndLoadConfig() instead, to perform automatic loading, registering, and validating in one step.</p></div><p class="paragraph">Registers a <a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a> to registries. Does NOT load or validate it from file. Use this if you have custom initialization to perform, otherwise use <a href="register-and-load-config.html">registerAndLoadConfig</a> for full initialization functionality.</p><p class="paragraph">Configs registered this way still have to handle their own initialization. That is to say, they have to be instantiated and passed to the registry in a timely manner, otherwise they will not be loaded in time for CONFIGURATION stage syncing with clients. Loading with the Fabric <span data-unresolved-link="net.fabricmc.api/ModInitializer///PointingToDeclaration/">ModInitializer</span> is a convenient and typical way to achieve this.</p><p class="paragraph">Depending on the RegistryType(s) picked, the config will have different functionalities:</p><ul><li><p class="paragraph">SYNC: Will be registered to the SyncedConfigRegistry. Configs will be automatically synchronized and saved to clients during the CONFIGURATION stage, and also during any datapack reloads. Configs will NOT have client-side GUIs with this selection.</p></li><li><p class="paragraph">CLIENT: Will be registered to the ClientConfigRegistry. Configs will have GUI Screens automatically generated for in-game configuration, and screens will be automatically registered with ModMenu and Catalogue. Clients will not sync between servers and clients, and players don't need any special permissions to edit entries in a CLIENT config.</p></li><li><p class="paragraph">BOTH: Will be registered to both registries (default functionality). Updates made in the client-side GUI by Server Operators with the correct permissions will be automatically propagated to the server and out to any clients currently connected.</p></li></ul><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.2.0</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>T</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the config type, any subclass of <a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a></p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>config</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the config to register</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>config</span><wbr><span><span>Class</span></span></u></div></span></div><div><div class="title"><p class="paragraph">A Function0 of config class instances.</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>register</span><wbr><span><span>Type</span></span></u></div></span></div><div><div class="title"><p class="paragraph">enum of <a href="../-register-type/index.html">RegisterType</a> that defines which registries to register to. defaults to <a href="../-register-type/-b-o-t-h/index.html">RegisterType.BOTH</a></p></div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.RegisterType
+
+fun main() { 
+   //sampleStart 
+   //instance of your config loaded from file and automatically registered to the SyncedConfigRegistry and ClientConfigRegistry using the getId() method
+var myConfig = ConfigApi.registerAndLoadConfig({ MyConfig() })
+
+//adding the registerType, you can register a config as client-only. No syncing will occur. Useful for client-only mods.
+var myClientOnlyConfig = ConfigApi.registerAndLoadConfig({ MyConfig() }, RegisterType.CLIENT)
+
+//adding the registerType, you can register a config as sync-only. Their won't be any client-side GUI functionality, so the config will only be editable from the file itself, but it will auto-sync with clients.
+var mySyncedOnlyConfig = ConfigApi.registerAndLoadConfig({ MyConfig() }, RegisterType.SERVER)
+
+//Init function would be called in ModInitializer or some other entrypoint. Not strictly necessary if loading on-reference is ok.
+fun init() {} 
+   //sampleEnd
+}</code></pre></div><hr><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-static/index.html"><span class="token annotation builtin">JvmStatic</span></a></div><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="register-config.html">T</a><span class="token operator"> : </span><a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a><span class="token operator">&gt; </span><a href="register-config.html"><span class="token function"><strike>registerConfig</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">config<span class="token operator">: </span><a href="register-config.html">T</a><span class="token punctuation">, </span></span><span class="parameter ">configClass<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html">Supplier</a><span class="token operator">&lt;</span><a href="register-config.html">T</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">registerType<span class="token operator">: </span><a href="../-register-type/index.html">RegisterType</a><span class="token operator"> = </span>RegisterType.BOTH</span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="register-config.html">T</a></div><div class="deprecation-content"><h3 class="">Deprecated</h3><p class="paragraph">Consider registerAndLoadConfig() instead, to perform automatic loading, registering, and validating in one step.</p></div><p class="paragraph">Registers a <a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a> to registries. Does NOT load or validate it from file. Use this if you have custom initialization to perform, otherwise use <a href="register-and-load-config.html">registerAndLoadConfig</a> for full initialization functionality.</p><p class="paragraph">Configs registered this way still have to handle their own initialization. That is to say, they have to be instantiated and passed to the registry in a timely manner, otherwise they will not be loaded in time for CONFIGURATION stage syncing with clients. Loading with the Fabric <span data-unresolved-link="net.fabricmc.api/ModInitializer///PointingToDeclaration/">ModInitializer</span> is a convenient and typical way to achieve this.</p><p class="paragraph">Depending on the RegistryType(s) picked, the config will have different functionalities:</p><ul><li><p class="paragraph">SYNC: Will be registered to the SyncedConfigRegistry. Configs will be automatically synchronized and saved to clients during the CONFIGURATION stage, and also during any datapack reloads. Configs will NOT have client-side GUIs with this selection.</p></li><li><p class="paragraph">CLIENT: Will be registered to the ClientConfigRegistry. Configs will have GUI Screens automatically generated for in-game configuration, and screens will be automatically registered with ModMenu and Catalogue. Clients will not sync between servers and clients, and players don't need any special permissions to edit entries in a CLIENT config.</p></li><li><p class="paragraph">BOTH: Will be registered to both registries (default functionality). Updates made in the client-side GUI by Server Operators with the correct permissions will be automatically propagated to the server and out to any clients currently connected.</p></li></ul><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.3.2</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>T</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the config type, any subclass of <a href="../../me.fzzyhmstrs.fzzy_config.config/-config/index.html">Config</a></p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>config</span></span></u></div></span></div><div><div class="title"><p class="paragraph">the config to register</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>config</span><wbr><span><span>Class</span></span></u></div></span></div><div><div class="title"><p class="paragraph">A Supplier of config class instances.</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>register</span><wbr><span><span>Type</span></span></u></div></span></div><div><div class="title"><p class="paragraph">enum of <a href="../-register-type/index.html">RegisterType</a> that defines which registries to register to. defaults to <a href="../-register-type/-b-o-t-h/index.html">RegisterType.BOTH</a></p></div></div></div></div></div><h4 class="">Samples</h4><div class="sample-container"><pre><code class="runnablesample monospace block lang-kotlin" theme="idea">import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.RegisterType
+
+fun main() { 
+   //sampleStart 
+   //instance of your config loaded from file and automatically registered to the SyncedConfigRegistry and ClientConfigRegistry using the getId() method
+var myConfig = ConfigApi.registerAndLoadConfig({ MyConfig() })
+
+//adding the registerType, you can register a config as client-only. No syncing will occur. Useful for client-only mods.
+var myClientOnlyConfig = ConfigApi.registerAndLoadConfig({ MyConfig() }, RegisterType.CLIENT)
+
+//adding the registerType, you can register a config as sync-only. Their won't be any client-side GUI functionality, so the config will only be editable from the file itself, but it will auto-sync with clients.
+var mySyncedOnlyConfig = ConfigApi.registerAndLoadConfig({ MyConfig() }, RegisterType.SERVER)
+
+//Init function would be called in ModInitializer or some other entrypoint. Not strictly necessary if loading on-reference is ok.
+fun init() {} 
+   //sampleEnd
+}</code></pre></div></div></div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
