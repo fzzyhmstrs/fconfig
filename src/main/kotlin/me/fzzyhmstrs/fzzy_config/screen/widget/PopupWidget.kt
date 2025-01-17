@@ -23,6 +23,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.renderBlur
 import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
@@ -82,7 +83,6 @@ class PopupWidget
     private var focused: Element? = null
     private var focusedSelectable: Selectable? = null
     private var dragging = false
-    private val fillColor = Color(30, 30, 30, 90).rgb
     private var suggestionWindowElement: Element? = null
 
     init {
