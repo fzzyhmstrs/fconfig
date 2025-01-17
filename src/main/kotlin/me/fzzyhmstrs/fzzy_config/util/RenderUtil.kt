@@ -25,7 +25,7 @@ import java.awt.Color
 object RenderUtil {
 
     /**
-     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1.
      * @param id Identifier - The sprite identifier for the image.
      * @param x Int - the x location of the texture
      * @param y Int - the y location of the texture
@@ -39,7 +39,7 @@ object RenderUtil {
     }
 
     /**
-     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1.
      * @param id Identifier - The sprite identifier for the image.
      * @param x Int - the x location of the texture
      * @param y Int - the y location of the texture
@@ -57,7 +57,7 @@ object RenderUtil {
     }
 
     /**
-     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * Extension function to replicate drawGuiTexture from 1.20.2-1.21.1.
      * @param id Identifier - The sprite identifier for the image.
      * @param x Int - the x location of the texture
      * @param y Int - the y location of the texture
@@ -124,7 +124,7 @@ object RenderUtil {
     }
 
     /**
-     * Extension function to draw a texture, replacing drawtexture. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * Extension function to draw a texture, replacing drawtexture.
      * @param id Identifier - The sprite identifier for the image.
      * @param x Int - the x location of the texture
      * @param y Int - the y location of the texture
@@ -171,7 +171,7 @@ object RenderUtil {
         context.matrices.push()
         context.matrices.translate(x, y, 0f)
         context.draw()
-        MinecraftClient.getInstance().gameRenderer.renderBlur()
+        MinecraftClient.getInstance().gameRenderer.renderBlur(delta)
         MinecraftClient.getInstance().framebuffer.beginWrite(false)
         context.matrices.pop()
     }
