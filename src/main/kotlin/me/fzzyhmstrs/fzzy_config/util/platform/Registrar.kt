@@ -39,7 +39,7 @@ interface Registrar<T> {
      * @author fzzyhmstrs
      * @since 0.5.9
      */
-    fun register(name: String, entrySupplier: Supplier<T>): RegistrySupplier<T>
+    fun register(name: String, entrySupplier: Supplier<out T>): RegistrySupplier<T>
 
     /**
      * Returns the registry instance this registrar was linked to
