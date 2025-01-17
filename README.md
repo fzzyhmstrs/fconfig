@@ -4,7 +4,7 @@
 Add the following to your build script to depend on Fzzy Config:
 
 #### Repositories section
-``` Kotlin
+```kotlin
 // build.gradle.kts
 
 //version 0.4.3 or higher:
@@ -21,8 +21,13 @@ maven {
         includeGroup("maven.modrinth")
     }
 }
+
+//for (neo)forge
+maven {
+    url = URI("https://thedarkcolour.github.io/KotlinForForge/")
+}
 ```
-``` groovy
+```groovy
 // build.gradle
 
 //version 0.4.3 or higher
@@ -39,6 +44,11 @@ maven {
         includeGroup "maven.modrinth"
     }
 }
+
+//for (neo)forge
+maven {
+    url = "https://thedarkcolour.github.io/KotlinForForge/"
+}
 ```
 
 #### Dependencies section:
@@ -46,7 +56,7 @@ Version names will be in the form `x.x.x+[mc_version]`, e.g. `0.4.3+1.21`. For (
 
 Either CurseForge, Modrinth, or the [Maven itself](https://maven.fzzyhmstrs.me/me/fzzyhmstrs/fzzy_config/) can be used to see the current version listings.
 
-``` kotlin
+```kotlin
 // build.gradle.kts
 
 //version 0.4.3 or higher
@@ -57,7 +67,7 @@ modImplementation("me.fzzyhmstrs:fzzy_config:$fzzyConfigVersion") //NOTE: unders
 val fzzyConfigVersion: String by project //define this in your gradle.properties file
 modImplementation("maven.modrinth:fzzy-config:$fzzyConfigVersion")
 ```
-``` java
+```groovy
 // build.gradle
 
 //version 0.4.3 or higher
