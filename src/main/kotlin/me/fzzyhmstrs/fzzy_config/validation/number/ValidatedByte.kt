@@ -130,8 +130,9 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      * Annotation-driven validation for Bytes
      * @param min: Byte - minimum allowable value, default to Byte.MIN_VALUE
      * @param max: Byte - maximum allowable value, default to Byte.MAX_VALUE
+     * @param type: [ValidatedNumber.WidgetType] - The "style" of the GUI widget for the annotated setting
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, added widget type 0.6.3
      */
-    annotation class Restrict(val min: Byte = Byte.MIN_VALUE, val max: Byte = Byte.MAX_VALUE)
+    annotation class Restrict(val min: Byte = Byte.MIN_VALUE, val max: Byte = Byte.MAX_VALUE, val type: WidgetType = WidgetType.SLIDER)
 }

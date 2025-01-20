@@ -129,8 +129,9 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
      * Annotation-driven validation for Floats
      * @param min: Float - minimum allowable value, default to Float.MIN_VALUE
      * @param max: Float - maximum allowable value, default to Float.MAX_VALUE
+     * @param type: [ValidatedNumber.WidgetType] - The "style" of the GUI widget for the annotated setting
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, added widget type 0.6.3
      */
-    annotation class Restrict(val min: Float = -Float.MAX_VALUE, val max: Float = Float.MAX_VALUE)
+    annotation class Restrict(val min: Float = -Float.MAX_VALUE, val max: Float = Float.MAX_VALUE, val type: WidgetType = WidgetType.SLIDER)
 }
