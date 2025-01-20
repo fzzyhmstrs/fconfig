@@ -130,8 +130,9 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
      * Annotation-driven validation for Doubles
      * @param min: Double - minimum allowable value, default to Double.MIN_VALUE
      * @param max: Double - maximum allowable value, default to Double.MAX_VALUE
+     * @param type: [ValidatedNumber.WidgetType] - The "style" of the GUI widget for the annotated setting
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, added widget type 0.6.3
      */
-    annotation class Restrict(val min: Double = -Double.MAX_VALUE, val max: Double = Double.MAX_VALUE)
+    annotation class Restrict(val min: Double = -Double.MAX_VALUE, val max: Double = Double.MAX_VALUE, val type: WidgetType = WidgetType.SLIDER)
 }
