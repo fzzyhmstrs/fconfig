@@ -123,8 +123,9 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
      * Annotation-driven validation for Shorts
      * @param min: Short - minimum allowable value, default to Short.MIN_VALUE
      * @param max: Short - maximum allowable value, default to Short.MAX_VALUE
+     * @param type: [ValidatedNumber.WidgetType] - The "style" of the GUI widget for the annotated setting
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, added widget type 0.6.3
      */
-    annotation class Restrict(val min: Short = Short.MIN_VALUE, val max: Short = Short.MAX_VALUE)
+    annotation class Restrict(val min: Short = Short.MIN_VALUE, val max: Short = Short.MAX_VALUE, val type: WidgetType = WidgetType.SLIDER)
 }
