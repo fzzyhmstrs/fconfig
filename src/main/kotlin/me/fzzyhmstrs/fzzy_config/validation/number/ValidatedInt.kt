@@ -23,7 +23,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @param defaultValue Int. the default value of this wrapper
  * @param maxValue Int. the maximum allowed value, inclusive
  * @param minValue Int. the minimum allowed value, inclusive
- * @property widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
+ * @property widgetType [ValidatedNumber.WidgetType] defines what the config GUI widget looks like
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedNumberExamples.ints
  * @author fzzyhmstrs
  * @since 0.1.0
@@ -35,7 +35,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * A validated int number generated with an [IntRange].
      * @param defaultValue Int. the default value of this wrapper
      * @param range [IntRange]. the allowable range of this Validated Int
-     * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
+     * @param widgetType [ValidatedNumber.WidgetType] defines what the config GUI widget looks like
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -45,7 +45,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
     /**
      * A validated int number with a default selected from the min of the allowable range.
      * @param range [IntRange]. the allowable range of this Validated Int
-     * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
+     * @param widgetType [ValidatedNumber.WidgetType] defines what the config GUI widget looks like
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -56,7 +56,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * A validated int number with a default selected from the min of the allowable range.
      * @param minValue Int. the minimum allowed value, inclusive
      * @param maxValue Int. the maximum allowed value, inclusive
-     * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
+     * @param widgetType [ValidatedNumber.WidgetType] defines what the config GUI widget looks like
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -152,8 +152,9 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * Annotation-driven validation for Ints
      * @param min: Int - minimum allowable value, default to Int.MIN_VALUE
      * @param max: Int - maximum allowable value, default to Int.MAX_VALUE
+     * @param type: [ValidatedNumber.WidgetType] - The "style" of the GUI widget for the annotated setting
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, added widget type 0.6.3
      */
-    annotation class Restrict(val min: Int = Int.MIN_VALUE, val max: Int = Int.MAX_VALUE)
+    annotation class Restrict(val min: Int = Int.MIN_VALUE, val max: Int = Int.MAX_VALUE, val type: WidgetType = WidgetType.SLIDER)
 }

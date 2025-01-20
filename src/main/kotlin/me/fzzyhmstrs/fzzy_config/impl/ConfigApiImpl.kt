@@ -405,7 +405,7 @@ internal object ConfigApiImpl {
                     }
                     //fallback is to use by-type TOML serialization
                 } else if (propVal != null) {
-                    val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
+                    val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, name, prop.annotations)
                     if (basicValidation != null) {
                         val newFlags = if (ignoreVisibility) flags or IGNORE_VISIBILITY else flags
                         basicValidation.trySerialize(propVal, errorBuilder, newFlags) ?: TomlNull
@@ -448,7 +448,7 @@ internal object ConfigApiImpl {
                     if(v is EntrySerializer<*>) {
                         toml.element(str, v.serializeEntry(null, errorBuilder, flags))
                     } else if (v != null) {
-                        val basicValidation = manager.basicValidationStrategy(v, prop.returnType, annotations)
+                        val basicValidation = manager.basicValidationStrategy(v, prop.returnType, str, annotations)
                         if (basicValidation != null) {
                             val el = basicValidation.trySerialize(v, errorBuilder, flags)
                             if (el != null)
@@ -544,7 +544,7 @@ internal object ConfigApiImpl {
                         errorBuilder.add(result.getError())
                     }
                 } else {
-                    val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, prop.annotations)
+                    val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop.returnType, name, prop.annotations)
                     if (basicValidation != null) {
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, flags)
@@ -640,7 +640,7 @@ internal object ConfigApiImpl {
                         v.deserializeEntry(it, errorBuilder, str, flags)
                     }
                 } else if (v != null) {
-                    val basicValidation = UpdateManager.basicValidationStrategy(v, prop.returnType, annotations)
+                    val basicValidation = UpdateManager.basicValidationStrategy(v, prop.returnType, str, annotations)
                     if (basicValidation != null) {
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(it, errorBuilder, str, flags)
