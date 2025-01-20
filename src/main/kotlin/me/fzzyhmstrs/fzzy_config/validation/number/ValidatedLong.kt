@@ -151,8 +151,9 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
      * Annotation-driven validation for Longs
      * @param min: Long - minimum allowable value, default to Long.MIN_VALUE
      * @param max: Long - maximum allowable value, default to Long.MAX_VALUE
+     * @param type: [ValidatedNumber.WidgetType] - The "style" of the GUI widget for the annotated setting
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, added widget type 0.6.3
      */
-    annotation class Restrict(val min: Long = Long.MIN_VALUE, val max: Long = Long.MAX_VALUE)
+    annotation class Restrict(val min: Long = Long.MIN_VALUE, val max: Long = Long.MAX_VALUE, val type: WidgetType = WidgetType.SLIDER)
 }
