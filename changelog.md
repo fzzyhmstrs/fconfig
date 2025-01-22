@@ -17,7 +17,7 @@
 * Added `testVersion` method to `PlatformApi` for platform-agnostic testing of MC or mod version
 
 ### Changes
-  * Removed internal `ListListWidget` and `MapListWidget` and replaced them with `ValidatedList.ListListEntry` and `ValidatedMap.MapListEntry` using `DynamicListWidget`s for those widget presentations.
+* `@Validated[Number].Restrict` annotations now accept an optional `ValidatedNumber.WidgetType` with the new third param `type` 
 
 ### Fixes
 * Fixed suggestion windows not being properly linked up in the config screen.
