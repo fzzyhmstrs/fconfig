@@ -10,7 +10,9 @@
 
 package me.fzzyhmstrs.fzzy_config.examples
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.collection.*
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
@@ -142,6 +144,53 @@ object ValidatedCollectionExamples {
     fun stringMaps() {
         //Example ValidatedStringMap with basic validation
         val validatedStringMap = ValidatedStringMap(mapOf("a" to 1), ValidatedString(), ValidatedInt())
+
+        //fields and sections have lang keys based on their "location" in the Config class graph.
+        //Lange key composition is as follows
+        //1. the namespace of the config id: (my_mod)
+        //2. the path of the config id: (my_mod.my_config)
+        //3. any parent ConfigSection field names as declared in-code: (my_mod.my_config.subSection)
+        //4. the setting field name as declared in-code: (my_mod.my_config.subSection.fieldName)
+        val fieldLang = """
+        {
+            "_comment1": "the lang for an example 'fieldName' setting in a config inside section 'subSection'",
+            "my_mod.my_config.subSection.fieldName": "Very Important Setting",
+            "my_mod.my_config.subSection.fieldName.desc": "This very important setting is used in this very important way."
+        }
+        """
+    }
+
+    fun choices() {
+        //example choice set built from a list
+        //this choice set will have 1 and 2 "active" by default
+        //Note that the validation included here is for processing only, the provided list of choices is used to validate deserialized entries
+        var validatedListToChoices = ValidatedList(listOf(1, 2, 4, 8), ValidatedInt()).toChoiceSet(listOf(1, 2))
+
+        val LOG_ERRORS = "log_errors"
+        val DEBUG_MODE = "debug_mode"
+        val DEV_MODE = "dev_mode"
+        val FAIL_FAST = "fail_fast_mode"
+
+        //A more in depth example including an example of translation provision
+        //example lang key:
+        // "my_mod.my_config.validatedFeaturesToChoices.log_errors": "Log Errors"
+        var validatedFeaturesToChoices = ValidatedList(
+            listOf(
+                LOG_ERRORS,
+                DEBUG_MODE,
+                DEV_MODE,
+                FAIL_FAST ),
+            ValidatedString()).toChoiceSet(
+                selectedChoices = listOf(),
+                widgetType = ValidatedChoiceList.WidgetType.INLINE,
+                translationProvider = { thing, key -> FcText.translatable("$key.$thing") },
+                descriptionProvider = { thing, key -> FcText.translatable("$key.$thing.desc") }
+            )
+
+        //example usage of a choice set
+        if (validatedFeaturesToChoices.contains(LOG_ERRORS)) {
+            FC.LOGGER.error("This bad thing happened. Here's some details: <Details>")
+        }
 
         //fields and sections have lang keys based on their "location" in the Config class graph.
         //Lange key composition is as follows
