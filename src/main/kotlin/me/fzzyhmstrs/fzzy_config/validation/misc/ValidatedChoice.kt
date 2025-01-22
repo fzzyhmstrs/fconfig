@@ -24,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedChoiceList
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.WidgetType
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -41,7 +42,7 @@ import java.util.function.Predicate
 import kotlin.math.max
 
 /**
- * A validated set of choices of any type
+ * A validated single choice of any type, from an input list of possible choices
  *
  * Similar to a [ValidatedEnum], but constructed from a pre-defined list of choices
  * @param T the choice type
@@ -56,10 +57,17 @@ import kotlin.math.max
  * @author fzzyhmstrs
  * @since 0.2.0, added providers 0.3.6
  */
-open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private val choices: List<T>, private val handler: EntryHandler<T>, private val translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, private val descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
+open class ValidatedChoice<T> @JvmOverloads constructor(
+    defaultValue: T,
+    private val choices: List<T>,
+    private val handler: EntryHandler<T>,
+    private val translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) },
+    private val descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") },
+    private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue)
+{
 
     /**
-     * A validated set of choices of any type
+     * A validated single choice of any type, from an input list of possible choices
      *
      * Similar to a [ValidatedEnum], but constructed from a pre-defined list of choices
      * @param T the choice type
@@ -196,9 +204,28 @@ open class ValidatedChoice<T> @JvmOverloads constructor(defaultValue: T, private
     /**
      * @suppress
      */
-     override fun toString(): String {
-         return "Validated Choice[value=$storedValue, choices=$choices]"
-     }
+    override fun toString(): String {
+        return "Validated Choice[value=$storedValue, choices=$choices]"
+    }
+
+    /**
+     * Converts this ValidatedChoice into a [ValidatedChoiceList] wrapping this choice's options, widget type, and translation providers
+     * @param selectedChoices List&lt;[T]&gt; - The default selected choices of the resulting choice set. Can be empty.
+     * @param widgetType [ValidatedChoiceList.WidgetType] defines the GUI selection type. Defaults to POPUP if this choices widget type is POPUP (also default), INLINE otherwise
+     * @return [ValidatedChoiceList] with options based on this choice's options
+     * @author fzzyhmstrs
+     * @since 0.6.3
+     */
+    @JvmOverloads
+    fun toChoiceSet(selectedChoices: List<T> = listOf(),
+                    widgetType: ValidatedChoiceList.WidgetType = if (this.widgetType == WidgetType.POPUP)
+                        ValidatedChoiceList.WidgetType.POPUP
+                    else
+                        ValidatedChoiceList.WidgetType.INLINE): ValidatedChoiceList<T>
+    {
+        @Suppress("DEPRECATION")
+        return ValidatedChoiceList(selectedChoices, choices, handler, translationProvider, descriptionProvider, widgetType)
+    }
 
     /**
      * Determines which type of selector widget will be used for the Choice selector, default is POPUP

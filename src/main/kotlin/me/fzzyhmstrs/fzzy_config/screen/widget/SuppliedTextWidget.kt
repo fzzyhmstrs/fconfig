@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.google.common.base.Supplier
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -73,7 +74,7 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         val j = textRenderer.getWidth(text)
         val k = x + (horizontalAlignment * (max(i - j, 0)).toFloat()).roundToInt()
         val l = y + (getHeight() - textRenderer.fontHeight + 1) / 2
-        val orderedText = if (j > i) this.trim(text, i) else text.asOrderedText()
+        val orderedText = if (j > i) FcText.trim(text, i, textRenderer) else text.asOrderedText()
         context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
         if (overflowTooltip != null) {
             if (j > i) {
@@ -82,17 +83,12 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         }
     }
 
-    private fun trim(text: Text, width: Int): OrderedText? {
-        val stringVisitable = textRenderer.trimToWidth(text, width - textRenderer.getWidth(ScreenTexts.ELLIPSIS))
-        return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
-    }
-
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
         return false
     }
 
     override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
-        if (!parentSelected) return TooltipChild.EMPTY
+        if (!((parentSelected && isFocused) || isMouseOver(mouseX.toDouble(), mouseY.toDouble()))) return TooltipChild.EMPTY
         return overflowTooltip?.let { listOf(it.get()) }?.takeIf { textRenderer.getWidth(it[0]) > getWidth() } ?: TooltipChild.EMPTY
     }
 
