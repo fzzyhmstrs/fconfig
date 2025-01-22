@@ -12,13 +12,12 @@
 -------------------------------------
 
 ### Additions
-* New `drawNineSlice` and `renderBlur` methods in `RenderUtil` for matching method signatures across versions. Part of an ongoing effort to unify the API across all versions.
-* Added `open  ContextMenuPopup` to `Popups` for easy third party creation of context menus.
-* New `flatBuild` in `ContextResultBuilder` that flattens the context map groups into one map.
+* new validation `ValidatedChoiceList`. Similar to `ValidatedChoice`, but the list version allows for enabling/disabling of none to all of the possible options while the Choice is one and always one of the choices from the options.
+  * New `toChoiceSet` helper method in `ValidatedList`, `ValidatedSet`, and `ValidatedChoice` for creation of choice lists from the backing validation.
+* Added `testVersion` method to `PlatformApi` for platform-agnostic testing of MC or mod version
 
 ### Changes
-* None.
+  * Removed internal `ListListWidget` and `MapListWidget` and replaced them with `ValidatedList.ListListEntry` and `ValidatedMap.MapListEntry` using `DynamicListWidget`s for those widget presentations.
 
 ### Fixes
-* `ContextResultBuilder` build and other utility methods no longer accidentally internal.
-* (1.21.4) fixed the included version of Fabric Permissions API being outdated.
+* Fixed suggestion windows not being properly linked up in the config screen.
