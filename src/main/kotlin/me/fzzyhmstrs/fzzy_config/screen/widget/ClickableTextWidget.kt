@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -40,13 +41,8 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
         val j = textRenderer.getWidth(text)
         val k = x + (horizontalAlignment * (i - j).toFloat()).roundToInt()
         val l = y + (getHeight() - textRenderer.fontHeight) / 2
-        val orderedText = if (j > i) this.trim(text, i) else text.asOrderedText()
+        val orderedText = if (j > i) FcText.trim(text, i, textRenderer) else text.asOrderedText()
         context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
-    }
-
-    private fun trim(text: Text, width: Int): OrderedText? {
-        val stringVisitable = textRenderer.trimToWidth(text, width - textRenderer.getWidth(ScreenTexts.ELLIPSIS))
-        return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

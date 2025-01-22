@@ -11,13 +11,13 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.brigadier.Message
+import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.resource.language.I18n
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
+import net.minecraft.screen.ScreenTexts
+import net.minecraft.text.*
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
+import net.minecraft.util.Language
 import net.minecraft.util.math.ChunkPos
 import java.util.*
 import java.util.function.Supplier
@@ -397,5 +397,10 @@ object FcText {
             }
         }
         return text ?: empty()
+    }
+
+    fun trim(text: Text, width: Int, textRenderer: TextRenderer): OrderedText? {
+        val stringVisitable = textRenderer.trimToWidth(text, width - textRenderer.getWidth(ScreenTexts.ELLIPSIS))
+        return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
     }
 }
