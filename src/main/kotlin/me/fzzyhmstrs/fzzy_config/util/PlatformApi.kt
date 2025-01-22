@@ -16,6 +16,8 @@ import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
 import java.io.File
 
+import java.util.Optional
+
 /**
  * API for abstraction of simple ModLoader requests
  * @author fzzyhmstrs
@@ -81,4 +83,14 @@ interface PlatformApi {
      */
     @ApiStatus.Experimental
     fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T>
+
+    /**
+     * Tests the version of the provided mod (or minecraft)
+     * @param id String - the modid to test the version of. Use "minecraft" to test MCs loaded version
+     * @param version String representation of the version to test. Example "0.6.3". The loaders may have individual quirks when it comes to parsing the result
+     * @return [Optional]&lt;Int&gt; - The resulting version comparison. If the comparison isn't valid for some reason (or the id isn't loaded) the optional will be empty, otherwise will be the result of a Comparator check (negative = loaded version less than the requested version, 0 = versions functionally equal, positive = loaded version is higher).
+     * @author fzzyhmstrs
+     * @since 0.6.3
+     */
+    fun testVersion(id: String, version: String): Optional<Int>
 }
