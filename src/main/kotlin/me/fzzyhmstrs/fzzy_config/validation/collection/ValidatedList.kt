@@ -43,7 +43,7 @@ import java.util.function.BiFunction
 import java.util.function.Supplier
 
 /**
- * a validated list
+ * A validated list
  *
  * This [ValidatedField] implements [List], so you can directly use it as if it were an immutable list
  * @param T any non-null type
@@ -83,7 +83,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
                 ValidationResult.success(list)
             }
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Critical error enountered while deserializing list [$fieldName], using defaults.")
+            ValidationResult.error(defaultValue, "Critical error encountered while deserializing list [$fieldName], using defaults: ${e.message}")
         }
     }
 
@@ -153,6 +153,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
     override fun instanceEntry(): ValidatedList<T> {
         return ValidatedList(copyStoredValue(), entryHandler)
     }
+
     @Internal
     @Suppress("UNCHECKED_CAST")
     override fun isValidEntry(input: Any?): Boolean {
@@ -220,16 +221,32 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
 
     /**
      * Converts this ValidatedList into [ValidatedChoice] wrapping this list as the valid choice options
-     * @return [ValidatedChoice] with options based on this list's contents
      * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
      * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
      * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
+     * @return [ValidatedChoice] with options based on this list's contents
      * @author fzzyhmstrs
      * @since 0.2.0, added optional params 0.3.6
      */
     @JvmOverloads
     fun toChoices(widgetType: WidgetType = WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoice<T> {
         return ValidatedChoice(defaultValue, entryHandler, translationProvider, descriptionProvider, widgetType)
+    }
+
+    /**
+     * Converts this ValidatedList into [ValidatedChoiceList] wrapping this list as the valid choice options
+     * @param selectedChoices List&lt;[T]&gt; - The default selected choices of the resulting choice set. Can be empty.
+     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
+     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
+     * @param widgetType [ValidatedChoiceList.WidgetType] defines the GUI selection type. Defaults to POPUP
+     * @return [ValidatedChoiceList] with options based on this list's contents
+     * @author fzzyhmstrs
+     * @since 0.6.3
+     */
+    @JvmOverloads
+    fun toChoiceSet(selectedChoices: List<T> = listOf(), widgetType: ValidatedChoiceList.WidgetType = ValidatedChoiceList.WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoiceList<T> {
+        @Suppress("DEPRECATION")
+        return ValidatedChoiceList(selectedChoices, defaultValue, entryHandler, translationProvider, descriptionProvider, widgetType)
     }
 
     // List Interface //////////////////////////////////

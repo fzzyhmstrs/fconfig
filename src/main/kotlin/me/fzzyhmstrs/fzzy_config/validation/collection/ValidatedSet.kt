@@ -223,14 +223,30 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     /**
      * Converts this ValidatedSet into [ValidatedChoice] wrapping this set as the valid choice options
      * @return [ValidatedChoice] with options based on this set's contents
-     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Translation
-     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this ValidatedChoice into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
+     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this into a text Translation. This will be the "title" of the choice widget
+     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
      * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
      * @author fzzyhmstrs
      * @since 0.2.0, added optional params 0.4.0
      */
     fun toChoices(widgetType: WidgetType = WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoice<T> {
         return ValidatedChoice(defaultValue.toList(), entryHandler, translationProvider, descriptionProvider, widgetType)
+    }
+
+    /**
+     * Converts this ValidatedSet into [ValidatedChoiceList] wrapping this set as the valid choice options
+     * @param selectedChoices List&lt;[T]&gt; - The default selected choices of the resulting choice set. Can be empty.
+     * @param translationProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this into a text Translation. This will be the "title" of the choice widget
+     * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base translation key of this into a text Description: NOTE: *translation* key, not description key. This is the same base key as provided to [translationProvider]
+     * @param widgetType [ValidatedChoiceList.WidgetType] defines the GUI selection type. Defaults to POPUP
+     * @return [ValidatedChoiceList] with options based on this list's contents
+     * @author fzzyhmstrs
+     * @since 0.6.3
+     */
+    @JvmOverloads
+    fun toChoiceSet(selectedChoices: List<T> = listOf(), widgetType: ValidatedChoiceList.WidgetType = ValidatedChoiceList.WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoiceList<T> {
+        @Suppress("DEPRECATION")
+        return ValidatedChoiceList(selectedChoices, defaultValue.toList(), entryHandler, translationProvider, descriptionProvider, widgetType)
     }
 
     // Set Interface //////////////////////////////////
