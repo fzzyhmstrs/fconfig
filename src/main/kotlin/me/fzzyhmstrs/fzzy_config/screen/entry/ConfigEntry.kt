@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.AbstractDecorationWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.DecorationWidget
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry.ContentBuilder
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -101,6 +102,8 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
                 n.add(w)
             if (w is TooltipChild)
                 t.add(w)
+            if (w is SuggestionWindowProvider)
+                w.addListener(parentElement)
         }
         narratables = n.filter { widget -> widget.message != texts.name }
         c.addAll(actions.mapNotNull { it.nullCast() })
