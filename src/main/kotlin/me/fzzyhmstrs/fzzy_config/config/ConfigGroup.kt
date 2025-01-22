@@ -145,7 +145,7 @@ class ConfigGroup @JvmOverloads constructor(
             val bl = list.groupIsVisible(group)
             val bl2 = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
             val t = if (bl2) title.copy().styled { s -> s.withUnderline(true) } else title
-            val trimmed = trim(t, width - 17)
+            val trimmed = FcText.trim(t, width - 17, MinecraftClient.getInstance().textRenderer)
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, trimmed, x + 17, y + (getHeight() - (MinecraftClient.getInstance().textRenderer.fontHeight) + 1) / 2, -1)
             val h2 = y + height/2
             if (bl) { //vertical line
@@ -163,11 +163,6 @@ class ConfigGroup @JvmOverloads constructor(
         }
 
         override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {}
-
-        private fun trim(text: Text, width: Int): OrderedText? {
-            val stringVisitable = MinecraftClient.getInstance().textRenderer.trimToWidth(text, width - MinecraftClient.getInstance().textRenderer.getWidth(ScreenTexts.ELLIPSIS))
-            return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
-        }
 
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
             if (!parentSelected) return TooltipChild.EMPTY

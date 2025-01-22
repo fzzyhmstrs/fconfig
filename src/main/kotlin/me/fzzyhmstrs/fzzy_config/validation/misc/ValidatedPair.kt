@@ -185,7 +185,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
                 right,
                 LayoutWidget.Position.ALIGN_LEFT,
                 LayoutWidget.Position.BELOW)
-        return LayoutClickableWidget(0, 0, 110, 20, layout)
+        return LayoutClickableWidget(0, 0, 110, 40, layout)
     }
 
     /**
