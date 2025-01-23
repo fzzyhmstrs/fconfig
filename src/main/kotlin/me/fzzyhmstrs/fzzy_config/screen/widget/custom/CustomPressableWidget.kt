@@ -15,7 +15,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -23,7 +22,6 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.KeyCodes
 import net.minecraft.text.Text
-import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus.Internal
 

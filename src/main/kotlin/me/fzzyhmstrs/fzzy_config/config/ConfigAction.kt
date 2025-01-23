@@ -18,9 +18,9 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -84,7 +84,12 @@ class ConfigAction @JvmOverloads constructor(
 
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<Any>): ClickableWidget {
-        return ActiveButtonWidget(titleSupplier, 110, 20, activeSupplier, { _ -> pressAction.run() }, background ?: CustomPressableWidget.DEFAULT_TEXTURES)
+        val button = CustomButtonWidget.builder { _ -> pressAction.run() }
+            .size(110, 20)
+            .messageSupplier(titleSupplier)
+            .activeSupplier(activeSupplier)
+            .textures(background ?: CustomPressableWidget.DEFAULT_TEXTURES)
+        return button.build()
     }
 
     @Internal

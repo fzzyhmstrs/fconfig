@@ -11,7 +11,10 @@
 package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
-import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
@@ -240,7 +243,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<IngredientProvider>): ClickableWidget {
-        return ActiveButtonWidget("fc.validated_field.ingredient.edit".translate(), 110, 20, { true }, { openIngredientPopup(it) })
+        return CustomButtonWidget.builder("fc.validated_field.ingredient.edit".translate()) { openIngredientPopup(it) }.size(110, 20).build()
     }
 
     @Internal

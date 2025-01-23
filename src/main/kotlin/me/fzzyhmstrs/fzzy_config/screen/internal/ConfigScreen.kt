@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
@@ -136,9 +137,11 @@ internal class ConfigScreen(
     private fun initFooter() {
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //goto button
-        directionalLayoutWidget.add(TextlessActionWidget("widget/action/goto".fcId(), "widget/action/goto_inactive".fcId(), "widget/action/goto_highlighted".fcId(), "fc.button.goto".translate(), "fc.button.goto".translate(), { anchors.size > 1 } ) { Popups.openGotoPopup(anchors, anchorWidth, this.height) }) { p -> p.alignLeft() }
+        directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openGotoPopup(anchors, anchorWidth, this.height) }.size(20, 20).textures(TextureIds.GOTO_SET).narrationSupplier { _, _ -> TextureIds.GOTO_LANG }.activeSupplier { anchors.size > 1 }.tooltip(TextureIds.GOTO_LANG).build()) { p -> p.alignLeft() }
+        //directionalLayoutWidget.add(TextlessActionWidget("widget/action/goto".fcId(), "widget/action/goto_inactive".fcId(), "widget/action/goto_highlighted".fcId(), "fc.button.goto".translate(), "fc.button.goto".translate(), { anchors.size > 1 } ) { Popups.openGotoPopup(anchors, anchorWidth, this.height) }) { p -> p.alignLeft() }
         //info button
-        directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
+        directionalLayoutWidget.add(CustomButtonWidget.builder { openInfoPopup() }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignLeft() }
+        //directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
         fun setColor(entries: Int) {
             if(entries > 0)
@@ -153,7 +156,8 @@ internal class ConfigScreen(
         searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
         directionalLayoutWidget.add(searchField)
         //forward alert button
-        directionalLayoutWidget.add(TextlessActionWidget("widget/action/alert".fcId(), "widget/action/alert_inactive".fcId(), "widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(), { manager.hasForwards() } ) { manager.forwardsHandler() })
+        directionalLayoutWidget.add(CustomButtonWidget.builder { manager.forwardsHandler() }.size(20, 20).textures("widget/action/alert".fcId(), "widget/action/alert_inactive".fcId(), "widget/action/alert_highlighted".fcId()).narrationSupplier { a, _ -> if (a) "fc.button.alert.active".translate() else "fc.button.alert.inactive".translate() }.activeSupplier { manager.hasForwards() }.tooltipSupplier { a -> if (a) "fc.button.alert.active".translate() else "fc.button.alert.inactive".translate() }.build()) { p -> p.alignLeft() }
+        //directionalLayoutWidget.add(TextlessActionWidget("widget/action/alert".fcId(), "widget/action/alert_inactive".fcId(), "widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(), { manager.hasForwards() } ) { manager.forwardsHandler() })
         //changes button
         directionalLayoutWidget.add(ChangesWidget(scope, { this.width }, manager))
         //done button

@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget.Companion.DEFAULT_TEXTURES
 import net.minecraft.client.gui.DrawContext
@@ -27,9 +28,10 @@ import java.util.function.Supplier
  * @param pressAction [Consumer]&lt;ActiveButtonWidget&gt; - action to take when the button is pressed
  * @param textures [TextureSet], optional - a custom background texture set; defaults to [DEFAULT_TEXTURES]
  * @author fzzyhmstrs
- * @since 0.2.0, implements TextureSet for backgrounds 0.6.0
+ * @since 0.2.0, implements TextureSet for backgrounds 0.6.0, deprecated 0.6.3 for removal by 0.7.0
  */
 //client
+@Deprecated("Unused internally. Switch to CustomButtonWidget#builder. Scheduled for removal 0.7.0")
 open class ActiveButtonWidget@JvmOverloads constructor(
     private val titleSupplier: Supplier<Text>,
     width: Int,
@@ -82,6 +84,10 @@ open class ActiveButtonWidget@JvmOverloads constructor(
         background: Identifier? = null)
             :
             this(title, width, height, background?.let { TextureSet(it) }, activeSupplier, pressAction)
+
+    init {
+        FC.LOGGER.error("This class is marked for removal. Please reimplement as a CustomButtonWidget or use CustomButtonWidget#builder")
+    }
 
     /**
      * @suppress

@@ -13,8 +13,8 @@ package me.fzzyhmstrs.fzzy_config.validation.collection
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
@@ -110,18 +110,19 @@ internal class MapListWidget<K, V>(
 
         private val keyWidget = key.widgetAndTooltipEntry(keyValidator.apply(parent, this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val valueWidget = value.widgetAndTooltipEntry(ChoiceValidator.any()).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
-        private val deleteWidget = TextlessActionWidget(
-            TextureIds.DELETE,
-            TextureIds.DELETE_INACTIVE,
-            TextureIds.DELETE_HIGHLIGHTED,
-            TextureIds.DELETE_LANG,
-            TextureIds.DELETE_LANG,
-            { true },
-            { parent.children().let { list ->
+
+        private val deleteWidget = CustomButtonWidget.builder { parent.children().let { list ->
                 list.indexOf(this).takeIf { i -> i >=0 && i<list.size }?.let {
                         i -> list.removeAt(i)
                 }
-            } })
+            } }
+            .textures(TextureIds.DELETE,
+                TextureIds.DELETE_INACTIVE,
+                TextureIds.DELETE_HIGHLIGHTED)
+            .tooltip(TextureIds.DELETE_LANG)
+            .narrationSupplier { _, _ -> TextureIds.DELETE_LANG }
+            .size(20, 20)
+            .build()
 
         fun get(): Pair<K, V> {
             return Pair(key.get(), value.get())
@@ -172,18 +173,17 @@ internal class MapListWidget<K, V>(
     @Suppress("UNCHECKED_CAST")
     private class NewEntry<K, V>(private val keySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<K, *>, private val valueSupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<V, *>, private val parent: MapListWidget<K, V>, private val validator: BiFunction<MapListWidget<K, V>, MapEntry<K, V>?, ChoiceValidator<K>>): MapEntry<K, V>() {
 
-        private val addWidget = TextlessActionWidget(
-            TextureIds.ADD,
-            TextureIds.ADD_INACTIVE,
-            TextureIds.ADD_HIGHLIGHTED,
-            TextureIds.ADD_LANG,
-            TextureIds.ADD_LANG,
-            { true },
-            {
+        private val addWidget = CustomButtonWidget.builder {
                 parent.children().let { it.add(it.lastIndex, ExistingEntry(keySupplier.instanceEntry() as Entry1<K, *>, valueSupplier.instanceEntry() as Entry1<V, *>, parent, validator)) }
                 parent.makeVisible(this)
-            })
-
+            }
+            .textures(TextureIds.ADD,
+                TextureIds.ADD_INACTIVE,
+                TextureIds.ADD_HIGHLIGHTED)
+            .tooltip(TextureIds.ADD_LANG)
+            .narrationSupplier { _, _ -> TextureIds.ADD_LANG }
+            .size(20, 20)
+            .build()
 
         override fun children(): MutableList<out Element> {
             return mutableListOf(addWidget)
