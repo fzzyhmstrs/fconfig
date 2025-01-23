@@ -498,14 +498,14 @@ class LayoutWidget @JvmOverloads constructor(
         var maxW = -1000000
         var maxH = -1000000
         for ((_, posEl) in elements) {
-            minW = min(posEl.getLeft() - paddingW, minW)
+            minW = posEl.provideMinW(minW)
         }
+        if (debug) FC.DEVLOG.error("  minW: $minW")
         for ((_, posEl) in elements) {
-            if (posEl.alignment != Position.ALIGN_JUSTIFY_WEAK) {
-                maxW = max(max((posEl.getRight() + paddingW) - minW, posEl.elWidth() + (paddingW * 2)), maxW)
-            }
+            maxW = posEl.provideMaxW(maxW, minW, paddingW)
             maxH = max(posEl.getBottom(), maxH)
         }
+        maxW  += (paddingW * 2)
         if (manualWidth <= 0) {
             updateWidth(maxW)
         } else {
@@ -888,7 +888,7 @@ class LayoutWidget @JvmOverloads constructor(
         @Deprecated("Use Positions Impl values")
         CENTERED_HORIZONTALLY {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(parent.getX(), 0) { parent.elWidth()/2 - el.width/2 }, prevY)
+                return Pair(SuppliedPos(parent.getX(), 0) { parent.elWidth() / 2 - el.width / 2 }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
@@ -1118,6 +1118,44 @@ class LayoutWidget @JvmOverloads constructor(
         private fun inLeftRightBounds(chk: IntRange): Boolean {
             val lr = leftRight()
             return chk == lr || lr.contains(chk.first) || lr.contains(chk.last) || chk.contains(lr.first) || chk.contains(lr.last)
+        }
+
+        @Suppress("DEPRECATION")
+        fun provideMinW(minW: Int): Int {
+            return when (alignment) {
+                PositionGlobalAlignment.ALIGN_LEFT -> min( getLeft(), minW)
+                PositionGlobalAlignment.ALIGN_LEFT_OF -> min( getLeft(), minW)
+                PositionGlobalAlignment.ALIGN_RIGHT -> min( getLeft(), minW)
+                PositionGlobalAlignment.ALIGN_CENTER -> min(max(0, getLeft()), minW)
+                PositionGlobalAlignment.ALIGN_JUSTIFY -> min(max(0, getLeft()), minW)
+                PositionGlobalAlignment.ALIGN_JUSTIFY_WEAK -> min(max(0, getLeft()), minW)
+                PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY -> min( getLeft(), minW)
+                PositionGlobalAlignment.POSITION_RIGHT_OF_AND_JUSTIFY -> min( getLeft(), minW)
+                PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY -> min( getLeft(), minW)
+                PositionGlobalAlignment.POSITION_LEFT_OF_AND_JUSTIFY -> min( getLeft(), minW)
+                PositionGlobalAlignment.ALIGN_LEFT_AND_STRETCH -> min( getLeft(), minW)
+                PositionGlobalAlignment.ALIGN_LEFT_OF_AND_STRETCH -> min( getLeft(), minW)
+                PositionGlobalAlignment.ALIGN_RIGHT_AND_STRETCH -> min( getLeft(), minW)
+            }
+        }
+
+        @Suppress("DEPRECATION")
+        fun provideMaxW(maxW: Int, minW: Int, paddingW: Int): Int {
+            return when (alignment) {
+                PositionGlobalAlignment.ALIGN_LEFT -> max(max(getRight() - minW, elWidth()), maxW)
+                PositionGlobalAlignment.ALIGN_LEFT_OF -> maxW
+                PositionGlobalAlignment.ALIGN_RIGHT -> max(max(getRight() - minW, elWidth()), maxW)
+                PositionGlobalAlignment.ALIGN_CENTER -> max(elWidth(), maxW)
+                PositionGlobalAlignment.ALIGN_JUSTIFY -> max(elWidth() - paddingW, maxW)
+                PositionGlobalAlignment.ALIGN_JUSTIFY_WEAK -> maxW
+                PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY -> max(max(getRight() - minW, elWidth()) - paddingW, maxW)
+                PositionGlobalAlignment.POSITION_RIGHT_OF_AND_JUSTIFY -> max(max(getRight() - minW, elWidth()) - paddingW, maxW)
+                PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY -> max(max(getRight() - minW, elWidth()) - paddingW, maxW)
+                PositionGlobalAlignment.POSITION_LEFT_OF_AND_JUSTIFY -> maxW
+                PositionGlobalAlignment.ALIGN_LEFT_AND_STRETCH -> max(max(getRight() - minW, elWidth()), maxW)
+                PositionGlobalAlignment.ALIGN_LEFT_OF_AND_STRETCH -> maxW
+                PositionGlobalAlignment.ALIGN_RIGHT_AND_STRETCH -> max(max(getRight() - minW, elWidth()), maxW)
+            }
         }
 
         override fun toString(): String {
