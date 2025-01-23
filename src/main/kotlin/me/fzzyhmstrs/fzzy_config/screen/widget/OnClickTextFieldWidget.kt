@@ -11,11 +11,13 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.client.input.KeyCodes
-import net.minecraft.entity.ai.pathing.NavigationType
+import net.minecraft.util.Identifier
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -25,23 +27,28 @@ import java.util.function.Supplier
  * @param textSupplier [Supplier]&lt;String&gt; - supplier of the message the "text field" displays
  * @param onClick [Consumer]&lt;OnClickTextFieldWidget&gt; - action to take when the button is pressed
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, now uses AbstractTextWidget 0.6.3
  */
 //client
 class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: OnInteractAction)
     :
-    TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, 110, 20, FcText.EMPTY)
+    AbstractTextWidget( 0, 0, 110, 20, FcText.EMPTY, MinecraftClient.getInstance().textRenderer)
 {
-    init {
-        setMaxLength(1000)
-        this.text = textSupplier.get()
-        this.setCursorToStart()
-    }
 
-    override fun renderButton(context: DrawContext?, mouseX: Int, mouseY: Int, delta: Float) {
-        super.renderButton(context, mouseX, mouseY, delta)
-        this.text = textSupplier.get()
-        this.setCursorToStart()
+    private val textures: TextureSet = TextureSet(Identifier.ofVanilla("widget/text_field"), Identifier.ofVanilla("widget/text_field"), Identifier.ofVanilla("widget/text_field_highlighted"))
+
+    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        context.drawNineSlice(textures.get(this.active, this.isSelected), x, y, width, height, alpha)
+        val text = FcText.literal(textSupplier.get())
+        val i = getWidth() - 8
+        val j = textRenderer.getWidth(text)
+        val k = x + 4
+        val l = y + (getHeight() - textRenderer.fontHeight + 1) / 2
+        val orderedText = if (j > i) FcText.trim(text, i, textRenderer) else text.asOrderedText()
+        context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
+        if (j > i) {
+            tooltip = Tooltip.of(text)
+        }
     }
 
     override fun onClick(mouseX: Double, mouseY: Double) {
@@ -60,7 +67,11 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
         }
     }
     private fun isNavigation(keyCode: Int): Boolean {
-        return keyCode == GLFW.GLFW_KEY_TAB || keyCode == GLFW.GLFW_KEY_RIGHT || keyCode == GLFW.GLFW_KEY_LEFT || keyCode == GLFW.GLFW_KEY_DOWN || keyCode == GLFW.GLFW_KEY_UP
+        return keyCode == GLFW.GLFW_KEY_TAB
+                || keyCode == GLFW.GLFW_KEY_RIGHT
+                || keyCode == GLFW.GLFW_KEY_LEFT
+                || keyCode == GLFW.GLFW_KEY_DOWN
+                || keyCode == GLFW.GLFW_KEY_UP
     }
 
     /**

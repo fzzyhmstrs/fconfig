@@ -23,7 +23,7 @@ import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextlessActionWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -36,7 +36,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ScreenRect
-import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
@@ -226,24 +225,23 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
         override var h: Int = 20
         private val tooltip = Tooltip.of(texts.desc)
 
-        val acceptForwardWidget = TextlessActionWidget(
-            "widget/action/accept".fcId(),
-            "widget/action/accept_inactive".fcId(),
-            "widget/action/accept_highlighted".fcId(),
-            "fc.button.accept".translate(),
-            "fc.button.accept".translate(),
-            { true },
-            { manager.acceptForward(forwardedUpdate); applyVisibility { stack -> stack.push(DynamicListWidget.Visibility.HIDDEN) } }
-        )
-        val denyForwardWidget = TextlessActionWidget(
-            "widget/action/delete".fcId(),
-            "widget/action/delete_inactive".fcId(),
-            "widget/action/delete_highlighted".fcId(),
-            "fc.button.deny".translate(),
-            "fc.button.deny".translate(),
-            { true },
-            { manager.rejectForward(forwardedUpdate); applyVisibility { stack -> stack.push(DynamicListWidget.Visibility.HIDDEN) } }
-        )
+        val acceptForwardWidget = CustomButtonWidget.builder { manager.acceptForward(forwardedUpdate); applyVisibility { stack -> stack.push(DynamicListWidget.Visibility.HIDDEN) } }
+            .textures("widget/action/accept".fcId(),
+                "widget/action/accept_inactive".fcId(),
+                "widget/action/accept_highlighted".fcId())
+            .tooltip("fc.button.accept".translate())
+            .narrationSupplier { _, _ -> "fc.button.accept".translate() }
+            .size(20, 20)
+            .build()
+
+        val denyForwardWidget = CustomButtonWidget.builder { manager.rejectForward(forwardedUpdate); applyVisibility { stack -> stack.push(DynamicListWidget.Visibility.HIDDEN) } }
+            .textures("widget/action/delete".fcId(),
+                "widget/action/delete_inactive".fcId(),
+                "widget/action/delete_highlighted".fcId())
+            .tooltip("fc.button.deny".translate())
+            .narrationSupplier { _, _ -> "fc.button.deny".translate() }
+            .size(20, 20)
+            .build()
 
         override fun selectableChildren(): List<SelectableElement> {
             return listOf(acceptForwardWidget, denyForwardWidget).cast()

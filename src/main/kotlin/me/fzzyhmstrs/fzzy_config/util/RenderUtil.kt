@@ -11,15 +11,10 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.blaze3d.systems.RenderSystem
-import it.unimi.dsi.fastutil.ints.IntIterator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.Divider
-import net.minecraft.util.math.MathHelper
 import kotlin.math.min
-import net.minecraft.util.math.ColorHelper
 import java.awt.Color
 
 /**

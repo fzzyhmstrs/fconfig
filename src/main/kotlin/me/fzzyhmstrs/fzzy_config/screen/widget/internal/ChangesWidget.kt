@@ -14,7 +14,11 @@ import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.context.Position
 import me.fzzyhmstrs.fzzy_config.screen.entry.ChangelogEntry
-import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.Popups
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -66,23 +70,23 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         val popup = PopupWidget.Builder("fc.button.changes.title".translate())
             // Apply Changes
             .add("apply",
-                ActiveButtonWidget(applyText, client.textRenderer.getWidth(applyText) + 8, 20, { manager.hasChanges() }, { manager.apply(false) }),
+                CustomButtonWidget.builder(applyText) { manager.apply(false) }.size(client.textRenderer.getWidth(applyText) + 8, 20).activeSupplier { manager.hasChanges() }.build(),
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_JUSTIFY)
             .pushSpacing(UnaryOperator.identity()) { _ -> 2 }
             // Revert Changes
             .add("revert",
-                ActiveButtonWidget(revertText, client.textRenderer.getWidth(revertText) + 8, 20, { manager.hasChanges() }, { manager.revert() }),
+                CustomButtonWidget.builder(revertText) { manager.revert() }.size(client.textRenderer.getWidth(revertText) + 8, 20).activeSupplier { manager.hasChanges() }.build(),
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_JUSTIFY)
             // Restore Defaults > confirm popup
             .add("restore",
-                ActiveButtonWidget(restoreText, client.textRenderer.getWidth(restoreText) + 8, 20, { manager.hasRestores(scope) }, { b -> Popups.openConfirmPopup(Position.fromWidget(b), "fc.config.restore.confirm.desc".translate()) { manager.restore(scope) } }),
+                CustomButtonWidget.builder(restoreText) { b -> Popups.openConfirmPopup(Position.fromWidget(b), "fc.config.restore.confirm.desc".translate()) { manager.restore(scope) } }.size(client.textRenderer.getWidth(restoreText) + 8, 20).activeSupplier { manager.hasRestores(scope) }.build(),
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_JUSTIFY)
             // Change History
             .add("changelog",
-                ActiveButtonWidget(changelogText, client.textRenderer.getWidth(changelogText) + 8, 20, { manager.hasChangeHistory() }, { openChangelogPopup() }),
+                CustomButtonWidget.builder(changelogText) { openChangelogPopup() }.size(client.textRenderer.getWidth(changelogText) + 8, 20).activeSupplier { manager.hasChangeHistory() }.build(),
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_JUSTIFY)
             .addDoneWidget(spacingH = 2)

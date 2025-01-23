@@ -10,8 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.result
 
-import org.jetbrains.annotations.ApiStatus
-
 /**
  * Generic provider of values based on a string scope provided
  * @param T Non-null type to return
