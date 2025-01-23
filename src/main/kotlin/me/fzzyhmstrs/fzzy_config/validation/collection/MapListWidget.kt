@@ -39,7 +39,7 @@ internal class MapListWidget<K, V>(
     valueSupplier: Entry1<V, *>,
     entryValidator: BiFunction<MapListWidget<K, V>, MapEntry<K, V>?, ChoiceValidator<K>>)
     :
-    ElementListWidget<MapListWidget.MapEntry<K, V>>(MinecraftClient.getInstance(), 272, 160, 0, 0, 22), Widget, SuggestionWindowListener {
+    ElementListWidget<MapListWidget.MapEntry<K, V>>(MinecraftClient.getInstance(), 268, 160, 0, 0, 22), Widget, SuggestionWindowListener {
 
     fun getRawMap(skip: MapEntry<K, V>? = null): Map<K, V> {
         val map: MutableMap<K, V> = mutableMapOf()
@@ -104,8 +104,12 @@ internal class MapListWidget<K, V>(
         return 258 //16 padding, 20 slider width and padding
     }
 
+    override fun getRowLeft(): Int {
+        return this.x
+    }
+
     override fun getScrollbarPositionX(): Int {
-        return this.left + this.width / 2 + this.rowWidth / 2 + 6
+        return this.x + this.width - 6
     }
 
     private fun makeVisible(entry: MapEntry<K, V>) {
