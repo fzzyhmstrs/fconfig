@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.widget.RepositioningWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
@@ -38,7 +39,7 @@ import java.util.function.Supplier
  * @param width Widget width in pixels
  * @param height Widget height in pixels
  * @author fzzyhmstrs
- * @since 0.6.0
+ * @since 0.6.0, implements RepositioningWidget 0.6.3
  */
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val client: MinecraftClient, x: Int, y: Int, width: Int, height: Int)
@@ -47,7 +48,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     y,
     width,
     height,
-    ScreenTexts.EMPTY), ParentElement {
+    ScreenTexts.EMPTY), ParentElement, RepositioningWidget {
 
     //// Widget ////
 
@@ -121,9 +122,9 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     /**
      * This is run when the widget is moved or resized. List elements should be repositioned when this is called.
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.6.0, overrides method from RepositioningWidget 0.6.3
      */
-    open fun onReposition() {}
+    override fun onReposition() {}
     /**
      * List entries tht are currently selectable. Hidden or otherwise disabled entries should not be counted in this list.
      * @author fzzyhmstrs
