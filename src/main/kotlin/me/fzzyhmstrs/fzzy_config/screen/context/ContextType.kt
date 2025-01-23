@@ -265,6 +265,13 @@ class ContextType private constructor(private val id: String, private val releva
          */
         val CLEAR = create("clear", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
 
+        /**
+         * Does not listen to user input. Selects all possible options in the context object.
+         * @author fzzyhmstrs
+         * @since 0.6.3
+         */
+        val SELECT_ALL = create("select_all", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
+
 
         private fun types(inputType: ContextInput): List<ContextType> {
             return when (inputType) {

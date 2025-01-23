@@ -11,32 +11,59 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.text.MutableText
+import net.minecraft.util.Identifier
 
 
 //client
 /**
  * A widget that will open a fzzy config screen directly on press.
  * @author fzzyhmstrs
- * @since 0.5.7
+ * @since 0.5.7, reimplemented with CustomPressableWidget 0.6.3
  */
 class ConfigScreenWidget private constructor(
     private val scope: String,
     position: Position)
     :
-    TextlessActionWidget(
-        TextureIds.CONFIG,
-        TextureIds.CONFIG_INACTIVE,
-        TextureIds.CONFIG_HIGHLIGHTED,
-        TextureIds.CONFIG_LANG,
-        TextureIds.CONFIG_INACTIVE_LANG,
-        { ClientConfigRegistry.hasScreen(scope) },
-        { _ -> ClientConfigRegistry.openScreen(scope) }
-    )
+    CustomPressableWidget(0, 0, 20, 20, FcText.EMPTY)
 {
     init {
         setPosition(position.positionX(MinecraftClient.getInstance().window.scaledWidth), position.positionY(MinecraftClient.getInstance().window.scaledHeight))
     }
+
+    private fun getTex(): Identifier {
+        if(!active)
+            return TextureIds.CONFIG_INACTIVE
+        return if (hovered || isFocused)
+            TextureIds.CONFIG_HIGHLIGHTED
+        else
+            TextureIds.CONFIG
+    }
+
+    override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        this.active = ClientConfigRegistry.hasScreen(scope)
+        context.drawTex(getTex(), x, y, getWidth(), getHeight())
+        tooltip = if (this.active) {
+            Tooltip.of(TextureIds.CONFIG_LANG)
+        } else {
+            Tooltip.of(TextureIds.CONFIG_INACTIVE_LANG)
+        }
+    }
+
+    override fun getNarrationMessage(): MutableText {
+        return if(active) TextureIds.CONFIG_LANG.copy() else TextureIds.CONFIG_INACTIVE_LANG.copy()
+    }
+
+    override fun onPress() {
+        ClientConfigRegistry.openScreen(scope)
+    }
+
 
     companion object {
         /**

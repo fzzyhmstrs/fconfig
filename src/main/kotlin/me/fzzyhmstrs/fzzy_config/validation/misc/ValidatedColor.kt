@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -38,7 +39,6 @@ import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.MutableText
-import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -240,7 +240,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): ClickableWidget {
-        return ActiveButtonWidget({ this.toHexString().lit() }, 110, 20, { true }, { openColorEditPopup() })
+        return CustomButtonWidget.builder { openColorEditPopup() }.size(110, 20).messageSupplier { this.toHexString().lit() }.build()
     }
 
     @Internal

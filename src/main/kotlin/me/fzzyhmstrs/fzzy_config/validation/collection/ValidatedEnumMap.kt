@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
@@ -186,7 +187,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
-        return ActiveButtonWidget(TextureIds.MAP_LANG, 110, 20, { true }, { b: ActiveButtonWidget -> openMapEditPopup(b) })
+        return CustomButtonWidget.builder(TextureIds.MAP_LANG) { b: CustomButtonWidget -> openMapEditPopup(b) }.size(110, 20).build()
     }
 
     @Internal
@@ -196,7 +197,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
 
     @Suppress("UNCHECKED_CAST")
     //client
-    private fun openMapEditPopup(b: ActiveButtonWidget) {
+    private fun openMapEditPopup(b: CustomButtonWidget) {
         try {
             val map = storedValue.map {
                 Pair(

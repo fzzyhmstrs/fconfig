@@ -18,11 +18,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.AbstractTextWidget
-import net.minecraft.screen.ScreenTexts
-import net.minecraft.text.OrderedText
-import net.minecraft.text.StringVisitable
 import net.minecraft.text.Text
-import net.minecraft.util.Language
 import kotlin.math.max
 import kotlin.math.roundToInt
 
