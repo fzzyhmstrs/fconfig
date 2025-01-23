@@ -10,11 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.navigation.GuiNavigationPath
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -33,9 +33,10 @@ import java.util.function.Supplier
  * @param pressAction [Consumer]&lt;TextlessActionWidget&gt; - action to take on press
  * @param renderBackground Default false. If true, will render a standard MC button background behind your icon.
  * @author fzzyhmstrs
- * @since 0.2.0, added optional bg rendering 0.6.0
+ * @since 0.2.0, added optional bg rendering 0.6.0, deprecated 0.6.3 for removal by 0.7.0
  */
 //client
+@Deprecated("Unused internally. Switch to CustomButtonWidget#builder. Scheduled for removal 0.7.0")
 open class TextlessActionWidget(
     private val activeIcon: Identifier,
     private val inactiveIcon: Identifier,
@@ -76,6 +77,10 @@ open class TextlessActionWidget(
         activeSupplier,
         pressAction,
         true)
+
+    init {
+        FC.LOGGER.error("This class is marked for removal. Please reimplement as a CustomButtonWidget or use CustomButtonWidget#builder")
+    }
 
     private fun getTex(): Identifier {
         if(!active)

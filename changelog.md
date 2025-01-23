@@ -3,6 +3,8 @@
 * `Custom[Widgets]` are moved from the internal widget package to the custom package
 * Several widgets and other classes have been deleted
 * `PopupWidget` has many deprecations, and probably at least one breaking change despite my best efforts
+* As of 0.6.3, `ActiveButtonWidget` is unused and deprecated, marked for removal by 0.7.0
+* As of 0.6.3, `TextlessActionWidget` is unused and deprecated, marked for removal by 0.7.0
 * Possibly more, I didn't take great notes
 
 ## Registrar is still marked experimental with anticipated stability by 0.7.0
@@ -15,9 +17,13 @@
 * new validation `ValidatedChoiceList`. Similar to `ValidatedChoice`, but the list version allows for enabling/disabling of none to all of the possible options while the Choice is one and always one of the choices from the options.
   * New `toChoiceSet` helper method in `ValidatedList`, `ValidatedSet`, and `ValidatedChoice` for creation of choice lists from the backing validation.
 * Added `testVersion` method to `PlatformApi` for platform-agnostic testing of MC or mod version
+* `CustomButtonWidget` now accepts an `activeSupplier` to dynamically update active state, and a `messageSupplier` to dynamically update the button label. See the builder for details.
 
 ### Changes
-* `@Validated[Number].Restrict` annotations now accept an optional `ValidatedNumber.WidgetType` with the new third param `type` 
+* `@Validated[Number].Restrict` annotations now accept an optional `ValidatedNumber.WidgetType` with the new third param `type`
+* Reimplemented all instances of `ActiveButtonWidget` as built or extended-from `CustomButtonWidget`, and ActiveButtonWidget is now deprecated.
+* Reimplemented all instances of `TextlessActionWidget` as built `CustomButtonWidget`, and TextlessActionWidget is now deprecated.
+
 
 ### Fixes
 * Fixed suggestion windows not being properly linked up in the config screen.

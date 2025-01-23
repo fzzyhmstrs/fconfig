@@ -1,28 +1,37 @@
 package me.fzzyhmstrs.fzzy_config.screen.context
 
 import me.fzzyhmstrs.fzzy_config.fcId
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
+import java.util.function.Consumer
 
 internal class ContextActionWidget(
     private val action: ContextAction,
     position: Position,
     width: Int)
     :
-    ActiveButtonWidget(
-        action.texts.name,
+    CustomButtonWidget(
+        0,
+        0,
         width,
         14,
-        TextureSet("widget/popup/button_right_click".fcId(), "widget/popup/button_right_click".fcId(), "widget/popup/button_right_click_highlighted".fcId()),
-                action.active,
-        { _ -> PopupWidget.pop(); action.action.apply(position) }
-    ) {
+        action.texts.name,
+        { _ -> PopupWidget.pop(); action.action.apply(position) },
+        DEFAULT_NARRATION_SUPPLIER,
+        Consumer { _-> },
+        TextureSet("widget/popup/button_right_click".fcId(), "widget/popup/button_right_click".fcId(), "widget/popup/button_right_click_highlighted".fcId()))
+{
+
+    init {
+        this.activeSupplier = action.active
+    }
+
 
     override fun renderCustom(
         context: DrawContext,

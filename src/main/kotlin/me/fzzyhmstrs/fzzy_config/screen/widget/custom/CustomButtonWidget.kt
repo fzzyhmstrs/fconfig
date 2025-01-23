@@ -12,6 +12,9 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget.ActiveNarrationSupplier
+import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.isNotEmpty
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
@@ -20,6 +23,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import java.util.function.Consumer
+import java.util.function.Function
 import java.util.function.Supplier
 
 /**
@@ -31,13 +35,13 @@ import java.util.function.Supplier
  * @param width button width in pixels
  * @param height button height in pixels
  * @param pressAction [Consumer]&lt;[CustomButtonWidget]&gt; action to invoke when the button is clicked or activated
- * @param narrationSupplier [ButtonWidget.NarrationSupplier] same use as in vanilla; converts a provided input text into a narration text.
+ * @param narrationSupplier [ActiveNarrationSupplier] converts a provided input text and the current active state of this widget into a narration text.
  * @param narrationAppender [Consumer]&lt;[NarrationMessageBuilder]&gt; unlike the supplier, this is used to directly append additional narrations as needed to the message builder.
  * @param textures [TextureSet], default [CustomPressableWidget.DEFAULT_TEXTURES]. The textures for this button
  * @param child [TooltipChild], used to pass additional tooltip context. This button will pass and tooltip from this child out to its own parent (this button is also a [TooltipChild])
  * @param renderMessage If false, the label won't be rendered
  * @author fzzyhmstrs
- * @since 0.5.?
+ * @since 0.5.?, update to ActiveNarrationSupplier 0.6.3
  */
 open class CustomButtonWidget protected constructor(
     x: Int,
@@ -46,7 +50,7 @@ open class CustomButtonWidget protected constructor(
     height: Int,
     message: Text,
     private val pressAction: Consumer<CustomButtonWidget>,
-    private val narrationSupplier: ButtonWidget.NarrationSupplier,
+    private val narrationSupplier: ActiveNarrationSupplier = DEFAULT_ACTIVE_NARRATION_SUPPLIER,
     private val narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> },
     override val textures: TextureSet = DEFAULT_TEXTURES,
     private val child: TooltipChild? = null,
@@ -54,6 +58,41 @@ open class CustomButtonWidget protected constructor(
     :
     CustomPressableWidget(x, y, width, height, message)
 {
+
+    /**
+     * A custom [ButtonWidget] implementation with builder and rendering improvements (and more features in general)
+     *
+     * This constructor is for compatibility purposes with subclasses. Use the builder to create buttons.
+     * @param x button X position
+     * @param y button Y position
+     * @param width button width in pixels
+     * @param height button height in pixels
+     * @param pressAction [Consumer]&lt;[CustomButtonWidget]&gt; action to invoke when the button is clicked or activated
+     * @param narrationSupplier [ButtonWidget.NarrationSupplier] same use as in vanilla; converts a provided input text into a narration text.
+     * @param narrationAppender [Consumer]&lt;[NarrationMessageBuilder]&gt; unlike the supplier, this is used to directly append additional narrations as needed to the message builder.
+     * @param textures [TextureSet], default [CustomPressableWidget.DEFAULT_TEXTURES]. The textures for this button
+     * @param child [TooltipChild], used to pass additional tooltip context. This button will pass and tooltip from this child out to its own parent (this button is also a [TooltipChild])
+     * @param renderMessage If false, the label won't be rendered
+     * @author fzzyhmstrs
+     * @since 0.6.3
+     */
+    @Deprecated("Custom button widgets now use ActiveNarrationSupplier. Use the primary constructor.")
+    protected constructor(
+        x: Int,
+        y: Int,
+        width: Int,
+        height: Int,
+        message: Text,
+        pressAction: Consumer<CustomButtonWidget>,
+        narrationSupplier: ButtonWidget.NarrationSupplier = DEFAULT_NARRATION_SUPPLIER,
+        narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> },
+        textures: TextureSet = DEFAULT_TEXTURES,
+        child: TooltipChild? = null,
+        renderMessage: Boolean = true): this(x, y, width, height, message, pressAction, ActiveNarrationSupplier { _, supplier -> narrationSupplier.createNarrationMessage(supplier) }, narrationAppender, textures, child, renderMessage)
+
+    protected var activeSupplier: Supplier<Boolean> = Supplier { true }
+    protected var messageSupplier: Supplier<Text>? = null
+    protected var tooltipSupplier: Function<Boolean, Text>? = null
 
     override fun onPress() {
         pressAction.accept(this)
@@ -64,8 +103,18 @@ open class CustomButtonWidget protected constructor(
             super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
     }
 
+    override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        this.active = activeSupplier.get()
+        tooltipSupplier?.apply(active)?.let { if(it.isNotEmpty()) this.tooltip = Tooltip.of(it) else this.tooltip = null }
+        super.renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
+    }
+
+    override fun getMessage(): Text {
+        return messageSupplier?.get() ?: super.getMessage()
+    }
+
     override fun getNarrationMessage(): MutableText {
-        return narrationSupplier.createNarrationMessage { super.getNarrationMessage() }
+        return narrationSupplier.createNarrationMessage(this.active) { super.getNarrationMessage() }
     }
 
     override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
@@ -78,6 +127,11 @@ open class CustomButtonWidget protected constructor(
             narrationAppender.accept(builder)
     }
 
+    @FunctionalInterface
+    fun interface ActiveNarrationSupplier {
+        fun createNarrationMessage(active: Boolean, textSupplier: Supplier<MutableText>): MutableText
+    }
+
     /**
      * Builds a [CustomButtonWidget]
      * @param message [Text] the button label
@@ -87,14 +141,18 @@ open class CustomButtonWidget protected constructor(
      */
     class Builder(private val message: Text, private val onPress: Consumer<CustomButtonWidget>) {
 
+        constructor(onPress: Consumer<CustomButtonWidget>): this(FcText.EMPTY, onPress)
+
         private var tooltip: Tooltip? = null
+        private var tooltipSupplier: Function<Boolean, Text>? = null
         private var x = 0
         private var y = 0
         private var w = 150
         private var h = 20
-        private var narrationSupplier: ButtonWidget.NarrationSupplier = DEFAULT_NARRATION_SUPPLIER
+        private var narrationSupplier: ActiveNarrationSupplier = DEFAULT_ACTIVE_NARRATION_SUPPLIER
         private var narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> }
-        private var active = true
+        private var activeSupplier: Supplier<Boolean> = Supplier { true }
+        private var messageSupplier: Supplier<Text>? = null
         private var textures: TextureSet = DEFAULT_TEXTURES
         private var child: TooltipChild? = null
         private var renderMessage: Boolean = true
@@ -178,13 +236,50 @@ open class CustomButtonWidget protected constructor(
         }
 
         /**
+         * Applies the provided text as a [Tooltip] to this widget. Default is null
+         * @param tooltip [Text], nullable. Converted to a [Tooltip] for this widget
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.5.?
+         */
+        fun tooltip(tooltip: Text?): Builder {
+            this.tooltip = if (tooltip != null) Tooltip.of(tooltip) else null
+            return this
+        }
+
+        /**
+         * A tooltip supplier for this widget. Default is null
+         * @param tooltipSupplier [Function]&lt;Boolean, [Text]&gt; converts the widgets current active state into a tooltip text
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.3
+         */
+        fun tooltipSupplier(tooltipSupplier: Function<Boolean, Text>): Builder {
+            this.tooltipSupplier = tooltipSupplier
+            return this
+        }
+
+        /**
          * Applies a narration supplier to this widget. Default is the standard supplier for buttons, which narrates the button as "Message button"
          * @param narrationSupplier [ButtonWidget.NarrationSupplier]
          * @return this builder
          * @author fzzyhmstrs
          * @since 0.5.?
          */
+        @Deprecated("Custom button widgets now use ActiveNarrationSupplier. Use the overload accepting that.")
         fun narrationSupplier(narrationSupplier: ButtonWidget.NarrationSupplier): Builder {
+            this.narrationSupplier = ActiveNarrationSupplier { _, textSupplier -> narrationSupplier.createNarrationMessage(textSupplier) }
+            return this
+        }
+
+        /**
+         * Applies a narration supplier to this widget. Default is the standard supplier for buttons, which narrates the button as "Message button"
+         * @param narrationSupplier [ActiveNarrationSupplier]
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.3
+         */
+        fun narrationSupplier(narrationSupplier: ActiveNarrationSupplier): Builder {
             this.narrationSupplier = narrationSupplier
             return this
         }
@@ -209,7 +304,19 @@ open class CustomButtonWidget protected constructor(
          * @since 0.5.?
          */
         fun active(active: Boolean): Builder {
-            this.active = active
+            this.activeSupplier = Supplier { active }
+            return this
+        }
+
+        /**
+         * Sets the dynamic active state of this button.
+         * @param activeSupplier supplier of active state. Should re-evaluate state on each call (or dynamically in some way as needed)
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.3
+         */
+        fun activeSupplier(activeSupplier: Supplier<Boolean>): Builder {
+            this.activeSupplier = activeSupplier
             return this
         }
 
@@ -233,6 +340,30 @@ open class CustomButtonWidget protected constructor(
          */
         fun noMessage(): Builder {
             this.renderMessage = false
+            return this
+        }
+
+        /**
+         * Sets the dynamic label text this button.
+         * @param messageSupplier a dynamic supplier of the button label. This should update its message as needed for the dynamic state of the button.
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.3
+         */
+        fun messageSupplier(messageSupplier: Supplier<Text>): Builder {
+            this.messageSupplier = messageSupplier
+            return this
+        }
+
+        /**
+         * Defines the texture set used for rendering the button background
+         * @param textures [TextureSet] Predefined set of textures for this buttons various states
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.3
+         */
+        fun textures(textures: TextureSet): Builder {
+            this.textures = textures
             return this
         }
 
@@ -271,7 +402,9 @@ open class CustomButtonWidget protected constructor(
         fun build(): CustomButtonWidget {
             val widget = CustomButtonWidget(x, y, w, h, message, onPress, narrationSupplier, narrationAppender, textures, child, renderMessage)
             widget.tooltip = tooltip
-            widget.active = active
+            widget.activeSupplier = activeSupplier
+            widget.messageSupplier = messageSupplier
+            widget.tooltipSupplier = tooltipSupplier
             return widget
         }
 
@@ -291,11 +424,31 @@ open class CustomButtonWidget protected constructor(
         }
 
         /**
+         * Creates a [Builder] instance. Will have no message by default
+         * @param onPress [Consumer]&lt;[CustomButtonWidget]&gt; action to invoke when the button is clicked or activated
+         * @author fzzyhmstrs
+         * @since 0.6.3
+         */
+        @JvmStatic
+        fun builder(onPress: Consumer<CustomButtonWidget>): Builder {
+            return Builder(onPress)
+        }
+
+        /**
          * A default instance of narration supplier. Simply returns the supplied test unchanged.
          * @author fzzyhmstrs
          * @since 0.5.?
          */
         @JvmStatic
+        @Deprecated("Custom button widgets now use ActiveNarrationSupplier. See DEFAULT_ACTIVE_NARRATION_SUPPLIER")
         protected val DEFAULT_NARRATION_SUPPLIER: ButtonWidget.NarrationSupplier = ButtonWidget.NarrationSupplier { textSupplier: Supplier<MutableText?> -> textSupplier.get() }
+
+        /**
+         * A default instance of narration supplier. Simply returns the supplied test unchanged.
+         * @author fzzyhmstrs
+         * @since 0.6.3
+         */
+        @JvmStatic
+        protected val DEFAULT_ACTIVE_NARRATION_SUPPLIER: ActiveNarrationSupplier = ActiveNarrationSupplier { _, textSupplier: Supplier<MutableText> -> textSupplier.get() }
     }
 }

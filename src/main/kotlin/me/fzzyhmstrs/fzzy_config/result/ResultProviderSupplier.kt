@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.result
 
 import me.fzzyhmstrs.fzzy_config.config.Config
-import org.jetbrains.annotations.ApiStatus
 import java.util.function.Supplier
 import kotlin.reflect.KMutableProperty
 
