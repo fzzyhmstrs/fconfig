@@ -274,7 +274,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("$prefix.")
                 ConfigApiImpl.drill(baseConfig, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
-                    basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
+                    basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, new, drillAnnotations)?.instanceEntry()
                 }
                 val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {

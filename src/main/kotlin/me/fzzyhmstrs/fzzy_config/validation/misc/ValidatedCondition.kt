@@ -19,10 +19,10 @@ import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -284,22 +284,30 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
     private inner class ConditionalActiveButtonWidget(
         width: Int,
         height: Int,
-        private val activeSupplier: Supplier<Boolean>,
+        activeSupplier: Supplier<Boolean>,
         private val conditionMessages: Supplier<List<Text>>,
         private val delegateWidget: ClickableWidget)
         :
-        ActiveButtonWidget(
-            {
+        CustomButtonWidget(
+            0,
+            0,
+            width,
+            height,
+            FcText.EMPTY,
+            { _ -> },
+            Companion.DEFAULT_NARRATION_SUPPLIER,
+            { _ -> })
+    {
+
+        init {
+            this.messageSupplier = Supplier {
                 if (conditionMessages.get().size == 1)
                     singleFailText ?: "fc.validated_field.condition".translate()
                 else
                     pluralFailText ?: singleFailText ?: "fc.validated_field.conditions".translate()
-            },
-            width,
-            height,
-            activeSupplier,
-            { _ -> })
-    {
+            }
+            this.activeSupplier = activeSupplier
+        }
 
         override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activeSupplier.get()

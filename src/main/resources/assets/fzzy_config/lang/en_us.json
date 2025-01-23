@@ -1,6 +1,9 @@
 {
 "fc.validated_field.boolean.true": "True",
 "fc.validated_field.boolean.false": "False",
+"fc.validated_field.choice_set": "Edit Choices...",
+"fc.validated_field.choice_set.deselect": "Deselect all",
+"fc.validated_field.choice_set.select": "Select all",
 "fc.validated_field.color.r": "R",
 "fc.validated_field.color.g": "G",
 "fc.validated_field.color.b": "B",

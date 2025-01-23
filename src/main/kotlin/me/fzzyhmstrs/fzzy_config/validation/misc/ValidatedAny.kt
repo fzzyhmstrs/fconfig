@@ -20,7 +20,11 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
-import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -120,7 +124,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
-        return ActiveButtonWidget("fc.validated_field.object".translate(), 110, 20, { true }, { openObjectPopup() })
+        return CustomButtonWidget.builder("fc.validated_field.object".translate()) { openObjectPopup() }.size(110, 20).build()
     }
 
     @Internal
@@ -171,7 +175,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("$prefix.")
                 ConfigApiImpl.drill(newNewThing, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
-                    basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, drillAnnotations)?.instanceEntry()
+                    basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, new, drillAnnotations)?.instanceEntry()
                 }
                 val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {
@@ -221,8 +225,8 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 276, 160, spec)
         val popup = PopupWidget.Builder(translation())
             .add("list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
-            .add("revert", ActiveButtonWidget("fc.button.revert".translate(), 147, 20, { manager.hasChanges() }, { manager.revert() }), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("restore", ActiveButtonWidget("fc.button.restore".translate(), 147, 20, { manager.hasRestores("") }, { manager.restore("") }), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("revert", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.revert() }.size(147, 20).activeSupplier { manager.hasChanges() }.build(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("restore", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.restore("") }.size(147, 20).activeSupplier { manager.hasRestores("") }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .addDoneWidget()
             .onClose { manager.apply(true); if(manager.hasChanges()) setAndUpdate(newThing) }
             .build()
