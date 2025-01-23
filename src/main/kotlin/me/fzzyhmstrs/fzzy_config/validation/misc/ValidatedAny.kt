@@ -221,7 +221,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             }
         }
         manager.pushUpdatableStates()
-        val spec = DynamicListWidget.ListSpec(leftPadding = 0)
+        val spec = DynamicListWidget.ListSpec(leftPadding = 2)
         val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 276, 160, spec)
         val popup = PopupWidget.Builder(translation())
             .add("list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)

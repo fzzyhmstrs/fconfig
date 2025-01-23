@@ -28,7 +28,7 @@ import java.util.function.Function
 //client
 internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>>, entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, entryValidator: BiFunction<ListListWidget<T>, ListEntry<T>?, ChoiceValidator<T>>)
     :
-    ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 158, 160, 0, 22), SuggestionWindowListener {
+    ElementListWidget<ListListWidget.ListEntry<T>>(MinecraftClient.getInstance(), 144, 160, 0, 22), SuggestionWindowListener {
 
     fun getRawList(skip: ListEntry<T>? = null): List<T> {
         val list: MutableList<T> = mutableListOf()
@@ -67,8 +67,12 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         return 134 //16 padding, 20 slider width and padding
     }
 
+    override fun getRowLeft(): Int {
+        return this.x
+    }
+
     override fun getScrollbarX(): Int {
-        return this.x + this.width / 2 + this.rowWidth / 2 + 6
+        return this.x + this.width - 6
     }
 
     private fun makeVisible(entry: ListEntry<T>) {
