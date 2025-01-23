@@ -488,7 +488,7 @@ class LayoutWidget @JvmOverloads constructor(
     }
 
 
-    private fun attemptRecomputeDims(@Suppress("UNUSED_PARAMETER") debug: Boolean = false) {
+    private fun attemptRecomputeDims(debug: Boolean = false) {
         if (manualHeight > 0 && manualWidth > 0) {
             updateWidth(manualWidth)
             updateHeight(manualHeight)
@@ -500,7 +500,6 @@ class LayoutWidget @JvmOverloads constructor(
         for ((_, posEl) in elements) {
             minW = posEl.provideMinW(minW)
         }
-        if (debug) FC.DEVLOG.error("  minW: $minW")
         for ((_, posEl) in elements) {
             maxW = posEl.provideMaxW(maxW, minW, paddingW)
             maxH = max(posEl.getBottom(), maxH)
@@ -526,7 +525,7 @@ class LayoutWidget @JvmOverloads constructor(
 
     fun compute(debug: Boolean = false): LayoutWidget {
         for (posEl in elements.values) {
-            if (debug) FC.DEVLOG.info("E $posEl")
+            //if (debug) FC.DEVLOG.info("E $posEl")
             if (posEl.element is LayoutWidget) {
                 posEl.element.compute(debug)
             }
@@ -569,7 +568,7 @@ class LayoutWidget @JvmOverloads constructor(
                     }
 
                 } else if (posEl.alignment == Position.ALIGN_RIGHT_AND_JUSTIFY || posEl.alignment == Position.POSITION_LEFT_OF_AND_JUSTIFY) {
-                    if (debug) FC.DEVLOG.info("Element Before: $posEl")
+                    //if (debug) FC.DEVLOG.info("Element Before: $posEl")
                     var closestLeftEl: PositionedElement<*>? = null
                     var leftPos = -1000000000
                     for (posElLeft in elements.values) {
@@ -581,7 +580,7 @@ class LayoutWidget @JvmOverloads constructor(
                             }
                         }
                     }
-                    if (debug) FC.DEVLOG.info("Closest Right Element: $closestLeftEl")
+                    //if (debug) FC.DEVLOG.info("Closest Right Element: $closestLeftEl")
                     if (closestLeftEl != null) {
                         if (posEl.element is ClickableWidget) {
                             posEl.getX().dec(posEl.getLeft() - closestLeftEl.getRight())
@@ -604,7 +603,7 @@ class LayoutWidget @JvmOverloads constructor(
                             posEl.element.setWidth(posEl.element.width + dec)
                         }
                     }
-                    if (debug) FC.DEVLOG.info("Element After: $posEl")
+                    //if (debug) FC.DEVLOG.info("Element After: $posEl")
                 } else if (posEl.alignment == Position.ALIGN_LEFT_AND_STRETCH
                     || posEl.alignment == Position.ALIGN_RIGHT_AND_STRETCH
                     || posEl.alignment == Position.ALIGN_LEFT_OF_AND_STRETCH
