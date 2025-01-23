@@ -112,6 +112,11 @@ class PopupWidget
         this.x = positionX.apply(screenWidth, width) //screenWidth/2 - width/2
         this.y = positionY.apply(screenHeight, height) //screenHeight/2 - height/2
         positioner.accept(this.x, this.y)
+        for (el in children) {
+            if (el is RepositioningWidget) {
+                el.onReposition()
+            }
+        }
     }
 
     override fun children(): List<Element> {
