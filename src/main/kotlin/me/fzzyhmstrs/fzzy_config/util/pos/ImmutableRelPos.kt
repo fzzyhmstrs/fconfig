@@ -9,6 +9,9 @@
 * */
 
 package me.fzzyhmstrs.fzzy_config.util.pos
+
+import me.fzzyhmstrs.fzzy_config.FC
+
 /**
  * A relative [Pos]. Offsets a parent Pos. Mutation of this pos will NOT alter the offset.
  * @param parent Pos - the Pos this is relative to
@@ -18,6 +21,9 @@ package me.fzzyhmstrs.fzzy_config.util.pos
  */
 @Deprecated("Scheduled for removal by 0.7.0; use ImmutableSuppliedPos instead")
 open class ImmutableRelPos @JvmOverloads constructor(private val parent: Pos, private val p: Int = 0): Pos {
+    init {
+        FC.LOGGER.error("Scheduled for removal by 0.7.0; use ImmutableSuppliedPos instead")
+    }
     override fun get(): Int {
         return parent.get() + p
     }
