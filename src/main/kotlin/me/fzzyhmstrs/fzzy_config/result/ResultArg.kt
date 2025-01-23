@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.result
 
 import com.mojang.brigadier.StringReader
-import org.jetbrains.annotations.ApiStatus
 import java.util.function.Consumer
 
 /**

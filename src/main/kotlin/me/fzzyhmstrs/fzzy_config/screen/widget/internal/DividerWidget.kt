@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.Scalable
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.widget.ClickableWidget

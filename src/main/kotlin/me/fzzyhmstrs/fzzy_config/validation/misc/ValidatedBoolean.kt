@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.screen.widget.ActiveButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
@@ -76,13 +76,7 @@ open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defa
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Boolean>): ClickableWidget {
-        return ActiveButtonWidget(
-            { if(get()) "fc.validated_field.boolean.true".translate() else "fc.validated_field.boolean.false".translate() },
-            110,
-            20,
-            { true },
-            { setAndUpdate(!get()) }
-        )
+        return CustomButtonWidget.builder { setAndUpdate(!get()) }.size(110, 20).messageSupplier { if(get()) "fc.validated_field.boolean.true".translate() else "fc.validated_field.boolean.false".translate() }.build()
     }
 
     /**

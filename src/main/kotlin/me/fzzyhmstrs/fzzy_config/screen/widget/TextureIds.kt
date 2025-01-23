@@ -56,7 +56,7 @@ object TextureIds {
 
     /////////////////////////
 
-    /** a gray button with a green plus sign in the middle */
+    /** a gray button with an "open screen" wireframe texture in the middle */
     val GOTO = "widget/action/goto".fcId()
 
     /** same as above but with the "inactive" button texture */
@@ -64,7 +64,23 @@ object TextureIds {
 
     /** same as above but with a white highlighted border */
     val GOTO_HIGHLIGHTED = "widget/action/goto_highlighted".fcId()
+
+    val GOTO_SET = TextureSet(GOTO, GOTO_INACTIVE, GOTO_HIGHLIGHTED)
     val GOTO_LANG = "fc.button.goto".translate()
+
+    /////////////////////////
+
+    /** a gray button with a blue "i" bubble in the middle */
+    val INFO = "widget/action/info".fcId()
+
+    /** same as above but with the "inactive" button texture */
+    val INFO_INACTIVE = "widget/action/info_inactive".fcId()
+
+    /** same as above but with a white highlighted border */
+    val INFO_HIGHLIGHTED = "widget/action/info_highlighted".fcId()
+
+    val INFO_SET = TextureSet(INFO, INFO_INACTIVE, INFO_HIGHLIGHTED)
+    val INFO_LANG = "fc.button.info".translate()
 
     /////////////////////////
 
@@ -135,6 +151,10 @@ object TextureIds {
 
     /** a button icon with a mouse pointer hovering over it */
     val DECO_BUTTON_CLICK = "widget/decoration/mouse".fcId()
+
+    val LIST_LANG = "fc.validated_field.list".translate()
+
+    val SET_LANG = "fc.validated_field.set".translate()
 
     val MAP_LANG = "fc.validated_field.map".translate()
     val MAP_ARROW = ">".lit()

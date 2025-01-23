@@ -10,12 +10,10 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import com.mojang.blaze3d.systems.RenderSystem
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
-import java.awt.Color
 
 /**
  * Render utils for DrawContext to provide functionality similar to 1.20.2+ sprite rendering

@@ -18,8 +18,6 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
 import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.descSupplied
-import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.literal
 import me.fzzyhmstrs.fzzy_config.util.FcText.prefixLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transSupplied
@@ -32,7 +30,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlComment
-import java.util.*
 import java.util.function.Supplier
 
 internal object ConfigApiImplClient {

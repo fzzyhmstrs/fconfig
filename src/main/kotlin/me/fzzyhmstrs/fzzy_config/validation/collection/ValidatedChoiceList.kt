@@ -11,10 +11,16 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
+import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
@@ -25,6 +31,7 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedChoiceList.WidgetType
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -36,10 +43,7 @@ import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.function.BiFunction
-import java.util.function.Consumer
-import java.util.function.Predicate
-import java.util.function.UnaryOperator
+import java.util.function.*
 import kotlin.math.max
 
 /**
@@ -88,16 +92,21 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
             for ((index, el) in array.content.withIndex()) {
                 val result = handler.deserializeEntry(el, errors, "$fieldName[$index]", 1).report(errors)
                 if (!result.isError()) {
-                    list.add(index, result.get())
+                    val candidate = result.get()
+                    if (!choices.contains(candidate)) {
+                        errors.add("$fieldName[$index] is not a valid option. Options: $choices")
+                    } else {
+                        list.add(index, candidate)
+                    }
                 }
             }
             if (errors.isNotEmpty()) {
-                ValidationResult.error(list, "Error(s) encountered while deserializing choice set, some entries were skipped: $errors")
+                ValidationResult.error(list, "Error(s) encountered while deserializing choice list, some entries were skipped: $errors")
             } else {
                 ValidationResult.success(list)
             }
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Critical error encountered while deserializing choice set [$fieldName], using defaults: ${e.message}.")
+            ValidationResult.error(defaultValue, "Critical error encountered while deserializing choice list [$fieldName], using defaults: ${e.message}.")
         }
     }
 
@@ -120,7 +129,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
                 toml.element(tomlEntry, annotations)
             }
         } catch (e: Throwable) {
-            return ValidationResult.error(toml.build(), "Critical error encountered while serializing choice set: ${e.localizedMessage}")
+            return ValidationResult.error(toml.build(), "Critical error encountered while serializing choice list: ${e.localizedMessage}")
         }
         return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
@@ -142,20 +151,27 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     override fun correctEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val list: MutableList<T> = mutableListOf()
         val errors: MutableList<String> = mutableListOf()
-        for (entry in input) {
+        for ((index, entry) in input.withIndex()) {
             val result = handler.correctEntry(entry, type).report(errors)
+            val candidate = result.get()
+            if (!choices.contains(candidate)) {
+                errors.add("Entry $entry at index [$index] is not a valid option. Options: $choices")
+            }
             list.add(result.get())
         }
-        return ValidationResult.predicated(list, errors.isEmpty(), "Errors corrected in list: $errors")
+        return ValidationResult.predicated(list, errors.isEmpty(), "Errors corrected in choice list: $errors")
     }
 
     @Internal
     override fun validateEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val errors: MutableList<String> = mutableListOf()
-        for (entry in input) {
+        for ((index, entry) in input.withIndex()) {
             handler.validateEntry(entry, type).report(errors)
+            if (!choices.contains(entry)) {
+                errors.add("Entry $entry at index [$index] is not a valid option. Options: $choices")
+            }
         }
-        return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in list: $errors")
+        return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in choice list: $errors")
     }
 
     /**
@@ -196,7 +212,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
         return when(widgetType) {
             WidgetType.POPUP -> {
-                ActiveButtonWidget("fc.validated_field.choice_set".translate(), 110, 20, { true }, { b: ActiveButtonWidget -> openChoicesEditPopup(b) })
+                CustomButtonWidget.builder("fc.validated_field.choice_set".translate()) { b -> openChoicesEditPopup(b) }.size(110, 20).build()
             }
             WidgetType.INLINE -> {
                 val layout = LayoutWidget(paddingW = 0, spacingW = 0).clampWidth(110)
@@ -220,6 +236,30 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         }
     }
 
+    @Internal
+    override fun entryDeco(): Decorated.DecoratedOffset? {
+        return Decorated.DecoratedOffset(TextureDeco.DECO_LIST, 2, 2)
+    }
+
+    @Internal
+    override fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> {
+        val map = super.contextActionBuilder(context)
+        val select = ContextAction.Builder("fc.validated_field.choice_set.select".translate()) { _ ->
+            this.accept(emptyList())
+            true }
+            .withActive { s -> Supplier { s.get() && this.isEmpty() } }
+        val deselect = ContextAction.Builder("fc.validated_field.choice_set.deselect".translate()) { _ ->
+            this.accept(emptyList())
+            true }
+            .withActive { s -> Supplier { s.get() && this.isNotEmpty() } }
+
+        map[ContextResultBuilder.COLLECTION] = mutableMapOf(
+            ContextType.SELECT_ALL to select,
+            ContextType.CLEAR to deselect
+        )
+        return map
+    }
+
     /**
      * Determines which type of selector widget will be used for the Choice selector, default is POPUP
      * @author fzzyhmstrs
@@ -240,7 +280,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         INLINE
     }
 
-    private fun openChoicesEditPopup(b: ActiveButtonWidget) {
+    private fun openChoicesEditPopup(b: CustomButtonWidget) {
         val builder = PopupWidget.Builder("fc.validated_field.choice_set".translate())
         val textRenderer = MinecraftClient.getInstance().textRenderer
         var buttonWidth = 86

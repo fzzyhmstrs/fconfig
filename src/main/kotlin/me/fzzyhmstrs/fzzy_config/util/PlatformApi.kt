@@ -15,8 +15,7 @@ import net.minecraft.registry.Registry
 import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
 import java.io.File
-
-import java.util.Optional
+import java.util.*
 
 /**
  * API for abstraction of simple ModLoader requests

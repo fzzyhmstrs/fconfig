@@ -12,7 +12,6 @@ package me.fzzyhmstrs.fzzy_config.result.api
 
 import me.fzzyhmstrs.fzzy_config.result.ResultProvider
 import me.fzzyhmstrs.fzzy_config.result.ResultProviderSupplier
-import org.jetbrains.annotations.ApiStatus
 import java.util.function.Supplier
 import kotlin.reflect.KClass
 

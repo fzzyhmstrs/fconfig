@@ -16,7 +16,6 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.screen.context.*
-import me.fzzyhmstrs.fzzy_config.screen.context.ContextActionWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -104,7 +103,7 @@ object Popups {
         PopupWidget.push(popup)
     }
 
-    internal fun  openEntryForwardingPopup(field: ValidatedField<*>) {
+    internal fun openEntryForwardingPopup(field: ValidatedField<*>) {
         val client = MinecraftClient.getInstance()
         val playerEntries = client.player?.networkHandler?.playerList?.associateBy { it.profile.name } ?: return
         val validator = EntryValidator.Builder<String>().both({ s -> playerEntries.containsKey(s)}).buildValidator()
@@ -137,7 +136,7 @@ object Popups {
                 LayoutWidget.Position.ALIGN_LEFT)
             .add(
                 "forward_button",
-                ActiveButtonWidget(forwardText, buttonWidth, 20, { playerEntries.containsKey(player) }, { forwardUpdate(field, playerEntries[player]); PopupWidget.pop() }),
+                CustomButtonWidget.builder(forwardText) { forwardUpdate(field, playerEntries[player]); PopupWidget.pop() }.size(buttonWidth, 20).activeSupplier { playerEntries.containsKey(player) }.build(),
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_LEFT)
             .add(
@@ -175,7 +174,7 @@ object Popups {
         val maxHeight = screenHeight - 16 - 4 - 9 - 4 - 5
         anchors.fitToContent(maxHeight)
 
-        val popup = PopupWidget.Builder("fc.button.goto".translate())
+        val popup = PopupWidget.Builder(TextureIds.GOTO_LANG)
             .addDivider()
             .add("anchors", anchors, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .positionX(PopupWidget.Builder.absScreen(0))

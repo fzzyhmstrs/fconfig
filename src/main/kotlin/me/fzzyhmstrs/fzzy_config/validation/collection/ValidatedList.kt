@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -179,7 +180,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
-        return ActiveButtonWidget("fc.validated_field.list".translate(), 110, 20, { true }, { b: ActiveButtonWidget -> openListEditPopup(b) })
+        return CustomButtonWidget.builder(TextureIds.LIST_LANG) { b: CustomButtonWidget -> openListEditPopup(b) }.size(110, 20).build()
     }
 
     @Internal
@@ -200,7 +201,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
 
     @Suppress("UNCHECKED_CAST")
     //client
-    private fun openListEditPopup(b: ActiveButtonWidget) {
+    private fun openListEditPopup(b: CustomButtonWidget) {
         try {
             val list = storedValue.map {
                 (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.accept(it) }
