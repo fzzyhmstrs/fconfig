@@ -164,4 +164,7 @@ class TestConfigImpl2: Config(Identifier("fzzy_config_test","test_config2")) {
     var id1 = ValidatedIdentifier.ofList(Identifier("stick"), listOf(Identifier("stick"), Identifier("blaze_rod"), Identifier("coal"), Identifier("charcoal")))
 
     var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> ("$u.$t").translate() })
+
+    var choiceList1 = ValidatedList.ofInt(1, 2, 5, 10).toChoiceList(listOf(1, 5))
+    var choiceList2 = choice1.toChoiceList(listOf(1, 5))
 }
