@@ -164,7 +164,7 @@ object ValidatedCollectionExamples {
         //example choice set built from a list
         //this choice set will have 1 and 2 "active" by default
         //Note that the validation included here is for processing only, the provided list of choices is used to validate deserialized entries
-        var validatedListToChoices = ValidatedList(listOf(1, 2, 4, 8), ValidatedInt()).toChoiceSet(listOf(1, 2))
+        var validatedListToChoices = ValidatedList(listOf(1, 2, 4, 8), ValidatedInt()).toChoiceList(listOf(1, 2))
 
         val LOG_ERRORS = "log_errors"
         val DEBUG_MODE = "debug_mode"
@@ -180,7 +180,7 @@ object ValidatedCollectionExamples {
                 DEBUG_MODE,
                 DEV_MODE,
                 FAIL_FAST ),
-            ValidatedString()).toChoiceSet(
+            ValidatedString()).toChoiceList(
                 selectedChoices = listOf(),
                 widgetType = ValidatedChoiceList.WidgetType.INLINE,
                 translationProvider = { thing, key -> FcText.translatable("$key.$thing") },

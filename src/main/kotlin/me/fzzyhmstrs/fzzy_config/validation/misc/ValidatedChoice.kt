@@ -217,8 +217,8 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
      * @since 0.6.3
      */
     @JvmOverloads
-    fun toChoiceSet(selectedChoices: List<T> = listOf(),
-                    widgetType: ValidatedChoiceList.WidgetType = if (this.widgetType == WidgetType.POPUP)
+    fun toChoiceList(selectedChoices: List<T> = listOf(),
+                     widgetType: ValidatedChoiceList.WidgetType = if (this.widgetType == WidgetType.POPUP)
                         ValidatedChoiceList.WidgetType.POPUP
                     else
                         ValidatedChoiceList.WidgetType.INLINE): ValidatedChoiceList<T>

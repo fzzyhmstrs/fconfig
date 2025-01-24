@@ -245,7 +245,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
      * @since 0.6.3
      */
     @JvmOverloads
-    fun toChoiceSet(selectedChoices: List<T> = listOf(), widgetType: ValidatedChoiceList.WidgetType = ValidatedChoiceList.WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoiceList<T> {
+    fun toChoiceList(selectedChoices: List<T> = listOf(), widgetType: ValidatedChoiceList.WidgetType = ValidatedChoiceList.WidgetType.POPUP, translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) }, descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") }): ValidatedChoiceList<T> {
         @Suppress("DEPRECATION")
         return ValidatedChoiceList(selectedChoices, defaultValue.toList(), entryHandler, translationProvider, descriptionProvider, widgetType)
     }
