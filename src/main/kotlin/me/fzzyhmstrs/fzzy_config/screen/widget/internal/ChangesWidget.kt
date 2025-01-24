@@ -67,30 +67,36 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         val revertText = "fc.button.revert".translate()
         val restoreText = "fc.button.restore".translate()
         val changelogText = "fc.button.changelog".translate()
+        val applyWidth = client.textRenderer.getWidth(applyText) + 8
+        val revertWidth = client.textRenderer.getWidth(revertText) + 8
+        val restoreWidth = client.textRenderer.getWidth(restoreText) + 8
+        val changeWidth = client.textRenderer.getWidth(changelogText) + 8
+        val width = maxOf(applyWidth, revertWidth, restoreWidth, changeWidth)
         val popup = PopupWidget.Builder("fc.button.changes.title".translate())
             // Apply Changes
             .add("apply",
-                CustomButtonWidget.builder(applyText) { manager.apply(false) }.size(client.textRenderer.getWidth(applyText) + 8, 20).activeSupplier { manager.hasChanges() }.build(),
+                CustomButtonWidget.builder(applyText) { manager.apply(false) }.size(applyWidth, 20).activeSupplier { manager.hasChanges() }.build(),
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_JUSTIFY)
             .pushSpacing(UnaryOperator.identity()) { _ -> 2 }
             // Revert Changes
             .add("revert",
-                CustomButtonWidget.builder(revertText) { manager.revert() }.size(client.textRenderer.getWidth(revertText) + 8, 20).activeSupplier { manager.hasChanges() }.build(),
+                CustomButtonWidget.builder(revertText) { manager.revert() }.size(revertWidth, 20).activeSupplier { manager.hasChanges() }.build(),
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_JUSTIFY)
             // Restore Defaults > confirm popup
             .add("restore",
-                CustomButtonWidget.builder(restoreText) { b -> Popups.openConfirmPopup(Position.fromWidget(b), "fc.config.restore.confirm.desc".translate()) { manager.restore(scope) } }.size(client.textRenderer.getWidth(restoreText) + 8, 20).activeSupplier { manager.hasRestores(scope) }.build(),
+                CustomButtonWidget.builder(restoreText) { b -> Popups.openConfirmPopup(Position.fromWidget(b), "fc.config.restore.confirm.desc".translate()) { manager.restore(scope) } }.size(restoreWidth, 20).activeSupplier { manager.hasRestores(scope) }.build(),
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_JUSTIFY)
             // Change History
             .add("changelog",
-                CustomButtonWidget.builder(changelogText) { openChangelogPopup() }.size(client.textRenderer.getWidth(changelogText) + 8, 20).activeSupplier { manager.hasChangeHistory() }.build(),
+                CustomButtonWidget.builder(changelogText) { openChangelogPopup() }.size(changeWidth, 20).activeSupplier { manager.hasChangeHistory() }.build(),
                 LayoutWidget.Position.BELOW,
                 LayoutWidget.Position.ALIGN_JUSTIFY)
             .addDoneWidget(spacingH = 2)
             .popSpacing()
+            .contentWidth(width)
             .positionX(PopupWidget.Builder.at { this.x - 8 })
             .positionY(PopupWidget.Builder.popupContext { h -> this.y - h + 28 })
             .build()
