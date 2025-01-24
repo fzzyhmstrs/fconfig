@@ -506,16 +506,16 @@ class LayoutWidget @JvmOverloads constructor(
             }
             if (debug) FC.DEVLOG.error("MinW: $minW\n")
             for ((_, posEl) in elements) {
-                if (debug) FC.DEVLOG.error("E1: $posEl")
-                if (debug) FC.DEVLOG.warn("  Before: $maxW")
+                //if (debug) FC.DEVLOG.error("E1: $posEl")
+                //if (debug) FC.DEVLOG.warn("  Before: $maxW")
                 maxW = posEl.provideMaxW(maxW, minW, paddingW)
-                if (debug) FC.DEVLOG.warn("  After: $maxW")
+                //if (debug) FC.DEVLOG.warn("  After: $maxW")
             }
             for ((_, posEl) in elements) { //re-iterate to make sure the width at least captures the content width of the elements.
-                if (debug) FC.DEVLOG.warn("E2: $posEl")
-                if (debug) FC.DEVLOG.info("  Before: $maxW")
+                //if (debug) FC.DEVLOG.warn("E2: $posEl")
+                //if (debug) FC.DEVLOG.info("  Before: $maxW")
                 maxW = max(maxW, posEl.provideContentW())
-                if (debug) FC.DEVLOG.info("  After: $maxW")
+                //if (debug) FC.DEVLOG.info("  After: $maxW")
             }
             maxW += (paddingW * 2)
             updateWidth(maxW)
