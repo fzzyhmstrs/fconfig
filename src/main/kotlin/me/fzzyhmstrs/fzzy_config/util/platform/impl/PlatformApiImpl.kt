@@ -13,9 +13,9 @@ package me.fzzyhmstrs.fzzy_config.util.platform.impl
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
-import net.fabricmc.loader.api.FabricLoader
-import net.fabricmc.loader.api.Version
 import net.minecraft.registry.Registry
+import net.neoforged.fml.ModList
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.slf4j.Logger
 import java.io.File
 import java.util.*
@@ -52,9 +52,9 @@ internal object PlatformApiImpl: PlatformApi {
 
     override fun testVersion(id: String, version: String): Optional<Int> {
         return try {
-            FabricLoader.getInstance().getModContainer(id).map { container ->
-                val v = Version.parse(version)
-                container.metadata.version.compareTo(v)
+            ModList.get().getModContainerById(id).map { container ->
+                val v = DefaultArtifactVersion(version)
+                container.modInfo.version.compareTo(v)
             }
         } catch (e: Throwable) {
             FC.DEVLOG.error("Critical error encountered parsing version in PlatformApi", e)
