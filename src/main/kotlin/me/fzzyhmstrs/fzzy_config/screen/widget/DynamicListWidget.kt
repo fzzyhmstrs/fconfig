@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.context.*
@@ -341,8 +340,8 @@ class DynamicListWidget(
             val entryMap: MutableMap<String, MutableMap<String, Entry>> = mutableMapOf()
             val groupMap: MutableMap<String, GroupPair> = mutableMapOf()
 
-            for (e in delegate) {
-                e.onAdd(pos, previousEntry)
+            for ((index, e) in delegate.withIndex()) {
+                e.onAdd(pos, previousEntry, index == delegate.lastIndex)
                 val v = e.getVisibility()
                 if (!(v.skip xor v.group)) {
                     for (g in e.scope.inGroups) {
@@ -490,11 +489,11 @@ class DynamicListWidget(
         }
 
         fun top(): Int {
-            return firstSelectable()?.top?.get()?.minus(this@DynamicListWidget.verticalPadding) ?: this@DynamicListWidget.top
+            return firstSelectable()?.top?.get()?.minus(this@DynamicListWidget.spec.verticalFirstPadding) ?: this@DynamicListWidget.top
         }
 
         fun bottom(): Int {
-            return lastSelectable()?.bottom?.get()?.plus(this@DynamicListWidget.verticalPadding) ?: this@DynamicListWidget.bottom
+            return lastSelectable()?.bottom?.get()/*?.plus(this@DynamicListWidget.verticalPadding)*/ ?: this@DynamicListWidget.bottom
         }
 
         fun scrollToTop(): Boolean {
@@ -632,15 +631,20 @@ class DynamicListWidget(
             return this.top.getSelectableNeighbor(up)
         }
 
-        fun onAdd(parentPos: Pos, previous: Entry?) {
+        fun onAdd(parentPos: Pos, previous: Entry?, last: Boolean) {
 
             if (previous == null) {
-                top = RelEntryPos(parentPos, null, offset = parentElement.verticalPadding)
+                top = RelEntryPos(parentPos, null, offset = parentElement.spec.verticalFirstPadding)
             } else {
                 top = RelEntryPos(previous.bottom, previous.top)
                 previous.top.next = top
             }
-            bottom = ImmutableSuppliedPos(top) { if (getVisibility().visible) h + parentElement.verticalPadding else 0 }
+            bottom = ImmutableSuppliedPos(top) {
+                if (getVisibility().visible)
+                    h + (if(last) parentElement.spec.verticalLastPadding else parentElement.verticalPadding)
+                else
+                    0
+            }
             init()
         }
 
@@ -926,6 +930,8 @@ class DynamicListWidget(
     data class ListSpec(val leftPadding: Int = 16,
                         val rightPadding: Int = 10,
                         val verticalPadding: Int = 4,
+                        val verticalFirstPadding: Int = verticalPadding,
+                        val verticalLastPadding: Int = verticalFirstPadding,
                         val hideScrollBar: Boolean = false,
                         val listNarrationKey: String = "fc.narrator.position.config")
 

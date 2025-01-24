@@ -167,4 +167,25 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
 
     var choiceList1 = ValidatedList.ofInt(1, 2, 5, 10).toChoiceList(listOf(1, 5))
     var choiceList2 = choice1.toChoiceList(listOf(1, 5))
+
+    var longObject = TestAny3()
+
+    class TestAny3: Walkable {
+        @RequiresAction(Action.RELOG)
+        var testInt1 = 1
+        var testInt2 = 1
+        var testInt3 = 1
+        var testInt4 = 1
+        var testInt5 = 1
+        var testInt6 = 1
+        var testInt7 = 1
+        var testInt8 = 1
+        var testInt9 = 1
+        var testInt10 = 1
+        var testInt11 = 1
+        var testInt12 = 1
+        var testInt13 = 1
+        var testValidated = ValidatedFloat(3f, 6f, 1f)
+        var testValidated2 = listOf(1, 3, 5, 7).validated()
+    }
 }
