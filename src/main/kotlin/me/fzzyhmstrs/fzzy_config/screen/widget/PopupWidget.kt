@@ -643,6 +643,17 @@ class PopupWidget
             return this
         }
         /**
+         * Defines a manual content width for the widget, adding padding on each side for the popup borders. Will override any automatic sizing computations for width
+         * @param width Int - the manual width of the Popup
+         * @return Builder - this builder for further use
+         * @author fzzyhmstrs
+         * @since 0.6.3
+         */
+        fun contentWidth(width: Int): Builder {
+            layoutWidget.setWidthQuiet(width + layoutWidget.getGeneralHorizontalPadding() * 2)
+            return this
+        }
+        /**
          * Defines a manual height for the widget. Will override any automatic sizing computations for height
          * @param height Int - the manual height of the Popup
          * @return Builder - this builder for further use
