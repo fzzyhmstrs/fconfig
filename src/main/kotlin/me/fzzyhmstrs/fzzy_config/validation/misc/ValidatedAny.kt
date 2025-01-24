@@ -45,7 +45,7 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaConstructor
 
 /**
- * Validation for an arbitrary non-null POJO (Plain Old Java Object). It will create a "mini-config" popup with the same style of list as the main config and section screens. Each field within the object will be validated just like a config, either automatically or purposefully if ValidatedFeilds are used.
+ * Validation for an arbitrary non-null POJO (Plain Old Java Object). It will create a "mini-config" popup with the same style of list as the main config and section screens. Each field within the object will be validated just like a config, either automatically or purposefully if ValidatedFields are used.
  *
  * The object passed follows the same rules as that of a config or config section. Non-final fields/properties that are public unless annotated with [IgnoreVisibility]
  *
@@ -157,7 +157,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             functionList.addAll(this)
         }
 
-        ConfigApiImpl.walk(newThing, prefix, 1){_, _, new, thing, _, annotations, globalAnnotations, callback ->
+        ConfigApiImpl.walk(newThing, prefix, 1) { _, _, new, thing, _, annotations, globalAnnotations, callback ->
 
             val flags = if(thing is EntryFlag) {
                 EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
@@ -221,12 +221,12 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             }
         }
         manager.pushUpdatableStates()
-        val spec = DynamicListWidget.ListSpec(leftPadding = 2)
-        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 276, 160, spec)
+        val spec = DynamicListWidget.ListSpec(leftPadding = 21, rightPadding = 15, verticalFirstPadding = 2)
+        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 288, 160, spec)
         val popup = PopupWidget.Builder(translation())
-            .add("list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
-            .add("revert", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.revert() }.size(147, 20).activeSupplier { manager.hasChanges() }.build(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("restore", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.restore("") }.size(147, 20).activeSupplier { manager.hasRestores("") }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("revert", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.revert() }.size(142, 20).activeSupplier { manager.hasChanges() }.build(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("restore", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.restore("") }.size(142, 20).activeSupplier { manager.hasRestores("") }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .addDoneWidget()
             .onClose { manager.apply(true); if(manager.hasChanges()) setAndUpdate(newThing) }
             .build()
