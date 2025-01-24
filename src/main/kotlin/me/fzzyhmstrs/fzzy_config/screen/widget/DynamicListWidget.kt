@@ -430,8 +430,16 @@ class DynamicListWidget(
                 val replacement = this@DynamicListWidget.focusedElement?.getNeighbor(true) ?: this@DynamicListWidget.focusedElement?.getNeighbor(false)
                 this@DynamicListWidget.focused = replacement
             }
+            val last = lastSelectable()
+            if (last == null) {
+                scrollToTop()
+            } else if (last.bottom.get() < this@DynamicListWidget.bottom) {
+                if (this@DynamicListWidget.noScroll()) {
+                    scrollToTop()
+                }
+                this@DynamicListWidget.ensureVisible(last)
+            }
             delegate.forEach { it.onScroll(0) }
-            FC.LOGGER.info(this@DynamicListWidget.topDelta().toString())
             return foundEntries.size
         }
 
@@ -475,9 +483,7 @@ class DynamicListWidget(
             if (last == null) {
                 scrollToTop()
             } else if (last.bottom.get() < this@DynamicListWidget.bottom) {
-                if (this@DynamicListWidget.noScroll()) {
-                    scrollToTop()
-                }
+                scrollToTop()
                 this@DynamicListWidget.ensureVisible(last)
             }
             delegate.forEach { it.onScroll(0) }
