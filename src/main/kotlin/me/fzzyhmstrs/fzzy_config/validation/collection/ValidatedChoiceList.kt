@@ -62,9 +62,9 @@ import kotlin.math.max
  * @param descriptionProvider BiFunction [T], String, [Text] - converts a choice instance [T] and the base description key of this ValidatedChoice into a text Description
  * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedCollectionExamples.choices
- * @see me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.toChoiceSet
- * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList.toChoiceSet
- * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet.toChoiceSet
+ * @see me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.toChoiceList
+ * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList.toChoiceList
+ * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet.toChoiceList
  * @author fzzyhmstrs
  * @since 0.6.3
  */
@@ -283,9 +283,9 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     private fun openChoicesEditPopup(b: CustomButtonWidget) {
         val builder = PopupWidget.Builder("fc.validated_field.choice_set".translate())
         val textRenderer = MinecraftClient.getInstance().textRenderer
-        var buttonWidth = 86
+        var buttonWidth = 70
         for (const in choices) {
-            buttonWidth = max(buttonWidth, textRenderer.getWidth(this.translationProvider.apply(const, this.translationKey())))
+            buttonWidth = max(buttonWidth, textRenderer.getWidth(this.translationProvider.apply(const, this.translationKey())) + 8)
         }
         buttonWidth = max(150, buttonWidth + 4)
         builder.pushSpacing(UnaryOperator.identity()) { 0 }
@@ -376,11 +376,11 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
 
         override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             val text = message
-            val i = getWidth() - 2 - (if (choiceSelected) 18 else 0)
+            val i = getWidth() - 4 - (if (choiceSelected) 18 else 0)
             val j = MinecraftClient.getInstance().textRenderer.getWidth(text)
             val l = y + (getHeight() - MinecraftClient.getInstance().textRenderer.fontHeight + 1) / 2
             val orderedText = if (j > i) FcText.trim(text, i, MinecraftClient.getInstance().textRenderer) else text.asOrderedText()
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 2, l, -1)
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 4, l, -1)
         }
 
         override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
