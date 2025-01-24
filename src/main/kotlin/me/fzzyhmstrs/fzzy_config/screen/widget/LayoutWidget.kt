@@ -420,7 +420,7 @@ class LayoutWidget @JvmOverloads constructor(
     /**
      * Push a custom element spacing to this widgets spacing stack. any elements added after this push will be spaced using the top h/w spacing on that stack, or the default spacing provided in the widget constructor if no custom spacing exists on the stack
      * @param w [UnaryOperator] that passes the current horizontal spacing (top of the stack) and returns what the new spacing should be
-     * @param h [UnaryOperator] that passes the current vertival spacing (top of the stack) and returns what the new spacing should be
+     * @param h [UnaryOperator] that passes the current vertical spacing (top of the stack) and returns what the new spacing should be
      * @return this widget
      * @author fzzyhmstrs
      * @since 0.6.0
@@ -496,26 +496,33 @@ class LayoutWidget @JvmOverloads constructor(
             updateWidth(manualWidth)
             updateHeight(manualHeight)
             return
-        }      
-        
+        }
+
         if (manualWidth <= 0) {
             var minW = Int.MAX_VALUE
             var maxW = Int.MIN_VALUE
             for ((_, posEl) in elements) {
-                minW = posEl.provideMinW(minW)
+                minW = posEl.provideMinW(minW, paddingW)
             }
+            if (debug) FC.DEVLOG.error("MinW: $minW\n")
             for ((_, posEl) in elements) {
+                if (debug) FC.DEVLOG.error("E1: $posEl")
+                if (debug) FC.DEVLOG.warn("  Before: $maxW")
                 maxW = posEl.provideMaxW(maxW, minW, paddingW)
+                if (debug) FC.DEVLOG.warn("  After: $maxW")
             }
             for ((_, posEl) in elements) { //re-iterate to make sure the width at least captures the content width of the elements.
-                maxW = max(maxW, posEl.elWidth()
+                if (debug) FC.DEVLOG.warn("E2: $posEl")
+                if (debug) FC.DEVLOG.info("  Before: $maxW")
+                maxW = max(maxW, posEl.provideContentW())
+                if (debug) FC.DEVLOG.info("  After: $maxW")
             }
             maxW += (paddingW * 2)
             updateWidth(maxW)
         } else {
             updateWidth(manualWidth)
         }
-        
+
         if (manualHeight <= 0) {
             var maxH = Int.MIN_VALUE
             for ((_, posEl) in elements) {
@@ -748,7 +755,7 @@ class LayoutWidget @JvmOverloads constructor(
             /**
              * Centers an element relative to the width of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
              *
-             * Justification of this element won't take any overlapping elemnts into consideration, it will justify to the global left and right edges of the Popup regardless.
+             * Justification of this element won't take any overlapping elements into consideration, it will justify to the global left and right edges of the Popup regardless.
              *
              * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
              * @author fzzyhmstrs
@@ -758,7 +765,7 @@ class LayoutWidget @JvmOverloads constructor(
             /**
              * Centers an element relative to the width of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
              *
-             * Justification of this element won't take any overlapping elemnts into consideration, it will justify to the global left and right edges of the Popup regardless.
+             * Justification of this element won't take any overlapping elements into consideration, it will justify to the global left and right edges of the Popup regardless.
              *
              * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
              *
@@ -1126,14 +1133,14 @@ class LayoutWidget @JvmOverloads constructor(
         }
 
         @Suppress("DEPRECATION")
-        fun provideMinW(minW: Int): Int {
+        fun provideMinW(minW: Int, paddingW: Int): Int {
             return when (alignment) {
                 PositionGlobalAlignment.ALIGN_LEFT -> min( getLeft(), minW)
                 PositionGlobalAlignment.ALIGN_LEFT_OF -> min( getLeft(), minW)
                 PositionGlobalAlignment.ALIGN_RIGHT -> min( getLeft(), minW)
-                PositionGlobalAlignment.ALIGN_CENTER -> min(max(0, getLeft()), minW)
-                PositionGlobalAlignment.ALIGN_JUSTIFY -> min(max(0, getLeft()), minW)
-                PositionGlobalAlignment.ALIGN_JUSTIFY_WEAK -> min(max(0, getLeft()), minW)
+                PositionGlobalAlignment.ALIGN_CENTER -> min(max(paddingW, getLeft()), minW)
+                PositionGlobalAlignment.ALIGN_JUSTIFY -> min(max(paddingW, getLeft()), minW)
+                PositionGlobalAlignment.ALIGN_JUSTIFY_WEAK -> min(max(paddingW, getLeft()), minW)
                 PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY -> min( getLeft(), minW)
                 PositionGlobalAlignment.POSITION_RIGHT_OF_AND_JUSTIFY -> min( getLeft(), minW)
                 PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY -> min( getLeft(), minW)
@@ -1160,6 +1167,14 @@ class LayoutWidget @JvmOverloads constructor(
                 PositionGlobalAlignment.ALIGN_LEFT_AND_STRETCH -> max(max(getRight() - minW, elWidth()), maxW)
                 PositionGlobalAlignment.ALIGN_LEFT_OF_AND_STRETCH -> maxW
                 PositionGlobalAlignment.ALIGN_RIGHT_AND_STRETCH -> max(max(getRight() - minW, elWidth()), maxW)
+            }
+        }
+
+        @Suppress("DEPRECATION")
+        fun provideContentW(): Int {
+            return when (alignment) {
+                PositionGlobalAlignment.ALIGN_JUSTIFY_WEAK -> 0
+                else -> elWidth()
             }
         }
 

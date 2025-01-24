@@ -24,9 +24,9 @@
 * Reimplemented all instances of `ActiveButtonWidget` as built or extended-from `CustomButtonWidget`, and ActiveButtonWidget is now deprecated.
 * Reimplemented all instances of `TextlessActionWidget` as built `CustomButtonWidget`, and TextlessActionWidget is now deprecated.
 
-
 ### Fixes
 * Fixed suggestion windows not being properly linked up in the config screen.
-* Several popups, widgets, and so on have better layout and positioning; fixed several weird overlap and underlap issues among other things.
+* Several popups, widgets, and so on have better layout and positioning; fixed several weird overlap and underlap issues among other things. 
+* Top and bottom of scrollable lists now position better.
 * Fixed searching leading to entries "hiding" above the top of the viewport, needing you to scroll up to find them despite not having a scroll bar potentially
 * Group collapsing now properly positions the bottom of the setting list at the bottom of the list viewport when applicable
