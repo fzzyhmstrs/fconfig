@@ -487,40 +487,46 @@ class LayoutWidget @JvmOverloads constructor(
         return add(id, element, lastEl, *positions)
     }
 
+    fun update() {
+        updateElements()
+    }
 
     private fun attemptRecomputeDims(debug: Boolean = false) {
         if (manualHeight > 0 && manualWidth > 0) {
             updateWidth(manualWidth)
             updateHeight(manualHeight)
             return
-        }
-        var minW = 1000000
-        var maxW = -1000000
-        var maxH = -1000000
-        for ((_, posEl) in elements) {
-            minW = posEl.provideMinW(minW)
-        }
-        for ((_, posEl) in elements) {
-            maxW = posEl.provideMaxW(maxW, minW, paddingW)
-            maxH = max(posEl.getBottom(), maxH)
-        }
-        maxW  += (paddingW * 2)
+        }      
+        
         if (manualWidth <= 0) {
+            var minW = Int.MAX_VALUE
+            var maxW = Int.MIN_VALUE
+            for ((_, posEl) in elements) {
+                minW = posEl.provideMinW(minW)
+            }
+            for ((_, posEl) in elements) {
+                maxW = posEl.provideMaxW(maxW, minW, paddingW)
+            }
+            for ((_, posEl) in elements) { //re-iterate to make sure the width at least captures the content width of the elements.
+                maxW = max(maxW, posEl.elWidth()
+            }
+            maxW += (paddingW * 2)
             updateWidth(maxW)
         } else {
             updateWidth(manualWidth)
         }
+        
         if (manualHeight <= 0) {
+            var maxH = Int.MIN_VALUE
+            for ((_, posEl) in elements) {
+                maxH = max(posEl.getBottom(), maxH)
+            }
             maxH += paddingH
             maxH -= this.y.get()
             updateHeight(maxH)
         } else {
             updateHeight(manualHeight)
         }
-    }
-
-    fun update() {
-        updateElements()
     }
 
     fun compute(debug: Boolean = false): LayoutWidget {
