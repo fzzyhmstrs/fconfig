@@ -14,7 +14,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import net.minecraft.registry.Registry
-import net.neoforged.fml.ModList
+import net.minecraftforge.fml.ModList
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 import org.slf4j.Logger
 import java.io.File
