@@ -71,7 +71,6 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         val revertWidth = client.textRenderer.getWidth(revertText) + 8
         val restoreWidth = client.textRenderer.getWidth(restoreText) + 8
         val changeWidth = client.textRenderer.getWidth(changelogText) + 8
-        val width = maxOf(applyWidth, revertWidth, restoreWidth, changeWidth)
         val popup = PopupWidget.Builder("fc.button.changes.title".translate())
             // Apply Changes
             .add("apply",
@@ -96,7 +95,6 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
                 LayoutWidget.Position.ALIGN_JUSTIFY)
             .addDoneWidget(spacingH = 2)
             .popSpacing()
-            .contentWidth(width)
             .positionX(PopupWidget.Builder.at { this.x - 8 })
             .positionY(PopupWidget.Builder.popupContext { h -> this.y - h + 28 })
             .build()
