@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.MouseClickResult
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.renderBlur
 import me.fzzyhmstrs.fzzy_config.util.pos.*
@@ -297,6 +298,10 @@ class PopupWidget
          */
         fun focusElement(element: Element) {
             (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.popupWidgets?.peek()?.trySetFocused(element)
+        }
+
+        init {
+            RenderUtil.addBackground("widget/popup/background".fcId(), RenderUtil.Background(4, 4, 64, 64))
         }
     }
 
