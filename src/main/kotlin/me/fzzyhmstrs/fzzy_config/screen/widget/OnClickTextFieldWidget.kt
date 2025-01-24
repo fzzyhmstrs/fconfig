@@ -10,6 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
@@ -35,7 +37,7 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
     AbstractTextWidget( 0, 0, 110, 20, FcText.EMPTY, MinecraftClient.getInstance().textRenderer)
 {
 
-    private val textures: TextureSet = TextureSet(Identifier("widget/text_field"), Identifier("widget/text_field"), Identifier("widget/text_field_highlighted"))
+    private val textures: TextureSet = TextureSet("widget/text_field".simpleId(), "widget/text_field".simpleId(), "widget/text_field_highlighted".simpleId())
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.drawNineSlice(textures.get(this.active, this.isSelected), x, y, width, height, alpha)
