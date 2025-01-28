@@ -1,0 +1,22 @@
+{
+  "Annotations.mdx": {
+    "name": "Annotations",
+    "icon": "AtSign"
+  },
+  "Translation.mdx": {
+    "name": "Translation",
+    "icon": "Languages"
+  },
+  "Validation.mdx": {
+    "name": "Validation",
+    "icon": "Check"
+  },
+  "Actions.mdx": {
+    "name": "Actions",
+    "icon": "SquareArrowUpRight"
+  },
+  "Events.mdx": {
+    "name": "Events",
+    "icon": "Workflow"
+  }
+}
