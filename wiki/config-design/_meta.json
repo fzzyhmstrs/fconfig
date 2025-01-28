@@ -1,6 +1,18 @@
 {
-  "New-Configs.mdx": "New Configs",
-  "Existing-Configs.mdx": "Existing Configs",
-  "Laying-Out-Configs.mdx": "Laying Out Configs",
-  "Troubleshooting.mdx": "Troubleshooting"
+  "New-Configs.mdx": {
+    "name": "New Configs",
+    "icon": "ListCheck"
+  },
+  "Existing-Configs.mdx": {
+    "name": "Existing Configs",
+    "icon": "ListRestart"
+  },
+  "Laying-Out-Configs.mdx": {
+    "name": "Laying Out Configs",
+    "icon": "ListTodo"
+  },
+  "Troubleshooting.mdx": {
+    "name": "Troubleshooting",
+    "icon": "CircleHelp"
+  }
 }
