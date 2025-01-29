@@ -281,9 +281,10 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     }
 
     private fun openChoicesEditPopup(b: CustomButtonWidget) {
-        val builder = PopupWidget.Builder("fc.validated_field.choice_set".translate())
+        val choiceListTitle = "fc.validated_field.choice_set".translate()
+        val builder = PopupWidget.Builder(choiceListTitle)
         val textRenderer = MinecraftClient.getInstance().textRenderer
-        var buttonWidth = 50
+        var buttonWidth = textRenderer.getWidth(choiceListTitle)
         for (const in choices) {
             buttonWidth = max(buttonWidth, textRenderer.getWidth(this.translationProvider.apply(const, this.translationKey())) + 8)
         }
