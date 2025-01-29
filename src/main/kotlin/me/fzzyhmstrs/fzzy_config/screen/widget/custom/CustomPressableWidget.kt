@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.simpleId
@@ -37,7 +38,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  */
 open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message), TooltipChild {
 
-    protected open val textures: TextureSet = DEFAULT_TEXTURES
+    protected open val textures: TextureProvider = DEFAULT_TEXTURES
 
     /**
      * Action invoked whenever the button is clicked on or activated with Enter.

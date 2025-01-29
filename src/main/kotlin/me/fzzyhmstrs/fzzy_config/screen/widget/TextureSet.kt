@@ -39,5 +39,21 @@ data class TextureSet(private val tex: Identifier, private val disabled: Identif
         }
     }
 
-    data class Single(private val tex: Identifier)
+    data class Single(private val tex: Identifier): TextureProvider {
+
+        override fun get(enabled: Boolean, focused: Boolean): Identifier {
+            return tex
+        }
+    }
+
+    data class Quad(private val tex: Identifier, private val disabled: Identifier, private val highlighted: Identifier, private val disabledHighlighted: Identifier): TextureProvider {
+
+        override fun get(enabled: Boolean, focused: Boolean): Identifier {
+            return if (enabled) {
+                if (focused) highlighted else tex
+            } else {
+                if (focused) disabledHighlighted else disabled
+            }
+        }
+    }
 }
