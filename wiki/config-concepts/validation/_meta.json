@@ -1,4 +1,24 @@
 {
+  "Booleans.mdx": {
+    "name": "Booleans",
+    "icon": "Binary"
+  },
+  "Collections.mdx": {
+    "name": "Collections",
+    "icon": "ListCollapse"
+  },
+  "Colors.mdx": {
+    "name": "Colors",
+    "icon": "Palette"
+  },
+  "Enums.mdx": {
+    "name": "Enums",
+    "icon": "BetweenHorizontalStart"
+  },
+  "Expressions.mdx": {
+    "name": "Expressions",
+    "icon": "SquareFunction"
+  },
   "Numbers.mdx": {
     "name": "Numbers",
     "icon": "Hash"
