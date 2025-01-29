@@ -1,0 +1,21 @@
+---
+title: Validated Expressions
+---
+
+Fzzy Config has a built-in math engine called `Expression`. See the [[Expressions]] article for more details. Validating expressions works much like any other validation, `ValdiatedExpression` wraps a default expression and allowable characters into a `ValidatedField` with GUI support, error correction, and so on.
+
+<CodeTabs>
+
+```java !!tabs Java
+// example validated Expression; automatically parses and caches the Math Expression input in string form.
+// The user can input any equation they like as long as it uses x, y, both, or neither expected variables passed in the set
+ValidatedExpression validatedExpression = new ValidatedExpression("2.5 * x ^ 2 - 45 * y", Set.of('x', 'y'));
+```
+
+```kotlin !!tabs Kotlin
+// example validated Expression; automatically parses and caches the Math Expression input in string form.
+// The user can input any equation they like as long as it uses x, y, both, or neither expected variables passed in the set
+var validatedExpression = ValidatedExpression("2.5 * x ^ 2 - 45 * y", setOf('x', 'y'))
+```
+
+</CodeTabs>
