@@ -1,8 +1,8 @@
 One of Fzzy Configs most powerful features is the validation system that is applied to every setting either implicitly or explicitly by the creator.
 
-Every setting is tightly controlled and fail-soft; no need to worry about catastrophic failure of a mod system if the config changes and the old file isn't valid. No need to worry if a user modifies one of the .toml directly. 
+Every setting is tightly controlled and fail-soft; no need to worry about catastrophic failure of a mod system if the config changes and the old file isn't valid. No need to worry if a user modifies the .toml directly. 
 
-Every read, write, and update is checked for errors and problems are either automatically corrected or shunted to the default value.
+Every read, write, and update is checked for errors and problems are either automatically corrected or a fallback is used.
 
 ## Validation Options
 Below is a (potentially non-exhaustive) list of types that Fzzy Config has validation tools for.
@@ -21,6 +21,7 @@ Below is a (potentially non-exhaustive) list of types that Fzzy Config has valid
   * [Choice Lists](#choice-lists-)
 * [Pairs of Values](#pairs-)
 * [Mapping](#mapping-)
+* [Conditional Settings](#conditional-settings-)
 * [Codecs](#codecs-)
 
 ## Validation Concepts
@@ -456,6 +457,54 @@ var validatedCharacter = ValidatedInt(0, Char.MAX_VALUE, Char.MIN_VALUE).map(
     { i: Int -> i.toChar() },
     { c: Char -> c.code }
 )
+```
+
+</CodeTabs>
+
+## Conditional Settings [⤴](#validation-options)
+Any validation can be wrapped with conditions that define whether the setting is "active" or not. This allows you to create settings that are based on game state, the state of other settings, and so on:
+* Whether a certain mod is loaded
+* The status of another config setting; `ValidatedBoolean` can be used directly as a condition input
+* Whether the game is multiplayer or not
+* Etc. Etc.
+
+<Callout variant="info">
+A conditional setting can have additional conditions added with <code>withCondition</code>. All conditions must pass for the setting to be "active"
+</Callout>
+
+<CodeTabs>
+
+```java !!tabs Java
+	// conditions should supply live values. Validated fields are a convenient mechanism to do that. A plain boolean won't update in-GUI until changes are applied.
+	ValidatedBoolean validatedBooleanGate = new ValidatedBoolean();
+
+	//create a conditional validation with toCondition. Note that the type is no longer ValidatedInt directly.
+	ValidatedCondition<Int> validatedConditionInt = (new ValidatedInt(5, 100, 0)).toCondition(validatedBooleanGate, Text.literal("Gate must be true"), () -> 0)
+```
+
+```kotlin !!tabs Kotlin
+	// conditions should supply live values. Validated fields are a convenient mechanism to do that. A plain boolean won't update in-GUI until changes are applied.
+	var validatedBooleanGate = ValidatedBoolean()
+
+	//create a conditional validation with toCondition
+	var validatedConditionInt = ValidatedInt(5, 100, 0).toCondition(validatedBooleanGate, "Gate must be true".lit()) { 0 }
+```
+
+</CodeTabs>
+
+## Codecs [⤴](#validation-options)
+Any `ValidatedField` instance can be used to generate a `Codec` of the type the validation represents. Importantly, that resulting Codec will be backed by all of the validation present in the field.
+
+<CodeTabs>
+
+```java !!tabs Java
+	//this codec will parse integers, clamping the allowed value to 0 to 100.
+    Codec<Int> intCodec = (new ValidatedInt(5, 100, 0)).codec()
+```
+
+```kotlin !!tabs Kotlin
+	//this codec will parse integers, clamping the allowed value to 0 to 100.
+    val intCodec: Codec<Int> = ValidatedInt(5, 100, 0).codec()
 ```
 
 </CodeTabs>
