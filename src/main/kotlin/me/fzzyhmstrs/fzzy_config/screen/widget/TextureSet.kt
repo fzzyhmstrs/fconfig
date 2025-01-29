@@ -10,16 +10,17 @@ import net.minecraft.util.Identifier
  * @param disabled [Identifier] rendered when the object is disabled. This has higher priority than [highlighted], so will render focused or not.
  * @param highlighted [Identifier] rendered then the object is active and focused.
  * @author fzzyhmstrs
- * @since 0.6.0
+ * @since 0.6.0, implements `TextureProvider` 0.6.4
  */
-data class TextureSet(private val tex: Identifier, private val disabled: Identifier, private val highlighted: Identifier) {
+data class TextureSet(private val tex: Identifier, private val disabled: Identifier, private val highlighted: Identifier): TextureProvider {
 
     /**
      * A set of textures where all three stored textures are the exact same. The sprite rendered will not change based on object state.
      * @param id [Identifier] the "normal" texture, rendered under any circumstance
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.6.0, deprecated 0.6.4
      */
+    @Deprecated("Use TextureSet.Single instead")
     constructor(id: Identifier): this(id, id, id)
 
     /**
@@ -28,13 +29,15 @@ data class TextureSet(private val tex: Identifier, private val disabled: Identif
      * @param focused The highlighted state of the underlying object. This is usually a combination of "focused" in the Minecraft sense as well as hovered. [ClickableWidget.isSelected][net.minecraft.client.gui.widget.ClickableWidget.isSelected] checks for both, for example.
      * @return [Identifier] from the texture set matching the current object state.
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.6.0, overrides from `TextureProvider` 0.6.4
      */
-    fun get(enabled: Boolean, focused: Boolean): Identifier {
+    override fun get(enabled: Boolean, focused: Boolean): Identifier {
         return if (enabled) {
             if (focused) highlighted else tex
         } else {
             disabled
         }
     }
+
+    data class Single(private val tex: Identifier)
 }
