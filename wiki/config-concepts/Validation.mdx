@@ -107,8 +107,8 @@ var myValidatedFloat = ValidatedFloat()
 
 </CodeTabs>
 
-## Booleans and Conditions [⤴](#validation-options)
-_See below if you want to attach secondary conditions to your boolean setting_. Booleans are very simple things. In general, you never need to define validation for booleans except when needed for use in other validation, or if you need to gate it with conditions.
+## Booleans [⤴](#validation-options)
+Booleans are very simple things. In general, you never need to define validation for booleans except when needed for use in other validation, or if you need to gate it with conditions.
 
 <CodeTabs>
 
@@ -125,32 +125,7 @@ var myValidatedBoolean = ValidatedBoolean() // typically not needed; ValidatedBo
 </CodeTabs>
 
 ### Conditions
-`ValidatedBoolean` can be converted to a `ValidatedCondition` with `withCondition`. Then using the method `getConditionally` you can gate the plain boolean setting behind secondary checks.
-* This setting is only relevant if another setting is active, otherwise it will be false
-* This setting is only relevant if some list isn't empty
-* Only relevant in `EnvType.CLIENT`/`Dist.CLIENT` settings
-* Etc.
-
-<CodeTabs>
-
-```java !!tabs Java
-//Note the type change!
-public ValidatedCondition myValidatedBoolean = new ValidatedBoolean().withCondition(() -> !lootTables.isEmpty(), "Loot table list can't be empty"); // boolean is gated behind a second check for a loot list. If that fails, will always return false on getConditionally
-
-public boolean booleanIsTrue() {
-	return myValidatedBoolean.getConditionally(); //always false if the list is empty
-}
-```
-
-```kotlin !!tabs Kotlin
-var myValidatedBoolean = ValidatedBoolean().withCondition({ lootTables.isNotEmpty() }, "Loot table list can't be empty") // boolean is gated behind a second check for a loot list. If that fails, will always return false on getConditionally
-
-fun booleanIsTrue(): Boolean {
-    return myValidatedBoolean.getConditionally() //always false if the list is empty
-}
-```
-
-</CodeTabs>
+`ValidatedBoolean` can be used directly as an input into a `ValidatedCondition`. See [Conditional Settings](#conditional-settings-) to learn more.
 
 ## Collections [⤴](#validation-options)
 Fzzy Config has validation tools for lists, maps, and sets. Each of these constructs has builders and other intricacies that are best digested thoroughly by visiting the documentation:
