@@ -1,19 +1,12 @@
-### _Result Providers are an experimental API as of 0.5.3_
-_Stable release target is 0.6.0_
-
 The Result Provider system is a framework for retrieving values from a config without directly interacting with that config in-code.
 
 A straightforward example is a loot table with a configurable drop chance for a powerful loot pool. Traditionally, the only way to modify this easily would be to override the loot table with a separate data pack. Result Providers let us define a new loot number provider that draws its value from a config value, allowing the drop chance to be altered in-game from a config GUI.
 
 ### Result Provider
-A result provider is an interface with one job: provide a result based on a passed config `scope`. The [Translation page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation#example) has a decent overview of what `scope` is in fzzy configs context. It works similarly to a web address, or forge/luckperms permission ids.
-```kotlin !!tabs Kotlin
-val myProvider: ResultProvider<Boolean> = TODO()
+A result provider is an interface with one job: provide a result based on a passed config `scope`. The [Translation page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation#example) has a decent overview of what `scope` is in Fzzy Config's context. It works similarly to a web address, or forge/luckperms permission ids.
 
-fun getMyResult(): Boolean {
-    return myProvider.getResult("my_mod.my_config.mySetting")
-}
-```
+<CodeTabs>
+
 ```java !!tabs Java
 ResultProvider<Boolean> myProvider = TODO();
 
@@ -22,17 +15,23 @@ public boolean getMyResult() {
 }
 ```
 
-#### Creating a Provider
-Create a simple implementation of a config-backed Result Provider using the `ResultApi` via `ConfigApi.result()` or `ConfigApiJava.result()`
-
-Creation of a simple provider is now added to the above example. This system requires a fallback (false in this case)
 ```kotlin !!tabs Kotlin
-val myProvider: ResultProvider<Boolean> = ConfigApi.result().createSimpleResultProvider(false, Boolean::class)
+val myProvider: ResultProvider<Boolean> = TODO()
 
 fun getMyResult(): Boolean {
     return myProvider.getResult("my_mod.my_config.mySetting")
 }
 ```
+
+</CodeTabs>
+
+#### Creating a Provider
+Create a simple implementation of a config-backed Result Provider using the `ResultApi` via `ConfigApi.result()` or `ConfigApiJava.result()`
+
+Creation of a simple provider is now added to the above example. This system requires a fallback (false in this case)
+
+<CodeTabs>
+
 ```java !!tabs Java
 ResultProvider<Boolean> myProvider = ConfigApiJava.result().createSimpleResultProvider(false, Boolean.class);
 
@@ -41,25 +40,41 @@ public boolean getMyResult() {
 }
 ```
 
+```kotlin !!tabs Kotlin
+val myProvider: ResultProvider<Boolean> = ConfigApi.result().createSimpleResultProvider(false, Boolean::class)
+
+fun getMyResult(): Boolean {
+    return myProvider.getResult("my_mod.my_config.mySetting")
+}
+```
+
+</CodeTabs>
+
 #### Using the Provider
 The above examples show a simple usage example. It is important to note that the scope is dynamic; it can point to any valid boolean-producing setting in any registered config. **Including configs of other mods**.
 
 This makes result providers a convenient way to interface with another mod without ever having to depend on it in-code. If for example, you are an addon to another mod, interfacing with a config setting this way is a change-robust way of retrieving the value you need. The parent config can add 5000 other settings, change package name, class name, and so on, and the value retrieval will still work. In the case that the scope becomes invalid, fzzy config will fail soft; throwing a log error and using your fallback approach.
-```kotlin !!tabs Kotlin
-//both of these are valid targets for the boolean provider created above
-val mySetting = false
-val mySetting2 = ValidatedBoolean(false)
-```
+
+<CodeTabs>
+
 ```java !!tabs Java
 //both of these are valid targets for the boolean provider created above
 boolean mySetting = false;
 ValidatedBoolean mySetting2 = new ValidatedBoolean(false);
 ```
 
+```kotlin !!tabs Kotlin
+//both of these are valid targets for the boolean provider created above
+val mySetting = false
+val mySetting2 = ValidatedBoolean(false)
+```
+
+</CodeTabs>
+
 ### Example: Loot Table with dynamic drop chance
 Below is the example loot table. It includes a rare drop that is valuable for mod progression, much like a wither skeleton skull.
 
-Currently, the drop is ward-wired to exactly the same random chance as a wither skull.
+Currently, the drop is hard-wired to exactly the same random chance as a wither skull.
 
 ```json
 {
@@ -95,18 +110,53 @@ Currently, the drop is ward-wired to exactly the same random chance as a wither 
 ```
 
 #### Float Provider
-To make this table dynamic, we will need a provider of float values to feed into our loot number provider. _This provider could be improved to accept any number type, but that is beyond the scope of this example_
-```kotlin !!tabs Kotlin
-val floatProvider = ConfigApi.result().createSimpleResultProvider(0f, Float::class)
-```
+To make this table dynamic, we will need a provider of float values to feed into our loot number provider. 
+
+<Callout>
+This provider could be improved to accept any number type, but that is beyond the scope of this example
+</Callout>
+
+<CodeTabs>
+
 ```java !!tabs Java
 ResultProvider<Float> floatProvider = ConfigApi.result().createSimpleResultProvider(0f, Float.class);
 ```
 
+```kotlin !!tabs Kotlin
+val floatProvider = ConfigApi.result().createSimpleResultProvider(0f, Float::class)
+```
+
+</CodeTabs>
+
 #### Number Provider
 Next we wire this provider into a `LootNumberProvider`. Note the scope param. This is the scope passed in from the loot table definition that we will be providing from our config.
 
-_Methods that are unnecessary to illustrating this example are excluded. Assume that things like the codec, type, and so on are implemented._
+<Callout>
+Methods that are unnecessary to illustrating this example are excluded. Assume that things like codec, type, and so on are implemented.
+</Callout>
+
+<CodeTabs>
+
+```java !!tabs Java
+public class ConfigLootNumberProvider implements LootNumberProvider {
+
+    private final String scope;
+	
+    public ConfigLootNumberProvider(String scope) {
+		this.scope = scope;
+    }
+	
+    @Overrride
+    float nextFloat(LootContext context) {
+		return floatProvider.getResult(scope);
+	}
+
+	//getType, registration of the type, codec, etc. are assumed
+
+private static final ResultProvider<Float> floatProvider = ConfigApiJava.result().createSimpleResultProvider(0f, Float.class);
+}
+```
+
 ```kotlin !!tabs Kotlin
 class ConfigLootNumberProvider(private val scope: String): LootNumberProvider {
 
@@ -121,28 +171,11 @@ class ConfigLootNumberProvider(private val scope: String): LootNumberProvider {
     }
 }
 ```
-```java !!tabs Java
-public class ConfigLootNumberProvider implements LootNumberProvider {
 
-	private final String scope;
-	
-	public ConfigLootNumberProvider(String scope) {
-		this.scope = scope;
-    }
-	
-	@Overrride
-	float nextFloat(LootContext context) {
-		return floatProvider.getResult(scope);
-	}
-
-	//getType, registration of the type, codec, etc. are assumed
-
-private static final ResultProvider<Float> floatProvider = ConfigApi.result().createSimpleResultProvider(0f, Float.class);
-}
-```
+</CodeTabs>
 
 #### Json Integration
-Let's assume our presumptive type and codec are registered under the identifier `my_mod:chance_provider` and takes one string `scope`. The number provider json would thus look like:
+Let's assume our presumptive type and codec are registered under the identifier `my_mod:chance_provider` and takes one string `scope`. The number provider json would look like:
 ```json
 {
   "type": "my_mod:chance_provider",
@@ -151,9 +184,27 @@ Let's assume our presumptive type and codec are registered under the identifier 
 ```
 
 #### The Config
-Our config, registered under the identifier `my_mod:my_config` needs the corresponding settings we want to refer to.
+Our config, registered under the identifier `my_mod:my_config` needs the setting(s) we want to refer to.
 
-It might also be a good idea to include the looting multiplier. _(And an even better idea to move these into a separate object for organization, but that's outside the example)_
+It might also be a good idea to include the looting multiplier. _(And an even better idea to move these into a separate section/object/group for organization, but that's outside the example)_
+
+<CodeTabs>
+
+```java !!tabs Java
+public class MyConfig extends Config {
+    
+    public MyConfig() {
+		super(Identifier.of("my_mod", "my_config"));
+    }
+
+    @ValidatedFloat.Restrict(min = 0f, max = 1f)
+    float progressionDropChance = 0.025f;
+
+    @ValidatedFloat.Restrict(min = 0f, max = 1f)
+    float progressionLootingMultiplier = 0.01f;
+}
+```
+
 ```kotlin !!tabs Kotlin
 class MyConfig : Config(Identifier.of("my_mod", "my_config")) {
     
@@ -165,25 +216,12 @@ class MyConfig : Config(Identifier.of("my_mod", "my_config")) {
 }
 ```
 
-```java !!tabs Java
-public class MyConfig extends Config {
-    
-	public MyConfig() {
-		super(Identifier.of("my_mod", "my_config"));
-    }
-
-	@ValidatedFloat.Restrict(min = 0f, max = 1f)
-    float progressionDropChance = 0.025f;
-
-	@ValidatedFloat.Restrict(min = 0f, max = 1f)
-    float progressionLootingMultiplier = 0.01f;
-}
-```
+</CodeTabs>
 
 #### Table Integration
-All the pieces can now be tied together. Our new provider condition can be used in loot tables.
+All the pieces can now be tied together; the new provider condition can be used in loot tables.
 
-This table will now have its chance dynamically updated from the config definition. Updates to the config values will be applied right away, not even needing a resource reload or similar.
+This table will now have its chance dynamically updated from the config definition. Updates to the config values will be applied right away, no resource reload needed.
 ```json
 {
   "type": "minecraft:entity",
