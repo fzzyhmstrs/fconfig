@@ -1,0 +1,35 @@
+---
+title: Validated Enums
+---
+
+Any enum included in a Config is automatically validated, but much like booleans making ValidatedEnums may be useful for constructing other valdiation types.
+
+<CodeTabs>
+
+```java !!tabs Java
+public enum MyEnum {
+    A,
+    B,
+    C
+}
+
+public MyEnum simpleEnum = MyEnum.A; //this will work most of the time
+public ValidatedEnum<MyEnum> validatedEnum = new ValidatedEnum(MyEnum.A, ValidatedEnum.WidgetType.CYCLING); //ValidatedEnum can be used to customize the GUI appearance
+```
+
+```kotlin !!tabs Kotlin
+enum class MyEnum {
+    A,
+    B,
+    C
+}
+
+var simpleEnum = MyEnum.A //this will work most of the time
+var validatedEnum = ValidatedEnum(MyEnum.A, ValidatedEnum.WidgetType.CYCLING) //ValidatedEnum can be used to customize the GUI appearance
+var validatedEnumExtension = MyEnum.A.validated() // kotlin extension function for validating an enum automatically
+```
+
+</CodeTabs>
+
+### Translation
+Enums can implement a special interface `EnumTranslatable` that allows for translation of enum constants and custom tooltips per constant. See [Translation](https://github.com/fzzyhmstrs/fconfig/wiki/Translation#enumtranslatable) for details.
