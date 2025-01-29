@@ -1,0 +1,22 @@
+---
+title: Validated Booleans
+---
+
+Booleans are very simple things. In general, you never need to define validation for booleans except when needed for use in other validation, or if you need to gate it with conditions.
+
+<CodeTabs>
+
+```java !!tabs Java
+public boolean mySimpleBoolean = true; // this will work fine.
+public ValidatedBoolean myValidatedBoolean = new ValidatedBoolean(); // typically not needed; ValidatedBoolean might be used if you are making something like a ValidatedMap<String, Boolean>.
+```
+
+```kotlin !!tabs Kotlin
+var mySimpleBoolean = true // this will work fine.
+var myValidatedBoolean = ValidatedBoolean() // typically not needed; ValidatedBoolean might be used if you are making something like a ValidatedMap<String, Boolean>.
+```
+
+</CodeTabs>
+
+### Conditions
+`ValidatedBoolean` can be used directly as an input condition into a `ValidatedCondition`. See [Conditional Settings](#conditional-settings-) to learn more.
