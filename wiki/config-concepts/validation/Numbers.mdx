@@ -1,0 +1,60 @@
+All primitive number types have validation tools. Validation:
+* Controls the number type: bytes stay bytes etc.
+* Define a minimum allowable value
+* Define a maximum value
+* Secondary attributes like which widget the user will see in-GUI when modifying the setting.
+
+### ValidatedNumber
+Number validation can be defined by using one of the six subclasses of `ValidatedNumber`. By default the allowable min and max will be the entire range of the type (Integer.MIN_VALUE to Integer.MAX_VALUE, for example)
+
+<CodeTabs>
+
+```java !!tabs Java
+public float myValidatedFloat = 0.5f; // this value is backed by automatic validation, with no max or min bound
+public ValidatedFloat myValidatedFloat = new ValidatedFloat(0.5f,1f,0f); // default value, max value, min value
+```
+
+```kotlin !!tabs Kotlin
+var mySimpleFloat = 0.5f // this value is backed by automatic validation, with no max or min bound
+var myValidatedFloat = ValidatedFloat(0.5f, 1f, 0f) // default value, max value, min value
+```
+
+</CodeTabs>
+
+### Annotations
+Validated Numbers each have their own partnered Annotation you can use to annotate an otherwise plain field with.
+
+<CodeTabs>
+
+```java !!tabs Java
+@ValidatedFloat.Restrict(min = 0f, max = 1f) // the previously unbounded simple float now has automatic validation with bounds between 0 and 1.
+public float myValidatedFloat = 0.5f;
+
+@ValidatedInt.Restrict(min = 0, type = ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS) //Restrict can also set the widget type used in the config GUI
+public int myWidgetTypeInt = 1;
+```
+
+```kotlin !!tabs Kotlin
+@ValidatedFloat.Restrict(0f, 1f) // the previously unbounded simple float now has automatic validation with bounds between 0 and 1.
+var myValidatedFloat = 0.5f
+
+@ValidatedInt.Restrict(min = 0, type = ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS) //Restrict can also set the widget type used in the config GUI
+var myWidgetTypeInt: Int = 1
+```
+
+</CodeTabs>
+
+### Shorthands
+Fzzy Config has shorthand contructors for validated numbers. These are generally used to provide Validators for other validation constructors, like Lists or Maps, where you need a ValidatedNumber but may not have any need for restriction.
+
+<CodeTabs>
+
+```java !!tabs Java
+public ValidatedFloat myValidatedFloat = new ValidatedFloat();
+```
+
+```kotlin !!tabs Kotlin
+var myValidatedFloat = ValidatedFloat()
+```
+
+</CodeTabs>
