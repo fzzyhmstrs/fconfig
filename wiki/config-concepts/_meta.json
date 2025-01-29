@@ -11,6 +11,7 @@
     "name": "Validation",
     "icon": "Check"
   },
+  "validation": "Validation Types",
   "Actions.mdx": {
     "name": "Actions",
     "icon": "SquareArrowUpRight"
