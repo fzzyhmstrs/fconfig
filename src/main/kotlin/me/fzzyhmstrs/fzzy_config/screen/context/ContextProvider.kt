@@ -33,6 +33,7 @@ interface ContextProvider {
          * @author fzzyhmstrs
          * @since 0.6.0
          */
+        @JvmStatic
         fun empty(position: Position): ContextResultBuilder {
             return ContextResultBuilder(position)
         }
