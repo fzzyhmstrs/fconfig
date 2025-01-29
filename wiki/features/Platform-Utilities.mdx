@@ -1,0 +1,29 @@
+As of 0.4.4, Fzzy Config has a lightweight `PlatformApi`, for performing common platform-specific functions without needing to write your own abstractions or having to rely on a separate API like Architectury.
+
+More complex functions like registration are left to dedicated platform resources like Architectury.
+
+### `isClient`
+Checks whether the current game-state includes a logical client.
+
+### `configDir`
+Retrieves the current config directory as a `File`.
+
+### `gameDir`
+Retrieves the current root game directory as a `File`.
+
+### `isModLoaded`
+Checks whether the mod that uses the provided mod_id is loaded or not.
+
+### `isDev`
+Returns whether the current JRE is a development environment (`runClient` task etc.)
+
+### `devlogger`
+Creates a logger that only logs when the JRE is a development environment
+
+### `testVersion`
+Tests a provided string modid and version against the loaded version of that mod. If the mod isn't loaded or the comparison isn't valid, will return an empty optional.
+
+## Registrar System
+The registrar system is a currently experimental lightweight cross-platform registration system for Minecraft registries. Create a new registrar with `createRegistrar`.
+
+See the [[Registrar System]] page for specific usage information.

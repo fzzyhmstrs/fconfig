@@ -1,0 +1,63 @@
+As of Fzzy Config 0.5.0 there is an event system, with a series of directly implementable methods in `Config` for managing events directly in your own config class, an `EventApi` for registering to various generic config events, as well as a way to attach listeners directly to [Validation](https://github.com/fzzyhmstrs/fconfig/wiki/Validation)
+
+### Config Implementations
+There are new overridable methods in `Config` that correspond to the various event stages added in 0.5.0. These are called alongside the events described below; if you only need to take action based on your own config changing state it's better to implement these than to register to the generic events called for every config.
+
+| Method           | Environment | Description                                                                                                                                                    |
+|------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `onSyncClient`   | Client      | Called when a player logs in or data packs are reloaded                                                                                                        |
+| `onSyncServer`   | Server      | Called when a player logs in or data packs are reloaded                                                                                                        |
+| `onUpdateClient` | Client      | Called after a config is updated in-game. Generally when "apply changes" is used or the config screen is closed, or when an update is received from the server |
+| `onUpdateServer` | Server      | Called when a update is synced to the server from a client and it passes permission checks                                                                     |
+
+These methods are called on their respective main threads (Render/Server thread), so it is safe to interact with game state.
+
+### Config Events
+A new sub-API has been added to `ConfigApi`, the `EventApi`, which manages registration to any events in Fzzy Config. Call the Event API with `ConfigApi.event()`. The events in the API mirror the methods present in `Config`, but are fired for every config relevant to the event. They also pass more generic information (`Config` vs. the method knowing the exact config subclass).
+
+| Method           | Environment | Params                                                      | Description                                                                                                                                                     |
+|------------------|-------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `onSyncClient`   | Client      | config ID: Identifier, config: Config                       | Fired when a player logs in or data packs are reloaded                                                                                                          |
+| `onSyncServer`   | Server      | config ID: Identifier, config: Config                       | Fired when a player logs in or data packs are reloaded                                                                                                          |
+| `onUpdateClient` | Client      | config ID: Identifier, config: Config                       | Fired after config(s) are updated in-game. Generally when "apply changes" is used or the config screen is closed, or when an update is received from the server |
+| `onUpdateServer` | Server      | config ID: Identifier, config: Config, player: ServerPlayer | Fired when a update is synced to the server from a client and it passes permission checks                                                                       |
+
+Events are called on their respective main threads (Render/Server thread), so it is safe to interact with game state. They will fire for every config relevant to that stage, so you will need to inspect the id and config to ensure you have the proper one.
+
+### Listeners
+The above events are only called when an update is "officially" completed, and the entire config state is synchronized. If you need to inspect changes to a config setting under any circumstance, either a player change or an internal in-code change, you can now attach a listener to any `ValidatedField`.
+
+These listeners are simply `Consumer` of the field itself. There are two methods available for attachment
+* `addListener`, directly in `ValidatedField` itself. This has no return, so you will have to attach in an init block, with a helper method, or similar.
+* `withListener`, an extension function with `ValidatedField` as a receiver. This method "passes through" the field, allowing you to attach inline, it also preserves the typing of the field in the consumer and return.
+
+<Callout>
+**NOTE:** These changes may be made on any thread, depending on the particulars of how the field is interacted with. Take precautions when interacting with game state.
+</Callout>
+
+<CodeTabs>
+
+```java !!tabs Java
+// add listener is the direct approach to attaching a listener. It doesn't have a return nor does it preserve typing, so use of `withListener` is recommended
+private static ValidatedBoolean helper() {
+    ValidatedBoolean myBool = new ValidatedBoolean(false);
+    myBool.addListener(myField -> do.stuff());
+    return myBool;
+}
+
+
+ValidatedBoolean myListenedField = helper();
+
+//with listener inlines the attachment more easily, and maintains the typing inside the consumer.
+ValidatedBoolean myListenedBool = ValidatedField.withListener(new ValidatedBoolean(false), valBool -> do.stuff());
+```
+
+```kotlin !!tabs Kotlin
+// add listener is the direct approach to attaching a listener. It doesn't have a return nor does it preserve typing, so use of `withListener` is recommended
+var myListenedField = ValidatedBoolean(false).also { it.addListener { valField: ValidatedField<Boolean> -> do.stuff() } }
+
+//with listener inlines the attachment more easily, and maintains the typing inside the consumer.
+val myListenedBool = ValidatedBoolean(false).withListener { valBool: ValidatedBoolean -> do.stuff() }
+```
+
+</CodeTabs>

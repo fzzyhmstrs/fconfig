@@ -1,0 +1,65 @@
+Common solutions to common problems are described here.
+
+## Config not in ModMenu
+ModMenu asks for its config screen on mod initialization. If your mod doesn't register your config until then, load order might mean your config hasn't had a chance to initialize before ModMenu has asked for config screens. To fix this, add your mod id (or the ids you used in the config identifiers) to the relevant mod properties file:
+```
+// fabric.mod.json "custom" block
+"custom": {
+  "fzzy_config": [
+    "mod_id"
+  ]
+}
+
+// (neoforged.)mods.toml in the modProperties table
+modProperties={fzzy_config="mod_id"}
+```
+
+## Arbitrary Object Settings Null
+If you use `ValidatedAny` to wrap your object, you don't need to do anything further, but if you just add a "plain" object instance to your config, that object needs to implement `Walkable`
+```kotlin
+// kotlin
+var myObject = ValidatedAny(MyObject())
+class MyObject{ ... } //can be a plain object
+
+var myObject2 = MyObject2()
+class MyObject2: Walkable{ ... } //implements walkable
+```
+```java
+// java
+public MyObject myObject = new ValidatedAny(new MyObject());
+public class MyObject{ ... } //can be a plain object
+
+public MyObject2 myObject2 = new MyObject2();
+public class MyObject2 implements Walkable{ ... } //implements walkable
+```
+
+## Java Compiler Errors
+Since FzzyConfig is written in kotlin, there are certain incompatibilities you might run into if you are writing a java mod. 
+* `ConfigApiJava` - This may solve issues with registration, commonly caused by certain kotlin classes such as `Function0` not being present in java build environment
+* `modCompileOnly` FabricLanguageKotlin - The robust solution, simply add kotlin to your compile classpath with FLK or similar.
+
+## TestMod Crashes
+**As of 0.4.3, there is a maven! If you haven't updated to using the maven, check out the homepage for the new repository and dependency paths**
+
+~~Currently~~ Prior to 0.4.3, Fzzy Config isn't on a "true" Maven, so the full maven.pom isn't available. As such, transitive dependencies aren't available. This causes issues when you try to `runClient`.
+```kotlin
+//build.gradle.kts
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    val tomlktVersion: String by project
+    modLocalRuntime("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
+}
+```
+```groovy
+//build.gradle
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    modLocalRuntime "net.peanuuutz.tomlkt:tomlkt-jvm:${project.tomlktVersion}"
+}
+```

@@ -1,0 +1,127 @@
+Thank you for choosing to migrate your config system to Fzzy Config! Re-implementation should be relatively painless for most config transitions.
+
+Migration will follow many of same the basic steps as [[New Configs]], so be sure to check out that section as needed.
+
+## General Steps
+1. Update config structure as needed
+2. Refactor registration
+3. Redo polish
+
+## 1. Updating Config Layout
+The majority of config libraries work with Plain Ol' Java (Kotlin) Objects. If your previous library was one of those, you are in luck because your config structure is already done! Fzzy Config also works with POJO. In step 3 you can look into the options available for taking a simple config class to the next level, if desired.
+
+To prepare your config class for use with Fzzy Config, you will need to implement `Config`. This defines registration information as well as provides the config with various helper methods.
+
+An example conversion from Cloth/Auto Config:
+```kotlin
+// kotlin
+
+// before
+@Config(name = "general")
+class GeneralConfig: ConfigData { ... }
+
+// after
+class GeneralConfig: Config(Identifier.of(MODID, "general") { ... }
+```
+
+```java
+// java
+
+// before
+@Config(name = "general")
+public class GeneralConfig implements ConfigData { ... }
+
+// after
+public class GeneralConfig implements Config { 
+    public GeneralConfig() {
+        super(Identifier.of(MODID, "general"));
+    }
+}
+```
+
+For a config managed by eg. simple GSON serialization, simply extend `Config` where before the object was entirely plain.
+
+For more in-depth discussion of laying out a config and an overview of more advanced options you can consider as part of your refactor check out:
+
+[[Laying out Configs]]
+
+## 2. Refactor Registration
+Fzzy Config has an inline registration system that works with an INSTANCE pattern. Configs are registered and loaded in one method call, allowing for config instantiation to be lock-step with registering it and deserializing its info from file.
+
+For example:
+```kotlin
+// kotlin
+//instance of your config loaded from file and automatically registered to the SyncedConfigRegistry and ClientConfigRegistry using the getId() method
+var myConfig = ConfigApi.registerAndLoadConfig(::MyConfig)
+```
+```java
+// java
+//instance of your config loaded from file and automatically registered to the SyncedConfigRegistry and ClientConfigRegistry using the getId() method
+public static MyConfig myConfig = ConfigApi.registerAndLoadConfig(MyConfig::new);
+```
+
+Fzzy Config won't "deserialize in place", as it needs access to instances of the config class. Loading and storing a config managed this way is easy with a Config/Impl pair or an INSTANCE pattern.
+```kotlin
+// kotlin
+
+/* Config/Impl pair */
+
+// access you config data here via Configs.myConfig.[etc]
+object Configs {
+    var myConfig = ConfigApi.registerAndLoadConfig(::MyConfig)
+}
+
+//create the config "template" here
+class MyConfig: Config(Identifier.of(MODID, "my_config")){ ... }
+
+/* Instance pattern */
+
+class MyConfig: Config(Identifier.of(MODID, "my_config")) { 
+    // instance your config for access in a companion object
+    companion object {
+        var INSTANCE = ConfigApi.registerAndLoadConfig(::MyConfig)
+    }
+    ...
+}
+```
+```java
+// java
+
+/* Configs/Impl pair */
+
+// access you config data here
+public class Configs {
+    public static MyConfig myConfig = ConfigApi.registerAndLoadConfig(MyConfig::new);
+}
+
+//create the config "template" here
+public class MyConfig extends Config { ... }
+
+/* Instance pattern */
+
+class MyConfig extends Config { 
+    //constructor here
+
+    // instance your config for access in a static field
+    public static MyConfig INSTANCE = ConfigApi.registerAndLoadConfig(MyConfig::new);
+    ...
+}
+```
+
+## 3. Redo Polish
+Naturally, most of the bits and bobs that came with the past library (annotations, translations, etc.) won't work with Fzzy Config. Fret not! Fzzy Config has an array of options of its own.
+
+### Translation
+Used something like `@ConfigEntry.Gui.Tooltip` from Cloth before? No need with Fzzy Config. All pieces of a config are translatable and describable by default. Check out the translations guide to learn more:
+
+[[Translation]]
+
+### Validation
+Fzzy Config has a very robust suite of validation options. In fact, it's built on validation as a foundation of its very functionality! Utilize these tools purposefully or not, either way Fzzy Config will apply them in the background in some form or fashion to keep everything in your config in tip-top shape.
+
+[[Validation]]
+
+### Annotations
+Fzzy Config has a powerful set of Annotations to bring the depth of function you need to your refactored config.
+
+[[Annotations]]

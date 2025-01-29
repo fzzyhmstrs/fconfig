@@ -1,0 +1,233 @@
+Proper layout of a config can make or break user and modder experience in and out of game. Determine the flow of your config settings, how they are or will be grouped into common themes, and create a layout matching expectations for navigation, maintenance, and use.
+
+## 1. How Many Configs?
+The first question to ask; how many config files will there be? For small mods, one config class will almost always be enough. For more complex mods, breaking configs into parts can be very beneficial.
+* _This choice will also affect what the player sees when they open your 'root' config screen._
+
+**NOTE: Config registration can be separated into synced and non-synced (client-side) configs. If you have client-only settings, consider splitting your config and putting all client settings together into their own config(s)**
+
+### [Simple] One Config
+For small mods or if you want to be quick about things, create one config class with all settings in one place. 
+* _The screen will open to the config settings screen itself, with all options laid out in a list._
+* _There will be one .toml file managing all stored data for your config._
+
+Fzzy Config maintains the declaration order of settings when displaying them in-game. As such, best practice is to group similar setting together. This makes it easier for users to navigate the setting list in a sensible manner.
+* _Don't worry about adding new setting 'in the middle' of a config class later. Fzzy Config will handle the new addition without a hiccup. Focus on keeping your settings organized as your config grows_
+
+![SingleConfig](https://github.com/fzzyhmstrs/fconfig/assets/72876796/07e6dce3-4539-470e-b7b9-c56987197a41)
+
+### [Beyond] Two+ Configs
+Fzzy Config makes organizing and partitioning your config settings easy. Create multiple config classes with the same namespace and they will be automatically grouped together in-game.
+* _The main screen will be a 'config selector', with buttons leading to each individual config screen._
+* _One .toml file will be generated per config class._
+
+Similar settings should be grouped into configs together. A common user expectation is that configs are grouped by in-game 'elements'.
+* One config per registry type: Items config, Blocks config, Enchantments config, etc.
+* One config per major gameplay element: Crafting config, Loot config, Client settings, etc.
+* Take advantage of class-wide annotations for a particular config like [`@WithPerms`](https://github.com/fzzyhmstrs/fconfig/wiki/Annotations#withperms-)/[`@WithCustomPerms`](https://github.com/fzzyhmstrs/fconfig/wiki/Annotations#withcustomperms-) (in this case, lock some settings in a config that requires particular permissions)
+
+Like single config layouts, items within a config class should be organized in a meaningful manner.
+
+![TwoPlusConfig](https://github.com/fzzyhmstrs/fconfig/assets/72876796/77592618-735b-4078-acf3-de576126ac69)
+
+## 2. Organization
+Large configs benefit from being broken up into parts, if separate config classes aren't suitable. Fzzy Config supports organization in three primary ways for two main purposes, sub-configuration and layout flow. Two of these methods also act as _anchors_ ([See below](https://github.com/fzzyhmstrs/fconfig/wiki/Laying-out-Configs#anchors)).
+| Strategy | UI Style | Repeatable | Anchor |
+|----------|----------|------------|--------|
+| [Sections](https://github.com/fzzyhmstrs/fconfig/wiki/Laying-out-Configs#sections) | Opens new screen | Yes | Yes|
+| [Objects](https://github.com/fzzyhmstrs/fconfig/wiki/Laying-out-Configs#objects) | Opens popup | Yes | No |
+| [Groups](https://github.com/fzzyhmstrs/fconfig/wiki/Laying-out-Configs#groups) | Collapsible inline grouping | No | Yes |
+
+If you use a common subclass for creation of repeating sub-elements, consider using the [`@Translation`](https://github.com/fzzyhmstrs/fconfig/wiki/Annotations#translation-) annotation, which will let you define common lang for all instances of the repeating element. 
+
+### Sections
+Subconfig classes can be extended from [`ConfigSection`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section). Subconfigs made this way will open a new, separate config screen of their own on top of the parent config screen.
+* _Sections are recommended for large sections of a parent config that belong together, where separating them into individual configs completely might be laborious._
+* _For example, if you have an `ItemsConfig`, you may have a `Swords` section, an `Axes` section, and so on._
+
+```kotlin
+// kotlin
+class ItemsConfig: Config(Identifier.of(MOD_ID, "items_config")) {
+
+    //settings that apply to all items can go in the parent class
+
+    var overallItemSetting = true
+    var overallItemWeight = 10
+
+    // category-specific settings can go into sections
+
+    var axes = AxesSection() // axe settings are stored here
+    class AxesSection: ConfigSection() { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
+        /* Axe-specific settings go here */
+    }
+
+    var swords = SwordsSection() // axe settings are stored here
+    class SwordsSection: ConfigSection() { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
+        /* Sword-specific settings go here */
+    }
+
+    var tridents = TridentsSection() // axe settings are stored here
+    class TridentsSection: ConfigSection() { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
+        /* Trident-specific settings go here */
+    }
+}
+```
+
+```java
+// java
+public class ItemsConfig extends Config {
+
+    public ItemsConfig() {
+        super(Identifier.of(MOD_ID, "items_config"));
+    }
+
+    //settings that apply to all items can go in the parent class
+
+    public boolean overallItemSetting = true;
+    public integer overallItemWeight = 10;
+
+    // category-specific settings can go into sections
+
+    public AxesSection axes = new AxesSection(); // axe settings are stored here
+    public static class AxesSection extends ConfigSection { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
+        /* Axe-specific settings go here */
+    }
+
+    public SwordsSection swords = new SwordsSection(); // axe settings are stored here
+    public static class SwordsSection extends ConfigSection { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
+        /* Sword-specific settings go here */
+    }
+
+    public TridentsSection tridents = new TridentsSection(); // axe settings are stored here
+    public static class TridentsSection extends ConfigSection { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
+        /* Trident-specific settings go here */
+    }
+}
+```
+
+### Objects
+[[Validation]] is its own topic, but for the sake of this article, FzzyConfig supports arbitrary Simple Objects (POJO/plain old java objects, POKO/plain old koktlin objects) with its validation engine. Validated Objects (called [`ValidatedAny`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-any) internally) will open a 'popup' window where the user can make selections similarly to a config screen.
+* _Objects are recommended where you need small, repeating blocks of particular settings that the user may want to copy and paste between settings_
+* _For example, if you have an `EntityConfig, you may have an object per entity that defines common settings like health, damage, movement speed, and so on._
+
+```kotlin
+// kotlin
+class BoisConfig: Config(Identifier.of(MOD_ID, "bois_config")) {
+
+    // If there are common clusters of settings you want to use in many places, such as mob stats,
+    // you can use ValidatedAny to implement arrangements of settings from one common source
+    // the empty constructor is needed for serialization
+    class BoiStats(hp: Double, dmg: Double, spd: Double): Walkable { //this doesn't *have* to implement Walkable, but it enables automatic validation
+
+        constructor(): this(20.0, 5.0, 0.3) // empty constructor for serialization and validation
+
+        var health = hp
+        var damage = dmg
+        var speed = spd
+    }
+
+    //settings built from your generic boi stats object
+
+    var bigBoi = ValidatedAny(BoiStats(40.0,8.0,0.15))
+
+    var littleBoi = ValidatedAny(BoiStats(10.0,1.0,0.4))
+
+    var regularBoi = ValidatedAny(BoiStats())
+
+    // you don't need to use ValidatedAny! FzzyConfig knows to wrap objects internally if they implement Walkable
+    var plainBoi = BoiStats()
+}
+```
+
+```java
+// java
+public class BoisConfig extends Config {
+
+    public BoisConfig() {
+        super(Identifier.of(MOD_ID, "bois_config"));
+    }
+
+    // If there are common clusters of settings you want to use in many places, such as mob stats,
+    // you can use ValidatedAny to implement arrangements of settings from one common source
+    // the empty constructor is needed for serialization
+    public class BoiStats implements Walkable { //this doesn't have to implement Walkable, but it enables automatic validation
+
+        public BoiStats() {
+            this(20.0,5.0,0.3);
+        }
+
+        public BoiStats(double hp, double dmg, double spd) {
+            this.health = hp;
+            this.damage = dmg;
+            this.speed = spd;
+        }
+
+        public double health;
+        public double damage;
+        public double speed;
+    }
+
+    //settings built from your generic boi stats object
+
+    public ValidatedAny<BoiStats> bigBoi = new ValidatedAny(new BoiStats(40.0,8.0,0.15));
+
+    public ValidatedAny<BoiStats> littleBoi = new ValidatedAny(new BoiStats(10.0,1.0,0.4));
+
+    public ValidatedAny<BoiStats> regularBoi = new ValidatedAny(new BoiStats());
+
+    // you don't need to use ValidatedAny! FzzyConfig knows to wrap objects with one internally if they implement Walkable
+    public BoiStats plainBoi = new BoiStats();
+}
+```
+
+### Groups
+Added as of Fzzy Config 0.6.0. Groups are inline organization elements that don't _structurally* change the config internally in any way. They are only used for visual organization of information in a config settings list, and as an anchor for quick navigation.
+
+Groups are great when further breaking down of sub-configs is tedious to manage in-code, or when simplicity of config layout is desired without sacrificing organization. For example, say you have a Main config and a Client config. You may want to leave the structure this simple internally without needing to worry about calling into specific sub-sections. Groups can still help organize those configs for the player. In the client config there may be a section for GUI element placement, another for sounds and volumes, another for particle effects. The user will be presented with three inline groups of settings that they can collapse out of the way if needed, and can still fast-navigate to with the Go To menu.
+
+Important group concepts
+* Groups work like a stack; you push onto the stack by defining a `ConfigGroup` inline with where you want it to start
+* Groups really work like a stack; to close a group, "Pop" it by annotating the last element you want in that group with `ConfigGroup.Pop`
+* Groups nest; if you define multiple groups before popping any of them, you will get a nested sub-group.
+* Pop for each push; not doing so will lead to undefined behavior. You can pop multiple groups on one setting, both/all groups will end with that multi-popped field.
+
+```kotlin
+//kotlin
+var group1 = ConfigGroup("test_group") //"Pushes" a new group. Any settings added below this point will be included into the group until it is popped.
+
+var groupSetting1 = TODO()
+var groupSetting2 = TODO()
+var groupSetting3 = TODO()
+@ConfigGroup.Pop //pop the group to close it. Settings below this point won't be part of "test_group"
+var groupSettingN = TODO()
+
+var notInGroupSetting = TODO()
+```
+
+```java
+//java
+public ConfigGroup group1 = new ConfigGroup("test_group"); //"Pushes" a new group. Any settings added below this point will be included into the group until it is popped.
+
+public Object groupSetting1 = TODO();
+public Object groupSetting2 = TODO();
+public Object groupSetting3 = TODO();
+@ConfigGroup.Pop //pop the group to close it. Settings below this point won't be part of "test_group"
+public Object groupSettingN = TODO();
+
+public Object notInGroupSetting = TODO();
+```
+
+## 3. Anchors
+Anchors are a concept introduced in Fzzy Config 0.6.0. Much like anchors in webpages, anchors are "points of interest" that you can fast-navigate to from within the config GUI. Back in [Organization](https://github.com/fzzyhmstrs/fconfig/wiki/Laying-out-Configs#organization), two of three anchors were introduced. The third is of course configs themselves.
+* Configs
+* Config Sections
+* Groups
+
+As noted above, `ValidatedAny` Objects are *not* anchors.
+
+If your config is laid out with more than one anchor, a `Go To...` menu will be available in the bottom left (or by pressing Ctrl + E). Clicking on any item in the resulting popup will "fast travel" the user to the screen and/or place in the screen where the anchor resides.
+
+### Customizing anchors
+Configs, sections, and groups all provide mechanisms for customizing anchors. Note in the example image below that all configs, sections, and groups use a predefined icon. You can customize this icon, as well as other things like the label. See the documentation for the specific element you are working on for information on editing the anchor info.
+
+![image-2](https://github.com/user-attachments/assets/b01f92fb-52ed-480b-bcbb-58133de5fd02)

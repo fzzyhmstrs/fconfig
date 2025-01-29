@@ -1,0 +1,359 @@
+Fzzy Config provides an extensive suite of Annotations for spicing up a config. All Fzzy Config annotations are documented over at the official documentation as well as explained here:
+
+[Annotation Documentation](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.annotations/index.html)
+
+Annotations in Fzzy Config are split into two broad categories; Toml Annotations for flavoring and commenting the .toml files themselves, and Config Annotations for adding functionality to the configs themselves in various ways. The Toml Annotations won't be covered here, you can read their documentation at the link above, and the original documentation at the [TomlKt Docs](https://peanuuutz.github.io/tomlkt/)
+
+## Config Annotations
+Augment the functionality of your configs with these annotations. The currently available list of annotations is:
+* [`@ClientModifiable`](#clientmodifiable-) - Fields marked with this will be editable by clients regardless of permission level
+* [`@WithPerms`](#withperms-) - Defines the permission level needed for clients to edit server settings marked with this
+* [`@WithCustomPerms` and `@AdminLevel`](#withcustomperms-and-adminlevel-) - Defines permission levels in a LuckPerms/Forge Permissions API style, with string-based "nodes"; optionally falling back to vanilla permission level.
+* [`@NonSync`](#nonsync-) - Defines a field as client-only. Editable regardless of perms, and won't sync to/from servers
+* [`@Version`](#version-) - Sets the version of a config class, used for version-managed updates
+* [`@RequiresRestart`](#requiresrestart-) - (Deprecated as of 0.4.0) Fields or classes marked with this will prompt a user restart after syncing
+* [`@RequiresAction`](#requiresaction-) - (As of 0.4.0) This will note that the user will need to take a particular action if they change the affected setting. Applies to fields and classes.
+* [`@ConvertFrom`](#convertfrom-) - Specifies an old config file from a previous lib to scrape and convert into a Fzzy Config toml
+* [`@IgnoreVisibility`](#ignorevisibility-) - Classes marked with this annotation can have fields/properties with lower visibility than public
+* [`@Translation`](#translation-) - Defines a custom lang file prefix for a setting or whole class of settings
+* [Toml Annotations](#toml-annotations-) - A series of annotations for decorating and modifying config .toml files directly.
+
+------------------------------
+
+## ClientModifiable [⤴](#config-annotations)
+`@ClientModifiable` is for use on **synced** settings. It marks that any user, regardless of permission or operator status, can edit the setting and push updates to the server and other clients. **Use this annotation with caution!**
+
+<CodeTabs>
+
+```java !!tabs Java
+@ClientModifiable
+public boolean myUnImportantSetting = false;
+```
+
+```kotlin !!tabs Kotlin
+@ClientModifiable
+var myUnImportantSetting = false
+```
+
+</CodeTabs>
+
+## WithPerms [⤴](#config-annotations)
+`@WithPerms` sets a special permission requirement for a setting. All configs have a overall required permission level, this individually modifies the perms of one setting. The overall perms can also be changed for a config. By default they are permission level 2 (gamemaster).
+
+<CodeTabs>
+
+```java !!tabs Java
+// changing the permission levels of an entire config
+public class MyConfig extends Config {
+    //constructor goes here
+
+    @Override
+    public int defaultPermLevel() {
+        return 4; // default is 2, this sets the default perm level to 4 (owner)
+    }
+
+    @WithPerms(opLevel = 2) // this field is ok to be perm level 2 still, specially set it
+    public int mySpecialField = 2;
+}
+```
+
+```kotlin !!tabs Kotlin
+// changing the permission levels of an entire config
+class MyConfig: Config(Identifier.of("my_id")) {
+    
+    override fun defaultPermLevel(): Int {
+        return 4 // default is 2, this sets the default perm level to 4 (owner)
+    }
+
+    @WithPerms(2) // this field is ok to be perm level 2 still, specially set it
+    var mySpecialField = 2
+}
+```
+
+</CodeTabs>
+
+## WithCustomPerms and AdminLevel [⤴](#config-annotations)
+Introduced as of 0.4.0.
+
+These two annotations work together as a pair to define permissions for a config based on LuckPerms/Forge Config API "node" style permissions. Permissions attached to a specific setting will take precedence over ones defined for the entire class.
+1. `@WithCustomPerms` - Use this like `@WithPerms` to define permissions for a setting or class. Define all of the node strings that are permissible; generally speaking only the lowest level of a "chain" of nodes would be needed, admin wouldn't need to be called out if it inherits everything from mod, and mod is permissible in the annotation. Optionally a vanilla permission level can be provided as a fallback (in case LuckPerms isn't present, for example).
+2. `@AdminLevel` - In case of an access violation (a cheater, hacks, etc), this annotation defines who should be alerted to the issue; using the example from above, only admins might be included in this annotation, not mods. If not provided, Fzzy Config will fallback to anyone with vanilla admin access or higher (permission level >= 3)
+
+<CodeTabs>
+
+```java !!tabs Java
+@AdminAccess(perms = {"permissions_example.admin"}, fallback = 3) // defines the permission nodes that are alerted of an access violation; falls back to vanilla admin or higher
+public class MyConfig extends Config {
+    //constructor goes here
+    
+    @WithCustomPerms(perms = {"permissions_example.moderator", "permissions_example.temporary_admin"}, fallback = 3) // permission nodes that have access to this setting (along with any inheriting nodes). Falls back to anyone with vanilla admin access or higher.
+    public int mySpecialField = 2;
+}
+```
+
+```kotlin !!tabs Kotlin
+@AdminAccess(["permissions_example.admin"], 3) // defines the permission nodes that are alerted of an access violation; falls back to vanilla admin or higher
+class MyConfig: Config(Identifier.of("my_id")) {
+    
+    @WithCustomPerms(["permissions_example.moderator", "permissions_example.temporary_admin"], 3) // permission nodes that have access to this setting (along with any inheriting nodes). Falls back to anyone with vanilla admin access or higher.
+    var mySpecialField = 2
+}
+```
+
+</CodeTabs>
+
+## NonSync [⤴](#config-annotations)
+`@NonSync` excludes a field from server-client synchronization, and by extension removes and permission requirements (as the setting can't affect the server anyways). This is primarily useful for client-only settings. Before using this annotation, consider if you can have an entire client-sided config separate from any synced configs. See [New Configs - Config Registration](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#3-config-registration) for details.
+
+<CodeTabs>
+
+```java !!tabs Java
+@NonSync
+public int myNonSyncedField = 5;
+```
+
+```kotlin !!tabs Kotlin
+@NonSync
+var myNonSyncedField = 5
+```
+
+</CodeTabs>
+
+## Version [⤴](#config-annotations)
+`@Version` marks a config class with a version integer. This can be used for simple record-keeping, of course, or used to handle potentially breaking updates in a meaningful manner. The version is marked at the top of the .toml file (0 by default) and the serialized version is compared against an annotated version integer, if any. If a mismatch is detected, the configs `update()` method is called for mismatch handling.
+
+<CodeTabs>
+
+```java !!tabs Java
+@Version(version = 1)
+public class MyConfig extends Config {
+    //constructor goes here
+    
+    @Override
+    public void update(int deserializedVersion) {
+        if (deserializedVersion < 1) {
+            //do stuff to fix potential issues.
+        }
+    }
+}
+```
+
+```kotlin !!tabs Kotlin
+@Version(1)
+class MyConfig: Config(Identifier("my_id")) {
+    
+    override fun update(deserializedVersion: Int) {
+        if (deserializedVersion < 1) {
+            //do stuff to fix potential issues.
+        }
+    }
+}
+```
+
+</CodeTabs>
+
+## ~~RequiresRestart~~ [⤴](#config-annotations)
+<Callout variant="warning">
+Deprecated as of 0.4.0. Use <code>@RequiresAction</code> instead (see below)
+</Callout>
+
+`@RequiresRestart` indicates that a marked field (or every field within a marked class) will need the client and/or server restarted in order for changes to take effect. If the user makes a change that requires a restart, they will be prompted in the chat menu, and a server log message will be printed. If a client joins to a server and the client finds that there are `@RequiresRestart` fields that don't match to the servers incoming config synchronization, they will be disconnected and prompted to either restart or go back to the main menu.
+
+<CodeTabs>
+
+```java !!tabs Java
+@RequiresRestart
+public int myItemDurability = 250; // something like item durability would require a restart, as durabilities are immutable once an item is instantiated.
+```
+
+```kotlin !!tabs Kotlin
+@RequiresRestart
+var myItemDurability = 250 // something like item durability would require a restart, as durabilities are immutable once an item is instantiated.
+```
+
+</CodeTabs>
+
+The screen show to clients if they joined with un-synced configs with differences that require a restart. Configs have been synced by this time, so when they restart and rejoin, the screen will not appear again.
+
+![image](https://github.com/fzzyhmstrs/fconfig/assets/72876796/e3c43b81-b78b-440a-bb88-a682a19d27ea)
+
+## RequiresAction [⤴](#config-annotations)
+Introduced as of 0.4.0.
+
+`@RequiresAction` indicates that the user will need to take a certain action if a marked field (or any field in a marked class) is changed, in order for the change to take full effect. The actions available are prioritized based on their Enum ordinal, so you can annotate a class with a certain action, but upgrade particular settings with a separate annotation of higher priority.
+
+The available actions, from highest to lowest priority
+1. `RESTART`: Same action as `@RequiresRestart`. Will prompt the user after a change that a restart is needed, and will disconnect clients joining a server with a synced RESTART change, prompting that they restart their client after the sync to apply the changes.
+2. `RELOG`: Prompts the user that they need to disconnect and reconnect to their current world or server for changes to take effect.
+3. `RELOAD_BOTH`: Prompts the user that both datapacks and assets need to be reloaded.
+4. `RELOAD_DATA`: Prompts the user that datapacks need to be reloaded.
+5. `RELOAD_RESOURCES`: Prompts the user that resource packs need to be reloaded.
+
+<CodeTabs>
+
+```java !!tabs Java
+@RequiresAction(action = Action.RESTART)
+public int myItemDurability = 250; // something like item durability would require a restart, as durabilities are immutable once an item is instantiated.
+
+@RequiresAction(action = Action.RELOAD_RESOURCES)
+public Identifier guiTheme = Identifier.of(MOD_ID, "default_theme"); // some sort of reloadable theme selector, that needs to reload resources to apply the new theme.
+```
+
+```kotlin !!tabs Kotlin
+@RequiresAction(Action.RESTART)
+var myItemDurability = 250 // something like item durability would require a restart, as durabilities are immutable once an item is instantiated.
+
+@RequiresAction(Action.RELOAD_RESOURCES)
+var guiTheme = Identifier.of(MOD_ID, "default_theme") // some sort of reloadable theme selector, that needs to reload resources to apply the new theme.
+```
+
+</CodeTabs>
+
+If `Action.RESTART` is used, a connecting client will be presented with the same restart screen as shown above in `@RequiresRestart`
+
+## ConvertFrom [⤴](#config-annotations)
+`@ConvertFrom` provides the deserializer with the path and file name to a pre-existing config file from an old config library. The deserializer will do its best to scrape still-relevant data from the old file, and then discard it.
+
+Supported file types:
+* `.toml`
+* `.json`
+* `.json5`
+* `.jsonc`
+
+The below examples will read an old file `./minecraft/config/example/config.json` and attempt to scrape as much relevant data from it as possible by converting it to TOML first and then using that converted file as input to the deserializer.
+
+<CodeTabs>
+
+```java !!tabs Java
+@ConvertFrom(fileName = "config.json", folder = "example")
+public class ConfigImpl extends Config {
+    public ConfigImpl {
+        super(new Identifier.of("example", "config"));
+    }
+    //config stuff go here
+}
+```
+
+```kotlin !!tabs Kotlin
+@ConvertFrom("config.json", "example")
+class ConfigImpl: Config(Identifier.of("example", "config")) {
+    //config stuff go here
+}
+```
+
+</CodeTabs>
+
+## IgnoreVisibility [⤴](#config-annotations)
+`@IgnoreVisiblity` tells the serializer that it should not ignore non-public fields. It will attempt to access widen private, protected, etc. fields and properties while performing de/serialization. This is useful if you want to make a config in a typical Java style, with private fields that have getters and setters as needed.
+
+NOTE: this can also be used on a `ConfigSection`, or a class wrapped by a `ValidatedAny`, to enable the class type to be less-than-public.
+
+<CodeTabs>
+
+```java !!tabs Java
+@IgnoreVisibility
+public class ConfigImpl extends Config {
+    public ConfigImpl {
+        super(new Identifier("example", "config"));
+    }
+
+    private int myPrivateField = 0;
+
+    @IgnoreVisibility
+    private static class SecretBit { /* stuff goes here */ }
+
+    // this ValidatedAny will work, thanks to the IgnoreVisibility on the SecretBit class. Otherwise the class would have to be public.
+    // note that the IgnoreVisiblity of the SecretBit is not responsible for the mySecretBit visibiltity; that is handled by the ConfigImpl annotation
+    private ValidatedAny<SecretBit> mySecretBit = new ValidatedAny(new SecretBit());
+}
+```
+
+```kotlin !!tabs Kotlin
+@IgnoreVisibility
+class ConfigImpl: Config(Identifier.of("example", "config")) {
+    
+    private var myPrivateProperty = 0
+
+    @IgnoreVisibility
+    private class SecretBit { /* stuff goes here */ }
+
+    // this ValidatedAny will work, thanks to the IgnoreVisibility on the SecretBit class. Otherwise the class would have to be public.
+    // note that the IgnoreVisiblity of the SecretBit is not responsible for the mySecretBit visibiltity; that is handled by the ConfigImpl annotation
+    private var mySecretBit = ValidatedAny(SecretBit())
+}
+```
+
+</CodeTabs>
+
+## Translation [⤴](#config-annotations)
+`@Translation` overrides the default translation mechanism as defined in [[Translation]], allowing you to set a custom lang key prefix. You can also define this annotation for an entire config class, and then use `@Translation` to negate the override on settings within that class that still need their default translation behavior.
+
+This annotation will provide both a name translation for the entry, and a hovered tooltip description, depending on the lang provided. If lang isn't found, Fzzy Config will fall back to the default translation mechanisms.
+
+This annotation is very useful for "repeating units" of config. A `ValidatedAny` object, in particular, that is repeated but the setting names are the same for each instance.
+- `prefix`: Set the prefix of your lang key. The field name of the field(s) or property(s) will be appended to this prefix. `my.prefix.[fieldName]` and `my.prefix.[fieldName].desc`
+- `negate`: Use this to turn off class-wide Translation for a specific setting that needs the default translation mechanisms.
+
+<CodeTabs>
+
+```java !!tabs Java
+@Translation(prefix = "example.prefix") //every setting within this class, for every instance of the class, will use this lang prefix
+class RepeatingUnit implements Walkable {
+    
+    public RepeatingUnit(){}
+
+    public RepeatingUnit(int thing1, float thing2, TagKey<Item> thing3) {
+        this.thing1 = thing1;
+        this.thing2 = thing2;
+        this.thing3.validateAndSet(thing3);
+    }
+
+    public boolean thing1 = true;
+    @Translation(negate = true) //thing2 needs a custom lang per usage, depending on the specific use for it. Skips the prefix override.
+    public float thing2 = 3f;
+    public ValidatedTagKey<Item> thing3 = new ValidatedTagKey(ItemTags.TRIMMABLE_ARMOR);
+}
+
+// the lang for this will look like
+//"example.prefix.thing1": "Thing 1 Name"
+//"my_mod.my_config.unitName.thing2": "Custom Per-Instance Name"
+//"example.prefix.thing3": "Thing 3 Name"
+```
+
+```kotlin !!tabs Kotlin
+// kotlin
+@Translation("example.prefix") //every setting within this class, for every instance of the class, will use this lang prefix
+class RepeatingUnit(): Walkable {
+    
+    constructor(thing1: Int, thing2: Float, thing3: TagKey<Item>): this() {
+        this.thing1 = thing1
+        this.thing2 = thing2
+        this.thing3.validateAndSet(thing3)
+    }
+
+    var thing1: Int = 0
+    @Translation(negate = true) //thing2 needs a custom lang per usage, depending on the specific use for it. Skips the prefix override.
+    var thing2: Float = 3f
+    var thing3 = ValidatedTagKey(ItemTags.TRIMMABLE_ARMOR)
+}
+
+// the lang for this will look like
+//"example.prefix.thing1": "Thing 1 Name"
+//"my_mod.my_config.unitName.thing2": "Custom Per-Instance Name"
+//"example.prefix.thing3": "Thing 3 Name"
+```
+
+</CodeTabs>
+
+## Toml Annotations [⤴](#config-annotations)
+TomlKt, the library that Fzzy Config's serializer is built off of, provides a series of annotations for decorating the .toml output files.
+* `@Comment` / `@TomlComment` - Adds a comment to the output file. Also, if no description translation is provided, Fzzy Config will use this comment in the in-game tooltip.
+* `@Inline` / `@TomlInline` - Forces the annotated list or map to be single-line in the output file.
+* `@BlockArray` / `@TomlBlockArray` - Modifies the encoding process of corresponding array-like property, either to force array of table to be encoded as block array, or to change how many items should be encoded per line
+* `@MultilineString` / `@TomlMultilineString` - Marks that the string property is multiline
+* `@LiteralString` / `@TomlLiteralString` - Marks the annotated string property as a literal in the output file. This means it will have single quotes `'C:\Users\<User>\.m2\repositories'` and escaping won't be performed by the parser.
+* `@Integer` / `@TomlInteger` - Defines the visual format of a integer-like numeric property (byte, short, int, long). 
+  * Base.Bin - binary `0b11010100`
+  * Base.Oct - octal `0o81244`
+  * Base.Dec - standard decimal form.
+  * Base.Hex - hexidecimel `0xFF342B6A`

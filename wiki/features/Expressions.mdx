@@ -1,0 +1,45 @@
+Fzzy Config contains a math expression evaluation engine. It can be used to evaluate a wide array of basic math expressions with variable support. See the documentation for an overview of every supported math expression. Expressions can be chained and nested, and variables are supported via the use of Character placeholders ('x', 'y', etc)
+
+[`Expression`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-expression/index.html)
+
+## Creating an Expression
+The basis of an `Expression` is a string representation of the math equation you want evaluated. This string is parsed into an `Expression` with `parse()` Variable values are provided at evaluation time, see below.
+```kotlin
+// kotlin
+val math = "(x + 5) ^ 2 + x"
+val mathExpression = Expression.parse(math)
+```
+```java
+// java
+String math = "(x + 5) ^ 2 + x";
+Expression mathExpression = Expression.parse(math);
+```
+
+## Evaluating an Expression
+Once you have your expression, outputs are evaluated by passing replacement values for each placeholder character, as applicable, into the `eval` or `evalSafe` (recommended) methods.
+```kotlin
+// kotlin
+val mathMap = mapOf('x' to 2.5)
+val mathResult = mathExpression.evalSafe(mathMap, 20.0) // evalSafe fails soft with a fallback value. eval throws exceptions if there is a problem.
+```
+
+```java
+// java
+Map mathMap = Map.of('x', 2.5);
+double mathResult = mathExpression.evalSafe(mathMap, 20.0); // evalSafe fails soft with a fallback value. eval throws exceptions if there is a problem.
+```
+
+## Validating an Expression
+`ValdiatedExpression` wraps a default expression and allowable characters into a `ValidatedField` with GUI support etc.
+```kotlin
+// kotlin
+// example validated Expression; automatically parses and caches the Math Expression input in string form.
+// The user can input any equation they like as long as it uses x, y, both, or neither expected variables passed in the set
+var validatedExpression = ValidatedExpression("2.5 * x ^ 2 - 45 * y", setOf('x', 'y'))
+```
+```java
+// java
+// example validated Expression; automatically parses and caches the Math Expression input in string form.
+// The user can input any equation they like as long as it uses x, y, both, or neither expected variables passed in the set
+ValidatedExpression validatedExpression = new ValidatedExpression("2.5 * x ^ 2 - 45 * y", Set.of('x', 'y'));
+```

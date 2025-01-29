@@ -1,0 +1,97 @@
+Fzzy Config provides several utilities for creating and validating colors. Colors are handled in three pieces:
+* [ValidatedColor](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/index.html)
+* [ColorHolder](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/-color-holder/index.html)
+* [MutableColor](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-color/-mutable-color/index.html)
+
+## ValidatedColor
+The core of a color setting. It validates instances of `ColorHolder`, which support ARGB colors.
+
+### Creating
+```kotlin
+// kotlin
+
+//example validated color. defined with standard integer RGBA color components [0-225]
+//this example has transparency enabled. To allow only opaque colors, use the RGB overload or input Int.MIN_VALUE
+var validatedColor = ValidatedColor(255, 128, 0, 255)
+
+//this validated color allows opaque colors only
+var validatedColorOpaque = ValidatedColor(0, 128, 255)
+
+//this validated color allows opaque colors only
+var validatedColorSimple = ValidatedColor()
+
+//Validated color built from a java Color. This color will not allow transparency
+var validatedColorColor = ValidatedColor(Color(1f,0.5f,0f), false)
+
+//kotlin extension function. validated color built from a hex string, with transparency enabled.
+var validatedColorString = "D6FF00AA".validatedColor(true)
+
+```
+
+```java
+// java
+
+//example validated color. defined with standard integer RGBA color components [0-225]
+//this example has transparency enabled. To allow only opaque colors, use the RGB overload or input Int.MIN_VALUE
+public ValidatedColor validatedColor = new ValidatedColor(255, 128, 0, 255);
+
+//this validated color allows opaque colors only
+public ValidatedColor validatedColorOpaque = new ValidatedColor(0, 128, 255);
+
+//this validated color allows opaque colors only
+public ValidatedColor validatedColorSimple = new ValidatedColor();
+
+//Validated color built from a java Color. This color will not allow transparency
+public ValidatedColor validatedColorColor = new ValidatedColor(new Color(1f,0.5f,0f), false);
+
+```
+
+### using
+Validated Colors can supply colors as components, a color integer, or a hex string.
+```kotlin
+// kotlin
+var myColor = ValidatedColor(255, 128, 0, 255)
+val colorRed = myColor.r() //255
+val colorInt = myColor.toInt() //16744448
+val colorHex = myColor.hexString() //"FF8000"
+```
+
+```java
+// java
+public ValidatedColor myColor = new ValidatedColor(255, 128, 0, 255);
+int colorRed = myColor.r(); //255
+int colorInt = myColor.toInt(); //16744448
+String colorHex = myColor.hexString(); //"FF8000"
+```
+
+## ColorHolder
+`ColorHolder` is an Immutable ARGB color respresentation. It is the container that `ValidatedColor` wraps and serializes.
+
+To update a `ValidatedColor` with new values requires passing a new ColorHolder into it. The general process for this is described below in `MutableColor`
+
+Get the holder via `ValidatedColor.get()`
+
+## MutableColor
+`MutableColor`, as the name implies, are mutable ARGB color representations. They are used to mutate a ValidatedColor via `ColorHolders`.
+
+`MutableColor` supports updating of colors via RGB, HSL, or hex string.
+
+To update a `ValidatedColor` internally, the following process can be followed. Generally the color will be updated externally via GUI or the .toml file.
+```kotlin
+// kotlin
+var myColor = ValidatedColor(255, 128, 0, 255)
+...
+val holder = myColor.get() // the old holder, rgb 255, 128, 0
+val mutable = holder.mutable() //create a MutableColor instance
+mutable.updateRGB(0, 128, 255) //mutate!
+myColor.accept(mutable.createHolder()) //ValidatedFields are consumers of their held type. consume a new holder created from the mutable.
+```
+```java
+// java
+ValidatedColor myColor = new ValidatedColor(255, 128, 0, 255);
+...
+ColorHolder holder = myColor.get(); // the old holder, rgb 255, 128, 0
+MutableColor mutable = holder.mutable(); //create a MutableColor instance
+mutable.updateRGB(0, 128, 255); //mutate!
+myColor.accept(mutable.createHolder()); //ValidatedFields are consumers of their held type. consume a new holder created from the mutable.
+```

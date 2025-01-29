@@ -1,0 +1,209 @@
+As of 0.6.0, there is a robust Context Handling system built into Fzzy Config. This system
+* Captures key inputs with a custom keybind-like system
+* Acts on inputs across "layered" context handling systems
+* Opens actions in a right click menu where and when applicable
+
+## The Foundation
+The Context Action system, at its core, is a layered user-input handling technique. It was birthed from and inspired by techniques built into Minecraft itself:
+* Keybinds
+* Screen key and mouse input 
+* Narration building
+
+The vanilla keybind and screen input handling systems both have flaws that this context action system aims to address.
+* Keybinds in vanilla overwrite each other if you double-map a keybind to the same key
+* Keybinds can't have modifiers (Ctrl, Shift, Alt)
+* To capture inputs on screens, you need to hardcode each interaction, properly ensuring execution order and so on. 
+* Minecraft in general has no concept of context menus (right click menus)
+
+### The `ContextType`
+The first step in resolving these and other issues was unifying the input capture method. Why should screens not use keybinds just like... keybinds?
+
+Enter `ContextType`. A ContextType is two things (unless it isn't, see below), an input listener and a `Map` key. The first is pretty self-explanatory. It accepts calls from a parent system and listens for relevant inputs. As a Map key, ContextType is used when building context menus for organization and ordering.
+
+Any system can interact with ContextTypes in a unified manner. Be it keybind inputs from the keyboard, input codes from screen methods, or otherwise. Either mouse or keyboard input can be handled.
+
+#### Example
+```kotlin
+//kotlin
+
+//FC comes with a range of pre-defined common context types
+ContextType.SAVE
+ContextType.FIND
+ContextType.COPY
+ContextType.CONTEXT_KEYBOARD
+//and so on. These can be used in handling without re-defining them. You should only redefine a type if you need the same input structure for a completely different user action result.
+
+//new context types can be defined with the create method
+val NEW = ContextType.create("new_file", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
+    inputCode == GLFW.GLFW_KEY_N && ctrl && !shift && !alt
+}
+```
+
+```java
+//java
+
+//FC comes with a range of pre-defined common context types
+ContextType.SAVE
+ContextType.FIND
+ContextType.COPY
+ContextType.CONTEXT_KEYBOARD
+//and so on. These can be used in handling without re-defining them. You should only redefine a type if you need the same input structure for a completely different user action result.
+
+//new context types can be defined with the create method
+ContextType NEW = ContextType.create("new_file", ContextInput.KEYBOARD,  (int inputCode, boolean ctrl, boolean shift, boolean alt) -> {
+    inputCode == GLFW.GLFW_KEY_N && ctrl && !shift && !alt
+});
+```
+
+### Now What?
+Now that we have a universal input-capture system, what do we do with it? We handle the input of course! But before we get into that, we have to talk about layers *pause for Shrek onion joke*. The context type system can detect more than one relevant input for a given user input scenario. If the user pressed `Ctrl + Shift + Z`, we might have a `Ctrl + Shift + Z` and plain `Z` type returning as relevant. This is handled with a layered, event-like approach that passes information back and forth between layers
+
+| Layer         | Purpose                                       | Direction     |
+|---------------|-----------------------------------------------|---------------|
+| Game Engine   | Handling in-game keybinds                     | Downstream ⬇️ |
+| Screen        | Screen-wide context                           |               |
+| List          | List actions, page up/down etc.               |               |
+| List Element  | Individual element actions, clear, copy, etc. |               |
+| Element Child | specialized actions                           | Upstream ⬆️   |
+
+### The `ContextHandler`
+The `ContextHandler` interface is designed to do just that, handle a passed context type. Any piece of your interaction puzzle that needs to manage inputs should implement this interface. 
+
+Handling a received context input starts at the "head" of the applicable game layers and proceeds **downstream**. For a screen input, that would be at the screen layer. If the screen has a valid need for the passed type, it should handle it and pass back execution there. If it doesn't, pass handling to its child(ren). Rinse and repeat.
+
+You end up with a downstream cascade, passing handling down as needed or returning back on success
+
+| Layer         | Not Handled             | Handled        |
+|---------------|-------------------------|----------------|
+| Screen        | Pass to List ⬇️         | Return true ↗️ |
+| List          | Pass to List Element ⬇️ | Return true ↗️ |
+| List Element  | Pass to Child ⬇️        | Return true ↗️ |
+| Element Child | Return false ↗️         | Return true ↗️ |
+
+#### Example
+```kotlin
+//kotlin
+class Parent: ContextHandler {
+
+    private val child = Child()
+
+    //this handling prioritizes the parents actions over the childs, it can be refactored to care about the child first of course
+    override fun handleContext(contextType: ContextType, position: Position): Boolean {
+        return when(contextType) {
+            ContextType.A -> handleContextA(position) //some parent-wide action
+            ContextType.B -> handleContextB(position) //another parent-wide action
+            else -> child.handleContext(contextType, position) //no applicable parent-wide handling, we move to the child
+        }
+    }
+}
+
+class Child: ContextHandler {
+
+    //child handles whatever it needs, and then since it's the furthest downstream layer, returns false if it can't handle the input, per the flow diagram above.
+    override fun handleContext(contextType: ContextType, position: Position): Boolean {
+
+        //we can scope in the passed position to be relevant to this childs working position
+        val newPosition = position.copy(x = this.x, y = this.y, width = this.width, height = this.height)
+
+        //handle relevant context types, otherwise terminate the chain with failure since this is the last layer
+        return when(contextType) {
+            ContextType.C -> handleContextC(newPosition) //some child-specific action
+            ContextType.D -> handleContextD(newPosition) //another another child-specific action
+            else -> false // no further downstream layers, so we return a failure from here
+        }
+    }
+}
+```
+
+### The Context Action
+The class that names the whole system, `ContextAction`. Context Actions are not strictly necessary in the grand scheme of a Context Action system, but provide two key benefits for use:
+* Provide a structured means of creating context callbacks for later use in a context handler. If you want to see an example of this in FC, you can explore how the `ConfigEntry` class handles context.
+* Are used in context menus (right click menus), particularly with the `ContextProvider` framework (see below).
+
+Outside of these two circumstances, it is generally valid to handle context "manually" inline with where the context handler is.
+
+`ValidatedField` is the best example of building context handling using actions, paired with 'ConfigEntry' as the final consumer of the building.
+
+```kotlin
+//kotlin
+
+//ValidatedField has a method contextActionBuilder which is used to build a context map. You can see the default implementation in ValidatedField itself to get a gist of the process, and in ValidatedList to see an example of layering actions.
+override fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> {
+    val map: MutableMap<ContextType, ContextAction.Builder> = mutableMapOf()
+    val action = ContextAction.Builder("my.action.translation.key".translate()) {
+            //code upon action being fired goes here
+            true } //return true/false based on handling result
+            .icon(MY_CUSTOM_CONTEXT_ICON) //a small icon can be passed here; it will appear in the context menu to the left of the action name.
+            .active { /* predicate for when the action can be performed */ }
+
+    map[MY_CONTEXT_TYPE] = action //add our action into a map using a ContextType as a key
+    val map2 = super.contextActionBuilder(context) //getting the builder map from the base builder method
+    map2[ContextResultBuilder.ENTRY].computeIfAbsent(key) { mutableMapOf() }.putAll(map) //apply the new action to the previously built ENTRY section, if any.
+}
+```
+
+### Context Providers
+The `ContextProvider` interface helps tie everything discussed above together. While the `ContextHandler` works downstream, ContextProvider works upstream, passing context information back up the chain for consumption by a further upstream handler. This achieves two major goals:
+* Providing a mechanism for a context handler to request context actions from children without them needing to themselves be handlers.
+* Building a structure for a context menu (right click menu)
+
+Considering the context handler flow diagram above, we can see how a handler and provider could work together:
+
+| Layer         | Downstream             | Upstream        |
+|---------------|-------------------------|----------------|
+| Screen        | Pass to List ⬇️         | Return true ↗️ |
+| List          | **Request context for menu** ⬇️ | Use builder to open context menu<br><br>Return true ↗️ |
+| List Element  | Pass ContextBuilder ⬇️        | Append own actions<br><br>Builder ready for parent layer ⬆️ |
+| Element Child | Add actions to builder ➡️         | Builder ready for parent layer ⬆️ |
+
+Using the same context handling example from above, we'll add in a provider system
+
+```kotlin
+//kotlin
+class Parent: ContextHandler, ContextProvider {
+
+    private val child = Child()
+
+    //this handling prioritizes the parents actions over the childs, it can be refactored to care about the child first of course
+    override fun handleContext(contextType: ContextType, position: Position): Boolean {
+        return when (contextType) {
+            ContextType.A -> handleContextA(position) //some parent-wide action
+            ContextType.B -> handleContextB(position) //another parent-wide action
+            else -> { //handle other inputs with provided context actions
+                val position = Position(/* Position information */) //create a position context for this element
+                val contextBuilder = ContextProvider.empty(position) //create an empty context builder to pass downstream
+                provideContext(contextBuilder) //build into the empty context
+                when (contextType) { //act on the provided input type with the built actions
+                    ContextType.CONTEXT_KEYBOARD, ContextType.CONTEXT_MOUSE -> { //context menu input (right click, Shift-F10, menu button)
+                        openContextMenuPopup(contextBuilder) //open a context menu
+                        true //return true, context handled
+                    }
+                    else -> { //some other so-far unhandled input
+                        for (m in contextBuilder.apply()) { //build the context builder and iterate over the added entry groups
+                            //if a matching input key is found in one of the groups, return its action application
+                            return m[contextType]?.action?.apply(contextBuilder.position()) ?: continue
+                        }
+                        false //no applicable handling found, return final context handling failure
+                    }
+                }
+            }
+        }
+    }
+
+    // pass the request downstream first, build onto that last. This puts the most scoped-in contexts at the top of the context menu, and the most generalized actions at the bottom.
+    override fun provideContext(builder: ContextResultBuilder) {
+         child.provideContext(builder)
+         builder.add("parent_group", PARENT_CONTEXT_TYPE, parentContextActionBuilder)
+    }
+}
+
+class Child: ContextProvider {
+
+    // child builds in its actions as needed
+    override fun provideContext(builder: ContextResultBuilder) {
+         builder.add("child_group", CHILD_CONTEXT_TYPE_A, builderA)
+         builder.add("child_group", CHILD_CONTEXT_TYPE_B, builderB)
+    }
+}
+```
+## Under Construction 🏗️

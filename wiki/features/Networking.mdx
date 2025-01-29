@@ -1,0 +1,95 @@
+Fzzy Config (as of 0.4.x) includes a lightweight cross-loader networking API for play-phase networking. This API was designed to facilitate implementation of Fzzy Configs internal networking, but works perfectly well for third party applications that need a simple, no-fuss API they can use on all modloaders.
+
+## Registration
+Fzzy Config works via the Payload concept introduced in recent Minecraft versions. For older versions of Fzzy Config, there is a `FzzyPayload` class used to take the place of the vanilla `CustomPayload`.
+
+Register a networking interaction **on both server and client (in common initializer)** using either:
+* `ConfigApi.network().registerS2C` - clientbound packets originated on the server and handled on a client
+* `ConfigApi.network().registerC2S` - serverbound packets originated on a client and handled by the server
+
+(For java users)
+* `ConfigApi.INSTANCE.network().registerS2C`
+* `ConfigApi.INSTANCE.network().registerC2S`
+
+For bidirectional transactions, regster each direction separately.
+
+The handler parameter uses a custom Context wrapper that will have the lowest common denominator of methods between Fabric and Forge for that version. If some context you are used to is missing, blame the other loader.
+
+**NOTE:** For `registerS2C`, take care to insulate the server from any client-only code that might be in the receiver end. Handling the payload with a method without any client-specific code that then itself passes that handling to the client handler in a separate class is a good way to insulate. For people coming from Fabric-only, I know that this may not seem ideal, but this is done to facilitate 1:1 API surface for NeoForge, which does the registration this way.
+
+## Sending
+To send a payload, simply use `ConfigApi.network().canSend` and `ConfigApi.Network().send`.
+* The player parameter determines which direction the sending will send. If the player instance is a `ServerPlayerEntity`, it will check/send for an S2C/clientbound direction. For a null player or a `ClientPlayerEntity`, it will send C2S/serverbound.
+
+## Example
+```kotlin
+// kotlin
+
+// the custom payload class. Includes its ID and Codec. In practice the data won't be "Any"; just for illustration.
+class MyCustomPayload(val data1: Any, val data2: Any): CustomPayload {
+    ....payload implementation here....
+}
+
+....
+
+// registration of the payload for a server to client channel
+// note that ClientPacketReceiver wouldn't have any client-only code in it. It's a go-between that would insulate the client code to another class during classloading
+ConfigApi.network().registerS2C(MyCustomPayload.TYPE, MyCustomPayload.CODEC, ClientPacketReceiver::handleMyCustomPayload)
+
+....
+
+//Handler example
+object ClientPacketReceiver {
+
+    //insulating any client code that might be in ClientClassThatNeedsPayload
+    fun handleMyCustomPayload(payload: MyCustomPayload, context: ClientPlayNetworkContext) {
+        ClientClassThatNeedsPayload.handle(payload.data1, payload.data2, context)
+    }
+}
+
+....
+
+// example method for sending a payload to be received by the registered handler.
+fun myPayloadSender(player: ServerPlayerEntity, data1: Any, data2: Any) {
+    if (ConfigApi.network().canSend(MyCustomPayload.TYPE.id, player)) {
+        ConfigApi.network().send(MyCustomPayload(data1, data2), player)
+    }
+}
+```
+```java
+// java
+
+// the custom payload class. Includes its ID and Codec. In practice the data won't be "Object"; just for illustration.
+public class MyCustomPayload implements CustomPayload {
+    public MyCustomPayload(Object data1, Object data2){...}
+    ....payload implementation here....
+}
+
+....
+
+// registration of the payload for a server to client channel
+// note that ClientPacketReceiver wouldn't have any client-only code in it. It's a go-between that would insulate the client code to another class during 
+// note the INSTANCE, required for java calls in this case
+ConfigApi.INSTANCE.network().registerS2C(MyCustomPayload.TYPE, MyCustomPayload.CODEC, ClientPacketReceiver::handleMyCustomPayload);
+
+....
+
+//Handler example
+class ClientPacketReceiver {
+
+    //insulating any client code that might be in ClientClassThatNeedsPayload
+    public static void handleMyCustomPayload(MyCustomPayload payload , ClientPlayNetworkContext context) {
+        ClientClassThatNeedsPayload.handle(payload.data1, payload.data2, context);
+    }
+}
+
+....
+
+// example method for sending a payload to be received by the registered handler.
+// note the INSTANCE, required for java calls in this case
+public void myPayloadSender(ServerPlayerEntity player, Object data1, Object data2) {
+    if (ConfigApi.INSTANCE.network().canSend(MyCustomPayload.TYPE.id, player)) {
+        ConfigApi.INSTANCE.network().send(new MyCustomPayload(data1, data2), player);
+    }
+}
+```
