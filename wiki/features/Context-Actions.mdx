@@ -15,6 +15,10 @@ The vanilla keybind and screen input handling systems both have flaws that this 
 * To capture inputs on screens, you need to hardcode each interaction, properly ensuring execution order and so on. 
 * Minecraft in general has no concept of context menus (right click menus)
 
+<Callout variant="info">
+Screens that use this system must extend from <code>PopupWidgetScreen</code>
+</Callout>
+
 ### The `ContextType`
 The first step in resolving these and other issues was unifying the input capture method. Why should screens not use keybinds just like... keybinds?
 
@@ -85,6 +89,47 @@ You end up with a downstream cascade, passing handling down as needed or returni
 
 <CodeTabs>
 
+```java !!tabs Java
+public class Parent implements ContextHandler {
+
+    public Parent() {}
+
+    private Child child = new Child();
+
+    //this handling prioritizes the parents actions over the childs, it can be refactored to care about the child first of course
+    @Override
+    public boolean handleContext(ContextType contextType, Position position) {
+        if (contextType == ContextType.A) {
+            return handleContextA(position); //some parent-wide action
+        } else if (contextType == ContextType.B) {
+            return handleContextB(position); //another parent-wide action
+        } else {
+            return child.handleContext(contextType, position); //no applicable parent-wide handling, we move to the child
+        }
+    }
+}
+
+class Child implements ContextHandler {
+
+    //child handles whatever it needs, and then since it's the furthest downstream layer, returns false if it can't handle the input, per the flow diagram above.
+    @Override
+    public boolean handleContext(ContextType contextType, Position position) {
+
+        //we can scope in the passed position to be relevant to this childs working position
+        Position newPosition = position.copy(position.contextInput, position.mX, position.mY, this.x, this.y, this.width, this.height, position.screenWidth, position.screenHeight);
+
+        //handle relevant context types, otherwise terminate the chain with failure since this is the last layer
+        if (contextType == ContextType.C) {
+            return handleContextC(newPosition); //some child-specific action
+        } else if (contextType == ContextType.D) {
+            return handleContextB(newPosition); //another another child-specific action
+        } else {
+            return false; // no further downstream layers, so we return a failure from here
+        }
+    }
+}
+```
+
 ```kotlin !!tabs Kotlin
 class Parent: ContextHandler {
 
@@ -131,6 +176,24 @@ Outside of these two circumstances, it is generally valid to handle context "man
 
 <CodeTabs>
 
+```java !!tabs Java
+//ValidatedField has a method contextActionBuilder which is used to build a context map. You can see the default implementation in ValidatedField itself to get a gist of the process, and in ValidatedList to see an example of layering actions.
+@Override
+public Map<String, Map<ContextType, ContextAction.Builder>> contextActionBuilder(EntryCreator.CreatorContext context) {
+    Map<ContextType, ContextAction.Builder> map = new LinkedHashMap(); //linked is important here; maintains the visual ordering of actions if used in a menu
+    ContextAction.Builder action = ContextAction.Builder("my.action.translation.key".translate(), position -> {
+            //code upon action being fired goes here
+            return true; }) //return true/false based on handling result
+            .icon(MY_CUSTOM_CONTEXT_ICON) //a small icon can be passed here; it will appear in the context menu to the left of the action name.
+            .active(() -> /* supplier for when the action can be performed */);
+
+    map.put(MY_CONTEXT_TYPE, action); //add our action into a map using a ContextType as a key
+    Map<String, Map<ContextType, ContextAction.Builder>> map2 = super.contextActionBuilder(context); //getting the builder map from the base builder method
+    map2.computeIfAbsent(ContextResultBuilder.ENTRY, k -> new LinkedHashMap()).putAll(map); //apply the new action to the previously built ENTRY section, if any.
+    return map2;
+}
+```
+
 ```kotlin !!tabs Kotlin
 //ValidatedField has a method contextActionBuilder which is used to build a context map. You can see the default implementation in ValidatedField itself to get a gist of the process, and in ValidatedList to see an example of layering actions.
 override fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> {
@@ -139,11 +202,11 @@ override fun contextActionBuilder(context: EntryCreator.CreatorContext): Mutable
             //code upon action being fired goes here
             true } //return true/false based on handling result
             .icon(MY_CUSTOM_CONTEXT_ICON) //a small icon can be passed here; it will appear in the context menu to the left of the action name.
-            .active { /* predicate for when the action can be performed */ }
+            .active { /* supplier for when the action can be performed */ }
 
     map[MY_CONTEXT_TYPE] = action //add our action into a map using a ContextType as a key
     val map2 = super.contextActionBuilder(context) //getting the builder map from the base builder method
-    map2[ContextResultBuilder.ENTRY].computeIfAbsent(key) { mutableMapOf() }.putAll(map) //apply the new action to the previously built ENTRY section, if any.
+    map2.computeIfAbsent(ContextResultBuilder.ENTRY) { mutableMapOf() }.putAll(map) //apply the new action to the previously built ENTRY section, if any.
     return map2
 }
 ```
@@ -168,6 +231,59 @@ Using the same context handling example from above, we'll add in a provider syst
 
 <CodeTabs>
 
+```java !!tabs Java
+class Parent implements ContextHandler, ContextProvider {
+
+    public Parent() {}
+
+    private Child child = new Child();
+
+    //this handling prioritizes the parents actions over the childs, it can be refactored to care about the child first of course
+    @Override
+    public boolean handleContext(contextType: ContextType, position: Position) {
+        if (contextType == ContextType.A) {
+            return handleContextA(position); //some parent-wide action
+        } else if (contextType == ContextType.B) {
+            return handleContextB(position); //another parent-wide action
+        } else {
+            Position position = Position(/* Position information */) //create a position context for this element
+            ContextResultProvider contextBuilder = ContextProvider.empty(position); //create an empty context builder to pass downstream
+            provideContext(contextBuilder); //build into the empty context
+            if (contextType == ContextType.CONTEXT_KEYBOARD || contextType == ContextType.CONTEXT_MOUSE) {
+                Popups.INSTANCE.openContextMenuPopup(contextBuilder);
+                return true;
+            } else {
+                //build and flatten the context inputs and act on a provided action if one matching the contextType exists
+                //Note that flatBuild only works well if all of the provided contextTypes are unique across groups. If groups might have duplicate keys, use build and handle duplicate "hits" somehow
+                Map<ContextType, ContextAction> m = contextBuilder.flatBuild();
+                if (!m.containsKey(contextType)) {
+                    return false;
+                } else {
+                    return m.get(contextType).getAction().apply(contextBuilder.position());
+                }
+            }
+        }
+    }
+
+    // pass the request downstream first, build onto that last. This puts the most scoped-in contexts at the top of the context menu, and the most generalized actions at the bottom.
+    @Override
+    public void provideContext(builder: ContextResultBuilder) {
+         child.provideContext(builder);
+         builder.add("parent_group", PARENT_CONTEXT_TYPE, parentContextActionBuilder);
+    }
+}
+
+class Child implements ContextProvider {
+
+    // child builds in its actions as needed
+    @Override
+    public void provideContext(builder: ContextResultBuilder) {
+         builder.add("child_group", CHILD_CONTEXT_TYPE_A, builderA);
+         builder.add("child_group", CHILD_CONTEXT_TYPE_B, builderB);
+    }
+}
+```
+
 ```kotlin !!tabs Kotlin
 class Parent: ContextHandler, ContextProvider {
 
@@ -188,11 +304,9 @@ class Parent: ContextHandler, ContextProvider {
                         true //return true, context handled
                     }
                     else -> { //some other so-far unhandled input
-                        for (m in contextBuilder.apply()) { //build the context builder and iterate over the added entry groups
-                            //if a matching input key is found in one of the groups, return its action application
-                            return m[contextType]?.action?.apply(contextBuilder.position()) ?: continue
-                        }
-                        false //no applicable handling found, return final context handling failure
+                        //build and flatten the context inputs and act on a provided action if one matching the contextType exists
+                        //Note that flatBuild only works well if all of the provided contextTypes are unique across groups. If groups might have duplicate keys, use build and handle duplicate "hits" somehow
+                        return contextBuilder.flatBuild()[contextType]?.action?.apply(contextBuilder.position()) ?: false
                     }
                 }
             }
