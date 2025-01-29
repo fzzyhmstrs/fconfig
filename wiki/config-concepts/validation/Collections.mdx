@@ -1,0 +1,45 @@
+---
+title: Validated Collections
+---
+
+Fzzy Config has validation tools for lists, maps, and sets. Each of these constructs has builders and other intricacies that are best digested thoroughly by visiting the documentation:
+
+[Validated Collections](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.collection/index.html)
+
+<Callout variant="info">
+Validated collections implement their respective collection type (list, set, map), so can be used directly as such instead of having to <code>.get()</code> the wrapped collection first.
+</Callout>
+
+### Validation Conversion
+Any `ValidatedField` can be converted into a list or set implementation with it as backing validation using the `toList()` and `toSet()` methods, respectively. In addition, collections can be converted to [ValidatedChoice](#choices) using their `toChoices()` method
+
+<CodeTabs>
+
+```java !!tabs Java
+//wraps the vararg valued provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
+public ValidatedList<Identifier> listFromField = new ValidatedIdentifier().toList(Identifier.of("stick"), Identifier.of("blaze_rod"));
+```
+
+```kotlin !!tabs Kotlin
+//wraps the vararg valued provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
+var listFromField = ValidatedIdentifier().toList(Identifier.of("stick"), Identifier.of("blaze_rod"))
+```
+
+</CodeTabs>
+
+### Static Initializers
+ValidatedList and Set have a series of static methods that can be used to initialize a variety of collections of given common types, much in the same vein as the java `List.of()` or kotlin `listOf()`.
+
+<CodeTabs>
+
+```java !!tabs Java
+public ValidatedList<Integer> validatedIntList = ValidatedList.ofInt(1, 2, 5, 10);
+public ValidatedSet<Integer> validatedIntSet = ValidatedSet.ofInt(1, 2, 5, 10);
+```
+
+```kotlin !!tabs Kotlin
+var validatedIntList = ValidatedList.ofInt(1, 2, 5, 10)
+var validatedIntSet = ValidatedSet.ofInt(1, 2, 5, 10)
+```
+
+</CodeTabs>
