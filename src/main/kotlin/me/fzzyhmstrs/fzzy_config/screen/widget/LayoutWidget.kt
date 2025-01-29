@@ -504,7 +504,7 @@ class LayoutWidget @JvmOverloads constructor(
             for ((_, posEl) in elements) {
                 minW = posEl.provideMinW(minW, paddingW)
             }
-            if (debug) FC.DEVLOG.error("MinW: $minW\n")
+            //if (debug) FC.DEVLOG.error("MinW: $minW\n")
             for ((_, posEl) in elements) {
                 //if (debug) FC.DEVLOG.error("E1: $posEl")
                 //if (debug) FC.DEVLOG.warn("  Before: $maxW")

@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget.ActiveNarrationSupplier
@@ -52,7 +53,7 @@ open class CustomButtonWidget protected constructor(
     private val pressAction: Consumer<CustomButtonWidget>,
     private val narrationSupplier: ActiveNarrationSupplier = DEFAULT_ACTIVE_NARRATION_SUPPLIER,
     private val narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> },
-    override val textures: TextureSet = DEFAULT_TEXTURES,
+    override val textures: TextureProvider = DEFAULT_TEXTURES,
     private val child: TooltipChild? = null,
     private val renderMessage: Boolean = true)
     :
@@ -153,7 +154,7 @@ open class CustomButtonWidget protected constructor(
         private var narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> }
         private var activeSupplier: Supplier<Boolean> = Supplier { true }
         private var messageSupplier: Supplier<Text>? = null
-        private var textures: TextureSet = DEFAULT_TEXTURES
+        private var textures: TextureProvider = DEFAULT_TEXTURES
         private var child: TooltipChild? = null
         private var renderMessage: Boolean = true
 
@@ -357,12 +358,12 @@ open class CustomButtonWidget protected constructor(
 
         /**
          * Defines the texture set used for rendering the button background
-         * @param textures [TextureSet] Predefined set of textures for this buttons various states
+         * @param textures [TextureProvider] Predefined set of textures for this buttons various states
          * @return this builder
          * @author fzzyhmstrs
-         * @since 0.6.3
+         * @since 0.6.3, updated to use base provider interface 0.6.4
          */
-        fun textures(textures: TextureSet): Builder {
+        fun textures(textures: TextureProvider): Builder {
             this.textures = textures
             return this
         }
@@ -382,6 +383,20 @@ open class CustomButtonWidget protected constructor(
         }
 
         /**
+         * Defines the texture set used for rendering the button background
+         * @param tex [Identifier] the "normal" texture, rendered when the button is active but not focused
+         * @param disabled [Identifier] rendered when the button is disabled. This has higher priority than [highlighted], so will render focused or not.
+         * @param highlighted [Identifier] rendered then the button is active and focused.
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        fun textures(tex: Identifier, disabled: Identifier, highlighted: Identifier, highlightedDisabled: Identifier): Builder {
+            this.textures = TextureSet.Quad(tex, disabled, highlighted, highlightedDisabled)
+            return this
+        }
+
+        /**
          * Defines the texture for rendering the button background. The sprite rendered will not change based on object state.
          * @param tex [Identifier] the "normal" texture, rendered under any circumstance
          * @return this builder
@@ -389,7 +404,7 @@ open class CustomButtonWidget protected constructor(
          * @since 0.6.0
          */
         fun texture(tex: Identifier): Builder {
-            this.textures = TextureSet(tex)
+            this.textures = TextureSet.Single(tex)
             return this
         }
 
