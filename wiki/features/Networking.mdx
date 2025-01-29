@@ -1,4 +1,4 @@
-Fzzy Config (as of 0.4.x) includes a lightweight cross-loader networking API for play-phase networking. This API was designed to facilitate implementation of Fzzy Configs internal networking, but works perfectly well for third party applications that need a simple, no-fuss API they can use on all modloaders.
+Fzzy Config (as of 0.4.x) includes a lightweight cross-loader networking API for play-phase networking. This API was designed to facilitate implementation of Fzzy Configs internal networking, but works perfectly well for third party applications that need a no-fuss API they can use on all modloaders.
 
 ## Registration
 Fzzy Config works via the Payload concept introduced in recent Minecraft versions. For older versions of Fzzy Config, there is a `FzzyPayload` class used to take the place of the vanilla `CustomPayload`.
@@ -8,14 +8,16 @@ Register a networking interaction **on both server and client (in common initial
 * `ConfigApi.network().registerC2S` - serverbound packets originated on a client and handled by the server
 
 (For java users)
-* `ConfigApi.INSTANCE.network().registerS2C`
-* `ConfigApi.INSTANCE.network().registerC2S`
+* `ConfigApiJava.INSTANCE.network().registerS2C`
+* `ConfigApiJava.INSTANCE.network().registerC2S`
 
 For bidirectional transactions, regster each direction separately.
 
 The handler parameter uses a custom Context wrapper that will have the lowest common denominator of methods between Fabric and Forge for that version. If some context you are used to is missing, blame the other loader.
 
-**NOTE:** For `registerS2C`, take care to insulate the server from any client-only code that might be in the receiver end. Handling the payload with a method without any client-specific code that then itself passes that handling to the client handler in a separate class is a good way to insulate. For people coming from Fabric-only, I know that this may not seem ideal, but this is done to facilitate 1:1 API surface for NeoForge, which does the registration this way.
+<Callout variant="warning">
+For <code>registerS2C</code>, take care to insulate the server from any client-only code that might be in the receiver end. Handling the payload with a method without any client-specific code that then itself passes that handling to the client handler in a separate class is a good way to insulate. For people coming from Fabric-only, I know that this may not seem ideal, but this is done to facilitate 1:1 API surface for NeoForge, which does the registration this way.
+</Callout>
 
 ## Sending
 To send a payload, simply use `ConfigApi.network().canSend` and `ConfigApi.Network().send`.
