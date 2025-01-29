@@ -16,22 +16,26 @@ modProperties={fzzy_config="mod_id"}
 
 ## Arbitrary Object Settings Null
 If you use `ValidatedAny` to wrap your object, you don't need to do anything further, but if you just add a "plain" object instance to your config, that object needs to implement `Walkable`
-```kotlin
-// kotlin
-var myObject = ValidatedAny(MyObject())
-class MyObject{ ... } //can be a plain object
 
-var myObject2 = MyObject2()
-class MyObject2: Walkable{ ... } //implements walkable
-```
-```java
-// java
+<CodeTabs>
+
+```java !!tabs Java
 public MyObject myObject = new ValidatedAny(new MyObject());
-public class MyObject{ ... } //can be a plain object
+public class MyObject{ /* implementation */ } //can be a plain object
 
 public MyObject2 myObject2 = new MyObject2();
-public class MyObject2 implements Walkable{ ... } //implements walkable
+public class MyObject2 implements Walkable{ /* implementation */ } //implements walkable
 ```
+
+```kotlin !!tabs Kotlin
+var myObject = ValidatedAny(MyObject())
+class MyObject{ /* implementation */ } //can be a plain object
+
+var myObject2 = MyObject2()
+class MyObject2: Walkable{ /* implementation */ } //implements walkable
+```
+
+</CodeTabs>
 
 ## Java Compiler Errors
 Since FzzyConfig is written in kotlin, there are certain incompatibilities you might run into if you are writing a java mod. 
@@ -42,8 +46,20 @@ Since FzzyConfig is written in kotlin, there are certain incompatibilities you m
 **As of 0.4.3, there is a maven! If you haven't updated to using the maven, check out the homepage for the new repository and dependency paths**
 
 ~~Currently~~ Prior to 0.4.3, Fzzy Config isn't on a "true" Maven, so the full maven.pom isn't available. As such, transitive dependencies aren't available. This causes issues when you try to `runClient`.
-```kotlin
-//build.gradle.kts
+
+<CodeTabs>
+
+```groovy !!tabs build.gradle
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    modLocalRuntime "net.peanuuutz.tomlkt:tomlkt-jvm:${project.tomlktVersion}"
+}
+```
+
+```kotlin !!tabs build.gradle.kts
 repositories {
     mavenCentral()
 }
@@ -53,13 +69,5 @@ dependencies {
     modLocalRuntime("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
 }
 ```
-```groovy
-//build.gradle
-repositories {
-    mavenCentral()
-}
 
-dependencies {
-    modLocalRuntime "net.peanuuutz.tomlkt:tomlkt-jvm:${project.tomlktVersion}"
-}
-```
+</CodeTabs>

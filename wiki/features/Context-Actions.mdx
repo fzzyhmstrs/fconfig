@@ -23,9 +23,24 @@ Enter `ContextType`. A ContextType is two things (unless it isn't, see below), a
 Any system can interact with ContextTypes in a unified manner. Be it keybind inputs from the keyboard, input codes from screen methods, or otherwise. Either mouse or keyboard input can be handled.
 
 #### Example
-```kotlin
-//kotlin
 
+<CodeTabs>
+
+```java !!tabs Java
+//FC comes with a range of pre-defined common context types
+ContextType.SAVE
+ContextType.FIND
+ContextType.COPY
+ContextType.CONTEXT_KEYBOARD
+//and so on. These can be used in handling without re-defining them. You should only redefine a type if you need the same input structure for a completely different user action result.
+
+//new context types can be defined with the create method
+ContextType NEW = ContextType.create("new_file", ContextInput.KEYBOARD,  (int inputCode, boolean ctrl, boolean shift, boolean alt) -> {
+    inputCode == GLFW.GLFW_KEY_N && ctrl && !shift && !alt
+});
+```
+
+```kotlin !!tabs Kotlin
 //FC comes with a range of pre-defined common context types
 ContextType.SAVE
 ContextType.FIND
@@ -39,21 +54,7 @@ val NEW = ContextType.create("new_file", ContextInput.KEYBOARD) { inputCode: Int
 }
 ```
 
-```java
-//java
-
-//FC comes with a range of pre-defined common context types
-ContextType.SAVE
-ContextType.FIND
-ContextType.COPY
-ContextType.CONTEXT_KEYBOARD
-//and so on. These can be used in handling without re-defining them. You should only redefine a type if you need the same input structure for a completely different user action result.
-
-//new context types can be defined with the create method
-ContextType NEW = ContextType.create("new_file", ContextInput.KEYBOARD,  (int inputCode, boolean ctrl, boolean shift, boolean alt) -> {
-    inputCode == GLFW.GLFW_KEY_N && ctrl && !shift && !alt
-});
-```
+</CodeTabs>
 
 ### Now What?
 Now that we have a universal input-capture system, what do we do with it? We handle the input of course! But before we get into that, we have to talk about layers *pause for Shrek onion joke*. The context type system can detect more than one relevant input for a given user input scenario. If the user pressed `Ctrl + Shift + Z`, we might have a `Ctrl + Shift + Z` and plain `Z` type returning as relevant. This is handled with a layered, event-like approach that passes information back and forth between layers
@@ -81,8 +82,10 @@ You end up with a downstream cascade, passing handling down as needed or returni
 | Element Child | Return false ↗️         | Return true ↗️ |
 
 #### Example
-```kotlin
-//kotlin
+
+<CodeTabs>
+
+```kotlin !!tabs Kotlin
 class Parent: ContextHandler {
 
     private val child = Child()
@@ -115,6 +118,8 @@ class Child: ContextHandler {
 }
 ```
 
+</CodeTabs>
+
 ### The Context Action
 The class that names the whole system, `ContextAction`. Context Actions are not strictly necessary in the grand scheme of a Context Action system, but provide two key benefits for use:
 * Provide a structured means of creating context callbacks for later use in a context handler. If you want to see an example of this in FC, you can explore how the `ConfigEntry` class handles context.
@@ -124,9 +129,9 @@ Outside of these two circumstances, it is generally valid to handle context "man
 
 `ValidatedField` is the best example of building context handling using actions, paired with 'ConfigEntry' as the final consumer of the building.
 
-```kotlin
-//kotlin
+<CodeTabs>
 
+```kotlin !!tabs Kotlin
 //ValidatedField has a method contextActionBuilder which is used to build a context map. You can see the default implementation in ValidatedField itself to get a gist of the process, and in ValidatedList to see an example of layering actions.
 override fun contextActionBuilder(context: EntryCreator.CreatorContext): MutableMap<String, MutableMap<ContextType, ContextAction.Builder>> {
     val map: MutableMap<ContextType, ContextAction.Builder> = mutableMapOf()
@@ -139,8 +144,11 @@ override fun contextActionBuilder(context: EntryCreator.CreatorContext): Mutable
     map[MY_CONTEXT_TYPE] = action //add our action into a map using a ContextType as a key
     val map2 = super.contextActionBuilder(context) //getting the builder map from the base builder method
     map2[ContextResultBuilder.ENTRY].computeIfAbsent(key) { mutableMapOf() }.putAll(map) //apply the new action to the previously built ENTRY section, if any.
+    return map2
 }
 ```
+
+</CodeTabs>
 
 ### Context Providers
 The `ContextProvider` interface helps tie everything discussed above together. While the `ContextHandler` works downstream, ContextProvider works upstream, passing context information back up the chain for consumption by a further upstream handler. This achieves two major goals:
@@ -149,17 +157,18 @@ The `ContextProvider` interface helps tie everything discussed above together. W
 
 Considering the context handler flow diagram above, we can see how a handler and provider could work together:
 
-| Layer         | Downstream             | Upstream        |
-|---------------|-------------------------|----------------|
-| Screen        | Pass to List ⬇️         | Return true ↗️ |
-| List          | **Request context for menu** ⬇️ | Use builder to open context menu<br><br>Return true ↗️ |
-| List Element  | Pass ContextBuilder ⬇️        | Append own actions<br><br>Builder ready for parent layer ⬆️ |
-| Element Child | Add actions to builder ➡️         | Builder ready for parent layer ⬆️ |
+| Layer         | Downstream                      | Upstream                                                    |
+|---------------|---------------------------------|-------------------------------------------------------------|
+| Screen        | Pass to List ⬇️                 | Return true ↗️                                              |
+| List          | **Request context for menu** ⬇️ | Use builder to open context menu<br><br>Return true ↗️      |
+| List Element  | Pass ContextBuilder ⬇️          | Append own actions<br><br>Builder ready for parent layer ⬆️ |
+| Element Child | Add actions to builder ➡️       | Builder ready for parent layer ⬆️                           |
 
 Using the same context handling example from above, we'll add in a provider system
 
-```kotlin
-//kotlin
+<CodeTabs>
+
+```kotlin !!tabs Kotlin
 class Parent: ContextHandler, ContextProvider {
 
     private val child = Child()
@@ -206,4 +215,7 @@ class Child: ContextProvider {
     }
 }
 ```
+
+</CodeTabs>
+
 ## Under Construction 🏗️

@@ -7,14 +7,14 @@ A straightforward example is a loot table with a configurable drop chance for a 
 
 ### Result Provider
 A result provider is an interface with one job: provide a result based on a passed config `scope`. The [Translation page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation#example) has a decent overview of what `scope` is in fzzy configs context. It works similarly to a web address, or forge/luckperms permission ids.
-```kotlin
+```kotlin !!tabs Kotlin
 val myProvider: ResultProvider<Boolean> = TODO()
 
 fun getMyResult(): Boolean {
     return myProvider.getResult("my_mod.my_config.mySetting")
 }
 ```
-```java
+```java !!tabs Java
 ResultProvider<Boolean> myProvider = TODO();
 
 public boolean getMyResult() {
@@ -26,14 +26,14 @@ public boolean getMyResult() {
 Create a simple implementation of a config-backed Result Provider using the `ResultApi` via `ConfigApi.result()` or `ConfigApiJava.result()`
 
 Creation of a simple provider is now added to the above example. This system requires a fallback (false in this case)
-```kotlin
+```kotlin !!tabs Kotlin
 val myProvider: ResultProvider<Boolean> = ConfigApi.result().createSimpleResultProvider(false, Boolean::class)
 
 fun getMyResult(): Boolean {
     return myProvider.getResult("my_mod.my_config.mySetting")
 }
 ```
-```java
+```java !!tabs Java
 ResultProvider<Boolean> myProvider = ConfigApiJava.result().createSimpleResultProvider(false, Boolean.class);
 
 public boolean getMyResult() {
@@ -45,12 +45,12 @@ public boolean getMyResult() {
 The above examples show a simple usage example. It is important to note that the scope is dynamic; it can point to any valid boolean-producing setting in any registered config. **Including configs of other mods**.
 
 This makes result providers a convenient way to interface with another mod without ever having to depend on it in-code. If for example, you are an addon to another mod, interfacing with a config setting this way is a change-robust way of retrieving the value you need. The parent config can add 5000 other settings, change package name, class name, and so on, and the value retrieval will still work. In the case that the scope becomes invalid, fzzy config will fail soft; throwing a log error and using your fallback approach.
-```kotlin
+```kotlin !!tabs Kotlin
 //both of these are valid targets for the boolean provider created above
 val mySetting = false
 val mySetting2 = ValidatedBoolean(false)
 ```
-```java
+```java !!tabs Java
 //both of these are valid targets for the boolean provider created above
 boolean mySetting = false;
 ValidatedBoolean mySetting2 = new ValidatedBoolean(false);
@@ -96,10 +96,10 @@ Currently, the drop is ward-wired to exactly the same random chance as a wither 
 
 #### Float Provider
 To make this table dynamic, we will need a provider of float values to feed into our loot number provider. _This provider could be improved to accept any number type, but that is beyond the scope of this example_
-```kotlin
+```kotlin !!tabs Kotlin
 val floatProvider = ConfigApi.result().createSimpleResultProvider(0f, Float::class)
 ```
-```java
+```java !!tabs Java
 ResultProvider<Float> floatProvider = ConfigApi.result().createSimpleResultProvider(0f, Float.class);
 ```
 
@@ -107,7 +107,7 @@ ResultProvider<Float> floatProvider = ConfigApi.result().createSimpleResultProvi
 Next we wire this provider into a `LootNumberProvider`. Note the scope param. This is the scope passed in from the loot table definition that we will be providing from our config.
 
 _Methods that are unnecessary to illustrating this example are excluded. Assume that things like the codec, type, and so on are implemented._
-```kotlin
+```kotlin !!tabs Kotlin
 class ConfigLootNumberProvider(private val scope: String): LootNumberProvider {
 
     override fun nextFloat(context: LootContext): Float {
@@ -121,7 +121,7 @@ class ConfigLootNumberProvider(private val scope: String): LootNumberProvider {
     }
 }
 ```
-```java
+```java !!tabs Java
 public class ConfigLootNumberProvider implements LootNumberProvider {
 
 	private final String scope;
@@ -154,7 +154,7 @@ Let's assume our presumptive type and codec are registered under the identifier 
 Our config, registered under the identifier `my_mod:my_config` needs the corresponding settings we want to refer to.
 
 It might also be a good idea to include the looting multiplier. _(And an even better idea to move these into a separate object for organization, but that's outside the example)_
-```kotlin
+```kotlin !!tabs Kotlin
 class MyConfig : Config(Identifier.of("my_mod", "my_config")) {
     
     @ValidatedFloat.Restrict(0f, 1f)
@@ -165,7 +165,7 @@ class MyConfig : Config(Identifier.of("my_mod", "my_config")) {
 }
 ```
 
-```java
+```java !!tabs Java
 public class MyConfig extends Config {
     
 	public MyConfig() {

@@ -1,55 +1,36 @@
 Creating a brand new config system based on Fzzy Config? Lets get started! This guide will walk through the basic steps needed to get a powerful, expressive config up and running.
 
 ## Steps
-1. [Development of Config layout](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#1-development-of-a-config-layout-)
-2. [Config class(es) creation](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#2-config-creation-)
-3. [Config Registration](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#3-config-registration-)
-4. [Polish](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#4-polish-)
-5. [Integration into the Mod](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#5-integration-into-your-mod-)
+1. [Development of Config layout](#1-development-of-a-config-layout-)
+2. [Config class(es) creation](#2-config-creation-)
+3. [Config Registration](#3-config-registration-)
+4. [Polish](#4-polish-)
+5. [Integration into the Mod](#5-integration-into-your-mod-)
 
-## 1. Development of a Config Layout [⤴](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#steps)
+## 1. Development of a Config Layout [⤴](#steps)
 Before you get into the nitty gritty of your Config implementation, determine a layout first. This layout will play a critical role in how the configs are laid out visually, the user experience of navigating your settings, and how you interact with the config internally.
 * _This step is so important to all future use of the config that I hesitate to say that there is a "quick and dirty" way to do it. Nevertheless, some mods only have need of a very simplistic config, so little thought needs to go into it._
 
 [[Laying out Configs]]
 
-## 2. Config Creation [⤴](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#steps)
+## 2. Config Creation [⤴](#steps)
 With your layout in mind, create some config classes and fill them with the settings you need. Configs extend the base class `config`.
 1. Extend [`Config`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config/index), provide an Identifier, and any custom folder(s) as needed.
 2. Fill in your empty class with settings. Settings have the following considerations:
     1. fields/properties need to be **non-final**, **non-static**, and **public***
     2. check out [[Validation]] for more powerful setting configuration and choice-restriction options.
 
-_\* If you use the `IgnoreVisibility` annotation, you can set the visibility less than public (private, protected, etc)._
-```kotlin
-// kotlin
-internal class MyConfig: Config(Identifier.of(MOD_ID, "my_config")) {
+<Callout>
+If you use the <code>IgnoreVisibility</code> annotation, you can set the visibility less than public (private, protected, etc).
+</Callout>
 
-    var bareDouble = 5.0 // A double without validation. It will still have basic type-validation backing it internally.
+<Callout variant="warning">
+For Kotlin users, configs cannot be <code>object</code>, as they need to be instanced. You can have a separate Config object used internally throughout the mod that references an instance of the config class implementation
+</Callout>
 
-    var booleanThing = false // most primitive types and a wide array of other types are supported by background validation. See Validation for details.
+<CodeTabs>
 
-    var validatedDouble = ValidatedDouble(5.0, 10.0, 0.0) //this field has defined validation, error correction, and will restrict user inputs to doubles between 0 and 10.
-
-    var mySection = MySection() // a section of the config with its own validated fields and other sections as applicable. This will appear in-game as a separate screen "layer" with a breadcrumb leading back to the parent screen.
-
-    internal class MySection: ConfigSection() { // a Config Section. Self-serializable. Of course it doesn't have to be defined inside of it's parent class, but it may be convenient
-
-        var sectionBoolean = ValidatedBoolean(true) //booleans can have defined validation, but it's not really necessary
-
-        var sectionMap = ValidatedIdentifierMap( //validation exists for common collections too, maps, lists, sets, and so on
-            mapOf(), //empty default map
-            ValidatedIdentifier.ofTag(Registries.ITEM.getId(Items.IRON_AXE), ItemTags.AXES), // the keys in this map can only be from the AXES tag
-            ValidatedDouble(1.0, 1.0, 0.0) //map values are double restricted between 0.0 and 1.0
-        )
-    }
-}
-```
-
-**NOTE: For Kotlin users, configs cannot be `object`, as they need to be instanced. You can have a separate Config object used internally throughout the mod that references a `val` instance of the config class implementation**
-
-```java
-// java
+```java !!tabs Java
 public class MyConfig extends Config {
 
     public MyConfig() {
@@ -80,32 +61,42 @@ public class MyConfig extends Config {
 }
 ```
 
-## 3. Config Registration [⤴](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#steps)
+```kotlin !!tabs Kotlin
+internal class MyConfig: Config(Identifier.of(MOD_ID, "my_config")) {
+
+    var bareDouble = 5.0 // A double without validation. It will still have basic type-validation backing it internally.
+
+    var booleanThing = false // most primitive types and a wide array of other types are supported by background validation. See Validation for details.
+
+    var validatedDouble = ValidatedDouble(5.0, 10.0, 0.0) //this field has defined validation, error correction, and will restrict user inputs to doubles between 0 and 10.
+
+    var mySection = MySection() // a section of the config with its own validated fields and other sections as applicable. This will appear in-game as a separate screen "layer" with a breadcrumb leading back to the parent screen.
+
+    internal class MySection: ConfigSection() { // a Config Section. Self-serializable. Of course it doesn't have to be defined inside of it's parent class, but it may be convenient
+
+        var sectionBoolean = ValidatedBoolean(true) //booleans can have defined validation, but it's not really necessary
+
+        var sectionMap = ValidatedIdentifierMap( //validation exists for common collections too, maps, lists, sets, and so on
+            mapOf(), //empty default map
+            ValidatedIdentifier.ofTag(Registries.ITEM.getId(Items.IRON_AXE), ItemTags.AXES), // the keys in this map can only be from the AXES tag
+            ValidatedDouble(1.0, 1.0, 0.0) //map values are double restricted between 0.0 and 1.0
+        )
+    }
+}
+```
+
+</CodeTabs>
+
+## 3. Config Registration [⤴](#steps)
 Configs are accessed via an `INSTANCE` pattern. Access in this manner, with the API calls for registration and loading described below, prevents "too-early" access to a config that hasn't been populated with live data.
 1. [`registerAndLoadConfig`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-config-api/index.html#195300946%2FFunctions%2F769193423). The API call for registering and loading a config from file, as the name implies. It will also automatically create the file if none exists. Select your [`RegisterType`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-register-type/index) based on the user needs for the config settings
     1. `BOTH` - Default, will have a GUI client side, and will also auto-sync between servers and clients.
     2. `CLIENT` - Will only have GUI functionality, no syncing to/from servers.
     3. `SERVER` - No GUI, only auto-syncing between servers and clients (Not Recommended, the only way to edit these configs is directly the .toml).
 
-```kotlin
-// kotlin
-object Configs {
-    //instance of your config loaded from file and automatically registered to the SyncedConfigRegistry and ClientConfigRegistry using the getId() method
-    var myConfig = ConfigApi.registerAndLoadConfig(::MyConfig)
+<CodeTabs>
 
-    //adding the registerType, you can register a config as client-only. No syncing will occur. Useful for client-only mods.
-    var myClientOnlyConfig = ConfigApi.registerAndLoadConfig(::MyConfig, RegisterType.CLIENT)
-
-    //adding the registerType, you can register a config as sync-only. Their won't be any client-side GUI functionality, so the config will only be editable from the file itself, but it will auto-sync with clients.
-    var mySyncedOnlyConfig = ConfigApi.registerAndLoadConfig(::MyConfig, RegisterType.SERVER)
-
-    //Init function would be called in ModInitializer or some other entrypoint. Not strictly necessary if loading on-reference is ok.
-    fun init() {}
-}
-```
-
-```java
-// java
+```java !!tabs Java
 class Configs {
     //instance of your config loaded from file and automatically registered to the SyncedConfigRegistry and ClientConfigRegistry using the getId() method
     //ConfigApiJava can come in handy to avoid pernicious compiler errors depending on your IDE and gradle setup.
@@ -122,7 +113,25 @@ class Configs {
 }
 ```
 
-## 4. Polish [⤴](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#steps)
+```kotlin !!tabs Kotlin
+object Configs {
+    //instance of your config loaded from file and automatically registered to the SyncedConfigRegistry and ClientConfigRegistry using the getId() method
+    var myConfig = ConfigApi.registerAndLoadConfig(::MyConfig)
+
+    //adding the registerType, you can register a config as client-only. No syncing will occur. Useful for client-only mods.
+    var myClientOnlyConfig = ConfigApi.registerAndLoadConfig(::MyConfig, RegisterType.CLIENT)
+
+    //adding the registerType, you can register a config as sync-only. Their won't be any client-side GUI functionality, so the config will only be editable from the file itself, but it will auto-sync with clients.
+    var mySyncedOnlyConfig = ConfigApi.registerAndLoadConfig(::MyConfig, RegisterType.SERVER)
+
+    //Init function would be called in ModInitializer or some other entrypoint. Not strictly necessary if loading on-reference is ok.
+    fun init() {}
+}
+```
+
+</CodeTabs>
+
+## 4. Polish [⤴](#steps)
 Your basic config is complete! But the features are only just beginning. Read on to take your config to the next level! Or don't. Fzzy Config will work for you either way :).
 
 ### Validation
@@ -149,21 +158,23 @@ Most aspects of a config are automatically translatable. You don't _have_ to tra
 
 Translations are covered in detail at [[Translation]].
 
-## 5. Integration into your Mod [⤴](https://github.com/fzzyhmstrs/fconfig/wiki/New-Configs#steps)
+## 5. Integration into your Mod [⤴](#steps)
 You've got a shiny, polished up config! How do you use it? There are two basic answers, both very easy!
 1. Simply call the fields as you normally would.
 2. `ValidatedField` instances are suppliers. Simply add `.get()` to the end.
 
-```kotlin 
-// kotlin
+<CodeTabs>
+
+```java !!tabs Java
+double myConfigDouble = Configs.myConfig.bareDouble; //plain fields are just plain fields. access them like normal!
+
+boolean myConfigSectionValidated = Configs.myConfig.mySection.sectionBoolean.get(); //defined validation wraps your values in a Supplier. 
+```
+
+```kotlin !!tabs Kotlin
 val myConfigDouble = Configs.myConfig.bareDouble //plain fields are just plain fields. access them like normal!
 
 val myConfigSectionValidated = Configs.myConfig.mySection.sectionBoolean.get() //defined validation wraps your values in a Supplier. 
 ```
 
-```java
-// java 
-double myConfigDouble = Configs.myConfig.bareDouble; //plain fields are just plain fields. access them like normal!
-
-boolean myConfigSectionValidated = Configs.myConfig.mySection.sectionBoolean.get(); //defined validation wraps your values in a Supplier. 
-```
+</CodeTabs>

@@ -32,11 +32,12 @@ Like single config layouts, items within a config class should be organized in a
 
 ## 2. Organization
 Large configs benefit from being broken up into parts, if separate config classes aren't suitable. Fzzy Config supports organization in three primary ways for two main purposes, sub-configuration and layout flow. Two of these methods also act as _anchors_ ([See below](https://github.com/fzzyhmstrs/fconfig/wiki/Laying-out-Configs#anchors)).
-| Strategy | UI Style | Repeatable | Anchor |
-|----------|----------|------------|--------|
-| [Sections](https://github.com/fzzyhmstrs/fconfig/wiki/Laying-out-Configs#sections) | Opens new screen | Yes | Yes|
-| [Objects](https://github.com/fzzyhmstrs/fconfig/wiki/Laying-out-Configs#objects) | Opens popup | Yes | No |
-| [Groups](https://github.com/fzzyhmstrs/fconfig/wiki/Laying-out-Configs#groups) | Collapsible inline grouping | No | Yes |
+
+| Strategy              | UI Style                    | Repeatable | Anchor |
+|-----------------------|-----------------------------|------------|--------|
+| [Sections](#sections) | Opens new screen            | Yes        | Yes    |
+| [Objects](#objects)   | Opens popup                 | Yes        | No     |
+| [Groups](#groups)     | Collapsible inline grouping | No         | Yes    |
 
 If you use a common subclass for creation of repeating sub-elements, consider using the [`@Translation`](https://github.com/fzzyhmstrs/fconfig/wiki/Annotations#translation-) annotation, which will let you define common lang for all instances of the repeating element. 
 
@@ -45,36 +46,9 @@ Subconfig classes can be extended from [`ConfigSection`](https://fzzyhmstrs.gith
 * _Sections are recommended for large sections of a parent config that belong together, where separating them into individual configs completely might be laborious._
 * _For example, if you have an `ItemsConfig`, you may have a `Swords` section, an `Axes` section, and so on._
 
-```kotlin
-// kotlin
-class ItemsConfig: Config(Identifier.of(MOD_ID, "items_config")) {
+<CodeTabs>
 
-    //settings that apply to all items can go in the parent class
-
-    var overallItemSetting = true
-    var overallItemWeight = 10
-
-    // category-specific settings can go into sections
-
-    var axes = AxesSection() // axe settings are stored here
-    class AxesSection: ConfigSection() { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
-        /* Axe-specific settings go here */
-    }
-
-    var swords = SwordsSection() // axe settings are stored here
-    class SwordsSection: ConfigSection() { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
-        /* Sword-specific settings go here */
-    }
-
-    var tridents = TridentsSection() // axe settings are stored here
-    class TridentsSection: ConfigSection() { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
-        /* Trident-specific settings go here */
-    }
-}
-```
-
-```java
-// java
+```java !!tabs Java
 public class ItemsConfig extends Config {
 
     public ItemsConfig() {
@@ -105,42 +79,43 @@ public class ItemsConfig extends Config {
 }
 ```
 
+```kotlin !!tabs Kotlin
+class ItemsConfig: Config(Identifier.of(MOD_ID, "items_config")) {
+
+    //settings that apply to all items can go in the parent class
+
+    var overallItemSetting = true
+    var overallItemWeight = 10
+
+    // category-specific settings can go into sections
+
+    var axes = AxesSection() // axe settings are stored here
+    class AxesSection: ConfigSection() { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
+        /* Axe-specific settings go here */
+    }
+
+    var swords = SwordsSection() // axe settings are stored here
+    class SwordsSection: ConfigSection() { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
+        /* Sword-specific settings go here */
+    }
+
+    var tridents = TridentsSection() // axe settings are stored here
+    class TridentsSection: ConfigSection() { // a Config Section. Self-serializable, and will add a "layer" to the GUI.
+        /* Trident-specific settings go here */
+    }
+}
+```
+
+</CodeTabs>
+
 ### Objects
 [[Validation]] is its own topic, but for the sake of this article, FzzyConfig supports arbitrary Simple Objects (POJO/plain old java objects, POKO/plain old koktlin objects) with its validation engine. Validated Objects (called [`ValidatedAny`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-any) internally) will open a 'popup' window where the user can make selections similarly to a config screen.
 * _Objects are recommended where you need small, repeating blocks of particular settings that the user may want to copy and paste between settings_
 * _For example, if you have an `EntityConfig, you may have an object per entity that defines common settings like health, damage, movement speed, and so on._
 
-```kotlin
-// kotlin
-class BoisConfig: Config(Identifier.of(MOD_ID, "bois_config")) {
+<CodeTabs>
 
-    // If there are common clusters of settings you want to use in many places, such as mob stats,
-    // you can use ValidatedAny to implement arrangements of settings from one common source
-    // the empty constructor is needed for serialization
-    class BoiStats(hp: Double, dmg: Double, spd: Double): Walkable { //this doesn't *have* to implement Walkable, but it enables automatic validation
-
-        constructor(): this(20.0, 5.0, 0.3) // empty constructor for serialization and validation
-
-        var health = hp
-        var damage = dmg
-        var speed = spd
-    }
-
-    //settings built from your generic boi stats object
-
-    var bigBoi = ValidatedAny(BoiStats(40.0,8.0,0.15))
-
-    var littleBoi = ValidatedAny(BoiStats(10.0,1.0,0.4))
-
-    var regularBoi = ValidatedAny(BoiStats())
-
-    // you don't need to use ValidatedAny! FzzyConfig knows to wrap objects internally if they implement Walkable
-    var plainBoi = BoiStats()
-}
-```
-
-```java
-// java
+```java !!tabs Java
 public class BoisConfig extends Config {
 
     public BoisConfig() {
@@ -180,6 +155,36 @@ public class BoisConfig extends Config {
 }
 ```
 
+```kotlin !!tabs Kotlin
+class BoisConfig: Config(Identifier.of(MOD_ID, "bois_config")) {
+
+    // If there are common clusters of settings you want to use in many places, such as mob stats,
+    // you can use ValidatedAny to implement arrangements of settings from one common source
+    // the empty constructor is needed for serialization
+    class BoiStats(hp: Double, dmg: Double, spd: Double): Walkable { //this doesn't *have* to implement Walkable, but it enables automatic validation
+
+        constructor(): this(20.0, 5.0, 0.3) // empty constructor for serialization and validation
+
+        var health = hp
+        var damage = dmg
+        var speed = spd
+    }
+
+    //settings built from your generic boi stats object
+
+    var bigBoi = ValidatedAny(BoiStats(40.0,8.0,0.15))
+
+    var littleBoi = ValidatedAny(BoiStats(10.0,1.0,0.4))
+
+    var regularBoi = ValidatedAny(BoiStats())
+
+    // you don't need to use ValidatedAny! FzzyConfig knows to wrap objects internally if they implement Walkable
+    var plainBoi = BoiStats()
+}
+```
+
+</CodeTabs>
+
 ### Groups
 Added as of Fzzy Config 0.6.0. Groups are inline organization elements that don't _structurally* change the config internally in any way. They are only used for visual organization of information in a config settings list, and as an anchor for quick navigation.
 
@@ -191,21 +196,9 @@ Important group concepts
 * Groups nest; if you define multiple groups before popping any of them, you will get a nested sub-group.
 * Pop for each push; not doing so will lead to undefined behavior. You can pop multiple groups on one setting, both/all groups will end with that multi-popped field.
 
-```kotlin
-//kotlin
-var group1 = ConfigGroup("test_group") //"Pushes" a new group. Any settings added below this point will be included into the group until it is popped.
+<CodeTabs>
 
-var groupSetting1 = TODO()
-var groupSetting2 = TODO()
-var groupSetting3 = TODO()
-@ConfigGroup.Pop //pop the group to close it. Settings below this point won't be part of "test_group"
-var groupSettingN = TODO()
-
-var notInGroupSetting = TODO()
-```
-
-```java
-//java
+```java !!tabs Java
 public ConfigGroup group1 = new ConfigGroup("test_group"); //"Pushes" a new group. Any settings added below this point will be included into the group until it is popped.
 
 public Object groupSetting1 = TODO();
@@ -217,8 +210,22 @@ public Object groupSettingN = TODO();
 public Object notInGroupSetting = TODO();
 ```
 
+```kotlin !!tabs Kotlin
+var group1 = ConfigGroup("test_group") //"Pushes" a new group. Any settings added below this point will be included into the group until it is popped.
+
+var groupSetting1 = TODO()
+var groupSetting2 = TODO()
+var groupSetting3 = TODO()
+@ConfigGroup.Pop //pop the group to close it. Settings below this point won't be part of "test_group"
+var groupSettingN = TODO()
+
+var notInGroupSetting = TODO()
+```
+
+</CodeTabs>
+
 ## 3. Anchors
-Anchors are a concept introduced in Fzzy Config 0.6.0. Much like anchors in webpages, anchors are "points of interest" that you can fast-navigate to from within the config GUI. Back in [Organization](https://github.com/fzzyhmstrs/fconfig/wiki/Laying-out-Configs#organization), two of three anchors were introduced. The third is of course configs themselves.
+Anchors are a concept introduced in Fzzy Config 0.6.0. Much like anchors in webpages, anchors are "points of interest" that you can fast-navigate to from within the config GUI. Back in [Organization](#2-organization), two of three anchors were introduced. The third is of course configs themselves.
 * Configs
 * Config Sections
 * Groups

@@ -20,7 +20,7 @@ Create a new Registrar using the `PlatformApi` accessed through the `ConfigApi`.
 
 <CodeTabs>
 
-```kotlin !!tabs Kotlin
+```kotlin !!tabs Kotlin !!tabs Kotlin
 val myItemRegistrar: Registrar<Item> = ConfigApi.platform().createRegistrar(MOD_ID, Registries.ITEM)
 ```
 
@@ -37,7 +37,7 @@ Once you have a registrar, there are two primary activities you need to do with 
 
 <CodeTabs>
 
-```kotlin !!tabs Kotlin
+```kotlin !!tabs Kotlin !!tabs Kotlin
 val myItemRegistrar: Registrar<Item> = ConfigApi.platform().createRegistrar(MOD_ID, Registries.ITEM)
 
 val ITEM_1: RegistrySupplier<Item> = myItemRegistrar.register("item_1", Supplier { Item1() })

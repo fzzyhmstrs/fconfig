@@ -53,57 +53,75 @@ All primitive number types have validation tools. Validation:
 
 ### ValidatedNumber
 Number validation can be defined by using one of the six subclasses of `ValidatedNumber`. By default the allowable min and max will be the entire range of the type (Integer.MIN_VALUE to Integer.MAX_VALUE, for example)
-```kotlin
-//kotlin
-var mySimpleFloat = 0.5f // this value is backed by automatic validation, with no max or min bound
-var myValidatedFloat = ValidatedFloat(0.5f, 1f, 0f) // default value, max value, min value
-```
 
-```java
-//java
+<CodeTabs>
+
+```java !!tabs Java
 public float myValidatedFloat = 0.5f; // this value is backed by automatic validation, with no max or min bound
 public ValidatedFloat myValidatedFloat = new ValidatedFloat(0.5f,1f,0f); // default value, max value, min value
 ```
 
-### Annotations
-Validated Numbers each have their own partnered Annotation you can use to annotate an otherwise plain field with.
-```kotlin
-// kotlin
-@ValidatedFloat.Restrict(0f, 1f) // the previously unbounded simple float now has automatic validation with bounds between 0 and 1.
-var myValidatedFloat = 0.5f
+```kotlin !!tabs Kotlin
+var mySimpleFloat = 0.5f // this value is backed by automatic validation, with no max or min bound
+var myValidatedFloat = ValidatedFloat(0.5f, 1f, 0f) // default value, max value, min value
 ```
 
-```java
-// java
+</CodeTabs>
+
+### Annotations
+Validated Numbers each have their own partnered Annotation you can use to annotate an otherwise plain field with.
+
+<CodeTabs>
+
+```java !!tabs Java
 @ValidatedFloat.Restrict(min = 0f, max = 1f) // the previously unbounded simple float now has automatic validation with bounds between 0 and 1.
 public float myValidatedFloat = 0.5f;
+
+@ValidatedInt.Restrict(min = 0, type = ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS) //Restrict can also set the widget type used in the config GUI
+public int myWidgetTypeInt = 1;
 ```
+
+```kotlin !!tabs Kotlin
+@ValidatedFloat.Restrict(0f, 1f) // the previously unbounded simple float now has automatic validation with bounds between 0 and 1.
+var myValidatedFloat = 0.5f
+
+@ValidatedInt.Restrict(min = 0, type = ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS) //Restrict can also set the widget type used in the config GUI
+var myWidgetTypeInt: Int = 1
+```
+
+</CodeTabs>
 
 ### Shorthands
 Fzzy Config has shorthand contructors for validated numbers. These are generally used to provide Validators for other validation constructors, like Lists or Maps, where you need a ValidatedNumber but may not have any need for restriction.
-```kotlin
-// kotlin
-var myValidatedFloat = ValidatedFloat()
-```
 
-```java
-//java
+<CodeTabs>
+
+```java !!tabs Java
 public ValidatedFloat myValidatedFloat = new ValidatedFloat();
 ```
 
+```kotlin !!tabs Kotlin
+var myValidatedFloat = ValidatedFloat()
+```
+
+</CodeTabs>
+
 ## Booleans and Conditions [⤴](#validation-options)
 _See below if you want to attach secondary conditions to your boolean setting_. Booleans are very simple things. In general, you never need to define validation for booleans except when needed for use in other validation, or if you need to gate it with conditions.
-```kotlin
-// kotlin
+
+<CodeTabs>
+
+```java !!tabs Java
+public boolean mySimpleBoolean = true; // this will work fine.
+public ValidatedBoolean myValidatedBoolean = new ValidatedBoolean(); // typically not needed; ValidatedBoolean might be used if you are making a ValidatedMap<String, Boolean>.
+```
+
+```kotlin !!tabs Kotlin
 var mySimpleBoolean = true // this will work fine.
 var myValidatedBoolean = ValidatedBoolean() // typically not needed; ValidatedBoolean might be used if you are making a ValidatedMap<String, Boolean>.
 ```
 
-```java
-//java
-public boolean mySimpleBoolean = true; // this will work fine.
-public ValidatedBoolean myValidatedBoolean = new ValidatedBoolean(); // typically not needed; ValidatedBoolean might be used if you are making a ValidatedMap<String, Boolean>.
-```
+</CodeTabs>
 
 ### Conditions
 `ValidatedBoolean` can be converted to a `ValidatedCondition` with `withCondition`. Then using the method `getConditionally` you can gate the plain boolean setting behind secondary checks.
@@ -111,17 +129,10 @@ public ValidatedBoolean myValidatedBoolean = new ValidatedBoolean(); // typicall
 * This setting is only relevant if some list isn't empty
 * Only relevant in `EnvType.CLIENT`/`Dist.CLIENT` settings
 * Etc.
-```kotlin
-// kotlin
-var myValidatedBoolean = ValidatedBoolean().withCondition({ lootTables.isNotEmpty() }, "Loot table list can't be empty") // boolean is gated behind a second check for a loot list. If that fails, will always return false on getConditionally
 
-fun booleanIsTrue(): Boolean {
-    return myValidatedBoolean.getConditionally() //always false if the list is empty
-}
-```
+<CodeTabs>
 
-```java
-//java
+```java !!tabs Java
 //Note the type change!
 public ValidatedCondition myValidatedBoolean = new ValidatedBoolean().withCondition(() -> !lootTables.isEmpty(), "Loot table list can't be empty"); // boolean is gated behind a second check for a loot list. If that fails, will always return false on getConditionally
 
@@ -130,6 +141,15 @@ public boolean booleanIsTrue() {
 }
 ```
 
+```kotlin !!tabs Kotlin
+var myValidatedBoolean = ValidatedBoolean().withCondition({ lootTables.isNotEmpty() }, "Loot table list can't be empty") // boolean is gated behind a second check for a loot list. If that fails, will always return false on getConditionally
+
+fun booleanIsTrue(): Boolean {
+    return myValidatedBoolean.getConditionally() //always false if the list is empty
+}
+```
+
+</CodeTabs>
 
 ## Collections [⤴](#validation-options)
 Fzzy Config has validation tools for lists, maps, and sets. Each of these constructs has builders and other intricacies that are best digested thoroughly by visiting the documentation:
@@ -140,36 +160,55 @@ Fzzy Config has validation tools for lists, maps, and sets. Each of these constr
 
 ### Validation Conversion
 Any `ValidatedField` can be converted into a list or set implementation with it as backing validation using the `toList()` and `toSet()` methods, respectively. In addition, collections can be converted to [ValidatedChoice](#choices) using their `toChoices()` method
-```kotlin
-//kotlin
-//wraps the vararg valued provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
-var listFromField = ValidatedIdentifier().toList(Identifier.of("stick"), Identifier.of("blaze_rod"))
-```
 
-```java
-//java
+<CodeTabs>
+
+```java !!tabs Java
 //wraps the vararg valued provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
 public ValidatedList<Identifier> listFromField = new ValidatedIdentifier().toList(Identifier.of("stick"), Identifier.of("blaze_rod"));
 ```
 
-### Static Initializers
-ValidatedList and Set have a series of static methods that can be used to initialize a variety of collections of given common types, much in the same vein as the java `List.of()` or kotlin `listOf()`.
-```kotlin
-// kotlin
-var validatedIntList = ValidatedList.ofInt(1,2,5,10)
-var validatedIntSet = ValidatedSet.ofInt(1,2,5,10)
+```kotlin !!tabs Kotlin
+//wraps the vararg valued provided with a blank validated field (identifiers in this case). validation with actual bounds and logic can of course be used too
+var listFromField = ValidatedIdentifier().toList(Identifier.of("stick"), Identifier.of("blaze_rod"))
 ```
 
-```java
-// java
-public ValidatedList<Integer> validatedIntList = ValidatedList.ofInt(1,2,5,10);
-public ValidatedSet<Integer> validatedIntSet = ValidatedSet.ofInt(1,2,5,10);
+</CodeTabs>
+
+### Static Initializers
+ValidatedList and Set have a series of static methods that can be used to initialize a variety of collections of given common types, much in the same vein as the java `List.of()` or kotlin `listOf()`.
+
+<CodeTabs>
+
+```java !!tabs Java
+public ValidatedList<Integer> validatedIntList = ValidatedList.ofInt(1, 2, 5, 10);
+public ValidatedSet<Integer> validatedIntSet = ValidatedSet.ofInt(1, 2, 5, 10);
 ```
+
+```kotlin !!tabs Kotlin
+var validatedIntList = ValidatedList.ofInt(1, 2, 5, 10)
+var validatedIntSet = ValidatedSet.ofInt(1, 2, 5, 10)
+```
+
+</CodeTabs>
 
 ## Enums [⤴](#validation-options)
 Any enum included in a Config is automatically validated, but much like booleans making ValidatedEnums may be useful for constructing other valdiation types.
-```kotlin
-// kotlin
+
+<CodeTabs>
+
+```java !!tabs Java
+public enum MyEnum {
+    A,
+    B,
+    C
+}
+
+public MyEnum simpleEnum = MyEnum.A; //this will work most of the time
+public ValidatedEnum<MyEnum> validatedEnum = new ValidatedEnum(MyEnum.A, ValidatedEnum.WidgetType.CYCLING); //ValidatedEnum can be used to customize the GUI appearance
+```
+
+```kotlin !!tabs Kotlin
 enum class MyEnum {
     A,
     B,
@@ -181,17 +220,7 @@ var validatedEnum = ValidatedEnum(MyEnum.A, ValidatedEnum.WidgetType.CYCLING) //
 var validatedEnumExtension = MyEnum.A.validated() // kotlin extension function for validating an enum automatically
 ```
 
-```java
-// java
-public enum MyEnum {
-    A,
-    B,
-    C
-}
-
-public MyEnum simpleEnum = MyEnum.A; //this will work most of the time
-public ValidatedEnum<MyEnum> validatedEnum = new ValidatedEnum(MyEnum.A, ValidatedEnum.WidgetType.CYCLING); //ValidatedEnum can be used to customize the GUI appearance
-```
+</CodeTabs>
 
 ### Translation
 Enums can implement a special interface `EnumTranslatable`. See [Translation](https://github.com/fzzyhmstrs/fconfig/wiki/Translation#enumtranslatable) for details.
@@ -218,41 +247,30 @@ For more details, check out the related documentation:
 ## TagKey [⤴](#validation-options)
 FzzyConfig can automatically validate TagKeys from any registry. Validated Tags also provide suggestions to the user.
 
-```kotlin
-// kotlin
+<CodeTabs>
+
+```java !!tabs Java
+// Validated tags accept a predicate that can be used to filter a tag further. This example allows any tag except `minecraft:burnable_logs`
+public ValidatedTagKey<Item> validatedTag = ValidatedTagKey(ItemTags.AXES, id -> id != Identifier.of("burnable_logs"));
+```
+
+```kotlin !!tabs Kotlin
 // Validated tags accept a predicate that can be used to filter a tag further. This example will allow any vanilla minecraft tag.
 var validatedTag = ValidatedTagKey(ItemTags.AXES) { id: Identifier -> id.namespace == "minecraft" }
 var shortHandTag = ItemTags.AXES.validated() // kotlin extension function for quick validation
 ```
 
-```java
-// java
-// Validated tags accept a predicate that can be used to filter a tag further. This example allows any tag except `minecraft:burnable_logs`
-public ValidatedTagKey<Item> validatedTag = ValidatedTagKey(ItemTags.AXES, id -> id != Identifier.of("burnable_logs"));
-```
+</CodeTabs>
 
 ## Ingredient [⤴](#validation-options)
 Minecraft ingredients can be validated, with restrictions placed on the three ways you can construct Ingredients (single item, item list, item tag)
 
 ### Creation
 ValidatedIngredients are constructed from one of three constructors based on the type of ingredient desired as default
-```kotlin
-// kotlin
-// A validated Ingredient for a single item
-var validatedIngredientItem = ValidatedIngredient(Identifier.of("oak_log"))
 
-// A validated ingredient accepting a set of items
-var validatedIngredientList = ValidatedIngredient(setOf(Identifier.of("oak_log"), Identifier.of("dark_oak_log")))
+<CodeTabs>
 
-// A validated ingredient utilizing a tag
-var validatedIngredientTag = ValidatedIngredient(ItemTags.LOGS_THAT_BURN)
-
-//get the ingredient from the holder for use in Materials etc
-var validatedIngredientIngredient: Ingredient = validatedIngredientItem.toIngredient()
-```
-
-```java
-//java
+```java !!tabs Java
 // A validated Ingredient for a single item
 public ValidatedIngredient validatedIngredientItem = new ValidatedIngredient(Identifier.of("oak_log"));
 
@@ -266,6 +284,22 @@ public ValidatedIngredient validatedIngredientTag = new ValidatedIngredient(Item
 public Ingredient validatedIngredientIngredient = validatedIngredientItem.toIngredient();
 ```
 
+```kotlin !!tabs Kotlin
+// A validated Ingredient for a single item
+var validatedIngredientItem = ValidatedIngredient(Identifier.of("oak_log"))
+
+// A validated ingredient accepting a set of items
+var validatedIngredientList = ValidatedIngredient(setOf(Identifier.of("oak_log"), Identifier.of("dark_oak_log")))
+
+// A validated ingredient utilizing a tag
+var validatedIngredientTag = ValidatedIngredient(ItemTags.LOGS_THAT_BURN)
+
+//get the ingredient from the holder for use in Materials etc
+var validatedIngredientIngredient: Ingredient = validatedIngredientItem.toIngredient()
+```
+
+</CodeTabs>
+
 ### Usage
 `ValidatedIngredient` is not an ingredient itself, and does not hold ingredients. It lazily creates ingredients only when needed. This prevents an ingredient from being created before the source for the ingredient is ready (before a tag is populated, for example). Call `toIngredient()` to have the validation supply an ingredient.
 
@@ -278,16 +312,20 @@ See examples of `ValidatedAny` at [Laying out Configs](https://github.com/fzzyhm
 
 ## Choices [⤴](#validation-options)
 Create non-enum sets of choices (sets of integers, strings, and so on). Lists and sets can be automatically converted to choices with their `toChoices()` method. `ValidatedChoice` is validation of the type the choices are, so the `get()` and `apply()` methods will return the current choice in the relevant type, and take a new choice in that type as well.
-```kotlin
-// kotlin
-// Defines a set of weights the user can choose from. Note the use of ValidatedSets toChoices()
-var validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(ValidatedChoice.WidgetType.CYCLING) //Validated choice has optional GUI and translation controls too.
-```
-```java
-// java
+
+<CodeTabs>
+
+```java !!tabs Java
 // Defines a set of weights the user can choose from. Note the use of ValidatedSets toChoices()
 public ValidatedChoice<Integer> validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(ValidatedChoice.WidgetType.CYCLING); //Validated choice has optional GUI and translation controls too.
 ```
+
+```kotlin !!tabs Kotlin
+// Defines a set of weights the user can choose from. Note the use of ValidatedSets toChoices()
+var validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(ValidatedChoice.WidgetType.CYCLING) //Validated choice has optional GUI and translation controls too.
+```
+
+</CodeTabs>
 
 ### Translation Providers
 The type and values of choices provided may not be automatically [`Translatable`](https://github.com/fzzyhmstrs/fconfig/wiki/Translation), such as plain numbers or strings. If you still want to provide translations and tooltips for your choices, ValidatedChoice can accept a translationProvider and descriptionProvider; BiFunctions that convert the choice to display into a translated text and hovered tooltip instead.
@@ -295,17 +333,10 @@ The type and values of choices provided may not be automatically [`Translatable`
 Using the weights example from above, we can build out some translations and descriptions for the weight options.
 
 Depending on the translation and descriptions provided, the choices might display like `"Ultra Rare", "Very Rare", "Rare", "Uncommon", "Common"` instead of `1, 2, 5, 10, 20`, with hovered tooltips that explain what each rarity value means (chance an item will appear, for example)
-```kotlin
-// kotlin
-// now we build out a translation and description provider. 
-var validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(
-    ValidatedChoice.WidgetType.CYCLING,
-    ValidatedChoice.translate(),  //ValidatedChoice has a helper method that produces an automatic translated text based on a pre-defined key format.
-    ValidatedChoice.translate()   //see the documentation for details on the key format.
-)
-```
-```java
-// java
+
+<CodeTabs>
+
+```java !!tabs Java
 // Defines a set of weights the user can choose from. Note the use of ValidatedSets toChoices()
 public ValidatedChoice<Integer> validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(
     ValidatedChoice.WidgetType.CYCLING,
@@ -314,8 +345,39 @@ public ValidatedChoice<Integer> validatedWeightChoices = ValidateSet.ofInt(1, 2,
 ); 
 ```
 
+```kotlin !!tabs Kotlin
+// now we build out a translation and description provider. 
+var validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(
+    ValidatedChoice.WidgetType.CYCLING,
+    ValidatedChoice.translate(),  //ValidatedChoice has a helper method that produces an automatic translated text based on a pre-defined key format.
+    ValidatedChoice.translate()   //see the documentation for details on the key format.
+)
+```
+
+</CodeTabs>
+
 ## Choice Lists [⤴](#validation-options)
-As of Fzzy Config 0.6.0, 
+As of Fzzy Config 0.6.0, create sets of selectable and de-selectable choices with `ValidatedChoiceList`. This is useful for a feature-flag-style setting, polling for active flags using `List#contains`.
+
+Like `ValidatedChoice`, this validation is of the type `List<T>`, where T is your choice type. Like `ValidatedList`, this validation implements the `List` interface, so can be used directly for list operations.
+
+Helper methods `toChoiceList` in `ValidatedList / Set / Choice` make creation of a choice list easier
+
+<CodeTabs>
+
+```java !!tabs Java
+ValidatedChoiceList<String> enabledFeatures = ValidatedList.ofString("dev_mode", "logging", "fail_fast", "compatibility_mode").toChoiceList(listOf("logging"));
+```
+
+```kotlin !!tabs Kotlin
+val enabledFeatures = ValidatedList.ofString("dev_mode", "logging", "fail_fast", "compatibility_mode").toChoiceList(listOf("logging"))
+```
+
+</CodeTabs>
+
+The choice list appears in-GUI as a popup with the available choices, each in an enabled or disabled state. Clicking on any choice flip it's state between enabled and disabled.
+
+![Validated Choice List Popup](https://github.com/user-attachments/assets/f1d54c0e-9bc6-46dc-89eb-003383f3426c)
 
 ## Pairs [⤴](#validation-options)
 Validation can be joined into pairs, which are then stored as one `ValidatedPair.Tuple`. This allows you to present two Validations as one "setting", that the user understands are part of the same "unit" of functionality. For example:
@@ -326,29 +388,9 @@ Other features:
 * Pairs can have custom labels added to better illustrate what each half of the pair is accomplishing. "Min" and "Max" for the above range example, perhaps.
 * Pair elements can also be stacked on top of each other. See the constructor method below using `ValidatedPair.LayoutStyle.STACKED`.
 
-```kotlin
-//kotlin
+<CodeTabs>
 
-//Validated field has a mapping method 'pairWith' that automatically applies the default values of each half into the Pairs default value
-val pair1 = ValidatedInt(1, 10, 0).pairWith(ValidatedInt(10, 20, 10))
-
-//you can still do it the other way if you want. This also lets you stack the two settings on top of each other if desired.
-val pair1Long = ValidatedPair(ValidatedPair.Tuple(1, 10), ValidatedInt(1, 10, 0), ValidatedInt(10, 20, 10), ValidatedPair.LayoutStyle.STACKED)
-
-//if both halves are the same validation type, there is a shorthand static method. You can define the default tuple and layout style optionally.
-val pairSame = ValidatedPair.of(ValidatedInt(1))
-
-//Add labels with the withLabels extension function
-val pairSameLabeled = ValidatedPair.of(ValidatedInt(1)).withLabels(LeftText, RightText)
-
-//Pairs store their value in a nested class `Tuple`. To retrieve your setting you would do something like
-val pairMin: Int = pair1.get().left
-val pairMax: Int = pair1.get().right
-```
-
-```java
-//java
-
+```java !!tabs Java
 //Validated field has a mapping method 'pairWith' that automatically applies the default values of each half into the Pairs default value
 public ValidatedPair<Int, Int> pair1 = (new ValidatedInt(1, 10, 0)).pairWith(new ValidatedInt(10, 20, 10));
 
@@ -366,6 +408,26 @@ int pairMin = pair1.get().left;
 int pairMax = pair1.get().right;
 ```
 
+```kotlin !!tabs Kotlin
+//Validated field has a mapping method 'pairWith' that automatically applies the default values of each half into the Pairs default value
+val pair1 = ValidatedInt(1, 10, 0).pairWith(ValidatedInt(10, 20, 10))
+
+//you can still do it the other way if you want. This also lets you stack the two settings on top of each other if desired.
+val pair1Long = ValidatedPair(ValidatedPair.Tuple(1, 10), ValidatedInt(1, 10, 0), ValidatedInt(10, 20, 10), ValidatedPair.LayoutStyle.STACKED)
+
+//if both halves are the same validation type, there is a shorthand static method. You can define the default tuple and layout style optionally.
+val pairSame = ValidatedPair.of(ValidatedInt(1))
+
+//Add labels with the withLabels extension function
+val pairSameLabeled = ValidatedPair.of(ValidatedInt(1)).withLabels(LeftText, RightText)
+
+//Pairs store their value in a nested class `Tuple`. To retrieve your setting you would do something like
+val pairMin: Int = pair1.get().left
+val pairMax: Int = pair1.get().right
+```
+
+</CodeTabs>
+
 ## Mapping [⤴](#validation-options)
 As of Fzzy Config 0.5.0, Validation can be mapped to any other convertible type, much like Minecraft's Codecs. The validation will be stored as if it were the underlying mapped-from type, enforce limitations using the underlying type, the in-game widgets will be based on the underlying validation, and so on.
 
@@ -373,20 +435,10 @@ As of Fzzy Config 0.5.0, Validation can be mapped to any other convertible type,
 Fzzy Config doesn't have built in validation for Characters. With mapping, we can easily build our own.
 
 NOTE: The in-game widget for this will still be based on an int, so will be a slider or a number entry box. This example is illustrative only, as in this case a dedicated validation with a character selection box would probably be better.
-```kotlin
-//kotlin
 
-//Starting with a ValidatedInt, which characters map easily to, we define validation that bounds the int to the valid character range
-//Then using map, we map the int to and from a Char, just like Codec mapping.
-//This provides a ValidatedField<Char>, so calling get() will provide a character!
-var validatedCharacter = ValidatedInt(0, Char.MAX_VALUE, Char.MIN_VALUE).map(
-    { i: Int -> i.toChar() },
-    { c: Char -> c.code }
-)
-```
-```java
-//java
+<CodeTabs>
 
+```java !!tabs Java
 //Starting with a ValidatedInt, which characters map easily to, we define validation that bounds the int to the valid character range
 //Then using map, we map the int to and from a Char, just like Codec mapping.
 //This provides a ValidatedField<Char>, so calling get() will provide a character!
@@ -395,3 +447,15 @@ ValidatedField<Character> validatedCharacter = new ValidatedInt(0, Character.MAX
     c -> Character.getNumericValue(c)
 );
 ```
+
+```kotlin !!tabs Kotlin
+//Starting with a ValidatedInt, which characters map easily to, we define validation that bounds the int to the valid character range
+//Then using map, we map the int to and from a Char, just like Codec mapping.
+//This provides a ValidatedField<Char>, so calling get() will provide a character!
+var validatedCharacter = ValidatedInt(0, Char.MAX_VALUE, Char.MIN_VALUE).map(
+    { i: Int -> i.toChar() },
+    { c: Char -> c.code }
+)
+```
+
+</CodeTabs>
