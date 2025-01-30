@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.decoration
 
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import net.minecraft.util.Identifier
 
@@ -16,7 +17,16 @@ class SmallSpriteDecoration: SpriteDecoration {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
+    @Deprecated("use TextureProvider constructor. Scheduled for removal 0.7.0")
     constructor(tex: TextureSet): super(tex, 10, 10)
+
+    /**
+     * A small decoration using a texture set
+     * @param tex [TextureSet] texture set for normal/disabled/highlighted textures
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    constructor(tex: TextureProvider): super(tex, 10, 10)
 
     /**
      * A small decoration with one texture used in all circumstances

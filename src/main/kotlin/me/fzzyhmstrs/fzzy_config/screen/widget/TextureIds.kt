@@ -162,25 +162,25 @@ object TextureIds {
     //////////// SMALL (10/11x10) /////////////
 
     /** wireframe "copy" symbol of two pieces of paper overlapping. 10x10 */
-    val CONTEXT_COPY = TextureSet("widget/context/copy".fcId(), "widget/context/copy_disabled".fcId(), "widget/context/copy".fcId())
+    val CONTEXT_COPY: TextureProvider = TextureSet("widget/context/copy".fcId(), "widget/context/copy_disabled".fcId(), "widget/context/copy".fcId())
 
     /** wireframe "paste" symbol of a clipboard. 10x10 */
-    val CONTEXT_PASTE = TextureSet("widget/context/paste".fcId(), "widget/context/paste_disabled".fcId(), "widget/context/paste".fcId())
+    val CONTEXT_PASTE: TextureProvider = TextureSet("widget/context/paste".fcId(), "widget/context/paste_disabled".fcId(), "widget/context/paste".fcId())
 
     /** wireframe arrow pointing right. 10x10 */
-    val CONTEXT_FORWARD = TextureSet("widget/context/forward".fcId(), "widget/context/forward_disabled".fcId(), "widget/context/forward".fcId())
+    val CONTEXT_FORWARD: TextureProvider = TextureSet("widget/context/forward".fcId(), "widget/context/forward_disabled".fcId(), "widget/context/forward".fcId())
 
     /** wireframe "undo" symbol of an arrow lopping left to right and pointing back left. 10x10 */
-    val CONTEXT_REVERT = TextureSet("widget/context/revert".fcId(), "widget/context/revert_disabled".fcId(), "widget/context/revert".fcId())
+    val CONTEXT_REVERT: TextureProvider = TextureSet("widget/context/revert".fcId(), "widget/context/revert_disabled".fcId(), "widget/context/revert".fcId())
 
     /** wireframe of two arrows pointing in a circular motion. 10x10 */
-    val CONTEXT_RESTORE = TextureSet("widget/context/restore".fcId(), "widget/context/restore_disabled".fcId(), "widget/context/restore".fcId())
+    val CONTEXT_RESTORE: TextureProvider = TextureSet("widget/context/restore".fcId(), "widget/context/restore_disabled".fcId(), "widget/context/restore".fcId())
 
     /** wireframe of a floppy disk. 10x10 */
-    val CONTEXT_SAVE = TextureSet("widget/context/save".fcId(), "widget/context/save_disabled".fcId(), "widget/context/save".fcId())
+    val CONTEXT_SAVE: TextureProvider = TextureSet("widget/context/save".fcId(), "widget/context/save_disabled".fcId(), "widget/context/save".fcId())
 
     /** wireframe of a magnifying glass. 10x10 */
-    val CONTEXT_FIND = TextureSet("widget/context/find".fcId(), "widget/context/find_disabled".fcId(), "widget/context/find".fcId())
+    val CONTEXT_FIND: TextureProvider = TextureSet("widget/context/find".fcId(), "widget/context/find_disabled".fcId(), "widget/context/find".fcId())
 
     /** up arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_UP = "widget/scroll/increment_up".fcId()
