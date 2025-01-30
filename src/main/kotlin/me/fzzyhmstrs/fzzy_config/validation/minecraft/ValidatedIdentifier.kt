@@ -71,6 +71,8 @@ import kotlin.jvm.optionals.getOrNull
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.identifiers
  * @see ofTag
  * @see ofRegistry
+ * @see ofRegistryKey
+ * @see ofDynamicKey
  * @see ofRegistryTags
  * @see ofList
  * @see ofSuppliedList

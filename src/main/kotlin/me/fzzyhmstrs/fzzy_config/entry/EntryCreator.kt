@@ -23,7 +23,6 @@ import java.util.function.BiFunction
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-@Internal
 @Experimental
 @JvmDefaultWithoutCompatibility
 fun interface EntryCreator {
