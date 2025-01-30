@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.decoration
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import net.minecraft.client.gui.DrawContext
@@ -29,7 +30,20 @@ interface SpriteDecorated: Decorated {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    fun textureSet(): TextureSet
+    @Deprecated("Use textures() instead. Scheduled for removal 0.7.0")
+    fun textureSet(): TextureSet {
+        throw UnsupportedOperationException("Implement textures() to provide a TextureProvider impl")
+    }
+
+    /**
+     * [TextureProvider] this decoration will render from
+     * @author fzzyhmstrs
+     * @since 0.6.4
+     */
+    @Suppress("DEPRECATION")
+    fun textures(): TextureProvider {
+        return textureSet()
+    }
 
     /**
      * Width of the texture set in pixels
@@ -50,6 +64,6 @@ interface SpriteDecorated: Decorated {
     override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
         RenderSystem.enableBlend()
         RenderSystem.enableDepthTest()
-        context.drawTex(textureSet().get(enabled, selected), x, y, w, h)
+        context.drawTex(textures().get(enabled, selected), x, y, w, h)
     }
 }

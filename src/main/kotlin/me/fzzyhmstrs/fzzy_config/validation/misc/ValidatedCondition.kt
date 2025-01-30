@@ -296,8 +296,9 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             height,
             FcText.EMPTY,
             { _ -> },
-            Companion.DEFAULT_NARRATION_SUPPLIER,
-            { _ -> })
+            Companion.DEFAULT_ACTIVE_NARRATION_SUPPLIER,
+            { _ -> },
+            null)
     {
 
         init {

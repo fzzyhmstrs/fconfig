@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
@@ -53,7 +54,7 @@ import kotlin.experimental.and
  * @param background [Identifier], nullable - if non-null, will provide a custom background for the widget rendering.
  * @param decoration [Decorated], nullable - if non-null, will render a "decoration" next to the widget. These are the typically white/wireframe icons shown next to certain settings like lists.
  * @author fzzyhmstrs
- * @since 0.5.0, Decorated and PressableTextures incorporated 0.6.0
+ * @since 0.5.0, Decorated and TextureSet incorporated 0.6.0
  */
 class ConfigAction @JvmOverloads constructor(
     private val titleSupplier: Supplier<Text>,
@@ -61,7 +62,7 @@ class ConfigAction @JvmOverloads constructor(
     private val pressAction: Runnable,
     private val decoration: Decorated?,
     private val description: Text? = null,
-    private val background: TextureSet? = null)
+    private val background: TextureProvider? = null)
 :
     EntryWidget<Any>,
     EntryFlag,
@@ -78,7 +79,7 @@ class ConfigAction @JvmOverloads constructor(
         description: Text? = null,
         background: Identifier? = null)
             :
-            this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background?.let { TextureSet(it) })
+            this(titleSupplier, activeSupplier, pressAction, decoration?.let{ SpriteDecoration(it) }, description, background?.let { TextureSet.Single(it) })
 
     private var flags: Byte = 0
     @Internal
@@ -122,7 +123,7 @@ class ConfigAction @JvmOverloads constructor(
         private var titleSupplier: Supplier<Text> = Supplier { FcText.EMPTY }
         private var activeSupplier: Supplier<Boolean> = Supplier { true }
         private var desc: Text? = null
-        private var background: TextureSet? = null
+        private var background: TextureProvider? = null
         private var decoration: Decorated? = null
         private var flags: Byte = 0
 
@@ -169,8 +170,21 @@ class ConfigAction @JvmOverloads constructor(
          * @author fzzyhmstrs
          * @since 0.5.0
          */
-        fun background(background: TextureSet): Builder {
-            this.background = background
+        fun background(id: Identifier): Builder {
+            this.background = TextureSet.Single(id)
+            return this
+        }
+
+        /**
+         * Sets a custom background for the button widget, which will appear when the button is selected and active
+         * @param tex [TextureProvider] provides the textures for the button in various states
+         * @see TextureSet
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.4
+         */
+        fun background(tex: TextureProvider): Builder {
+            this.background = tex
             return this
         }
 
@@ -184,6 +198,19 @@ class ConfigAction @JvmOverloads constructor(
          */
         fun decoration(id: Identifier): Builder {
             this.decoration = SpriteDecoration(id)
+            return this
+        }
+
+        /**
+         * Defines a decoration texture id. This will be drawn to the left of the button widget in the config screen. Decorations are typically 20x20 at the most
+         * @param deco [Decorated] the decoration to render to the left of the button.
+         * @see me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.4
+         */
+        fun decoration(deco: Decorated): Builder {
+            this.decoration = deco
             return this
         }
 

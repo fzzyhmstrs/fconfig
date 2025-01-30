@@ -23,8 +23,9 @@ internal class ContextActionWidget(
         14,
         action.texts.name,
         { _ -> PopupWidget.pop(); action.action.apply(position) },
-        DEFAULT_NARRATION_SUPPLIER,
+        DEFAULT_ACTIVE_NARRATION_SUPPLIER,
         Consumer { _-> },
+        null,
         TextureSet("widget/popup/button_right_click".fcId(), "widget/popup/button_right_click".fcId(), "widget/popup/button_right_click_highlighted".fcId()))
 {
 
