@@ -37,7 +37,7 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
     AbstractTextWidget( 0, 0, 110, 20, FcText.EMPTY, MinecraftClient.getInstance().textRenderer)
 {
 
-    private val textures: TextureSet = TextureSet("widget/text_field".simpleId(), "widget/text_field".simpleId(), "widget/text_field_highlighted".simpleId())
+    private val textures: TextureProvider = TextureSet("widget/text_field".simpleId(), "widget/text_field".simpleId(), "widget/text_field_highlighted".simpleId())
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.drawNineSlice(textures.get(this.active, this.isSelected), x, y, width, height, alpha)

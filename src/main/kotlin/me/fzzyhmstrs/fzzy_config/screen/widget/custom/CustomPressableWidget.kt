@@ -149,8 +149,11 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     }
 
     companion object {
+        @JvmStatic
         protected val tex =  "widget/button".simpleId()
+        @JvmStatic
         protected val disabled = "widget/button_disabled".simpleId()
+        @JvmStatic
         protected val highlighted = "widget/button_highlighted".simpleId()
 
         /**

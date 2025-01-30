@@ -332,7 +332,7 @@ class DynamicListWidget(
         private val delegateMap: Map<String, Map<String, Entry>>
         private val groups: Map<String, GroupPair>
 
-        private val searcher: Searcher<Entry> = Searcher(delegate)
+        private val searcher: Searcher<Entry> by lazy { Searcher(delegate) }
 
         init {
             var previousEntry: Entry? = null
