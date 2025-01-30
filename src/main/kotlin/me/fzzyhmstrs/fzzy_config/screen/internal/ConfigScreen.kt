@@ -34,6 +34,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.DirectionalLayoutWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
+import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
@@ -60,9 +61,9 @@ internal class ConfigScreen(
 
     private var parent: Screen? = null
 
-    internal var layout = ThreePartsLayoutWidget(this)
-    private var searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
-    private var doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
+    internal lateinit var layout: ThreePartsLayoutWidget
+    private lateinit var searchField: NavigableTextFieldWidget
+    private lateinit var doneButton: CustomButtonWidget
 
     private var mX: Double = 0.0
     private var mY: Double = 0.0
@@ -76,12 +77,6 @@ internal class ConfigScreen(
 
     fun setParent(screen: Screen?): ConfigScreen {
         this.parent = screen
-        if (screen !is ConfigScreen) {
-            doneButton.tooltip = Tooltip.of("fc.config.done.desc".translate())
-            return this
-        }
-        doneButton.message = "fc.config.back".translate()
-        doneButton.tooltip = Tooltip.of("fc.config.back.desc".translate(screen.title))
         return this
     }
 
@@ -143,13 +138,13 @@ internal class ConfigScreen(
         directionalLayoutWidget.add(CustomButtonWidget.builder { openInfoPopup() }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignLeft() }
         //directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
+        searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
         fun setColor(entries: Int) {
             if(entries > 0)
                 searchField.setEditableColor(Colors.WHITE)
             else
                 searchField.setEditableColor(0xFF5555)
         }
-        searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
         searchField.setMaxLength(100)
         searchField.text = ""
         searchField.setChangedListener { s -> setColor(configList.search(s)) }
@@ -161,11 +156,14 @@ internal class ConfigScreen(
         //changes button
         directionalLayoutWidget.add(ChangesWidget(scope, { this.width }, manager))
         //done button
-        val msg = doneButton.message
-        val tt = doneButton.tooltip
-        doneButton = DoneButtonWidget { _ -> if (hasShiftDown()) shiftClose() else close() }
-        doneButton.message = msg
-        doneButton.tooltip = tt
+        doneButton = CustomButtonWidget.builder { _ -> if (hasShiftDown()) shiftClose() else close() }
+            .size(78, 20)
+            .messageSupplier {
+                if (hasShiftDown()) { ScreenTexts.DONE } else { "fc.config.back".translate() }
+            }
+            .tooltipSupplier {
+                if (parent !is ConfigScreen || hasShiftDown()) "fc.config.done.desc".translate() else "fc.config.back.desc".translate(parent?.title ?: "")
+            }.build()
         directionalLayoutWidget.add(doneButton)
     }
 
@@ -336,8 +334,12 @@ internal class ConfigScreen(
                 }
             }
             ContextType.FIND -> {
-                this.focused = searchField
-                true
+                if (this::searchField.isInitialized) {
+                    this.focused = searchField
+                    true
+                } else {
+                    false
+                }
             }
             ContextType.SEARCH -> {
                 if (anchors.size > 1) {
@@ -370,7 +372,9 @@ internal class ConfigScreen(
         val save = ContextAction.Builder("fc.button.save".translate()) { manager.apply(false); true }
             .active { manager.hasChanges() }
             .icon(TextureDeco.CONTEXT_SAVE)
-        val find = ContextAction.Builder("fc.config.search".translate()) { this.focused = searchField; true }
+        val find = ContextAction.Builder("fc.config.search".translate()) {
+                if (this::searchField.isInitialized) { this.focused = searchField; true } else false
+            }
             .icon(TextureDeco.CONTEXT_FIND)
         builder.add(ContextResultBuilder.CONFIG, ContextType.SAVE, save)
         builder.add(ContextResultBuilder.CONFIG, ContextType.FIND, find)
