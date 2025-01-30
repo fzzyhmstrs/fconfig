@@ -3,6 +3,14 @@
     "name": "Booleans",
     "icon": "Binary"
   },
+  "Choice-Lists.mdx": {
+    "name": "Choice Lists",
+    "icon": "ListTodo"
+  },
+  "Choices.mdx": {
+    "name": "Choices",
+    "icon": "CaseUpper"
+  },
   "Collections.mdx": {
     "name": "Collections",
     "icon": "ListCollapse"
@@ -19,8 +27,32 @@
     "name": "Expressions",
     "icon": "SquareFunction"
   },
+  "Identifiers.mdx": {
+    "name": "Identifiers",
+    "icon": "IdCard"
+  },
+  "Ingredients.mdx": {
+    "name": "Identifiers",
+    "icon": "Blocks"
+  },
   "Numbers.mdx": {
     "name": "Numbers",
     "icon": "Hash"
+  },
+  "Objects.mdx": {
+    "name": "Objects",
+    "icon": "Shapes"
+  },
+  "Pairs.mdx": {
+    "name": "Pairs",
+    "icon": "Ampersand"
+  },
+  "Registry-Objects.mdx": {
+    "name": "Registry Objects",
+    "icon": "FileStack"
+  },
+  "TagKeys.mdx": {
+    "name": "TagKeys",
+    "icon": "Tag"
   }
 }

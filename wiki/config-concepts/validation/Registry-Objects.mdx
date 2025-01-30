@@ -1,0 +1,23 @@
+---
+title: Validated Registry Objects
+---
+
+`ValidatedRegistryType` provides a simple way to create validation for registered object types, as long as the registry is defaulted. This lets your config directly provide the relevant objects instead of having to later map them from identifiers yourself.
+
+<Callout variant="info">
+There is also a method overload where you can provide a default manually that bypasses the `DefaultedRegistry` restriction.
+</Callout>
+
+<CodeTabs>
+
+```java !!tabs Java
+// the resulting field will directly provide items, not identifiers for items
+public ValidatedField<Item> mapped = ValidatedRegistryType.of(Registries.ITEM);
+```
+
+```kotlin !!tabs Kotlin
+// the resulting field will directly provide items, not identifiers for items
+var mapped: ValidatedField<Item> = ValidatedRegistryType.of(Registries.ITEM)
+```
+
+</CodeTabs>

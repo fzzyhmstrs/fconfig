@@ -1,0 +1,51 @@
+---
+title: Validated Pairs
+---
+
+Validation can be joined into pairs, which are then stored as one `ValidatedPair.Tuple`. This allows you to present two Validations as one "setting", that the user understands are part of the same "unit" of functionality. For example:
+* An allowable range with a max and min. Join these together to create one Range setting that has both the max and min selectors side by side.
+* An on-off switch and then a Object/`ValidatedAny` setting with a condition on the on-off switch being on, allowing you to have a "confirmation gate" where the user first has to enable the fancy/dangerous/special settings before they can interact with them.
+
+Other features:
+* Pairs can have custom labels added to better illustrate what each half of the pair is accomplishing. "Min" and "Max" for the above range example, perhaps.
+* Pair elements can also be stacked on top of each other. See the constructor method below using `ValidatedPair.LayoutStyle.STACKED`.
+
+<CodeTabs>
+
+```java !!tabs Java
+//Validated field has a mapping method 'pairWith' that automatically applies the default values of each half into the Pairs default value
+public ValidatedPair<Int, Int> pair1 = (new ValidatedInt(1, 10, 0)).pairWith(new ValidatedInt(10, 20, 10));
+
+//you can still do it the other way if you want. This also lets you stack the two settings on top of each other if desired.
+public ValidatedPair<Int, Int> pair1Long = new ValidatedPair(new ValidatedPair.Tuple(1, 10), new ValidatedInt(1, 10, 0), new ValidatedInt(10, 20, 10), ValidatedPair.LayoutStyle.STACKED);
+
+//if both halves are the same validation type, there is a shorthand static method. You can define the default tuple and layout style optionally.
+public ValidatedPair<Int, Int> pairSame = ValidatedPair.of(new ValidatedInt(1));
+
+//if both halves are the same validation type, there is a shorthand static method. You can define the default tuple and layout style optionally.
+public ValidatedPair<Int, Int> pairSameLabeled = ValidatedPair.withLabels(ValidatedPair.of(new ValidatedInt(1)), LeftText, RightText);
+
+//Pairs store their value in a nested class `Tuple`. To retrieve your setting you would do something like
+int pairMin = pair1.get().left;
+int pairMax = pair1.get().right;
+```
+
+```kotlin !!tabs Kotlin
+//Validated field has a mapping method 'pairWith' that automatically applies the default values of each half into the Pairs default value
+val pair1 = ValidatedInt(1, 10, 0).pairWith(ValidatedInt(10, 20, 10))
+
+//you can still do it the other way if you want. This also lets you stack the two settings on top of each other if desired.
+val pair1Long = ValidatedPair(ValidatedPair.Tuple(1, 10), ValidatedInt(1, 10, 0), ValidatedInt(10, 20, 10), ValidatedPair.LayoutStyle.STACKED)
+
+//if both halves are the same validation type, there is a shorthand static method. You can define the default tuple and layout style optionally.
+val pairSame = ValidatedPair.of(ValidatedInt(1))
+
+//Add labels with the withLabels extension function
+val pairSameLabeled = ValidatedPair.of(ValidatedInt(1)).withLabels(LeftText, RightText)
+
+//Pairs store their value in a nested class `Tuple`. To retrieve your setting you would do something like
+val pairMin: Int = pair1.get().left
+val pairMax: Int = pair1.get().right
+```
+
+</CodeTabs>

@@ -1,0 +1,20 @@
+---
+title: Validated TagKeys
+---
+
+FzzyConfig can automatically validate TagKeys from any registry. Validated Tags also provide suggestions to the user.
+
+<CodeTabs>
+
+```java !!tabs Java
+// Validated tags accept a predicate that can be used to filter a tag further. This example allows any tag except `minecraft:burnable_logs`
+public ValidatedTagKey<Item> validatedTag = ValidatedTagKey(ItemTags.AXES, id -> id != Identifier.of("burnable_logs"));
+```
+
+```kotlin !!tabs Kotlin
+// Validated tags accept a predicate that can be used to filter a tag further. This example will allow any vanilla minecraft tag.
+var validatedTag = ValidatedTagKey(ItemTags.AXES) { id: Identifier -> id.namespace == "minecraft" }
+var shortHandTag = ItemTags.AXES.validated() // kotlin extension function for quick validation
+```
+
+</CodeTabs>

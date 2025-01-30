@@ -1,0 +1,25 @@
+---
+title: Validated Choice Lists
+---
+
+As of Fzzy Config 0.6.0, create sets of selectable and de-selectable choices with `ValidatedChoiceList`. This is useful for a feature-flag-style setting, polling for active flags using `List#contains`.
+
+Like `ValidatedChoice`, this validation is of the type `List<T>`, where T is your choice type. Like `ValidatedList`, this validation implements the `List` interface, so can be used directly for list operations.
+
+Helper methods `toChoiceList` in `ValidatedList / Set / Choice` make creation of a choice list easier
+
+<CodeTabs>
+
+```java !!tabs Java
+ValidatedChoiceList<String> enabledFeatures = ValidatedList.ofString("dev_mode", "logging", "fail_fast", "compatibility_mode").toChoiceList(listOf("logging"));
+```
+
+```kotlin !!tabs Kotlin
+val enabledFeatures = ValidatedList.ofString("dev_mode", "logging", "fail_fast", "compatibility_mode").toChoiceList(listOf("logging"))
+```
+
+</CodeTabs>
+
+The choice list appears in-GUI as a popup with the available choices, each in an enabled or disabled state. Clicking on any choice flip it's state between enabled and disabled.
+
+![Validated Choice List Popup](https://github.com/user-attachments/assets/f1d54c0e-9bc6-46dc-89eb-003383f3426c)

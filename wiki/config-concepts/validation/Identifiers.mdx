@@ -1,0 +1,43 @@
+---
+title: Validated Identifiers
+---
+
+`ValidatedIdentifier` is one of the more powerful validation tools at the Fzzy Config modders disposal. `ValidatedIdentifier` can provide:
+* Suggestions for allowable identifiers
+* Restrictions based on tags, registries, or pre-defined lists
+* ValidatedIdentifier implements most methods that Identifier itself does.
+
+Most of the time, one of the companion methods will probably work best for creating a `ValidatedIdentifier` based on a registry, tag, or other built in Minecraft identifier collection.
+
+<CodeTabs>
+
+```java !!tabs Java
+public ValidatedIdentifier fromRegistry = ValidatedIdentifier.ofRegistry(Identifier.of("cobblestone"), Registries.ITEM); //build from an MC registry
+public ValidatedIdentifier fromRegistryKey = ValidatedIdentifier.ofRegistryKey(Identifier.of("cobblestone"), RegistryKeys.BLOCK); //build from an MC registry key pointing to a registry
+public ValidatedIdentifier fromDynamicKey = ValidatedIdentifier.ofDynamicKey(RegistryKeys.LOOT_TABLE, "example_loot_sync_id", (id, entry) -> id.getPath().contains("gameplay")); //build from an MC registry key pointing to a dynamic registry, primarily used for registries that aren't synced to clients (like loot)
+public ValidatedIdentifier fromTag = ValidatedIdentifier.ofTag(ItemTags.WOOL); //build from a tag.
+public ValidatedIdentifier fromRegistryTags = ValidatedIdentifier.ofRegistryTags(RegistryKeys.DAMAGE_TYPE); //build a validated identifier with all the loaded tags for the specified registry as possible values.
+public ValidatedIdentifier fromList = ValidatedIdentifier.ofList(myListOfIds); //build from a predefined list of identifiers. Check the other options first.
+public ValidatedIdentifier fromSuppliedList = ValidatedIdentifier.ofSuppliedList(() -> myListOfIds); //same as ofList, but allows for dynamic supply of a list
+
+```
+
+```kotlin !!tabs Kotlin
+
+var fromRegistry = ValidatedIdentifier.ofRegistry(Identifier.of("cobblestone"), Registries.ITEM) //build from an MC registry
+var fromRegistryKey = ValidatedIdentifier.ofRegistryKey(Identifier.of("cobblestone"), RegistryKeys.BLOCK) //build from an MC registry key pointing to a registry
+var fromDynamicKey = ValidatedIdentifier.ofDynamicKey(RegistryKeys.LOOT_TABLE, "example_loot_sync_id") { id: Identifier, _: RegistryEntry<*> -> id.path.contains("gameplay") } //build from an MC registry key pointing to a dynamic registry, primarily used for registries that aren't synced to clients (like loot)
+var fromTag = ValidatedIdentifier.ofTag(ItemTags.WOOL) //build from a tag.
+var fromRegistryTags = ValidatedIdentifier.ofRegistryTags(RegistryKeys.DAMAGE_TYPE) //build a validated identifier with all the loaded tags for the specified registry as possible values.
+var fromList = ValidatedIdentifier.ofList(myListOfIds) //build from a predefined list of identifiers. Check the other options first.
+var fromSuppliedList = ValidatedIdentifier.ofSuppliedList { myListOfIds } //same as ofList, but allows for dynamic supply of a list
+```
+
+
+</CodeTabs>
+
+
+
+For more details, check out the related documentation: [Validated Identifier](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.minecraft/-validated-identifier/index.html)
+
+If you need to implement a custom identifier filter, see: [Allowable Identifiers](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-allowable-identifiers/index.html)
