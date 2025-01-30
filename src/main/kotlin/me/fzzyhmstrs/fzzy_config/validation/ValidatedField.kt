@@ -156,6 +156,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return (if(input != null) serialize(input) else serialize(get())).report(errorBuilder).get()
     }
 
+    @Internal
     fun trySerialize(input: Any?, errorBuilder: MutableList<String>, flags: Byte): TomlElement? {
         return try {
             @Suppress("DEPRECATION", "UNCHECKED_CAST")
