@@ -1,6 +1,7 @@
 {
+  "annotations": "Annotations",
   "Annotations.mdx": {
-    "name": "Annotations",
+    "name": "Config Annotations",
     "icon": "AtSign"
   },
   "Translation.mdx": {

@@ -19,7 +19,7 @@ var validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(Valida
 </CodeTabs>
 
 ### Translation Providers
-The type and values of choices provided may not be automatically [`Translatable`](https://github.com/fzzyhmstrs/fconfig/wiki/Translation), such as plain numbers or strings. If you still want to provide translations and tooltips for your choices, ValidatedChoice can accept a translationProvider and descriptionProvider; BiFunctions that convert the choice to display into a translated text and hovered tooltip instead.
+The type and values of choices provided may not be automatically [`Translatable`](../Translation), such as plain numbers or strings. If you still want to provide translations and tooltips for your choices, ValidatedChoice can accept a translationProvider and descriptionProvider; BiFunctions that convert the choice to display into a translated text and hovered tooltip instead.
 
 Using the weights example from above, we can build out some translations and descriptions for the weight options.
 

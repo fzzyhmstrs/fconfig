@@ -1,0 +1,37 @@
+---
+title: @WithPerms
+---
+
+`@WithPerms` sets a special permission requirement for a setting. All configs have a overall required permission level, this individually modifies the perms of one setting. The overall perms can also be changed for a config. By default they are permission level 2 (gamemaster).
+
+<CodeTabs>
+
+```java !!tabs Java
+// changing the permission levels of an entire config
+public class MyConfig extends Config {
+    //constructor goes here
+
+    @Override
+    public int defaultPermLevel() {
+        return 4; // default is 2, this sets the default perm level to 4 (owner)
+    }
+
+    @WithPerms(opLevel = 2) // this field is ok to be perm level 2 still, specially set it
+    public int mySpecialField = 2;
+}
+```
+
+```kotlin !!tabs Kotlin
+// changing the permission levels of an entire config
+class MyConfig: Config(Identifier.of("my_id")) {
+    
+    override fun defaultPermLevel(): Int {
+        return 4 // default is 2, this sets the default perm level to 4 (owner)
+    }
+
+    @WithPerms(2) // this field is ok to be perm level 2 still, specially set it
+    var mySpecialField = 2
+}
+```
+
+</CodeTabs>

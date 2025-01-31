@@ -1,0 +1,61 @@
+---
+title: @Translation
+---
+
+`@Translation` overrides the default translation mechanism as defined in [[Translation]], allowing you to set a custom lang key prefix. You can also define this annotation for an entire config class, and then use `@Translation` to negate the override on settings within that class that still need their default translation behavior.
+
+This annotation will provide both a name translation for the entry, and a hovered tooltip description, depending on the lang provided. If lang isn't found, Fzzy Config will fall back to the default translation mechanisms.
+
+This annotation is very useful for "repeating units" of config. A `ValidatedAny` object, in particular, that is repeated but the setting names are the same for each instance.
+- `prefix`: Set the prefix of your lang key. The field name of the field(s) or property(s) will be appended to this prefix. `my.prefix.[fieldName]` and `my.prefix.[fieldName].desc`
+- `negate`: Use this to turn off class-wide Translation for a specific setting that needs the default translation mechanisms.
+
+<CodeTabs>
+
+```java !!tabs Java
+@Translation(prefix = "example.prefix") //every setting within this class, for every instance of the class, will use this lang prefix
+class RepeatingUnit implements Walkable {
+    
+    public RepeatingUnit(){}
+
+    public RepeatingUnit(int thing1, float thing2, TagKey<Item> thing3) {
+        this.thing1 = thing1;
+        this.thing2 = thing2;
+        this.thing3.validateAndSet(thing3);
+    }
+
+    public boolean thing1 = true;
+    @Translation(negate = true) //thing2 needs a custom lang per usage, depending on the specific use for it. Skips the prefix override.
+    public float thing2 = 3f;
+    public ValidatedTagKey<Item> thing3 = new ValidatedTagKey(ItemTags.TRIMMABLE_ARMOR);
+}
+
+// the lang for this will look like
+//"example.prefix.thing1": "Thing 1 Name"
+//"my_mod.my_config.unitName.thing2": "Custom Per-Instance Name"
+//"example.prefix.thing3": "Thing 3 Name"
+```
+
+```kotlin !!tabs Kotlin
+@Translation("example.prefix") //every setting within this class, for every instance of the class, will use this lang prefix
+class RepeatingUnit(): Walkable {
+    
+    constructor(thing1: Int, thing2: Float, thing3: TagKey<Item>): this() {
+        this.thing1 = thing1
+        this.thing2 = thing2
+        this.thing3.validateAndSet(thing3)
+    }
+
+    var thing1: Int = 0
+    @Translation(negate = true) //thing2 needs a custom lang per usage, depending on the specific use for it. Skips the prefix override.
+    var thing2: Float = 3f
+    var thing3 = ValidatedTagKey(ItemTags.TRIMMABLE_ARMOR)
+}
+
+// the lang for this will look like
+//"example.prefix.thing1": "Thing 1 Name"
+//"my_mod.my_config.unitName.thing2": "Custom Per-Instance Name"
+//"example.prefix.thing3": "Thing 3 Name"
+```
+
+</CodeTabs>

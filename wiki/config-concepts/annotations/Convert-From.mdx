@@ -1,0 +1,34 @@
+---
+title: @ConvertFrom
+---
+
+`@ConvertFrom` provides the deserializer with the path and file name to a pre-existing config file from an old config library. The deserializer will do its best to scrape still-relevant data from the old file, and then discard it.
+
+Supported file types:
+* `.toml`
+* `.json`
+* `.json5`
+* `.jsonc`
+
+The below examples will read an old file `./minecraft/config/example/config.json` and attempt to scrape as much relevant data from it as possible by converting it to TOML first and then using that converted file as input to the deserializer.
+
+<CodeTabs>
+
+```java !!tabs Java
+@ConvertFrom(fileName = "config.json", folder = "example")
+public class ConfigImpl extends Config {
+    public ConfigImpl {
+        super(new Identifier.of("example", "config"));
+    }
+    //config stuff go here
+}
+```
+
+```kotlin !!tabs Kotlin
+@ConvertFrom("config.json", "example")
+class ConfigImpl: Config(Identifier.of("example", "config")) {
+    //config stuff go here
+}
+```
+
+</CodeTabs>

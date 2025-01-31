@@ -1,0 +1,44 @@
+---
+title: @IgnoreVisibility
+---
+
+`@IgnoreVisiblity` tells the serializer that it should not ignore non-public fields. It will attempt to access widen private, protected, etc. fields and properties while performing de/serialization. This is useful if you want to make a config in a typical Java style, with private fields that have getters and setters as needed.
+
+NOTE: this can also be used on a `ConfigSection`, or a class wrapped by a `ValidatedAny`, to enable the class type to be less-than-public.
+
+<CodeTabs>
+
+```java !!tabs Java
+@IgnoreVisibility
+public class ConfigImpl extends Config {
+    public ConfigImpl {
+        super(new Identifier("example", "config"));
+    }
+
+    private int myPrivateField = 0;
+
+    @IgnoreVisibility
+    private static class SecretBit { /* stuff goes here */ }
+
+    // this ValidatedAny will work, thanks to the IgnoreVisibility on the SecretBit class. Otherwise the class would have to be public.
+    // note that the IgnoreVisiblity of the SecretBit is not responsible for the mySecretBit visibiltity; that is handled by the ConfigImpl annotation
+    private ValidatedAny<SecretBit> mySecretBit = new ValidatedAny(new SecretBit());
+}
+```
+
+```kotlin !!tabs Kotlin
+@IgnoreVisibility
+class ConfigImpl: Config(Identifier.of("example", "config")) {
+    
+    private var myPrivateProperty = 0
+
+    @IgnoreVisibility
+    private class SecretBit { /* stuff goes here */ }
+
+    // this ValidatedAny will work, thanks to the IgnoreVisibility on the SecretBit class. Otherwise the class would have to be public.
+    // note that the IgnoreVisiblity of the SecretBit is not responsible for the mySecretBit visibiltity; that is handled by the ConfigImpl annotation
+    private var mySecretBit = ValidatedAny(SecretBit())
+}
+```
+
+</CodeTabs>

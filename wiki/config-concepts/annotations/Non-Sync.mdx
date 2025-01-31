@@ -1,0 +1,19 @@
+---
+title: @NonSync
+---
+
+`@NonSync` excludes a field from server-client synchronization, and by extension removes and permission requirements (as the setting can't affect the server anyway). This is primarily useful for client-only settings. Before using this annotation, consider if you can have an entire client-sided config separate from any synced configs. See [New Configs - Config Registration](/config-design/New-Configs#3-config-registration) for details.
+
+<CodeTabs>
+
+```java !!tabs Java
+@NonSync
+public int myNonSyncedField = 5;
+```
+
+```kotlin !!tabs Kotlin
+@NonSync
+var myNonSyncedField = 5
+```
+
+</CodeTabs>
