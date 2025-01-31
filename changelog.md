@@ -14,19 +14,18 @@
 -------------------------------------
 
 ### Additions
-* new validation `ValidatedChoiceList`. Similar to `ValidatedChoice`, but the list version allows for enabling/disabling of none to all of the possible options while the Choice is one and always one of the choices from the options.
-  * New `toChoiceSet` helper method in `ValidatedList`, `ValidatedSet`, and `ValidatedChoice` for creation of choice lists from the backing validation.
-* Added `testVersion` method to `PlatformApi` for platform-agnostic testing of MC or mod version
-* `CustomButtonWidget` now accepts an `activeSupplier` to dynamically update active state, and a `messageSupplier` to dynamically update the button label. See the builder for details.
+* New `TextureProvider` interface for generic provision of textures based on active/hovered state.
+* `Single` and `Quad` variants of `TextureSet` added for sets with one texture regardless of state, and sets with all four textures different, respectively.
 
 ### Changes
-* `@Validated[Number].Restrict` annotations now accept an optional `ValidatedNumber.WidgetType` with the new third param `type`
-* Reimplemented all instances of `ActiveButtonWidget` as built or extended-from `CustomButtonWidget`, and ActiveButtonWidget is now deprecated.
-* Reimplemented all instances of `TextlessActionWidget` as built `CustomButtonWidget`, and TextlessActionWidget is now deprecated.
+* `TextureSet` now implements the `TextureProvider` interface
+* `CustomPressableWidget` and therefore `CustomButtonWidget` now use `TextureProvider` instead of directly `TextureSet` in their implementations.
+* `textureSet` method of `SpriteDecorated` is now deprecated and defaulted, with a scheduled removal of 0.7.0.
+  * `SpriteDecoration` and `SmallSpriteDecoration` constructors with `TextureSet` are likewise deprecated, with new overloads taking `TextureProvider`
+* The texture sets in `TextureIds` are now explicitly typed as `TextureProvider` instead. 
+* Improved the lazy-loading and/or reduced duplicate loading of certain elements in lists and screens. This effort will expand in the future to further FCs goal of only ever loading a resource upon it being needed.
+* `ValidatedChoiceList` now shows highlights around "unselected" options to better indicate that they are still active button elements.
 
 ### Fixes
-* Fixed suggestion windows not being properly linked up in the config screen.
-* Several popups, widgets, and so on have better layout and positioning; fixed several weird overlap and underlap issues among other things. 
-* Top and bottom of scrollable lists now position better.
-* Fixed searching leading to entries "hiding" above the top of the viewport, needing you to scroll up to find them despite not having a scroll bar potentially
-* Group collapsing now properly positions the bottom of the setting list at the bottom of the list viewport when applicable
+* Fixed `ValidatedChoiceList` popup widgets being too narrow for the popup with very short choice titles.
+* Remove stray dev-environment logging from `LayoutWidget`
