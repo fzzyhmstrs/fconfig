@@ -17,7 +17,6 @@ import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DoneButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
