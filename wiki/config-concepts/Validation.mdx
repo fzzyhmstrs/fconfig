@@ -35,7 +35,7 @@ ValidatedFields can be manipulated in a variety of ways to enhance their effecti
 ## Validation Concepts
 
 ### What is it?
-"Validation" is a bit of a misnomer, as the toolset does much more than that. It's a label of convenience stemming from the base class `ValidatedField`. Validation tools provide a set of tools to handle settings in various ways. To borrow from the KDoc for `Entry`, validation tools do the following:
+"Validation" is a bit of a misnomer, as the toolset does much more than that. It's a label of convenience stemming from the base class `ValidatedField`. Validation tools handle settings in various ways. To borrow from the KDoc for `Entry`:
 * serialize contents
 * deserialize input
 * validate updates
@@ -48,23 +48,29 @@ ValidatedFields can be manipulated in a variety of ways to enhance their effecti
 * accepts listeners
 
 ### Providing Validation
-Every setting that appears in a Config GUI is backed in some way by validation. Even when you don't explicitly provide it, Fzzy Config will wrap supported types with basic validation in the background.
-* _If you try to add a setting of an unsupported type, you will need to create custom validation for it, or it **will not** appear in config GUIs nor will be serialized in the config files_
+Every setting that appears in a Config GUI is backed by validation. Even when you don't explicitly provide it, Fzzy Config will wrap supported types with basic validation in the background.
 
-For more specific control of your settings, in the vein of Minecraft `GameOption`, specifically define the validation for your setting using one of the options above, or a custom implementation if you are feeling adventurous. This grants you the ability to:
+<Callout variant="warning">
+If you try to add a setting of an unsupported type, you will need to create custom validation for it, or it will not appear in config GUIs nor will it be serialized in the config files.
+</Callout>
+
+For advanced control of your settings, in the vein of Minecraft `GameOption`, define the validation for your setting using one of the options above, or make a custom implementation if you are feeling adventurous. This grants you the ability to:
 * Provide input restrictions
 * Suggest inputs to users
 * In some places define the widget used in-game
+* Attach listeners, conditions, and feature flags to the setting
 
 --------------------------------------------
 
 ## Mapping [⤴](#validation-manipulation)
-As of Fzzy Config 0.5.0, Validation can be mapped to any other convertible type, much like Minecraft's Codecs. The validation will be stored as if it were the underlying mapped-from type, enforce limitations using the underlying type, the in-game widgets will be based on the underlying validation, and so on.
+As of Fzzy Config 0.5.0, Validation can be mapped to another convertible type, much like Mojang's Codecs. The validation will be stored as if it were the underlying mapped-from type, enforce limitations using the underlying type, the in-game widgets will be based on the underlying validation, and so on, but in-code you can interact directly with the mapped-to type.
 
 ### Example: Character
 Fzzy Config doesn't have built in validation for Characters. With mapping, we can easily build our own.
 
-NOTE: The in-game widget for this will still be based on an int, so will be a slider or a number entry box. This example is illustrative only, as in this case a dedicated validation with a character selection box would probably be better.
+<Callout>
+The in-game widget for this will still be based on an int, so will be a slider or a number entry box. This example is illustrative only, as in this case a dedicated validation with a character selection box would probably be better.
+</Callout>
 
 <CodeTabs>
 
@@ -91,7 +97,7 @@ var validatedCharacter = ValidatedInt(0, Char.MAX_VALUE, Char.MIN_VALUE).map(
 </CodeTabs>
 
 ## Conditional Settings [⤴](#validation-manipulation)
-Any validation can be wrapped with conditions that define whether the setting is "active" or not. This allows you to create settings that are based on game state, the state of other settings, and so on:
+Any validation can be wrapped with conditions that define whether the setting is "active" or not. This allows you to create settings that are based on:
 * Whether a certain mod is loaded
 * The status of another config setting; `ValidatedBoolean` can be used directly as a condition input
 * Whether the game is multiplayer or not
@@ -122,9 +128,9 @@ A conditional setting can have additional conditions added with <code>withCondit
 </CodeTabs>
 
 ## Listeners [⤴](#validation-manipulation)
-You can listen to changes of any `ValidatedField` (actually of any `Entry`, of which validated fields are the most common) by supplying a consumer of that field.
+You can listen to changes made to any `ValidatedField` by supplying a consumer of that field.
 
-Listening works on both server and client and will trigger on config load too, as applicable. The listeners apply any time the stored value is set by anything (with a couple exceptions, see below)
+Listening works on both server and client and will trigger on config load too, as applicable. The listeners apply any time the stored value is set by anything (with a couple exceptions, see example below)
 
 <CodeTabs>
 

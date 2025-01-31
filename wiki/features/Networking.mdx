@@ -4,14 +4,16 @@ Fzzy Config (as of 0.4.x) includes a lightweight cross-loader networking API for
 Fzzy Config works via the Payload concept introduced in recent Minecraft versions. For older versions of Fzzy Config, there is a `FzzyPayload` class used to take the place of the vanilla `CustomPayload`.
 
 Register a networking interaction **on both server and client (in common initializer)** using either:
-* `ConfigApi.network().registerS2C` - clientbound packets originated on the server and handled on a client
-* `ConfigApi.network().registerC2S` - serverbound packets originated on a client and handled by the server
+* `ConfigApi.network().registerS2C` - client-bound packets originated on the server and handled on a client
+* `ConfigApi.network().registerC2S` - server-bound packets originated on a client and handled by the server
 
 (For java users)
 * `ConfigApiJava.INSTANCE.network().registerS2C`
 * `ConfigApiJava.INSTANCE.network().registerC2S`
 
-For bidirectional transactions, regster each direction separately.
+<Callout variant="info">
+For bidirectional transactions, register each direction separately.
+</Callout>
 
 The handler parameter uses a custom Context wrapper that will have the lowest common denominator of methods between Fabric and Forge for that version. If some context you are used to is missing, blame the other loader.
 
@@ -21,7 +23,7 @@ For <code>registerS2C</code>, take care to insulate the server from any client-o
 
 ## Sending
 To send a payload, simply use `ConfigApi.network().canSend` and `ConfigApi.Network().send`.
-* The player parameter determines which direction the sending will send. If the player instance is a `ServerPlayerEntity`, it will check/send for an S2C/clientbound direction. For a null player or a `ClientPlayerEntity`, it will send C2S/serverbound.
+* The player parameter determines which direction the sending will send. If the player instance is a `ServerPlayerEntity`, it will check/send for an S2C/client-bound direction. For a null player or a `ClientPlayerEntity`, it will send C2S/serverbound.
 
 ## Example
 

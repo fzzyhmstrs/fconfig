@@ -5,7 +5,7 @@ title: Translating Configs
 Almost everything related to Fzzy Config is automatically translatable or otherwise able to be notated. Translation is not strictly *required*, but strongly recommended for a better user experience.
 
 ## Concept
-Translation in Fzzy Config is driven by the [Translatable](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-translatable/index.html) interface or the [@Translation](https://github.com/fzzyhmstrs/fconfig/wiki/Annotations#translation-) annotation.
+Translation in Fzzy Config is driven by the [Translatable](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-translatable/index.html) interface or the [@Translation](./annotations/Translation) annotation.
 
 ### Translatable
 Translation in most places in Fzzy Config is a matched triad of keys:
@@ -19,21 +19,21 @@ The below image showcases all three translations in action. The Prefix is the te
 
 
 The following pieces and parts automatically support these:
-* [[Validation]] (including automatic validation of "plain" values)
-* Config Classes
-* Config Sections
-* Config Actions
-* Config Groups
+* [Validation](Validation) (including automatic validation of "plain" values)
+* [Config Classes](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config/index.html)
+* [Config Sections](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section/index.html)
+* [Config Actions](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-action/index.html)
+* [Config Groups](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-group/index.html)
 
 So almost every piece of your config will automatically support translation, tooltips, and inline descriptions! If there is something in your config that isn't getting captured, simply implement `Translatable` on that escapee.
 
 Some notes regarding translations in practice:
-* Prefixes often won't be rendered in popups or other situations outside of the normal config GUI.
+* Prefixes often won't be rendered in popups or other situations outside the normal config GUI.
 * Both prefixes and descriptions will be narrated, prefix and then description.
 * If you prefix a config, the prefix text will both appear in the config landing page (if applicable) and at the top of the config settings list as a "header".
 
 ### @Translation
-If you want to override the default translation key system, or provide a translation and description for something without implementing Translatable, you can use the `@Translation` annotation. This annotation provides a prefix that the annotated field name is appended to. See the annotations article for details.
+If you want to override the default translation, or provide a translation and description without implementing `Translatable`, you can use the `@Translation` annotation. This annotation provides a prefix that the annotated field name is appended to. See the [Annotations](./annotations/Translation) article for details.
 
 This annotation can be very useful for repeating parts. If you have a config object, lets say an entity attributes "chunk", that repeats many times in a config. Normally you would have to provide a translation for every individual setting based on the total classpath. That would get annoying fast. @Translation allows you to define one lang prefix that is common for all instances of the annotated field.
 
@@ -73,7 +73,7 @@ The primary method to override in EnumTranslatable is `prefix()`. Per the docume
 <CodeTabs>
 
 ```java !!tabs Java
-// this enum will have a translation key like "my_mod.test_enum.ALPHA" etc.
+// this enum will have a translation key like "my_mod.test_enum.ANNIE" etc.
 public enum TestEnum implements EnumTranslatable {
     ANNIE,
     BILBO,

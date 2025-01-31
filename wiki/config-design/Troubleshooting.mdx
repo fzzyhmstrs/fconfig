@@ -43,9 +43,12 @@ Since FzzyConfig is written in kotlin, there are certain incompatibilities you m
 * `modCompileOnly` FabricLanguageKotlin - The robust solution, simply add kotlin to your compile classpath with FLK or similar.
 
 ## TestMod Crashes
-**As of 0.4.3, there is a maven! If you haven't updated to using the maven, check out the homepage for the new repository and dependency paths**
 
-~~Currently~~ Prior to 0.4.3, Fzzy Config isn't on a "true" Maven, so the full maven.pom isn't available. As such, transitive dependencies aren't available. This causes issues when you try to `runClient`.
+<Callout variant="info">
+As of 0.4.3, there is a maven! If you haven't updated to using the maven, check out the homepage for the new repository and dependency paths
+</Callout>
+
+Prior to 0.4.3, Fzzy Config wasn't on a "true" Maven, so the full `maven.pom` isn't available. As such, transitive dependencies aren't available. This causes issues when you try to `runClient`.
 
 <CodeTabs>
 
