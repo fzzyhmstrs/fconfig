@@ -4,8 +4,8 @@ title: "@IgnoreVisibility"
 
 `@IgnoreVisiblity` tells the serializer that it should not ignore non-public fields. It will attempt to access widen private, protected, etc. fields and properties while performing de/serialization. This is useful if you want to make a config in a typical Java style, with private fields that have getters and setters as needed.
 
-NOTE: this can also be used on a `ConfigSection`, or a class wrapped by a `ValidatedAny`, to enable the class type to be less-than-public.
-
+<Callout variant="info">
+This can also be used on a <code>ConfigSection</code>, or a class wrapped by a <code>ValidatedAny</code>, to enable the class type to be less-than-public.
 <CodeTabs>
 
 ```java !!tabs Java

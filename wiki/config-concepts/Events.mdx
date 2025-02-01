@@ -35,8 +35,8 @@ These listeners are simply `Consumer` of the field itself. There are two methods
 * `addListener`, directly in `ValidatedField` itself. This has no return, so you will have to attach in an init block, with a helper method, or similar.
 * `withListener`, an extension function with `ValidatedField` as a receiver. This method "passes through" the field, allowing you to attach inline, it also preserves the typing of the field in the consumer and return.
 
-<Callout>
-**NOTE:** These changes may be made on any thread, depending on the particulars of how the field is interacted with. Take precautions when interacting with game state.
+<Callout variant="warning">
+These changes may be made on any thread, depending on the particulars of how the field is interacted with. Take precautions when interacting with game state.
 </Callout>
 
 <CodeTabs>

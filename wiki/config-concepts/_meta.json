@@ -5,7 +5,7 @@
   },
   "annotations": {
     "name": "Annotation Types",
-    "icon": "CornerDownRight"
+    "icon": null
   },
   "Translation.mdx": {
     "name": "Translation",
@@ -17,7 +17,7 @@
   },
   "validation": {
     "name": "Validation Types",
-    "icon": "CornerDownRight"
+    "icon": null
   },
   "Actions.mdx": {
     "name": "Actions",

@@ -65,7 +65,9 @@ If not provided with fallbacks, Fzzy Config will do it's best to provide stand-i
 ## EnumTranslatable
 Enums can implement a special sub-interface of Translatable, [EnumTranslatable](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-enum-translatable/index.html). This interface provides default methods for creating translations of each enum constant.
 
-**NOTE: this translates the enum constants themselves. The field holding the enum gets its own translation following the rules above**
+<Callout variant="info">
+This translates the enum constants themselves. The field holding the enum gets its own translation following the rules above
+</Callout>
 
 ### Prefix
 The primary method to override in EnumTranslatable is `prefix()`. Per the documentation, enum translations are in the form `<prefix>.CONSTANT`, `<prefix>.CONSTANT.desc`, `<prefix>.CONSTANT.prefix`.

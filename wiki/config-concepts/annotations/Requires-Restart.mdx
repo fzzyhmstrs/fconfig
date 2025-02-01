@@ -2,8 +2,8 @@
 title: "@RequiresRestart"
 ---
 
-<Callout variant="warning">
-Deprecated as of 0.4.0. Use <code>@RequiresAction</code> instead (see below)
+<Callout variant="danger">
+Deprecated as of 0.4.0. Use <a href="Requires-Action"><code>@RequiresAction</code></a> instead
 </Callout>
 
 `@RequiresRestart` indicates that a marked field (or every field within a marked class) will need the client and/or server restarted in order for changes to take effect. If the user makes a change that requires a restart, they will be prompted in the chat menu, and a server log message will be printed. If a client joins to a server and the client finds that there are `@RequiresRestart` fields that don't match to the servers incoming config synchronization, they will be disconnected and prompted to either restart or go back to the main menu.
