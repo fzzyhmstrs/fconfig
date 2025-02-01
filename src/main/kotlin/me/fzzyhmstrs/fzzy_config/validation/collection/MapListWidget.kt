@@ -22,7 +22,6 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.gui.widget.Widget
@@ -194,7 +193,7 @@ internal class MapListWidget<K, V>(
             hovered: Boolean,
             tickDelta: Float
         ) {
-            keyWidget.setPosition(x, y)
+            keyWidget.setPosition(x + 1, y)
             keyWidget.render(context, mouseX, mouseY, tickDelta)
             context.drawTextWithShadow(parent.client.textRenderer, TextureIds.MAP_ARROW, x + 115, y + 5, Colors.WHITE)
             valueWidget.setPosition(x+124, y)

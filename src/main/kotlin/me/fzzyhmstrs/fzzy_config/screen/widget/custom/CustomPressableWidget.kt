@@ -15,7 +15,7 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
-import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
@@ -167,5 +167,11 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
          * @since 0.6.0
          */
         val DEFAULT_TEXTURES = TextureSet(tex, disabled, highlighted)
+
+        init {
+            RenderUtil.addBackground(tex, RenderUtil.defaultBg)
+            RenderUtil.addBackground(disabled, RenderUtil.defaultBg)
+            RenderUtil.addBackground(highlighted, RenderUtil.defaultBg)
+        }
     }
 }

@@ -22,7 +22,6 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ScreenRect
 import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.tooltip.HoveredTooltipPositioner
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.ElementListWidget
 import net.minecraft.client.gui.widget.Widget
@@ -185,7 +184,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             hovered: Boolean,
             tickDelta: Float
         ) {
-            entryWidget.setPosition(x, y)
+            entryWidget.setPosition(x + 1, y)
             entryWidget.render(context, mouseX, mouseY, tickDelta)
             deleteWidget.setPosition(x+114, y)
             deleteWidget.render(context, mouseX, mouseY, tickDelta)
