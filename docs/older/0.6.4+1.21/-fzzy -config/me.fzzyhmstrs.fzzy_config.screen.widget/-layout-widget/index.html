@@ -1,0 +1,596 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>LayoutWidget</title>
+    <link href="../../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../../images/fc_banner.png">
+<link href="../../../images/discord_banner.png">
+<link href="../../../images/discord_small_banner.png">
+<link href="../../../images/wiki_banner.png">
+<link href="../../../images/wiki_small_banner.png">
+<link href="../../../images/docs_banner.png">
+<link href="../../../images/docs_small_banner.png">
+<link href="../../../images/cf_banner.png">
+<link href="../../../images/modrinth_banner.png">
+<link href="../../../images/icon.png">
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.widget/-layout-widget/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.6.4+1.21</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.4+1.21.3</a><a href="index.html">0.6.4+1.21</a><a href="..\..\..\..\0.6.4+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.4+1.20.1</a><a href="..\..\..\..\0.6.3+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.3+1.21.3</a><a href="..\..\..\..\0.6.3+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.3+1.21</a><a href="..\..\..\..\0.6.3+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.3+1.20.1</a><a href="..\..\..\..\0.6.1+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.1+1.21.3</a><a href="..\..\..\..\0.6.1+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.1+1.21</a><a href="..\..\..\..\0.6.1+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.1+1.20.1</a><a href="..\..\..\..\0.6.0+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.0+1.21.3</a><a href="..\..\..\..\0.6.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.0+1.21</a><a href="..\..\..\..\0.6.0+1.20.1\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.widget\-layout-widget\index.html">0.6.0+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.9%2B1.21.3">0.5.9+1.21.3</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.9%2B1.21">0.5.9+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.9%2B1.20.6">0.5.9+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.9%2B1.20.4">0.5.9+1.20.4</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.9%2B1.20.1">0.5.9+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.7%2B1.21.2">0.5.7+1.21.2</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.7%2B1.21">0.5.7+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.7%2B1.20.6">0.5.7+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.7%2B1.20.4">0.5.7+1.20.4</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.7%2B1.20.1">0.5.7+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.6%2B1.21.2">0.5.6+1.21.2</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.6%2B1.21">0.5.6+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.6%2B1.20.6">0.5.6+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.6%2B1.20.4">0.5.6+1.20.4</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.6%2B1.20.1">0.5.6+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.5%2B1.21.2">0.5.5+1.21.2</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.4%2B1.21.2-pre4">0.5.4+1.21.2-pre4</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.4%2B1.21">0.5.4+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.4%2B1.20.6">0.5.4+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.4%2B1.20.4">0.5.4+1.20.4</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.4%2B1.20.1">0.5.4+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.3%2B24w40a">0.5.3+24w40a</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.3%2B1.21">0.5.3+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.3%2B1.20.6">0.5.3+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.3%2B1.20.4">0.5.3+1.20.4</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.3%2B1.20.1">0.5.3+1.20.1</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.0%2B24w34a">0.5.0+24w34a</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.0%2B1.21">0.5.0+1.21</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.0%2B1.20.6">0.5.0+1.20.6</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.0%2B1.20.4">0.5.0+1.20.4</a><a href="..\..\..\..\..\not-found-version.html?v=0.5.0%2B1.20.1">0.5.0+1.20.1</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.screen.widget/LayoutWidget///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../index.html">Fzzy Config</a><span class="delimiter">/</span><a href="../index.html">me.fzzyhmstrs.fzzy_config.screen.widget</a><span class="delimiter">/</span><span class="current">LayoutWidget</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Layout</span><wbr><span><span>Widget</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">LayoutWidget</a>&nbsp;<span><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a>&nbsp;</span><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">x<span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">Pos</a><span class="token operator"> = </span>AbsPos(0)<span class="token punctuation">, </span></span><span class="parameter ">y<span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">Pos</a><span class="token operator"> = </span>AbsPos(0)<span class="token punctuation">, </span></span><span class="parameter ">paddingW<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8</span><span class="token punctuation">, </span></span><span class="parameter ">paddingH<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>paddingW<span class="token punctuation">, </span></span><span class="parameter ">spacingW<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4</span><span class="token punctuation">, </span></span><span class="parameter ">spacingH<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>spacingW</span></span><span class="token punctuation">)</span> : <span data-unresolved-link="net.minecraft.client.gui.widget/Widget///PointingToDeclaration/">Widget</span>, <a href="../-scalable/index.html">Scalable</a></div><p class="paragraph">A powerful widget used to heuristically layout out multiple element widgets in a manner akin to web DOM layout. Widgets stored in a layout can be automatically repositioned, scaled, queried, and categorized. <strong>NOTE:</strong> LayoutWidget is not a <span data-unresolved-link="net.minecraft.client.gui/ParentElement///PointingToDeclaration/">ParentElement</span>, it is expected that you extract the elements from the layout and add them as children to a parent that contains this layout. The layout is only for positioning.</p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.6.0</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>x</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">Pos</a>, optional. The x position of this widget. Default is <a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-abs-pos/index.html">AbsPos</a> of 0. This initial position can be overwritten later with <a href="set-pos.html">setPos</a></p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>y</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">Pos</a>, optional. The y position of this widget. Default is <a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-abs-pos/index.html">AbsPos</a> of 0. This initial position can be overwritten later with <a href="set-pos.html">setPos</a></p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>padding</span><wbr><span><span>W</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Int, optional. Default 8px. The horizontal space given around the left/right edge of the layout (where the border would go visually). Unlike the DOM, there is no margin/padding duo, just padding.</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>padding</span><wbr><span><span>H</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Int, optional. Default whatever <span data-unresolved-link="me.fzzyhmstrs.fzzy_config.screen.widget/LayoutWidget/paddingW/#/PointingToDeclaration/">paddingW</span> is. The vertical space given around the top/bottom edge of the layout (where the border would go visually). Unlike the DOM, there is no margin/padding duo, just padding.</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>spacing</span><wbr><span><span>W</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Int, optional. Default 4. The horizontal space between elements. This can be modified per element as needed with <a href="push-spacing.html">pushSpacing</a> and <a href="pop-spacing.html">popSpacing</a></p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>spacing</span><wbr><span><span>H</span></span></u></div></span></div><div><div class="title"><p class="paragraph">Int, optional. Default whatever <span data-unresolved-link="me.fzzyhmstrs.fzzy_config.screen.widget/LayoutWidget/spacingW/#/PointingToDeclaration/">spacingW</span> is. The vertical space between elements. This can be modified per element as needed with <a href="push-spacing.html">pushSpacing</a> and <a href="pop-spacing.html">popSpacing</a></p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-62607510%2FConstructors%2F769193423" anchor-label="LayoutWidget" id="-62607510%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-layout-widget.html"><span>Layout</span><wbr><span><span>Widget</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-62607510%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><div class="block"><div class="block"><span class="token annotation builtin">@</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.jvm/-jvm-overloads/index.html"><span class="token annotation builtin">JvmOverloads</span></a></div></div><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">x<span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">Pos</a><span class="token operator"> = </span>AbsPos(0)<span class="token punctuation">, </span></span><span class="parameter ">y<span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">Pos</a><span class="token operator"> = </span>AbsPos(0)<span class="token punctuation">, </span></span><span class="parameter ">paddingW<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">8</span><span class="token punctuation">, </span></span><span class="parameter ">paddingH<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>paddingW<span class="token punctuation">, </span></span><span class="parameter ">spacingW<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">4</span><span class="token punctuation">, </span></span><span class="parameter ">spacingH<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span>spacingW</span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-638063432%2FClasslikes%2F769193423" anchor-label="LayoutElement" id="-638063432%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-layout-element/index.html"><span>Layout</span><wbr><span><span>Element</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-638063432%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">interface </span><a href="-layout-element/index.html">LayoutElement</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="711152335%2FClasslikes%2F769193423" anchor-label="Position" id="711152335%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-position/index.html"><span><span>Position</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="711152335%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">interface </span><a href="-position/index.html">Position</a></div><div class="brief "><p class="paragraph">A layout position to apply to a popup element</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1918608656%2FClasslikes%2F769193423" anchor-label="PositionAlignment" id="-1918608656%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-position-alignment/index.html"><span>Position</span><wbr><span><span>Alignment</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1918608656%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">interface </span><a href="-position-alignment/index.html">PositionAlignment</a> : <a href="../-popup-widget/-builder/-position/index.html">PopupWidget.Builder.Position</a>, <a href="-position/index.html">LayoutWidget.Position</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="2069492817%2FFunctions%2F769193423" anchor-label="add" id="2069492817%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="add.html"><span><span>add</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2069492817%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="add.html">E</a><span class="token operator"> : </span><span data-unresolved-link="net.minecraft.client.gui.widget/Widget///PointingToDeclaration/">Widget</span><span class="token operator">&gt; </span><a href="add.html"><span class="token function">add</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">element<span class="token operator">: </span><a href="add.html">E</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">vararg </span>positions<span class="token operator">: </span><a href="-position/index.html">LayoutWidget.Position</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LayoutWidget</a></div><div class="brief "><p class="paragraph">Adds an element, automatically keyed off the last added element (or "" if this is the first added element).</p></div><div class="symbol monospace"><span class="token keyword">fun </span><span class="token operator">&lt;</span><a href="add.html">E</a><span class="token operator"> : </span><span data-unresolved-link="net.minecraft.client.gui.widget/Widget///PointingToDeclaration/">Widget</span><span class="token operator">&gt; </span><a href="add.html"><span class="token function">add</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">element<span class="token operator">: </span><a href="add.html">E</a><span class="token punctuation">, </span></span><span class="parameter ">parent<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">vararg </span>positions<span class="token operator">: </span><a href="-position/index.html">LayoutWidget.Position</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LayoutWidget</a></div><div class="brief "><p class="paragraph">Adds an element, keyed off a manually defined parent element.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1957663599%2FFunctions%2F769193423" anchor-label="categorize" id="1957663599%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="categorize.html"><span><span>categorize</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1957663599%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="categorize.html"><span class="token function">categorize</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">children<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.client.gui/Element///PointingToDeclaration/">Element</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">drawables<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.client.gui/Drawable///PointingToDeclaration/">Drawable</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">selectables<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-mutable-list/index.html">MutableList</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.client.gui/Selectable///PointingToDeclaration/">Selectable</span><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">other<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html">Consumer</a><span class="token operator">&lt;</span><span data-unresolved-link="net.minecraft.client.gui.widget/Widget///PointingToDeclaration/">Widget</span><span class="token operator">&gt;</span><span class="token operator"> = </span>Consumer { _-&gt; }</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Categorizes the elements in this layout into the three constituent components many screens/parents care about, as well as providing a method for arbitrary categorization</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1464622067%2FFunctions%2F769193423" anchor-label="clampHeight" id="1464622067%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="clamp-height.html"><span>clamp</span><wbr><span><span>Height</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1464622067%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="clamp-height.html"><span class="token function">clampHeight</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LayoutWidget</a></div><div class="brief "><p class="paragraph">Same as <a href="set-height.html">setHeight</a> but returns itself, and won't recompute if the layout is empty. This is often used up front to, as the name implies, clamp the allowable height of a new layout before adding elements.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-199370666%2FFunctions%2F769193423" anchor-label="clampWidth" id="-199370666%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="clamp-width.html"><span>clamp</span><wbr><span><span>Width</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-199370666%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="clamp-width.html"><span class="token function">clampWidth</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LayoutWidget</a></div><div class="brief "><p class="paragraph">Same as <a href="set-width.html">setWidth</a> but returns itself, and won't recompute if the layout is empty. This is often used up front to, as the name implies, clamp the allowable width of a new layout before adding elements.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="173363205%2FFunctions%2F769193423" anchor-label="compute" id="173363205%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="compute.html"><span><span>compute</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="173363205%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="compute.html"><span class="token function">compute</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">debug<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a><span class="token operator"> = </span><span class="token boolean">false</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LayoutWidget</a></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1694960647%2FFunctions%2F769193423" anchor-label="getElement" id="1694960647%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-element.html"><span>get</span><wbr><span><span>Element</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1694960647%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-element.html"><span class="token function">getElement</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-layout-element/index.html">LayoutWidget.LayoutElement</a><span class="token operator">?</span></div><div class="brief "><p class="paragraph">Recursively retrieves the named element. Starts with this layout's elements, then burrows into nested layouts' elements as applicable.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-493051972%2FFunctions%2F769193423" anchor-label="getGeneralHorizontalPadding" id="-493051972%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-general-horizontal-padding.html"><span>get</span><wbr><span>General</span><wbr><span>Horizontal</span><wbr><span><span>Padding</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-493051972%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-general-horizontal-padding.html"><span class="token function">getGeneralHorizontalPadding</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The horizontal padding of this layout.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1988414518%2FFunctions%2F769193423" anchor-label="getGeneralHorizontalSpacing" id="-1988414518%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-general-horizontal-spacing.html"><span>get</span><wbr><span>General</span><wbr><span>Horizontal</span><wbr><span><span>Spacing</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1988414518%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-general-horizontal-spacing.html"><span class="token function">getGeneralHorizontalSpacing</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The general horizontal spacing of this layout. Does not take into account the current state of the spacing stack.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1110020594%2FFunctions%2F769193423" anchor-label="getGeneralVerticalPadding" id="-1110020594%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-general-vertical-padding.html"><span>get</span><wbr><span>General</span><wbr><span>Vertical</span><wbr><span><span>Padding</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1110020594%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-general-vertical-padding.html"><span class="token function">getGeneralVerticalPadding</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The vertical padding of this layout.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1689584156%2FFunctions%2F769193423" anchor-label="getGeneralVerticalSpacing" id="1689584156%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-general-vertical-spacing.html"><span>get</span><wbr><span>General</span><wbr><span>Vertical</span><wbr><span><span>Spacing</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1689584156%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="get-general-vertical-spacing.html"><span class="token function">getGeneralVerticalSpacing</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">The general vertical spacing of this layout. Does not take into account the current state of the spacing stack.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="920628506%2FFunctions%2F769193423" anchor-label="getHeight" id="920628506%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-height.html"><span>get</span><wbr><span><span>Height</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="920628506%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-height.html"><span class="token function">getHeight</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the height of this widget. If height has been clamped, will return that manual height, otherwise the automatically computed height.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1487234891%2FFunctions%2F769193423" anchor-label="getNavigationFocus" id="1487234891%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1487234891%2FFunctions%2F769193423"><span>get</span><wbr><span>Navigation</span><wbr><span><span>Focus</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1487234891%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">fun </span><a href="index.html#1487234891%2FFunctions%2F769193423"><span class="token function">getNavigationFocus</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="net.minecraft.client.gui/ScreenRect///PointingToDeclaration/">ScreenRect</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="900590483%2FFunctions%2F769193423" anchor-label="getWidth" id="900590483%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-width.html"><span>get</span><wbr><span><span>Width</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="900590483%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-width.html"><span class="token function">getWidth</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the width of this widget. If width has been clamped, will return that manual width, otherwise the automatically computed width.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1126691617%2FFunctions%2F769193423" anchor-label="getX" id="1126691617%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-x.html"><span>get</span><wbr><span><span>X</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1126691617%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-x.html"><span class="token function">getX</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the current X screen position of this widget. Uses the position from the <a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">x</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1157711424%2FFunctions%2F769193423" anchor-label="getY" id="1157711424%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-y.html"><span>get</span><wbr><span><span>Y</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1157711424%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="get-y.html"><span class="token function">getY</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></div><div class="brief "><p class="paragraph">Returns the current Y screen position of this widget. Uses the position from the <a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">y</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="259732532%2FFunctions%2F769193423" anchor-label="isEmpty" id="259732532%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="is-empty.html"><span>is</span><wbr><span><span>Empty</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="259732532%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="is-empty.html"><span class="token function">isEmpty</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Returns whether this layout has no elements yet.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2084021423%2FFunctions%2F769193423" anchor-label="lastElement" id="-2084021423%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="last-element.html"><span>last</span><wbr><span><span>Element</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2084021423%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="last-element.html"><span class="token function">lastElement</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a></div><div class="brief "><p class="paragraph">Returns the id of the last element added to this widget, or "" if none have been added yet</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1541948495%2FFunctions%2F769193423" anchor-label="popSpacing" id="-1541948495%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="pop-spacing.html"><span>pop</span><wbr><span><span>Spacing</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1541948495%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="pop-spacing.html"><span class="token function">popSpacing</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LayoutWidget</a></div><div class="brief "><p class="paragraph">Pops a set of custom spacing off this widgets spacing stack. If all custom spacings are popped, will revert to the default spacing provided in the constructor</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1994990641%2FFunctions%2F769193423" anchor-label="pushSpacing" id="1994990641%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="push-spacing.html"><span>push</span><wbr><span><span>Spacing</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1994990641%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="push-spacing.html"><span class="token function">pushSpacing</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">w<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/UnaryOperator.html">UnaryOperator</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">h<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/UnaryOperator.html">UnaryOperator</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LayoutWidget</a></div><div class="brief "><p class="paragraph">Push a custom element spacing to this widgets spacing stack. any elements added after this push will be spaced using the top h/w spacing on that stack, or the default spacing provided in the widget constructor if no custom spacing exists on the stack</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-420363433%2FFunctions%2F769193423" anchor-label="setDimensions" id="-420363433%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-dimensions.html"><span>set</span><wbr><span><span>Dimensions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-420363433%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-dimensions.html"><span class="token function">setDimensions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets a manual width and height for this layout. Will override any automatically computed dimensions.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-94339412%2FFunctions%2F769193423" anchor-label="setHeight" id="-94339412%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-height.html"><span>set</span><wbr><span><span>Height</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-94339412%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-height.html"><span class="token function">setHeight</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">height<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets a manual height for this layout. Will override any automatically computed height</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="55075726%2FFunctions%2F769193423" anchor-label="setPos" id="55075726%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-pos.html"><span>set</span><wbr><span><span>Pos</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="55075726%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="set-pos.html"><span class="token function">setPos</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">x<span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">Pos</a><span class="token punctuation">, </span></span><span class="parameter ">y<span class="token operator">: </span><a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">Pos</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">LayoutWidget</a></div><div class="brief "><p class="paragraph">Sets the X and Y anchor positions this layout is positioned against. The widget will wrap the positions in a <a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-rel-pos/index.html">RelPos</a> to avoid mutating external position state.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="251737523%2FFunctions%2F769193423" anchor-label="setPosition" id="251737523%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-position.html"><span>set</span><wbr><span><span>Position</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="251737523%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-position.html"><span class="token function">setPosition</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">x<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">y<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the X and Y coordinate of this layout. This updates the <a href="set-position.html">x</a> and <a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">y</a>, so will overwrite and reference made with <a href="set-pos.html">setPos</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1358038403%2FFunctions%2F769193423" anchor-label="setWidth" id="-1358038403%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-width.html"><span>set</span><wbr><span><span>Width</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1358038403%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-width.html"><span class="token function">setWidth</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">width<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets a manual width for this layout. Will override any automatically computed widths.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="817942155%2FFunctions%2F769193423" anchor-label="setX" id="817942155%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-x.html"><span>set</span><wbr><span><span>X</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="817942155%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-x.html"><span class="token function">setX</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">x<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the X coordinate of this layout. This updates the <a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">x</a>, so will overwrite and reference made with <a href="set-pos.html">setPos</a> in the X dimension.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1526724886%2FFunctions%2F769193423" anchor-label="setY" id="-1526724886%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="set-y.html"><span>set</span><wbr><span><span>Y</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1526724886%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="set-y.html"><span class="token function">setY</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">y<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Sets the Y coordinate of this layout. This updates the <a href="../../me.fzzyhmstrs.fzzy_config.util.pos/-pos/index.html">y</a>, so will overwrite and reference made with <a href="set-pos.html">setPos</a> in the Y dimension.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-229877126%2FFunctions%2F769193423" anchor-label="update" id="-229877126%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="update.html"><span><span>update</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-229877126%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="update.html"><span class="token function">update</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
