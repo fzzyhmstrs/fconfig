@@ -38,7 +38,7 @@ import java.util.function.Supplier
 /**
  * API for management of config files. If writing in Java, consider using [ConfigApiJava] where possible.
  *
- * Configs can de/serialized from File, string, or raw TomlElement. File read is performed with validation and correction.
+ * Configs can de/serialized from File, string, or raw TomlElement. File read/write is performed with validation and correction.
  * @author fzzyhmstrs
  * @since 0.1.0
  */
