@@ -1,5 +1,5 @@
 ---
-title: @Version
+title: "@Version"
 ---
 
 `@Version` marks a config class with a version integer. This can be used for simple record-keeping, of course, or used to handle potentially breaking updates in a meaningful manner. The version is marked at the top of the .toml file (0 by default) and the serialized version is compared against an annotated version integer, if any. If a mismatch is detected, the configs `update()` method is called for mismatch handling.

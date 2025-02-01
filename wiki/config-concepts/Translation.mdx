@@ -5,7 +5,7 @@ title: Translating Configs
 Almost everything related to Fzzy Config is automatically translatable or otherwise able to be notated. Translation is not strictly *required*, but strongly recommended for a better user experience.
 
 ## Concept
-Translation in Fzzy Config is driven by the [Translatable](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-translatable/index.html) interface or the [@Translation](./annotations/Translation) annotation.
+Translation in Fzzy Config is driven by the [Translatable](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-translatable/index.html) interface or the [@Translation](annotations/Translation) annotation.
 
 ### Translatable
 Translation in most places in Fzzy Config is a matched triad of keys:
@@ -33,7 +33,7 @@ Some notes regarding translations in practice:
 * If you prefix a config, the prefix text will both appear in the config landing page (if applicable) and at the top of the config settings list as a "header".
 
 ### @Translation
-If you want to override the default translation, or provide a translation and description without implementing `Translatable`, you can use the `@Translation` annotation. This annotation provides a prefix that the annotated field name is appended to. See the [Annotations](./annotations/Translation) article for details.
+If you want to override the default translation, or provide a translation and description without implementing `Translatable`, you can use the `@Translation` annotation. This annotation provides a prefix that the annotated field name is appended to. See the [Annotations](annotations/Translation) article for details.
 
 This annotation can be very useful for repeating parts. If you have a config object, lets say an entity attributes "chunk", that repeats many times in a config. Normally you would have to provide a translation for every individual setting based on the total classpath. That would get annoying fast. @Translation allows you to define one lang prefix that is common for all instances of the annotated field.
 

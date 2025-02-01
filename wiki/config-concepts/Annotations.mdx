@@ -10,14 +10,14 @@ Annotations in Fzzy Config are split into two broad categories; Toml Annotations
 
 ## Config Annotations
 Augment the functionality of your configs with these annotations. The currently available list of annotations is:
-* [`@ClientModifiable`](./annotations/Client-Modifiable) - Fields marked with this will be editable by clients regardless of permission level
-* [`@WithPerms`](./annotations/With-Perms) - Defines the permission level needed for clients to edit server settings marked with this
-* [`@WithCustomPerms` and `@AdminLevel`](./annotations/With-Custom-Perms) - Defines permission levels in a LuckPerms/Forge Permissions API style, with string-based "nodes"; optionally falling back to vanilla permission level.
-* [`@NonSync`](./annotations/Non-Sync) - Defines a field as client-only. Editable regardless of perms, and won't sync to/from servers
-* [`@Version`](./annotations/Version) - Sets the version of a config class, used for version-managed updates
-* [`@RequiresRestart`](./annotations/Requires-Restart) - (Deprecated as of 0.4.0) Fields or classes marked with this will prompt a user restart after syncing
-* [`@RequiresAction`](./annotations/Requires-Action) - (As of 0.4.0) This will note that the user will need to take a particular action if they change the affected setting. Applies to fields and classes.
-* [`@ConvertFrom`](./annotations/Convert-From) - Specifies an old config file from a previous lib to scrape and convert into a Fzzy Config toml
-* [`@IgnoreVisibility`](./annotations/Ignore-Visibility) - Classes marked with this annotation can have fields/properties with lower visibility than public
-* [`@Translation`](./annotations/Translation) - Defines a custom lang file prefix for a setting or whole class of settings
-* [Toml Annotations](./annotations/Toml-Annotations) - A series of annotations for decorating and modifying config .toml files directly.
+* [`@ClientModifiable`](annotations/Client-Modifiable) - Fields marked with this will be editable by clients regardless of permission level
+* [`@WithPerms`](annotations/With-Perms) - Defines the permission level needed for clients to edit server settings marked with this
+* [`@WithCustomPerms` and `@AdminLevel`](annotations/With-Custom-Perms) - Defines permission levels in a LuckPerms/Forge Permissions API style, with string-based "nodes"; optionally falling back to vanilla permission level.
+* [`@NonSync`](annotations/Non-Sync) - Defines a field as client-only. Editable regardless of perms, and won't sync to/from servers
+* [`@Version`](annotations/Version) - Sets the version of a config class, used for version-managed updates
+* [`@RequiresRestart`](annotations/Requires-Restart) - (Deprecated as of 0.4.0) Fields or classes marked with this will prompt a user restart after syncing
+* [`@RequiresAction`](annotations/Requires-Action) - (As of 0.4.0) This will note that the user will need to take a particular action if they change the affected setting. Applies to fields and classes.
+* [`@ConvertFrom`](annotations/Convert-From) - Specifies an old config file from a previous lib to scrape and convert into a Fzzy Config toml
+* [`@IgnoreVisibility`](annotations/Ignore-Visibility) - Classes marked with this annotation can have fields/properties with lower visibility than public
+* [`@Translation`](annotations/Translation) - Defines a custom lang file prefix for a setting or whole class of settings
+* [Toml Annotations](annotations/Toml-Annotations) - A series of annotations for decorating and modifying config .toml files directly.

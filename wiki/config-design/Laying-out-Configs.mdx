@@ -32,7 +32,7 @@ Fzzy Config makes organizing and partitioning your config settings easy. Create 
 Similar settings should be grouped into configs together. A common user expectation is that configs are grouped by in-game 'elements'.
 * One config per registry type: Items config, Blocks config, Enchantments config, etc.
 * One config per major gameplay element: Crafting config, Loot config, Client settings, etc.
-* Take advantage of class-wide annotations for a particular config like [`@WithPerms`](/config-concepts/annotations/With-Perms)/[`@WithCustomPerms`](/config-concepts/annotations/With-Custom-Perms)
+* Take advantage of class-wide annotations for a particular config like [`@WithPerms`](../config-concepts/annotations/With-Perms)/[`@WithCustomPerms`](/config-concepts/annotations/With-Custom-Perms)
 
 Like single config layouts, items within a config class should be organized in a meaningful manner.
 
@@ -47,7 +47,7 @@ Large configs benefit from being broken up into parts, if separate config classe
 | [Objects](#objects)   | Opens popup                 | Yes        | No     |
 | [Groups](#groups)     | Collapsible inline grouping | No         | Yes    |
 
-If you use a common subclass for creation of repeating sub-elements, consider using the [`@Translation`](/config-concepts/Translation) annotation, which will let you define common lang for all instances of the repeating element. 
+If you use a common subclass for creation of repeating sub-elements, consider using the [`@Translation`](../config-concepts/Translation) annotation, which will let you define common lang for all instances of the repeating element. 
 
 ### Sections
 Subconfig classes can be extended from [`ConfigSection`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section). Subconfigs made this way will open a new, separate config screen of their own on top of the parent config screen.
@@ -117,7 +117,7 @@ class ItemsConfig: Config(Identifier.of(MOD_ID, "items_config")) {
 </CodeTabs>
 
 ### Objects
-[Validation](/config-concepts/Validation) is its own topic, but for the sake of this article, FzzyConfig supports arbitrary Simple Objects (POJO) with its validation engine. Validated Objects (called [`ValidatedAny`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-any) internally) will open a 'popup' window where the user can make selections.
+[Validation](../config-concepts/Validation) is its own topic, but for the sake of this article, FzzyConfig supports arbitrary Simple Objects (POJO) with its validation engine. Validated Objects (called [`ValidatedAny`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-any) internally) will open a 'popup' window where the user can make selections.
 * _Objects are recommended where you need small, repeating blocks of particular settings that the user may want to copy and paste between settings_
 * _For example, if you have an `EntityConfig, you may have an object per entity that defines common settings like health, damage, movement speed, and so on._
 
