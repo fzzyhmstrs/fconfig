@@ -1,4 +1,8 @@
-Fzzy Config (as of 0.4.x) includes a lightweight cross-loader networking API for play-phase networking. This API was designed to facilitate implementation of Fzzy Configs internal networking, but works perfectly well for third party applications that need a no-fuss API they can use on all modloaders.
+---
+title: Networking
+---
+
+Fzzy Config (as of 0.4.x) includes a lightweight cross-loader networking API for play-phase networking. This API was designed to facilitate implementation of Fzzy Configs internal networking, but works perfectly well for third party applications that need a no-fuss API they can use on all mod loaders.
 
 ## Registration
 Fzzy Config works via the Payload concept introduced in recent Minecraft versions. For older versions of Fzzy Config, there is a `FzzyPayload` class used to take the place of the vanilla `CustomPayload`.
@@ -23,7 +27,7 @@ For <code>registerS2C</code>, take care to insulate the server from any client-o
 
 ## Sending
 To send a payload, simply use `ConfigApi.network().canSend` and `ConfigApi.Network().send`.
-* The player parameter determines which direction the sending will send. If the player instance is a `ServerPlayerEntity`, it will check/send for an S2C/client-bound direction. For a null player or a `ClientPlayerEntity`, it will send C2S/serverbound.
+* The player parameter determines which direction the sending will send. If the player instance is a `ServerPlayerEntity`, it will check/send for an S2C/client-bound direction. For a null player or a `ClientPlayerEntity`, it will send C2S/server-bound.
 
 ## Example
 

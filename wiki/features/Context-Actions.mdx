@@ -1,3 +1,7 @@
+---
+title: Context Actions
+---
+
 As of 0.6.0, there is a robust Context Handling system built into Fzzy Config. This system
 * Captures key inputs with a custom keybind-like system
 * Acts on inputs across "layered" context handling systems
@@ -167,7 +171,7 @@ class Child: ContextHandler {
 
 ### The Context Action
 The class that names the whole system, `ContextAction`. Context Actions are not strictly necessary in the grand scheme of a Context Action system, but provide two key benefits for use:
-* Provide a structured means of creating context callbacks for later use in a context handler. If you want to see an example of this in FC, you can explore how the `ConfigEntry` class handles context.
+* Provide a structured means of creating context callbacks for later use in a context handler. If you want to see an example of this in FC, you can explore how `ConfigEntry` handles context.
 * Are used in context menus (right click menus), particularly with the `ContextProvider` framework (see below).
 
 Outside of these two circumstances, it is generally valid to handle context "manually" inline with where the context handler is.

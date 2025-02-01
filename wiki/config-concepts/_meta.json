@@ -1,8 +1,11 @@
 {
-  "annotations": "Annotations",
   "Annotations.mdx": {
     "name": "Config Annotations",
     "icon": "AtSign"
+  },
+  "annotations": {
+    "name": "Annotation Types",
+    "icon": "CornerDownRight"
   },
   "Translation.mdx": {
     "name": "Translation",
@@ -12,7 +15,10 @@
     "name": "Validation",
     "icon": "Check"
   },
-  "validation": "Validation Types",
+  "validation": {
+    "name": "Validation Types",
+    "icon": "CornerDownRight"
+  },
   "Actions.mdx": {
     "name": "Actions",
     "icon": "SquareArrowUpRight"

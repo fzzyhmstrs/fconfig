@@ -8,8 +8,8 @@ TomlKt, the library that Fzzy Config's serializer is built off of, provides a se
 * `@BlockArray` / `@TomlBlockArray` - Modifies the encoding process of corresponding array-like property, either to force array of table to be encoded as block array, or to change how many items should be encoded per line
 * `@MultilineString` / `@TomlMultilineString` - Marks that the string property is multiline
 * `@LiteralString` / `@TomlLiteralString` - Marks the annotated string property as a literal in the output file. This means it will have single quotes `'C:\Users\<User>\.m2\repositories'` and escaping won't be performed by the parser.
-* `@Integer` / `@TomlInteger` - Defines the visual format of a integer-like numeric property (byte, short, int, long).
+* `@Integer` / `@TomlInteger` - Defines the visual format of an integer-like numeric property (byte, short, int, long).
     * Base.Bin - binary `0b11010100`
     * Base.Oct - octal `0o81244`
     * Base.Dec - standard decimal form.
-    * Base.Hex - hexidecimel `0xFF342B6A`
+    * Base.Hex - hexadecimal `0xFF342B6A`

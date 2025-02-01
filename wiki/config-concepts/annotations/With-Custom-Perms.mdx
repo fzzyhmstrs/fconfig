@@ -5,8 +5,8 @@ title: "@WithCustomPerms and @AdminLevel"
 Introduced as of 0.4.0.
 
 These two annotations work together as a pair to define permissions for a config based on LuckPerms/Forge Config API "node" style permissions. Permissions attached to a specific setting will take precedence over ones defined for the entire class.
-1. `@WithCustomPerms` - Use this like `@WithPerms` to define permissions for a setting or class. Define all of the node strings that are permissible; generally speaking only the lowest level of a "chain" of nodes would be needed, admin wouldn't need to be called out if it inherits everything from mod, and mod is permissible in the annotation. Optionally a vanilla permission level can be provided as a fallback (in case LuckPerms isn't present, for example).
-2. `@AdminLevel` - In case of an access violation (a cheater, hacks, etc), this annotation defines who should be alerted to the issue; using the example from above, only admins might be included in this annotation, not mods. If not provided, Fzzy Config will fallback to anyone with vanilla admin access or higher (permission level >= 3)
+1. `@WithCustomPerms` - Use this like `@WithPerms` to define permissions for a setting or class. Define all the node strings that are permissible; generally speaking only the lowest level of a "chain" of nodes would be needed, admin wouldn't need to be called out if it inherits everything from mod, and mod is permissible in the annotation. Optionally a vanilla permission level can be provided as a fallback (in case LuckPerms isn't present, for example).
+2. `@AdminLevel` - In case of an access violation (a cheater, hacks, etc.), this annotation defines who should be alerted to the issue; using the example from above, only admins might be included in this annotation, not mods. If not provided, Fzzy Config will fall back to anyone with vanilla admin access or higher (permission level >= 3)
 
 <CodeTabs>
 

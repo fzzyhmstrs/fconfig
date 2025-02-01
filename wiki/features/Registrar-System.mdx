@@ -1,5 +1,9 @@
+---
+title: Translating Configs
+---
+
 <Callout variant="warning">
-Registrars are currently experimental. Stabel release is expected by 0.7.0.
+Registrars are currently experimental. Stable release is expected by 0.7.0.
 </Callout>
 
 From Fzzy Config 0.5.9, there is a simple registration system built into the `PlatformApi` for cross-platform registration to built-in or modded `Registry` objects.
@@ -37,7 +41,7 @@ Registrar<Item> myItemRegistrar = ConfigApiJava.platform().createRegistrar(MOD_I
 ### Using the Registrar
 Once you have a registrar, there are two primary activities you need to do with it.
 1. `register()` objects to it
-2. `init()` the registrar to link it to the modloading system
+2. `init()` the registrar to link it to the mod loading system
 
 <CodeTabs>
 

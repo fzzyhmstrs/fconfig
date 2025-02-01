@@ -1,3 +1,7 @@
+---
+title: Laying Out Configs
+---
+
 Proper layout of a config can make or break user and modder experience in and out of game. Determine the flow of your config settings, how they are or will be grouped into common themes, and create a layout matching expectations for navigation, maintenance, and use.
 
 ## 1. How Many Configs?
@@ -50,7 +54,7 @@ Large configs benefit from being broken up into parts, if separate config classe
 If you use a common subclass for creation of repeating sub-elements, consider using the [`@Translation`](../config-concepts/Translation) annotation, which will let you define common lang for all instances of the repeating element. 
 
 ### Sections
-Subconfig classes can be extended from [`ConfigSection`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section). Subconfigs made this way will open a new, separate config screen of their own on top of the parent config screen.
+Sub-config classes can be extended from [`ConfigSection`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section). Sub-configs made this way will open a new, separate config screen of their own on top of the parent config screen.
 * _Sections are recommended for large sections of a parent config that belong together, where separating them into individual configs completely might be laborious._
 * _For example, if you have an `ItemsConfig`, you may have a `Swords` section, an `Axes` section, and so on._
 
