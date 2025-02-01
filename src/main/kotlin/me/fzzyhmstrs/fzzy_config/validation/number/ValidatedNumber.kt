@@ -21,7 +21,6 @@ import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -37,7 +36,6 @@ import net.minecraft.client.resource.language.I18n
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
-import net.minecraft.util.Identifier
 import net.minecraft.util.Util
 import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -48,6 +46,7 @@ import java.util.*
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
+import java.util.function.UnaryOperator
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.round
@@ -203,11 +202,13 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
         val numberWidget = ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) }, 99, false, increment)
 
+        layout.pushSpacing({ _-> 1 }, UnaryOperator.identity())
         layout.add(
             "textbox",
             numberWidget,
             LayoutWidget.Position.LEFT,
             LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
+        layout.popSpacing()
         layout.add(
             "up",
             CustomButtonWidget.builder("fc.button.up".translate()) {

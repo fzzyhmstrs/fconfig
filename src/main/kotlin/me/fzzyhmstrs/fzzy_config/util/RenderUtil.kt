@@ -11,16 +11,11 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import com.mojang.blaze3d.systems.RenderSystem
-import it.unimi.dsi.fastutil.ints.IntIterator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
-import net.minecraft.util.math.Divider
-import net.minecraft.util.math.MathHelper
-import kotlin.math.min
-import net.minecraft.util.math.ColorHelper
 import java.awt.Color
+import kotlin.math.min
 
 /**
  * Render utils for DrawContext to provide functionality similar to 1.20.2+ sprite rendering
@@ -128,7 +123,10 @@ object RenderUtil {
      * @since 0.6.1
      */
     fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
-        this.drawTex(id, x, y, width, height, alpha)
+        RenderSystem.setShaderColor(1f, 1f, 1f, alpha)
+        val bg = getBackground(id)
+        this.drawNineSlice(id, x, y, width, height, bg.outerWidth, bg.outerHeight, bg.width, bg.height)
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
     }
 
     /**
@@ -279,10 +277,11 @@ object RenderUtil {
 
 
     private val backgrounds: MutableMap<Identifier, Background> = mutableMapOf()
-    private val defaultBg = Background(20, 4, 200, 20)
+    internal val defaultBg = Background(20, 4, 200, 20)
+    private val fallbackBg = Background(1, 1, 20, 20)
 
     fun getBackground(id: Identifier): Background {
-        return backgrounds[id] ?: defaultBg
+        return backgrounds[id] ?: fallbackBg
     }
 
     fun addBackground(id: Identifier, background: Background) {
