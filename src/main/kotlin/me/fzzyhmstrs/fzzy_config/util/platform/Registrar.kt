@@ -16,6 +16,8 @@ import java.util.function.Supplier
  * val MY_ITEM = ITEMS.register("name") { MyItem(Item.Settings()) }
  * ```
  *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Registrar-System) for more details and examples.
+ *
  * Scheduled for stability by 0.7.0
  * @see [me.fzzyhmstrs.fzzy_config.util.PlatformApi.createRegistrar]
  * @author fzzyhmstrs

@@ -17,7 +17,9 @@ import net.minecraft.network.packet.CustomPayload
 import net.minecraft.util.Identifier
 
 /**
- * API for multiloader abstraction of simple play-phase networking
+ * API for multi-loader abstraction of simple play-phase networking
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Networking) for more details and examples.
  * @author fzzyhmstrs
  * @since 0.4.1
  */

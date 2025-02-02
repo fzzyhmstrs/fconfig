@@ -28,7 +28,7 @@ fun interface ResultProviderSupplier<T: Any> {
      * - If the `thing` is a basic primitive or object, the `property` should be used to supply values from the properties getter
      *
      * Using this general strategy ensures that fresh values are supplied on every call.
-     * @param scope String representation of a config setting. See [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation) for an overview of how scopes work.
+     * @param scope String representation of a config setting. See [the translation wiki page](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/Translation) for an overview of how scopes work.
      * @param config [Config] the config instance providing results
      * @param thing [Any] the candidate result to potentially use to create the supplier with.
      * @param property [KMutableProperty] reflection property instance for the [thing]

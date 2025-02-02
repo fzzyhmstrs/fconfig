@@ -35,6 +35,8 @@ import kotlin.jvm.optionals.getOrNull
  * A validated TagKey
  *
  * By default, validation will allow any TagKey currently known by the registry of the provided default Tag.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/TagKeys) for more details and examples.
  * @param T the TagKey type
  * @param defaultValue [TagKey] - the default tag
  * @param predicate [Predicate]&lt;[Identifier]&gt;, Optional - use to restrict the allowable tag selection

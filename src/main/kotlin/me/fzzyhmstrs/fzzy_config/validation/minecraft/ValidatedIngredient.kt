@@ -44,6 +44,8 @@ import java.util.function.Predicate
  * A validated provider of [Ingredient]
  *
  * This does not store an ingredient, it stores an [IngredientProvider], which lazily generates the ingredient only when requested.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Ingredients) for more details and examples.
  * @sample me.fzzyhmstrs.fzzy_config.examples.MinecraftExamples.ingredients
  * @author fzzyhmstrs
  * @since 0.2.0, marked final 0.6.0
@@ -56,6 +58,8 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      * This does not store an ingredient, it stores an [IngredientProvider], which lazily generates the ingredient only when requested.
      *
      * Initializes this validation with a single-item IngredientProvider
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Ingredients) for more details and examples.
      * @param item [Identifier] defining the item
      * @param itemPredicate [Predicate]<Identifier>, optional - restricts the set of allowable items (default is any item in the Items registry)
      * @param tagPredicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag in the Items registry)
@@ -71,6 +75,8 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      * This does not store an ingredient, it stores an [IngredientProvider], which lazily generates the ingredient only when requested.
      *
      * Initializes this validation with a multi-item IngredientProvider
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Ingredients) for more details and examples.
      * @param set [Set]<Any> - Set defining the default tags and items. Anything that isn't an Identifier or Tagkey&lt;Item&gt; will be ignored
      * @param itemPredicate [Predicate]<Identifier>, optional - restricts the set of allowable items (default is any item in the Items registry)
      * @param tagPredicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag in the Items registry)
@@ -86,6 +92,8 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      * This does not store an ingredient, it stores an [IngredientProvider], which lazily generates the ingredient only when requested.
      *
      * Initializes this validation with a multi-item IngredientProvider
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Ingredients) for more details and examples.
      * @param tag [TagKey]<Item> defining the tag to pull items from
      * @param itemPredicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag from the Items registry)
      * @param tagPredicate [Predicate]<Identifier>, optional - restricts the set of allowable tags (default is any tag in the Items registry)

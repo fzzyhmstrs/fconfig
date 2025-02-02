@@ -56,6 +56,8 @@ import kotlin.math.max
  * This is useful for a feature-flag-style setting, polling for active flags using `List#contains`. This can come with performance implementations, so for usage in high-traffic situations a series of booleans or [ValidatedBoolean][me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean] is preferable.
  *
  * This [ValidatedField] implements [List], so you can directly use it as if it were an immutable list. While it does technically accept duplicates, as list implementations typically allow, you really shouldn't include duplicates. It rarely makes sense for the setting type anyway.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Choice-Lists) for more details and examples.
  * @param T the choice type
  * @param defaultValues the choices that are "active" by default. Can be empty.
  * @param choices [List]<T> defining the appropriate choices

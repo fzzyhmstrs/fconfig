@@ -65,6 +65,8 @@ import kotlin.jvm.optionals.getOrNull
  * A validated Identifier field.
  *
  * There are various shortcut methods available for building ValidatedIdentifiers more easily than with the primary constructor. Check out options in the See Also section
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
  * @param defaultValue String, the string value of the default identifier
  * @param allowableIds [AllowableIdentifiers] instance. Defines the predicate for valid ids, and the supplier of valid id lists
  * @param validator [EntryValidator]<String> handles validation of individual entries. Defaults to validation based on the predicate provided in allowableIds
@@ -92,6 +94,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
      * An unbounded validated identifier
      *
      * Validation will be limited to ensuring inputs are valid identifiers
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
      * @param defaultValue [Identifier] the default identifier for this validation
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -102,6 +106,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
      * An unbounded validated identifier constructed from a string
      *
      * Validation will be limited to ensuring inputs are valid identifiers
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
      * @param defaultValue [String] the default identifier (in string form) for this validation
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -112,6 +118,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
      * An unbounded validated identifier constructed from namespace and path strings
      *
      * Validation will be limited to ensuring inputs are valid identifiers
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
      * @param defaultNamespace [String] the default namespace for this validation
      * @param defaultPath [String] the default path for this validation
      * @author fzzyhmstrs
@@ -123,6 +131,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
      * An unbounded validated identifier with a dummy default value
      *
      * Validation will be limited to ensuring inputs are valid identifiers
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -339,6 +349,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * builds a String EntryValidator with always-strong behavior
          *
          * Use if your identifier list is available both at loading (during modInitialization, typically), and during updating (in-game).
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param allowableIds an [AllowableIdentifiers] instance.
          * @author fzzyhmstrs
          * @since 0.2.0
@@ -355,6 +367,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable tag of values
          *
          * Allowable identifiers in this validation will NOT be cached. Tag contents can change over time in a game thanks to reloads.
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param tag the tag of allowable values to choose from
          * @return [ValidatedIdentifier] wrapping the provided default and tag
@@ -377,6 +391,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Uses "minecraft:air" as the default value.
          *
          * Allowable identifiers in this validation will NOT be cached. Tag contents can change over time in a game thanks to reloads.
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param tag the tag of allowable values to choose from
          * @return [ValidatedIdentifier] wrapping the provided tag
          * @author fzzyhmstrs
@@ -397,6 +413,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable registry of values
          *
          * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param registry the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided default and registry
@@ -412,6 +430,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable registry of values, filtered by the provided predicate
          *
          * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param registry the registry whose ids are valid for this identifier
          * @param predicate Predicate<RegistryEntry> tests an allowable subset of the registry
@@ -434,6 +454,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable registry of values, filtered by the provided predicate
          *
          * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param registry the registry whose ids are valid for this identifier
          * @param predicate Predicate<RegistryEntry> tests an allowable subset of the registry
@@ -458,6 +480,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Uses "minecraft:air" as the default value
          *
          * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param registry the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
@@ -475,6 +499,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Uses "minecraft:air" as the default value
          *
          * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param registry the registry whose ids are valid for this identifier
          * @param predicate [Predicate]<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided predicated registry
@@ -499,6 +525,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Uses "minecraft:air" as the default value
          *
          * Allowable identifiers in this validation will be cached after their first polling. This is typically when suggestions are generated in a screen. Static registries like the ones passed into this method do not change while in game, so caching is beneficial with no downside.
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param registry the registry whose ids are valid for this identifier
          * @param predicate [BiPredicate]&lt;Identifier, RegistryEntry&gt; tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided predicated registry
@@ -523,6 +551,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Uses "minecraft:air" as the default value
          *
          * Allowable identifiers in this validation will be cached after their first polling if the registry is a static; dynamic registry validation will NOT be cached as those registries can change while in game.
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided registry
@@ -558,6 +588,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
         /**
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @param predicate [Predicate]<RegistryEntry> tests an allowable subset of the registry
@@ -597,6 +629,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
         /**
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @param predicate [Predicate]<RegistryEntry> tests an allowable subset of the registry
@@ -638,6 +672,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
          *
          * Uses "minecraft:air" as the default value
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided registry
          * @author fzzyhmstrs
@@ -654,6 +690,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
          *
          * Uses "minecraft:air" as the default value
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @param predicate [BiPredicate]<RegistryEntry> tests an allowable subset of the registry
          * @return [ValidatedIdentifier] wrapping the provided registry
@@ -694,6 +732,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
          *
          * Used primarily for dynamic registries that aren't synced to clients (Loot registries, primarily)
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @param predicateId String unique id for the predicate provided; used to properly sync ids that this predicate cares about
@@ -735,6 +775,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable registry of values, defined from a RegistryKey
          *
          * Used primarily for dynamic registries that aren't synced to clients (Loot registries, primarily)
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @param predicateId String unique id for the predicate provided; used to properly sync ids that this predicate cares about
@@ -778,6 +820,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Used primarily for dynamic registries that aren't synced to clients (Loot registries, primarily)
          *
          * Uses "minecraft:air" as the default value
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @param predicateId String unique id for the predicate provided; used to properly sync ids that this predicate cares about
          * @param predicate [BiPredicate]<RegistryEntry> tests an allowable subset of the registry
@@ -818,6 +862,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey
          *
          * Uses "c:dummy" as the default TagKey id
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param T the TagKey type
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the TagKeys of the provided registry
@@ -845,6 +891,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey, and predicated by the provided predicate
          *
          * Uses "c:dummy" as the default TagKey id
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param T the TagKey type
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
          * @param predicate [Predicate]<Identifier> tests an allowable subset of the TagKeys
@@ -871,6 +919,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
         /**
          * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param T the TagKey type
          * @param default [TagKey] the default TagKey value to get an identifier from
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
@@ -897,6 +947,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
 
         /**
          * Builds a ValidatedIdentifier based on the existing [TagKey] stream from the registry defined by the supplied RegistryKey, and predicated by the provided predicate
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param T the TagKey type
          * @param default [TagKey] the default TagKey value to get an identifier from
          * @param key [RegistryKey] for the registry whose ids are valid for this identifier
@@ -926,6 +978,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable list of values
          *
          * This list should be available and complete at validation time
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param list the list whose entries are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided default and list
@@ -946,6 +1000,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * This list should be available and complete at validation time
          *
          * uses "minecraft:air" as the default value
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param list the list whose entries are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided list
          * @author fzzyhmstrs
@@ -963,6 +1019,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * Builds a ValidatedIdentifier based on an allowable list of values
          *
          * This list does not have to be complete at validation time.
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param defaultValue the default value of the ValidatedIdentifier
          * @param listSupplier Supplier of the list whose entries are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided default and list supplier
@@ -981,6 +1039,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
          * This list does not have to be complete at validation time.
          *
          * uses "minecraft:air" as the default value
+         *
+         * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Identifiers) for more details and examples.
          * @param listSupplier Supplier of the list whose entries are valid for this identifier
          * @return [ValidatedIdentifier] wrapping the provided list supplier
          * @author fzzyhmstrs

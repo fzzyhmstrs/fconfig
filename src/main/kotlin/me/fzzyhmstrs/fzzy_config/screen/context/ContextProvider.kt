@@ -3,7 +3,7 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 /**
  * Generates a set of grouped context actions upon request. This is the upstream-facing counterpart of [ContextHandler]; it applies its results to a builder provided from upstream for further amendment and usage upstream. This may be used together with a handler (handler requests potential context inputs by requesting for them from it's children provider(s))
  *
- * See the [Wiki](https://github.com/fzzyhmstrs/fconfig/wiki/Context-Actions) for a detailed overview of the ContextAction system in fzzy config.
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Context-Actions) for a detailed overview of the ContextAction system in fzzy config.
  * @author fzzyhmstrs
  * @since 0.6.0
  */

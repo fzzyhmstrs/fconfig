@@ -12,7 +12,7 @@ import java.util.function.UnaryOperator
 /**
  * An action linked to contextual input, be it a keybind press, mouse click, or other event. This is the heart of the Context handling system in Fzzy Config, providing the actual "doing" of actions.
  *
- * See the [Wiki](https://github.com/fzzyhmstrs/fconfig/wiki/Context-Actions) for a detailed overview of the ContextAction system in fzzy config.
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Context-Actions) for a detailed overview of the ContextAction system in fzzy config.
  * @author fzzyhmstrs
  * @since 0.6.0
  */
@@ -21,7 +21,7 @@ class ContextAction private constructor(val texts: Translatable.Result, val acti
     /**
      * A builder of [ContextAction]. This is used in [ContextHandler] and [ContextProvider] to incrementally build actions, with modifications applied on different layers of context handling/provision as needed.
      *
-     * See the [Wiki](https://github.com/fzzyhmstrs/fconfig/wiki/Context-Actions) for a detailed overview of the ContextAction system in fzzy config.
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Context-Actions) for a detailed overview of the ContextAction system in fzzy config.
      * @param name [Text]
      * @author fzzyhmstrs
      * @since 0.6.0

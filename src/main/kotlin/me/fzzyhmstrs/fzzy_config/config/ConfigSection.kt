@@ -29,6 +29,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * Use to organize related sub-topics of a larger config. Auto GUI creation will use sections to create separate "layers" of GUI Screens for the player to drill down into. Recommended practice is to group all sections at the beginning or end of a Config, so the section widgets in the GUI are grouped together, and the non-grouped entries are also all together.
  *
  * Follows the same rules as a Config regarding setting definitions. See the documentation for [Config] for details.
+ *
+ * [Laying Out Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/Laying-out-Configs) has more information about how sections can be best utilized.
  * @author fzzyhmstrs
  * @since 0.2.0
  */

@@ -23,9 +23,11 @@ import net.peanuuutz.tomlkt.toBoolean
 import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
- * a validated boolean value
+ * A validated boolean value.
  *
  * Since there is basically nothing to validate on a boolean, this primarily serves to parse and correct issues with de/serialization.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Booleans) for more details and examples.
  * @param defaultValue the default boolean state
  * @see me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.booleans

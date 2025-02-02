@@ -52,6 +52,8 @@ import kotlin.reflect.jvm.javaConstructor
  * This Validation is useful for "blocks" of config, such as Entity Stats or Tool Materials, that you want to break out.
  *
  * You can nest other POJO within this one, as long as it either implements [Walkable] or is another ValidatedAny
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Objects) for more details and examples, and refer to [Laying Out Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/Laying-out-Configs) for more information about how `ValdiatedAny` can be best utilized.
  * @param T [Walkable] object to be managed
  * @param defaultValue Instance of T to wrap
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.anys

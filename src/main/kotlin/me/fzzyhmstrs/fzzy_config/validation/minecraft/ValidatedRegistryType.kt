@@ -20,6 +20,8 @@ import java.util.function.Predicate
 
 /**
  * Helper to create validation for Registered objects, specifically things in a [DefaultedRegistry] like Items and Blocks.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Registry-Objects) for more details and examples.
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.registries
  * @see ValidatedField.map
  * @author fzzyhmstrs
@@ -31,6 +33,8 @@ object ValidatedRegistryType {
      * Validation for a registry object in a [DefaultedRegistry]
      *
      * This validation will accept any instance of an object that is registered in the provided registry. Will use the registries default value as its default.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Registry-Objects) for more details and examples.
      * @param T the object type
      * @param registry [DefaultedRegistry]&lt;[T]&gt; - the registry instance
      * @return [ValidatedField]&lt;[T]&gt; - Validation wrapping the registry. Is a [Supplier][java.util.function.Supplier] and [Consumer][java.util.function.Consumer] of the current instance of [T] it is holding
@@ -49,6 +53,8 @@ object ValidatedRegistryType {
      * Validation for a registry object in a [Registry], the Registry doesn't have to be Defaulted because a default is being provided.
      *
      * This validation will accept any instance of an object that is registered in the provided registry.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Registry-Objects) for more details and examples.
      * @param T the object type
      * @param defaultValue [T] default registry object instance
      * @param registry [Registry]&lt;[T]&gt; - the registry instance
@@ -69,6 +75,8 @@ object ValidatedRegistryType {
 
     /**
      * Validation for a registry object in a [Registry], the Registry doesn't have to be Defaulted because a default is being provided.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Registry-Objects) for more details and examples.
      * @param T the object type
      * @param defaultValue [T] default registry object instance
      * @param registry [Registry]&lt;[T]&gt; - the registry instance
@@ -92,6 +100,8 @@ object ValidatedRegistryType {
      * Validation for a registry object in a [Registry], the Registry doesn't have to be Defaulted because a default is being provided.
      *
      * This validation will accept any instance of an object that is registered in the provided registry.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Registry-Objects) for more details and examples.
      * @param T the object type
      * @param defaultValue [T] default registry object instance
      * @param registry [Registry]&lt;[T]&gt; - the registry instance

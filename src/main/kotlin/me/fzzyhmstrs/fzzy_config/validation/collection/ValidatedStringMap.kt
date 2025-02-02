@@ -32,7 +32,8 @@ import java.util.function.BiFunction
 
 /**
  * A Validated Map with String keys
-
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Collections) for more details and examples.
  * @param V any non-null type with a valid [Entry] for handling
  * @param defaultValue the default map
  * @param keyHandler the key handler, an [Entry]<String>, typically a [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString]

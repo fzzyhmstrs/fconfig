@@ -19,6 +19,8 @@ import java.util.*
 
 /**
  * API for abstraction of simple ModLoader requests
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Platform-Utilities) for more details and examples.
  * @author fzzyhmstrs
  * @since 0.5.0
  */
@@ -74,6 +76,8 @@ interface PlatformApi {
 
     /**
      * Creates a [Registrar] wrapper for registering objects in a platform-agnostic way.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Registrar-System) for more details and examples.
      * @param namespace String namespace to register objects under
      * @param registry [Registry] registry to wrap
      * @return [Registrar] platform-agnostic wrapper that registers objects

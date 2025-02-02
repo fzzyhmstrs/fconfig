@@ -45,6 +45,8 @@ import kotlin.math.max
  * A validated single choice of any type, from an input list of possible choices
  *
  * Similar to a [ValidatedEnum], but constructed from a pre-defined list of choices
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Choices) for more details and examples.
  * @param T the choice type
  * @param defaultValue the default choice
  * @param choices [List]<T> defining the appropriate choices

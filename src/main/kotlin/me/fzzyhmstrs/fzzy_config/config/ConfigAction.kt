@@ -47,6 +47,8 @@ import kotlin.experimental.and
  * Builds a button that will appear in a Config GUI, to perform some arbitrary, possible non-config-related action
  *
  * This could be used to link to a wiki, open another non-fzzy-config config, open a non-config screen, open a patchouli guide, run a command, and so on.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/Actions) for more details and examples.
  * @param titleSupplier Supplier&lt;Text&gt; - supplies a name for the button widget. Will be checked every frame, so the button name will dynamically update as needed.
  * @param activeSupplier Supplier&lt;Boolean&gt; - supplies an active state; whether the button is inactive ("greyed out" and unclickable) or active (functioning normally)
  * @param pressAction [Runnable] - the action to execute on clicking the button

@@ -35,6 +35,8 @@ import java.util.function.UnaryOperator
 
 /**
  * A validated pair of values
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Pairs) for more details and examples.
  * @param A stored type of the left side of the tuple
  * @param B stored type of the right side of the tuple
  * @param defaultValue [Tuple] default pair of values

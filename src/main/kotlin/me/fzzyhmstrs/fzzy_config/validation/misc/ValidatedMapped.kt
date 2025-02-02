@@ -27,6 +27,8 @@ import java.util.function.Function
 
 /**
  * Represents a [ValidatedField] mapped to another value representable by the wrapped delegate
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/Validation#mapping-) for more details and examples.
  * @author fzzyhmstrs
  * @since 0.5.0
  */

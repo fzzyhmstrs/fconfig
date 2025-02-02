@@ -39,6 +39,8 @@ import java.util.*
  * Defines the start of a config group
  *
  * Groups organize a grouping of settings into one unit that can be collapsed and expanded in the GUI
+ *
+ * [Laying Out Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/Laying-out-Configs) has more information about how groups can be best utilized.
  * @author fzzyhmstrs
  * @since 0.6.0
  */

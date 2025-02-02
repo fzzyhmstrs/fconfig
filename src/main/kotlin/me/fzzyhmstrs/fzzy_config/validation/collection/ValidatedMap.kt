@@ -42,6 +42,8 @@ import kotlin.collections.set
  * A validated Map of arbitrary (Validated) keys and values
  *
  * NOTE: This construct is handled as an array of array pairs in TOML. It may not look like a traditional TOML map.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Collections) for more details and examples.
  * @param K Any non-null type with an associated [Entry] to handle key-related tasks
  * @param V Any non-null type with an associated [Entry] to handle value-related tasks
  * @param defaultValue Map<K, V> the default map for this validation

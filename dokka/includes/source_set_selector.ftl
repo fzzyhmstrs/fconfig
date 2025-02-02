@@ -1,7 +1,7 @@
 <#macro display>
     <div class="links-section" id="links-section">
         <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
-            <a class="wiki-section" href="https://github.com/fzzyhmstrs/fconfig/wiki" rel="nofollow">
+            <a class="wiki-section" href="https://moddedmc.wiki/en/project/fzzy-config/docs" rel="nofollow">
             </a>
         </div>
         <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">

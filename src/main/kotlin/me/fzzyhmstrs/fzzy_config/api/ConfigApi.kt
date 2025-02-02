@@ -39,6 +39,11 @@ import java.util.function.Supplier
  * API for management of config files. If writing in Java, consider using [ConfigApiJava] where possible.
  *
  * Configs can de/serialized from File, string, or raw TomlElement. File read/write is performed with validation and correction.
+ *
+ * The wiki has several articles related to using and designing configs
+ * - [New Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/New-Configs)
+ * - [Existing Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/Existing-Configs)
+ * - [Laying Out Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/Laying-out-Configs)
  * @author fzzyhmstrs
  * @since 0.1.0
  */
@@ -425,6 +430,8 @@ object ConfigApi {
 
     /**
      * Provides an instance of the [NetworkApi] for usage of the built-in cross-loader networking API
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Networking) for more details and examples.
      * @author fzzyhmstrs
      * @since 0.4.1
      */
@@ -434,6 +441,8 @@ object ConfigApi {
 
     /**
      * Provides an instance of the [PlatformApi] for usage of the built-in cross-loader utilities
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Platform-Utilities) for more details and examples.
      * @author fzzyhmstrs
      * @since 0.5.0
      */
@@ -444,6 +453,8 @@ object ConfigApi {
 
     /**
      * Provides an instance of the [EventApi] for registering to config events
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/Events) for more details and examples.
      * @author fzzyhmstrs
      * @since 0.5.0
      */
@@ -454,6 +465,8 @@ object ConfigApi {
 
     /**
      * Provides an instance of the [ResultApi] for creation of [ResultProvider][me.fzzyhmstrs.fzzy_config.result.ResultProvider] to indirectly refer to configs via scope strings
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Result-Providers) for more details and examples.
      * @author fzzyhmstrs
      * @since 0.5.3
      */

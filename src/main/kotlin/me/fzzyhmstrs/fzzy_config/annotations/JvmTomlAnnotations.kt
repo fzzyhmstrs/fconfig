@@ -19,6 +19,8 @@ import net.peanuuutz.tomlkt.TomlInteger
 /**
  * Java field-friendly version of [TomlComment](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-comment/index.html)
  *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/annotations/Toml-Annotations) for more details and examples.
+ *
  * Adds comments to corresponding property.
  *
  * ```kotlin
@@ -51,6 +53,8 @@ annotation class Comment(val value: String)
 /**
  * Java field-friendly version of [TomlInline](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-inline/index.html)
  *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/annotations/Toml-Annotations) for more details and examples.
+ *
  * Forces the annotated array-like or table-like property to be a one-liner.
  *
  * ```kotlin
@@ -82,6 +86,8 @@ annotation class Inline
 
 /**
  * Java-field-friendly version of [TomlBlockArray](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-block-array/index.html)
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/annotations/Toml-Annotations) for more details and examples.
  *
  * Modifies the encoding process of corresponding array-like property, either to
  * force array of table to be encoded as block array, or to change how many
@@ -117,6 +123,8 @@ annotation class BlockArray(val itemsPerLine: Int = 1)
 /**
  * Java field-friendly version of [TomlMultilimeString](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-multiline-string/index.html)
  *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/annotations/Toml-Annotations) for more details and examples.
+ *
  * Marks the annotated [String] property as multiline when encoded.
  *
  * ```kotlin
@@ -147,6 +155,8 @@ annotation class MultilineString
 /**
  * Java field-friendly version of [TomlLiteralString](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-literal-string/index.html)
  *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/annotations/Toml-Annotations) for more details and examples.
+ *
  * Marks the annotated [String] property as literal when encoded.
  *
  * ```kotlin
@@ -171,6 +181,8 @@ annotation class LiteralString
 
 /**
  * Java field-friendly version of [TomlInteger](https://peanuuutz.github.io/tomlkt/tomlkt/net.peanuuutz.tomlkt/-toml-integer/index.html)
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/annotations/Toml-Annotations) for more details and examples.
  *
  * Changes the representation of the annotated [Byte], [Short], [Int], [Long]
  * property.

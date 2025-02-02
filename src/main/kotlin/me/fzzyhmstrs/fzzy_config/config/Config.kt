@@ -35,6 +35,11 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * - Validation. Inputs are automatically validated
  * - Correction. Invalid inputs are automatically corrected, reverted, or skipped.
  * - Gui Support. FzzyConfigs auto-generated GUIs only take Entry's into account when building their GUI layers. The internal validation is used to build meaningful and helpful widgets with helpful tooltips and auto-suggestions, where possible. Entry's are auto-synced back to the server and other listening clients based on user permission level
+ *
+ * The wiki has several articles related to using and designing configs
+ *  - [New Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/New-Configs)
+ *  - [Existing Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/Existing-Configs)
+ *  - [Laying Out Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/Laying-out-Configs)
  * @param identifier Identifier - The identifier of this config. Common groups of namespace will be the first "layer" of the Config GUI where applicable (all configs of the same namespace in one group), so it's recommended to use one unified namespace (modid, generally)
  * @param name String, optional -  the name of the config, this will be the file name (sans file extension). By default, this is defined from the path of the config identifier. NOTE: Do not add a file type to this name. That is done automatically where needed
  * @param folder String, optional - the subfolder inside the root config folder the file will be saved in. By default, this is defined from the namespace of the config identifier. Can be "", which will put the file in the root config folder.

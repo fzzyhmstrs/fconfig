@@ -39,6 +39,8 @@ import kotlin.math.max
 
 /**
  * A validated Enum Class
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Enums) for more details and examples.
  * @param T the enum type. Any [Enum]
  * @param defaultValue Enum Constant used as the default for this setting
  * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP

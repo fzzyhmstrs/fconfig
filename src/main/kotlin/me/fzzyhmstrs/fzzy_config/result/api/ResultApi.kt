@@ -17,6 +17,8 @@ import kotlin.reflect.KClass
 
 /**
  * API for reflectively providing results from a config using string scopes rather than direct access.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Result-Providers) for more details and examples.
  * @author fzzyhmstrs
  * @since 0.5.3
  */
@@ -25,7 +27,7 @@ interface ResultApi {
     /**
      * Creates a result provider that will return values of the given type from a config. This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
      *
-     * For an overview of scope, see [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation).
+     * For an overview of scope, see [the translation wiki page](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/Translation).
      *
      * You can also supply _args_ via the scope string by appending them with a `?` like `mod_id.config_id.settingName?arg?arg2`. See the wiki for details on how this is or can be utilized.
      *
@@ -42,7 +44,7 @@ interface ResultApi {
     /**
      * Creates a result provider that will return values of the given type from a config. This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
      *
-     * For an overview of scope, see [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation).
+     * For an overview of scope, see [the translation wiki page](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/Translation).
      *
      * You can also supply _args_ via the scope string by appending them with a `?` like `mod_id.config_id.settingName?arg?arg2`. See the wiki for details on how this is or can be utilized.
      *
@@ -59,7 +61,7 @@ interface ResultApi {
     /**
      * Creates a result provider that will return values of the given type from a config. This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
      *
-     * For an overview of scope, see [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation).
+     * For an overview of scope, see [the translation wiki page](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/Translation).
      *
      * You can also supply _args_ via the scope string by appending them with a `?` like `mod_id.config_id.settingName?arg?arg2`. See the wiki for details on how this is or can be utilized.
      *
@@ -76,7 +78,7 @@ interface ResultApi {
     /**
      * Creates a result provider that will return values of the given type from a config. This provider will inspect the registered config matching to the scope provided, utilizing the fallback instead if a valid scope isn't provided.
      *
-     * For an overview of scope, see [the translation wiki page](https://github.com/fzzyhmstrs/fconfig/wiki/Translation).
+     * For an overview of scope, see [the translation wiki page](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/Translation).
      *
      * You can also supply _args_ via the scope string by appending them with a `?` like `mod_id.config_id.settingName?arg?arg2`. See the wiki for details on how this is or can be utilized.
      *

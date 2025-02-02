@@ -47,6 +47,8 @@ import java.util.function.Supplier
  * A validated list
  *
  * This [ValidatedField] implements [List], so you can directly use it as if it were an immutable list
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Collections) for more details and examples.
  * @param T any non-null type
  * @param defaultValue default list of values
  * @param entryHandler [Entry] used to handle individual list entries

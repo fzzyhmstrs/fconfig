@@ -36,6 +36,8 @@ import java.util.function.BiFunction
  * A Validated Map with Enum keys
  *
  * NOTE: The provided map does not need to be an EnumMap, but it can be
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Collections) for more details and examples.
  * @param K key type, any Enum
  * @param V any non-null type with a valid [Entry] for handling
  * @param defaultValue the default map

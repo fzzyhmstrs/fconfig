@@ -20,6 +20,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
  * A validated integer number. This field is a wrapper of integers that is both a [java.util.function.Supplier] and [java.util.function.Consumer] of type Int
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Numbers) for more details and examples.
  * @param defaultValue Int. the default value of this wrapper
  * @param maxValue Int. the maximum allowed value, inclusive
  * @param minValue Int. the minimum allowed value, inclusive
@@ -33,6 +35,8 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
 
     /**
      * A validated int number generated with an [IntRange].
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Numbers) for more details and examples.
      * @param defaultValue Int. the default value of this wrapper
      * @param range [IntRange]. the allowable range of this Validated Int
      * @param widgetType [ValidatedNumber.WidgetType] defines what the config GUI widget looks like
@@ -44,6 +48,8 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
 
     /**
      * A validated int number with a default selected from the min of the allowable range.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Numbers) for more details and examples.
      * @param range [IntRange]. the allowable range of this Validated Int
      * @param widgetType [ValidatedNumber.WidgetType] defines what the config GUI widget looks like
      * @author fzzyhmstrs
@@ -54,6 +60,8 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
 
     /**
      * A validated int number with a default selected from the min of the allowable range.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Numbers) for more details and examples.
      * @param minValue Int. the minimum allowed value, inclusive
      * @param maxValue Int. the maximum allowed value, inclusive
      * @param widgetType [ValidatedNumber.WidgetType] defines what the config GUI widget looks like
@@ -69,6 +77,8 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * The validation will be limited to ensuring the value de/serializes as an int, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Numbers) for more details and examples.
      * @param defaultValue Int. the default value of this wrapper
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -81,6 +91,8 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * The validation will be limited to ensuring the value de/serializes as an int, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Numbers) for more details and examples.
      * @author fzzyhmstrs
      * @since 0.2.0
      */

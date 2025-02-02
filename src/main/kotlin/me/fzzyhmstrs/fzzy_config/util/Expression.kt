@@ -27,6 +27,8 @@ import kotlin.reflect.typeOf
  *
  * Typical usage involves evaluating named doubles in a math equation with matching variable names.
  *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Expressions) for more details and examples.
+ *
  * Default operations and functions supported:
  * - {constant values} - any double constant value: 5.0
  * - {variable values} - any single-character letter: 'x', 'y'. Must match to the characters the evaluation side expects

@@ -42,7 +42,9 @@ import java.util.function.Function
 import java.util.function.Supplier
 
 /**
- * a validated value with a fallback that is supplied if provided conditions aren't passed
+ * A validated value with a fallback that is supplied if provided conditions aren't passed
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/Validation#conditional-settings-) for more details and examples.
  * @param T the type being wrapped
  * @param delegate [ValidatedField] the field being wrapped with conditions
  * @param fallback [Supplier]&lt;[T]&gt; supplies fallback values if the condition fails

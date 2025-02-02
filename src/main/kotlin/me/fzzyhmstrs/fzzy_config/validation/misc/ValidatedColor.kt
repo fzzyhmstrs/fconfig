@@ -51,6 +51,8 @@ import java.util.function.Supplier
  * A validated color value
  *
  * This is a [ValidatedField] of type [ColorHolder], a basic Color data class.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Colors) for more details and examples.
  * @see [validatedColor]
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.colors
  * @throws IllegalStateException if the input RGBA values aren't in bounds (not in the range 0..255)

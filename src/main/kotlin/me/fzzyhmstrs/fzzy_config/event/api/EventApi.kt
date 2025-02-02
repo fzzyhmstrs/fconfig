@@ -14,6 +14,8 @@ import net.minecraft.util.Identifier
 
 /**
  * API for registration of config events
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/Events) for more details and examples.
  * @author fzzyhmstrs
  * @since 0.5.0
  */

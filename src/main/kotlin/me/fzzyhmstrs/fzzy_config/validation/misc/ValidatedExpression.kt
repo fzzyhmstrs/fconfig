@@ -35,6 +35,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * A validated math expression
  *
  * This [ValidatedField] is itself an expression, so you can call eval() or evalSafe() on it directly
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Expressions) for more details and examples.
  * @param defaultValue String - representation of the desired math expression, parsed to a cached [Expression] internally.
  * @param validVars Set&lt;Char&gt; - represents the valid variable characters the user can utilize in their expression.
  * @param validator [EntryValidator], optional - validates entered math strings

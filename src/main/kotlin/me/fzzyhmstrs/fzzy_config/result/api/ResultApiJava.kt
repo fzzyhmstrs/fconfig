@@ -16,6 +16,8 @@ import java.util.function.Supplier
 
 /**
  * Java-friendly API for reflectively providing results from a config using string scopes rather than direct access.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Result-Providers) for more details and examples.
  * @author fzzyhmstrs
  * @since 0.5.3
  */

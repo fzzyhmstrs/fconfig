@@ -20,6 +20,8 @@ import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
  * A validated byte number. This field is a wrapper of bytes that is both a [java.util.function.Supplier] and [java.util.function.Consumer] of type Byte
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Numbers) for more details and examples.
  * @param defaultValue Byte. the default value of this wrapper
  * @param maxValue Byte. the maximum allowed value, inclusive
  * @param minValue Byte. the minimum allowed value, inclusive
@@ -32,6 +34,8 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
 
     /**
      * A validated byte number with a default selected from the min of the allowable range.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Numbers) for more details and examples.
      * @param minValue Byte. the minimum allowed value, inclusive
      * @param maxValue Byte. the maximum allowed value, inclusive
      * @param widgetType [WidgetType][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType] defines what the config GUI widget looks like
@@ -47,6 +51,8 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      * The validation will be limited to ensuring the value de/serializes as a byte, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Numbers) for more details and examples.
      * @param defaultValue Byte. the default value of this wrapper
      * @author fzzyhmstrs
      * @since 0.2.0
@@ -59,6 +65,8 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      * The validation will be limited to ensuring the value de/serializes as a byte, since there are no bounds.
      *
      * The widget type is locked to [WidgetType.TEXTBOX][me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.TEXTBOX]
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Numbers) for more details and examples.
      * @author fzzyhmstrs
      * @since 0.2.0
      */

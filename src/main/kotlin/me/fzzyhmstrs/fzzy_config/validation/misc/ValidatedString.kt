@@ -34,6 +34,8 @@ import java.util.function.Supplier
  * - [me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier]
  * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum]
  * - [me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice]
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Strings) for more details and examples.
  * @param defaultValue String default for the setting
  * @param checker [EntryChecker] defining validation and correction for the string inputs. If the provided checker is an AllowableStrings, this will show suggestions in its text field widget.
  * @sample me.fzzyhmstrs.fzzy_config.examples.ValidatedMiscExamples.strings

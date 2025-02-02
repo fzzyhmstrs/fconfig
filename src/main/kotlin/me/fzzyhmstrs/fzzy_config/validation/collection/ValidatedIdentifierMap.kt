@@ -33,6 +33,8 @@ import java.util.function.BiFunction
 
 /**
  * A Validated Map with Identifier Keys
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Collections) for more details and examples.
  * @param V any non-null type with a valid [Entry] for handling
  * @param defaultValue the default map
  * @param keyHandler [ValidatedIdentifier] key handler
