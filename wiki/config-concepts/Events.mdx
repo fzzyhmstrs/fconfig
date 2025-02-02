@@ -2,7 +2,7 @@
 title: Config Events
 ---
 
-As of Fzzy Config 0.5.0 there is an event system, with a series of directly implementable methods in `Config` for managing events directly in your own config class, an `EventApi` for registering to various generic config events, as well as a way to attach listeners directly to [Validation](https://github.com/fzzyhmstrs/fconfig/wiki/Validation)
+As of Fzzy Config 0.5.0 there is an event system, with a series of directly implementable methods in `Config` for managing events directly in your own config class, an `EventApi` for registering to various generic config events, as well as a way to attach listeners directly to [Validation](Validation)
 
 ### Config Implementations
 There are new overridable methods in `Config` that correspond to the various event stages added in 0.5.0. These are called alongside the events described below; if you only need to take action based on your own config changing state it's better to implement these than to register to the generic events called for every config.
