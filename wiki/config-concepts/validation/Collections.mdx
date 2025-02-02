@@ -43,3 +43,26 @@ var validatedIntSet = ValidatedSet.ofInt(1, 2, 5, 10)
 ```
 
 </CodeTabs>
+
+### Map Builders
+Validated Maps come with builders for simple and flexible creation. These builders are "staged", walking you through the steps you need to properly build it, so they are technically pseudo-builders.
+
+<CodeTabs>
+
+```java !!tabs Java
+public ValidatedMap<Integer, Boolean> myMap = (new ValidatedMap.Builder())
+        .keyHandler(new ValidatedInt(2, 100, 0)) //first comes the key handler. The default value for this will be the initial value stored in the key when a new entry is added.
+        .valueHandler(new ValidatedBoolean()) //next the value handler.
+        .defaults(Map.of(5, true, 10, false, 15, true)) //default map values can be set a variety of ways
+        .build(); //build!
+```
+
+```kotlin !!tabs Kotlin
+var myMap: ValidatedMap<Int, Boolean> = ValidatedMap.Builder()
+    .keyHandler(ValidatedInt(2, 100, 0)) //first comes the key handler. The default value for this will be the initial value stored in the key when a new entry is added.
+    .valueHandler(ValidatedBoolean()) //next the value handler.
+    .defaults(mapOf(5 to true, 10 to false, 15 to true)) //default map values can be set a variety of ways
+    .build() //build!
+```
+
+</CodeTabs>
