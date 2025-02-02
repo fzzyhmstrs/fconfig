@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedChoiceList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient
@@ -166,7 +167,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
     var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> ("$u.$t").translate() })
 
     var choiceList1 = ValidatedList.ofInt(1, 2, 5, 10).toChoiceList(listOf(1, 5))
-    var choiceList2 = choice1.toChoiceList(listOf(1, 5))
+    var choiceList2 = choice1.toChoiceList(listOf(1, 5), ValidatedChoiceList.WidgetType.INLINE)
 
     var longObject = TestAny3()
 
