@@ -160,7 +160,7 @@ internal class ConfigScreen(
         doneButton = CustomButtonWidget.builder { _ -> if (hasShiftDown()) shiftClose() else close() }
             .size(78, 20)
             .messageSupplier {
-                if (hasShiftDown()) { ScreenTexts.DONE } else { "fc.config.back".translate() }
+                if (hasShiftDown() || parent !is ConfigScreen) { ScreenTexts.DONE } else { "fc.config.back".translate() }
             }
             .tooltipSupplier {
                 if (parent !is ConfigScreen || hasShiftDown()) "fc.config.done.desc".translate() else "fc.config.back.desc".translate(parent?.title ?: "")
