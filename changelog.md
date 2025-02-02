@@ -14,18 +14,10 @@
 -------------------------------------
 
 ### Additions
-* New `TextureProvider` interface for generic provision of textures based on active/hovered state.
-* `Single` and `Quad` variants of `TextureSet` added for sets with one texture regardless of state, and sets with all four textures different, respectively.
+* None
 
 ### Changes
-* `TextureSet` now implements the `TextureProvider` interface
-* `CustomPressableWidget` and therefore `CustomButtonWidget` now use `TextureProvider` instead of directly `TextureSet` in their implementations.
-* `textureSet` method of `SpriteDecorated` is now deprecated and defaulted, with a scheduled removal of 0.7.0.
-  * `SpriteDecoration` and `SmallSpriteDecoration` constructors with `TextureSet` are likewise deprecated, with new overloads taking `TextureProvider`
-* The texture sets in `TextureIds` are now explicitly typed as `TextureProvider` instead. 
-* Improved the lazy-loading and/or reduced duplicate loading of certain elements in lists and screens. This effort will expand in the future to further FCs goal of only ever loading a resource upon it being needed.
-* `ValidatedChoiceList` now shows highlights around "unselected" options to better indicate that they are still active button elements.
+* None.
 
 ### Fixes
-* Fixed `ValidatedChoiceList` popup widgets being too narrow for the popup with very short choice titles.
-* Remove stray dev-environment logging from `LayoutWidget`
+* Fixed the "Done" button message to properly say "Done" again on a root level screen whether you are pressing shift or not.
