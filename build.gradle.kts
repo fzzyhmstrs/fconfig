@@ -30,6 +30,7 @@ plugins {
     id("com.modrinth.minotaur") version "2.+"
     id("org.jetbrains.dokka") version "1.9.20"
     id("com.matthewprenger.cursegradle") version "1.4.0"
+    id("org.moddedmc.wiki.toolkit") version "0.2.5"
     `maven-publish`
 }
 
@@ -195,7 +196,7 @@ val testmodJar =  tasks.register("testmodJar", Jar::class) {
     archiveClassifier = "testmod"
 }
 
-val remapTestmodJar =  tasks.register("remapTestmodJar", RemapJarTask::class){
+val remapTestmodJar =  tasks.register("remapTestmodJar", RemapJarTask::class) {
     dependsOn(testmodJar.get())
     input.set(testmodJar.get().archiveFile)
     archiveClassifier = "testmod"
@@ -203,8 +204,16 @@ val remapTestmodJar =  tasks.register("remapTestmodJar", RemapJarTask::class){
     //destinationDirectory =  File(project.layout.buildDirectory.get().asFile, "testmod")
 }
 
-tasks.build{
+tasks.build {
     dependsOn(remapTestmodJar.get())
+}
+
+wiki {
+    docs {
+        create("fzzy-config") {
+            root.set(file("wiki"))
+        }
+    }
 }
 
 tasks.withType<DokkaTask>().configureEach {
