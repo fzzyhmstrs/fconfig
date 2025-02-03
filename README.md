@@ -81,6 +81,23 @@ modImplementation "maven.modrinth:fzzy-config:${project.fzzyConfigVersion}"
 
 Fzzy Config is a powerful configuration engine for Minecraft Mods that meets you where you want to be. Quick and dirty or detailed and featureful, Fzzy Config will work with you. It provides a wide array of features above and beyond what you can find in other libraries.
 
+## Wiki
+Fzzy Configs features are extensively documented on the wiki. Check it out!
+
+<a href="https://moddedmc.wiki/en/project/fzzy-config/docs" title="Wiki Link"> <img src="https://i.imgur.com/Ber97Pl.png" alt="documentation button"/> </a>
+
+## Documentation
+Check out the projects API documentation for detailed overviews of all classes, methods, and so on.
+
+<a href="https://fzzyhmstrs.github.io/fconfig/" title="Documentation Link"> <img src="https://i.imgur.com/eNp3fua.png" alt="documentation button"/> </a>
+
+## Further Help
+Stuck? Drop a line in my Discord server and I will help you out.
+
+<a href="https://discord.gg/zDbaYmUba2" title="Discord Link"> <img src="https://i.imgur.com/iXATO6K.png" alt="Join the Discord Button"/> </a>
+
+## Features
+
 ### All the basics
 * Automatic serialization
 * Minimal API with lightweight integration requirements
