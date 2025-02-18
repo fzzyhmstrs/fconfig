@@ -4,6 +4,8 @@
 "fc.validated_field.choice_set": "Edit Choices...",
 "fc.validated_field.choice_set.deselect": "Deselect all",
 "fc.validated_field.choice_set.select": "Select all",
+"fc.validated_field.choice_set.selected": "%s: Selected",
+"fc.validated_field.choice_set.deselected": "%s: Deselected",
 "fc.validated_field.color.r": "R",
 "fc.validated_field.color.g": "G",
 "fc.validated_field.color.b": "B",
