@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.entry.WidgetEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
@@ -237,6 +238,9 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
                 }
                 LayoutClickableWidget(0, 0, 110, 20 * choices.size, layout)
             }
+            WidgetType.SCROLLABLE -> {
+                CustomButtonWidget.builder("fc.validated_field.choice_set".translate()) { b -> openChoicesScrollableEditPopup(b) }.size(110, 20).build()
+            }
         }
     }
 
@@ -281,7 +285,14 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
          * @author fzzyhmstrs
          * @since 0.6.3
          */
-        INLINE
+        INLINE,
+        /**
+         * The choices are displayed in a popup with a scrollable list widget displaying the choices. Up to 6 choices are displayed in the "window", with additional options available via scrolling.
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        SCROLLABLE
+        
     }
 
     private fun openChoicesEditPopup(b: CustomButtonWidget) {
@@ -315,11 +326,59 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         PopupWidget.push(builder.build())
     }
 
+    private fun openChoicesScrollableEditPopup(b: CustomButtonWidget) {
+        val choiceListTitle = "fc.validated_field.choice_set".translate()
+        val textRenderer = MinecraftClient.getInstance().textRenderer
+        var buttonWidth = textRenderer.getWidth(choiceListTitle)
+        var entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
+        for ((index, const) in choices.withIndex()) {
+            entries.add( BiFunction { list, _ ->
+                val button = ChoiceWidget(
+                    const,
+                    buttonWidth,
+                    { c: T -> this.get().contains(c) },
+                    this,
+                    { c ->
+                        val newList = this.get().toMutableList()
+                        if (!newList.remove(c)) {
+                            newList.add(c)
+                        }
+                        this.accept(newList)
+                    })
+                val name = this.translationProvider.apply(const, this.translationKey())
+                val desc = this.descriptionProvider.apply(const, this.descriptionKey()).takeIf { it.string != "" }
+                WidgetEntry(list, "choice$index", Translatable.Result(name, desc, null), 20, button)
+            })
+            buttonWidth = max(buttonWidth, textRenderer.getWidth(this.translationProvider.apply(const, this.translationKey())) + 8)
+        }
+        val spec = DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding: Int = 0)
+        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, buttonWidth + 10, 120, spec)
+        val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 120, 20, FcText.EMPTY)
+        searchField.setMaxLength(100)
+        searchField.text = ""
+        fun setColor(entries: Int) {
+            if(entries > 0)
+                searchField.setEditableColor(Colors.WHITE)
+            else
+                searchField.setEditableColor(0xFF5555)
+        }
+        searchField.setChangedListener { s -> setColor(entryList.search(s)) }
+        searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+
+        val builder = PopupWidget.Builder(choiceListTitle)
+        builder.add("choice_list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+        builder.add("choice_search", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
+        builder.positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
+        builder.positionY(PopupWidget.Builder.popupContext { b.y - 20 })
+        builder.addDoneWidget()
+        PopupWidget.push(builder.build())
+    }
+
     /**
      * @suppress
      */
     override fun toString(): String {
-        return "Validated Choice Set[value=$storedValue, choices=$choices]"
+        return "Validated Choice List[enabled=$storedValue, choices=$choices]"
     }
 
     // List Interface //////////////////////////////////
@@ -404,7 +463,10 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         }
 
         override fun getNarrationMessage(): MutableText {
-            return entry.translationProvider.apply(thisVal, entry.translationKey())
+            return if (choiceSelected) 
+                FcText.translatable("fc.validated_field.choice_set.selected", super.getNarrationMessage())
+            else
+                FcText.translatable("fc.validated_field.choice_set.deselected", super.getNarrationMessage())
         }
 
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
