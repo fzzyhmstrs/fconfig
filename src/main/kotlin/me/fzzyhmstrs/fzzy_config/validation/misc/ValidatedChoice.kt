@@ -197,6 +197,22 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
             }
             WidgetType.CYCLING -> {
                 CyclingOptionsWidget(choicePredicate, this)
+            },
+            WidgetType.INLINE -> {
+                val layout = LayoutWidget(paddingW = 0, spacingW = 0).clampWidth(110)
+                for ((index, const) in choices.withIndex()) {
+                    val button = ChoiceOptionWidget(
+                        const,
+                        110,
+                        { c: T -> c != this.get() },
+                        this,
+                        { this.accept(it) })
+                    layout.add("choice$index", button, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
+                }
+                LayoutClickableWidget(0, 0, 110, 20 * choices.size, layout)
+            },
+            WidgetType.SCROLLABLE -> {
+                ChoiceScrollablePopupButtonWidget(translation(), choicePredicate, this)
             }
         }
     }
@@ -230,7 +246,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     /**
      * Determines which type of selector widget will be used for the Choice selector, default is POPUP
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, add INLINE and SCROLLABLE 0.6.5
      */
     enum class WidgetType {
         /**
@@ -240,11 +256,23 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
          */
         POPUP,
         /**
-         * A traditional MC cycling button widget, iterating through the choices in order
+         * The choices are displayed inline in the setting screen, stacked on top of each other. This widget will take up more than one "normal" setting widget of height (unless you only have one choice, in which case... consider [ValidatedBoolean][me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean]).
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        CYCLING
+        CYCLING,
+        /**
+         * A traditional MC cycling button widget, iterating through the choices in order
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        INLINE,
+        /**
+         * The choices are displayed in a popup with a scrollable list widget displaying the choices. Up to 6 choices are displayed in the "window", with additional options available via scrolling.
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        SCROLLABLE
     }
 
     @Internal
@@ -279,10 +307,6 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     //client
     private class ChoicePopupButtonWidget<T>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
 
-        private val choices = entry.choices.filter {
-            choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
-        }
-
         init {
             constructTooltip()
         }
@@ -315,11 +339,13 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
             val builder = PopupWidget.Builder(name, spacingH = 0)
             val textRenderer = MinecraftClient.getInstance().textRenderer
             var buttonWidth = 86
+            val choices = entry.choices.filter {
+                choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
+            }
             for (const in choices) {
                 buttonWidth = max(buttonWidth, textRenderer.getWidth(entry.translationProvider.apply(const, entry.translationKey())))
             }
             buttonWidth = max(150, buttonWidth + 4)
-            var prevParent = "title"
             for ((index, const) in choices.withIndex()) {
                 val button = ChoiceOptionWidget(
                     const,
@@ -327,9 +353,83 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                     { c: T -> c != entry.get() },
                     entry,
                     { entry.accept(it); constructTooltip(); PopupWidget.pop() })
-                builder.add("choice$index", button, prevParent, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
-                prevParent = "choice$index"
+                builder.add("choice$index", button, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             }
+            builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
+            builder.positionY(PopupWidget.Builder.popupContext { this.y - 20 })
+            builder.additionalNarration("fc.validated_field.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey())))
+            PopupWidget.push(builder.build())
+        }
+    }
+
+    //client
+    private class ChoiceScrollablePopupButtonWidget<T>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
+
+        init {
+            constructTooltip()
+        }
+
+        override fun getMessage(): Text {
+            return entry.translationProvider.apply(entry.get(), entry.translationKey())
+        }
+
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+            builder?.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.message).append(". "))
+        }
+
+        private fun constructTooltip() {
+            val text1 = entry.descLit("").takeIf { it.string != "" }?.copy()
+            val text2 = entry.descriptionProvider.apply(entry.get(), entry.descriptionKey()).takeIf { it.string != "" }
+            val totalText = if(text1 != null) {
+                if (text2 != null) {
+                    text1.append("; ".lit()).append(text2)
+                } else {
+                    text1
+                }
+            } else {
+                text2 ?: FcText.empty()
+            }
+            if(totalText.string != "")
+                tooltip = Tooltip.of(totalText)
+        }
+
+        override fun onPress() {
+            val textRenderer = MinecraftClient.getInstance().textRenderer
+            var buttonWidth = 86
+            val choices = entry.choices.filter {
+                choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
+            }
+            val entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
+            for ((index, const) in choices.withIndex()) {
+                entries.add( BiFunction { list, _ ->
+                    val button = ChoiceOptionWidget(
+                        const,
+                        buttonWidth,
+                        { c: T -> c != entry.get() },
+                        entry,
+                        { entry.accept(it); constructTooltip(); PopupWidget.pop() })
+                    val name = this.translationProvider.apply(const, this.translationKey())
+                    val desc = this.descriptionProvider.apply(const, this.descriptionKey()).takeIf { it.string != "" }
+                    WidgetEntry(list, "choice$index", Translatable.Result(name, desc, null), 20, button)
+                })
+            }
+            val spec = DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding = 0)
+            val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, buttonWidth + 10, 120, spec)
+            val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, buttonWidth + 10, 20, FcText.EMPTY)
+            searchField.setMaxLength(100)
+            searchField.text = ""
+            fun setColor(entries: Int) {
+                if(entries > 0)
+                    searchField.setEditableColor(-1)
+                else
+                    searchField.setEditableColor(0xFF5555)
+            }
+            searchField.setChangedListener { s -> setColor(entryList.search(s)) }
+            searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+
+            val builder = PopupWidget.Builder(name, spacingH = 0)
+            builder.add("choice_list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            builder.add("choice_search", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
             builder.positionY(PopupWidget.Builder.popupContext { this.y - 20 })
             builder.additionalNarration("fc.validated_field.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey())))
