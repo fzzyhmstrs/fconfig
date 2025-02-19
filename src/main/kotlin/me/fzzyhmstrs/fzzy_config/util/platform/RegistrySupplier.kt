@@ -88,4 +88,14 @@ interface RegistrySupplier<T>: Supplier<T>, RegistryEntry<T> {
     override fun ownerEquals(owner: RegistryEntryOwner<T>?): Boolean {
         return getEntry().ownerEquals(owner)
     }
+
+    @Suppress("DeprecatedCallableAddReplaceWith")
+    @Deprecated("Deprecated in Java")
+    override fun matches(entry: RegistryEntry<T>?): Boolean {
+        return getEntry().matches(entry)
+    }
+
+    override fun value(): T {
+        return get()
+    }
 }

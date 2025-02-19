@@ -24,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.screen.entry.WidgetEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
@@ -31,6 +32,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -328,7 +330,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         val choiceListTitle = "fc.validated_field.choice_set".translate()
         val textRenderer = MinecraftClient.getInstance().textRenderer
         var buttonWidth = textRenderer.getWidth(choiceListTitle)
-        var entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
+        val entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
         for ((index, const) in choices.withIndex()) {
             entries.add( BiFunction { list, _ ->
                 val button = ChoiceWidget(
@@ -349,14 +351,14 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
             })
             buttonWidth = max(buttonWidth, textRenderer.getWidth(this.translationProvider.apply(const, this.translationKey())) + 8)
         }
-        val spec = DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding: Int = 0)
-        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, buttonWidth + 10, 120, spec)
+        val spec = DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding = 0)
+        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, buttonWidth + 10, 120, spec)
         val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 120, 20, FcText.EMPTY)
         searchField.setMaxLength(100)
         searchField.text = ""
         fun setColor(entries: Int) {
             if(entries > 0)
-                searchField.setEditableColor(Colors.WHITE)
+                searchField.setEditableColor(-1)
             else
                 searchField.setEditableColor(0xFF5555)
         }
@@ -437,15 +439,6 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
 
         var choiceSelected = selectedPredicate.test(thisVal)
 
-        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
-            val text = message
-            val i = getWidth() - 4 - (if (choiceSelected) 18 else 0)
-            val j = MinecraftClient.getInstance().textRenderer.getWidth(text)
-            val l = y + (getHeight() - MinecraftClient.getInstance().textRenderer.fontHeight + 1) / 2
-            val orderedText = if (j > i) FcText.trim(text, i, MinecraftClient.getInstance().textRenderer) else text.asOrderedText()
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 4, l, -1)
-        }
-
         override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             choiceSelected = selectedPredicate.test(thisVal)
             RenderSystem.enableBlend()
@@ -454,6 +447,15 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
             if (choiceSelected) {
                 context.drawTex(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)
             }
+        }
+
+        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+            val text = message
+            val i = getWidth() - 4 - (if (choiceSelected) 18 else 0)
+            val j = MinecraftClient.getInstance().textRenderer.getWidth(text)
+            val l = y + (getHeight() - MinecraftClient.getInstance().textRenderer.fontHeight + 1) / 2
+            val orderedText = if (j > i) FcText.trim(text, i, MinecraftClient.getInstance().textRenderer) else text.asOrderedText()
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 4, l, -1)
         }
 
         override fun getMessage(): Text {
