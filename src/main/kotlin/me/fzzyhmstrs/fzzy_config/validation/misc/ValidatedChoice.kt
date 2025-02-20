@@ -12,14 +12,19 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.screen.entry.WidgetEntry
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutClickableWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
@@ -199,7 +204,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
             }
             WidgetType.CYCLING -> {
                 CyclingOptionsWidget(choicePredicate, this)
-            },
+            }
             WidgetType.INLINE -> {
                 val layout = LayoutWidget(paddingW = 0, spacingW = 0).clampWidth(110)
                 for ((index, const) in choices.withIndex()) {
@@ -212,7 +217,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                     layout.add("choice$index", button, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
                 }
                 LayoutClickableWidget(0, 0, 110, 20 * choices.size, layout)
-            },
+            }
             WidgetType.SCROLLABLE -> {
                 ChoiceScrollablePopupButtonWidget(translation(), choicePredicate, this)
             }
@@ -307,7 +312,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     }
 
     //client
-    private class ChoicePopupButtonWidget<T>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
+    private class ChoicePopupButtonWidget<T>(private val name: Text, private val choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
 
         init {
             constructTooltip()
@@ -365,7 +370,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     }
 
     //client
-    private class ChoiceScrollablePopupButtonWidget<T>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
+    private class ChoiceScrollablePopupButtonWidget<T>(private val name: Text, private val choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, FcText.empty()) {
 
         init {
             constructTooltip()
@@ -403,6 +408,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
             }
             val entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
             for ((index, const) in choices.withIndex()) {
+                buttonWidth = max(buttonWidth, textRenderer.getWidth(entry.translationProvider.apply(const, entry.translationKey())))
                 entries.add( BiFunction { list, _ ->
                     val button = ChoiceOptionWidget(
                         const,
@@ -410,8 +416,8 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                         { c: T -> c != entry.get() },
                         entry,
                         { entry.accept(it); constructTooltip(); PopupWidget.pop() })
-                    val name = this.translationProvider.apply(const, this.translationKey())
-                    val desc = this.descriptionProvider.apply(const, this.descriptionKey()).takeIf { it.string != "" }
+                    val name = entry.translationProvider.apply(const, entry.translationKey())
+                    val desc = entry.descriptionProvider.apply(const, entry.descriptionKey()).takeIf { it.string != "" }
                     WidgetEntry(list, "choice$index", Translatable.Result(name, desc, null), 20, button)
                 })
             }
