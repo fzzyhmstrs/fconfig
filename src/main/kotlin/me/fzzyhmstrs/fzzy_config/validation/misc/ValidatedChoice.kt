@@ -407,8 +407,12 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                 choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
             }
             val entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
-            for ((index, const) in choices.withIndex()) {
+            for (const in choices) {
                 buttonWidth = max(buttonWidth, textRenderer.getWidth(entry.translationProvider.apply(const, entry.translationKey())))
+            }
+            if (choices.size <= 6)
+                buttonWidth += 10
+            for ((index, const) in choices.withIndex()) {
                 entries.add( BiFunction { list, _ ->
                     val button = ChoiceOptionWidget(
                         const,
@@ -421,25 +425,33 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                     WidgetEntry(list, "choice$index", Translatable.Result(name, desc, null), 20, button)
                 })
             }
-            val spec = DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding = 0)
-            val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, buttonWidth + 10, 120, spec)
-            val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, buttonWidth + 10, 20, FcText.EMPTY)
-            searchField.setMaxLength(100)
-            searchField.text = ""
-            fun setColor(entries: Int) {
-                if(entries > 0)
-                    searchField.setEditableColor(-1)
-                else
-                    searchField.setEditableColor(0xFF5555)
+            var listWidth = buttonWidth
+            val spec = if (entries.size > 6) {
+                listWidth += 10
+                DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding = 0)
+            } else {
+                DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = -6, verticalPadding = 0)
             }
-            searchField.setChangedListener { s -> setColor(entryList.search(s)) }
-            searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+            val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, listWidth, 120, spec)
 
-            val builder = PopupWidget.Builder(name, spacingH = 0)
+            val builder = PopupWidget.Builder(name)
             builder.add("choice_list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            builder.add("choice_search", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
+            if (entries.size > 6) {
+                val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, listWidth, 20, FcText.EMPTY)
+                searchField.setMaxLength(100)
+                searchField.text = ""
+                fun setColor(entries: Int) {
+                    if(entries > 0)
+                        searchField.setEditableColor(-1)
+                    else
+                        searchField.setEditableColor(0xFF5555)
+                }
+                searchField.setChangedListener { s -> setColor(entryList.search(s)) }
+                searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+                builder.add("choice_search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
+            }
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
-            builder.positionY(PopupWidget.Builder.popupContext { this.y - 20 })
+            builder.positionY(PopupWidget.Builder.popupContext { this.y - 72 })
             builder.additionalNarration("fc.validated_field.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey())))
             PopupWidget.push(builder.build())
         }

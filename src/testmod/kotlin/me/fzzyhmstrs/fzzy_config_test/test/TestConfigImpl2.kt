@@ -26,10 +26,7 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
+import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
@@ -165,9 +162,15 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
     var id1 = ValidatedIdentifier.ofList(Identifier.of("stick"), listOf(Identifier.of("stick"), Identifier.of("blaze_rod"), Identifier.of("coal"), Identifier.of("charcoal")))
 
     var choice1 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> ("$u.$t").translate() })
+    var choice2 = ValidatedList.ofInt(1, 2, 5, 10).toChoices(widgetType = ValidatedChoice.WidgetType.INLINE, translationProvider = { t, u -> ("$u.$t").translate() }, descriptionProvider = { t, u -> ("$u.$t").translate() })
+    var choice3 = ValidatedList.ofInt(1, 2, 5, 10, 20, 40, 80, 160).toChoices(widgetType = ValidatedChoice.WidgetType.SCROLLABLE)
+    var choice3a = ValidatedList.ofInt(1, 2, 5, 10, 20, 40).toChoices(widgetType = ValidatedChoice.WidgetType.SCROLLABLE)
 
     var choiceList1 = ValidatedList.ofInt(1, 2, 5, 10).toChoiceList(listOf(1, 5))
     var choiceList2 = choice1.toChoiceList(listOf(1, 5), ValidatedChoiceList.WidgetType.INLINE)
+    var choiceList3 = ValidatedList.ofString("A", "B", "AB", "C", "ACDC", "1", "4").toChoiceList(listOf("A", "1"), widgetType = ValidatedChoiceList.WidgetType.SCROLLABLE)
+    var choiceList3a = ValidatedList.ofString("A", "B", "AB", "C", "ACDC", "1").toChoiceList(listOf("A", "1"), widgetType = ValidatedChoiceList.WidgetType.SCROLLABLE)
+
 
     var longObject = TestAny3()
 

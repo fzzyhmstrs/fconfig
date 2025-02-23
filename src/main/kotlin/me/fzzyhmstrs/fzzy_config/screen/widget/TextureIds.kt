@@ -113,6 +113,9 @@ object TextureIds {
     /** a list of list entries. no brackets */
     val DECO_LIST = "widget/decoration/list".fcId()
 
+    /** a list of entries with checkboxes on the left. Entry one is checked, 2 and 3 are not. no brackets */
+    val DECO_CHOICE_LIST = "widget/decoration/choice_list".fcId()
+
     /** a wireframe depiction of an NbtObject */
     val DECO_OBJECT = "widget/decoration/object".fcId()
 
