@@ -357,7 +357,7 @@ class PopupWidget
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedBoth(id: String, element: E, parent: String, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Widget {
@@ -378,7 +378,7 @@ class PopupWidget
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedW(id: String, element: E, parent: String, spacingW: Int, vararg positions: Position): Builder where E: Widget {
@@ -399,7 +399,7 @@ class PopupWidget
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedH(id: String, element: E, parent: String, spacingH: Int, vararg positions: Position): Builder where E: Widget {
@@ -420,7 +420,7 @@ class PopupWidget
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedBoth(id: String, element: E, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Widget {
@@ -440,7 +440,7 @@ class PopupWidget
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedW(id: String, element: E, spacingW: Int, vararg positions: Position): Builder where E: Widget {
@@ -460,7 +460,7 @@ class PopupWidget
          * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedH(id: String, element: E, spacingH: Int, vararg positions: Position): Builder where E: Widget {
@@ -819,7 +819,7 @@ class PopupWidget
         //client
         companion object Positioners {
             /**
-             * Positions a Popup dimention at an absolute location
+             * Positions a Popup dimension at an absolute location
              *
              * The position will not change on resize or other events, so use wisely.
              * @param a Int - the position to apply
@@ -915,7 +915,7 @@ class PopupWidget
          * - [LayoutWidget.PositionRelativeAlignment] - How to align an element in relation to the dimension features of its parent (top, bottom, left, and right edges etc.)
          * - [LayoutWidget.PositionGlobalAlignment] - How to align an element in relation to the global dimensions of the Popup as a whole
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         //client
         @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
@@ -925,7 +925,7 @@ class PopupWidget
             /**
              * Collection of all implemented [Position]. Preferred practice is to use this collection rather than referring directly to the underlying Enums
              * @author fzzyhmstrs
-             * @since 0.2.0
+             * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
              */
             @Suppress("DEPRECATION", "UNUSED")
             @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
@@ -933,84 +933,84 @@ class PopupWidget
                 /**
                  * Positions an element below its parent. Does not define horizontal alignment or positioning.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val BELOW: Position = LayoutWidget.PositionRelativePos.BELOW
                 /**
                  * Positions an element to the left of its parent. Does not define vertical alignment or positioning.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val LEFT: Position = LayoutWidget.PositionRelativePos.LEFT
                 /**
                  * Positions an element to the right of its parent. Does not define vertical alignment or positioning.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val RIGHT: Position = LayoutWidget.PositionRelativePos.RIGHT
                 /**
                  * Aligns an elements top edge horizontally with the top edge of its parent. Does not define any other position or alignment.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val HORIZONTAL_TO_TOP_EDGE: Position = LayoutWidget.PositionRelativeAlignment.HORIZONTAL_TO_TOP_EDGE
                 /**
                  * Aligns an elements bottom edge horizontally with the bottom edge of its parent. Does not define any other position or alignment.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val HORIZONTAL_TO_BOTTOM_EDGE: Position = LayoutWidget.PositionRelativeAlignment.HORIZONTAL_TO_BOTTOM_EDGE
                 /**
                  * Aligns an elements left edge vertically with the left edge of its parent. Does not define any other position or alignment.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val VERTICAL_TO_LEFT_EDGE: Position = LayoutWidget.PositionRelativeAlignment.VERTICAL_TO_LEFT_EDGE
                 /**
                  * Aligns an elements right edge vertically with the right edge of its parent. Does not define any other position or alignment.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val VERTICAL_TO_RIGHT_EDGE: Position = LayoutWidget.PositionRelativeAlignment.VERTICAL_TO_RIGHT_EDGE
                 /**
                  * Centers an element vertically relative to the vertical dimensions of its parent (top and bottom edges). Does not define any other position or alignment.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val CENTERED_VERTICALLY: Position = LayoutWidget.PositionRelativeAlignment.CENTERED_VERTICALLY
                 /**
                  * Centers an element horizontally relative to the horizontal dimensions of its parent (left and right edge). Does not define any other position or alignment.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val CENTERED_HORIZONTALLY: Position = LayoutWidget.PositionRelativeAlignment.CENTERED_HORIZONTALLY
                 /**
                  * Aligns an element to the left side of the Popup widget. Does not define any other position or alignment.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val ALIGN_LEFT: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT
                 /**
                  * Aligns an element to the right side of the Popup widget. Does not define any other position or alignment.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val ALIGN_RIGHT: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT
                 /**
                  * Centers an element relative to the width of the Popup widget. Does not define any other position or alignment.
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val ALIGN_CENTER: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_CENTER
@@ -1021,7 +1021,7 @@ class PopupWidget
                  *
                  * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val ALIGN_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_JUSTIFY
@@ -1032,7 +1032,7 @@ class PopupWidget
                  *
                  * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val ALIGN_LEFT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY
@@ -1043,7 +1043,7 @@ class PopupWidget
                  *
                  * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
                  * @author fzzyhmstrs
-                 * @since 0.2.0
+                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
                  */
                 @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
                 val ALIGN_RIGHT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY
