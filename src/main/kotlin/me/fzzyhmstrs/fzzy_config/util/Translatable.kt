@@ -104,9 +104,9 @@ interface Translatable {
      * @param desc [Text], nullable. the tooltip description. Null means no description is present.
      * @param prefix [Text], nullable. the inline prefix text of a config entry. Null means no prefix.
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.6.0, data class since 0.6.5
      */
-    class Result(val name: Text, val desc: Text? = null, val prefix: Text? = null) {
+    data class Result(val name: Text, val desc: Text? = null, val prefix: Text? = null) {
 
         companion object {
             val EMPTY = Result(FcText.empty(), null, null)
