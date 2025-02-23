@@ -26,6 +26,9 @@ object TextureDeco {
     /** a list of list entries. no brackets */
     val DECO_LIST = SpriteDecoration(TextureIds.DECO_LIST)
 
+    /** a list of entries with checkboxes on the left. Entry one is checked, 2 and 3 are not. no brackets */
+    val DECO_CHOICE_LIST = SpriteDecoration(TextureIds.DECO_CHOICE_LIST)
+
     /** a wireframe depiction of an NbtObject */
     val DECO_OBJECT = SpriteDecoration(TextureIds.DECO_OBJECT)
 

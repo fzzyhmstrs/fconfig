@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
@@ -20,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.entry.WidgetEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
@@ -246,7 +248,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
 
     @Internal
     override fun entryDeco(): Decorated.DecoratedOffset? {
-        return Decorated.DecoratedOffset(TextureDeco.DECO_LIST, 2, 2)
+        return Decorated.DecoratedOffset(TextureDeco.DECO_CHOICE_LIST, 2, 2)
     }
 
     @Internal
@@ -292,7 +294,6 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
          * @since 0.6.5
          */
         SCROLLABLE
-        
     }
 
     private fun openChoicesEditPopup(b: CustomButtonWidget) {
@@ -331,6 +332,11 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         val textRenderer = MinecraftClient.getInstance().textRenderer
         var buttonWidth = textRenderer.getWidth(choiceListTitle)
         val entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
+        for (const in choices) {
+            buttonWidth = max(buttonWidth, textRenderer.getWidth(this.translationProvider.apply(const, this.translationKey())) + 8)
+        }
+        if (choices.size <= 6)
+            buttonWidth += 10
         for ((index, const) in choices.withIndex()) {
             entries.add( BiFunction { list, _ ->
                 val button = ChoiceWidget(
@@ -349,27 +355,34 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
                 val desc = this.descriptionProvider.apply(const, this.descriptionKey()).takeIf { it.string != "" }
                 WidgetEntry(list, "choice$index", Translatable.Result(name, desc, null), 20, button)
             })
-            buttonWidth = max(buttonWidth, textRenderer.getWidth(this.translationProvider.apply(const, this.translationKey())) + 8)
         }
-        val spec = DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding = 0)
-        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, buttonWidth + 10, 120, spec)
-        val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 120, 20, FcText.EMPTY)
-        searchField.setMaxLength(100)
-        searchField.text = ""
-        fun setColor(entries: Int) {
-            if(entries > 0)
-                searchField.setEditableColor(-1)
-            else
-                searchField.setEditableColor(0xFF5555)
+        var listWidth = buttonWidth
+        val spec = if (entries.size > 6) {
+            listWidth += 10
+            DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding = 0)
+        } else {
+            DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = -6, verticalPadding = 0)
         }
-        searchField.setChangedListener { s -> setColor(entryList.search(s)) }
-        searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, listWidth, 120, spec)
 
         val builder = PopupWidget.Builder(choiceListTitle)
-        builder.add("choice_list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-        builder.add("choice_search", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
+        builder.add("choice_list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
+        if (entries.size > 6) {
+            val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, listWidth, 20, FcText.EMPTY)
+            searchField.setMaxLength(100)
+            searchField.text = ""
+            fun setColor(entries: Int) {
+                if(entries > 0)
+                    searchField.setEditableColor(-1)
+                else
+                    searchField.setEditableColor(0xFF5555)
+            }
+            searchField.setChangedListener { s -> setColor(entryList.search(s)) }
+            searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+            builder.add("choice_search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
+        }
         builder.positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
-        builder.positionY(PopupWidget.Builder.popupContext { b.y - 20 })
+        builder.positionY(PopupWidget.Builder.popupContext { b.y - 82 })
         builder.addDoneWidget()
         PopupWidget.push(builder.build())
     }
