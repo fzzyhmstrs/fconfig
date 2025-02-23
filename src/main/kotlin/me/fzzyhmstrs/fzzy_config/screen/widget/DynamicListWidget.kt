@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.context.*
@@ -60,10 +61,6 @@ class DynamicListWidget(
 {
 
     //// Widget ////
-
-    companion object {
-        val scrollMultiplier: Supplier<Double> = Supplier { 10.0 }
-    }
 
     private val entries: Entries by lazy {
         Entries(entryBuilders.mapIndexed { index, biFunction -> biFunction.apply(this, index) })
@@ -154,13 +151,13 @@ class DynamicListWidget(
         if (verticalAmount > 0.0) {
             val topDelta = -topDelta()
             if (topDelta == 0) return true
-            val scrollDist = (verticalAmount * scrollMultiplier.get()).toInt().coerceAtLeast(1)
+            val scrollDist = (verticalAmount * 10).toInt().coerceAtLeast(1)
             val clampedDist = min(topDelta, scrollDist)
             entries.scroll(clampedDist)
         } else {
             val bottomDelta = -bottomDelta()
             if (bottomDelta >= 0) return true
-            val scrollDist = (verticalAmount * scrollMultiplier.get()).toInt().coerceAtMost(-1)
+            val scrollDist = (verticalAmount * 10).toInt().coerceAtMost(-1)
             val clampedDist = max(bottomDelta, scrollDist)
             entries.scroll(clampedDist)
         }
@@ -330,7 +327,15 @@ class DynamicListWidget(
 
         //map <group, map <scope, entry> >
         private val delegateMap: Map<String, Map<String, Entry>>
-        private val groups: Map<String, GroupPair>
+        private val groups: Map<String, GroupPair> by lazy {
+            val groupMap: MutableMap<String, GroupPair> = mutableMapOf()
+            for (e in delegate) {
+                if (e.getVisibility().group) {
+                    groupMap[e.scope.group] = GroupPair(e, true)
+                }
+            }
+            groupMap
+        }
 
         private val searcher: Searcher<Entry> by lazy { Searcher(delegate) }
 
@@ -338,7 +343,6 @@ class DynamicListWidget(
             var previousEntry: Entry? = null
             val pos = ReferencePos { this@DynamicListWidget.top }
             val entryMap: MutableMap<String, MutableMap<String, Entry>> = mutableMapOf()
-            val groupMap: MutableMap<String, GroupPair> = mutableMapOf()
 
             for ((index, e) in delegate.withIndex()) {
                 e.onAdd(pos, previousEntry, index == delegate.lastIndex)
@@ -349,13 +353,9 @@ class DynamicListWidget(
                         entryMap.computeIfAbsent(g) { _ -> mutableMapOf() }[e.scope.scope] = e
                     }
                 }
-                if (e.getVisibility().group) {
-                    groupMap[e.scope.group] = GroupPair(e, true)
-                }
                 previousEntry = e
             }
             delegateMap = entryMap
-            groups = groupMap
         }
 
         private var inFrameEntries: List<Entry> = emptyList()
@@ -600,10 +600,10 @@ class DynamicListWidget(
         LastSelectable
     {
 
-        private val visibilityStack: VisibilityStack = VisibilityStack(visibility, LinkedList())
+        private var visibilityProvider: VisibilityProvider = visibility
 
         fun getVisibility(): Visibility {
-            return visibilityStack.get()
+            return visibilityProvider.get()
         }
 
         protected open val x: Pos = ReferencePos { parentElement.rowX() }
@@ -666,7 +666,13 @@ class DynamicListWidget(
         }
 
         fun applyVisibility(consumer: Consumer<VisibilityStack>) {
-            consumer.accept(this.visibilityStack)
+            if (this.visibilityProvider !is VisibilityStack) {
+                val vs = VisibilityStack(this.getVisibility(), LinkedList())
+                this.visibilityProvider = vs
+                consumer.accept(vs)
+            } else {
+                consumer.accept(this.visibilityProvider as VisibilityStack)
+            }
         }
 
         override fun pushLast() {
@@ -880,7 +886,7 @@ class DynamicListWidget(
         }
     }
 
-    enum class Visibility(val visible: Boolean, val skip: Boolean, val selectable: Boolean, val group: Boolean, val repeatable: Boolean, val affectedBy: Predicate<Visibility>) {
+    enum class Visibility(val visible: Boolean, val skip: Boolean, val selectable: Boolean, val group: Boolean, val repeatable: Boolean, val affectedBy: Predicate<Visibility>): VisibilityProvider {
         VISIBLE(true, false, true, false, false, { v -> !v.group }),
         HIDDEN(false, false, false, false, true, { v -> !v.group }),
         FILTERED(false, false, false, false, false, { v -> !v.group }),
@@ -889,6 +895,10 @@ class DynamicListWidget(
         GROUP_HIDDEN(false, true, false, true, true, { v -> v.group }), //hiding handled externally
         GROUP_DISABLED(false, true, false, true, false, { _ -> false }), //problem group with no entries
         HEADER_VISIBLE(true, true, false, false, false, { _ -> false });
+
+        override fun get(): Visibility {
+            return this
+        }
 
         companion object {
             fun filter(visibilityStack: VisibilityStack) {
@@ -921,11 +931,7 @@ class DynamicListWidget(
         }
     }
 
-    data class Scope(val scope: String, val group: String = "", val inGroups: List<String> = EMPTY) {
-        companion object {
-            private val EMPTY = listOf<String>()
-        }
-    }
+    data class Scope(val scope: String, val group: String = "", val inGroups: List<String> = listOf<String>())
 
     data class ListSpec(val leftPadding: Int = 16,
                         val rightPadding: Int = 10,
@@ -935,8 +941,13 @@ class DynamicListWidget(
                         val hideScrollBar: Boolean = false,
                         val listNarrationKey: String = "fc.narrator.position.config")
 
-    data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>) {
-        fun get(): Visibility {
+    @FunctionalInterface
+    fun interface VisibilityProvider {
+        fun get(): Visibility
+    }
+
+    data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>): VisibilityProvider {
+        override fun get(): Visibility {
             return visibilityStack.firstOrNull() ?: baseVisibility
         }
 
