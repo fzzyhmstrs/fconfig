@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.util.Searcher.SearchContent
 import net.minecraft.client.search.SuffixArray
 import java.util.*
@@ -134,8 +135,7 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
         val list: List<C>
         when (type) {
             SearchType.DESCRIPTION -> {
-                val results = searchDesc.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
-                list = results
+                list = searchDesc.findAll(trimmedSearchInput.lowercase(Locale.ROOT)).filter { !it.skip }
             }
             SearchType.NEGATION -> {
                 val results = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT))
@@ -154,8 +154,7 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
                 list = searchEntries.filter { e -> e != result  && !e.skip }
             }
             SearchType.NORMAL -> {
-                val results = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT)).filter{ !it.skip }
-                list = results
+                list = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT)).filter { !it.skip }
             }
         }
         return list
