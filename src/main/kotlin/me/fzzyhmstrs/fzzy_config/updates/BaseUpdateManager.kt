@@ -47,7 +47,7 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
     //   ex. 'mymod.items.dropRates.oceanChests'
 
     protected var updateMap: LinkedHashMap<String, Updatable> = LinkedHashMap()
-    private var changeHistory: MutableMap<Updatable, SortedMap<Long, Text>> = mutableMapOf()
+    protected var changeHistory: MutableMap<Updatable, SortedMap<Long, Text>> = mutableMapOf()
 
     override fun update(updatable: Updatable, updateMessage: Text) {
         updateMap.computeIfAbsent(updatable.getEntryKey()) { updatable }
@@ -69,6 +69,10 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
             baseTime++
         }
         updateLog[baseTime] = text
+    }
+
+    fun getHistory(): Map<Updatable, SortedMap<Long, Text>> {
+        return changeHistory
     }
 
     override fun hasChangeHistory(): Boolean {

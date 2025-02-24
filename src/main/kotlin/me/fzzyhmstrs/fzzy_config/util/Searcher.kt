@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.util.Searcher.SearchContent
 import net.minecraft.client.search.SuffixArray
 import java.util.*

@@ -75,7 +75,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     EntryCreator
 {
 
-    private var pushedValue: T? = null
+    protected var pushedValue: T? = null
     override var translatableEntryKey: String = ""
     private var updateManager: UpdateManager? = null
     private var listener: Consumer<Entry<T, *>>? = null
@@ -352,7 +352,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun isDefault(): Boolean {
-        return defaultValue == get()
+        return !deserializedChanged(defaultValue, get())
     }
 
     @Internal
@@ -392,7 +392,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     @Internal
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun peekState(): Boolean {
-        return pushedValue != get()
+        return deserializedChanged(pushedValue, get())
     }
     /**
      * @suppress
@@ -401,7 +401,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun popState(): Boolean {
         if (pushedValue == null) return false
-        val updated = pushedValue != get()
+        val updated = deserializedChanged(pushedValue, get())
         pushedValue = null
         return updated
     }

@@ -132,6 +132,24 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         return super.get()
     }
 
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun isDefault(): Boolean {
+        for (condition in conditions) {
+            if (!condition.get()) return true
+        }
+        return delegate.isDefault()
+    }
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun restore() {
+        for (condition in conditions) {
+            if (!condition.get()) return
+        }
+        reset()
+        getUpdateManager()?.addUpdateMessage(this, FcText.translatable("fc.validated_field.default", translation(), defaultValue.toString()))
+    }
 
     @Internal
     override fun entryDeco(): Decorated.DecoratedOffset? {
