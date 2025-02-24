@@ -159,7 +159,7 @@ internal object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
+                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.mapValues { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
         }
         manager.openScreen(scope)
     }
@@ -174,7 +174,7 @@ internal object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
+                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.mapValues { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
         }
         return manager.provideScreen(scope)
     }
@@ -186,6 +186,11 @@ internal object ClientConfigRegistry {
     //client
     internal fun getPerms(): Map<String, Map<String, Boolean>> {
         return HashMap(customPermissions)
+    }
+
+    //client
+    internal fun getPermsRef(): Map<String, Map<String, Boolean>> {
+        return customPermissions
     }
 
     //client

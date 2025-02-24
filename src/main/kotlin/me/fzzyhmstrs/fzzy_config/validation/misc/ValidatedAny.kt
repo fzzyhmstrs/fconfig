@@ -60,6 +60,9 @@ import kotlin.reflect.jvm.javaConstructor
  */
 open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent {
 
+    private var default: Boolean? = null
+    private var changed: Boolean? = null
+
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return ConfigApi.deserializeFromToml(copyStoredValue(), toml, mutableListOf()).contextualize()
@@ -76,7 +79,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     override fun deserializedChanged(old: Any?, new: Any?): Boolean {
         old as? T ?: return true
         new as? T ?: return true
-        return ConfigApi.serializeConfig(old, mutableListOf(), 1) != ConfigApi.serializeConfig(new, mutableListOf(), 1)
+        return (ConfigApi.serializeConfig(old, mutableListOf(), 1) != ConfigApi.serializeConfig(new, mutableListOf(), 1))
     }
 
     /**
@@ -128,12 +131,30 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     @Internal
+    override fun set(input: T) {
+        changed = null
+        default = null
+        super.set(input)
+    }
+
+    @Internal
     override fun setAndUpdate(input: T) {
         if (input == get()) return
         val oldVal = get()
-        val oldStr = ConfigApi.serializeConfig(oldVal, mutableListOf(), 1).lines().joinToString(" ", transform = {s -> s.trim()})
+        val oldVersion = ConfigApiImpl.serializeToToml(oldVal, mutableListOf(), 1)
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
-        val newStr = ConfigApi.serializeConfig(tVal1.get(), mutableListOf(), 1).lines().joinToString(" ", transform = {s -> s.trim()})
+        val newVersion = ConfigApiImpl.serializeToToml(tVal1.get(), mutableListOf(), 1)
+        var oldStr = ""
+        var newStr = ""
+        for ((key, oldEl) in oldVersion) {
+            val newEl = newVersion[key]
+            if (newEl != oldEl) {
+                newStr += "$key=$newEl "
+                oldStr += "$key=$oldEl "
+            }
+        }
+        oldStr = oldStr.trim()
+        newStr = newStr.trim()
         set(tVal1.get())
         val message = if (tVal1.isError()) {
             FcText.translatable("fc.validated_field.update.error", translation(), oldStr, newStr, tVal1.getError())
@@ -141,6 +162,33 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
             FcText.translatable("fc.validated_field.update", translation(), oldStr, newStr)
         }
         update(message)
+    }
+
+    /**
+     * @suppress
+     */
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun peekState(): Boolean {
+        val c = changed ?: deserializedChanged(pushedValue, get())
+        changed = c
+        return c
+    }
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun isDefault(): Boolean {
+        val e = default ?: !deserializedChanged(defaultValue, get())
+        default = e
+        return e
+    }
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun restore() {
+        reset()
+        @Suppress("DEPRECATION")
+        getUpdateManager()?.addUpdateMessage(this, FcText.translatable("fc.validated_field.default", translation(), ConfigApi.serializeConfig(defaultValue, mutableListOf(), 1).lines().joinToString(" ", transform = {s -> s.trim()})))
     }
 
     //client
@@ -226,7 +274,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         val popup = PopupWidget.Builder(translation())
             .add("list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("revert", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.revert() }.size(142, 20).activeSupplier { manager.hasChanges() }.build(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("restore", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.restore("") }.size(142, 20).activeSupplier { manager.hasRestores("") }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("restore", CustomButtonWidget.builder("fc.button.restore".translate()) { manager.restore("") }.size(142, 20).activeSupplier { manager.hasRestores("") }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .addDoneWidget()
             .onClose { manager.apply(true); if(manager.hasChanges()) setAndUpdate(newThing) }
             .build()
