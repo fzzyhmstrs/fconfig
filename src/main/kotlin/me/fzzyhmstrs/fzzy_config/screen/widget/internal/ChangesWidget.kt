@@ -40,6 +40,10 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
         private val changesHighlightedTex: Identifier = "widget/changes_highlighted".fcId()
     }
 
+    init {
+        this.active = manager.hasChanges() || manager.hasChangeHistory() || manager.hasRestores(scope)
+    }
+
     override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = manager.hasChanges() || manager.hasChangeHistory() || manager.hasRestores(scope)
         super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)

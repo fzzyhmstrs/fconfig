@@ -42,7 +42,6 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.Util
 import java.util.concurrent.TimeUnit
-import java.util.function.BiFunction
 import java.util.function.Supplier
 
 //client
@@ -52,8 +51,8 @@ internal class ConfigScreen(
     private val manager: UpdateManager,
     private val configList: DynamicListWidget,
     private val parentScopesButtons: List<Supplier<ClickableWidget>>,
-    private val anchors: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>>,
-    private val anchorWidth: Int)
+    private val sidebar: ConfigScreenManager.Sidebar,
+    private val onFinalClose: Runnable)
     :
     PopupWidgetScreen(title), ContextHandler, ContextProvider
 {
@@ -85,7 +84,7 @@ internal class ConfigScreen(
 
     override fun close() {
         if(this.parent == null || this.parent !is ConfigScreen) {
-            manager.apply(true)
+            onFinalClose.run()
             this.client?.narratorManager?.clear()
         }
         this.client?.setScreen(parent)
@@ -131,7 +130,7 @@ internal class ConfigScreen(
     private fun initFooter() {
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //goto button
-        directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openGotoPopup(anchors, anchorWidth, this.height) }.size(20, 20).textures(TextureIds.GOTO_SET).narrationSupplier { _, _ -> TextureIds.GOTO_LANG }.activeSupplier { anchors.size > 1 }.tooltip(TextureIds.GOTO_LANG).build()) { p -> p.alignLeft() }
+        directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openGotoPopup(this.sidebar.getAnchors(), this.sidebar.getAnchorWidth(), this.height) }.size(20, 20).textures(TextureIds.GOTO_SET).narrationSupplier { _, _ -> TextureIds.GOTO_LANG }.activeSupplier { sidebar.needsSidebar() }.tooltip(TextureIds.GOTO_LANG).build()) { p -> p.alignLeft() }
         //directionalLayoutWidget.add(TextlessActionWidget("widget/action/goto".fcId(), "widget/action/goto_inactive".fcId(), "widget/action/goto_highlighted".fcId(), "fc.button.goto".translate(), "fc.button.goto".translate(), { anchors.size > 1 } ) { Popups.openGotoPopup(anchors, anchorWidth, this.height) }) { p -> p.alignLeft() }
         //info button
         directionalLayoutWidget.add(CustomButtonWidget.builder { openInfoPopup() }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignLeft() }
@@ -341,8 +340,8 @@ internal class ConfigScreen(
                 }
             }
             ContextType.SEARCH -> {
-                if (anchors.size > 1) {
-                    Popups.openGotoPopup(anchors, anchorWidth, this.height)
+                if (sidebar.needsSidebar()) {
+                    Popups.openGotoPopup(this.sidebar.getAnchors(), this.sidebar.getAnchorWidth(), this.height)
                     true
                 } else {
                     false
