@@ -21,10 +21,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
-import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
@@ -43,23 +40,22 @@ import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.Toml
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.function.BiFunction
 import java.util.function.Supplier
 
 //client
-internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private val forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, private val perms: Int): BaseUpdateManager() {
+internal class ConfigMultiUpdateManager(private val configs: List<ConfigSet>, private val forwardedUpdates: MutableList<ConfigScreenManager.ForwardedUpdate>, private val perms: Int): ConfigBaseUpdateManager() {
 
     private val updatableEntries: MutableMap<String, Updatable> = mutableMapOf()
 
-    fun setUpdatableEntry(entry: Updatable) {
+    override fun setUpdatableEntry(entry: Updatable) {
         updatableEntries[entry.getEntryKey()] = entry
     }
 
-    fun getUpdatableEntry(key: String): Updatable? {
+    override fun getUpdatableEntry(key: String): Updatable? {
         return updatableEntries[key]
     }
 
-    fun pushUpdatableStates() {
+    override fun pushUpdatableStatesInternal() {
         for (updatable in updatableEntries.values) {
             updatable.pushState()
         }
@@ -84,16 +80,6 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
 
     override fun forwardsCount(): Int {
         return forwardedUpdates.size
-    }
-
-    override fun forwardsHandler() {
-        val entries: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = forwardedUpdates.map { BiFunction { list, _ -> ForwardEntry(list, it, this) } }
-        val list = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, 190, 120)
-        val popup = PopupWidget.Builder("fc.config.forwarded".translate())
-            .add("list", list, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
-            .addDoneWidget()
-            .build()
-        PopupWidget.push(popup)
     }
 
     private fun acceptForward(forwardedUpdate: ConfigScreenManager.ForwardedUpdate) {
@@ -214,10 +200,10 @@ internal class ConfigUpdateManager(private val configs: List<ConfigSet>, private
             ConfigApiImpl.printChangeHistory(flush(), updatedConfigs.toString(), MinecraftClient.getInstance().player)
         }
         if (!final)
-            pushUpdatableStates()
+            pushUpdatableStatesInternal()
     }
 
-    private class ForwardEntry(parentElement: DynamicListWidget, private val forwardedUpdate: ConfigScreenManager.ForwardedUpdate, private val manager: ConfigUpdateManager)
+    private class ForwardEntry(parentElement: DynamicListWidget, private val forwardedUpdate: ConfigScreenManager.ForwardedUpdate, private val manager: ConfigMultiUpdateManager)
         : DynamicListWidget.Entry(parentElement, Translatable.Result(forwardedUpdate.entry.transLit(forwardedUpdate.scope), forwardedUpdate.summary.lit()), DynamicListWidget.Scope(forwardedUpdate.scope))
     {
 

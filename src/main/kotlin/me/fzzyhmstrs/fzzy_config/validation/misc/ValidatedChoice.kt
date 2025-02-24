@@ -216,7 +216,9 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                         { this.accept(it) })
                     layout.add("choice$index", button, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
                 }
-                LayoutClickableWidget(0, 0, 110, 20 * choices.size, layout)
+                LayoutClickableWidget(0, 0, 110, 20 * choices.size, layout).withNarrationAppender { builder ->
+                    builder.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.translationProvider.apply(this.get(), this.translationKey())).append(". "))
+                }
             }
             WidgetType.SCROLLABLE -> {
                 ChoiceScrollablePopupButtonWidget(translation(), choicePredicate, this)
