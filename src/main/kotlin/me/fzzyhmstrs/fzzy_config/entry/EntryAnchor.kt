@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.entry
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
@@ -96,7 +95,6 @@ interface EntryAnchor {
         INLINE {
             override fun action(scope: String, anchorId: String): Runnable {
                 return Runnable {
-                    FC.DEVLOG.error(scope)
                     ConfigApi.openScreen(scope)
                     MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.scrollToGroup(anchorId)
                 }
