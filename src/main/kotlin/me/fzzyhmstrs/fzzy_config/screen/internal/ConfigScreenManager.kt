@@ -149,7 +149,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private tailrec fun getValidScope(scope: String): String? {
-        FC.DEVLOG.warn(scope)
         if(configs.keys.contains(scope)) return scope
         val validScopeTry = scope.substringBeforeLast('.')
         if (validScopeTry == scope) return null
@@ -214,9 +213,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
             val config: Config = set.active
             val prefix = config.getId().toTranslationKey()
             val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, emptyList(), config::class.java.simpleName)
-            val groups: LinkedList<String> = LinkedList()
 
-            val context = EntryCreator.CreatorContext(prefix, groups, set.clientOnly, configTexts, config::class.annotations, ConfigApiImpl.getActions(config, ConfigApiImpl.IGNORE_NON_SYNC), contextMisc)
+            val context = EntryCreator.CreatorContext(prefix, ConfigGroup.emptyGroups, set.clientOnly, configTexts, config::class.annotations, ConfigApiImpl.getActions(config, ConfigApiImpl.IGNORE_NON_SYNC), contextMisc)
             //config button, if the config spec allows for them
             EntryCreators.createConfigEntry(context).applyToList(functions)
             //Header entry injected into function map at top of config
@@ -283,6 +281,14 @@ internal class ConfigScreenManager(private val scope: String, private val config
         return SidebarData(anchors, anchorWidth + 1)
     }
 
+    private val contextMisc: EntryCreator.CreatorContextMisc by lazy {
+        EntryCreator.CreatorContextMisc()
+            .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
+            .put(EntryCreators.COPY_BUFFER, copyBuffer)
+    }
+
+
+
     private fun walkConfig(
         set: ConfigSet, //the current set of configs to walk
         functionMap: MutableMap<String, MutableList<EntryCreator.Creator>>, //Creators go here, sorted by encounter order and scope
@@ -301,10 +307,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 functionMap.computeIfAbsent(parent) { mutableListOf() }.add(creator)
             }
         }
-
-        val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
-            .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
-            .put(EntryCreators.COPY_BUFFER, copyBuffer)
 
         anchorPredicate.test(AnchorResult(prefix, config, configTexts))
 
@@ -362,7 +364,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val skip2 = anchorPredicate.test(AnchorResult(new, thing, prepareResult.texts))
 
                 if (!skip2) {
-                    val context = EntryCreator.CreatorContext(new, LinkedList(groups), set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
+                    //pass in a singleton list if there is an empty group state to save memory
+                    val context = EntryCreator.CreatorContext(new, if (groups.isEmpty()) ConfigGroup.emptyGroups else LinkedList(groups), set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
 
                     when (prepareResult.perms) {
                         ConfigApiImplClient.PermResult.FAILURE -> {
@@ -480,7 +483,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
     internal inner class Sidebar {
 
         private val data: SidebarData by lazy {
-            FC.DEVLOG.info("Initializing sidebar data")
             this@ConfigScreenManager.prepareSidebarData()
         }
 
