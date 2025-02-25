@@ -42,7 +42,7 @@ import java.util.function.Supplier
  * @param child [TooltipChild], used to pass additional tooltip context. This button will pass and tooltip from this child out to its own parent (this button is also a [TooltipChild])
  * @param renderMessage If false, the label won't be rendered
  * @author fzzyhmstrs
- * @since 0.5.?, update to ActiveNarrationSupplier 0.6.3
+ * @since 0.5.?, update to ActiveNarrationSupplier 0.6.3, improve memory footprint 0.6.5
  */
 open class CustomButtonWidget protected constructor(
     x: Int,
@@ -51,8 +51,8 @@ open class CustomButtonWidget protected constructor(
     height: Int,
     message: Text,
     private val pressAction: Consumer<CustomButtonWidget>,
-    private val narrationSupplier: ActiveNarrationSupplier = DEFAULT_ACTIVE_NARRATION_SUPPLIER,
-    private val narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> },
+    private val narrationSupplier: ActiveNarrationSupplier? = null,
+    private val narrationAppender: Consumer<NarrationMessageBuilder>? = null,
     private val child: TooltipChild? = null,
     override val textures: TextureProvider = DEFAULT_TEXTURES,
     private val renderMessage: Boolean = true)
@@ -85,8 +85,8 @@ open class CustomButtonWidget protected constructor(
         height: Int,
         message: Text,
         pressAction: Consumer<CustomButtonWidget>,
-        narrationSupplier: ActiveNarrationSupplier = DEFAULT_ACTIVE_NARRATION_SUPPLIER,
-        narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> },
+        narrationSupplier: ActiveNarrationSupplier? = null,
+        narrationAppender: Consumer<NarrationMessageBuilder>? = null,
         textures: TextureSet = DEFAULT_TEXTURES,
         child: TooltipChild? = null,
         renderMessage: Boolean = true): this(x, y, width, height, message, pressAction, narrationSupplier, narrationAppender, child, textures, renderMessage)
@@ -122,7 +122,7 @@ open class CustomButtonWidget protected constructor(
         child: TooltipChild? = null,
         renderMessage: Boolean = true): this(x, y, width, height, message, pressAction, ActiveNarrationSupplier { _, supplier -> narrationSupplier.createNarrationMessage(supplier) }, narrationAppender, textures, child, renderMessage)
 
-    protected var activeSupplier: Supplier<Boolean> = Supplier { true }
+    protected var activeSupplier: Supplier<Boolean> = DEFAULT_ACTIVE_SUPPLIER
     protected var messageSupplier: Supplier<Text>? = null
     protected var tooltipSupplier: Function<Boolean, Text>? = null
 
@@ -146,7 +146,7 @@ open class CustomButtonWidget protected constructor(
     }
 
     override fun getNarrationMessage(): MutableText {
-        return narrationSupplier.createNarrationMessage(this.active) { super.getNarrationMessage() }
+        return (narrationSupplier ?: DEFAULT_ACTIVE_NARRATION_SUPPLIER).createNarrationMessage(this.active) { super.getNarrationMessage() }
     }
 
     override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
@@ -156,7 +156,7 @@ open class CustomButtonWidget protected constructor(
     override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
         super.appendClickableNarrations(builder)
         if (builder != null)
-            narrationAppender.accept(builder)
+            narrationAppender?.accept(builder)
     }
 
     @FunctionalInterface
@@ -496,5 +496,7 @@ open class CustomButtonWidget protected constructor(
          */
         @JvmStatic
         protected val DEFAULT_ACTIVE_NARRATION_SUPPLIER: ActiveNarrationSupplier = ActiveNarrationSupplier { _, textSupplier: Supplier<MutableText> -> textSupplier.get() }
+
+        private val DEFAULT_ACTIVE_SUPPLIER = Supplier { true }
     }
 }
