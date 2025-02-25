@@ -125,7 +125,7 @@ class ContextType private constructor(private val id: String, private val releva
         val END = create("end", ContextInput.KEYBOARD) { inputCode: Int, _, _, _ ->
             inputCode == GLFW.GLFW_KEY_END
         }
-        
+
         /**
          * Ctrl-C, should move the context object to a copy buffer in some way
          * @author fzzyhmstrs
@@ -240,7 +240,7 @@ class ContextType private constructor(private val id: String, private val releva
          * @since 0.6.5
          */
         val FULL_EXIT = create("full_exit", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
-            inputCode == GLFW.GLFW_KEY_ESC && !ctrl && shift && !alt
+            inputCode == GLFW.GLFW_KEY_ESCAPE && !ctrl && shift && !alt
         }
 
 
