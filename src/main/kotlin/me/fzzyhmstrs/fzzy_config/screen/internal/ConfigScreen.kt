@@ -294,12 +294,12 @@ internal class ConfigScreen(
         val contextTypes = ContextType.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextTypes.isEmpty()) return super.keyPressed(keyCode, scanCode, modifiers)
         var bl = false
-        val input = if(MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
+        val input = if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
 
         for (contextType in contextTypes) {
             bl = bl || handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }
-        return if(bl) {
+        return if (bl) {
             true
         } else {
             val bl2 = super.keyPressed(keyCode, scanCode, modifiers)
@@ -350,6 +350,10 @@ internal class ConfigScreen(
             }
             ContextType.UNDO -> {
                 manager.revertLast()
+                true
+            }
+            ContextType.FULL_EXIT -> {
+                shiftClose()
                 true
             }
             else -> {
