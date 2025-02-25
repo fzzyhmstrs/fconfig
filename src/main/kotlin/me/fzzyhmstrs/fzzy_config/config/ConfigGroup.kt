@@ -88,6 +88,8 @@ class ConfigGroup @JvmOverloads constructor(
 
     companion object {
 
+        internal val emptyGroups: LinkedList<String> = LinkedList()
+
         internal fun pop(annotations: List<Annotation>, groups: LinkedList<String>) {
             if (annotations.firstOrNull { it is Pop } != null) {
                 groups.poll()

@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import com.mojang.blaze3d.systems.RenderSystem
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
@@ -21,13 +20,11 @@ import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
-import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.entry.WidgetEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
-import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit

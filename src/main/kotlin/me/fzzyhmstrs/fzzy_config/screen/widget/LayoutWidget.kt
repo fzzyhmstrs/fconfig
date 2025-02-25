@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder.*
 import me.fzzyhmstrs.fzzy_config.util.pos.*
@@ -31,16 +30,16 @@ import kotlin.math.min
  * @param x [Pos], optional. The x position of this widget. Default is [AbsPos] of 0. This initial position can be overwritten later with [setPos]
  * @param y [Pos], optional. The y position of this widget. Default is [AbsPos] of 0. This initial position can be overwritten later with [setPos]
  * @param paddingW Int, optional. Default 8px. The horizontal space given around the left/right edge of the layout (where the border would go visually). Unlike the DOM, there is no margin/padding duo, just padding.
- * @param paddingH Int, optional. Default whatever [paddingW] is. The vertical space given around the top/bottom edge of the layout (where the border would go visually). Unlike the DOM, there is no margin/padding duo, just padding.
+ * @param paddingH Int, optional. Default whatever `paddingW`` is. The vertical space given around the top/bottom edge of the layout (where the border would go visually). Unlike the DOM, there is no margin/padding duo, just padding.
  * @param spacingW Int, optional. Default 4. The horizontal space between elements. This can be modified per element as needed with [pushSpacing] and [popSpacing]
- * @param spacingH Int, optional. Default whatever [spacingW] is. The vertical space between elements. This can be modified per element as needed with [pushSpacing] and [popSpacing]
+ * @param spacingH Int, optional. Default whatever `spacingW` is. The vertical space between elements. This can be modified per element as needed with [pushSpacing] and [popSpacing]
  * @author fzzyhmstrs
  * @since 0.6.0
  */
 class LayoutWidget @JvmOverloads constructor(
     private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0),
     private val paddingW: Int = 8, private val paddingH: Int = paddingW,
-    private val spacingW: Int = 4, private val spacingH: Int = spacingW): Widget, Scalable {
+    spacingW: Int = 4, spacingH: Int = spacingW): Widget, Scalable {
 
     private var width: Int = 0
     private var height: Int = 0
@@ -51,7 +50,7 @@ class LayoutWidget @JvmOverloads constructor(
     private val yPos = MutableReferencePos(y, paddingH)
     private val wPos = RelPos(xPos, width - (2 * paddingW))
     private val hPos = RelPos(yPos, height - (2 * paddingH))
-    private val sets: Deque<PosSet> = LinkedList(listOf(PosSet(xPos, yPos, wPos, hPos, spacingW, spacingH)))
+    private val sets: Deque<PosSet> = ArrayDeque<PosSet>(1).also { it.add(PosSet(xPos, yPos, wPos, hPos, spacingW, spacingH)) }
 
     private val elements: MutableMap<String, PositionedElement<*>> = mutableMapOf()
 
@@ -98,22 +97,22 @@ class LayoutWidget @JvmOverloads constructor(
     }
     /**
      * The general vertical spacing of this layout. Does not take into account the current state of the spacing stack.
-     * @return [spacingH]
+     * @return the base of the position stacks vertical spacing (aka the default spacing)
      * @author fzzyhmstrs
      * @since 0.6.0
      */
     @Suppress("unused")
     fun getGeneralVerticalSpacing(): Int {
-        return spacingH
+        return sets.peekLast().spacingH
     }
     /**
      * The general horizontal spacing of this layout. Does not take into account the current state of the spacing stack.
-     * @return [spacingW]
+     * @return the base of the position stacks horizontal spacing (aka the default spacing)
      * @author fzzyhmstrs
      * @since 0.6.0
      */
     fun getGeneralHorizontalSpacing(): Int {
-        return spacingW
+        return sets.peekLast().spacingW
     }
 
     private fun updateElementWidths(delta: Int) {
@@ -384,8 +383,8 @@ class LayoutWidget @JvmOverloads constructor(
 
         val parentEl = elements[parent]
         if (parentEl == null) { //initial element
-            var newX: Pos = RelPos(set.x)
-            var newY: Pos = RelPos(set.y)
+            var newX: Pos = RelPos(set.xPos)
+            var newY: Pos = RelPos(set.yPos)
             @Suppress("DEPRECATION")
             var alignment: PositionGlobalAlignment = PositionGlobalAlignment.ALIGN_CENTER
             for (pos in positions) {
@@ -400,8 +399,8 @@ class LayoutWidget @JvmOverloads constructor(
             }
             return PositionedElement(el, set, newX, newY, alignment)
         }
-        var newX: Pos = RelPos(set.x, set.spacingW)
-        var newY: Pos = RelPos(set.y, set.spacingH)
+        var newX: Pos = RelPos(set.xPos, set.spacingW)
+        var newY: Pos = RelPos(set.yPos, set.spacingH)
         //subsequent elements
         var alignment: PositionGlobalAlignment = parentEl.alignment
         for(pos in positions) {
@@ -491,6 +490,7 @@ class LayoutWidget @JvmOverloads constructor(
         updateElements()
     }
 
+    @Suppress("UNUSED_PARAMETER")
     private fun attemptRecomputeDims(debug: Boolean = false) {
         if (manualHeight > 0 && manualWidth > 0) {
             updateWidth(manualWidth)
@@ -574,9 +574,9 @@ class LayoutWidget @JvmOverloads constructor(
                         }
                     } else {
                         if (posEl.element is ClickableWidget) {
-                            posEl.element.width = posEl.set.w.get() - posEl.getLeft()
+                            posEl.element.width = posEl.set.wPos.get() - posEl.getLeft()
                         } else if (posEl.element is Scalable) {
-                            posEl.element.setW(posEl.set.w.get() - posEl.getLeft())
+                            posEl.element.setW(posEl.set.wPos.get() - posEl.getLeft())
                         }
                     }
 
@@ -607,11 +607,11 @@ class LayoutWidget @JvmOverloads constructor(
                         }
                     } else {
                         if (posEl.element is ClickableWidget) {
-                            val dec = posEl.getLeft() - posEl.set.x.get()
+                            val dec = posEl.getLeft() - posEl.set.xPos.get()
                             posEl.getX().dec(dec)
                             posEl.element.width += dec
                         } else if (posEl.element is Scalable) {
-                            val dec = posEl.getLeft() - posEl.set.x.get()
+                            val dec = posEl.getLeft() - posEl.set.xPos.get()
                             posEl.getX().dec(dec)
                             posEl.element.setW(posEl.element.width + dec)
                         }
@@ -638,7 +638,7 @@ class LayoutWidget @JvmOverloads constructor(
                         }
                     } else {
                         if (posEl.element is Scalable) {
-                            posEl.element.setH(posEl.set.h.get() - posEl.getTop())
+                            posEl.element.setH(posEl.set.hPos.get() - posEl.getTop())
                         }
                     }
                 }
@@ -922,11 +922,11 @@ class LayoutWidget @JvmOverloads constructor(
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.x), prevY)
+                return Pair(RelPos(globalSet.xPos), prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.x), prevY)
+                return Pair(RelPos(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
@@ -936,57 +936,57 @@ class LayoutWidget @JvmOverloads constructor(
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.x), prevY)
+                return Pair(RelPos(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_RIGHT {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+                return Pair(SuppliedPos(globalSet.wPos, 0) { -el.width }, prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+                return Pair(SuppliedPos(globalSet.wPos, 0) { -el.width }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_CENTER {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
+                return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
+                return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_JUSTIFY {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
+                return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
+                return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_JUSTIFY_WEAK {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
+                return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.x, 0) { (globalSet.w.get() - globalSet.x.get()) / 2 - el.width / 2 }, prevY)
+                return Pair(SuppliedPos(globalSet.xPos, 0) { (globalSet.wPos.get() - globalSet.xPos.get()) / 2 - el.width / 2 }, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT_AND_JUSTIFY {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.x), prevY)
+                return Pair(RelPos(globalSet.xPos), prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.x), prevY)
+                return Pair(RelPos(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
@@ -996,17 +996,17 @@ class LayoutWidget @JvmOverloads constructor(
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.x), prevY)
+                return Pair(RelPos(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_RIGHT_AND_JUSTIFY {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+                return Pair(SuppliedPos(globalSet.wPos, 0) {-el.width}, prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+                return Pair(SuppliedPos(globalSet.wPos, 0) {-el.width}, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
@@ -1016,17 +1016,17 @@ class LayoutWidget @JvmOverloads constructor(
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+                return Pair(SuppliedPos(globalSet.wPos, 0) {-el.width}, prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT_AND_STRETCH {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.x), prevY)
+                return Pair(RelPos(globalSet.xPos), prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.x), prevY)
+                return Pair(RelPos(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
@@ -1036,17 +1036,17 @@ class LayoutWidget @JvmOverloads constructor(
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.x), prevY)
+                return Pair(RelPos(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
         ALIGN_RIGHT_AND_STRETCH {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+                return Pair(SuppliedPos(globalSet.wPos, 0) {-el.width}, prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(SuppliedPos(globalSet.w, 0) {-el.width}, prevY)
+                return Pair(SuppliedPos(globalSet.wPos, 0) {-el.width}, prevY)
             }
         }
     }
@@ -1212,6 +1212,9 @@ class LayoutWidget @JvmOverloads constructor(
         override fun toString(): String {
             return "MutableRef(${get()})[$parent + $offset]"
         }
-
     }
+
+    @Internal
+    //client
+    data class PosSet(val xPos: Pos, val yPos: Pos, val wPos: Pos, val hPos: Pos, val spacingW: Int, val spacingH: Int)
 }

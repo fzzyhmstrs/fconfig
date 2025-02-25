@@ -251,7 +251,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                     manager.setUpdatableEntry(entryCreator)
                 }
 
-                val context = EntryCreator.CreatorContext(new, groups, false, prepareResult.texts, annotations, prepareResult.actions, misc)
+                val context = EntryCreator.CreatorContext(new, if (groups.isEmpty()) ConfigGroup.emptyGroups else LinkedList(groups), false, prepareResult.texts, annotations, prepareResult.actions, misc)
 
                 when (prepareResult.perms) {
                     ConfigApiImplClient.PermResult.FAILURE -> {
