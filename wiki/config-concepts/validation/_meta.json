@@ -54,5 +54,9 @@
   "TagKeys.mdx": {
     "name": "TagKeys",
     "icon": "Tag"
+  },
+  "TriStates.mdx": {
+    "name": "TriStates",
+    "icon": "BringToFront"
   }
 }
