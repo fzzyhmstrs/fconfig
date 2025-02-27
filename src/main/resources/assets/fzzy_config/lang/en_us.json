@@ -97,6 +97,15 @@
 "fc.tristate.false": "False",
 "fc.tristate.false.desc": "False",
 
+"fc.keybind.ctrl": "[ ctrl + %s ]",
+"fc.keybind.ctrl.shift": "[ ctrl + shift + %s ]",
+"fc.keybind.ctrl.shift.alt": "[ ctrl + shift + alt + %s ]",
+"fc.keybind.ctrl.alt": "[ ctrl + alt + %s ]",
+"fc.keybind.shift": "[ shift + %s ]",
+"fc.keybind.shift.alt": "[ shift + alt + %s ]",
+"fc.keybind.alt": "[ alt + %s ]",
+"fc.keybind": "[ %s ]",
+
 "test.walkable.testChildDave.testChildBool": "Test Child Dave's Boolean",
 "test.walkable.testChildDave.testChildBool.desc": "Dave's favorite boolean. Please treat it well.",
 
