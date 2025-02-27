@@ -1,6 +1,8 @@
 package me.fzzyhmstrs.fzzy_config.screen.context
 
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.TriState
+import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
 import java.util.*
 
@@ -80,6 +82,35 @@ class ContextType private constructor(private val id: String, private val releva
                     && this.alt.validate(alt)
         }
 
+        fun keybind(): Text {
+            val key: Text = TODO()
+            val c = ctrl == TriState.TRUE
+            val s = shift == TriState.TRUE
+            val a = alt == TriState.TRUE
+            return if (c) {
+                if (s) {
+                    if (a) {
+                        FcText.translatable("fc.keybind.ctrl.shift.alt", key)
+                    } else {
+                        FcText.translatable("fc.keybind.ctrl.shift", key)
+                    }
+                } else if (a) {
+                    FcText.translatable("fc.keybind.ctrl.alt", key)
+                } else {
+                    FcText.translatable("fc.keybind.ctrl", key)
+                }
+            } else if (s) {
+                if (a) {
+                    FcText.translatable("fc.keybind.shift.alt", key)
+                } else {
+                    FcText.translatable("fc.keybind.shift", key)
+                }
+            } else if (a) {
+                FcText.translatable("fc.keybind.alt", key)
+            } else {
+                FcText.translatable("fc.keybind", key)
+            }
+        }
     }
 
     companion object {
