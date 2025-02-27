@@ -25,6 +25,15 @@ object TextureIds {
     /** a green checkmark */
     val ENTRY_OK = "widget/entry_ok".fcId()
 
+    /** a greyscale checkmark */
+    val ENTRY_OK_DISABLED = "widget/entry_ok_disabled".fcId()
+
+    /** a red 'X' */
+    val ENTRY_NO = "widget/entry_no".fcId()
+
+    /** a greyscale 'X' */
+    val ENTRY_NO_DISABLED = "widget/entry_no_disabled".fcId()
+
     /** a red triangular sign with an exclamation mark in the middle */
     val ENTRY_ERROR = "widget/entry_error".fcId()
 
