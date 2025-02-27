@@ -38,7 +38,8 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.Condition
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionImpl
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionSupplierImpl
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionBooleanSupplierImpl
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
 import net.minecraft.network.PacketByteBuf
@@ -683,6 +684,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     /**
      * Convert this field to a [ValidatedCondition]. The provided condition (and any others you append) must pass for the stored value to be provided, otherwise the fallback will be supplied.
      * @param condition [Condition] a condition to check before passing the stored value
+     * @param fallback [Supplier]&lt;[T]&gt; provides the fallback value to use if the condition fails
      * @throws IllegalStateException if the fallback is this
      * @return this condition
      * @author fzzyhmstrs
@@ -699,6 +701,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * Note: a ValidatedField is a supplier. If you want a custom failMessage, this is a valid overload of `withCondition(ValidatedField<Boolean>)`
      * @param condition [Supplier]&lt;Boolean&gt; a supplier of booleans for the condition to check against
      * @param failMessage [Text] a message to provide to a tooltip if a condition isn't met
+     * @param fallback [Supplier]&lt;[T]&gt; provides the fallback value to use if the condition fails
      * @throws IllegalStateException if the fallback is this
      * @return this condition
      * @author fzzyhmstrs
@@ -706,7 +709,25 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      */
     open fun toCondition(condition: Supplier<Boolean>, failMessage: Text, fallback: Supplier<T>): ValidatedCondition<T> {
         val newField = ValidatedCondition(this, fallback)
-        newField.withCondition(ConditionImpl(condition, failMessage))
+        newField.withCondition(ConditionSupplierImpl(condition, failMessage))
+        return newField
+    }
+
+    /**
+     * Convert this field to a [ValidatedCondition]. The provided condition (and any others you append) must pass for the stored value to be provided, otherwise the fallback will be supplied.
+     *
+     * Note: a ValidatedField is a supplier. If you want a custom failMessage, this is a valid overload of `withCondition(ValidatedField<Boolean>)`
+     * @param condition [BooleanSupplier] a supplier of booleans for the condition to check against
+     * @param fallback [Supplier]&lt;[T]&gt; provides the fallback value to use if the condition fails
+     * @param failMessage [Text] a message to provide to a tooltip if a condition isn't met
+     * @throws IllegalStateException if the fallback is this
+     * @return this condition
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    open fun toCondition(condition: BooleanSupplier, fallback: Supplier<T>, failMessage: Text): ValidatedCondition<T> {
+        val newField = ValidatedCondition(this, fallback)
+        newField.withCondition(ConditionBooleanSupplierImpl(condition, failMessage))
         return newField
     }
 
