@@ -35,7 +35,7 @@ import java.util.function.Supplier
 /**
  * A validated [TriState] (True, False, or Default). This validation is itself a [TriStateProvider], so can directly act as the stored TriState without needing to call [get]. TriStateProvider is itself a [BooleanSupplier], so this validation can be passed directly into places that use one of those, such as [ValidatedField.toCondition] (default treated as false in that case)
  *
- * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/TriState) for more details and examples.
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/TriStates) for more details and examples.
  * @param defaultValue Enum Constant used as the default for this setting
  * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
  * @author fzzyhmstrs
