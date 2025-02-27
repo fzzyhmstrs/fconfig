@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.updates
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.*
@@ -204,6 +205,7 @@ internal interface BasicValidationProvider {
                     java.lang.Double::class.java -> ValidatedDouble()
                     java.lang.Float::class.java -> ValidatedFloat()
                     java.lang.Boolean::class.java -> ValidatedBoolean()
+                    TriState::class.java -> ValidatedTriState(TriState.DEFAULT)
                     java.awt.Color::class.java -> ValidatedColor()
                     Identifier::class.java -> ValidatedIdentifier()
                     java.lang.String::class.java -> ValidatedString()
