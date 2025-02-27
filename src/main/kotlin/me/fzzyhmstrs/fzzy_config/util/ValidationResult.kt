@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import java.util.function.Consumer
@@ -147,8 +148,33 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        fun <T>predicated(storedVal: T, valid: Boolean, error: String): ValidationResult<T> {
+        fun <T> predicated(storedVal: T, valid: Boolean, error: String): ValidationResult<T> {
             return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, error)
+        }
+
+        /**
+         * Converts a [DataResult] into a [ValidationResult]
+         * @param T the data type
+         * @param result [DataResult] the parsed data result from a Codec or other data source.
+         * @param fallback [T] the value to pass in case data parsing has failed
+         * @return a non-null validation result with the parsed or fallback value and error message as appropriate
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        fun <T> mapDataResult(result: DataResult<T>, fallback: T): ValidationResult<T> {
+            return result.mapOrElse({ r -> success(r) }, { e -> error(fallback, e.message()) })
+        }
+
+        /**
+         * Converts a [DataResult] into a [ValidationResult] with no fallback
+         * @param T the data type
+         * @param result [DataResult] the parsed data result from a Codec or other data source.
+         * @return a nullable-result validation result with the parsed value or null and error message as appropriate
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        fun <T> mapDataResult(result: DataResult<T>): ValidationResult<T?> {
+            return result.mapOrElse({ r -> success(r) }, { e -> error(null, e.message()) })
         }
 
         /**

@@ -39,6 +39,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
+import java.util.function.BooleanSupplier
 import java.util.function.Function
 import java.util.function.Supplier
 
@@ -204,7 +205,22 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * @since 0.5.4
      */
     open fun withCondition(condition: Supplier<Boolean>, failMessage: Text): ValidatedCondition<T> {
-        conditions.add(ConditionImpl(condition, failMessage))
+        conditions.add(ConditionSupplierImpl(condition, failMessage))
+        return this
+    }
+
+    /**
+     * Adds a conditional check to this [ValidatedCondition]. Apply conditional checks on top of the stored value by calling [get]. Get the base value with [getUnconditional].
+     *
+     * Note: a ValidatedField is a supplier. If you want a custom failMessage, this is a valid overload of `withCondition(ValidatedField<Boolean>)`
+     * @param failMessage [Text] a message to provide to a tooltip if a condition isn't met
+     * @param condition [Supplier]&lt;Boolean&gt; a supplier of booleans for the condition to check against
+     * @return this condition
+     * @author fzzyhmstrs
+     * @since 0.5.4
+     */
+    open fun withCondition(failMessage: Text, condition: BooleanSupplier): ValidatedCondition<T> {
+        conditions.add(ConditionBooleanSupplierImpl(condition, failMessage))
         return this
     }
 
@@ -227,10 +243,10 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * @param failMessage [Text] a message to provide to a tooltip if a condition isn't met
      * @return this condition
      * @author fzzyhmstrs
-     * @since 0.5.4
+     * @since 0.5.4, explicitly uses BooleanSupplier internally 0.6.5
      */
     open fun withCondition(scope: String, failMessage: Text): ValidatedCondition<T> {
-        return withCondition({ booleanProvider.getResult(scope) }, failMessage)
+        return withCondition(failMessage) { booleanProvider.getResult(scope) }
     }
 
     /**
@@ -513,10 +529,21 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         }
     }
 
-    internal class ConditionImpl(private val condition: Supplier<Boolean>, private val failMessage: Text): Condition {
+    internal class ConditionSupplierImpl(private val condition: Supplier<Boolean>, private val failMessage: Text): Condition {
 
         override fun get(): Boolean {
             return condition.get()
+        }
+
+        override fun failMessage(): Text {
+            return failMessage
+        }
+    }
+
+    internal class ConditionBooleanSupplierImpl(private val condition: BooleanSupplier, private val failMessage: Text): Condition {
+
+        override fun get(): Boolean {
+            return condition.asBoolean
         }
 
         override fun failMessage(): Text {
