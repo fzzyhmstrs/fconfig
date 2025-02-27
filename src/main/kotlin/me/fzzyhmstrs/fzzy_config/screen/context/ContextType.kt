@@ -75,6 +75,8 @@ class ContextType private constructor(private val id: String, private val releva
      */
     data class RelevantImpl(val inputCode: Int, val ctrl: TriState, val shift: TriState, val alt: TriState): Relevant {
 
+        constructor(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): this(inputCode, TriState.of(ctrl), TriState.of(shift), TriState.of(alt))
+        
         override fun relevant(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): Boolean {
             return this.inputCode == inputCode
                     && this.ctrl.validate(ctrl)
