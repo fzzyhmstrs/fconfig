@@ -25,6 +25,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
+import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -59,6 +60,7 @@ internal class ConfigScreen(
 {
 
     private var parent: Screen? = null
+    private var globalInputHandler: ((key: Int, released: Boolean, type: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean) -> TriState)? = null
 
     internal lateinit var layout: ThreePartsLayoutWidget
     private lateinit var searchField: NavigableTextFieldWidget
@@ -73,6 +75,10 @@ internal class ConfigScreen(
 
     private val menuListBackground: Identifier = "textures/gui/menu_list_background.png".simpleId()
     private val inWorldMenuListBackground: Identifier = "textures/gui/inworld_menu_list_background.png".simpleId()
+
+    fun setGlobalInputHandler(handler: ((key: Int, released: Boolean, type: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean) -> TriState)?) {
+        this.globalInputHandler = handler
+    }
 
     fun setParent(screen: Screen?): ConfigScreen {
         this.parent = screen
@@ -285,6 +291,8 @@ internal class ConfigScreen(
     }
 
     override fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        val global = globalInputHandler?.invoke(button, false, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (global != null && global != TriState.DEFAULT) return global.asBoolean
         val contextTypes = ContextType.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextTypes.isEmpty()) return super.onClick(mouseX, mouseY, button)
         var bl = false
@@ -298,7 +306,15 @@ internal class ConfigScreen(
 
     }
 
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        val global = globalInputHandler?.invoke(button, true, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (global != null && global != TriState.DEFAULT) return global.asBoolean
+        return super.mouseReleased(mouseX, mouseY, button)
+    }
+
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        val global = globalInputHandler?.invoke(keyCode, false, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (global != null && global != TriState.DEFAULT) return global.asBoolean
         val contextTypes = ContextType.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextTypes.isEmpty()) return super.keyPressed(keyCode, scanCode, modifiers)
         var bl = false
@@ -318,6 +334,12 @@ internal class ConfigScreen(
                 bl2
             }
         }
+    }
+
+    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        val global = globalInputHandler?.invoke(keyCode, true, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (global != null && global != TriState.DEFAULT) return global.asBoolean
+        return super.keyReleased(keyCode, scanCode, modifiers)
     }
 
     override fun handleContext(contextType: ContextType, position: Position): Boolean {
