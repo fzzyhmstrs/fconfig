@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.withListener
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
@@ -23,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedTriState
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config_test.FC.TEST_PERMISSION_BAD
@@ -110,6 +112,8 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
 
     var myMap: ValidatedStringMap<MyTestAny> = ValidatedStringMap(mapOf("a" to MyTestAny(), "b" to MyTestAny()), ValidatedString(), ValidatedAny(MyTestAny()))
 
+    var myTriState = TriState.TRUE
+    var myTriState2 = ValidatedTriState(TriState.FALSE, ValidatedTriState.WidgetType.CYCLING)
 
     /*
     {

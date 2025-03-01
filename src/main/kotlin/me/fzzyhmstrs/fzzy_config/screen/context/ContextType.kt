@@ -2,6 +2,7 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.TriState
+import net.minecraft.client.util.InputUtil
 import net.minecraft.text.Text
 import org.lwjgl.glfw.GLFW
 import java.util.*
@@ -62,57 +63,6 @@ class ContextType private constructor(private val id: String, private val releva
          * @since 0.6.0
          */
         fun relevant(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): Boolean
-    }
-
-    /**
-     * Basic implementation of [Relevant] that uses [TriState] for processing modifier inputs. [TriState.DEFAULT] auto-passes the modifier key (either pressed or not-pressed will be considered relevant)
-     * @param inputCode Int keycode of the key to test for
-     * @param ctrl [TriState] whether ctrl modifier key is needed or not. Generally if ctrl is [TriState.TRUE], the other modifiers should be [TriState.FALSE] to avoid input relevance ambiguity
-     * @param shift [TriState] whether shift modifier key is needed or not. Generally if shift is [TriState.TRUE], the other modifiers should be [TriState.FALSE] to avoid input relevance ambiguity
-     * @param alt [TriState] whether alt modifier key is needed or not. Generally if alt is [TriState.TRUE], the other modifiers should be [TriState.FALSE] to avoid input relevance ambiguity
-     * @author fzzyhmstrs
-     * @since 0.6.5
-     */
-    data class RelevantImpl(val inputCode: Int, val ctrl: TriState, val shift: TriState, val alt: TriState): Relevant {
-
-        constructor(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): this(inputCode, TriState.of(ctrl), TriState.of(shift), TriState.of(alt))
-        
-        override fun relevant(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): Boolean {
-            return this.inputCode == inputCode
-                    && this.ctrl.validate(ctrl)
-                    && this.shift.validate(shift)
-                    && this.alt.validate(alt)
-        }
-
-        fun keybind(): Text {
-            val key: Text = TODO()
-            val c = ctrl == TriState.TRUE
-            val s = shift == TriState.TRUE
-            val a = alt == TriState.TRUE
-            return if (c) {
-                if (s) {
-                    if (a) {
-                        FcText.translatable("fc.keybind.ctrl.shift.alt", key)
-                    } else {
-                        FcText.translatable("fc.keybind.ctrl.shift", key)
-                    }
-                } else if (a) {
-                    FcText.translatable("fc.keybind.ctrl.alt", key)
-                } else {
-                    FcText.translatable("fc.keybind.ctrl", key)
-                }
-            } else if (s) {
-                if (a) {
-                    FcText.translatable("fc.keybind.shift.alt", key)
-                } else {
-                    FcText.translatable("fc.keybind.shift", key)
-                }
-            } else if (a) {
-                FcText.translatable("fc.keybind.alt", key)
-            } else {
-                FcText.translatable("fc.keybind", key)
-            }
-        }
     }
 
     companion object {
