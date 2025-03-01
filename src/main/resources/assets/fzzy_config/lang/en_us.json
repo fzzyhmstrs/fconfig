@@ -222,6 +222,8 @@
 "fc.button.goto.narration": "Go To: %s",
 "fc.button.up": "Increment",
 "fc.button.down": "Decrement",
+"fc.button.clear": "Clear Keybind",
+"fc.button.compound": "Add Keybind Option",
 "fc.button.slider.usage.focused": "Press up or down arrows to change value",
 "fc.button.restart.cancel": "Back to Title Screen",
 "fc.button.info": "Screen Usage Information",
