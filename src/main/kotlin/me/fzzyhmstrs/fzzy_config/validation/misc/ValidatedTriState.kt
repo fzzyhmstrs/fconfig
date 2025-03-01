@@ -73,9 +73,11 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
                         c.drawTex(TextureIds.ENTRY_OK_DISABLED, x + (w / 2) - 10, y + (h / 2) - 10, 20, 20)
                     }
                 )
+                t.width = 37
                 val d = SideBySideWidget(
                     TriState.DEFAULT
                 )
+                d.width = 36
                 val f = SideBySideWidget(
                     TriState.FALSE,
                     { c, x, y, w, h ->
@@ -85,6 +87,7 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
                         c.drawTex(TextureIds.ENTRY_NO_DISABLED, x + (w / 2) - 10, y + (h / 2) - 10, 20, 20)
                     }
                 )
+                f.width = 37
                 val layout = LayoutWidget(paddingW = 0, spacingW = 0).clampWidth(110)
                 layout.add("true", t, LayoutWidget.Position.ALIGN_LEFT)
                 layout.add("default", d, LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)

@@ -177,6 +177,7 @@ internal interface BasicValidationProvider {
                                 })
                         } ?: ValidatedFloat(input as Float)
                         java.lang.Boolean::class.java -> ValidatedBoolean(input as Boolean)
+                        TriState::class.java -> ValidatedTriState(TriState.DEFAULT)
                         java.awt.Color::class.java -> ValidatedColor(input as Color)
                         Identifier::class.java -> ValidatedIdentifier(input as Identifier)
                         java.lang.String::class.java -> ValidatedString(input as String)
