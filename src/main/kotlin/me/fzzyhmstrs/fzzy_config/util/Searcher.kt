@@ -16,6 +16,12 @@ import java.util.*
 
 /**
  * Searches provided inputs by name and/or description with optional search decorators
+ * - [SearchType.NORMAL] - No search decorations - searches the [Translatable.Result.name] parameters of the provided [SearchContent] list.
+ * - [SearchType.NEGATION] - '-' in front of search - excludes matches from the [Translatable.Result.name] parameters of the provided [SearchContent] list.
+ * - [SearchType.DESCRIPTION] - '$' in front of search - searches the [Translatable.Result.desc] and [Translatable.Result.prefix] parameters of the provided [SearchContent] list.
+ * - [SearchType.NEGATE_DESCRIPTION] - '-$' in front of search - excludes matches from the [Translatable.Result.desc] and [Translatable.Result.prefix] parameters of the provided [SearchContent] list.
+ * - [SearchType.EXACT] - surround search with "" - searches for an exact match from the [Translatable.Result.name] parameters of the provided [SearchContent] list.
+ * - [SearchType.EXACT] - surround search with -"" - excludes an exact match from the [Translatable.Result.name] parameters of the provided [SearchContent] list.
  * @param C subclass of [SearchContent]
  * @param searchEntries List&lt;[C]&gt; list of [SearchContent] entries to search through.
  * @author fzzyhmstrs
