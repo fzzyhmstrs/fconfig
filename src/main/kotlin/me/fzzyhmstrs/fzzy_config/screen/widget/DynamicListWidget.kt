@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.context.*
@@ -43,6 +42,23 @@ import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * A Widget for displaying a list of [Entry] that supports dynamic operations and entry features.
+ * - Entries can have different heights
+ * - Entries can be hidden and unhidden
+ * - Built-in entry text searching capabilities
+ * - Add or remove entries (as of 0.6.5)
+ * - Scrollable, navigable, narratable, and everything else expected from a vanilla list.
+ * @param client [MinecraftClient] instance
+ * @param entryBuilders List&lt;[BiFunction]&lt;DynamicListWidget, Int, [Entry]&gt;&gt; - builders for the initial entry set. Fzzy Config is built on a "lazy-as-possible" paradigm, so the entries themselves aren't passed here.
+ * @param x horizontal position of the left edge of the widget in pixels
+ * @param y vertical position of the top edge of the widget in pixels
+ * @param width width of the widget in pixels
+ * @param height height of the widget in pixels
+ * @param spec [ListSpec] widget options for customizing list visuals and behavior.
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
 class DynamicListWidget(
     client: MinecraftClient,
     entryBuilders: List<BiFunction<DynamicListWidget, Int, out Entry>>,
@@ -62,9 +78,7 @@ class DynamicListWidget(
 
     //// Widget ////
 
-    private val entries: Entries by lazy {
-        Entries(entryBuilders.mapIndexed { index, biFunction -> biFunction.apply(this, index) })
-    }
+    private var entries: Entries = Entries(entryBuilders.mapIndexed { index, biFunction -> biFunction.apply(this, index) })
 
     val verticalPadding: Int
         get() = spec.verticalPadding
@@ -87,6 +101,63 @@ class DynamicListWidget(
         entries.onResize()
     }
 
+    /**
+     * Removes an entry from this list widget if it exists in the entries list. Will remove all instances of it if more than one instance of the same object reference are included in the list.
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    fun removeEntry(entry: Entry) {
+        entries = Entries(entries.filter { it != entry })
+    }
+
+    /**
+     * Adds an entry at the end of the entries list.
+     * @param entry [BiFunction]&lt;DynamicListWidget, Int, [Entry]&gt; - builder for the entry to add. Fzzy Config is built on a "lazy-as-possible" paradigm, so the entries themselves aren't passed here.
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    fun addEntry(entry: BiFunction<DynamicListWidget, Int, out Entry>) {
+        val l = entries.toList()
+        entries = Entries(l + listOf(entry.apply(this, l.size)))
+    }
+
+    /**
+     * Adds an entry after the specified existing entry in the entries list.
+     * @param entry [BiFunction]&lt;DynamicListWidget, Int, [Entry]&gt; - builder for the entry to add. Fzzy Config is built on a "lazy-as-possible" paradigm, so the entries themselves aren't passed here.
+     * @param after [Entry] the entry to insert the new entry after
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    fun addEntryAfter(entry: BiFunction<DynamicListWidget, Int, out Entry>, after: Entry) {
+        val list = entries.toMutableList().let {
+            val i = it.indexOf(after)
+            it.add(i + 1, entry.apply(this, i + 1))
+            it
+        }
+        entries = Entries(list)
+    }
+    /**
+     * Adds an entry before the specified existing entry in the entries list.
+     * @param entry [BiFunction]&lt;DynamicListWidget, Int, [Entry]&gt; - builder for the entry to add. Fzzy Config is built on a "lazy-as-possible" paradigm, so the entries themselves aren't passed here.
+     * @param after [Entry] the entry to insert the new entry after
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    fun addEntryBefore(entry: BiFunction<DynamicListWidget, Int, out Entry>, after: Entry) {
+        val list = entries.toMutableList().let {
+            val i = it.indexOf(after)
+            it.add(i, entry.apply(this, i))
+            it
+        }
+        entries = Entries(list)
+    }
+
+    /**
+     * Searches the widgets list of [Entry] based on the [Translatable.Result] texts provided with the entries.
+     * @param searchInput String input to search for. Searching has several special characters as explained in [Searcher]
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
     fun search(searchInput: String): Int {
         return entries.search(searchInput)
     }
@@ -590,6 +661,11 @@ class DynamicListWidget(
 
     private class GroupPair(val groupEntry: Entry, var visible: Boolean)
 
+    /**
+     * Base entry class for list widget entries.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract class Entry(parentElement: DynamicListWidget, override val texts: Translatable.Result, val scope: Scope, visibility: Visibility = Visibility.VISIBLE)
         :
         CustomListWidget.Entry<DynamicListWidget>(parentElement),
