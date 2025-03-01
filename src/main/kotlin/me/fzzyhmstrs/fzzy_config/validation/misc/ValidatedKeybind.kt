@@ -15,20 +15,23 @@ import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType.Relevant
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
@@ -119,7 +122,46 @@ open class ValidatedKeybind @JvmOverloads constructor(defaultValue: FzzyKeybind,
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<FzzyKeybind>): ClickableWidget {
         return when (widgetType) {
-            WidgetType.ONE_WIDGET -> KeybindWidget()
+            WidgetType.ONE_WIDGET -> {
+                val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
+                val keybindWidget = KeybindWidget()
+                layout.add(
+                    "textbox",
+                    keybindWidget,
+                    LayoutWidget.Position.LEFT,
+                    LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
+                layout.add(
+                    "clear",
+                    CustomButtonWidget.builder("fc.button.clear".translate()) {
+                        keybindWidget.compounding = false
+                        keybindWidget.resetting = false
+                        this.accept(FzzyKeybindUnbound) }
+                        .noMessage()
+                        .size(11, 10)
+                        .active(this.storedValue != FzzyKeybindUnbound)
+                        .tooltip("fc.button.clear".translate())
+                        .textures(TextureIds.KEYBIND_CLEAR, TextureIds.KEYBIND_CLEAR_DISABLED, TextureIds.KEYBIND_CLEAR_HIGHLIGHTED)
+                        .build(),
+                    LayoutWidget.Position.RIGHT,
+                    LayoutWidget.Position.ALIGN_RIGHT,
+                    LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                layout.add(
+                    "compound",
+                    CustomButtonWidget.builder("fc.button.compound".translate()) {
+                        keybindWidget.compounding = false
+                        keybindWidget.resetting = false
+                        this.accept(FzzyKeybindUnbound) }
+                        .noMessage()
+                        .size(11, 10)
+                        .active(this.storedValue != FzzyKeybindUnbound)
+                        .tooltip("fc.button.compound".translate())
+                        .textures(TextureIds.KEYBIND_CLEAR, TextureIds.KEYBIND_CLEAR_DISABLED, TextureIds.KEYBIND_CLEAR_HIGHLIGHTED)
+                        .build(),
+                    LayoutWidget.Position.BELOW,
+                    LayoutWidget.Position.ALIGN_RIGHT,
+                    LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
+                LayoutClickableWidget(0, 0, 110, 20, layout)
+            }
             WidgetType.STACKED -> {
                 KeybindWidget()
             }
@@ -186,15 +228,20 @@ open class ValidatedKeybind @JvmOverloads constructor(defaultValue: FzzyKeybind,
      */
 
     //client
-    private inner class KeybindWidget: CustomPressableWidget(0, 0, 110, 20, this@ValidatedKeybind.storedValue.keybind()) {
+    private inner class KeybindWidget: CustomPressableWidget(0, 0, 99, 20, this@ValidatedKeybind.storedValue.keybind()) {
 
         override val textures: TextureProvider = TextureSet("widget/text_field".simpleId(), "widget/text_field".simpleId(), "widget/text_field_highlighted".simpleId())
 
-        private var resetting = false
+        var resetting = false
+        var compounding = false
 
         override fun getMessage(): Text {
             return if (resetting) {
-                FcText.translatable("fc.keybind.selecting", super.getMessage().copy().formatted(Formatting.UNDERLINE))
+                if (compounding) {
+                    FcText.translatable("fc.keybind.or", super.getMessage(), FcText.translatable("fc.keybind.selecting", FcText.literal("  ").formatted(Formatting.UNDERLINE)))
+                } else {
+                    FcText.translatable("fc.keybind.selecting", super.getMessage().copy().formatted(Formatting.UNDERLINE))
+                }
             } else {
                 this@ValidatedKeybind.storedValue.keybind()
             }
@@ -204,25 +251,42 @@ open class ValidatedKeybind @JvmOverloads constructor(defaultValue: FzzyKeybind,
             super.setFocused(focused)
             if (!focused) {
                 if (resetting) {
-                    this@ValidatedKeybind.accept(FzzyKeybindUnbound)
+                    if (!compounding) {
+                        this@ValidatedKeybind.accept(FzzyKeybindUnbound)
+                    }
                 }
                 resetting = false
+                compounding = false
                 MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.setGlobalInputHandler(null)
             }
         }
 
         override fun onPress() {
             resetting = true
+            if (Screen.hasShiftDown() && this@ValidatedKeybind.widgetType == WidgetType.ONE_WIDGET && this@ValidatedKeybind.storedValue != FzzyKeybindUnbound) {
+                compounding = true
+            }
+            setupHandler()
+        }
+
+        fun setupHandler() {
             MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.setGlobalInputHandler { key, released, _, ctrl, shift, alt ->
                 if (!released) {
                     return@setGlobalInputHandler TriState.DEFAULT
                 }
                 if (key == GLFW.GLFW_KEY_ESCAPE && !ctrl && !shift && !alt) {
-                    this@ValidatedKeybind.accept(FzzyKeybindUnbound)
+                    if (!compounding) {
+                        this@ValidatedKeybind.accept(FzzyKeybindUnbound)
+                    }
                 } else {
-                    this@ValidatedKeybind.accept(FzzyKeybindSimple(key, ctrl, shift, alt))
+                    if (compounding) {
+                        this@ValidatedKeybind.accept(this@ValidatedKeybind.get().compoundWith(FzzyKeybindSimple(key, ctrl, shift, alt)))
+                    } else {
+                        this@ValidatedKeybind.accept(FzzyKeybindSimple(key, ctrl, shift, alt))
+                    }
                 }
                 resetting = false
+                compounding = false
                 MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.setGlobalInputHandler(null)
                 TriState.TRUE
             }
