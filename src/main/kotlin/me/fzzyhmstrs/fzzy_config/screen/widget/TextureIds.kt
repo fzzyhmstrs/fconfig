@@ -197,18 +197,36 @@ object TextureIds {
     /** up arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_UP = "widget/scroll/increment_up".fcId()
 
-    /** highlighted up arrow inside standard MC button texturing. 11x10 */
-    val INCREMENT_UP_HIGHLIGHTED = "widget/scroll/increment_up_highlighted".fcId()
-
     /** greyed-out up arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_UP_DISABLED = "widget/scroll/increment_up_disabled".fcId()
+
+    /** highlighted up arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_UP_HIGHLIGHTED = "widget/scroll/increment_up_highlighted".fcId()
 
     /** down arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_DOWN = "widget/scroll/increment_down".fcId()
 
+    /** greyed-out down arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_DOWN_DISABLED = "widget/scroll/increment_down_disabled".fcId()
+
     /** highlighted down arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_DOWN_HIGHLIGHTED = "widget/scroll/increment_down_highlighted".fcId()
 
-    /** greyed-out down arrow inside standard MC button texturing. 11x10 */
-    val INCREMENT_DOWN_DISABLED = "widget/scroll/increment_down_disabled".fcId()
+    /** '+' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_ADD = "widget/validation/keybind/keybind_add".fcId()
+
+    /** greyed-out '+' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_ADD_DISABLED = "widget/validation/keybind/keybind_add_disabled".fcId()
+
+    /** highlighted '+' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_ADD_HIGHLIGHTED = "widget/validation/keybind/keybind_add_highlighted".fcId()
+
+    /** 'X' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_CLEAR = "widget/validation/keybind/keybind_clear".fcId()
+
+    /** greyed-out 'X' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_CLEAR_DISABLED = "widget/validation/keybind/keybind_clear_disabled".fcId()
+
+    /** highlighted 'X' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_CLEAR_HIGHLIGHTED = "widget/validation/keybind/keybind_clear_highlighted".fcId()
 }

@@ -20,7 +20,6 @@ import net.minecraft.text.Text
  */
 class FzzyKeybindCompound(val keybinds: List<FzzyKeybind>): FzzyKeybind {
 
-
     override fun relevant(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): Boolean {
         return keybinds.any { it.relevant(inputCode, ctrl, shift, alt) }
     }
