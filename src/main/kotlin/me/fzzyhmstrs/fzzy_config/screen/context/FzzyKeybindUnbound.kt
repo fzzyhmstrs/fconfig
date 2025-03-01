@@ -27,4 +27,11 @@ data object FzzyKeybindUnbound: FzzyKeybind {
         return this
     }
 
+    override fun containedKeybinds(): List<FzzyKeybind> {
+        return listOf()
+    }
+
+    override fun compoundWith(other: FzzyKeybind): FzzyKeybind {
+        return other
+    }
 }
