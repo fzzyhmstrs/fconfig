@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.screen.context.ContextType.Relevant
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.util.InputUtil
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 
 /**
@@ -25,9 +26,9 @@ import net.minecraft.text.Text
  * @author fzzyhmstrs
  * @since 0.6.5
  */
-data class FzzyKeybindSimple(val inputCode: Int, val ctrl: TriState, val shift: TriState, val alt: TriState): FzzyKeybind {
+data class FzzyKeybindSimple(val inputCode: Int, val type: ContextInput, val ctrl: TriState, val shift: TriState, val alt: TriState): FzzyKeybind {
 
-    constructor(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): this(inputCode, TriState.of(ctrl), TriState.of(shift), TriState.of(alt))
+    constructor(inputCode: Int, type: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean): this(inputCode, type, TriState.of(ctrl), TriState.of(shift), TriState.of(alt))
 
     override fun relevant(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): Boolean {
         return this.inputCode == inputCode
@@ -36,8 +37,11 @@ data class FzzyKeybindSimple(val inputCode: Int, val ctrl: TriState, val shift: 
                 && this.alt.validate(alt)
     }
 
-    override fun keybind(): Text {
-        val key: Text = InputUtil.fromKeyCode(inputCode, -1).localizedText
+    override fun keybind(): MutableText {
+        val key: Text = if (type == ContextInput.KEYBOARD)
+            InputUtil.fromKeyCode(inputCode, -1).localizedText
+        else
+            InputUtil.Type.MOUSE.createFromCode(inputCode).localizedText
         val c = ctrl == TriState.TRUE
         val s = shift == TriState.TRUE
         val a = alt == TriState.TRUE
@@ -62,7 +66,7 @@ data class FzzyKeybindSimple(val inputCode: Int, val ctrl: TriState, val shift: 
         } else if (a) {
             FcText.translatable("fc.keybind.alt", key)
         } else {
-            FcText.translatable("fc.keybind", key)
+            key.copy()
         }
     }
 

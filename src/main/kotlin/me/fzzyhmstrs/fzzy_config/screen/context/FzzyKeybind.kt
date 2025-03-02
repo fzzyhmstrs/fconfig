@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.context
 
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType.Relevant
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 
 /**
@@ -33,7 +34,7 @@ sealed interface FzzyKeybind: Relevant {
      * @author fzzyhmstrs
      * @since 0.6.5
      */
-    fun keybind(): Text
+    fun keybind(): MutableText
 
     /**
      * Copies the current keybind object where possible.
@@ -67,5 +68,28 @@ sealed interface FzzyKeybind: Relevant {
             1 -> list[0]
             else -> FzzyKeybindCompound(list)
         }
+    }
+
+    class Builder {
+        private val keybinds: MutableList<FzzyKeybind> = mutableListOf()
+
+        fun keyboard(keyCode: Int, ctrl: Boolean = false, shift: Boolean = false, alt: Boolean = false): Builder {
+            keybinds.add(FzzyKeybindSimple(keyCode, ContextInput.KEYBOARD, ctrl, shift, alt))
+            return this
+        }
+
+        fun mouse(button: Int, ctrl: Boolean = false, shift: Boolean = false, alt: Boolean = false): Builder {
+            keybinds.add(FzzyKeybindSimple(button, ContextInput.MOUSE, ctrl, shift, alt))
+            return this
+        }
+
+        fun build(): FzzyKeybind {
+            return when (keybinds.size) {
+                0 -> FzzyKeybindUnbound
+                1 -> keybinds[0]
+                else -> FzzyKeybindCompound(keybinds)
+            }
+        }
+
     }
 }

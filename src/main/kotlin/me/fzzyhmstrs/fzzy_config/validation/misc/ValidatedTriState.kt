@@ -206,7 +206,6 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
         override fun onPress() {
             this@ValidatedTriState.accept(state)
         }
-
     }
 
     //client
