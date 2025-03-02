@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config_test.test
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
+import me.fzzyhmstrs.fzzy_config.screen.context.ContextInput
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
 import me.fzzyhmstrs.fzzy_config.util.TriState
@@ -21,12 +23,10 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedTriState
+import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
+import me.fzzyhmstrs.fzzy_config_test.FC
 import me.fzzyhmstrs.fzzy_config_test.FC.TEST_PERMISSION_BAD
 import net.fabricmc.loader.api.FabricLoader
 import net.minecraft.client.MinecraftClient
@@ -39,6 +39,7 @@ import net.minecraft.registry.RegistryKeys
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.HoverEvent
 import net.minecraft.util.Identifier
+import org.lwjgl.glfw.GLFW
 
 @RequiresRestart
 class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
@@ -108,6 +109,19 @@ class TestConfigImpl4: Config(Identifier("fzzy_config_test","test_config4")) {
 
     var myTriState = TriState.TRUE
     var myTriState2 = ValidatedTriState(TriState.FALSE, ValidatedTriState.WidgetType.CYCLING)
+
+    var myKeybind = ValidatedKeybind(GLFW.GLFW_KEY_BACKSPACE, ContextInput.KEYBOARD, ctrl = false, shift = true, alt = false)
+
+    var keybindButton = ConfigAction.Builder().title("Test Keybind".lit()).decoration(TextureDeco.DECO_QUESTION).build {
+        FC.LOGGER.warn(
+            "Testing Shift Backspace combination: {}",
+            myKeybind.relevant(GLFW.GLFW_KEY_BACKSPACE, ctrl = false, shift = true, alt = false)
+        )
+        FC.LOGGER.warn(
+            "Testing Tab key: {}",
+            myKeybind.relevant(GLFW.GLFW_KEY_TAB, ctrl = false, shift = false, alt = false)
+        )
+    }
 
     /*
     {
