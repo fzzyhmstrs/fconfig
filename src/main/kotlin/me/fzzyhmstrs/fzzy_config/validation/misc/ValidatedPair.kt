@@ -189,10 +189,10 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
     }
 
     /**
-     * creates a deep copy of this ValidatedBoolean
-     * return ValidatedBoolean wrapping the current boolean value
+     * creates a deep copy of this ValidatedPair
+     * @return ValidatedPair wrapping each half also copied by their respective [copyValue] methods
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.6.0
      */
     override fun instanceEntry(): ValidatedPair<A, B> {
         return ValidatedPair(Tuple(leftHandler.copyValue(storedValue.left), rightHandler.copyValue(storedValue.right)), leftHandler, rightHandler, layoutStyle)
