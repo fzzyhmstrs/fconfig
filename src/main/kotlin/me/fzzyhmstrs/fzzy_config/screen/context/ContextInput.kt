@@ -10,22 +10,39 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.context
 
+import com.mojang.serialization.Codec
+import net.minecraft.util.StringIdentifiable
+import net.peanuuutz.tomlkt.TomlElement
+import net.peanuuutz.tomlkt.TomlLiteral
+
 /**
  * Defines the type of input that triggered a context action.
  * @author fzzyhmstrs
- * @since 0.6.0
+ * @since 0.6.0, stringIdentifiable since 0.6.5
  */
-enum class ContextInput {
+enum class ContextInput(private val id: String): StringIdentifiable {
     /**
      * Context event triggered with keyboard input
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    KEYBOARD,
+    KEYBOARD("keyboard"),
     /**
      * Context event triggered with mouse input
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    MOUSE
+    MOUSE("mouse");
+
+    override fun asString(): String {
+        return id
+    }
+
+    companion object {
+        val CODEC: Codec<ContextInput> = StringIdentifiable.createCodec { ContextInput.entries.toTypedArray() }
+
+        fun fallback(): TomlElement {
+            return TomlLiteral(KEYBOARD.id)
+        }
+    }
 }

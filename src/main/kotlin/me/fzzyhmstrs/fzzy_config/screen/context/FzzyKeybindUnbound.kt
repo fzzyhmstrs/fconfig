@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.context
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 
 data object FzzyKeybindUnbound: FzzyKeybind {
@@ -19,7 +20,7 @@ data object FzzyKeybindUnbound: FzzyKeybind {
         return false
     }
 
-    override fun keybind(): Text {
+    override fun keybind(): MutableText {
         return FcText.translatable("key.keyboard.unknown")
     }
 

@@ -18,12 +18,19 @@
 * New widget type `SCROLLABLE` for `ValidatedChoiceList` and `ValidatedChoice` which opens a scrollable and searchable widget list
 * `ValidatedChoice` now includes the `INLINE` widget type previously only available on the list version
 * `ValidatedChoiceList` now has its own decorator, distinguishing it from a normal list 
+* Added new `TriState` utility enum and corresponding `ValidatedTriState` validation for configs. Like most tri-states, has TRUE, FALSE, and DEFAULT choices, and two different widget options for selecting between them.
+* Added a `FzzyKeybind` system that builds on the `ContextType` system introduced in 0.6.0.
+  * Define basic or compound (multiple choice) keybinds with or without modifiers (ctrl, shift, alt)
+  * `ValidatedKeybind` validation added for configurable keybind handling.
+  * Keybinds still need to be handled by other Fzzy Config context handling methods, this is a structured method for setting up and configuring context types.
+  * For a robust example, see Fzzy Configs built-in keybind config and `ConfigScreen` context handler that is used to handle GUI inputs.
 
 ### Changes
 * __Registrar System__: `RegistrySupplier` now implements `RegistryEntry` directly, as well as passing its reference entry. This includes a breaking experimental change, `getKey` has changed to `getRegistryKey`
 * Improved the narration of `ValidatedChoice` and `ValidatedChoiceList`
 * Improved the memory footprint of `DynamicListWidget`, deferring several allocations until needed
 * Shortened in-GUI changelogs related to Validated Object changes.
+* In-GUI usage information popup updated with a list widget and configurable keybind entries.
 * `ConfigScreenManager` now caches config GUI templates incrementally, instead of front-loading all screen templates at once. This has some side effects, namely that each screen now has a separate Update Manager, so restoring defaults, reverting changes, etc. is now sectioned off per-config instead of global to the namespace. The "Root" screen update manager can see any loaded children managers, so changes can be managed from the root screen into any child screens that have been loaded and modified.
 
 
@@ -31,4 +38,6 @@
 * Fixed done button on config screens saying "back" when they should say "done" in certain circumstances
 * Fixed `ValidatedAny` popup saying "Revert Changes" for both the revert and restore defaults button
 * Certain validation types now properly determine their defaultness and changed state, namely Validated Objects.
-* ValidatedCondition now properly considers its conditions when determining default and changed states. A Validated Condition that has failed conditions will always be considered "default"
+* `ValidatedCondition` now properly considers its conditions when determining default and changed states. A Validated Condition that has failed conditions will always be considered "default"
+* Fixed various typos and other content issues with some KDoc entries
+* `ConfigScreenNarrator` now properly strips out formatting codes before narrating the text content (this also affects the vanilla screen narrator)
