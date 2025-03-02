@@ -17,6 +17,7 @@ import net.minecraft.client.gui.screen.narration.Narration
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.text.Text
+import net.minecraft.text.TextVisitFactory
 import java.util.function.Consumer
 
 internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
@@ -127,13 +128,17 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
                 .setNarration(this@ConfigScreenNarrator.currentMessageIndex, narration)
         }
 
+        override fun put(part: NarrationPart, text: Text) {
+            this.put(part, Narration.string(TextVisitFactory.removeFormattingCodes(text)))
+        }
+
         override fun put(part: NarrationPart, vararg texts: Text) {
-            val collector = FcText.empty()
+            val collector = StringBuilder()
             for (text in texts) {
-                collector.append(text)
-                collector.append(" ".lit())
+                collector.append(TextVisitFactory.removeFormattingCodes(text))
+                collector.append(" ")
             }
-            put(part, Narration.text(collector))
+            put(part, Narration.string(collector.toString()))
         }
 
         override fun nextMessage(): NarrationMessageBuilder {
