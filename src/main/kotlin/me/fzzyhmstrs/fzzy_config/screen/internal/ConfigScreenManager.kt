@@ -341,7 +341,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     basicValidation2.setEntryKey(new)
                     entryCreator = basicValidation2
                     basicValidation2.prepare(new, groups, annotations, globalAnnotations)
-                    ConfigApiImplClient.prepare(thing, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
+                    ConfigApiImplClient.prepare(basicValidation2, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
                 } else {
                     entryCreator = null
                     ConfigApiImplClient.PrepareResult.FAIL

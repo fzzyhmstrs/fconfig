@@ -165,7 +165,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
 
     /**
      * creates a deep copy of this ValidatedChoice (as deep as possible)
-     * return ValidatedChoice wrapping a copy of the currently stored choice, allowable choices, and handler
+     * return ValidatedChoice wrapping a copy of the currently stored choice, allowable choices, handler, translation providers, and widget type
      * @author fzzyhmstrs
      * @since 0.2.0
      */

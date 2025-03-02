@@ -106,7 +106,8 @@
 "fc.keybind.alt": "Alt %s",
 "fc.keybind.or": "%1$s §oor§r %2$s",
 "fc.keybind.narrate": "%s key bind",
-"fc.keybind.selecting": "§e>§r %s §e<§r",
+"fc.keybind.resetting": "§e>§r %s §e<§r",
+"fc.keybind.resetting.narrate": "Select new key bind. Currently: %s",
 
 "test.walkable.testChildDave.testChildBool": "Test Child Dave's Boolean",
 "test.walkable.testChildDave.testChildBool.desc": "Dave's favorite boolean. Please treat it well.",

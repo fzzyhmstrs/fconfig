@@ -182,9 +182,9 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
 
     /**
      * creates a deep copy of this ValidatedChoice (as deep as possible)
-     * return ValidatedChoice wrapping a copy of the currently stored choice, allowable choices, and handler
+     * return ValidatedChoiceList wrapping a copy of the currently stored choices, allowable choices, handler, translation providers, and widget type
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.6.3
      */
     override fun instanceEntry(): ValidatedChoiceList<T> {
         @Suppress("DEPRECATION")
@@ -204,13 +204,13 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
 
     /**
      * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
-     * @param input [T] input to be copied
+     * @param input List&lt;[T]&gt; input to be copied
      * @return copied output
      * @author fzzyhmstrs
      * @since 0.6.0
      */
     override fun copyValue(input: List<T>): List<T> {
-        return input.toList()
+        return input.map { handler.copyValue(it) }
     }
 
     @Internal
