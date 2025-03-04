@@ -1,5 +1,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.context
 
+import me.fzzyhmstrs.fzzy_config.impl.config.KeybindsConfig
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.util.InputUtil
@@ -81,6 +82,7 @@ class ContextType private constructor(private val id: String, private val releva
          * @author fzzyhmstrs
          * @since 0.6.0
          */
+        @JvmStatic
         fun create(id: String, inputType: ContextInput, relevantCheck: Relevant): ContextType {
             return create(id, inputType, true, relevantCheck)
         }
@@ -95,6 +97,7 @@ class ContextType private constructor(private val id: String, private val releva
          * @author fzzyhmstrs
          * @since 0.6.0
          */
+        @JvmStatic
         fun create(id: String, inputType: ContextInput, addToContextList: Boolean, relevantCheck: Relevant): ContextType {
             if (ids.contains(id))
                 throw IllegalStateException("Duplicate context types not allowed; $id already created for input $inputType")
@@ -114,138 +117,121 @@ class ContextType private constructor(private val id: String, private val releva
             return ct
         }
 
-        val PAGE_UP = create("page_up", ContextInput.KEYBOARD) { inputCode: Int, _, _, _ ->
-            inputCode == GLFW.GLFW_KEY_PAGE_UP
-        }
+        @JvmStatic
+        val PAGE_UP = create("page_up", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.pageUp)
 
-        val PAGE_DOWN = create("page_down", ContextInput.KEYBOARD) { inputCode: Int, _, _, _ ->
-            inputCode == GLFW.GLFW_KEY_PAGE_DOWN
-        }
+        @JvmStatic
+        val PAGE_DOWN = create("page_down", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.pageDown)
 
-        val HOME = create("home", ContextInput.KEYBOARD) { inputCode: Int, _, _, _ ->
-            inputCode == GLFW.GLFW_KEY_HOME
-        }
+        @JvmStatic
+        val HOME = create("home", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.home)
 
-        val END = create("end", ContextInput.KEYBOARD) { inputCode: Int, _, _, _ ->
-            inputCode == GLFW.GLFW_KEY_END
-        }
+        @JvmStatic
+        val END = create("end", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.end)
 
         /**
          * Ctrl-C, should move the context object to a copy buffer in some way
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val COPY = create("copy", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
-            inputCode == GLFW.GLFW_KEY_C && ctrl && !shift && !alt
-        }
+        @JvmStatic
+        val COPY = create("copy", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.copy)
 
         /**
          * Ctrl-V, should take something from a copy buffer of some kind and move it into the context object
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val PASTE = create("paste", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
-            inputCode == GLFW.GLFW_KEY_V && ctrl && !shift && !alt
-        }
+        @JvmStatic
+        val PASTE = create("paste", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.paste)
 
         /**
          * Ctrl-X should move the context object to a copy buffer in some way and clear the object
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val CUT = create("cut", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
-            inputCode == GLFW.GLFW_KEY_X && ctrl && !shift && !alt
-        }
+        @JvmStatic
+        val CUT = create("cut", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.cut)
 
         /**
          * Ctrl-F, should open or focus a search box in some way
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val FIND = create("find", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
-            ((inputCode == GLFW.GLFW_KEY_F && ctrl && !shift && !alt) || inputCode == GLFW.GLFW_KEY_F3)
-        }
+        @JvmStatic
+        val FIND = create("find", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.find)
 
         /**
          * Ctrl-S, should save context object state
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val SAVE = create("save", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
-            inputCode == GLFW.GLFW_KEY_S && ctrl && !shift && !alt
-        }
+        @JvmStatic
+        val SAVE = create("save", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.save)
 
         /**
          * Ctrl-Z, should revert the last action taken (total across the whole context object), as opposed to revert, which should focus on the scoped context object only.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val UNDO = create("undo", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
-            inputCode == GLFW.GLFW_KEY_Z && ctrl && !shift && !alt
-        }
+        @JvmStatic
+        val UNDO = create("undo", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.undo)
 
         /**
          * Shift-F10 or Menu key, should open a context menu (right click menu)
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val CONTEXT_KEYBOARD = create("keyboard_context_menu", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
-            ((inputCode == GLFW.GLFW_KEY_F10 && !ctrl && shift && !alt) || inputCode == GLFW.GLFW_KEY_MENU)
-        }
+        @JvmStatic
+        val CONTEXT_KEYBOARD = create("keyboard_context_menu", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.contextKeyboard)
 
         /**
          * Right click, should open a context menu (right click menu)
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val CONTEXT_MOUSE = create("mouse_context_menu", ContextInput.MOUSE) { inputCode: Int, _, _, _ ->
-            inputCode == GLFW.GLFW_MOUSE_BUTTON_RIGHT
-        }
+        @JvmStatic
+        val CONTEXT_MOUSE = create("mouse_context_menu", ContextInput.MOUSE, KeybindsConfig.INSTANCE.contextMouse)
 
         /**
          * Enter, should, well, act on something.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val ACT = create("act", ContextInput.KEYBOARD) { inputCode: Int, _: Boolean, _: Boolean, _: Boolean ->
-            inputCode == GLFW.GLFW_KEY_ENTER || inputCode == GLFW.GLFW_KEY_KP_ENTER
-        }
+        @JvmStatic
+        val ACT = create("act", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.act)
 
         /**
          * Backspace, should back out to a previous context (such as backing out a screen)
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val BACK = create("back", ContextInput.KEYBOARD) { inputCode: Int, _: Boolean, _: Boolean, _: Boolean ->
-            inputCode == GLFW.GLFW_KEY_BACKSPACE
-        }
+        @JvmStatic
+        val BACK = create("back", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.back)
 
         /**
          * Ctrl-E, should open a navigation menu, as opposed to find which opens text-based finding this should open a "goto" style menu.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val SEARCH = create("search", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
-            ((inputCode == GLFW.GLFW_KEY_E && ctrl && !shift && !alt))
-        }
+        @JvmStatic
+        val SEARCH = create("search", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.search)
 
         /**
          * F1, should open information window/popup/text etc.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        val INFO = create("info", ContextInput.KEYBOARD) { inputCode: Int, _: Boolean, _: Boolean, _: Boolean ->
-            inputCode == GLFW.GLFW_KEY_F1
-        }
+        @JvmStatic
+        val INFO = create("info", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.info)
 
         /**
          * Fully exit the current open screen, including any popups, nested screens, etc.
          * @author fzzyhmstrs
          * @since 0.6.5
          */
-        val FULL_EXIT = create("full_exit", ContextInput.KEYBOARD) { inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean ->
-            inputCode == GLFW.GLFW_KEY_ESCAPE && !ctrl && shift && !alt
-        }
+        @JvmStatic
+        val FULL_EXIT = create("full_exit", ContextInput.KEYBOARD, KeybindsConfig.INSTANCE.fullExit)
 
 
         //////// map keys only /////////////
@@ -255,6 +241,7 @@ class ContextType private constructor(private val id: String, private val releva
          * @author fzzyhmstrs
          * @since 0.6.0
          */
+        @JvmStatic
         val FORWARD = create("forward", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
 
         /**
@@ -262,6 +249,7 @@ class ContextType private constructor(private val id: String, private val releva
          * @author fzzyhmstrs
          * @since 0.6.0
          */
+        @JvmStatic
         val REVERT = create("revert", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
 
         /**
@@ -269,6 +257,7 @@ class ContextType private constructor(private val id: String, private val releva
          * @author fzzyhmstrs
          * @since 0.6.0
          */
+        @JvmStatic
         val RESTORE = create("restore", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
 
         /**
@@ -276,6 +265,7 @@ class ContextType private constructor(private val id: String, private val releva
          * @author fzzyhmstrs
          * @since 0.6.0
          */
+        @JvmStatic
         val CLEAR = create("clear", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
 
         /**
@@ -283,6 +273,7 @@ class ContextType private constructor(private val id: String, private val releva
          * @author fzzyhmstrs
          * @since 0.6.3
          */
+        @JvmStatic
         val SELECT_ALL = create("select_all", ContextInput.MOUSE, false) { _: Int, _: Boolean, _: Boolean, _: Boolean -> false }
 
 

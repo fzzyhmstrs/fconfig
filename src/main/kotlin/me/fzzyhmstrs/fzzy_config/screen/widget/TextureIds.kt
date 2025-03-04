@@ -93,6 +93,20 @@ object TextureIds {
 
     /////////////////////////
 
+    /** a gray button with a red arrow looping up to point backwards */
+    val RESTORE = "widget/action/restore".fcId()
+
+    /** same as above but with the "inactive" button texture */
+    val RESTORE_INACTIVE = "widget/action/restore_inactive".fcId()
+
+    /** same as above but with a white highlighted border */
+    val RESTORE_HIGHLIGHTED = "widget/action/restore_highlighted".fcId()
+
+    val RESTORE_SET = TextureSet(RESTORE, RESTORE_INACTIVE, RESTORE_HIGHLIGHTED)
+    val RESTORE_LANG = "fc.button.restore".translate()
+
+    /////////////////////////
+
     /** a gray button texture with the fzzy config logo in the middle */
     val CONFIG = "widget/action/config".fcId()
 

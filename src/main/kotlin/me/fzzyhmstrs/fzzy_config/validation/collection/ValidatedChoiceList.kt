@@ -356,9 +356,9 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         var listWidth = buttonWidth
         val spec = if (entries.size > 6) {
             listWidth += 10
-            DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding = 0)
+            DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding = 0, listNarrationKey = "fc.narrator.position.entry")
         } else {
-            DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = -6, verticalPadding = 0)
+            DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = -6, verticalPadding = 0, listNarrationKey = "fc.narrator.position.entry")
         }
         val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, listWidth, 120, spec)
 

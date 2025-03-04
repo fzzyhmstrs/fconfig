@@ -118,17 +118,17 @@ internal object ConfigApiImpl {
 
     ///////////////////// Registration ///////////////////////////////////////////////////
 
-    internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType): T {
+    internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType, noGui: Boolean = false): T {
         return when(registerType) {
-            RegisterType.BOTH -> registerBoth(config, configClass)
+            RegisterType.BOTH -> registerBoth(config, configClass, noGui)
             RegisterType.SERVER -> registerSynced(config)
-            RegisterType.CLIENT -> registerClient(config, configClass)
+            RegisterType.CLIENT -> registerClient(config, configClass, noGui)
         }
     }
 
-    private fun <T: Config> registerBoth(config: T, configClass: () -> T): T {
+    private fun <T: Config> registerBoth(config: T, configClass: () -> T, noGui: Boolean): T {
         SyncedConfigRegistry.registerConfig(config)
-        return registerClient(config, configClass)
+        return registerClient(config, configClass, noGui)
     }
 
     private fun <T: Config> registerSynced(config: T): T {
@@ -136,29 +136,29 @@ internal object ConfigApiImpl {
         return config
     }
 
-    private fun <T: Config> registerClient(config: T, configClass: () -> T): T {
+    private fun <T: Config> registerClient(config: T, configClass: () -> T, noGui: Boolean): T {
         if(isClient)
-            ConfigApiImplClient.registerConfig(config, configClass())
+            ConfigApiImplClient.registerConfig(config, configClass(), noGui)
         return config
     }
 
-    internal fun <T: Config> registerAndLoadConfig(configClass: () -> T, registerType: RegisterType): T {
+    internal fun <T: Config> registerAndLoadConfig(configClass: () -> T, registerType: RegisterType, noGui: Boolean = false): T {
         return when(registerType) {
-            RegisterType.BOTH -> registerAndLoadBoth(configClass)
+            RegisterType.BOTH -> registerAndLoadBoth(configClass, noGui)
             RegisterType.SERVER -> registerAndLoadSynced(configClass)
-            RegisterType.CLIENT -> registerAndLoadClient(configClass)
+            RegisterType.CLIENT -> registerAndLoadClient(configClass, noGui)
         }
     }
-    private fun <T: Config> registerAndLoadBoth(configClass: () -> T): T {
-        return registerBoth(readOrCreateAndValidate(configClass), configClass)
+    private fun <T: Config> registerAndLoadBoth(configClass: () -> T, noGui: Boolean): T {
+        return registerBoth(readOrCreateAndValidate(configClass), configClass, noGui)
     }
 
     private fun <T: Config> registerAndLoadSynced(configClass: () -> T): T {
         return registerSynced(readOrCreateAndValidate(configClass))
     }
 
-    private fun <T: Config> registerAndLoadClient(configClass: () -> T): T {
-        return registerClient(readOrCreateAndValidate(configClass), configClass)
+    private fun <T: Config> registerAndLoadClient(configClass: () -> T, noGui: Boolean): T {
+        return registerClient(readOrCreateAndValidate(configClass), configClass, noGui)
     }
 
     internal fun isConfigLoaded(scope: String, type: RegisterType): Boolean {
