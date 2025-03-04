@@ -182,6 +182,7 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
     }
 
     override fun setFocused(focused: Element?) {
+        if (focusedElement === focused) return
         this.focusedElement?.isFocused = false
         focused?.isFocused = true
         this.focusedElement = focused

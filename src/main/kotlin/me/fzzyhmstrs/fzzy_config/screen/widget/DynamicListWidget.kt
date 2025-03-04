@@ -254,13 +254,14 @@ class DynamicListWidget(
     override var lastSelected: Element? = null
 
     override fun pushLast() {
+        focused?.nullCast<LastSelectable>()?.pushLast()
         lastSelected = focused
-        lastSelected?.nullCast<LastSelectable>()?.pushLast()
+
     }
 
     override fun popLast() {
-        (lastSelected as? Entry)?.let { focused = it }
         lastSelected?.nullCast<LastSelectable>()?.popLast()
+        (lastSelected as? Entry)?.let { focused = it }
     }
 
     override fun resetHover(mouseX: Double, mouseY: Double) {
@@ -780,17 +781,16 @@ class DynamicListWidget(
         }
 
         override fun pushLast() {
+            focused?.nullCast<LastSelectable>()?.pushLast()
             lastSelected = focused
-            lastSelected?.nullCast<LastSelectable>()?.pushLast()
         }
 
         override fun popLast() {
+            lastSelected?.nullCast<LastSelectable>()?.popLast()
             lastSelected?.let { focused = it }
             if (lastSelected == null) {
                 focused = selectableChildren().firstOrNull()
-                focused?.isFocused = true
             }
-            lastSelected?.nullCast<LastSelectable>()?.popLast()
         }
 
         override fun isFocused(): Boolean {
@@ -809,6 +809,7 @@ class DynamicListWidget(
         }
 
         override fun setFocused(focused: Element?) {
+            if (focusedElement === focused) return
             this.focusedElement?.isFocused = false
             focused?.isFocused = true
             this.focusedElement = focused
@@ -1171,7 +1172,13 @@ class DynamicListWidget(
 
     /**
      * Feature configuration spec for a Dynamic List
-     * @param
+     * @param leftPadding Default 16; the horizontal space in pixels between the left edge of the list widget and the left edge of the entry rows
+     * @param rightPadding Default 10; the horizontal spacing in pixels between the right edge of the entry rows and the left edge of the scroll bar. The scroll bar typically takes up 6 pixels of width, hence the delta between this and [leftPadding]
+     * @param verticalPadding Default 4; the vertical spacing in pixels between list entries.
+     * @param verticalFirstPadding Default whatever [verticalPadding] is; the vertical spacing in pixels between the top of the left widget and the top of the first entry row, when the list is fully scrolled to the top of the list.
+     * @param verticalLastPadding Default whatever [verticalFirstPadding] is; the vertical spacing in pixels between the bottom of the last list entry and the bottom of the widget, then the list is fully scrolled down, if applicable. If the set of entries is shorter than the list widget height, this won't apply.
+     * @param hideScrollBar Default false; whether the scroll bar should be hidden if it's not needed (the entries height is shorter than the widget height).
+     * @param listNarrationKey Default "fc.narrator.position.config"; the translation key of the narration used when describing the position of the entry in the list. The default key translates to "Setting X of Y".
      * @author fzzyhmstrs
      * @since 0.6.0
      */
@@ -1184,19 +1191,24 @@ class DynamicListWidget(
                         val listNarrationKey: String = "fc.narrator.position.config")
 
     /**
-     *
+     * Returns a Visibility for a consumer of an entries Visibility. [Visibility] itself is a visibility provider, returning itself. This is to lower the memory footprint of the entries if, as is typical, they are only ever one visibility (usually [Visibility.VISIBLE]). If visibility is modified during usage, the default visibility provider enum is replaced with a [VisibilityStack] to track visibility changes over time.
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.6.5
      */
     @FunctionalInterface
     fun interface VisibilityProvider {
+        /**
+         * Returns the entries current [Visibility] status
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
         fun get(): Visibility
     }
 
     /**
-     *
+     * A [VisibilityProvider] that tracks the base visibility of an entry as well as the entries visibility history through a stack (linked list).
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.6.0, implements [VisibilityProvider] as of 0.6.5
      */
     data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>): VisibilityProvider {
         override fun get(): Visibility {

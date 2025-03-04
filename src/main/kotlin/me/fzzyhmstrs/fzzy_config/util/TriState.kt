@@ -15,6 +15,13 @@ import net.minecraft.util.StringIdentifiable
 import java.util.function.BooleanSupplier
 import java.util.function.Supplier
 
+/**
+ * Enum representing a three-state system: True, False, Default. This tri-state implements [TriStateProvider], a generic representation of a three-state system.
+ *
+ * In general, a DEFAULT should state should act as a "pass", refraining from altering state when possible.
+ * @author fzzyhmstrs
+ * @since 0.6.5
+ */
 enum class TriState(private val state: String): TriStateProvider, EnumTranslatable, StringIdentifiable {
     DEFAULT("default"),
     TRUE("true"),

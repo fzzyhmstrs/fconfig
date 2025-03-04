@@ -490,12 +490,20 @@ open class CustomButtonWidget protected constructor(
         protected val DEFAULT_NARRATION_SUPPLIER: ButtonWidget.NarrationSupplier = ButtonWidget.NarrationSupplier { textSupplier: Supplier<MutableText?> -> textSupplier.get() }
 
         /**
+         * Narration supplier that only supplies the default narration if the button is active.
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        @JvmStatic
+        val ACTIVE_ONLY_ACTIVE_NARRATION_SUPPLIER: ActiveNarrationSupplier = ActiveNarrationSupplier { active, textSupplier: Supplier<MutableText> -> if (active) textSupplier.get() else FcText.empty() }
+
+        /**
          * A default instance of narration supplier. Simply returns the supplied test unchanged.
          * @author fzzyhmstrs
          * @since 0.6.3
          */
         @JvmStatic
-        protected val DEFAULT_ACTIVE_NARRATION_SUPPLIER: ActiveNarrationSupplier = ActiveNarrationSupplier { _, textSupplier: Supplier<MutableText> -> textSupplier.get() }
+        val DEFAULT_ACTIVE_NARRATION_SUPPLIER: ActiveNarrationSupplier = ActiveNarrationSupplier { _, textSupplier: Supplier<MutableText> -> textSupplier.get() }
 
         private val DEFAULT_ACTIVE_SUPPLIER = Supplier { true }
     }
