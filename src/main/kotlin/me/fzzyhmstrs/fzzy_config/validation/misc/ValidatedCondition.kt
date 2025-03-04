@@ -68,7 +68,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * creates a deep copy of this ValidatedCondition
      * @return ValidatedCondition wrapping a deep copy of the currently stored object and conditions
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.5.4
      */
     override fun instanceEntry(): ValidatedField<T> {
         val condition = ValidatedCondition(delegate.instanceEntry(), fallback)
@@ -125,7 +125,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
 
     /**
      * Retrieves the wrapped value without performing condition checks
-     * @return stored value
+     * @return stored value [T]
      * @author fzzyhmstrs
      * @since 0.5.4
      */

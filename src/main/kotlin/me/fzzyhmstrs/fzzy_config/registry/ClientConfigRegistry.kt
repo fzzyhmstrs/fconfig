@@ -251,9 +251,11 @@ internal object ClientConfigRegistry {
     }
 
     //client
-    internal fun registerConfig(config: Config, baseConfig: Config) {
-        validScopes.add(config.getId().namespace)
-        validSubScopes.put(config.getId().namespace, config.getId().path)
+    internal fun registerConfig(config: Config, baseConfig: Config, noGui: Boolean) {
+        if (!noGui) {
+            validScopes.add(config.getId().namespace)
+            validSubScopes.put(config.getId().namespace, config.getId().path)
+        }
         UpdateManager.applyKeys(config)
         clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config, baseConfig)
         EventApiImpl.fireOnRegisteredClient(config.getId(), config)

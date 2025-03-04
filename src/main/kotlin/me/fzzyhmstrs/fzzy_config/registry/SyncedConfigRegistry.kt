@@ -99,6 +99,7 @@ internal object SyncedConfigRegistry {
             val payload = ConfigPermissionsS2CCustomPayload(id, perms)
             sender.accept(player, payload)
         }
+        if (!canSender.test(player, DynamicIdsS2CCustomPayload.type)) return
         val dynamicIdSyncs = ValidatedIdentifier.createSyncs(PortingUtils.getDynamicManager(player))
         if (dynamicIdSyncs.isEmpty()) return
         for (sync in dynamicIdSyncs) {

@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
+import me.fzzyhmstrs.fzzy_config.util.TriState.*
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedTriState.WidgetType
 import net.minecraft.client.gui.DrawContext
@@ -99,10 +100,10 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
     }
 
     /**
-     * creates a deep copy of this ValidatedEnum
-     * return ValidatedEnum wrapping a copy of the currently stored object and widget type
+     * creates a deep copy of this ValidatedTriState
+     * return ValidatedTriState wrapping the currently stored state and widget type
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.6.5
      */
     override fun instanceEntry(): ValidatedTriState {
         return ValidatedTriState(this.defaultValue)
@@ -118,26 +119,75 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
         }
     }
 
+    /**
+     * Gets the value of the tri-state. Implemented from [BooleanSupplier].
+     *
+     * @return boolean state of the stored value
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
     override fun getAsBoolean(): Boolean {
         return storedValue.asBoolean
     }
 
+    /**
+     * Gets the value of the tri-state as a boxed, nullable boolean.
+     *
+     * @return `null` if [DEFAULT]; otherwise `true` if [TRUE] or `false` if [FALSE].
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
     override fun getBoxed(): Boolean? {
         return storedValue.getBoxed()
     }
 
+    /**
+     * Gets the value of this tri-state.
+     * If the value is [DEFAULT] then use the supplied value.
+     *
+     * @param value the value to fall back to
+     * @return the value of the tri-state or the supplied value if [DEFAULT].
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
     override fun orElse(value: Boolean): Boolean {
         return storedValue.orElse(value)
     }
 
+    /**
+     * Gets the value of this tri-state.
+     * If the value is [DEFAULT] then use the supplied value.
+     *
+     * @param supplier the supplier used to get the value to fall back to
+     * @return the value of the tri-state or the value of the supplier if the tri-state is [DEFAULT].
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
     override fun orElseGet(supplier: BooleanSupplier): Boolean {
         return storedValue.orElseGet(supplier)
     }
 
+    /**
+     * Gets the value of this tri-state.
+     * If the value is [DEFAULT] then use the supplied value.
+     *
+     * @param supplier the supplier used to get the value to fall back to
+     * @return the value of the tri-state or the value of the supplier if the tri-state is [DEFAULT].
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
     override fun orElseGet(supplier: Supplier<Boolean>): Boolean {
         return storedValue.orElseGet(supplier)
     }
 
+    /**
+     * Validates a provided boolean input against the current tri-state.
+     * - [DEFAULT] will return true no matter what (no validation)
+     * - [TRUE] will return true if the input is true
+     * - [FALSE] will return true if the input is false
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
     override fun validate(input: Boolean): Boolean {
         return storedValue.validate(input)
     }
@@ -162,7 +212,7 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
          */
         SIDE_BY_SIDE,
         /**
-         * A traditional MC cycling button widget, looping through the tristate [TriState.DEFAULT] then [TriState.TRUE] then [TriState.FALSE] etc., starting on the state set as the default value.
+         * A traditional MC cycling button widget, looping through the tri-state; [TriState.DEFAULT] then [TriState.TRUE] then [TriState.FALSE] etc., starting on the state set as the default value.
          * @author fzzyhmstrs
          * @since 0.6.5
          */

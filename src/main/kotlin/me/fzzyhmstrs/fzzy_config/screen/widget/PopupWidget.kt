@@ -59,14 +59,16 @@ import kotlin.math.min
 class PopupWidget
     private constructor(
         private var message: Text,
-        private val width: Int,
-        private val height: Int,
+        private var width: Int,
+        private var height: Int,
         private val blurBackground: Boolean,
         private val closeOnOutOfBounds: Boolean,
         private val background: Identifier,
         private val positionX: BiFunction<Int, Int, Int>,
         private val positionY: BiFunction<Int, Int, Int>,
-        private val positioner: BiConsumer<Int, Int>,
+        private val positioner: Positioner,
+        private val widthFunction: BiFunction<Int, Int, Int>,
+        private val heightFunction: BiFunction<Int, Int, Int>,
         private val onClose: Runnable,
         private val onClick: MouseClickResult,
         private val children: List<Element>,
@@ -111,9 +113,11 @@ class PopupWidget
     }
 
     fun position(screenWidth: Int, screenHeight: Int) {
+        this.width = widthFunction.apply(screenWidth, width)
+        this.height = heightFunction.apply(screenHeight, height)
         this.x = positionX.apply(screenWidth, width) //screenWidth/2 - width/2
         this.y = positionY.apply(screenHeight, height) //screenHeight/2 - height/2
-        positioner.accept(this.x, this.y)
+        positioner.position(this.x, this.y, this.width, this.height)
         for (el in children) {
             if (el is RepositioningWidget) {
                 el.onReposition()
@@ -207,6 +211,7 @@ class PopupWidget
     }
 
     override fun setFocused(focused: Element?) {
+        if (this.focused == focused) return
         this.focused?.let { it.isFocused = false }
         focused?.let { it.isFocused = true }
         this.focused = focused
@@ -323,6 +328,8 @@ class PopupWidget
         private val layoutWidget = LayoutWidget(spacingW = spacingW, spacingH = spacingH)
         private var positionX: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var positionY: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
+        private var widthFunction: BiFunction<Int, Int, Int> = BiFunction { _, w -> w }
+        private var heightFunction: BiFunction<Int, Int, Int> = BiFunction { _, h -> h }
 
         private var onClose = Runnable { }
         private var onClick: MouseClickResult = MouseClickResult { _, _, _, _ -> ClickResult.USE }
@@ -659,6 +666,17 @@ class PopupWidget
             return this
         }
         /**
+         * Defines a width function for the widget. Applies on popup init, and when the screen is resized.
+         * @param widthFunction [BiFunction]&lt;Int, Int, Int&gt; - function for defining the popup widget width. Screen Width, Previous Widget Width -> New Widget Width
+         * @return Builder - this builder for further use
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        fun widthFunction(widthFunction: BiFunction<Int, Int, Int>): Builder {
+            this.widthFunction = widthFunction
+            return this
+        }
+        /**
          * Defines a manual height for the widget. Will override any automatic sizing computations for height
          * @param height Int - the manual height of the Popup
          * @return Builder - this builder for further use
@@ -667,6 +685,17 @@ class PopupWidget
          */
         fun height(height: Int): Builder {
             layoutWidget.setHeightQuiet(height)
+            return this
+        }
+        /**
+         * Defines a height function for the widget. Applies on popup init, and when the screen is resized.
+         * @param heightFunction [BiFunction]&lt;Int, Int, Int&gt; - function for defining the popup widget height. Screen Height, Previous Widget Height -> New Widget Height
+         * @return Builder - this builder for further use
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        fun heightFunction(heightFunction: BiFunction<Int, Int, Int>): Builder {
+            this.heightFunction = heightFunction
             return this
         }
         /**
@@ -790,9 +819,11 @@ class PopupWidget
                 narratedTitle.append(", ".lit()).append(additional)
             }
 
-            val positioner: BiConsumer<Int, Int> = BiConsumer { x, y ->
+            val positioner: Positioner = Positioner { x, y, w, h ->
                 layoutWidget.setPosition(x, y)
+                layoutWidget.setDimensions(w, h)
             }
+
             layoutWidget.compute(true)
             val children: MutableList<Element> = mutableListOf()
             val selectables: MutableList<Selectable> = mutableListOf()
@@ -806,7 +837,7 @@ class PopupWidget
                 }
             }
 
-            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, onClose, onClick, children, selectables, drawables)
+            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, onClick, children, selectables, drawables)
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1054,6 +1085,9 @@ class PopupWidget
         sealed interface PositionAlignment: Position
     }
 
+    private fun interface Positioner {
+        fun position(x: Int, y: Int, width: Int, height: Int)
+    }
 
     /**
      * Applies a click action from provided inputs and returns a [ClickResult]. Used to perform an action in a Popup besides actions laid-out widgets may trigger, such as a special action if a click misses the popup.
