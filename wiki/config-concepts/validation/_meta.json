@@ -35,6 +35,10 @@
     "name": "Ingredients",
     "icon": "Blocks"
   },
+  "Keybinds.mdx": {
+    "name": "Keybinds",
+    "icon": "Keyboard"
+  },
   "Numbers.mdx": {
     "name": "Numbers",
     "icon": "Hash"

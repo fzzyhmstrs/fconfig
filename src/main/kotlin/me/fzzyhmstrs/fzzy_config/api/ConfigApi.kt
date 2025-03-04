@@ -138,6 +138,26 @@ object ConfigApi {
     }
 
     /**
+     * Creates and registers a Config. Use this over [registerConfig] and [readOrCreateAndValidate] if possible.
+     *
+     * Performs the entire creation, loading, validation, and registration process on a config class. Internally performs the two steps
+     * 1) [readOrCreateAndValidate]
+     * 2) [registerConfig]
+     *
+     * This method avoids registering a GUI. Use this if you want to implement your own GUI.
+     * @param T the config type, any subclass of [Config]
+     * @param configClass Supplier of config class instances
+     * @param registerType [RegisterType], default [RegisterType.CLIENT]. Where to register the config. [RegisterType.SERVER] doesn't make much sense here.
+     * @return loaded, validated, and registered instance of T
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    @JvmStatic
+    fun <T: Config> registerAndLoadNoGuiConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.CLIENT): T {
+        return ConfigApiImpl.registerAndLoadConfig({ configClass.get() }, registerType, true)
+    }
+
+    /**
      * Reads a config from File or Creates a new config class; writes out any corrections, updates, or new content to File. Automatically adds ".toml" to the name for reading and writing.
      *
      * Includes [Version] updating support, automatic validation and correction, and detailed error reporting. Use this to generate the actual config class instance to be used in-game, if you have other custom initialization to perform, otherwise see [registerAndLoadConfig]. See the Example Config for typical usage case.

@@ -24,6 +24,8 @@
   * `ValidatedKeybind` validation added for configurable keybind handling.
   * Keybinds still need to be handled by other Fzzy Config context handling methods, this is a structured method for setting up and configuring context types.
   * For a robust example, see Fzzy Configs built-in keybind config and `ConfigScreen` context handler that is used to handle GUI inputs.
+* Added `wdithFunction` and `heightFunction` to `PopupWidget`, allowing for dynamic sizing based on screen and previous dimension context.
+* Fzzy Config finally has its own config! `keybinds.toml` controls the inputs used for interacting with Config GUIs.
 
 ### Changes
 * __Registrar System__: `RegistrySupplier` now implements `RegistryEntry` directly, as well as passing its reference entry. This includes a breaking experimental change, `getKey` has changed to `getRegistryKey`
@@ -31,6 +33,7 @@
 * Improved the memory footprint of `DynamicListWidget`, deferring several allocations until needed
 * Shortened in-GUI changelogs related to Validated Object changes.
 * In-GUI usage information popup updated with a list widget and configurable keybind entries.
+* The Config GUI info screen has been updated with a list view of the GUI keybinds. These keybinds can be edited (and this list is secretly a custom config GUI for Fzzy Configs built-in Keybinds config)
 * `ConfigScreenManager` now caches config GUI templates incrementally, instead of front-loading all screen templates at once. This has some side effects, namely that each screen now has a separate Update Manager, so restoring defaults, reverting changes, etc. is now sectioned off per-config instead of global to the namespace. The "Root" screen update manager can see any loaded children managers, so changes can be managed from the root screen into any child screens that have been loaded and modified.
 
 

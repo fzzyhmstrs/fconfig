@@ -2,6 +2,10 @@
 title: Validated Pairs
 ---
 
+<Callout>
+Added in Fzzy Config 0.6.0
+</Callout>
+
 Validation can be joined into pairs, which are then stored as one `ValidatedPair.Tuple`. This allows you to present two Validations as one "setting", that the user understands are part of the same "unit" of functionality. For example:
 * An allowable range with a max and min. Join these together to create one Range setting that has both the max and min selectors side by side.
 * An on-off switch and then an Object/`ValidatedAny` setting with a condition on the on-off switch being on, allowing you to have a "confirmation gate" where the user first has to enable the fancy/dangerous/special settings before they can interact with them.

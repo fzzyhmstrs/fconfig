@@ -6,7 +6,11 @@ title: Registrar System
 Registrars are currently experimental. Stable release is expected by 0.7.0.
 </Callout>
 
-From Fzzy Config 0.5.9, there is a simple registration system built into the `PlatformApi` for cross-platform registration to built-in or modded `Registry` objects.
+<Callout>
+Added in Fzzy Config 0.5.9
+</Callout>
+
+A simple registration system built into the `PlatformApi` for cross-platform registration to built-in or modded `Registry` objects.
 
 ### Registrar Pieces and Parts
 The system is built out of two basic parts
@@ -22,6 +26,10 @@ The output object of a `Registrar`, this supplier performs all the basic registr
 - `getKey()` - The `RegistryKey` the object is registered with.
 - `getId()` - The `Identifier` the object is registered with.
 - `getEntry()` - The `RegistryEntry` that stores the object in the registry.
+
+<Callout variant="info">
+As of 0.6.5, RegistrySupplier is itself an instance of RegistryEntry.
+</Callout>
 
 ### Creating a Registrar
 Create a new Registrar using the `PlatformApi` accessed through the `ConfigApi`.

@@ -23,10 +23,12 @@ import net.minecraft.util.Util
  * @param lineHeight space between lines, default 9 (MC standard)
  * @param topPadding pixels of padding above the text. Will add to the widget's height.
  * @param bottomPadding pixels of padding below the text. Will add to the widget's height.
+ * @param leftPadding pixels of padding on the left side of the text.
+ * @param rightPadding pixels of padding on the right side of the text.
  * @author fzzyhmstrs
- * @since 0.6.0
+ * @since 0.6.0, left and right padding 0.6.5
  */
-class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private val lineHeight: Int = 9, private val topPadding: Int = 0, private val bottomPadding: Int = topPadding) :
+class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private val lineHeight: Int = 9, private val topPadding: Int = 0, private val bottomPadding: Int = topPadding, private val leftPadding: Int = 0, private val rightPadding: Int = 0) :
     AbstractTextWidget(0, 0, 50, 0, message, MinecraftClient.getInstance().textRenderer) {
 
     private val cache = Util.cachedMapper<Key, MultilineText> { _ ->
@@ -34,18 +36,18 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        val text = cache.map(getKey())
-        text.drawWithShadow(context, x, y + topPadding, lineHeight, textColor)
+        val text = cache.map(getKey(width - leftPadding - rightPadding))
+        text.drawWithShadow(context, x + leftPadding, y + topPadding, lineHeight, textColor)
     }
 
     override fun getHeight(): Int {
-        return (cache.map(getKey()).count() * lineHeight) + topPadding + bottomPadding
+        return (cache.map(getKey(width - leftPadding - rightPadding)).count() * lineHeight) + topPadding + bottomPadding
     }
 
     override fun setHeight(height: Int) {
     }
 
-    private fun getKey(): Key {
+    private fun getKey(width: Int): Key {
         return Key(message, width)
     }
 

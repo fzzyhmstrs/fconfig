@@ -136,7 +136,7 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
      * Gets the wrapped result value from the mapped delegate
      * @return N. The result being wrapped and passed by this ValidationResult.
      * @author fzzyhmstrs
-     * @since 0.1.0
+     * @since 0.5.0
      */
     override fun get(): N {
         return to.apply(delegate.get())
@@ -149,7 +149,7 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
      * @param input new value to wrap
      * @see validateAndSet
      * @author fzzyhmstrs
-     * @since 0.1.0
+     * @since 0.5.0
      */
     override fun accept(input: N) {
         delegate.accept(from.apply(input))
