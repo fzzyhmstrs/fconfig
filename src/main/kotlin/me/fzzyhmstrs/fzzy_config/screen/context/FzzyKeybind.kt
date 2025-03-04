@@ -70,19 +70,52 @@ sealed interface FzzyKeybind: Relevant {
         }
     }
 
+    /**
+     * Builds a [FzzyKeybind] from 0 or more individual keybind inputs. If 0 inputs are provided, an unbound keybind will be supplied. Multiple inputs are evaluated as "OR" arguments. Any 1 input can pass for the keybind to pass.
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
     class Builder {
         private val keybinds: MutableList<FzzyKeybind> = mutableListOf()
 
+        /**
+         * Adds a keyboard-type keybind.
+         * @param keyCode Keyboard key to test against. Using GLFW here is recommended.
+         * @param ctrl Whether the ctrl modifier needs to be active (left/right ctrl or left/right super pressed)
+         * @param shift Whether the shift modifier needs to be active (left/right shift pressed)
+         * @param alt Whether the alt modifier needs to be active (left/right alt pressed)
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        @JvmOverloads
         fun keyboard(keyCode: Int, ctrl: Boolean = false, shift: Boolean = false, alt: Boolean = false): Builder {
             keybinds.add(FzzyKeybindSimple(keyCode, ContextInput.KEYBOARD, ctrl, shift, alt))
             return this
         }
 
+        /**
+         * Adds a mouse-type keybind.
+         * @param button Mouse button to test against. Using GLFW here is recommended.
+         * @param ctrl Whether the ctrl modifier needs to be active (left/right ctrl or left/right super pressed)
+         * @param shift Whether the shift modifier needs to be active (left/right shift pressed)
+         * @param alt Whether the alt modifier needs to be active (left/right alt pressed)
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        @JvmOverloads
         fun mouse(button: Int, ctrl: Boolean = false, shift: Boolean = false, alt: Boolean = false): Builder {
             keybinds.add(FzzyKeybindSimple(button, ContextInput.MOUSE, ctrl, shift, alt))
             return this
         }
 
+        /**
+         * Builds the keybind.
+         * @return [FzzyKeybind] result.
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
         fun build(): FzzyKeybind {
             return when (keybinds.size) {
                 0 -> FzzyKeybindUnbound

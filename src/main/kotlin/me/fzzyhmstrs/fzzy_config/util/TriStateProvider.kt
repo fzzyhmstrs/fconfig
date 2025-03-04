@@ -13,6 +13,13 @@ package me.fzzyhmstrs.fzzy_config.util
 import java.util.function.BooleanSupplier
 import java.util.function.Supplier
 
+/**
+ * A generic representation of a three state system. Implements [BooleanSupplier]
+ * @see TriState
+ * @see me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedTriState
+ * @author fzzyhmstrs
+ * @since 0.6.5
+ */
 interface TriStateProvider: BooleanSupplier {
     override fun getAsBoolean(): Boolean
     fun getBoxed(): Boolean?

@@ -71,6 +71,11 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         initPopup()
     }
 
+    override fun setFocused(focused: Element?) {
+        if (this.focused === focused) return
+        super<Screen>.setFocused(focused)
+    }
+
     /**
      * Marked final to preserve proper popup ordering and rendering
      * @since 0.6.0
