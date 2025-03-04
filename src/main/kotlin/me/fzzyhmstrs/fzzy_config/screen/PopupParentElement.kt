@@ -93,8 +93,8 @@ interface PopupParentElement: ParentElement, LastSelectable {
             }
         } else {
             if (popupWidgets.isEmpty()) {
+                (focused as? LastSelectable)?.pushLast()
                 pushLast()
-                (lastSelected as? LastSelectable)?.pushLast()
             }
             this.blurElements()
             popupWidgets.push(widget)
@@ -121,10 +121,13 @@ interface PopupParentElement: ParentElement, LastSelectable {
 
     private fun mouseClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
         for (element in this.children()) {
-            if (element.isMouseOver(mouseX, mouseY))
+            var lastFocused: Element? = null
+            if (element.isMouseOver(mouseX, mouseY)) {
+                lastFocused = this.focused
                 this.focused = element
+            }
             if (!element.mouseClicked(mouseX, mouseY, button)) {
-                this.focused = null
+                this.focused = lastFocused
             } else {
                 if (this.focused != element) {
                     this.focused = element

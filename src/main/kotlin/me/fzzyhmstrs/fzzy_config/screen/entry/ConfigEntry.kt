@@ -29,6 +29,7 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
+import net.minecraft.client.gui.navigation.GuiNavigationType
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
@@ -504,7 +505,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
          * @suppress
          */
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
-            val bl1 = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
+            val bl1 = isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && MinecraftClient.getInstance().navigationType == GuiNavigationType.MOUSE
             if (!bl1 && !keyboardFocused) return TooltipChild.EMPTY
             return listOf(actionTooltip)
         }
