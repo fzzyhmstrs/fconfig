@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
+import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
@@ -113,6 +114,8 @@ internal object NetworkEventsClient {
             if (scopeToOpen != "") {
                 ClientConfigRegistry.openScreen(scopeToOpen)
             }
+
+            PopupParentElement.popAll()
         }
 
         FCC.withRestart { openRestartScreen ->
