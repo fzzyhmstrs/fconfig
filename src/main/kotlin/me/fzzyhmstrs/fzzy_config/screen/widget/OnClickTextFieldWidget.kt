@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
@@ -19,7 +18,6 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.client.input.KeyCodes
-import net.minecraft.util.Identifier
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -74,6 +72,8 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
                 || keyCode == GLFW.GLFW_KEY_LEFT
                 || keyCode == GLFW.GLFW_KEY_DOWN
                 || keyCode == GLFW.GLFW_KEY_UP
+                || keyCode == GLFW.GLFW_KEY_LEFT_SHIFT
+                || keyCode == GLFW.GLFW_KEY_RIGHT_SHIFT
     }
 
     /**
