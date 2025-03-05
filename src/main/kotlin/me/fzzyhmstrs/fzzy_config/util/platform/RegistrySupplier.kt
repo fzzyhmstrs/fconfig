@@ -78,7 +78,7 @@ interface RegistrySupplier<T>: Supplier<T>, RegistryEntry<T> {
     }
 
     override fun getKey(): Optional<RegistryKey<T>> {
-        return getEntry().key
+        return getEntry().key!!
     }
 
     override fun getType(): RegistryEntry.Type {

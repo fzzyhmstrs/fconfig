@@ -114,8 +114,6 @@ internal object NetworkEventsClient {
             if (scopeToOpen != "") {
                 ClientConfigRegistry.openScreen(scopeToOpen)
             }
-
-            PopupParentElement.popAll()
         }
 
         FCC.withRestart { openRestartScreen ->
@@ -124,6 +122,8 @@ internal object NetworkEventsClient {
             } else
                 false
         }
+
+        PopupParentElement.popAll()
     }
 
     private var initialized = false
