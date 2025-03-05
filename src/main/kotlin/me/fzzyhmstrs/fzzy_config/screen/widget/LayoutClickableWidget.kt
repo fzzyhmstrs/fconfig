@@ -20,6 +20,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
+import java.util.function.Consumer
 
 /**
  * Clickable widget that contains a LayoutWidget which provides and lays out children of this widget. The layout will be automatically constrained to the dimensions of the widget, and updated as the position and size changes.
@@ -41,6 +42,19 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
     private var focusedSelectable: Selectable? = null
     private var focusedElement: Element? = null
     private var dragging: Boolean = false
+    private var narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> }
+
+    /**
+     * Applies custom narration to this layout widget. This consumer will be applied on every call to narration building, using the same message level as the default narration of the widget. In particular, element POSITION and USAGE information is typically applied already. The current hovered and/or focused child widget uses the next message layer. If you have to dodge one of both of these existing additions, you will have to add one or two more layers to the builder before using it.
+     * @param narrationAppender Consumer&lt;[NarrationMessageBuilder]&gt; appends arbitrary narration information to the provided builder.
+     * @return this widget
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    fun withNarrationAppender(narrationAppender: Consumer<NarrationMessageBuilder>): LayoutClickableWidget {
+        this.narrationAppender = narrationAppender
+        return this
+    }
 
     init {
         layout.setPos(ReferencePos { this.x }, ReferencePos { this.y })
@@ -164,6 +178,7 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
     }
 
     override fun setFocused(focused: Element?) {
+        if (focusedElement === focused) return
         this.focusedElement?.isFocused = false
         focused?.isFocused = true
         this.focusedElement = focused
@@ -182,6 +197,7 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
     }
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
+        narrationAppender.accept(builder)
         val list: List<Selectable> = this.selectables.filter { it.isNarratable }
         val selectedElementNarrationData = Screen.findSelectedElementData(list, focusedSelectable)
         if (selectedElementNarrationData != null) {

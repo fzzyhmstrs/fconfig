@@ -24,6 +24,15 @@ object TextureIds {
     /** a green checkmark */
     val ENTRY_OK = "widget/entry_ok".fcId()
 
+    /** a greyscale checkmark */
+    val ENTRY_OK_DISABLED = "widget/entry_ok_disabled".fcId()
+
+    /** a red 'X' */
+    val ENTRY_NO = "widget/entry_no".fcId()
+
+    /** a greyscale 'X' */
+    val ENTRY_NO_DISABLED = "widget/entry_no_disabled".fcId()
+
     /** a red triangular sign with an exclamation mark in the middle */
     val ENTRY_ERROR = "widget/entry_error".fcId()
 
@@ -84,6 +93,20 @@ object TextureIds {
 
     /////////////////////////
 
+    /** a gray button with a red arrow looping up to point backwards */
+    val RESTORE = "widget/action/restore".fcId()
+
+    /** same as above but with the "inactive" button texture */
+    val RESTORE_INACTIVE = "widget/action/restore_inactive".fcId()
+
+    /** same as above but with a white highlighted border */
+    val RESTORE_HIGHLIGHTED = "widget/action/restore_highlighted".fcId()
+
+    val RESTORE_SET = TextureSet(RESTORE, RESTORE_INACTIVE, RESTORE_HIGHLIGHTED)
+    val RESTORE_LANG = "fc.button.restore".translate()
+
+    /////////////////////////
+
     /** a gray button texture with the fzzy config logo in the middle */
     val CONFIG = "widget/action/config".fcId()
 
@@ -112,6 +135,9 @@ object TextureIds {
 
     /** a list of list entries. no brackets */
     val DECO_LIST = "widget/decoration/list".fcId()
+
+    /** a list of entries with checkboxes on the left. Entry one is checked, 2 and 3 are not. no brackets */
+    val DECO_CHOICE_LIST = "widget/decoration/choice_list".fcId()
 
     /** a wireframe depiction of an NbtObject */
     val DECO_OBJECT = "widget/decoration/object".fcId()
@@ -185,18 +211,36 @@ object TextureIds {
     /** up arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_UP = "widget/scroll/increment_up".fcId()
 
-    /** highlighted up arrow inside standard MC button texturing. 11x10 */
-    val INCREMENT_UP_HIGHLIGHTED = "widget/scroll/increment_up_highlighted".fcId()
-
     /** greyed-out up arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_UP_DISABLED = "widget/scroll/increment_up_disabled".fcId()
+
+    /** highlighted up arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_UP_HIGHLIGHTED = "widget/scroll/increment_up_highlighted".fcId()
 
     /** down arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_DOWN = "widget/scroll/increment_down".fcId()
 
+    /** greyed-out down arrow inside standard MC button texturing. 11x10 */
+    val INCREMENT_DOWN_DISABLED = "widget/scroll/increment_down_disabled".fcId()
+
     /** highlighted down arrow inside standard MC button texturing. 11x10 */
     val INCREMENT_DOWN_HIGHLIGHTED = "widget/scroll/increment_down_highlighted".fcId()
 
-    /** greyed-out down arrow inside standard MC button texturing. 11x10 */
-    val INCREMENT_DOWN_DISABLED = "widget/scroll/increment_down_disabled".fcId()
+    /** '+' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_ADD = "widget/validation/keybind/keybind_add".fcId()
+
+    /** greyed-out '+' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_ADD_DISABLED = "widget/validation/keybind/keybind_add_disabled".fcId()
+
+    /** highlighted '+' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_ADD_HIGHLIGHTED = "widget/validation/keybind/keybind_add_highlighted".fcId()
+
+    /** 'X' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_CLEAR = "widget/validation/keybind/keybind_clear".fcId()
+
+    /** greyed-out 'X' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_CLEAR_DISABLED = "widget/validation/keybind/keybind_clear_disabled".fcId()
+
+    /** highlighted 'X' symbol inside standard MC button texturing. 11x10 */
+    val KEYBIND_CLEAR_HIGHLIGHTED = "widget/validation/keybind/keybind_clear_highlighted".fcId()
 }

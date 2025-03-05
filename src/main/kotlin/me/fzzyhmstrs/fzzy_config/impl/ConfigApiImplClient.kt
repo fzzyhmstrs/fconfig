@@ -38,8 +38,12 @@ internal object ConfigApiImplClient {
         return ClientConfigRegistry.getPerms()
     }
 
-    internal fun registerConfig(config: Config, baseConfig: Config) {
-        ClientConfigRegistry.registerConfig(config, baseConfig)
+    internal fun getPermsRef(): Map<String, Map<String, Boolean>> {
+        return ClientConfigRegistry.getPermsRef()
+    }
+
+    internal fun registerConfig(config: Config, baseConfig: Config, noGui: Boolean) {
+        ClientConfigRegistry.registerConfig(config, baseConfig, noGui)
     }
 
     internal fun isConfigLoaded(id: Identifier): Boolean {

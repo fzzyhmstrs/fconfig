@@ -35,6 +35,10 @@
     "name": "Ingredients",
     "icon": "Blocks"
   },
+  "Keybinds.mdx": {
+    "name": "Keybinds",
+    "icon": "Keyboard"
+  },
   "Numbers.mdx": {
     "name": "Numbers",
     "icon": "Hash"
@@ -54,5 +58,9 @@
   "TagKeys.mdx": {
     "name": "TagKeys",
     "icon": "Tag"
+  },
+  "TriStates.mdx": {
+    "name": "TriStates",
+    "icon": "BringToFront"
   }
 }

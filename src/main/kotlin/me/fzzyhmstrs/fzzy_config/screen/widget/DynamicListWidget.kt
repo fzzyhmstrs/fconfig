@@ -42,6 +42,23 @@ import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * A Widget for displaying a list of [Entry] that supports dynamic operations and entry features.
+ * - Entries can have different heights
+ * - Entries can be hidden and unhidden
+ * - Built-in entry text searching capabilities
+ * - Add or remove entries (as of 0.6.5)
+ * - Scrollable, navigable, narratable, and everything else expected from a vanilla list.
+ * @param client [MinecraftClient] instance
+ * @param entryBuilders List&lt;[BiFunction]&lt;DynamicListWidget, Int, [Entry]&gt;&gt; - builders for the initial entry set. Fzzy Config is built on a "lazy-as-possible" paradigm, so the entries themselves aren't passed here.
+ * @param x horizontal position of the left edge of the widget in pixels
+ * @param y vertical position of the top edge of the widget in pixels
+ * @param width width of the widget in pixels
+ * @param height height of the widget in pixels
+ * @param spec [ListSpec] widget options for customizing list visuals and behavior.
+ * @author fzzyhmstrs
+ * @since 0.6.0
+ */
 class DynamicListWidget(
     client: MinecraftClient,
     entryBuilders: List<BiFunction<DynamicListWidget, Int, out Entry>>,
@@ -61,13 +78,7 @@ class DynamicListWidget(
 
     //// Widget ////
 
-    companion object {
-        val scrollMultiplier: Supplier<Double> = Supplier { 10.0 }
-    }
-
-    private val entries: Entries by lazy {
-        Entries(entryBuilders.mapIndexed { index, biFunction -> biFunction.apply(this, index) })
-    }
+    private var entries: Entries = Entries(entryBuilders.mapIndexed { index, biFunction -> biFunction.apply(this, index) })
 
     val verticalPadding: Int
         get() = spec.verticalPadding
@@ -90,6 +101,63 @@ class DynamicListWidget(
         entries.onResize()
     }
 
+    /**
+     * Removes an entry from this list widget if it exists in the entries list. Will remove all instances of it if more than one instance of the same object reference are included in the list.
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    fun removeEntry(entry: Entry) {
+        entries = Entries(entries.filter { it != entry })
+    }
+
+    /**
+     * Adds an entry at the end of the entries list.
+     * @param entry [BiFunction]&lt;DynamicListWidget, Int, [Entry]&gt; - builder for the entry to add. Fzzy Config is built on a "lazy-as-possible" paradigm, so the entries themselves aren't passed here.
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    fun addEntry(entry: BiFunction<DynamicListWidget, Int, out Entry>) {
+        val l = entries.toList()
+        entries = Entries(l + listOf(entry.apply(this, l.size)))
+    }
+
+    /**
+     * Adds an entry after the specified existing entry in the entries list.
+     * @param entry [BiFunction]&lt;DynamicListWidget, Int, [Entry]&gt; - builder for the entry to add. Fzzy Config is built on a "lazy-as-possible" paradigm, so the entries themselves aren't passed here.
+     * @param after [Entry] the entry to insert the new entry after
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    fun addEntryAfter(entry: BiFunction<DynamicListWidget, Int, out Entry>, after: Entry) {
+        val list = entries.toMutableList().let {
+            val i = it.indexOf(after)
+            it.add(i + 1, entry.apply(this, i + 1))
+            it
+        }
+        entries = Entries(list)
+    }
+    /**
+     * Adds an entry before the specified existing entry in the entries list.
+     * @param entry [BiFunction]&lt;DynamicListWidget, Int, [Entry]&gt; - builder for the entry to add. Fzzy Config is built on a "lazy-as-possible" paradigm, so the entries themselves aren't passed here.
+     * @param after [Entry] the entry to insert the new entry after
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    fun addEntryBefore(entry: BiFunction<DynamicListWidget, Int, out Entry>, after: Entry) {
+        val list = entries.toMutableList().let {
+            val i = it.indexOf(after)
+            it.add(i, entry.apply(this, i))
+            it
+        }
+        entries = Entries(list)
+    }
+
+    /**
+     * Searches the widgets list of [Entry] based on the [Translatable.Result] texts provided with the entries.
+     * @param searchInput String input to search for. Searching has several special characters as explained in [Searcher]
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
     fun search(searchInput: String): Int {
         return entries.search(searchInput)
     }
@@ -154,13 +222,13 @@ class DynamicListWidget(
         if (verticalAmount > 0.0) {
             val topDelta = -topDelta()
             if (topDelta == 0) return true
-            val scrollDist = (verticalAmount * scrollMultiplier.get()).toInt().coerceAtLeast(1)
+            val scrollDist = (verticalAmount * 10).toInt().coerceAtLeast(1)
             val clampedDist = min(topDelta, scrollDist)
             entries.scroll(clampedDist)
         } else {
             val bottomDelta = -bottomDelta()
             if (bottomDelta >= 0) return true
-            val scrollDist = (verticalAmount * scrollMultiplier.get()).toInt().coerceAtMost(-1)
+            val scrollDist = (verticalAmount * 10).toInt().coerceAtMost(-1)
             val clampedDist = max(bottomDelta, scrollDist)
             entries.scroll(clampedDist)
         }
@@ -186,13 +254,14 @@ class DynamicListWidget(
     override var lastSelected: Element? = null
 
     override fun pushLast() {
+        focused?.nullCast<LastSelectable>()?.pushLast()
         lastSelected = focused
-        lastSelected?.nullCast<LastSelectable>()?.pushLast()
+
     }
 
     override fun popLast() {
-        (lastSelected as? Entry)?.let { focused = it }
         lastSelected?.nullCast<LastSelectable>()?.popLast()
+        (lastSelected as? Entry)?.let { focused = it }
     }
 
     override fun resetHover(mouseX: Double, mouseY: Double) {
@@ -326,11 +395,19 @@ class DynamicListWidget(
 
     //////////////////////////////
 
-    inner class Entries(private val delegate: List<Entry>): Iterable<Entry> {
+    private inner class Entries(private val delegate: List<Entry>): Iterable<Entry> {
 
         //map <group, map <scope, entry> >
         private val delegateMap: Map<String, Map<String, Entry>>
-        private val groups: Map<String, GroupPair>
+        private val groups: Map<String, GroupPair> by lazy {
+            val groupMap: MutableMap<String, GroupPair> = mutableMapOf()
+            for (e in delegate) {
+                if (e.getVisibility().group) {
+                    groupMap[e.scope.group] = GroupPair(e, true)
+                }
+            }
+            groupMap
+        }
 
         private val searcher: Searcher<Entry> by lazy { Searcher(delegate) }
 
@@ -338,7 +415,6 @@ class DynamicListWidget(
             var previousEntry: Entry? = null
             val pos = ReferencePos { this@DynamicListWidget.top }
             val entryMap: MutableMap<String, MutableMap<String, Entry>> = mutableMapOf()
-            val groupMap: MutableMap<String, GroupPair> = mutableMapOf()
 
             for ((index, e) in delegate.withIndex()) {
                 e.onAdd(pos, previousEntry, index == delegate.lastIndex)
@@ -349,13 +425,9 @@ class DynamicListWidget(
                         entryMap.computeIfAbsent(g) { _ -> mutableMapOf() }[e.scope.scope] = e
                     }
                 }
-                if (e.getVisibility().group) {
-                    groupMap[e.scope.group] = GroupPair(e, true)
-                }
                 previousEntry = e
             }
             delegateMap = entryMap
-            groups = groupMap
         }
 
         private var inFrameEntries: List<Entry> = emptyList()
@@ -590,6 +662,15 @@ class DynamicListWidget(
 
     private class GroupPair(val groupEntry: Entry, var visible: Boolean)
 
+    /**
+     * Base entry class for list widget entries. This is typically built using a BiFunction that supplies the [parentElement] and an entry index
+     * @param parentElement The [DynamicListWidget] this entry belongs to.
+     * @param texts [Translatable.Result] text set for this entry. This is used when searching entries.
+     * @param scope [Scope] defines the entries personal scope as well as any entry groups this entry owns and/or belongs to. Basic entries will only need to provide the personal scope id, which might be as simple as the index in string form.
+     * @param visibility [Visibility], default [Visibility.VISIBLE]. The starting visibility setting for the entry.
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     abstract class Entry(parentElement: DynamicListWidget, override val texts: Translatable.Result, val scope: Scope, visibility: Visibility = Visibility.VISIBLE)
         :
         CustomListWidget.Entry<DynamicListWidget>(parentElement),
@@ -600,10 +681,10 @@ class DynamicListWidget(
         LastSelectable
     {
 
-        private val visibilityStack: VisibilityStack = VisibilityStack(visibility, LinkedList())
+        private var visibilityProvider: VisibilityProvider = visibility
 
         fun getVisibility(): Visibility {
-            return visibilityStack.get()
+            return visibilityProvider.get()
         }
 
         protected open val x: Pos = ReferencePos { parentElement.rowX() }
@@ -625,6 +706,15 @@ class DynamicListWidget(
         override val skip: Boolean
             get() = getVisibility().skip
 
+        /**
+         * The children of the entry that comply to [SelectableElement], that is both [Selectable] and an [Element]
+         *
+         * This can be used to differentiate "cosmetic" children from "content" children (ones that can be selected via keyboard navigation.
+         * - All children, including cosmetic ones (labels, titles, etc.) are passed to [children]
+         * - only children that should be considered in keyboard navigation should be passed to this.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         abstract fun selectableChildren(): List<SelectableElement>
 
         fun getNeighbor(up: Boolean): Entry? {
@@ -632,7 +722,6 @@ class DynamicListWidget(
         }
 
         fun onAdd(parentPos: Pos, previous: Entry?, last: Boolean) {
-
             if (previous == null) {
                 top = RelEntryPos(parentPos, null, offset = parentElement.spec.verticalFirstPadding)
             } else {
@@ -654,10 +743,26 @@ class DynamicListWidget(
             return false
         }
 
+        /**
+         * Applied when the entry is added to an entries list for the first time. Generally this will happen when the Dynamic List is displayed. This may happen more than once, if an entry is removed or added (the entries list is rebuilt).
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         open fun init() {}
 
+        /**
+         * Applied when the parent Dynamic List is resized. This should handle any reorganization/repositioning of children.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         open fun onResize() {}
 
+        /**
+         * Applied when the Dynamic List is scrolled. Use this to move children to match the scroll, as applicable.
+         * @param dY the amount of scroll.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         open fun onScroll(dY: Int) {}
 
         fun scroll(dY: Int) {
@@ -666,21 +771,26 @@ class DynamicListWidget(
         }
 
         fun applyVisibility(consumer: Consumer<VisibilityStack>) {
-            consumer.accept(this.visibilityStack)
+            if (this.visibilityProvider !is VisibilityStack) {
+                val vs = VisibilityStack(this.getVisibility(), LinkedList())
+                this.visibilityProvider = vs
+                consumer.accept(vs)
+            } else {
+                consumer.accept(this.visibilityProvider as VisibilityStack)
+            }
         }
 
         override fun pushLast() {
+            focused?.nullCast<LastSelectable>()?.pushLast()
             lastSelected = focused
-            lastSelected?.nullCast<LastSelectable>()?.pushLast()
         }
 
         override fun popLast() {
+            lastSelected?.nullCast<LastSelectable>()?.popLast()
             lastSelected?.let { focused = it }
             if (lastSelected == null) {
                 focused = selectableChildren().firstOrNull()
-                focused?.isFocused = true
             }
-            lastSelected?.nullCast<LastSelectable>()?.popLast()
         }
 
         override fun isFocused(): Boolean {
@@ -699,6 +809,7 @@ class DynamicListWidget(
         }
 
         override fun setFocused(focused: Element?) {
+            if (focusedElement === focused) return
             this.focusedElement?.isFocused = false
             focused?.isFocused = true
             this.focusedElement = focused
@@ -720,6 +831,19 @@ class DynamicListWidget(
             return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
         }
 
+        /**
+         * Renders the entry. This is the base method of [CustomListWidget.Entry] and generally shouldn't be overridden directly.
+         * @param context [DrawContext]
+         * @param mouseX Integer horizontal position of the mouse from the left of the screen in pixels
+         * @param mouseY Integer vertical position of the mouse from the top of the screen in pixels
+         * @param delta tick delta
+         * @see renderEntry
+         * @see renderBorder
+         * @see renderHighlight
+         * @see renderExtras
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         @Deprecated("Use renderEntry/renderBorder/renderHighlight for rendering instead")
         override fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             if (!getVisibility().visible) return
@@ -733,16 +857,75 @@ class DynamicListWidget(
             renderEntry(context, xx, tt, ww, hh, mouseX, mouseY, bl, isFocused, delta)
         }
 
+        /**
+         * Base render method for the entry.
+         * @param context [DrawContext]
+         * @param x Integer position of the left edge of the entry in pixels
+         * @param y Integer position of the top edge of the entry in pixels
+         * @param width Integer width of the entry in pixels
+         * @param height Integer height of the entry in pixels
+         * @param mouseX Integer horizontal position of the mouse from the left of the screen in pixels
+         * @param mouseY Integer vertical position of the mouse from the top of the screen in pixels
+         * @param hovered whether the entry is hovered with the mouse
+         * @param focused whether the entry is focused (has been clicked on or navigated to via keyboard)
+         * @param delta tick delta
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float)
+
+        /**
+         * Render call for drawing a border on the entry, as applicable. This happens before, therefor "under" the main entry render calls.
+         * @param context [DrawContext]
+         * @param x Integer position of the left edge of the entry in pixels
+         * @param y Integer position of the top edge of the entry in pixels
+         * @param width Integer width of the entry in pixels
+         * @param height Integer height of the entry in pixels
+         * @param mouseX Integer horizontal position of the mouse from the left of the screen in pixels
+         * @param mouseY Integer vertical position of the mouse from the top of the screen in pixels
+         * @param hovered whether the entry is hovered with the mouse
+         * @param focused whether the entry is focused (has been clicked on or navigated to via keyboard)
+         * @param delta tick delta
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
+        /**
+         * Render call for drawing an entry background highlight. This happens before, therefor "under" both the entry and border render calls
+         * @param context [DrawContext]
+         * @param x Integer position of the left edge of the entry in pixels
+         * @param y Integer position of the top edge of the entry in pixels
+         * @param width Integer width of the entry in pixels
+         * @param height Integer height of the entry in pixels
+         * @param mouseX Integer horizontal position of the mouse from the left of the screen in pixels
+         * @param mouseY Integer vertical position of the mouse from the top of the screen in pixels
+         * @param hovered whether the entry is hovered with the mouse
+         * @param focused whether the entry is focused (has been clicked on or navigated to via keyboard)
+         * @param delta tick delta
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        open fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
+
         fun renderExtras(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             renderExtras(context, x.get(), top.get(), w.get(), h, mouseX, mouseY, this.isMouseOver(mouseX.toDouble(), mouseY.toDouble()), isFocused, delta)
         }
 
-        abstract fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float)
-
-        open fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
-
-        open fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
-
+        /**
+         * Render call for rendering anything else related to the entry. This call is not bound by a render scissor, so you can draw "out of bounds" as needed.
+         * @param context [DrawContext]
+         * @param x Integer position of the left edge of the entry in pixels
+         * @param y Integer position of the top edge of the entry in pixels
+         * @param width Integer width of the entry in pixels
+         * @param height Integer height of the entry in pixels
+         * @param mouseX Integer horizontal position of the mouse from the left of the screen in pixels
+         * @param mouseY Integer vertical position of the mouse from the top of the screen in pixels
+         * @param hovered whether the entry is hovered with the mouse
+         * @param focused whether the entry is focused (has been clicked on or navigated to via keyboard)
+         * @param delta tick delta
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         open fun renderExtras(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {}
 
         override fun getFocusedPath(): GuiNavigationPath? {
@@ -880,15 +1063,71 @@ class DynamicListWidget(
         }
     }
 
-    enum class Visibility(val visible: Boolean, val skip: Boolean, val selectable: Boolean, val group: Boolean, val repeatable: Boolean, val affectedBy: Predicate<Visibility>) {
+    /**
+     * Enum defining how the user sees and can interact with an entry.
+     * @param visible Whether the entry is visible. A non-visible entry will take up 0 width in the list (effectively removed from the list, visually)
+     * @param skip Whether the entry should be skipped when searching
+     * @param selectable Whether the user can interact with the entry
+     * @param group Whether the entry belongs to a group
+     * @param repeatable Whether this visibility can be applied to an entry more than once
+     * @param affectedBy Predicate to determine if this visibility is affected by another
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    enum class Visibility(val visible: Boolean, val skip: Boolean, val selectable: Boolean, val group: Boolean, val repeatable: Boolean, val affectedBy: Predicate<Visibility>): VisibilityProvider {
+        /**
+         * Standard visibility. The Entry can be seen, searched, and interacted with.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         VISIBLE(true, false, true, false, false, { v -> !v.group }),
+        /**
+         * Entry hidden by a user action like toggling a group, or some visibility button. Not visible nor selectable, but searchable (in case the user reverses the hidden state after searching)
+         * @see hide
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         HIDDEN(false, false, false, false, true, { v -> !v.group }),
+        /**
+         * Entry filtered by searching. Not visible nor selectable
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         FILTERED(false, false, false, false, false, { v -> !v.group }),
+        /**
+         * Visible entry that represents a group heading
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         GROUP_VISIBLE(true, true, true, true, false, { v -> v.group }),
+        /**
+         * Filtered entry that represents a group heading
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         GROUP_FILTERED(false, true, false, true, false, { v -> v.group }), //filtering handled externally
+        /**
+         * Hidden entry that represents a group heading
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         GROUP_HIDDEN(false, true, false, true, true, { v -> v.group }), //hiding handled externally
+        /**
+         * A disabled group heading, typically caused by a layout error
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         GROUP_DISABLED(false, true, false, true, false, { _ -> false }), //problem group with no entries
+        /**
+         * A header entry. Always visible, skipped in searching, and not selectable. Visibility of headers can't be changed.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         HEADER_VISIBLE(true, true, false, false, false, { _ -> false });
+
+        override fun get(): Visibility {
+            return this
+        }
 
         companion object {
             fun filter(visibilityStack: VisibilityStack) {
@@ -921,12 +1160,28 @@ class DynamicListWidget(
         }
     }
 
-    data class Scope(val scope: String, val group: String = "", val inGroups: List<String> = EMPTY) {
-        companion object {
-            private val EMPTY = listOf<String>()
-        }
-    }
+    /**
+     * The scope context of an entry. This is used during searching and other methods of filtering. For basic lists, all that is needed is [scope]
+     * @param scope String id of the entry, should be unique
+     * @param group Default "", the group this entry owns
+     * @param inGroups Default empty list, the group(s) this entry is part of
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
+    data class Scope(val scope: String, val group: String = "", val inGroups: List<String> = listOf())
 
+    /**
+     * Feature configuration spec for a Dynamic List
+     * @param leftPadding Default 16; the horizontal space in pixels between the left edge of the list widget and the left edge of the entry rows
+     * @param rightPadding Default 10; the horizontal spacing in pixels between the right edge of the entry rows and the left edge of the scroll bar. The scroll bar typically takes up 6 pixels of width, hence the delta between this and [leftPadding]
+     * @param verticalPadding Default 4; the vertical spacing in pixels between list entries.
+     * @param verticalFirstPadding Default whatever [verticalPadding] is; the vertical spacing in pixels between the top of the left widget and the top of the first entry row, when the list is fully scrolled to the top of the list.
+     * @param verticalLastPadding Default whatever [verticalFirstPadding] is; the vertical spacing in pixels between the bottom of the last list entry and the bottom of the widget, then the list is fully scrolled down, if applicable. If the set of entries is shorter than the list widget height, this won't apply.
+     * @param hideScrollBar Default false; whether the scroll bar should be hidden if it's not needed (the entries height is shorter than the widget height).
+     * @param listNarrationKey Default "fc.narrator.position.config"; the translation key of the narration used when describing the position of the entry in the list. The default key translates to "Setting X of Y".
+     * @author fzzyhmstrs
+     * @since 0.6.0
+     */
     data class ListSpec(val leftPadding: Int = 16,
                         val rightPadding: Int = 10,
                         val verticalPadding: Int = 4,
@@ -935,8 +1190,28 @@ class DynamicListWidget(
                         val hideScrollBar: Boolean = false,
                         val listNarrationKey: String = "fc.narrator.position.config")
 
-    data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>) {
-        fun get(): Visibility {
+    /**
+     * Returns a Visibility for a consumer of an entries Visibility. [Visibility] itself is a visibility provider, returning itself. This is to lower the memory footprint of the entries if, as is typical, they are only ever one visibility (usually [Visibility.VISIBLE]). If visibility is modified during usage, the default visibility provider enum is replaced with a [VisibilityStack] to track visibility changes over time.
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    @FunctionalInterface
+    fun interface VisibilityProvider {
+        /**
+         * Returns the entries current [Visibility] status
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        fun get(): Visibility
+    }
+
+    /**
+     * A [VisibilityProvider] that tracks the base visibility of an entry as well as the entries visibility history through a stack (linked list).
+     * @author fzzyhmstrs
+     * @since 0.6.0, implements [VisibilityProvider] as of 0.6.5
+     */
+    data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>): VisibilityProvider {
+        override fun get(): Visibility {
             return visibilityStack.firstOrNull() ?: baseVisibility
         }
 

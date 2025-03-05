@@ -10,12 +10,10 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
-import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
-import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
+import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
@@ -27,7 +25,9 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager.ConfigScree
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.updates.BasicValidationProvider
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
+import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.Ref
@@ -38,7 +38,9 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
+import java.lang.ref.SoftReference
 import java.util.*
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Predicate
@@ -47,116 +49,110 @@ import kotlin.math.max
 import kotlin.math.min
 
 //client
-internal class ConfigScreenManager(private val scope: String, private val configs: List<ConfigSet>) {
+internal class ConfigScreenManager(private val scope: String, private val configs: Map<String, ConfigSet>): BasicValidationProvider {
 
-    private val configMap: Map<String, Set<Config>>
-    private val forwardedUpdates: MutableList<ForwardedUpdate> = mutableListOf()
-    private val manager: ConfigUpdateManager
+    private val sidebar: Sidebar = Sidebar()
+    private val screenCaches: MutableMap<String, ConfigScreenCache> = mutableMapOf()
 
-    private var screens: Map<String, ConfigScreenBuilder> = mapOf()
     private var copyBuffer: Ref<Any?> = Ref(null)
-    private var cachedPermissionLevel = 0
     private var cachedPerms:  Map<String, Map<String, Boolean>> = mapOf()
-    private var cachedOutOfGame: Boolean = false
+    private val cachedPermKey: AtomicInteger = AtomicInteger(0)
+    private var cachedScope: String = ""
 
     init {
-        val map: MutableMap<String, Set<Config>> = mutableMapOf()
-        if (configs.size > 1)
-            map[scope] = configs.map { it.active }.toSet()
-        configs.forEach { map[it.active.getId().toTranslationKey()] = setOf(it.active) }
-        configMap = map
-
-        manager = ConfigUpdateManager(configs, forwardedUpdates, ConfigApiImplClient.getPlayerPermissionLevel())
-        cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
         cachedPerms = ConfigApiImplClient.getPerms()
-        prepareScreens()
     }
 
     //////////////////////////////////////////////
 
     internal fun receiveForwardedUpdate(update: String, player: UUID, scope: String, summary: String) {
-        var entry: Entry<*, *>? = null
-        for ((config, _, _) in configs) {
-            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, new, thing, _, _, _, callback ->
-                if (new == scope) {
-                    if(thing is Entry<*, *>) {
-                        entry = thing
-                        callback.cancel()
-                    } else {
-                        val basicThing = manager.getUpdatableEntry(new)
-                        if (basicThing != null && basicThing is Entry<*, *>) {
-                            entry = basicThing
-                            callback.cancel()
-                        }
-                    }
-                }
-            }
-            if (entry != null)
-                break
-        }
-        if (entry == null)
+        val realScope = getValidScope(scope)
+        if (realScope == null) {
+            FC.LOGGER.error("Received forwarded update from unknown config")
+            FC.LOGGER.error("    > Player: $player")
+            FC.LOGGER.error("    > Scope: $scope")
+            FC.LOGGER.error("    > Summary: $summary")
             return
-        try {
-            forwardedUpdates.add(ForwardedUpdate(scope, update, player, entry!!, summary))
-        } catch (e: Throwable) {
-            //empty catch block to avoid stupid crashes
         }
-    }
-
-    private fun checkForRebuild() {
-        if(cachedPermissionLevel != ConfigApiImplClient.getPlayerPermissionLevel()
-            || cachedPerms != ConfigApiImplClient.getPerms()
-            || cachedOutOfGame != outOfGame()) {
-            cachedPermissionLevel = ConfigApiImplClient.getPlayerPermissionLevel()
-            cachedPerms = ConfigApiImplClient.getPerms()
-            cachedOutOfGame = outOfGame()
-            manager.flush()
-            prepareScreens()
+        val config = configs[realScope]
+            ?: throw IllegalStateException("Unexpected error: Config $realScope not found in manager")
+        val cache = screenCaches.computeIfAbsent(realScope) { _ ->
+            val playerPerms = ConfigApiImplClient.getPlayerPermissionLevel()
+            val customPermsKey = cachedPermKey.get()
+            val outOfWorld = outOfGame()
+            prepareConfigScreenCache(config, playerPerms, customPermsKey, outOfWorld)
         }
-        if (MinecraftClient.getInstance().currentScreen !is ConfigScreen) {
-            manager.flush()
-            manager.pushUpdatableStates()
-        }
+        cache.receiveForwardedUpdate(config.active, update, player, scope, summary)
     }
 
     internal fun provideScreen(scope: String = this.scope): Screen? {
-        checkForRebuild()
+        cachedScope = scope
+        if (cachedPerms != ConfigApiImplClient.getPermsRef()) {
+            cachedPerms = ConfigApiImplClient.getPerms()
+            cachedPermKey.incrementAndGet()
+        }
+        //checkForRebuild()
         return provideScopedScreen(scope)
     }
 
     private fun provideScopedScreen(scope: String): Screen? {
-        val realScope = if (scope == this.scope && configMap.size == 1)
-            configMap.keys.toList()[0]
+        val realScope = if (scope == this.scope && configs.size == 1)
+            configs.keys.toList()[0]
+        else if (scope == this.scope)
+            return provideRootScreen()
         else
-            scope
-        return screens[realScope]?.build() ?: return null
+            getValidScope(scope) ?: return null
+        val configSet = configs[realScope] ?: return null
+        val playerPerms = ConfigApiImplClient.getPlayerPermissionLevel()
+        val customPermsKey = cachedPermKey.get()
+        val outOfWorld = outOfGame()
+        var cache = screenCaches.computeIfAbsent(realScope) { _ ->
+            prepareConfigScreenCache(configSet, playerPerms, customPermsKey, outOfWorld)
+        }
+        if (cache.isInvalid(playerPerms, customPermsKey, outOfWorld)) {
+            cache = prepareConfigScreenCache(configSet, playerPerms, customPermsKey, outOfWorld, cache)
+            screenCaches[realScope] = cache
+        }
+        cache.manager.pushUpdatableStates(cachedScope)
+        return cache.provideScreen(scope)
+    }
+
+    private fun provideRootScreen(): Screen? {
+        val playerPerms = ConfigApiImplClient.getPlayerPermissionLevel()
+        val customPermsKey = cachedPermKey.get()
+        val outOfWorld = outOfGame()
+        var cache = screenCaches.computeIfAbsent(this.scope) { _ ->
+            prepareRootScreenCache(playerPerms, customPermsKey, outOfWorld)
+        }
+        if (cache.isInvalid(playerPerms, customPermsKey, outOfWorld)) {
+            cache = prepareRootScreenCache(playerPerms, customPermsKey, outOfWorld, cache)
+            screenCaches[this.scope] = cache
+        }
+        cache.manager.pushUpdatableStates(cachedScope)
+        return cache.provideScreen(this.scope)
     }
 
     internal fun openScreen(scope: String = this.scope) {
+        cachedScope = scope
+        if (cachedPerms != ConfigApiImplClient.getPermsRef()) {
+            cachedPerms = ConfigApiImplClient.getPerms()
+            cachedPermKey.incrementAndGet()
+        }
         //don't open the screen that's already open
         if (MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.scope == scope) return
-        checkForRebuild()
         openScopedScreen(scope)
     }
 
     private fun openScopedScreen(scope: String) {
-        val realScope = if(scope == this.scope && configMap.size == 1)
-            configMap.keys.toList()[0]
-        else
-            getValidScope(scope) ?: return
-        val screen = screens[realScope]?.build() ?: return
+        val screen = provideScopedScreen(scope) ?: return
         MinecraftClient.getInstance().setScreen(screen)
     }
 
-    private fun getValidScope(scope: String): String? {
-        val validScopes = screens.keys
-        if(validScopes.contains(scope)) return scope
-        var validScopeTry = scope.substringBeforeLast('.')
+    private tailrec fun getValidScope(scope: String): String? {
+        if(configs.keys.contains(scope)) return scope
+        val validScopeTry = scope.substringBeforeLast('.')
         if (validScopeTry == scope) return null
-        while(!validScopes.contains(validScopeTry) && validScopeTry.contains('.')) {
-            validScopeTry = validScopeTry.substringBeforeLast('.')
-        }
-        return if(validScopes.contains(validScopeTry)) validScopeTry else null
+        return getValidScope(validScopeTry)
     }
 
     private fun outOfGame(): Boolean {
@@ -166,20 +162,77 @@ internal class ConfigScreenManager(private val scope: String, private val config
 
     ////////////////////////////////////////////////
 
-    private fun prepareScreens() {
-        val permLevel = ConfigApiImplClient.getPlayerPermissionLevel()
-        prepareConfigScreens(permLevel)
-    }
-
-    private fun prepareConfigScreens(playerPermLevel: Int) {
+    private fun prepareConfigScreenCache(configSet: ConfigSet, playerPerms: Int, customPermsKey: Int, outOfGame: Boolean, previous: ConfigScreenCache? = null): ConfigScreenCache {
         val functionMap: MutableMap<String, MutableList<EntryCreator.Creator>> = mutableMapOf()
         val nameMap: MutableMap<String, Text> = mutableMapOf()
-        val anchors: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
-        var anchorWidth = 0
         val anchorPredicate: Predicate<AnchorResult> =
             Predicate { result ->
                 if (result.thing !is EntryAnchor) return@Predicate false
                 nameMap[result.scope] = result.texts.name
+                false
+            }
+        val forwardedUpdates: MutableList<ForwardedUpdate> = previous?.forwardedUpdates ?: mutableListOf()
+        val manager = ConfigSingleUpdateManager(configSet, forwardedUpdates, playerPerms)
+
+        if (configs.size > 1) {
+            val cache = screenCaches[this.scope]
+            cache?.manager?.nullCast<ConfigRootUpdateManager>()?.addChild(manager)
+        }
+
+        walkConfig(configSet, functionMap, anchorPredicate, playerPerms, manager)
+
+        if(configs.size > 1)
+            nameMap[this.scope] = PlatformUtils.configName(this.scope, "Config Root").lit()
+        val scopes = functionMap.keys.toList() + if(configs.size > 1) listOf(this.scope) else listOf()
+        val scopeButtonFunctions = buildScopeButtons(nameMap)
+        val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
+        for((s, entryBuilders) in functionMap) {
+            val name = nameMap[s] ?: FcText.EMPTY
+            builders[s] = buildBuilder(name, s, scopes, scopeButtonFunctions, entryBuilders, manager)
+        }
+        return ConfigScreenCache(forwardedUpdates, manager, builders, playerPerms, customPermsKey, outOfGame)
+    }
+
+    private fun prepareRootScreenCache(playerPerms: Int, customPermsKey: Int, outOfGame: Boolean, previous: ConfigScreenCache? = null): ConfigScreenCache {
+        val name = PlatformUtils.configName(this.scope, "Config Root").lit()
+        val forwardedUpdates: MutableList<ForwardedUpdate> = previous?.forwardedUpdates ?: mutableListOf()
+        val manager = ConfigRootUpdateManager()
+        val functions: MutableList<EntryCreator.Creator> = mutableListOf()
+        val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
+            .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
+            .put(EntryCreators.COPY_BUFFER, copyBuffer)
+
+        fun List<EntryCreator.Creator>.applyToList(functions: MutableList<EntryCreator.Creator>) {
+            for (creator in this) {
+                functions.add(creator)
+            }
+        }
+
+        for ((s, set) in configs) {
+            screenCaches[s]?.let { manager.addChild(it.manager) }
+            val config: Config = set.active
+            val prefix = config.getId().toTranslationKey()
+            val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, emptyList(), config::class.java.simpleName)
+
+            val context = EntryCreator.CreatorContext(prefix, ConfigGroup.emptyGroups, set.clientOnly, configTexts, config::class.annotations, ConfigApiImpl.getActions(config, ConfigApiImpl.IGNORE_NON_SYNC), contextMisc)
+            //config button, if the config spec allows for them
+            EntryCreators.createConfigEntry(context).applyToList(functions)
+            //Header entry injected into function map at top of config
+        }
+
+        val builder = buildBuilder(name, this.scope, listOf(), mapOf(), functions, manager)
+
+        return ConfigScreenCache(forwardedUpdates, manager, mapOf(this.scope to builder), playerPerms, customPermsKey, outOfGame)
+    }
+
+    private fun prepareSidebarData(): SidebarData {
+
+        val anchors: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
+        var anchorWidth = 0
+
+        val anchorConsumer: Consumer<AnchorResult> =
+            Consumer { result ->
+                if (result.thing !is EntryAnchor) return@Consumer
                 val layer = result.scope.split('.').filter { it != this.scope }.size
                 val anchor = result.thing.anchorEntry(EntryAnchor.Anchor(layer, result.texts.name))
                 val anchorTexts = Translatable.Result(anchor.name, result.texts.desc, result.texts.prefix)
@@ -203,27 +256,45 @@ internal class ConfigScreenManager(private val scope: String, private val config
                         anchor.layer)
                 }
                 anchors.add(anchorFunction)
-                false
             }
-        nameMap[scope] = PlatformUtils.configName(this.scope, "Config Root").lit()
-        for (config in configs) {
-            walkConfig(config, functionMap, anchorPredicate, playerPermLevel)
+
+        for (configSet in configs.values) {
+            val config = configSet.active
+            val prefix = config.getId().toTranslationKey()
+            val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, emptyList(), config::class.java.simpleName)
+            anchorConsumer.accept(AnchorResult(prefix, config, configTexts))
+
+            ConfigApiImpl.walk(config, prefix, 1) { _, _, new, thing, thingProp, annotations, globalAnnotations, callback ->
+                if (thing != null) {
+                    if (thing is EntryParent) {
+                        if (thing.continueWalk()) callback.cont()
+                    } else if (thing !is EntryCreator && this.basicValidationStrategy(thing, thingProp.returnType, new, annotations).nullCast<EntryParent>()?.continueWalk() == true) {
+                        callback.cont()
+                    }
+                    val fieldName = new.substringAfterLast('.')
+                    val texts = ConfigApiImplClient.getText(thing, fieldName, annotations, globalAnnotations)
+                    anchorConsumer.accept(AnchorResult(new, thing, texts))
+                }
+            }
         }
-        val scopes = functionMap.keys.toList()
-        val scopeButtonFunctions = buildScopeButtons(nameMap)
-        val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
-        for((s, entryBuilders) in functionMap) {
-            val name = nameMap[s] ?: FcText.EMPTY
-            builders[s] = buildBuilder(name, s, scopes, scopeButtonFunctions, entryBuilders, anchors, anchorWidth)
-        }
-        this.screens = builders
+
+        return SidebarData(anchors, anchorWidth + 1)
     }
+
+    private val contextMisc: EntryCreator.CreatorContextMisc by lazy {
+        EntryCreator.CreatorContextMisc()
+            .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
+            .put(EntryCreators.COPY_BUFFER, copyBuffer)
+    }
+
+
 
     private fun walkConfig(
         set: ConfigSet, //the current set of configs to walk
         functionMap: MutableMap<String, MutableList<EntryCreator.Creator>>, //Creators go here, sorted by encounter order and scope
         anchorPredicate: Predicate<AnchorResult>, //Returns true if the anchor will supplant an inline entry. nameMap will now happen here
-        playerPermLevel: Int)
+        playerPermLevel: Int,
+        manager: ConfigBaseUpdateManager)
     {
         val config: Config = set.active
         val baseConfig: Config = set.base
@@ -237,23 +308,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
             }
         }
 
-        val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
-            .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
-            .put(EntryCreators.COPY_BUFFER, copyBuffer)
+        anchorPredicate.test(AnchorResult(prefix, config, configTexts))
 
-        val skip = anchorPredicate.test(AnchorResult(prefix, config, configTexts))
-
-        //apply top level Creators as needed
-        if (!skip || configTexts.prefix != null) {
+        if (configTexts.prefix != null) {
             val context = EntryCreator.CreatorContext(prefix, groups, set.clientOnly, configTexts, config::class.annotations, ConfigApiImpl.getActions(config, ConfigApiImpl.IGNORE_NON_SYNC), contextMisc)
-            //config button, if the config spec allows for them
-            if (!skip) {
-                EntryCreators.createConfigEntry(context).applyToMap(this.scope, functionMap)
-            }
-            //Header entry injected into function map at top of config
-            if (configTexts.prefix != null) {
-                EntryCreators.createHeaderEntry(context).applyToMap(prefix, functionMap)
-            }
+            EntryCreators.createHeaderEntry(context).applyToMap(prefix, functionMap)
         }
 
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
@@ -274,7 +333,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("$prefix.")
                 ConfigApiImpl.drill(baseConfig, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->
-                    basicValidation = manager.basicValidationStrategy(thing2, drillProp.returnType, new, drillAnnotations)?.instanceEntry()
+                    basicValidation = this.basicValidationStrategy(thing2, drillProp.returnType, new, drillAnnotations)?.instanceEntry()
                 }
                 val basicValidation2 = basicValidation
                 if (basicValidation2 != null) {
@@ -282,7 +341,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     basicValidation2.setEntryKey(new)
                     entryCreator = basicValidation2
                     basicValidation2.prepare(new, groups, annotations, globalAnnotations)
-                    ConfigApiImplClient.prepare(thing, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
+                    ConfigApiImplClient.prepare(basicValidation2, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
                 } else {
                     entryCreator = null
                     ConfigApiImplClient.PrepareResult.FAIL
@@ -305,7 +364,8 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 val skip2 = anchorPredicate.test(AnchorResult(new, thing, prepareResult.texts))
 
                 if (!skip2) {
-                    val context = EntryCreator.CreatorContext(new, LinkedList(groups), set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
+                    //pass in a singleton list if there is an empty group state to save memory
+                    val context = EntryCreator.CreatorContext(new, if (groups.isEmpty()) ConfigGroup.emptyGroups else LinkedList(groups), set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
 
                     when (prepareResult.perms) {
                         ConfigApiImplClient.PermResult.FAILURE -> {
@@ -333,7 +393,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
                 Supplier {
                     CustomButtonWidget.builder(translation) { openScopedScreen(name) }
                         .dimensions(0, 0, min(100, textRenderer.getWidth(translation) + 8), 20)
-                        .narrationSupplier{ _ -> FcText.translatable("fc.button.navigate", translation) }
+                        .narrationSupplier { _, _ -> FcText.translatable("fc.button.navigate", translation) }
                         .build()
                 }
             }
@@ -344,26 +404,99 @@ internal class ConfigScreenManager(private val scope: String, private val config
                              scopes: List<String>,
                              scopeButtonFunctions: Map<String, Supplier<ClickableWidget>>,
                              entries: List<EntryCreator.Creator>,
-                             anchors: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>>,
-                             anchorWidth: Int): ConfigScreenBuilder {
-        val scopeSplit = scope.split(".")
-        val parentScopes = scopes.filter { scopeSplit.containsAll(it.split(".")) && it != scope }.sortedBy { it.length }
-        val suppliers: MutableList<Supplier<ClickableWidget>> = mutableListOf()
-        for(fScope in parentScopes) {
-            suppliers.add(scopeButtonFunctions[fScope] ?: continue)
-        }
+                             manager: UpdateManager): ConfigScreenBuilder {
         return ConfigScreenBuilder {
+            val scopeSplit = scope.split(".")
+            val parentScopes = scopes.filter { scopeSplit.containsAll(it.split(".")) && it != scope }.sortedBy { it.length }
+            val suppliers: List<Supplier<ClickableWidget>> = parentScopes.mapNotNull { scopeButtonFunctions[it] }
             val list = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 290, 290, DynamicListWidget.ListSpec(verticalPadding = 4))
-            ConfigScreen(name, scope, this.manager, list, suppliers, anchors, anchorWidth).setParent(MinecraftClient.getInstance().currentScreen)
+            ConfigScreen(name, scope, manager, list, suppliers, this.sidebar) {
+                for ((_, cache) in screenCaches) {
+                    if (cache.manager.hasChanges()) cache.manager.apply(true)
+                    cache.manager.invalidatePush()
+                }
+            }.setParent(MinecraftClient.getInstance().currentScreen)
         }
     }
 
     ///////////////////////////////////////
 
-    internal fun interface ConfigScreenBuilder {
+    private fun interface ConfigScreenBuilder {
         fun build(): ConfigScreen
+    }
+
+    private class ConfigScreenCache(val forwardedUpdates: MutableList<ForwardedUpdate>, val manager: ConfigBaseUpdateManager, screenBuilders: Map<String, ConfigScreenBuilder>, private val permLevel: Int, private val customPermsKey: Int, private val outOfWorld: Boolean) {
+
+        private val screens: SoftReference<Map<String, ConfigScreenBuilder>> = SoftReference(screenBuilders)
+
+        fun isInvalid(permLevel: Int, customPermsKey: Int, outOfWorld: Boolean): Boolean {
+            return this.permLevel != permLevel
+                    || this.customPermsKey != customPermsKey
+                    || this.outOfWorld != outOfWorld
+                    || this.screens.get() == null
+        }
+
+        fun provideScreen(scope: String) : Screen? {
+            val screenMap = screens.get()
+            val screenTry = screenMap?.get(getValidSubScope(scope))
+            return screenTry?.build()
+        }
+
+        private tailrec fun getValidSubScope(scope: String): String? {
+            val screenMap = screens.get() ?: return null
+            if(screenMap.keys.contains(scope)) return scope
+            val validScopeTry = scope.substringBeforeLast('.')
+            if (validScopeTry == scope) return null
+            return getValidSubScope(validScopeTry)
+        }
+
+        fun receiveForwardedUpdate(config: Config, update: String, player: UUID, scope: String, summary: String) {
+            var entry: Entry<*, *>? = null
+            ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, new, thing, _, _, _, callback ->
+                if (new == scope) {
+                    if(thing is Entry<*, *>) {
+                        entry = thing
+                        callback.cancel()
+                    } else {
+                        val basicThing = manager.getUpdatableEntry(new)
+                        if (basicThing != null && basicThing is Entry<*, *>) {
+                            entry = basicThing
+                            callback.cancel()
+                        }
+                    }
+                }
+            }
+            if (entry == null)
+                return
+            try {
+                forwardedUpdates.add(ForwardedUpdate(scope, update, player, entry!!, summary))
+            } catch (e: Throwable) {
+                //empty catch block to avoid stupid crashes
+            }
+        }
     }
 
     internal class ForwardedUpdate(val scope: String, val update: String, val player: UUID, val entry: Entry<*, *>, val summary: String)
 
+    private class SidebarData(val anchors: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>>, val anchorWidth: Int)
+
+    internal inner class Sidebar {
+
+        private val data: SidebarData by lazy {
+            this@ConfigScreenManager.prepareSidebarData()
+        }
+
+        fun getAnchors(): List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> {
+            return data.anchors
+        }
+
+        fun getAnchorWidth(): Int {
+            return data.anchorWidth
+        }
+
+        fun needsSidebar(): Boolean {
+            return (this@ConfigScreenManager.configs.size > 1) || (data.anchors.size > 1)
+        }
+
+    }
 }

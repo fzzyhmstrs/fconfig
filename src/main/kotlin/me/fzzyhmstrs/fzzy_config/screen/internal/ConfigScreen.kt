@@ -11,9 +11,11 @@
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.impl.config.KeybindsConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
+import me.fzzyhmstrs.fzzy_config.screen.entry.InfoKeybindEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
@@ -24,6 +26,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
+import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
@@ -52,13 +55,14 @@ internal class ConfigScreen(
     private val manager: UpdateManager,
     private val configList: DynamicListWidget,
     private val parentScopesButtons: List<Supplier<ClickableWidget>>,
-    private val anchors: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>>,
-    private val anchorWidth: Int)
+    private val sidebar: ConfigScreenManager.Sidebar,
+    private val onFinalClose: Runnable)
     :
     PopupWidgetScreen(title), ContextHandler, ContextProvider
 {
 
     private var parent: Screen? = null
+    private var globalInputHandler: ((key: Int, released: Boolean, type: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean) -> TriState)? = null
 
     internal lateinit var layout: ThreePartsLayoutWidget
     private lateinit var searchField: NavigableTextFieldWidget
@@ -74,6 +78,10 @@ internal class ConfigScreen(
     private val menuListBackground: Identifier = "textures/gui/menu_list_background.png".simpleId()
     private val inWorldMenuListBackground: Identifier = "textures/gui/inworld_menu_list_background.png".simpleId()
 
+    fun setGlobalInputHandler(handler: ((key: Int, released: Boolean, type: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean) -> TriState)?) {
+        this.globalInputHandler = handler
+    }
+
     fun setParent(screen: Screen?): ConfigScreen {
         this.parent = screen
         return this
@@ -85,7 +93,7 @@ internal class ConfigScreen(
 
     override fun close() {
         if(this.parent == null || this.parent !is ConfigScreen) {
-            manager.apply(true)
+            onFinalClose.run()
             this.client?.narratorManager?.clear()
         }
         this.client?.setScreen(parent)
@@ -131,7 +139,7 @@ internal class ConfigScreen(
     private fun initFooter() {
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //goto button
-        directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openGotoPopup(anchors, anchorWidth, this.height) }.size(20, 20).textures(TextureIds.GOTO_SET).narrationSupplier { _, _ -> TextureIds.GOTO_LANG }.activeSupplier { anchors.size > 1 }.tooltip(TextureIds.GOTO_LANG).build()) { p -> p.alignLeft() }
+        directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openGotoPopup(this.sidebar.getAnchors(), this.sidebar.getAnchorWidth(), this.height) }.size(20, 20).textures(TextureIds.GOTO_SET).narrationSupplier { _, _ -> TextureIds.GOTO_LANG }.activeSupplier { sidebar.needsSidebar() }.tooltip(TextureIds.GOTO_LANG).build()) { p -> p.alignLeft() }
         //directionalLayoutWidget.add(TextlessActionWidget("widget/action/goto".fcId(), "widget/action/goto_inactive".fcId(), "widget/action/goto_highlighted".fcId(), "fc.button.goto".translate(), "fc.button.goto".translate(), { anchors.size > 1 } ) { Popups.openGotoPopup(anchors, anchorWidth, this.height) }) { p -> p.alignLeft() }
         //info button
         directionalLayoutWidget.add(CustomButtonWidget.builder { openInfoPopup() }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignLeft() }
@@ -285,6 +293,8 @@ internal class ConfigScreen(
     }
 
     override fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        val global = globalInputHandler?.invoke(button, false, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (global != null && global != TriState.DEFAULT) return global.asBoolean
         val contextTypes = ContextType.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextTypes.isEmpty()) return super.onClick(mouseX, mouseY, button)
         var bl = false
@@ -298,16 +308,24 @@ internal class ConfigScreen(
 
     }
 
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        val global = globalInputHandler?.invoke(button, true, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (global != null && global != TriState.DEFAULT) return global.asBoolean
+        return super.mouseReleased(mouseX, mouseY, button)
+    }
+
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        val global = globalInputHandler?.invoke(keyCode, false, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (global != null && global != TriState.DEFAULT) return global.asBoolean
         val contextTypes = ContextType.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextTypes.isEmpty()) return super.keyPressed(keyCode, scanCode, modifiers)
         var bl = false
-        val input = if(MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
+        val input = if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
 
         for (contextType in contextTypes) {
             bl = bl || handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }
-        return if(bl) {
+        return if (bl) {
             true
         } else {
             val bl2 = super.keyPressed(keyCode, scanCode, modifiers)
@@ -318,6 +336,12 @@ internal class ConfigScreen(
                 bl2
             }
         }
+    }
+
+    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        val global = globalInputHandler?.invoke(keyCode, true, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
+        if (global != null && global != TriState.DEFAULT) return global.asBoolean
+        return super.keyReleased(keyCode, scanCode, modifiers)
     }
 
     override fun handleContext(contextType: ContextType, position: Position): Boolean {
@@ -341,8 +365,8 @@ internal class ConfigScreen(
                 }
             }
             ContextType.SEARCH -> {
-                if (anchors.size > 1) {
-                    Popups.openGotoPopup(anchors, anchorWidth, this.height)
+                if (sidebar.needsSidebar()) {
+                    Popups.openGotoPopup(this.sidebar.getAnchors(), this.sidebar.getAnchorWidth(), this.height)
                     true
                 } else {
                     false
@@ -358,6 +382,10 @@ internal class ConfigScreen(
             }
             ContextType.UNDO -> {
                 manager.revertLast()
+                true
+            }
+            ContextType.FULL_EXIT -> {
+                shiftClose()
                 true
             }
             else -> {
@@ -381,27 +409,43 @@ internal class ConfigScreen(
 
     private fun openInfoPopup() {
         val textRenderer = MinecraftClient.getInstance().textRenderer
+        val list: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "page_up", KeybindsConfig.INSTANCE.pageUp) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "page_down", KeybindsConfig.INSTANCE.pageDown) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "home", KeybindsConfig.INSTANCE.home) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "end", KeybindsConfig.INSTANCE.end) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "copy", KeybindsConfig.INSTANCE.copy) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "paste", KeybindsConfig.INSTANCE.paste) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "find", KeybindsConfig.INSTANCE.find) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "save", KeybindsConfig.INSTANCE.save) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "undo", KeybindsConfig.INSTANCE.undo) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "context_keyboard", KeybindsConfig.INSTANCE.contextKeyboard) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "context_mouse", KeybindsConfig.INSTANCE.contextMouse) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "back", KeybindsConfig.INSTANCE.back) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "search", KeybindsConfig.INSTANCE.search) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "info", KeybindsConfig.INSTANCE.info) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "full_exit", KeybindsConfig.INSTANCE.fullExit) }
+        val listWidget = DynamicListWidget(MinecraftClient.getInstance(), list, 0, 0, 10000, 0, DynamicListWidget.ListSpec(leftPadding = 10, rightPadding = 4, listNarrationKey = "fc.narrator.position.list"))
         val popup = PopupWidget.Builder("fc.button.info".translate())
             .addDivider()
             .add("header", ClickableTextWidget(this, "fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
                 style.withFormatting(Formatting.AQUA, Formatting.UNDERLINE)
-                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://fzzyhmstrs.github.io/fconfig/"))
+                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://moddedmc.wiki/en/project/fzzy-config/docs"))
                     .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, "fc.button.info.fc.tip".translate()))
             }), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             .addDivider()
-            .add("undo", TextWidget("fc.button.info.undo".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("find", TextWidget("fc.button.info.find".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("copy", TextWidget("fc.button.info.copy".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("paste", TextWidget("fc.button.info.paste".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("save", TextWidget("fc.button.info.save".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("page", TextWidget("fc.button.info.page".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("keybinds", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
             .addDivider()
-            .add("click", TextWidget("fc.button.info.click".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("click_kb", TextWidget("fc.button.info.click_kb".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("click_kb2", TextWidget("fc.button.info.click_kb2".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .addDivider()
-            .add("alert", TextWidget("fc.button.info.alert".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("alert", TextWidget("fc.button.info.alert".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             .addDoneWidget()
+            .widthFunction { sw, _ -> (sw * 0.92).toInt() }
+            .heightFunction { sh, h ->
+                val newHeight = (sh * 0.9).toInt()
+                val heightDelta = newHeight - h
+                listWidget.height += heightDelta
+                newHeight
+            }
+            .onClose { KeybindsConfig.INSTANCE.save() }
             .build()
         PopupWidget.push(popup)
     }

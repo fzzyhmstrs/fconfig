@@ -2,7 +2,11 @@
 title: Validated Choice Lists
 ---
 
-As of Fzzy Config 0.6.0, create sets of selectable and de-selectable choices with `ValidatedChoiceList`. This is useful for a feature-flag-style setting, polling for active flags using `List#contains`.
+<Callout>
+Added in Fzzy Config 0.6.0
+</Callout>
+
+Create sets of selectable and de-selectable choices with `ValidatedChoiceList`. This is useful for a feature-flag-style setting, polling for active flags using `List#contains`.
 
 Like `ValidatedChoice`, this validation is of the type `List<T>`, where T is your choice type. Like `ValidatedList`, this validation implements the `List` interface, so can be used directly for list operations.
 

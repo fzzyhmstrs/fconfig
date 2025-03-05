@@ -94,6 +94,23 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     /**
      * @suppress
      */
+    override fun setWidth(width: Int) {
+        super.setWidth(width)
+        onReposition()
+        focusedElement?.let { ensureVisible(it) }
+    }
+
+    /**
+     * @suppress
+     */
+    override fun setHeight(height: Int) {
+        super.setHeight(height)
+        onReposition()
+    }
+
+    /**
+     * @suppress
+     */
     override fun setPosition(x: Int, y: Int) {
         super.setPosition(x, y)
         onReposition()
@@ -205,6 +222,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     override fun setFocused(focused: Element?) {
+        if (focusedElement === focused) return
         @Suppress("UNCHECKED_CAST")
         val f = focused as? E
         if (f != null && !selectableEntries().contains(f)) return
@@ -532,7 +550,10 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     override fun setFocused(focused: Boolean) {
-        super<ParentElement>.setFocused(focused)
+        if (!focused) {
+            this.focusedElement?.isFocused = false
+            this.focusedElement = null
+        }
     }
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {

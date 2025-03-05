@@ -20,16 +20,18 @@ import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.entry.WidgetEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
-import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.screen.widget.internal.NavigableTextFieldWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -180,9 +182,9 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
 
     /**
      * creates a deep copy of this ValidatedChoice (as deep as possible)
-     * return ValidatedChoice wrapping a copy of the currently stored choice, allowable choices, and handler
+     * return ValidatedChoiceList wrapping a copy of the currently stored choices, allowable choices, handler, translation providers, and widget type
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.6.3
      */
     override fun instanceEntry(): ValidatedChoiceList<T> {
         @Suppress("DEPRECATION")
@@ -202,13 +204,13 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
 
     /**
      * Copies the provided input as deeply as possible. For immutables like numbers and booleans, this will simply return the input
-     * @param input [T] input to be copied
+     * @param input List&lt;[T]&gt; input to be copied
      * @return copied output
      * @author fzzyhmstrs
      * @since 0.6.0
      */
     override fun copyValue(input: List<T>): List<T> {
-        return input.toList()
+        return input.map { handler.copyValue(it) }
     }
 
     @Internal
@@ -237,12 +239,15 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
                 }
                 LayoutClickableWidget(0, 0, 110, 20 * choices.size, layout)
             }
+            WidgetType.SCROLLABLE -> {
+                CustomButtonWidget.builder("fc.validated_field.choice_set".translate()) { b -> openChoicesScrollableEditPopup(b) }.size(110, 20).build()
+            }
         }
     }
 
     @Internal
     override fun entryDeco(): Decorated.DecoratedOffset? {
-        return Decorated.DecoratedOffset(TextureDeco.DECO_LIST, 2, 2)
+        return Decorated.DecoratedOffset(TextureDeco.DECO_CHOICE_LIST, 2, 2)
     }
 
     @Internal
@@ -281,7 +286,13 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
          * @author fzzyhmstrs
          * @since 0.6.3
          */
-        INLINE
+        INLINE,
+        /**
+         * The choices are displayed in a popup with a scrollable list widget displaying the choices. Up to 6 choices are displayed in the "window", with additional options available via scrolling.
+         * @author fzzyhmstrs
+         * @since 0.6.5
+         */
+        SCROLLABLE
     }
 
     private fun openChoicesEditPopup(b: CustomButtonWidget) {
@@ -315,11 +326,71 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         PopupWidget.push(builder.build())
     }
 
+    private fun openChoicesScrollableEditPopup(b: CustomButtonWidget) {
+        val choiceListTitle = "fc.validated_field.choice_set".translate()
+        val textRenderer = MinecraftClient.getInstance().textRenderer
+        var buttonWidth = textRenderer.getWidth(choiceListTitle)
+        val entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
+        for (const in choices) {
+            buttonWidth = max(buttonWidth, textRenderer.getWidth(this.translationProvider.apply(const, this.translationKey())) + 8)
+        }
+        if (choices.size <= 6)
+            buttonWidth += 10
+        for ((index, const) in choices.withIndex()) {
+            entries.add( BiFunction { list, _ ->
+                val button = ChoiceWidget(
+                    const,
+                    buttonWidth,
+                    { c: T -> this.get().contains(c) },
+                    this,
+                    { c ->
+                        val newList = this.get().toMutableList()
+                        if (!newList.remove(c)) {
+                            newList.add(c)
+                        }
+                        this.accept(newList)
+                    })
+                val name = this.translationProvider.apply(const, this.translationKey())
+                val desc = this.descriptionProvider.apply(const, this.descriptionKey()).takeIf { it.string != "" }
+                WidgetEntry(list, "choice$index", Translatable.Result(name, desc, null), 20, button)
+            })
+        }
+        var listWidth = buttonWidth
+        val spec = if (entries.size > 6) {
+            listWidth += 10
+            DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = 4, verticalPadding = 0, listNarrationKey = "fc.narrator.position.entry")
+        } else {
+            DynamicListWidget.ListSpec(leftPadding = 0, rightPadding = -6, verticalPadding = 0, listNarrationKey = "fc.narrator.position.entry")
+        }
+        val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries, 0, 0, listWidth, 120, spec)
+
+        val builder = PopupWidget.Builder(choiceListTitle)
+        builder.add("choice_list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
+        if (entries.size > 6) {
+            val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, listWidth, 20, FcText.EMPTY)
+            searchField.setMaxLength(100)
+            searchField.text = ""
+            fun setColor(entries: Int) {
+                if(entries > 0)
+                    searchField.setEditableColor(-1)
+                else
+                    searchField.setEditableColor(0xFF5555)
+            }
+            searchField.setChangedListener { s -> setColor(entryList.search(s)) }
+            searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+            builder.add("choice_search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
+        }
+        builder.positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
+        builder.positionY(PopupWidget.Builder.popupContext { b.y - 82 })
+        builder.addDoneWidget()
+        PopupWidget.push(builder.build())
+    }
+
     /**
      * @suppress
      */
     override fun toString(): String {
-        return "Validated Choice Set[value=$storedValue, choices=$choices]"
+        return "Validated Choice List[enabled=$storedValue, choices=$choices]"
     }
 
     // List Interface //////////////////////////////////
@@ -380,15 +451,6 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
 
         var choiceSelected = selectedPredicate.test(thisVal)
 
-        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
-            val text = message
-            val i = getWidth() - 4 - (if (choiceSelected) 18 else 0)
-            val j = MinecraftClient.getInstance().textRenderer.getWidth(text)
-            val l = y + (getHeight() - MinecraftClient.getInstance().textRenderer.fontHeight + 1) / 2
-            val orderedText = if (j > i) FcText.trim(text, i, MinecraftClient.getInstance().textRenderer) else text.asOrderedText()
-            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 4, l, -1)
-        }
-
         override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             choiceSelected = selectedPredicate.test(thisVal)
             RenderSystem.enableBlend()
@@ -399,12 +461,24 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
             }
         }
 
+        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+            val text = message
+            val i = getWidth() - 4 - (if (choiceSelected) 18 else 0)
+            val j = MinecraftClient.getInstance().textRenderer.getWidth(text)
+            val l = y + (getHeight() - MinecraftClient.getInstance().textRenderer.fontHeight + 1) / 2
+            val orderedText = if (j > i) FcText.trim(text, i, MinecraftClient.getInstance().textRenderer) else text.asOrderedText()
+            context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, orderedText, x + 4, l, -1)
+        }
+
         override fun getMessage(): Text {
             return entry.translationProvider.apply(thisVal, entry.translationKey())
         }
 
         override fun getNarrationMessage(): MutableText {
-            return entry.translationProvider.apply(thisVal, entry.translationKey())
+            return if (choiceSelected)
+                FcText.translatable("fc.validated_field.choice_set.selected", super.getNarrationMessage())
+            else
+                FcText.translatable("fc.validated_field.choice_set.deselected", super.getNarrationMessage())
         }
 
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {

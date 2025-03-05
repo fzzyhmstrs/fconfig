@@ -1,0 +1,67 @@
+---
+title: Validated Keybinds
+---
+
+<Callout>
+Added in Fzzy Config 0.6.5
+</Callout>
+
+A simple keybind implementation of the context handling as explained in [Context Actions](../../features/Context-Actions). This system is used inside Fzzy Config to handle screen inputs made to the Config GUI, but it can be purposed for any input made by the user in screens or otherwise.
+
+<Callout variant="warning">
+Keybinds made this way do NOT automatically work. They have to be wired up to something! They are a framework for receiving inputs, alongside the context handler system.
+</Callout>
+
+### FzzyKeybind
+
+This keybind system starts with the [FzzyKeybind](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.screen.context/-fzzy-keybind/index.html) interface. It implements `ContextAction.Relevant`, making it fully compatible as an input to the Fzzy Config context handling system.
+
+Fzzy keybinds work with any modifier keys (ctrl, shift, and/or alt), and can also be compounded together (multiple choice keybinds).
+
+Keybinds have a `Builder`:
+
+<CodeTabs>
+
+```java !!tabs Java
+//this compound keybind accepts either ctrl-Tab or Keypad + as inputs.
+public FzzyKeybind keybind = (new FzzyKeybind.Builder()).keyboard(GLFW.GLFW_KEY_TAB, true, false, false).keyboard(GLFW.GLFW_KEY_KP_ADD).build();
+
+//this keybind can be passed into the context type registry for automatic handling (or used separately of course).
+public ContextType keybindType = ContextType.create("my.keybind.id", ContextInput.KEYBOARD, keybind);
+```
+
+```kotlin !!tabs Kotlin
+ //this compound keybind accepts either ctrl-Tab or Mouse 4 as inputs.
+val keybind: FzzyKeybind = Builder().keyboard(GLFW.GLFW_KEY_TAB, ctrl = true, shift = false, alt = false).mouse(GLFW.GLFW_MOUSE_BUTTON_4).build()
+
+//this keybind can be passed into the context type registry for automatic handling (or used separately of course).
+val keybindType: ContextType = ContextType.create("my.keybind.id", ContextInput.KEYBOARD, keybind)
+```
+
+</CodeTabs>
+
+### Validation
+Keybinds have a built-in validation type, that also implements `ContextType.Relevant` so they too can be directly used in the `ContextType` registry. This allows for construction of configurable keybinds.
+
+<CodeTabs>
+
+```java !!tabs Java
+//keybind with built-in validation and GUI configuration support. Can be registered to the context type registry just like above.
+public ValidatedKeybind myKeybind = new ValidatedKeybind(GLFW.GLFW_KEY_TAB, true, false, false);
+
+//there are multiple constructor overloads, including one that lets you operate on a provided Builder for construction of compound keybinds.
+public ValidatedKeybind myCompoundKeybind = new ValidatedKeybind(builder -> builder.keyboard(GLFW.GLFW_KEY_TAB, true, false, false).keyboard(GLFW.GLFW_KEY_KP_ADD));
+```
+
+```kotlin !!tabs Kotlin
+ //keybind with built-in validation and GUI configuration support. Can be registered to the context type registry just like above.
+var myKeybind: ValidatedKeybind = ValidatedKeybind(GLFW.GLFW_KEY_TAB, true, false, false)
+
+//there are multiple constructor overloads, including one that lets you operate on a provided Builder for construction of compound keybinds.
+var myCompoundKeybind: ValidatedKeybind = ValidatedKeybind { builder: FzzyKeybind.Builder ->
+    builder.keyboard(GLFW.GLFW_KEY_TAB, true, false, false).keyboard(GLFW.GLFW_KEY_KP_ADD)
+}
+```
+
+</CodeTabs>
+

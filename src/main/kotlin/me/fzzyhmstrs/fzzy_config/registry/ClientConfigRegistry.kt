@@ -159,7 +159,7 @@ internal object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
+                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.mapValues { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
         }
         manager.openScreen(scope)
     }
@@ -174,7 +174,7 @@ internal object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.map { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
+                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.mapValues { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
         }
         return manager.provideScreen(scope)
     }
@@ -186,6 +186,11 @@ internal object ClientConfigRegistry {
     //client
     internal fun getPerms(): Map<String, Map<String, Boolean>> {
         return HashMap(customPermissions)
+    }
+
+    //client
+    internal fun getPermsRef(): Map<String, Map<String, Boolean>> {
+        return customPermissions
     }
 
     //client
@@ -220,9 +225,11 @@ internal object ClientConfigRegistry {
     }
 
     //client
-    internal fun registerConfig(config: Config, baseConfig: Config) {
-        validScopes.add(config.getId().namespace)
-        validSubScopes.put(config.getId().namespace, config.getId().path)
+    internal fun registerConfig(config: Config, baseConfig: Config, noGui: Boolean) {
+        if (!noGui) {
+            validScopes.add(config.getId().namespace)
+            validSubScopes.put(config.getId().namespace, config.getId().path)
+        }
         UpdateManager.applyKeys(config)
         clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config, baseConfig)
         EventApiImpl.fireOnRegisteredClient(config.getId(), config)

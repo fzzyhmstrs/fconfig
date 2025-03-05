@@ -29,6 +29,7 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
+import net.minecraft.client.gui.navigation.GuiNavigationType
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
@@ -98,7 +99,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         val n: MutableList<AbstractTextWidget> = mutableListOf()
         val t: MutableList<TooltipChild> = mutableListOf()
         layout.categorize(c, d, s) { w ->
-            if (w is AbstractTextWidget)
+            if (w is AbstractTextWidget && w !is OnClickTextFieldWidget)
                 n.add(w)
             if (w is TooltipChild)
                 t.add(w)
@@ -110,7 +111,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         t.addAll(actions.mapNotNull { it.nullCast() })
         children = c
         drawables = d
-        selectables = s.filterNot { it is AbstractTextWidget }.filterIsInstance<Element>().cast()
+        selectables = s.filterNot { it is AbstractTextWidget && it !is OnClickTextFieldWidget }.filterIsInstance<Element>().cast()
         tooltipProviders = t
     }
 
@@ -504,7 +505,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
          * @suppress
          */
         override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
-            val bl1 = isMouseOver(mouseX.toDouble(), mouseY.toDouble())
+            val bl1 = isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && MinecraftClient.getInstance().navigationType == GuiNavigationType.MOUSE
             if (!bl1 && !keyboardFocused) return TooltipChild.EMPTY
             return listOf(actionTooltip)
         }
