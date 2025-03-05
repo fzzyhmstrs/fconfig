@@ -80,6 +80,8 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
                 || keyCode == GLFW.GLFW_KEY_LEFT
                 || keyCode == GLFW.GLFW_KEY_DOWN
                 || keyCode == GLFW.GLFW_KEY_UP
+                || keyCode == GLFW.GLFW_KEY_LEFT_SHIFT
+                || keyCode == GLFW.GLFW_KEY_RIGHT_SHIFT
     }
 
     /**

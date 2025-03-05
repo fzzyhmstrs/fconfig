@@ -77,6 +77,10 @@ interface PopupParentElement: ParentElement, LastSelectable {
      * @since 0.2.0
      */
     fun setPopup(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
+        push(PopupEntry(this, widget, mouseX, mouseY))
+    }
+
+    fun setPopupInternal(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
         if(widget == null) {
             if (popupWidgets.isEmpty())
                 return
@@ -114,27 +118,19 @@ interface PopupParentElement: ParentElement, LastSelectable {
         if (popupWidget.mouseClicked(mouseX, mouseY, button) || popupWidget.isMouseOver(mouseX, mouseY)) {
             return true
         } else if(popupWidget.closesOnMissedClick()) {
-                setPopup(null, mouseX, mouseY)
+                setPopupInternal(null, mouseX, mouseY)
         }
         return false
     }
 
     private fun mouseClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
         for (element in this.children()) {
-            var lastFocused: Element? = null
-            if (element.isMouseOver(mouseX, mouseY)) {
-                lastFocused = this.focused
+            if (element.mouseClicked(mouseX, mouseY, button)) {
                 this.focused = element
-            }
-            if (!element.mouseClicked(mouseX, mouseY, button)) {
-                this.focused = lastFocused
-            } else {
-                if (this.focused != element) {
-                    this.focused = element
-                }
                 if (button == 0) {
                     this.isDragging = true
                 }
+
                 return true
             }
         }
@@ -169,5 +165,22 @@ interface PopupParentElement: ParentElement, LastSelectable {
 
     override fun charTyped(chr: Char, modifiers: Int): Boolean {
         return activeWidget()?.charTyped(chr, modifiers) ?: super.charTyped(chr, modifiers)
+    }
+
+    data class PopupEntry(val parent: PopupParentElement, val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null)
+
+    companion object {
+        private val popupStack: LinkedList<PopupEntry> = LinkedList()
+
+        private fun push(entry: PopupEntry) {
+            popupStack.push(entry)
+        }
+
+        internal fun popAll() {
+            while (popupStack.isNotEmpty()) {
+                val e = popupStack.pop()
+                e.parent.setPopupInternal(e.widget, e.mouseX, e.mouseY)
+            }
+        }
     }
 }
