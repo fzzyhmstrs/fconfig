@@ -40,7 +40,10 @@
 ### Fixes
 * Fixed done button on config screens saying "back" when they should say "done" in certain circumstances
 * Fixed `ValidatedAny` popup saying "Revert Changes" for both the revert and restore defaults button
-* Certain validation types now properly determine their defaultness and changed state, namely Validated Objects.
+* Certain validation types now properly determine their default- and changed-state, namely Validated Objects.
 * `ValidatedCondition` now properly considers its conditions when determining default and changed states. A Validated Condition that has failed conditions will always be considered "default"
 * Fixed various typos and other content issues with some KDoc entries
 * `ConfigScreenNarrator` now properly strips out formatting codes before narrating the text content (this also affects the vanilla screen narrator)
+* Fixed `ValidatedIdentifier` config widgets not being properly navigable with keyboard.
+* (NeoForge) fixed network crash involving clients without Fzzy Config trying to join a server with it.
+* (1.20.1) fixed texture issue with the context and go-to menus.
