@@ -93,7 +93,7 @@ internal object NetworkEvents {
             private val key = ServerPlayerConfigurationTask.Key(ConfigSyncS2CCustomPayload.type.id)
             override fun sendPacket(sender: Consumer<Packet<*>>) {
                 SyncedConfigRegistry.onConfigure(
-                    { _ -> true },
+                    { _ -> NetworkRegistry.hasChannel(event.listener, ConfigSyncS2CCustomPayload.type.id) },
                     { payload -> sender.accept(payload.toVanillaClientbound()) }
                 )
                 event.listener.onTaskFinished(key)

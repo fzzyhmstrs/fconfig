@@ -9,12 +9,12 @@ import java.util.*
 
 internal class RegistrySupplierImpl<R, T: R>(private val entry: DeferredHolder<R, T>): RegistrySupplier<R> {
 
-    override fun getRegistryKey(): RegistryKey<T> {
+    override fun getRegistryKey(): RegistryKey<R> {
         return entry.keyOrValue.left().get()
     }
 
-    override fun getKey(): Optional<RegistryKey<T>> {
-        return entry.key
+    override fun getKey(): Optional<RegistryKey<R>> {
+        return entry.keyOrValue.left()
     }
 
     override fun getId(): Identifier {
