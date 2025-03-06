@@ -435,7 +435,7 @@ internal class ConfigScreen(
             .heightFunction { sh, h ->
                 val newHeight = (sh * 0.9).toInt()
                 val heightDelta = newHeight - h
-                listWidget.height += heightDelta
+                listWidget.setH(listWidget.height + heightDelta)
                 newHeight
             }
             .onClose { KeybindsConfig.INSTANCE.save() }
