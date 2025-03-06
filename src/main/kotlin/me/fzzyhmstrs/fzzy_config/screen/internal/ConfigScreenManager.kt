@@ -114,7 +114,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
             screenCaches[realScope] = cache
         }
         cache.manager.pushUpdatableStates(cachedScope)
-        return cache.provideScreen(scope)
+        val realScope2 = if (scope == this.scope && configs.size == 1)
+            realScope
+        else
+            scope
+        return cache.provideScreen(realScope2)
     }
 
     private fun provideRootScreen(): Screen? {
