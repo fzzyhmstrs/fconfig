@@ -79,7 +79,8 @@ internal class InfoKeybindEntry(parentElement: DynamicListWidget, index: Int, sc
         restore.render(context, mouseX, mouseY, delta)
         widget.setPosition(x + width - 125, y)
         widget.render(context, mouseX, mouseY, delta)
-        description.setDimensionsAndPosition(width - 130, 0, x, y + 10)
+        description.setPosition(x, y + 10)
+        description.width = width - 130
         description.render(context, mouseX, mouseY, delta)
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, this.texts.name, x, y, if (hovered || focused) -171 else -1)
     }

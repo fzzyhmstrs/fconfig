@@ -173,5 +173,10 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
             RenderUtil.addBackground(disabled, RenderUtil.defaultBg)
             RenderUtil.addBackground(highlighted, RenderUtil.defaultBg)
         }
+
+        init {
+            RenderUtil.addBackground("widget/text_field".fcId(), RenderUtil.defaultBg)
+            RenderUtil.addBackground("widget/text_field_highlighted".fcId(), RenderUtil.defaultBg)
+        }
     }
 }

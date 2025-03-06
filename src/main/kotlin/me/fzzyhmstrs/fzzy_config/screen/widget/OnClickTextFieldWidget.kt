@@ -36,13 +36,6 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
     AbstractTextWidget( 0, 0, 110, 20, FcText.EMPTY, MinecraftClient.getInstance().textRenderer)
 {
 
-    companion object {
-        init {
-            RenderUtil.addBackground("widget/text_field".fcId(), RenderUtil.defaultBg)
-            RenderUtil.addBackground("widget/text_field_highlighted".fcId(), RenderUtil.defaultBg)
-        }
-    }
-
     private val textures: TextureProvider = TextureSet("widget/text_field".fcId(), "widget/text_field".fcId(), "widget/text_field_highlighted".fcId())
 
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {

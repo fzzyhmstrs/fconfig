@@ -103,6 +103,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
 
     override fun setH(height: Int) {
         this.height = height
+        onReposition()
     }
 
     /**
@@ -112,14 +113,6 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         super.setWidth(width)
         onReposition()
         focusedElement?.let { ensureVisible(it) }
-    }
-
-    /**
-     * @suppress
-     */
-    override fun setHeight(height: Int) {
-        super.setHeight(height)
-        onReposition()
     }
 
     /**
@@ -136,7 +129,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
      */
     fun setDimensions(width: Int, height: Int) {
         super.setWidth(width)
-        this.setH(height)
+        this.height = height
         onReposition()
         focusedElement?.let { ensureVisible(it) }
     }
