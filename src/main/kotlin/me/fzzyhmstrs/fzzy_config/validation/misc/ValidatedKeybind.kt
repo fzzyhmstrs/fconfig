@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType.Relevant
@@ -141,7 +142,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
                 table.element("ctrl", modifierHandler.serializeEntry(input.ctrl, errors, 1))
                 table.element("shift", modifierHandler.serializeEntry(input.shift, errors, 1))
                 table.element("alt", modifierHandler.serializeEntry(input.alt, errors, 1))
-                table.element("type", ContextInput.CODEC.encodeStart(TomlOps.INSTANCE, input.type).mapOrElse(Function.identity()) { _ -> ContextInput.fallback() })
+                table.element("type", ContextInput.CODEC.encodeStart(TomlOps.INSTANCE, input.type).get().map(Function.identity()) { _ -> ContextInput.fallback() })
                 table.element("key", TomlLiteral(input.inputCode))
                 return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors encountered serializing simple keybind: $errors")
             }
@@ -253,7 +254,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
     //client
     private inner class KeybindWidget: CustomPressableWidget(0, 0, 99, 20, this@ValidatedKeybind.get().keybind()) {
 
-        override val textures: TextureProvider = TextureSet("widget/text_field".simpleId(), "widget/text_field".simpleId(), "widget/text_field_highlighted".simpleId())
+        override val textures: TextureProvider = TextureSet("widget/text_field".fcId(), "widget/text_field".fcId(), "widget/text_field_highlighted".fcId())
 
         var resetting = false
         var compounding = false

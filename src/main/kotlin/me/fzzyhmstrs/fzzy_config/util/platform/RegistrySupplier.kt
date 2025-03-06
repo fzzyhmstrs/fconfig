@@ -89,12 +89,6 @@ interface RegistrySupplier<T>: Supplier<T>, RegistryEntry<T> {
         return getEntry().ownerEquals(owner)
     }
 
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Deprecated in Java")
-    override fun matches(entry: RegistryEntry<T>?): Boolean {
-        return getEntry().matches(entry)
-    }
-
     override fun value(): T {
         return get()
     }

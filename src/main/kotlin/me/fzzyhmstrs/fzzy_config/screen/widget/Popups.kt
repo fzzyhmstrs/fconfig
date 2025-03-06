@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
@@ -32,6 +33,10 @@ import kotlin.math.max
 
 //client
 object Popups {
+
+    init {
+        RenderUtil.addBackground("widget/popup/background_right_click".fcId(), RenderUtil.Background(4, 4, 64, 64))
+    }
 
     /**
      * Opens a context menu (aka. "right click menu") at the specified position and with the specified context action information as provided by the [ContextResultBuilder]
