@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
+import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl.channelMap
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
@@ -45,7 +46,7 @@ internal object NetworkEventsClient {
 
     fun canSend(id: Identifier): Boolean {
         val handler = MinecraftClient.getInstance().networkHandler ?: return false
-        return handler.isConnectionOpen
+        return channelMap[id]?.isRemotePresent(handler.connection) ?: handler.isConnectionOpen
     }
 
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {

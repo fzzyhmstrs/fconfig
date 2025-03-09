@@ -28,7 +28,7 @@ internal object NetworkApiImpl: NetworkApi {
 
     override fun canSend(id: Identifier, playerEntity: PlayerEntity?): Boolean {
         return if (playerEntity is ServerPlayerEntity) {
-            playerEntity.networkHandler.isConnectionOpen
+            channelMap[id]?.isRemotePresent(playerEntity.networkHandler.connection) ?: playerEntity.networkHandler.isConnectionOpen
         } else {
             NetworkEventsClient.canSend(id)
         }
@@ -42,7 +42,7 @@ internal object NetworkApiImpl: NetworkApi {
         }
     }
 
-    private val channelMap: MutableMap<Identifier, SimpleChannel> = mutableMapOf()
+    internal val channelMap: MutableMap<Identifier, SimpleChannel> = mutableMapOf()
 
     private val indexMap: MutableMap<Identifier, AtomicInteger> = mutableMapOf()
 
@@ -69,6 +69,52 @@ internal object NetworkApiImpl: NetworkApi {
         val version = "1.0"
         val index = indexMap.computeIfAbsent(id) { _ -> AtomicInteger(0) }
         val channel = channelMap.computeIfAbsent(id) { i -> NetworkRegistry.newSimpleChannel(i, { version }, { serverVersion -> serverVersion == version}, { clientVersion -> clientVersion == version }) }
+        @Suppress("INACCESSIBLE_TYPE")
+        channel.registerMessage(
+            index.incrementAndGet(),
+            clazz,
+            { payload: T, buf: PacketByteBuf -> payload.write(buf) },
+            function,
+            { payload, contextSuppler ->
+                val newContext = ServerPlayNetworkContext(contextSuppler.get())
+                handler.handle(payload, newContext)
+                contextSuppler.get().packetHandled = true
+            })
+    }
+
+    override fun <T : FzzyPayload> registerLenientS2C(
+        id: Identifier,
+        clazz: Class<T>,
+        function: Function<PacketByteBuf, T>,
+        handler: S2CPayloadHandler<T>
+    ) {
+        val version = "1.0"
+        val index = indexMap.computeIfAbsent(id) { _ -> AtomicInteger(0) }
+        val channel = channelMap.computeIfAbsent(id) { i -> NetworkRegistry.newSimpleChannel(i, { version }, NetworkRegistry.acceptMissingOr { serverVersion -> serverVersion == version }, NetworkRegistry.acceptMissingOr { clientVersion -> clientVersion == version }) }
+        @Suppress("INACCESSIBLE_TYPE")
+        channel.registerMessage(
+            index.incrementAndGet(),
+            clazz,
+            { payload: T, buf: PacketByteBuf -> payload.write(buf) },
+            function,
+            { payload, contextSuppler ->
+                if (PlatformUtils.isClient()) {
+                    val newContext = ClientPlayNetworkContext(contextSuppler.get())
+                    handler.handle(payload, newContext)
+                    contextSuppler.get().packetHandled = true
+                }
+            })
+    }
+
+    override fun <T : FzzyPayload> registerLenientC2S(
+        id: Identifier,
+        clazz: Class<T>,
+        function: Function<PacketByteBuf, T>,
+        handler: C2SPayloadHandler<T>
+    ) {
+        val version = "1.0"
+        val index = indexMap.computeIfAbsent(id) { _ -> AtomicInteger(0) }
+        val channel = channelMap.computeIfAbsent(id) { i -> NetworkRegistry.newSimpleChannel(i, { version }, NetworkRegistry.acceptMissingOr { serverVersion -> serverVersion == version}, NetworkRegistry.acceptMissingOr { clientVersion -> clientVersion == version }) }
         @Suppress("INACCESSIBLE_TYPE")
         channel.registerMessage(
             index.incrementAndGet(),
