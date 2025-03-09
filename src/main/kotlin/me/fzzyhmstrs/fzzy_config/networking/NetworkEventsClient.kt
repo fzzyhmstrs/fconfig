@@ -45,6 +45,11 @@ import java.util.function.Supplier
 
 internal object NetworkEventsClient {
 
+    fun canSend(id: Identifier): Boolean {
+        val handler = MinecraftClient.getInstance().networkHandler ?: return false
+        return NetworkRegistry.hasChannel(handler, id)
+    }
+
     fun forwardSetting(update: String, player: UUID, scope: String, summary: String) {
         if (!ConfigApi.network().canSend(SettingForwardCustomPayload.type.id, null)) {
             MinecraftClient.getInstance().player?.sendChat("fc.config.forwarded_error.c2s".translate())
