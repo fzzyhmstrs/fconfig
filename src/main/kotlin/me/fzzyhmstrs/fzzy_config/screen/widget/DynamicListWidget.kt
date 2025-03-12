@@ -174,6 +174,10 @@ class DynamicListWidget(
         entries.scrollToGroup(g)
     }
 
+    fun scrollToEntry(e: String) {
+        entries.scrollToEntry(e)
+    }
+
     override fun selectableEntries(): List<Entry> {
         return entries.selectableEntries()
     }
@@ -600,6 +604,17 @@ class DynamicListWidget(
             val delta = this@DynamicListWidget.top - groupPair.groupEntry.top.get()
             this@DynamicListWidget.handleScrollByBar(delta)
             this@DynamicListWidget.focused = groupPair.groupEntry
+        }
+
+        fun scrollToEntry(e: String) {
+            for (entry in delegate) {
+                if (entry.scope.scope == e) {
+                    val delta = this@DynamicListWidget.top - entry.top.get()
+                    this@DynamicListWidget.handleScrollByBar(delta)
+                    this@DynamicListWidget.focused = entry
+                    break
+                }
+            }
         }
 
         fun scroll(amount: Int) {

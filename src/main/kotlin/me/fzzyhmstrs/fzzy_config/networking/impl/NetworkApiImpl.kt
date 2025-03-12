@@ -64,4 +64,12 @@ internal object NetworkApiImpl: NetworkApi {
         }
     }
 
+    override fun <T: CustomPayload> registerLenientS2C(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: S2CPayloadHandler<T>) {
+        registerS2C(id, codec, handler)
+    }
+
+    override fun <T : CustomPayload> registerLenientC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>) {
+        registerC2S(id, codec, handler)
+    }
+
 }
