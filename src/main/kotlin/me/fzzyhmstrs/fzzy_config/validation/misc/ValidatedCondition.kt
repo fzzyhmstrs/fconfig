@@ -14,12 +14,14 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
@@ -99,6 +101,11 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             { checkConditions() },
             { conditionFailMessages() },
             delegate.widgetEntry(choicePredicate))
+    }
+
+    @Internal
+    override fun open() {
+        delegate.nullCast<EntryOpener>()?.let { if (checkConditions()) it.open() }
     }
 
     @Internal
@@ -306,8 +313,8 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
 
     private class ConditionDecoration(private val activeSupplier: Supplier<Boolean>): SpriteDecorated {
 
-        override fun textureSet(): TextureSet {
-            return TextureSet(TextureIds.ENTRY_ERROR)
+        override fun textures(): TextureProvider {
+            return TextureSet.Single(TextureIds.ENTRY_ERROR)
         }
 
         override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {

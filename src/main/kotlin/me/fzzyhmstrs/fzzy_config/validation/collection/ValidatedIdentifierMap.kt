@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
@@ -44,7 +45,7 @@ import java.util.function.BiFunction
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private val keyHandler: ValidatedIdentifier, private val valueHandler: Entry<V, *>): ValidatedField<Map<Identifier, V>>(defaultValue), Map<Identifier, V> {
+open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private val keyHandler: ValidatedIdentifier, private val valueHandler: Entry<V, *>): ValidatedField<Map<Identifier, V>>(defaultValue), Map<Identifier, V>, EntryOpener {
 
     init {
         for((key, value) in defaultValue) {
@@ -188,7 +189,14 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<Identifier, V>>): ClickableWidget {
-        return CustomButtonWidget.builder(TextureIds.MAP_LANG) { b: CustomButtonWidget -> openMapEditPopup(b) }.size(110, 20).build()
+        return CustomButtonWidget.builder(TextureIds.MAP_LANG) { b: CustomButtonWidget ->
+            openMapEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+        }.size(110, 20).build()
+    }
+
+    @Internal
+    override fun open() {
+        openMapEditPopup()
     }
 
     @Internal
@@ -198,7 +206,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
 
     @Suppress("UNCHECKED_CAST")
     //client
-    private fun openMapEditPopup(b: CustomButtonWidget) {
+    private fun openMapEditPopup(xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
         try {
             val map = storedValue.map {
                 Pair(
@@ -214,8 +222,8 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
                 .add("map", mapWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
                 .addDoneWidget()
                 .onClose { this.setAndUpdate(mapWidget.getMap()) }
-                .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
-                .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+                .positionX(xPosition)
+                .positionY(yPosition)
                 .build()
             PopupWidget.push(popup)
         } catch (e: Throwable) {

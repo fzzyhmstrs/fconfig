@@ -12,7 +12,9 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -32,7 +34,7 @@ import java.util.function.Function
  * @author fzzyhmstrs
  * @since 0.5.0
  */
-open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegate: ValidatedField<T>, private val to: Function<T, out N>, private val from: Function<in N, T>, defaultValue: N = to.apply(delegate.get())): ValidatedField<N>(defaultValue) {
+open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegate: ValidatedField<T>, private val to: Function<T, out N>, private val from: Function<in N, T>, defaultValue: N = to.apply(delegate.get())): ValidatedField<N>(defaultValue), EntryOpener {
 
     override var storedValue: N
         get() = to.apply(delegate.get())
@@ -120,6 +122,11 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<N>): ClickableWidget {
         return delegate.widgetEntry(choicePredicate.convert(from, from))
+    }
+
+    @Internal
+    override fun open() {
+        delegate.nullCast<EntryOpener>()?.open()
     }
 
     @Internal

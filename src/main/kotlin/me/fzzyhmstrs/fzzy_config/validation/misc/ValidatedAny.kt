@@ -60,7 +60,7 @@ import kotlin.reflect.jvm.javaConstructor
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent {
+open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent, EntryOpener {
 
     private var default: Boolean? = null
     private var changed: Boolean? = null
@@ -130,6 +130,11 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return CustomButtonWidget.builder("fc.validated_field.object".translate()) { openObjectPopup() }.size(110, 20).build()
+    }
+
+    @Internal
+    override fun open() {
+        openObjectPopup()
     }
 
     @Internal

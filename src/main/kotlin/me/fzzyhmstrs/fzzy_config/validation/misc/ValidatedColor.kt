@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -59,7 +60,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.1.2
  */
-open class ValidatedColor: ValidatedField<ColorHolder> {
+open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
     /**
      * A validated color value
@@ -243,6 +244,11 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<ColorHolder>): ClickableWidget {
         return CustomButtonWidget.builder { openColorEditPopup() }.size(110, 20).messageSupplier { this.toHexString().lit() }.build()
+    }
+
+    @Internal
+    override fun open() {
+        openColorEditPopup()
     }
 
     @Internal

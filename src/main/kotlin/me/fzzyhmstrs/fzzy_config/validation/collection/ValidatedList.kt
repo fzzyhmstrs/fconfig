@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation.collection
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
@@ -58,7 +59,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T, *>): ValidatedField<List<T>>(defaultValue), List<T> {
+open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T, *>): ValidatedField<List<T>>(defaultValue), List<T>, EntryOpener {
 
     init {
         for(thing in defaultValue) {
@@ -182,7 +183,14 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
-        return CustomButtonWidget.builder(TextureIds.LIST_LANG) { b: CustomButtonWidget -> openListEditPopup(b) }.size(110, 20).build()
+        return CustomButtonWidget.builder(TextureIds.LIST_LANG) { b: CustomButtonWidget ->
+            openListEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+        }.size(110, 20).build()
+    }
+
+    @Internal
+    override fun open() {
+        openListEditPopup()
     }
 
     @Internal
@@ -203,7 +211,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
 
     @Suppress("UNCHECKED_CAST")
     //client
-    private fun openListEditPopup(b: CustomButtonWidget) {
+    private fun openListEditPopup(xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
         try {
             val list = storedValue.map {
                 (entryHandler.instanceEntry() as Entry<T, *>).also { entry -> entry.accept(it) }
@@ -213,8 +221,8 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
                 .add("list", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
                 .addDoneWidget()
                 .onClose { this.setAndUpdate(listWidget.getList()) }
-                .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
-                .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+                .positionX(xPosition)
+                .positionY(yPosition)
                 .build()
             PopupWidget.push(popup)
         } catch (e: Throwable) {

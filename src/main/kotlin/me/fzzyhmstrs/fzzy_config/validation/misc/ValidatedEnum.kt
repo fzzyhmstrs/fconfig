@@ -33,6 +33,7 @@ import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Predicate
 import kotlin.math.max
@@ -74,7 +75,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType) {
             WidgetType.POPUP -> {
-                EnumPopupButtonWidget(this.translation(), choicePredicate, this)
+                EnumPopupButtonWidget(this.translation(), choicePredicate)
             }
             WidgetType.CYCLING -> {
                 CyclingOptionsWidget(choicePredicate, this)
@@ -135,17 +136,36 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
         CYCLING
     }
 
-    //client
-    private class EnumPopupButtonWidget<T: Enum<*>>(private val name: Text, choicePredicate: ChoiceValidator<T>, private val entry: ValidatedEnum<T>)
-        : CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
-
-        val constants = entry.get().declaringJavaClass.enumConstants.mapNotNull {
+    private fun openEnumPopup(name: Text, choicePredicate: ChoiceValidator<T> = ChoiceValidator.any(), xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
+        val builder = PopupWidget.Builder(name, spacingH = 0)
+        val textRenderer = MinecraftClient.getInstance().textRenderer
+        var buttonWidth = 86
+        val constants = this@ValidatedEnum.get().declaringJavaClass.enumConstants.mapNotNull {
             @Suppress("UNCHECKED_CAST")
             it as? T
         }.filter { choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid() }
+        for (const in constants) {
+            buttonWidth = max(buttonWidth, textRenderer.getWidth(const.let { it.transLit(it.name) }))
+        }
+        buttonWidth = max(150, buttonWidth + 4)
+        var prevParent = "title"
+        for (const in constants) {
+            val button = EnumOptionWidget(const, buttonWidth, {c -> (c as Enum<*>) != this@ValidatedEnum.get()}, { this@ValidatedEnum.accept(it); PopupWidget.pop() })
+            builder.add(const.name, button, prevParent, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
+            prevParent = const.name
+        }
+        builder.positionX(xPosition)
+        builder.positionY(yPosition)
+        builder.additionalNarration("fc.validated_field.current".translate(this@ValidatedEnum.get().transLit(this@ValidatedEnum.get().name)))
+        PopupWidget.push(builder.build())
+    }
+
+    //client
+    private inner class EnumPopupButtonWidget(private val name: Text, private val choicePredicate: ChoiceValidator<T>)
+        : CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
 
         override fun getMessage(): Text {
-            return entry.get().let { it.transLit(it.name) }
+            return this@ValidatedEnum.get().let { it.transLit(it.name) }
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
@@ -153,23 +173,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
         }
 
         override fun onPress() {
-            val builder = PopupWidget.Builder(name, spacingH = 0)
-            val textRenderer = MinecraftClient.getInstance().textRenderer
-            var buttonWidth = 86
-            for (const in constants) {
-                buttonWidth = max(buttonWidth, textRenderer.getWidth(const.let { it.transLit(it.name) }))
-            }
-            buttonWidth = max(150, buttonWidth + 4)
-            var prevParent = "title"
-            for (const in constants) {
-                val button = EnumOptionWidget(const, buttonWidth, {c -> (c as Enum<*>) != entry.get()}, { entry.accept(it); PopupWidget.pop() })
-                builder.add(const.name, button, prevParent, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
-                prevParent = const.name
-            }
-            builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
-            builder.positionY(PopupWidget.Builder.popupContext { this.y - 20 })
-            builder.additionalNarration("fc.validated_field.current".translate(entry.get().transLit(entry.get().name)))
-            PopupWidget.push(builder.build())
+            openEnumPopup(name, choicePredicate, PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 }, PopupWidget.Builder.popupContext { this.y - 20 })
         }
     }
 

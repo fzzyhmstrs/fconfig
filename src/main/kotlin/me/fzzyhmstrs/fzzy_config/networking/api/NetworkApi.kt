@@ -68,4 +68,22 @@ interface NetworkApi {
      * @since 0.4.1
      */
     fun <T: CustomPayload> registerC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>)
+    /**
+     * registers a client-bound (S2C) payload type and receipt handler. This does not have to be done on both server and client (hence lenient). This allows for clients without Fzzy Config to connect to a server with mods that register connections this way. A common entrypoint is typically the best place for registering this.     * @param T the payload type to register
+     * @param id [CustomPayload.Id] the id of the custom payload
+     * @param codec [PacketCodec] the packet codec for serializing the custom payload
+     * @param handler [S2CPayloadHandler] a handler for dealing with receiving the payload. This handler will be on the client handling a payload received from the server. As such, take care with your client-only class references, pushing them to a method to reference, perhaps.
+     * @author fzzyhmstrs
+     * @since 0.6.6, 0.6.5-fix1 for Forge 1.20.1
+     */
+    fun <T: CustomPayload> registerLenientS2C(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: S2CPayloadHandler<T>)
+    /**
+     * registers a server-bound (C2S) payload type and receipt handler. This does not have to be done on both server and client (hence lenient). This allows for clients without Fzzy Config to connect to a server with mods that register connections this way. A common entrypoint is typically the best place for this.     * @param T the payload type to register
+     * @param id [CustomPayload.Id] the id of the custom payload
+     * @param codec [PacketCodec] the packet codec for serializing the custom payload
+     * @param handler [S2CPayloadHandler] a handler for dealing with receiving the payload. This handler will be on the server handling a payload sent from the client.
+     * @author fzzyhmstrs
+     * @since 0.6.6, 0.6.5-fix1 for Forge 1.20.1
+     */
+    fun <T: CustomPayload> registerLenientC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>)
 }
