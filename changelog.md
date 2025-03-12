@@ -11,12 +11,27 @@
 
 -------------------------------------
 
+* ✅ Parity on the new lenient networking api methods
+* Root config annotation for applying a config to the root screen
+* Proper dismounting/remounting of reloadable validation (Identifier from dynamic keys)
+* Put a placeholder greyed-out button for custom scopes provided by metadata that haven't been loaded yet.
+* Invalidate config screen manager if scope is added after the manager is loaded the first time
+* Allow for scrolling to arbitrary entries in a DynamicListWidget
+* Allow for opening of popups with config screens
+  * Open the screen and then pass in the remaining scope
+  * Have an interface for running an action on scope input
+    * Actually could be the start of a framework for a CLI
+    * Different "calls" into the interface that perform various actions
+    * The entry system is this, basically. Evaluate it's fit for purpose in a CLI type system
+    * like imagine `configure edit namespace config value` and it prints all the current values of the config
+    * then `configure edit namespace config scope set [input]`
+    * In this case, I'm looking for the equivalent of `configure edit namespace config scope open`, which for most validation does nothing, but for `ValidatedAny` opens the popup
+
 ### Additions
 * None.
 
 ### Changes
 * None.
 
-
 ### Fixes
-* Fixed StackOverflow error when syncing configs on NeoForge 1.21.2+
+* None.
