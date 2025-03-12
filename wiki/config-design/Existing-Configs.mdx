@@ -20,13 +20,13 @@ An example conversion from Cloth/Auto Config:
 
 <CodeTabs>
 
-```java !!tabs Java !!tabs Java
+```java !!tabs Java
 // before
 @Config(name = "general")
 public class GeneralConfig implements ConfigData { /* implementation */ }
 
 // after
-public class GeneralConfig implements Config { 
+public class GeneralConfig extends Config { 
     public GeneralConfig() {
         super(Identifier.of(MOD_ID, "general"));
     }

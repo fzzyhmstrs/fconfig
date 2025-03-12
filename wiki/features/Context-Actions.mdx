@@ -25,7 +25,7 @@ The vanilla keybind and screen input handling systems both have flaws that this 
 * Minecraft in general has no concept of context menus (right click menus)
 
 <Callout variant="info">
-Screens that use this system must extend from <code>PopupWidgetScreen</code>
+Screens that use this system must extend from <code>PopupWidgetScreen</code> to utilize context menus (keybind handling can be done anywhere).
 </Callout>
 
 ### The `ContextType`
@@ -229,12 +229,12 @@ The `ContextProvider` interface helps tie everything discussed above together. W
 
 Considering the context handler flow diagram above, we can see how a handler and provider could work together:
 
-| Layer         | Downstream                      | Upstream                                                    |
-|---------------|---------------------------------|-------------------------------------------------------------|
-| Screen        | Pass to List ⬇️                 | Return true ↗️                                              |
-| List          | **Request context for menu** ⬇️ | Use builder to open context menu<br><br>Return true ↗️      |
-| List Element  | Pass ContextBuilder ⬇️          | Append own actions<br><br>Builder ready for parent layer ⬆️ |
-| Element Child | Add actions to builder ➡️       | Builder ready for parent layer ⬆️                           |
+| Layer         | Downstream                      | Upstream                                                        |
+|---------------|---------------------------------|-----------------------------------------------------------------|
+| Screen        | Pass to List ⬇️                 | Return true ↗️                                                  |
+| List          | **Request context for menu** ⬇️ | Use builder to open context menu<br /><br />Return true ↗️      |
+| List Element  | Pass ContextBuilder ⬇️          | Append own actions<br /><br />Builder ready for parent layer ⬆️ |
+| Element Child | Add actions to builder ➡️       | Builder ready for parent layer ⬆️                               |
 
 Using the same context handling example from above, we'll add in a provider system
 
