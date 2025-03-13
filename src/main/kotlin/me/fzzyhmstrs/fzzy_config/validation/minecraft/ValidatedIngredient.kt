@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
@@ -39,6 +40,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.BiFunction
 import java.util.function.Predicate
 
 /**
@@ -49,7 +51,7 @@ import java.util.function.Predicate
  * @author fzzyhmstrs
  * @since 0.2.0, marked final 0.6.0
  */
-class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<IngredientProvider>(defaultValue) {
+class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<IngredientProvider>(defaultValue), EntryOpener {
 
     /**
      * A validated provider of [Ingredient]
@@ -244,7 +246,13 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<IngredientProvider>): ClickableWidget {
-        return CustomButtonWidget.builder("fc.validated_field.ingredient.edit".translate()) { openIngredientPopup(it) }.size(110, 20).build()
+        return CustomButtonWidget.builder("fc.validated_field.ingredient.edit".translate()) { b ->
+            openIngredientPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+        }.size(110, 20).build()
+    }
+
+    override fun open(args: List<String>) {
+        openIngredientPopup()
     }
 
     @Internal
@@ -253,7 +261,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     }
 
     //client
-    private fun openIngredientPopup(b: ClickableWidget) {
+    private fun openIngredientPopup(xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         val popupNew = PopupWidget.Builder(translation())
@@ -268,8 +276,8 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
             .add("tags_clear", CustomButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60, 20).build(), "tags", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() }, "tags", LayoutWidget.Position.ALIGN_JUSTIFY, LayoutWidget.Position.BELOW)
             .addDoneWidget()
-            .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
-            .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
+            .positionX(xPosition)
+            .positionY(yPosition)
             .onClose{ this.setAndUpdate(fromLists()) }
             .build()
         PopupWidget.push(popupNew)
