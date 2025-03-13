@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-5 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
-import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
@@ -40,7 +40,6 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.util.function.BiFunction
 import java.util.function.Predicate
 import java.util.function.Supplier
 
@@ -52,7 +51,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0, marked final 0.6.0
  */
-class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<IngredientProvider>(defaultValue), EntryOpener {
+class ValidatedIngredient private constructor(defaultValue: IngredientProvider, private val itemPredicate: Predicate<Identifier>? = null, private val tagPredicate: Predicate<Identifier>? = null): ValidatedField<IngredientProvider>(defaultValue) {
 
     /**
      * A validated provider of [Ingredient]
@@ -109,6 +108,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
 
 
     init {
+        this.compositeFlags(EntryFlag.Flag.REQUIRES_WORLD)
         when(storedValue.type()) {
             ProviderType.STACK -> {
                 listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))
@@ -133,6 +133,25 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      */
     fun toIngredient(): Ingredient {
         return storedValue.provide()
+    }
+
+    @Internal
+    override fun set(input: IngredientProvider) {
+        when(input.type()) {
+            ProviderType.STACK -> {
+                listItemValidator.validateAndSet(setOf((input as ItemProvider).id))
+                listTagValidator.validateAndSet(setOf())
+            }
+            ProviderType.LIST -> {
+                listItemValidator.validateAndSet((input as ListProvider).ids)
+                listTagValidator.validateAndSet((input as ListProvider).tags)
+            }
+            ProviderType.TAG -> {
+                listItemValidator.validateAndSet(setOf())
+                listTagValidator.validateAndSet(setOf((input as TagProvider).tag))
+            }
+        }
+        super.set(input)
     }
 
     /**
@@ -244,13 +263,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<IngredientProvider>): ClickableWidget {
-        return CustomButtonWidget.builder("fc.validated_field.ingredient.edit".translate()) { b ->
-            openIngredientPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
-        }.size(110, 20).build()
-    }
-
-    override fun open(args: List<String>) {
-        openIngredientPopup()
+        return CustomButtonWidget.builder("fc.validated_field.ingredient.edit".translate()) { openIngredientPopup(it) }.size(110, 20).build()
     }
 
     @Internal
@@ -259,7 +272,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     }
 
     //client
-    private fun openIngredientPopup(xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
+    private fun openIngredientPopup(b: ClickableWidget) {
         val textRenderer = MinecraftClient.getInstance().textRenderer
 
         val popupNew = PopupWidget.Builder(translation())
@@ -274,8 +287,8 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
             .add("tags_clear", CustomButtonWidget.builder("fc.validated_field.ingredient.clear".translate()){ _ -> listTagValidator.validateAndSet(setOf()) }.size(60, 20).build(), "tags", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("tags_textbox", SuppliedTextWidget({ listTagValidator.get().toString().lit().formatted(Formatting.GRAY) }, textRenderer, 110, 20).supplyTooltipOnOverflow { listTagValidator.get().joinToString("\n").lit() }, "tags", LayoutWidget.Position.ALIGN_JUSTIFY, LayoutWidget.Position.BELOW)
             .addDoneWidget()
-            .positionX(xPosition)
-            .positionY(yPosition)
+            .positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
+            .positionY(PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
             .onClose{ this.setAndUpdate(fromLists()) }
             .build()
         PopupWidget.push(popupNew)
