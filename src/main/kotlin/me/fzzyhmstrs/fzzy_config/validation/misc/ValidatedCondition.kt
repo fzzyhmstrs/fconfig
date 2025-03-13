@@ -103,8 +103,8 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
     }
 
     @Internal
-    override fun open() {
-        delegate.nullCast<EntryOpener>()?.let { if (checkConditions()) it.open() }
+    override fun open(args: List<String>) {
+        delegate.nullCast<EntryOpener>()?.let { if (checkConditions()) it.open(args) }
     }
 
     @Internal

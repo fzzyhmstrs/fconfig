@@ -15,10 +15,10 @@
 * Root config annotation for applying a config to the root screen
 * Proper dismounting/remounting of reloadable validation (Identifier from dynamic keys)
 * Put a placeholder greyed-out button for custom scopes provided by metadata that haven't been loaded yet.
-* Invalidate config screen manager if scope is added after the manager is loaded the first time
-* Allow for scrolling to arbitrary entries in a DynamicListWidget
-* Allow for opening of popups with config screens
-  * Open the screen and then pass in the remaining scope
+* ✅ Invalidate config screen manager if scope is added after the manager is loaded the first time
+* ✅ Allow for scrolling to arbitrary entries in a DynamicListWidget
+* ✅ Allow for opening of popups with config screens
+  * ✅ Open the screen and then pass in the remaining scope
   * Have an interface for running an action on scope input
     * Actually could be the start of a framework for a CLI
     * Different "calls" into the interface that perform various actions

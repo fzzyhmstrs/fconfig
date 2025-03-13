@@ -92,17 +92,20 @@ internal class ConfigScreenManager(private val scope: String, private val config
             cachedPermKey.incrementAndGet()
         }
         //checkForRebuild()
-        return provideScopedScreen(scope)
+        return provideScopedScreen(scope).first
     }
 
-    private fun provideScopedScreen(scope: String): Screen? {
+    private fun provideScopedScreen(scope: String): Pair<ConfigScreen?, String?> {
         val realScope = if (scope == this.scope && configs.size == 1)
             configs.keys.toList()[0]
         else if (scope == this.scope)
-            return provideRootScreen()
+            return Pair(provideRootScreen(), null)
         else
-            getValidScope(scope) ?: return null
-        val configSet = configs[realScope] ?: return null
+            getValidScope(scope) ?: return Pair(null, null)
+        if (realScope == this.scope) {
+            return Pair(provideRootScreen(), scope.removePrefix(realScope).removePrefix("."))
+        }
+        val configSet = configs[realScope] ?: return Pair(null, null)
         val playerPerms = ConfigApiImplClient.getPlayerPermissionLevel()
         val customPermsKey = cachedPermKey.get()
         val outOfWorld = outOfGame()
@@ -118,10 +121,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
             realScope
         else
             scope
-        return cache.provideScreen(realScope2)
+        val screenResult = cache.provideScreen(realScope2)
+        return Pair(screenResult.first, scope.removePrefix(screenResult.second).removePrefix("."))
     }
 
-    private fun provideRootScreen(): Screen? {
+    private fun provideRootScreen(): ConfigScreen? {
         val playerPerms = ConfigApiImplClient.getPlayerPermissionLevel()
         val customPermsKey = cachedPermKey.get()
         val outOfWorld = outOfGame()
@@ -133,7 +137,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
             screenCaches[this.scope] = cache
         }
         cache.manager.pushUpdatableStates(cachedScope)
-        return cache.provideScreen(this.scope)
+        return cache.provideScreen(this.scope).first
     }
 
     internal fun openScreen(scope: String = this.scope) {
@@ -148,12 +152,18 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun openScopedScreen(scope: String) {
-        val screen = provideScopedScreen(scope) ?: return
-        MinecraftClient.getInstance().setScreen(screen)
+        val screenArgPair = provideScopedScreen(scope)
+        val screen = screenArgPair.first ?: return
+        MinecraftClient.getInstance().setScreen(screenArgPair.first)
+        val rawEntryString = screenArgPair.second
+        if (rawEntryString != null && rawEntryString != "") {
+            screen.scrollToEntry(scope)
+            screen.openEntry(rawEntryString)
+        }
     }
 
     private tailrec fun getValidScope(scope: String): String? {
-        if(configs.keys.contains(scope)) return scope
+        if(configs.keys.contains(scope) || this.scope == scope) return scope
         val validScopeTry = scope.substringBeforeLast('.')
         if (validScopeTry == scope) return null
         return getValidScope(validScopeTry)
@@ -440,10 +450,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
                     || this.screens.get() == null
         }
 
-        fun provideScreen(scope: String) : Screen? {
+        fun provideScreen(scope: String) : Pair<ConfigScreen?, String> {
             val screenMap = screens.get()
-            val screenTry = screenMap?.get(getValidSubScope(scope))
-            return screenTry?.build()
+            val screenScope = getValidSubScope(scope)
+            val screenTry = screenMap?.get(screenScope)
+            return Pair(screenTry?.build(), screenScope ?: scope)
         }
 
         private tailrec fun getValidSubScope(scope: String): String? {

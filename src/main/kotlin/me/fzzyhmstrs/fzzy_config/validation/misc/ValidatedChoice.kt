@@ -226,7 +226,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     }
 
     @Internal
-    override fun open() {
+    override fun open(args: List<String>) {
         openPopup(translation())
     }
 
