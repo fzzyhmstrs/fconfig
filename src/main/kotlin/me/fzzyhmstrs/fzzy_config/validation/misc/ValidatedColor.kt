@@ -245,7 +245,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
     }
 
     @Internal
-    override fun open() {
+    override fun open(args: List<String>) {
         openColorEditPopup()
     }
 
