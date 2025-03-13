@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
 import com.mojang.serialization.JsonOps
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
@@ -27,6 +28,7 @@ import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlNull
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Predicate
 import kotlin.jvm.optionals.getOrNull
@@ -42,7 +44,7 @@ import kotlin.jvm.optionals.getOrNull
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>, private val predicate: Predicate<Identifier>? = null): ValidatedField<TagKey<T>>(defaultValue) {
+open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKey<T>, private val predicate: Predicate<Identifier>? = null): ValidatedField<TagKey<T>>(defaultValue), EntryOpener {
 
     private val validator = if(predicate == null) ValidatedIdentifier.ofRegistryTags(defaultValue.regRef()) else ValidatedIdentifier.ofRegistryTags(defaultValue.regRef(), predicate)
     private val codec = TagKey.codec(defaultValue.regRef())
@@ -109,7 +111,14 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
 
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<TagKey<T>>): ClickableWidget {
-        return OnClickTextFieldWidget({ validator.get().toString() }, { it, isKb, key, code, mods -> popupTagPopup(it, isKb, key, code, mods, choicePredicate) })
+        return OnClickTextFieldWidget({ validator.get().toString() }, { b, isKb, key, code, mods ->
+            openTagPopup(isKb, key, code, mods, choicePredicate, { _, _ -> b.x - 8 }, { _, h -> b.y + 28 + 24 - h })
+        })
+    }
+
+    @Internal
+    override fun open(args: List<String>) {
+        openTagPopup(false, 0, 0, 0)
     }
 
     @Internal
@@ -126,7 +135,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
 
     @Internal
     //client
-    private fun popupTagPopup(b: ClickableWidget, isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>>) {
+    private fun openTagPopup(isKeyboard: Boolean, keyCode: Int, scanCode: Int, modifiers: Int, choicePredicate: ChoiceValidator<TagKey<T>> = ChoiceValidator.any(), xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
         val entryValidator = EntryValidator<String>{s, _ -> Identifier.tryParse(s)?.let { validator.validateEntry(it, EntryValidator.ValidationType.STRONG)}?.wrap(s) ?: ValidationResult.error(s, "invalid Identifier")}
         val entryApplier = Consumer<String> { e -> setAndUpdate(TagKey.of(defaultValue.regRef(), e.simpleId())) }
         val suggestionProvider = SuggestionBackedTextFieldWidget.SuggestionProvider {s, c, cv -> validator.allowableIds.getSuggestions(s, c, cv.convert({ it.simpleId() }, { it.simpleId() }))}
@@ -134,8 +143,8 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
         val popup = PopupWidget.Builder(translation())
             .add("text_field", textField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .addDoneWidget({ textField.pushChanges(); PopupWidget.pop() })
-            .positionX { _, _ -> b.x - 8 }
-            .positionY { _, h -> b.y + 28 + 24 - h }
+            .positionX(xPosition)
+            .positionY(yPosition)
             .build()
         PopupWidget.push(popup)
         PopupWidget.focusElement(textField)

@@ -14,6 +14,7 @@ import com.google.common.base.Suppliers
 import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.DynamicIdsS2CCustomPayload
@@ -21,10 +22,7 @@ import me.fzzyhmstrs.fzzy_config.nsId
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
-import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
@@ -86,7 +84,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     ValidatedField<Identifier>(defaultValue),
     Updatable,
     Translatable,
-    Comparable<Identifier>
+    Comparable<Identifier>,
+    EntryOpener
 {
     /**
      * An unbounded validated identifier
@@ -187,19 +186,30 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Identifier>): ClickableWidget {
-        return OnClickTextFieldWidget({ this.get().toString() }, { it, isKb, key, code, mods ->
-            val textField = PopupIdentifierTextFieldWidget(170, 20, choicePredicate, this)
-            val popup = PopupWidget.Builder(this.translation())
-                .add("text_field", textField, LayoutWidget.Position.BELOW)
-                .addDoneWidget({ textField.pushChanges(); PopupWidget.pop() })
-                .positionX { _, _ -> it.x - 8 }
-                .positionY { _, h -> it.y + 28 + 24 - h }
-                .build()
-            PopupWidget.push(popup)
-            PopupWidget.focusElement(textField)
-            if (isKb)
-                textField.keyPressed(key, code, mods)
+        return OnClickTextFieldWidget({ this.get().toString() }, { b, isKb, key, code, mods ->
+            openIdentifierPopup(isKb, key, code, mods, choicePredicate, { _, _ -> b.x - 8 }, { _, h -> b.y + 28 + 24 - h })
         })
+    }
+
+    @Internal
+    override fun open(args: List<String>) {
+        openIdentifierPopup(false, 0, 0, 0)
+    }
+
+    @Internal
+    //client
+    private fun openIdentifierPopup(isKb: Boolean, key: Int, code: Int, mods: Int, choicePredicate: ChoiceValidator<Identifier> = ChoiceValidator.any(), xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
+        val textField = PopupIdentifierTextFieldWidget(170, 20, choicePredicate, this)
+        val popup = PopupWidget.Builder(this.translation())
+            .add("text_field", textField, LayoutWidget.Position.BELOW)
+            .addDoneWidget({ textField.pushChanges(); PopupWidget.pop() })
+            .positionX(xPosition)
+            .positionY(yPosition)
+            .build()
+        PopupWidget.push(popup)
+        PopupWidget.focusElement(textField)
+        if (isKb)
+            textField.keyPressed(key, code, mods)
     }
 
     //////////// IDENTIFIER ///////////////////

@@ -185,7 +185,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     }
 
     @Internal
-    override fun open() {
+    override fun open(args: List<String>) {
         openListEditPopup()
     }
 
