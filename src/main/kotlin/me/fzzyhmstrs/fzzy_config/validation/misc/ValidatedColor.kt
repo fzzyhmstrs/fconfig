@@ -377,7 +377,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, private val alphaMode: Boolean): EntryHandler<ColorHolder> {
+    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, val alphaMode: Boolean): EntryHandler<ColorHolder> {
 
         private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
 
@@ -479,10 +479,17 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         ): TomlElement {
             val toml = TomlTableBuilder()
             try {
-                toml.element("r", TomlLiteral(r), TomlComment("Red component, 0 to 255"))
-                toml.element("g", TomlLiteral(g), TomlComment("Green component, 0 to 255"))
-                toml.element("b", TomlLiteral(b), TomlComment("Blue component, 0 to 255"))
-                if (alphaMode) toml.element("a", TomlLiteral(a), TomlComment("Alpha component, 0 to 255"))
+                if (input == null) {
+                    toml.element("r", TomlLiteral(r), TomlComment("Red component, 0 to 255"))
+                    toml.element("g", TomlLiteral(g), TomlComment("Green component, 0 to 255"))
+                    toml.element("b", TomlLiteral(b), TomlComment("Blue component, 0 to 255"))
+                    if (alphaMode) toml.element("a", TomlLiteral(a), TomlComment("Alpha component, 0 to 255"))
+                } else {
+                    toml.element("r", TomlLiteral(input.r), TomlComment("Red component, 0 to 255"))
+                    toml.element("g", TomlLiteral(input.g), TomlComment("Green component, 0 to 255"))
+                    toml.element("b", TomlLiteral(input.b), TomlComment("Blue component, 0 to 255"))
+                    if (input.alphaMode) toml.element("a", TomlLiteral(input.a), TomlComment("Alpha component, 0 to 255"))
+                }
             } catch (e: Throwable) {
                 errorBuilder.add("Critical exception while serializing color: ${e.localizedMessage}")
             }
