@@ -193,7 +193,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
     }
 
     @Internal
-    override fun open() {
+    override fun open(args: List<String>) {
         openMapEditPopup()
     }
 

@@ -10,10 +10,12 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
-import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.config.KeybindsConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.entry.InfoKeybindEntry
@@ -86,6 +88,33 @@ internal class ConfigScreen(
     fun setParent(screen: Screen?): ConfigScreen {
         this.parent = screen
         return this
+    }
+
+    fun scrollToEntry(scope: String) {
+        configList.scrollToEntry(scope)
+    }
+
+    fun openEntry(rawEntryString: String) {
+        val l = rawEntryString.split('.')
+        if (l.isEmpty()) return
+        val entry = l[0]
+        val args = if (l.size > 1) l.subList(1, l.size) else listOf()
+        openEntry(entry, args)
+    }
+
+    fun openEntry(entry: String, args: List<String>) {
+        val configScopePair = ClientConfigRegistry.getValidClientConfig(this.scope)
+        val config = configScopePair.first ?: return
+        val returnedScope = configScopePair.second
+        val e = if (returnedScope == this.scope)
+            entry
+        else
+            this.scope.removePrefix(returnedScope).removePrefix(".") + "." + entry
+        ConfigApiImpl.drill(config, e, '.', ConfigApiImpl.IGNORE_NON_SYNC) { _, _, _, thing, _, _, _, _ ->
+            if (thing is EntryOpener) {
+                thing.open(args)
+            }
+        }
     }
 
     fun scrollToGroup(g: String) {

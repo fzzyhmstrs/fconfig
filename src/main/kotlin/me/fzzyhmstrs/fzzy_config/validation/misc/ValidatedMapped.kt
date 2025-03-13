@@ -123,8 +123,8 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
     }
 
     @Internal
-    override fun open() {
-        delegate.nullCast<EntryOpener>()?.open()
+    override fun open(args: List<String>) {
+        delegate.nullCast<EntryOpener>()?.open(args)
     }
 
     @Internal
