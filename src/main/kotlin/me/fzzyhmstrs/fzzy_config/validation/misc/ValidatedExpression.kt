@@ -161,7 +161,7 @@ open class ValidatedExpression @JvmOverloads constructor(
     }
 
     @Internal
-    override fun open() {
+    override fun open(args: List<String>) {
         openExpressionEditPopup()
     }
 

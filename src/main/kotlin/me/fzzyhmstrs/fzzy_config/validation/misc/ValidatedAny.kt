@@ -133,7 +133,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     @Internal
-    override fun open() {
+    override fun open(args: List<String>) {
         openObjectPopup()
     }
 

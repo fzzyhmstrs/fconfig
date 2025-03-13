@@ -189,7 +189,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
     }
 
     @Internal
-    override fun open() {
+    override fun open(args: List<String>) {
         openListEditPopup()
     }
 

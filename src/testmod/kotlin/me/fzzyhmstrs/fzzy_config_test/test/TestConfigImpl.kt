@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config_test.test
 
 import me.fzzyhmstrs.fzzy_config.annotations.RequiresRestart
 import me.fzzyhmstrs.fzzy_config.annotations.Version
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
@@ -29,6 +30,7 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.Companion.withLab
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
+import me.fzzyhmstrs.fzzy_config_test.FC
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.text.ClickEvent
 import net.minecraft.util.Identifier
@@ -47,6 +49,8 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
     var enum1 = TestEnum.ALPHA
     @RequiresRestart
     var enum2 = TestEnum.BETA.validated()
+
+    var section1Button = ConfigAction.Builder().title("Open Section Object".lit()).build { ConfigApi.openScreen("fzzy_config_test.test_config.section1.object1"); FC.LOGGER.info("Tried opening object") }
 
     var section1 = TestSectionImpl()
     class TestSectionImpl: ConfigSection() {

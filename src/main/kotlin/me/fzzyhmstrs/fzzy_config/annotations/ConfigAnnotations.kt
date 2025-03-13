@@ -357,3 +357,13 @@ annotation class TomlHeaderComment(val text: String)
  */
 @Target(AnnotationTarget.FIELD, AnnotationTarget.PROPERTY, AnnotationTarget.CLASS)
 annotation class Translation(val prefix: String, val negate: Boolean = false)
+
+/**
+ * A config marked as a root config will be shown in the "root" config screen (the landing page for all of your configs when you first open the GUI) instead of in its own nested screen.
+ *
+ * Only one config in the same scope namespace can have the root config annotation. If more than one is present, an exception will be thrown.
+ * @author fzzyhmstrs
+ * @since 0.6.6
+ */
+@Target(AnnotationTarget.CLASS)
+annotation class RootConfig

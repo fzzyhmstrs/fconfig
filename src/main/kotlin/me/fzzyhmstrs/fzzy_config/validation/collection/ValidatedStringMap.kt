@@ -185,7 +185,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
     }
 
     @Internal
-    override fun open() {
+    override fun open(args: List<String>) {
         openMapEditPopup()
     }
 

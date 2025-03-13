@@ -249,7 +249,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     }
 
     @Internal
-    override fun open() {
+    override fun open(args: List<String>) {
         openChoicesScrollableEditPopup()
     }
 

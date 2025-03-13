@@ -196,7 +196,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
     }
 
     @Internal
-    override fun open() {
+    override fun open(args: List<String>) {
         openMapEditPopup()
     }
 

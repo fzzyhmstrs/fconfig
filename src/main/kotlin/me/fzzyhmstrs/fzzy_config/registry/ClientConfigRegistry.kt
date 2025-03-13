@@ -56,6 +56,22 @@ internal object ClientConfigRegistry {
         return clientConfigs[scope]?.active
     }
 
+    internal fun getValidClientConfig(scope: String): Pair<Config?, String> {
+        val s = getValidConfigScope(scope) ?: return Pair(null, scope)
+        return Pair(clientConfigs[s]?.active, s)
+    }
+
+    private fun getValidConfigScope(scope: String): String? {
+        val configScopes = clientConfigs.keys
+        if(configScopes.contains(scope)) return scope
+        var validScopeTry = scope.substringBeforeLast('.')
+        if (validScopeTry == scope) return null
+        while(!configScopes.contains(validScopeTry) && validScopeTry.contains('.')) {
+            validScopeTry = validScopeTry.substringBeforeLast('.')
+        }
+        return if(configScopes.contains(validScopeTry)) validScopeTry else null
+    }
+
     //client
     internal fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
@@ -227,13 +243,27 @@ internal object ClientConfigRegistry {
     //client
     internal fun registerConfig(config: Config, baseConfig: Config, noGui: Boolean) {
         if (!noGui) {
-            validScopes.add(config.getId().namespace)
-            validSubScopes.put(config.getId().namespace, config.getId().path)
+            val namespace = config.getId().namespace
+            validScopes.add(namespace)
+            validSubScopes.put(namespace, config.getId().path)
+            if (configScreenManagers.containsKey(namespace)) { //invalidate config screen manager
+                configScreenManagers.remove(namespace)
+            }
         }
-        UpdateManager.applyKeys(config)
         clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config, baseConfig)
         EventApiImpl.fireOnRegisteredClient(config.getId(), config)
     }
 
-    private class ConfigPair(val active: Config, val base: Config)
+    private class ConfigPair(private val _active: Config, val base: Config) {
+        var i: Boolean = false
+
+        val active: Config
+            get() {
+                if (!i) {
+                    i = true
+                    UpdateManager.applyKeys(_active)
+                }
+                return _active
+            }
+    }
 }
