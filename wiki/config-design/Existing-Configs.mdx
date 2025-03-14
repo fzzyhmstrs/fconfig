@@ -11,7 +11,7 @@ Migration will follow many of same the basic steps as [New Configs](New-Configs)
 2. [Refactor registration](#2-refactor-registration)
 3. [Redo polish](#3-redo-polish)
 
-## 1. Updating Config Layout
+## 1. Updating Config Layout <a href="#general-steps" style={{color: "#B2BFF9"}}>⤴</a>
 The majority of config libraries work with Plain Ol' Java (Kotlin) Objects. If your previous library was one of those, you are in luck because your config structure is already done! Fzzy Config also works with POJO. In step 3 you can look at how to take simple config to the next level, if desired.
 
 To prepare your config class for use with Fzzy Config, you will need to implement `Config`. This defines registration information as well as provides the config with various helper methods.
@@ -50,7 +50,7 @@ For more in-depth discussion of laying out a config and an overview of more adva
 
 [Laying out Configs](Laying-out-Configs)
 
-## 2. Refactor Registration
+## 2. Refactor Registration <a href="#general-steps" style={{color: "#B2BFF9"}}>⤴</a>
 Fzzy Config has an inline registration system that works with an INSTANCE pattern. Configs are registered and loaded in one method call, allowing for config instantiation to be lock-step with registering it and deserializing its info from file.
 
 For example:
@@ -121,7 +121,7 @@ class MyConfig: Config(Identifier.of(MODID, "my_config")) {
 
 </CodeTabs>
 
-## 3. Redo Polish
+## 3. Redo Polish <a href="#general-steps" style={{color: "#B2BFF9"}}>⤴</a>
 Naturally, the bits and bobs that came with the past library (annotations, translations, etc.) won't work with Fzzy Config. Fret not! Fzzy Config has options of its own.
 
 ### Translation
@@ -130,11 +130,11 @@ Used something like `@ConfigEntry.Gui.Tooltip` from Cloth before? No need with F
 [➡️ Translation](../config-concepts/Translation)
 
 ### Validation
-Fzzy Config has a very robust suite of validation options. Validation is a foundation of its very functionality! Whether you utilize these tools purposefully or not, either way Fzzy Config will apply them in the background to keep everything in your config running smoothly.
+Fzzy Config has many validation options. Validation is a foundation of its very functionality! Whether you utilize these tools purposefully or not, Fzzy Config will apply them in the background to keep everything in your config running smoothly.
 
 [➡️ Validation](../config-concepts/Validation)
 
 ### Annotations
-Fzzy Config has a powerful set of Annotations to bring the depth of function you need to your refactored config.
+Fzzy Config has a powerful suite of Annotations to add the depth of function you need to your refactored config.
 
 [➡️ Annotations](../config-concepts/Annotations)

@@ -2,10 +2,14 @@
 title: Config Events
 ---
 
-As of Fzzy Config 0.5.0 there is an event system, with a series of directly implementable methods in `Config` for managing events directly in your own config class, an `EventApi` for registering to various generic config events, as well as a way to attach listeners directly to [Validation](Validation)
+<Callout>
+Added in Fzzy Config 0.5.0
+</Callout>
+
+Fzzy Config has an event system, with a series of directly implementable methods in `Config` for managing events directly in your own config class, an `EventApi` for registering to various generic config events, as well as a way to attach listeners directly to [Validation](Validation)
 
 ### Config Implementations
-There are new overridable methods in `Config` that correspond to the various event stages added in 0.5.0. These are called alongside the events described below; if you only need to take action based on your own config changing state it's better to implement these than to register to the generic events called for every config.
+There are overridable methods in `Config` that correspond to the various event stages. These are called alongside the events described below; if you only need to take action based on your own config it's better to implement these than to register to the events, which are called for every config.
 
 | Method           | Environment | Description                                                                                                                                                    |
 |------------------|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -17,7 +21,7 @@ There are new overridable methods in `Config` that correspond to the various eve
 These methods are called on their respective main threads (Render/Server thread), so it is safe to interact with game state.
 
 ### Config Events
-A new sub-API has been added to `ConfigApi`, the `EventApi`, which manages registration to any events in Fzzy Config. Call the Event API with `ConfigApi.event()`. The events in the API mirror the methods present in `Config`, but are fired for every config relevant to the event. They also pass more generic information (`Config` vs. the method knowing the exact config subclass).
+The `EventApi` manages registration to any events in Fzzy Config. Call the Event API with `ConfigApi.event()`. The events in the API mirror the methods present in `Config`, but are fired for every config relevant to the event. They also pass more generic information (`Config` vs. the method knowing the exact config subclass).
 
 | Method           | Environment | Params                                                      | Description                                                                                                                                                     |
 |------------------|-------------|-------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -29,7 +33,7 @@ A new sub-API has been added to `ConfigApi`, the `EventApi`, which manages regis
 Events are called on their respective main threads (Render/Server thread), so it is safe to interact with game state. They will fire for every config relevant to that stage, so you will need to inspect the id and config to ensure you have the proper one.
 
 ### Listeners
-The above events are only called when an update is "officially" completed, and the entire config state is synchronized. If you need to inspect changes to a config setting under any circumstance, either a player change or an internal in-code change, you can now attach a listener to any `ValidatedField`.
+The above events are only called when an update is "officially" completed, and the entire config state is synchronized. If you need to inspect changes to a config setting under any circumstance, either a player change or an internal in-code change, you can attach a listener to any `ValidatedField`.
 
 These listeners are simply `Consumer` of the field itself. There are two methods available for attachment
 * `addListener`, directly in `ValidatedField` itself. This has no return, so you will have to attach in an init block, with a helper method, or similar.

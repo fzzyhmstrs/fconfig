@@ -198,7 +198,12 @@ class BoisConfig: Config(Identifier.of(MOD_ID, "bois_config")) {
 </CodeTabs>
 
 ### Groups
-Added as of Fzzy Config 0.6.0. Groups are inline organization elements that don't _structurally_ change the config in-code. They are used for visual organization of information in a config GUI, and as an [anchor](#3-anchors) for quick navigation.
+
+<Callout>
+Added in Fzzy Config 0.6.0
+</Callout>
+
+Groups are inline organization elements that don't _structurally_ change the config in-code. They are used for visual organization of information in a config GUI, and as an [anchor](#3-anchors) for quick navigation.
 
 For example, say you have a Main config and a Client config. You may want to leave this structure alone without needing to call into specific subsections. In the client config there may be a section for GUI positions, another for sounds, another for particles. The user will be presented with three inline groups of settings that they can collapse out of the way if needed, and can still fast-navigate to with the Go-To menu.
 

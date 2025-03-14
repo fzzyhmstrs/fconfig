@@ -11,7 +11,7 @@ Creating a brand-new config system based on Fzzy Config? Let's get started! This
 4. [Polish](#4-polish-)
 5. [Integration into the Mod](#5-integration-into-your-mod-)
 
-## 1. Development of a Config Layout [⤴](#steps)
+## 1. Development of a Config Layout <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
 Before you get into your Config implementation, figure out the layout you want (see article link below). This layout will determine how the configs are laid out visually, the user experience of navigating your settings, and how you interact with the config internally.
 
 <Callout variant="warning">
@@ -20,7 +20,7 @@ This step is so important to all future uses of the config that I hesitate to sa
 
 [➡️ Laying out Configs](Laying-out-Configs)
 
-## 2. Config Creation [⤴](#steps)
+## 2. Config Creation <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
 With your layout in mind, create some config classes and fill them with the settings you need. Configs extend the base class `Config`.
 1. Extend [`Config`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config/index), provide an Identifier, and any custom folder(s) as needed.
 2. Fill in your empty class with settings. Settings have the following considerations:
@@ -94,7 +94,7 @@ internal class MyConfig: Config(Identifier.of(MOD_ID, "my_config")) {
 
 </CodeTabs>
 
-## 3. Config Registration [⤴](#steps)
+## 3. Config Registration <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
 Configs are accessed via an `INSTANCE` pattern. Access in this manner, with the API calls for registration and loading described below, prevents "too-early" access to a config that hasn't been populated with live data.
 1. [`registerAndLoadConfig`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-config-api/index.html#195300946%2FFunctions%2F769193423). The API call for registering and loading a config from file It will also automatically create the file if none exists. Select your [`RegisterType`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-register-type/index) based on the user needs for the config settings
     1. `BOTH` - Default, will have a GUI client side, and will also auto-sync between servers and clients.
@@ -138,7 +138,7 @@ object Configs {
 
 </CodeTabs>
 
-## 4. Polish [⤴](#steps)
+## 4. Polish <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
 Your basic config is complete! But the features are only just beginning. Read on to take your config to the next level! Or don't. Fzzy Config will work for you either way :).
 
 ### Validation
@@ -159,18 +159,18 @@ Fzzy Config has a variety of annotations that provide secondary functions a conf
 * Server config permission control
 * Various flags; client only, restart-triggering, and so on.
 
-For the full breakdown of annotations available, check out:
+For the full breakdown of annotations check out:
 
 [➡️ Annotations](../config-concepts/Annotations)
 
 ### Translation
-Most aspects of a config are automatically translatable. You don't _have_ to translate anything, but it's strongly recommended. If you don't, Fzzy Config will do its best to generate human-readable names from the class and field names of the configs themselves.
+Most config components are automatically translatable. You don't _have_ to translate anything, but it's strongly recommended. If you don't, Fzzy Config will do its best to generate human-readable names for you.
 
 To properly translate your column head on over to:
 
 [➡️ Translation](../config-concepts/Translation)
 
-## 5. Integration into your Mod [⤴](#steps)
+## 5. Integration into your Mod <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
 You've got a shiny, polished up config! How do you use it?
 1. Simply call the fields as you normally would.
 2. `ValidatedField` instances are suppliers. Simply add `.get()` to the end.

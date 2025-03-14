@@ -63,7 +63,12 @@ For advanced control of your settings, in the vein of Minecraft `GameOption`, de
 --------------------------------------------
 
 ## Mapping [⤴](#validation-manipulation)
-As of Fzzy Config 0.5.0, Validation can be mapped to another convertible type, much like Mojang's Codecs. The validation will be stored as if it were the underlying mapped-from type, enforce limitations using the underlying type, the in-game widgets will be based on the underlying validation, and so on, but in-code you can interact directly with the mapped-to type.
+
+<Callout>
+Added in Fzzy Config 0.5.0
+</Callout>
+
+Validation can be mapped to another convertible type, much like Mojang's Codecs. The validation will be stored as if it were the underlying mapped-from type, enforce limitations using the underlying type, the in-game widgets will be based on the underlying validation, and so on, but in-code you can interact directly with the mapped-to type.
 
 ### Example: Character
 Fzzy Config doesn't have built in validation for Characters. With mapping, we can easily build our own.

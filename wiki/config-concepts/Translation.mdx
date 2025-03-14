@@ -9,9 +9,16 @@ Translation in Fzzy Config is driven by the [Translatable](https://fzzyhmstrs.gi
 
 ### Translatable
 Translation in most places in Fzzy Config is a matched triad of keys:
-* Translation: `my_mod.my_config.my_section.myField` (Name of the element)
-* Description: `my_mod.my_config.my_section.myField.desc` (tooltip of the element)
-* Prefix: `my_mod.my_config.my_section.myField.prefix` (Inline introduction of the element, typically presented above it in a GUI, hence the name. This is particularly useful above sections, groups, and other organizational elements to briefly explain what the user will find within)
+
+| Type        | Lang Key                                     | Description                                                                                                                                                                           |
+|-------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Translation | `my_mod.my_config.my_section.myField`        | Name of the element                                                                                                                                                                   |
+| Description | `my_mod.my_config.my_section.myField.desc`   | Tooltip of the element                                                                                                                                                                |
+| Prefix      | `my_mod.my_config.my_section.myField.prefix` | Inline introduction of the element, typically presented above it in a GUI, hence the name. This is useful above sections, groups, and so on to explain what the user will find within |
+
+<Callout variant="info">
+You don't need to supply translations for all of these (or any of these), missing entries will either be ignored or a fallback used
+</Callout>
 
 The below image showcases all three translations in action. The Prefix is the text at the top, the title is on the left, and the description is shown in the tooltip.
 
@@ -19,7 +26,7 @@ The below image showcases all three translations in action. The Prefix is the te
 
 
 The following pieces and parts automatically support these:
-* [Validation](Validation) (including automatic validation of "plain" values)
+* [Config Entries](Validation) (including automatic validation of "plain" values)
 * [Config Classes](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config/index.html)
 * [Config Sections](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section/index.html)
 * [Config Actions](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-action/index.html)
@@ -28,17 +35,17 @@ The following pieces and parts automatically support these:
 So almost every piece of your config will automatically support translation, tooltips, and inline descriptions! If there is something in your config that isn't getting captured, simply implement `Translatable` on that escapee.
 
 Some notes regarding translations in practice:
-* Prefixes often won't be rendered in popups or other situations outside the normal config GUI.
+* Prefixes often won't be rendered outside the normal config GUI list.
 * Both prefixes and descriptions will be narrated, prefix and then description.
-* If you prefix a config, the prefix text will both appear in the config landing page (if applicable) and at the top of the config settings list as a "header".
+* If you prefix a config, the prefix text will both appear in the config landing page (if applicable) and at the top of the settings list as a "header".
 
 ### @Translation
 If you want to override the default translation, or provide a translation and description without implementing `Translatable`, you can use the `@Translation` annotation. This annotation provides a prefix that the annotated field name is appended to. See the [Annotations](annotations/Translation) article for details.
 
-This annotation can be very useful for repeating parts. If you have a config object, lets say an entity attributes "chunk", that repeats many times in a config. Normally you would have to provide a translation for every individual setting based on the total classpath. That would get annoying fast. @Translation allows you to define one lang prefix that is common for all instances of the annotated field.
+This annotation is useful for repeating parts. If you have a config object that repeats many times in a config; normally you would have to provide a translation for every individual setting. That would get annoying fast. `@Translation` allows you to define one lang prefix that is common for all instances of the annotated field.
 
 ## Fallbacks
-If not provided with fallbacks, Fzzy Config will do it's best to provide stand-ins where possible.
+If not provided with translations, Fzzy Config will do it's best to provide fallbacks where possible.
 * Fields will use the Capitalized and split-by-word version of the field name: `myValidatedField` to `My Validated Field`
 * Sections will similarly fall back to the field the section is stored in.
 * Configs will fall back to their simple Class name split by words: `ItemsConfig` to `Items Config`
