@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.RepositioningWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.Scalable
@@ -190,7 +191,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
 
         //context.disableScissor()
-        if (!noScroll() && (!hideScrollWhileNotHovered() || this.hovered || this.isDragging())) {
+        if (!noScroll() && (!hideScrollWhileNotHovered() || this.hovered || this.isDragging)) {
             val sW = scrollWidth
             context.drawTex(scrollBarBackground, right - sW, y, sW, height)
             val pos = scrollBarPosition(mouseY.toDouble())
@@ -258,6 +259,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
 
     @Internal
     override fun setDragging(dragging: Boolean) {
+        FC.DEVLOG.info("Drag: $dragging")
         this.dragging = dragging
     }
 
@@ -438,6 +440,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
             return false
         }
         if (mouseX >= (right - scrollWidth) && (mouseX < right)) {
+            dragging = true
             if (scrollButtonType.get().mouseOverUp(mouseY, y, bottom)) {
                 client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(50)
@@ -475,6 +478,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        dragging = false
         return focused?.mouseReleased(mouseX, mouseY, button) == true
     }
 

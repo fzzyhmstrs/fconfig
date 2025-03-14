@@ -40,6 +40,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import java.lang.ref.SoftReference
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.BiFunction
 import java.util.function.Consumer
@@ -58,9 +59,12 @@ internal class ConfigScreenManager(private val scope: String, private val config
     private var cachedPerms:  Map<String, Map<String, Boolean>> = mapOf()
     private val cachedPermKey: AtomicInteger = AtomicInteger(0)
     private var cachedScope: String = ""
+    private val screenLock: AtomicBoolean = AtomicBoolean(false)
+    private val rootScope: String?
 
     init {
         cachedPerms = ConfigApiImplClient.getPerms()
+        rootScope = configs.entries.firstOrNull { it.value.rootConfig }?.key
     }
 
     //////////////////////////////////////////////
@@ -86,19 +90,32 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     internal fun provideScreen(scope: String = this.scope): Screen? {
-        cachedScope = scope
-        if (cachedPerms != ConfigApiImplClient.getPermsRef()) {
-            cachedPerms = ConfigApiImplClient.getPerms()
-            cachedPermKey.incrementAndGet()
+        try {
+            if (screenLock.get()) {
+                FC.DEVLOG.error("Screen preparation for [$scope] attempted while Screen Manager [${this.scope}] was preparing another screen for [$cachedScope]")
+                return null
+            }
+            screenLock.set(true)
+            cachedScope = scope
+            if (cachedPerms != ConfigApiImplClient.getPermsRef()) {
+                cachedPerms = ConfigApiImplClient.getPerms()
+                cachedPermKey.incrementAndGet()
+            }
+            val s = provideScopedScreen(scope).first
+            screenLock.set(false)
+            return s
+        } catch (e: Throwable) {
+            FC.LOGGER.error("Critical exception thrown while preparing a Config Screen for [$scope] from Screen Manager [${this.scope}]", e)
+        } finally {
+            screenLock.set(false)
         }
-        //checkForRebuild()
-        return provideScopedScreen(scope).first
+        return null
     }
 
     private fun provideScopedScreen(scope: String): Pair<ConfigScreen?, String?> {
         val realScope = if (scope == this.scope && configs.size == 1)
             configs.keys.toList()[0]
-        else if (scope == this.scope)
+        else if (scope == this.scope || scope == this.rootScope)
             return Pair(provideRootScreen(), null)
         else
             getValidScope(scope) ?: return Pair(null, null)
@@ -140,25 +157,48 @@ internal class ConfigScreenManager(private val scope: String, private val config
         return cache.provideScreen(this.scope).first
     }
 
+    internal fun isScreenOpen(scope: String): Boolean {
+        return MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.scope?.let {
+            //perfect scope match or the root config is open and the scope alias lines up
+            it == scope || (it == rootScope && scope == this.scope || scope == this.rootScope)
+        } == true
+    }
+
     internal fun openScreen(scope: String = this.scope) {
+        if (screenLock.get()) {
+            FC.DEVLOG.error("Screen open for [$scope] attempted while Screen Manager [${this.scope}] was preparing another screen for [$cachedScope]")
+            return
+        }
+        screenLock.set(true)
         cachedScope = scope
         if (cachedPerms != ConfigApiImplClient.getPermsRef()) {
             cachedPerms = ConfigApiImplClient.getPerms()
             cachedPermKey.incrementAndGet()
         }
         //don't open the screen that's already open
-        if (MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.scope == scope) return
+        if (MinecraftClient.getInstance().currentScreen?.nullCast<ConfigScreen>()?.scope?.let {
+            //perfect scope match or the root config is open and the scope alias lines up
+            it == scope || (it == rootScope && scope == this.scope || scope == this.rootScope)
+        } == true) {
+            screenLock.set(false)
+            return
+        }
         openScopedScreen(scope)
+        screenLock.set(false)
     }
 
     private fun openScopedScreen(scope: String) {
-        val screenArgPair = provideScopedScreen(scope)
-        val screen = screenArgPair.first ?: return
-        MinecraftClient.getInstance().setScreen(screenArgPair.first)
-        val rawEntryString = screenArgPair.second
-        if (rawEntryString != null && rawEntryString != "") {
-            screen.scrollToEntry(scope)
-            screen.openEntry(rawEntryString)
+        try {
+            val screenArgPair = provideScopedScreen(scope)
+            val screen = screenArgPair.first ?: return
+            MinecraftClient.getInstance().setScreen(screenArgPair.first)
+            val rawEntryString = screenArgPair.second
+            if (rawEntryString != null && rawEntryString != "") {
+                screen.scrollToEntry(scope)
+                screen.openEntry(rawEntryString)
+            }
+        } catch (e: Throwable) {
+            FC.LOGGER.error("Critical exception thrown while opening a Config Screen for [$scope] from Screen Manager [${this.scope}]", e)
         }
     }
 
@@ -175,6 +215,17 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     ////////////////////////////////////////////////
+
+    private fun rootConfigName(): Text {
+        if (rootScope != null) {
+            val result = configs[rootScope]?.active?.let { config ->
+                ConfigApiImplClient.getText(config, "", config::class.annotations, emptyList(), config::class.java.simpleName)
+            }
+            if (result != null)
+                return result.name
+        }
+        return PlatformUtils.configName(this.scope, "Config Root").lit()
+    }
 
     private fun prepareConfigScreenCache(configSet: ConfigSet, playerPerms: Int, customPermsKey: Int, outOfGame: Boolean, previous: ConfigScreenCache? = null): ConfigScreenCache {
         val functionMap: MutableMap<String, MutableList<EntryCreator.Creator>> = mutableMapOf()
@@ -196,7 +247,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         walkConfig(configSet, functionMap, anchorPredicate, playerPerms, manager)
 
         if(configs.size > 1)
-            nameMap[this.scope] = PlatformUtils.configName(this.scope, "Config Root").lit()
+            nameMap[this.scope] = rootConfigName()
         val scopes = functionMap.keys.toList() + if(configs.size > 1) listOf(this.scope) else listOf()
         val scopeButtonFunctions = buildScopeButtons(nameMap)
         val builders: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
@@ -208,9 +259,11 @@ internal class ConfigScreenManager(private val scope: String, private val config
     }
 
     private fun prepareRootScreenCache(playerPerms: Int, customPermsKey: Int, outOfGame: Boolean, previous: ConfigScreenCache? = null): ConfigScreenCache {
-        val name = PlatformUtils.configName(this.scope, "Config Root").lit()
+        val name = rootConfigName()
         val forwardedUpdates: MutableList<ForwardedUpdate> = previous?.forwardedUpdates ?: mutableListOf()
         val manager = ConfigRootUpdateManager()
+
+
         val functions: MutableList<EntryCreator.Creator> = mutableListOf()
         val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
             .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
@@ -223,6 +276,7 @@ internal class ConfigScreenManager(private val scope: String, private val config
         }
 
         for ((s, set) in configs) {
+            if (s == this.rootScope) continue
             screenCaches[s]?.let { manager.addChild(it.manager) }
             val config: Config = set.active
             val prefix = config.getId().toTranslationKey()
@@ -234,9 +288,44 @@ internal class ConfigScreenManager(private val scope: String, private val config
             //Header entry injected into function map at top of config
         }
 
-        val builder = buildBuilder(name, this.scope, listOf(), mapOf(), functions, manager)
+        val builderMap: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()
 
-        return ConfigScreenCache(forwardedUpdates, manager, mapOf(this.scope to builder), playerPerms, customPermsKey, outOfGame)
+        val rootConfig = configs[rootScope]
+        if (rootConfig != null && this.rootScope != null) {
+            val functionMap: MutableMap<String, MutableList<EntryCreator.Creator>> = mutableMapOf()
+            val nameMap: MutableMap<String, Text> = mutableMapOf(this.rootScope to name)
+            val anchorPredicate: Predicate<AnchorResult> =
+                Predicate { result ->
+                    if (result.thing !is EntryAnchor) return@Predicate false
+                    nameMap[result.scope] = result.texts.name
+                    false
+                }
+
+            val rootChildManager = ConfigSingleUpdateManager(rootConfig, forwardedUpdates, playerPerms)
+            manager.addChild(rootChildManager)
+
+            walkConfig(rootConfig, functionMap, anchorPredicate, playerPerms, rootChildManager)
+
+            val scopes = functionMap.keys.toList() + listOf(this.scope)
+            val scopeButtonFunctions = buildScopeButtons(nameMap)
+            for ((s, fs) in functionMap) {
+                if (s == this.rootScope) {
+                    functions.addAll(fs)
+                } else {
+                    val n = nameMap[s] ?: FcText.EMPTY
+                    builderMap[s] = buildBuilder(n, s, scopes, scopeButtonFunctions, fs, manager)
+                }
+            }
+        }
+
+        val builder = buildBuilder(name, this.rootScope ?: this.scope, listOf(), mapOf(), functions, manager)
+        builderMap[this.scope] = builder
+        if (this.rootScope != null)
+            builderMap[this.rootScope] = builder
+
+
+
+        return ConfigScreenCache(forwardedUpdates, manager, builderMap, playerPerms, customPermsKey, outOfGame)
     }
 
     private fun prepareSidebarData(): SidebarData {
