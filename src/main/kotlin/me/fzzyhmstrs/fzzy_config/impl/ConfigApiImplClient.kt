@@ -76,6 +76,10 @@ internal object ConfigApiImplClient {
         ClientConfigRegistry.openScreen(scope)
     }
 
+    internal fun isScreenOpen(scope: String): Boolean {
+        return ClientConfigRegistry.isScreenOpen(scope)
+    }
+
     internal fun openRestartScreen(): Boolean {
         if (MinecraftClient.getInstance().currentScreen is RestartScreen) return false
         MinecraftClient.getInstance().setScreen(RestartScreen())

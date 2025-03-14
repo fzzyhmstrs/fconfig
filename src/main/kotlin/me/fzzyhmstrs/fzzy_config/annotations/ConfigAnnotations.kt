@@ -339,7 +339,11 @@ annotation class Translation(val prefix: String, val negate: Boolean = false)
 /**
  * A config marked as a root config will be shown in the "root" config screen (the landing page for all of your configs when you first open the GUI) instead of in its own nested screen.
  *
- * Only one config in the same scope namespace can have the root config annotation. If more than one is present, an exception will be thrown.
+ * Only one config in the same scope namespace can have the root config annotation. If more than one is present, only the first encountered will be considered (this will likely result in undefined behavior).
+ *
+ * If this is added to a server-only config, it won't do anything.
+ *
+ * It is important to note that this does not change the actual structural layout or behavior of the configs in the backend at all. It's effectively moving where the buttons go, and what screen opens when the scope for this annotated config is called. If you add this annotation to a pre-existing config, everything will keep working as it was (saving/loading, the toml file location, even using the configs scope to open the screen)
  * @author fzzyhmstrs
  * @since 0.6.6
  */
