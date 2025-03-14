@@ -107,7 +107,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
 
 
     init {
-        this.compositeFlags(EntryFlag.Flag.REQUIRES_WORLD)
+        this.setFlag(EntryFlag.Flag.REQUIRES_WORLD.flag)
         when(storedValue.type()) {
             ProviderType.STACK -> {
                 listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))

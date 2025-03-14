@@ -99,6 +99,12 @@ internal object ConfigApiImpl {
             ConfigApiImplClient.openScreen(scope)
     }
 
+    internal fun isScreenOpen(scope: String): Boolean {
+        if (isClient)
+            return ConfigApiImplClient.isScreenOpen(scope)
+        return false
+    }
+
     internal fun openRestartScreen() {
         if (isClient)
             FCC.openRestartScreen()
@@ -807,7 +813,7 @@ internal object ConfigApiImpl {
     ///////////////// Reflection /////////////////////////////////////////////////////////
 
     private fun isIgnoreVisibility(clazz: KClass<*>): Boolean {
-        return clazz.annotations.firstOrNull { (it is IgnoreVisibility) }?.let { true } ?: false
+        return clazz.annotations.any { it is IgnoreVisibility }
     }
 
     private fun trySetAccessible(prop: KMutableProperty<*>): Boolean {
@@ -826,6 +832,10 @@ internal object ConfigApiImpl {
 
     internal fun isNonSync(annotations: List<Annotation>): Boolean {
         return annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
+    }
+
+    internal fun isRootConfig(clazz: KClass<*>): Boolean {
+        return clazz.annotations.any { it is RootConfig }
     }
 
     @Suppress("DEPRECATION")
