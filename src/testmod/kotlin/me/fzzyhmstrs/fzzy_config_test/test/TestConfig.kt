@@ -21,7 +21,7 @@ object TestConfig {
 
     fun init() {
         println("I registered my config")
-        ConfigApi.event().onSyncClient { id, config ->
+        ConfigApi.event().onSyncClient { id, _ ->
             println("Syncing config $id")
             if (id == testConfig4.getId()) {
                 println("I ran a sync event! :D")
@@ -40,7 +40,7 @@ object TestConfig {
                 println(config.folder)
             }
         }
-        ConfigApi.event().onUpdateServer { id, config, player ->
+        ConfigApi.event().onUpdateServer { id, _, player ->
             if (id == testConfig4.getId()) {
                 println("I'm on the server thread right?")
                 player.sendMessage("I ran a server update event!!".lit())
@@ -54,6 +54,7 @@ object TestConfig {
 
     val tupleProvider: ResultProvider<ValidatedPair.Tuple<Int, Int>> = ConfigApi.result().createSimpleResultProvider(ValidatedPair.Tuple(0, 0), ValidatedPair.Tuple(0, 0).javaClass.kotlin)
 
+    var rootConfig = ConfigApi.registerAndLoadConfig({ TestRootConfigImpl() }, RegisterType.BOTH)
     var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
     var testConfig4 = ConfigApi.registerAndLoadConfig({ TestConfigImpl4() }, RegisterType.BOTH)
 }

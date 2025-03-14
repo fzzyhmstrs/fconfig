@@ -175,9 +175,23 @@ internal object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.mapValues { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
+                clientConfigs.filterKeys {
+                    s -> s.startsWith(namespaceScope)
+                }.mapValues {
+                    ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key), ConfigApiImpl.isRootConfig(it.value.active::class))
+                })
         }
         manager.openScreen(scope)
+    }
+
+    internal fun isScreenOpen(scope: String): Boolean {
+        val namespaceScope = getValidScope(scope)
+        if (namespaceScope == null) {
+            FC.LOGGER.error("Failed to determine if a config screen is open. Invalid scope provided: [$scope]")
+            return false
+        }
+        val manager = configScreenManagers[namespaceScope] ?: return false
+        return manager.isScreenOpen(scope)
     }
 
     //client
@@ -190,7 +204,11 @@ internal object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.mapValues { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
+                clientConfigs.filterKeys {
+                    s -> s.startsWith(namespaceScope)
+                }.mapValues {
+                    ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key), ConfigApiImpl.isRootConfig(it.value.active::class))
+                })
         }
         return manager.provideScreen(scope)
     }
