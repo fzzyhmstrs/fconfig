@@ -2,9 +2,9 @@
 title: Troubleshooting
 ---
 
-Common solutions to common problems are described here.
+Solutions to common problems are described here.
 
-## Config not in ModMenu
+## <div><SquareMenuIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Config not in ModMenu</div>
 ModMenu asks for its config screen on mod initialization. If your mod doesn't register your config until then, load order might mean your config hasn't had a chance to initialize before ModMenu has asked for config screens. To fix this, add your mod id (or the ids you used in the config identifiers) to the relevant mod properties file:
 
 <CodeTabs>
@@ -23,7 +23,7 @@ modProperties={fzzy_config="mod_id"}
 
 </CodeTabs>
 
-## Arbitrary Object Settings Null
+## <div><TriangleDashedIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Arbitrary Object Settings Null</div>
 If you use `ValidatedAny` to wrap your object, you don't need to do anything further, but if you just add a "plain" object instance to your config, that object needs to implement `Walkable`
 
 <CodeTabs>
@@ -46,12 +46,12 @@ class MyObject2: Walkable{ /* implementation */ } //implements walkable
 
 </CodeTabs>
 
-## Java Compiler Errors
+## <div><CoffeeIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Java Compiler Errors</div>
 Since FzzyConfig is written in kotlin, there are certain incompatibilities you might run into if you are writing a java mod. 
 * `ConfigApiJava` - This may solve issues with registration, commonly caused by certain kotlin classes such as `Function0` not being present in java build environment
 * `modCompileOnly` FabricLanguageKotlin - The robust solution, simply add kotlin to your compile classpath with FLK or similar.
 
-## TestMod Crashes
+## <div><ServerCrashIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> TestMod Crashes</div>
 
 <Callout variant="info">
 As of 0.4.3, there is a maven! If you haven't updated to using the maven, check out the homepage for the new repository and dependency paths

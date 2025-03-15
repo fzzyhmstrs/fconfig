@@ -54,7 +54,7 @@ Large configs benefit from being broken up into parts, if separate config classe
 If you use a common subclass for creation of repeating sub-elements, consider using the [`@Translation`](../config-concepts/Translation) annotation, which will let you define common lang for all instances of the repeating element. 
 
 ### Sections
-Sub-config classes can be extended from [`ConfigSection`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section). Sub-configs made this way will open a new, separate config screen of their own on top of the parent config screen.
+Sub-config classes can be extended from [`ConfigSection` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section). Sub-configs made this way will open a new, separate config screen of their own on top of the parent config screen.
 * _Sections are recommended for large sections of a parent config that belong together, where separating them into individual configs completely might be laborious._
 * _For example, if you have an `ItemsConfig`, you may have a `Swords` section, an `Axes` section, and so on._
 
@@ -121,7 +121,7 @@ class ItemsConfig: Config(Identifier.of(MOD_ID, "items_config")) {
 </CodeTabs>
 
 ### Objects
-[Validation](../config-concepts/Validation) is its own topic, but for the sake of this article, FzzyConfig supports arbitrary Simple Objects (POJO) with its validation engine. Validated Objects (called [`ValidatedAny`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-any) internally) will open a 'popup' window where the user can make selections.
+[Validation](../config-concepts/Validation) is its own topic, but for the sake of this article, FzzyConfig supports arbitrary Simple Objects (POJO) with its validation engine. Validated Objects (called [`ValidatedAny` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-any) internally) will open a 'popup' window where the user can make selections.
 * _Objects are recommended where you need small, repeating blocks of particular settings that the user may want to copy and paste between settings_
 * _For example, if you have an `EntityConfig, you may have an object per entity that defines common settings like health, damage, movement speed, and so on._
 

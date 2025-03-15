@@ -2,7 +2,9 @@
 title: Validated Choices
 ---
 
-Create non-enum sets of choices (sets of integers, strings, and so on). Lists and sets can be automatically converted to choices with their `toChoices()` method. `ValidatedChoice` is validation of the type the choices are, so the `get()` and `apply()` methods will return the current choice in the relevant type, and take a new choice in that type as well.
+A set of choices with one active choice. Lists and sets can be automatically converted to choices with their `toChoices()` method. 
+
+`ValidatedChoice` is validation of the type the choices are, so the `get()` and `apply()` methods will return and consume choices in the relevant type directly.
 
 <CodeTabs>
 
@@ -19,11 +21,9 @@ var validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(Valida
 </CodeTabs>
 
 ### Translation Providers
-The type and values of choices provided may not be automatically [`Translatable`](../Translation), such as plain numbers or strings. If you still want to provide translations and tooltips for your choices, ValidatedChoice can accept a translationProvider and descriptionProvider; BiFunctions that convert the choice to display into a translated text and hovered tooltip instead.
+The choices provided may not be automatically [`Translatable`](../Translation), like numbers or strings. To provide translations and tooltips for your choices, ValidatedChoice accepts a translationProvider and descriptionProvider; BiFunctions that convert the choice into a translated text and hovered tooltip.
 
-Using the weights example from above, we can build out some translations and descriptions for the weight options.
-
-Depending on the translation and descriptions provided, the choices might display like `"Ultra Rare", "Very Rare", "Rare", "Uncommon", "Common"` instead of `1, 2, 5, 10, 20`, with hovered tooltips that explain what each rarity value means (chance an item will appear, for example)
+The weight choices from the example above might display like `"Ultra Rare", "Very Rare", "Rare", "Uncommon", "Common"` instead of `1, 2, 5, 10, 20`, with hovered tooltips that explain what each rarity value means.
 
 <CodeTabs>
 
@@ -46,3 +46,7 @@ var validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(
 ```
 
 </CodeTabs>
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-choice/index.html">here 🔗</a>
+</Callout>

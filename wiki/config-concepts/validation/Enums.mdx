@@ -2,7 +2,7 @@
 title: Validated Enums
 ---
 
-Any enum included in a Config is automatically validated, but much like booleans making ValidatedEnums may be useful for constructing other validation types.
+Any enum included in a Config is automatically validated; `ValidatedEnum` is still useful for constructing other validation types.
 
 <CodeTabs>
 
@@ -32,4 +32,8 @@ var validatedEnumExtension = MyEnum.A.validated() // kotlin extension function f
 </CodeTabs>
 
 ### Translation
-Enums can implement a special interface `EnumTranslatable` that allows for translation of enum constants and custom tooltips per constant. See [Translation](../Translation#enumtranslatable) for details.
+Enums can implement `EnumTranslatable` which provides custom names and tooltips for each enum constant. See [Translation](../Translation#-enumtranslatable) for details.
+
+<Callout>
+See the documentation pages for <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-translatable/index.html">Translatable 🔗</a>, <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-enum-translatable/index.html">EnumTranslatable 🔗</a>
+</Callout>

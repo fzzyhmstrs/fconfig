@@ -6,24 +6,36 @@ title: Validated Choice Lists
 Added in Fzzy Config 0.6.0
 </Callout>
 
-Create sets of selectable and de-selectable choices with `ValidatedChoiceList`. This is useful for a feature-flag-style setting, polling for active flags using `List#contains`.
+Create sets of toggle-able choices with `ValidatedChoiceList`. This is a feature-flag-style setting, poll for active features using `List#contains`.
 
-Like `ValidatedChoice`, this validation is of the type `List<T>`, where T is your choice type. Like `ValidatedList`, this validation implements the `List` interface, so can be used directly for list operations.
+This validation is a `List<T>`, where T is your choice type. Like `ValidatedList`, this implements `List`, so can be used directly for list operations.
 
-Helper methods `toChoiceList` in `ValidatedList / Set / Choice` make creation of a choice list easier
+Easily create a choice list using `toChoiceList` in `ValidatedList / Set / Choice`.
 
 <CodeTabs>
 
 ```java !!tabs Java
-ValidatedChoiceList<String> enabledFeatures = ValidatedList.ofString("dev_mode", "logging", "fail_fast", "compatibility_mode").toChoiceList(listOf("logging"));
+ValidatedChoiceList<String> enabledFeatures = ValidatedList.ofString(
+		"dev_mode", "logging", "fail_fast", "compatibility_mode" //the total list of choices/features
+).toChoiceList(
+		listOf("logging") //the enabled-by-default features
+);
 ```
 
 ```kotlin !!tabs Kotlin
-val enabledFeatures = ValidatedList.ofString("dev_mode", "logging", "fail_fast", "compatibility_mode").toChoiceList(listOf("logging"))
+val enabledFeatures = ValidatedList.ofString(
+    "dev_mode", "logging", "fail_fast", "compatibility_mode" //the total list of choices/features
+).toChoiceList(
+    listOf("logging") //the enabled-by-default features
+)
 ```
 
 </CodeTabs>
 
-The choice list appears in-GUI as a popup with the available choices, each in an enabled or disabled state. Clicking on any choice flip it's state between enabled and disabled.
+The in-GUI popup with the available choices, each in an enabled or disabled state. Clicking on a choice flips its state.
 
 ![Validated Choice List Popup](https://github.com/user-attachments/assets/f1d54c0e-9bc6-46dc-89eb-003383f3426c)
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.collection/-validated-choice-list/index.html">here 🔗</a>
+</Callout>

@@ -2,7 +2,7 @@
 title: "@Version"
 ---
 
-`@Version` marks a config class with a version integer. This can be used for simple record-keeping, of course, or used to handle potentially breaking updates in a meaningful manner. The version is marked at the top of the .toml file (0 by default) and the serialized version is compared against an annotated version integer, if any. If a mismatch is detected, the configs `update()` method is called for mismatch handling.
+Marks a config class with a version integer. This can be used for record-keeping, or used to handle breaking updates in a meaningful manner. The version is marked at the top of the .toml file (0 by default) and the serialized version is compared against the annotation version. If a mismatch is detected, the configs `update()` method is called for mismatch handling.
 
 <CodeTabs>
 
@@ -33,3 +33,7 @@ class MyConfig: Config(Identifier("my_id")) {
 ```
 
 </CodeTabs>
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.annotations/-version/index.html">here 🔗</a>
+</Callout>

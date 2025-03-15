@@ -1,7 +1,15 @@
-Arbitrary POJO (plain ol' objects) can be validated. Fzzy Config will automatically wrap any object that implements `Walkable`, or you can construct validation manually with `ValidatedAny`. The validation constructs a "mini-config" around the object; any validation or applicable fields included within the object will be validated just like a proper config. [[Annotations]] relevant to configs like `@IgnoreVisibility` work for these objects also.
+---
+title: Validated Objects
+---
+
+Arbitrary POJO (plain old objects) can be validated. Fzzy Config will automatically wrap any object that implements `Walkable`, or you can construct validation with `ValidatedAny`. The validation builds a "mini-config" around the object; anything included within the object will be validated just like a config. [Annotations](../Annotations) relevant to configs like `@IgnoreVisibility` work for these objects also.
 
 <Callout variant="warning">
-An object used in this way should have an empty constructor (doesn't have to be the only constructor, one of them should be empty). It's not _strictly_ necessary, but it will help avoid niche issues that might pop up when displaying the object in-game.
+An object used in this way needs an empty constructor (doesn't have to be the only constructor, one of them should be empty). It's not _strictly_ necessary in the "game crashes" sense, but it will avoid niche issues that pop up when displaying the object in-game.
 </Callout>
 
 See examples of `ValidatedAny` at [Laying out Configs](../../config-design/Laying-out-Configs)
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-any/index.html">here 🔗</a>
+</Callout>

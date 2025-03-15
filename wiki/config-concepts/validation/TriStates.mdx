@@ -6,11 +6,11 @@ title: Validated TriStates
 Added in Fzzy Config 0.6.5
 </Callout>
 
-Validation wrapping a Fzzy Config-specific `TriState` (also found in Fabric API, Minecraft itself, among many other places). Like most Tri-states it has three values, `TRUE`, `FALSE`, and `DEFAULT`.
+Validation for a Fzzy Config-specific `TriState` (also found in Fabric API, Minecraft itself, etc.). It has three values, `TRUE`, `FALSE`, and `DEFAULT`.
 
-Tri-states in Fzzy Config implement an interface `TriStateProvider` that includes helper methods useful for getting and interacting with a tri-state. `ValidatedTriState` also implements this interface and thus can be interacted with like it is a tri-state directly.
+Tri-states in Fzzy Config implement `TriStateProvider` which includes helper methods for getting and interacting with a tri-state. `ValidatedTriState` also implements this and so can be interacted with directly.
 
-`ValidatedField` and `ValidatedCondition` now also include an overload of `toCondition`/`withCondition` that accepts a BooleanSupplier. `TriStateProvider`, conveniently, is a BooleanSupplier thus can be passed directly to another validation as a condition. `DEFAULT` will be treated as `FALSE` in this case.
+`ValidatedField` and `ValidatedCondition` accept a BooleanSupplier for conditions, which `TriStateProvider` conveniently is. `DEFAULT` will act like `FALSE` in this case. See [Conditional Settings](../Validation#-conditional-settings-) to learn more.
 
 <CodeTabs>
 
@@ -31,3 +31,7 @@ var mySimpleTriState = TriState.TRUE //simple fields also work, validation will 
 ```
 
 </CodeTabs>
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-tri-state/index.html">here 🔗</a>
+</Callout>

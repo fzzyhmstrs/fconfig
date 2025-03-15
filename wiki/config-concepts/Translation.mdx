@@ -2,13 +2,13 @@
 title: Translating Configs
 ---
 
-Almost everything related to Fzzy Config is automatically translatable or otherwise able to be notated. Translation is not strictly *required*, but strongly recommended for a better user experience.
+Almost everything in Fzzy Config is automatically translatable. Translation is not strictly *required*, but strongly recommended for better user experience.
 
-## Concept
-Translation in Fzzy Config is driven by the [Translatable](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-translatable/index.html) interface or the [@Translation](annotations/Translation) annotation.
+## <div><LanguagesIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Concept</div>
+Translation in Fzzy Config is driven by the [Translatable 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-translatable/index.html) interface or the [@Translation](annotations/Translation) annotation.
 
 ### Translatable
-Translation in most places in Fzzy Config is a matched triad of keys:
+Translatable objects accept a matched triad of keys:
 
 | Type        | Lang Key                                     | Description                                                                                                                                                                           |
 |-------------|----------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -17,7 +17,7 @@ Translation in most places in Fzzy Config is a matched triad of keys:
 | Prefix      | `my_mod.my_config.my_section.myField.prefix` | Inline introduction of the element, typically presented above it in a GUI, hence the name. This is useful above sections, groups, and so on to explain what the user will find within |
 
 <Callout variant="info">
-You don't need to supply translations for all of these (or any of these), missing entries will either be ignored or a fallback used
+You don't need to supply translations for all (or any) of these, missing entries will either be ignored or a fallback used
 </Callout>
 
 The below image showcases all three translations in action. The Prefix is the text at the top, the title is on the left, and the description is shown in the tooltip.
@@ -25,34 +25,34 @@ The below image showcases all three translations in action. The Prefix is the te
 ![image](https://github.com/user-attachments/assets/ac7f8fa4-17e2-4d7e-b9df-fbac178b97dd)
 
 
-The following pieces and parts automatically support these:
+The following automatically support these keys:
 * [Config Entries](Validation) (including automatic validation of "plain" values)
-* [Config Classes](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config/index.html)
-* [Config Sections](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section/index.html)
-* [Config Actions](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-action/index.html)
-* [Config Groups](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-group/index.html)
+* [Config Classes 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config/index.html)
+* [Config Sections 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section/index.html)
+* [Config Actions 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-action/index.html)
+* [Config Groups 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-group/index.html)
 
-So almost every piece of your config will automatically support translation, tooltips, and inline descriptions! If there is something in your config that isn't getting captured, simply implement `Translatable` on that escapee.
+So almost every piece of your config will automatically support translation, tooltips, and inline descriptions! If there is something that isn't captured, simply implement `Translatable` or use `@Translation` on that escapee.
 
-Some notes regarding translations in practice:
+Notes regarding translations:
 * Prefixes often won't be rendered outside the normal config GUI list.
 * Both prefixes and descriptions will be narrated, prefix and then description.
 * If you prefix a config, the prefix text will both appear in the config landing page (if applicable) and at the top of the settings list as a "header".
 
 ### @Translation
-If you want to override the default translation, or provide a translation and description without implementing `Translatable`, you can use the `@Translation` annotation. This annotation provides a prefix that the annotated field name is appended to. See the [Annotations](annotations/Translation) article for details.
+If you want to override the default translation, or provide a translation and description without implementing `Translatable`, you can use the `@Translation` annotation. See the [Annotations](annotations/Translation) article for details.
 
-This annotation is useful for repeating parts. If you have a config object that repeats many times in a config; normally you would have to provide a translation for every individual setting. That would get annoying fast. `@Translation` allows you to define one lang prefix that is common for all instances of the annotated field.
+This annotation is useful for repeating parts. If you have a config object that repeats many times, normally you would have to provide a translation for every setting. `@Translation` allows you to define one lang prefix that is common for all instances of the annotated field.
 
-## Fallbacks
+## <div><IterationCwIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Fallbacks</div>
 If not provided with translations, Fzzy Config will do it's best to provide fallbacks where possible.
-* Fields will use the Capitalized and split-by-word version of the field name: `myValidatedField` to `My Validated Field`
-* Sections will similarly fall back to the field the section is stored in.
-* Configs will fall back to their simple Class name split by words: `ItemsConfig` to `Items Config`
-* Descriptions and Prefixes are blank by default, to prevent meaningless tooltips
-* If a field is annotated with `@Comment` or `@TomlComment`, it will be used as the tooltip description if no translation is found
+* Fields will use the capitalized and split-by-word field name: `myValidatedField` to `My Validated Field`
+* Sections will use the field the section is stored in.
+* Configs will use the simple class name split by words: `ItemsConfig` to `Items Config`.
+* Descriptions and Prefixes are blank by default.
+* If a field is annotated with `@Comment` or `@TomlComment`, it will be used as the fallback tooltip description.
 
-## Example
+## <div><NotebookPenIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Example</div>
 
 ```json5
 //fields and sections have lang keys based on their "location" in the Config class graph.
@@ -69,8 +69,8 @@ If not provided with translations, Fzzy Config will do it's best to provide fall
 }
 ```
 
-## EnumTranslatable
-Enums can implement a special sub-interface of Translatable, [EnumTranslatable](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-enum-translatable/index.html). This interface provides default methods for creating translations of each enum constant.
+## <div><SquareSigmaIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> EnumTranslatable</div>
+Enums can implement a sub-interface of Translatable, [EnumTranslatable 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-enum-translatable/index.html). This interface provides translation methods for each enum constant.
 
 <Callout variant="info">
 This translates the enum constants themselves. The field holding the enum gets its own translation following the rules above

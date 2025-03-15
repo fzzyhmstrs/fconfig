@@ -2,10 +2,13 @@
 title: Validated Ingredients
 ---
 
-Ingredients can be validated, with restrictions placed on the three ways you can construct Ingredients (single item, item list, item tag)
+`Ingredient` can be validated based on the three ways you can construct Ingredients 
+* single item
+* item list
+* item tag
 
 ### Creation
-ValidatedIngredients are constructed from one of three constructors based on the type of ingredient desired as default
+ValidatedIngredients are constructed from one of three constructors based on the default type of ingredient
 
 <CodeTabs>
 
@@ -40,4 +43,10 @@ var validatedIngredientIngredient: Ingredient = validatedIngredientItem.toIngred
 </CodeTabs>
 
 ### Usage
-`ValidatedIngredient` is not an ingredient itself, and does not hold ingredients. It lazily creates ingredients only when needed. This prevents an ingredient from being created before the source for the ingredient is ready (before a tag is populated, for example). Call `toIngredient()` to have the validation supply an ingredient.
+`ValidatedIngredient` is not an ingredient itself, and does not hold ingredients. It lazily creates ingredients only when needed. This prevents an ingredient from being created before the source for the ingredient is ready (before a tag is populated, for example).
+
+Call `toIngredient()` to supply an ingredient.
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.minecraft/-validated-ingredient/index.html">here 🔗</a>
+</Callout>

@@ -2,7 +2,7 @@
 title: "@WithPerms"
 ---
 
-`@WithPerms` sets a special permission requirement for a setting. All configs have an overall required permission level, this individually modifies the perms of one setting. The overall perms can also be changed for a config. By default, they are permission level 2 (gamemaster).
+Sets a permission requirement for a setting or class. All configs have a default permission level (2+ normally), this modifies the perms of individual settings or the whole config.
 
 <CodeTabs>
 
@@ -13,7 +13,7 @@ public class MyConfig extends Config {
 
     @Override
     public int defaultPermLevel() {
-        return 4; // default is 2, this sets the default perm level to 4 (owner)
+        return 4; // default is 2, this sets the default perm level to 4 (owner). WithPerms on the class could also be used.
     }
 
     @WithPerms(opLevel = 2) // this field is ok to be perm level 2 still, specially set it
@@ -26,7 +26,7 @@ public class MyConfig extends Config {
 class MyConfig: Config(Identifier.of("my_id")) {
     
     override fun defaultPermLevel(): Int {
-        return 4 // default is 2, this sets the default perm level to 4 (owner)
+        return 4 // default is 2, this sets the default perm level to 4 (owner). WithPerms on the class could also be used.
     }
 
     @WithPerms(2) // this field is ok to be perm level 2 still, specially set it
@@ -35,3 +35,7 @@ class MyConfig: Config(Identifier.of("my_id")) {
 ```
 
 </CodeTabs>
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.annotations/-with-perms/index.html">here 🔗</a>
+</Callout>

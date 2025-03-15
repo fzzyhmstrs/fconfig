@@ -1,4 +1,8 @@
 {
+  "Translation.mdx": {
+    "name": "Translation",
+    "icon": "Languages"
+  },
   "Annotations.mdx": {
     "name": "Config Annotations",
     "icon": "AtSign"
@@ -6,10 +10,6 @@
   "annotations": {
     "name": "Annotation Types",
     "icon": null
-  },
-  "Translation.mdx": {
-    "name": "Translation",
-    "icon": "Languages"
   },
   "Validation.mdx": {
     "name": "Validation",

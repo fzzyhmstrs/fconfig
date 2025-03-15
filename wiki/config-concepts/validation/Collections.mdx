@@ -2,16 +2,16 @@
 title: Validated Collections
 ---
 
-Fzzy Config has validation tools for lists, maps, and sets. Each of these constructs has builders and other intricacies that are best digested thoroughly by visiting the documentation:
+Fzzy Config has validation for lists, maps, and sets. Each of these has intricacies that are more thoroughly explained in the documentation:
 
-[Validated Collections](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.collection/index.html)
+[Validated Collections 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.collection/index.html)
 
 <Callout variant="info">
 Validated collections implement their respective collection type (list, set, map), so can be used directly as such instead of having to <code>.get()</code> the wrapped collection first.
 </Callout>
 
 ### Validation Conversion
-Any `ValidatedField` can be converted into a list or set implementation with it as backing validation using the `toList()` and `toSet()` methods, respectively. In addition, collections can be converted to [ValidatedChoice](Choices) using their `toChoices()` method
+Any `ValidatedField` can be converted into a list or set using the `toList()` and `toSet()` methods, respectively. In addition, collections can be converted to [ValidatedChoice](Choices) using their `toChoices()` method. The `ValidatedField` is backing validation for the resulting collection.
 
 <CodeTabs>
 
@@ -28,7 +28,7 @@ var listFromField = ValidatedIdentifier().toList(Identifier.of("stick"), Identif
 </CodeTabs>
 
 ### Static Initializers
-ValidatedList and Set have a series of static methods that can be used to initialize a variety of collections of given common types, much in the same vein as the java `List.of()` or kotlin `listOf()`.
+`ValidatedList` and Set have static methods that initialize collections of common types, much like java `List.of()` or kotlin `listOf()`.
 
 <CodeTabs>
 
@@ -45,7 +45,7 @@ var validatedIntSet = ValidatedSet.ofInt(1, 2, 5, 10)
 </CodeTabs>
 
 ### Map Builders
-Validated Maps come with builders for simple and flexible creation. These builders are "staged", walking you through the steps you need to properly build it, so they are technically pseudo-builders.
+Validated Maps have builders for simple creation. These builders are "staged", walking you through each stage needed to build it, so are technically pseudo-builders.
 
 <CodeTabs>
 
@@ -66,3 +66,7 @@ var myMap: ValidatedMap<Int, Boolean> = ValidatedMap.Builder()
 ```
 
 </CodeTabs>
+
+<Callout>
+See the documentation pages for <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.collection/-validated-list/index.html">List 🔗</a>, <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.collection/-validated-set/index.html">Set 🔗</a>, <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.collection/-validated-map/index.html">Map 🔗</a>, <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.collection/-validated-enum-map/index.html">Enum Map 🔗</a>, <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.collection/-validated-identifier-map/index.html">Identifier Map 🔗</a>, <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.collection/-validated-string-map/index.html">String Map 🔗</a>
+</Callout>

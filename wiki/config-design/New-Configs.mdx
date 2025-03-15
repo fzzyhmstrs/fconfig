@@ -22,7 +22,7 @@ This step is so important to all future uses of the config that I hesitate to sa
 
 ## 2. Config Creation <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
 With your layout in mind, create some config classes and fill them with the settings you need. Configs extend the base class `Config`.
-1. Extend [`Config`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config/index), provide an Identifier, and any custom folder(s) as needed.
+1. Extend [`Config` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config/index), provide an Identifier, and any custom folder(s) as needed.
 2. Fill in your empty class with settings. Settings have the following considerations:
     1. fields/properties need to be **non-final**, **non-static**, and **public**
     2. check out [Validation](../config-concepts/Validation) for more powerful setting configuration and choice-restriction options.
@@ -96,7 +96,7 @@ internal class MyConfig: Config(Identifier.of(MOD_ID, "my_config")) {
 
 ## 3. Config Registration <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
 Configs are accessed via an `INSTANCE` pattern. Access in this manner, with the API calls for registration and loading described below, prevents "too-early" access to a config that hasn't been populated with live data.
-1. [`registerAndLoadConfig`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-config-api/index.html#195300946%2FFunctions%2F769193423). The API call for registering and loading a config from file It will also automatically create the file if none exists. Select your [`RegisterType`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-register-type/index) based on the user needs for the config settings
+1. [`registerAndLoadConfig` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-config-api/index.html#195300946%2FFunctions%2F769193423). The API call for registering and loading a config from file It will also automatically create the file if none exists. Select your [`RegisterType`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-register-type/index) based on the user needs for the config settings
     1. `BOTH` - Default, will have a GUI client side, and will also auto-sync between servers and clients.
     2. `CLIENT` - Will only have GUI functionality, no syncing to/from servers.
     3. `SERVER` - No GUI, only auto-syncing between servers and clients (Not Recommended, the only way to edit these configs is directly the .toml).

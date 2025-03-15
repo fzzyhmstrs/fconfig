@@ -2,13 +2,13 @@
 title: "@Translation"
 ---
 
-`@Translation` overrides the default translation mechanism as defined in [Translation](../Translation), allowing you to set a custom lang key prefix. You can also define this annotation for an entire config class, and then use `@Translation` to negate the override on settings within that class that still need their default translation behavior.
+`@Translation` overrides the default translations as defined in [Translation](../Translation). You can also define this annotation for an entire class, and then use `@Translation` to negate the override on settings within that class that need the default translations.
 
-This annotation will provide both a name translation for the entry, and a hovered tooltip description, depending on the lang provided. If lang isn't found, Fzzy Config will fall back to the default translation mechanisms.
+This annotation will provide a name, description, and prefix translation for the entry depending on the lang provided. If lang isn't found, the default translation will be used.
 
-This annotation is very useful for "repeating units" of config. A `ValidatedAny` object, in particular, that is repeated but the setting names are the same for each instance.
-- `prefix`: Set the prefix of your lang key. The field name of the field(s) or property(s) will be appended to this prefix. `my.prefix.[fieldName]` and `my.prefix.[fieldName].desc`
-- `negate`: Use this to turn off class-wide Translation for a specific setting that needs the default translation mechanisms.
+This annotation is useful for "repeating units" of config. For example, a `ValidatedAny` that is repeated, so the setting names are the same for each instance.
+- `prefix`: Set the prefix of your lang key. The field name is appended to this prefix. `my.prefix.[fieldName]` and `my.prefix.[fieldName].desc`
+- `negate`: Turns off class-wide Translation for a specific setting.
 
 <CodeTabs>
 
@@ -59,3 +59,7 @@ class RepeatingUnit(): Walkable {
 ```
 
 </CodeTabs>
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.annotations/-translation/index.html">here 🔗</a>
+</Callout>

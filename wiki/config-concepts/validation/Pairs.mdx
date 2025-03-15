@@ -6,12 +6,12 @@ title: Validated Pairs
 Added in Fzzy Config 0.6.0
 </Callout>
 
-Validation can be joined into pairs, which are then stored as one `ValidatedPair.Tuple`. This allows you to present two Validations as one "setting", that the user understands are part of the same "unit" of functionality. For example:
-* An allowable range with a max and min. Join these together to create one Range setting that has both the max and min selectors side by side.
-* An on-off switch and then an Object/`ValidatedAny` setting with a condition on the on-off switch being on, allowing you to have a "confirmation gate" where the user first has to enable the fancy/dangerous/special settings before they can interact with them.
+Validation can be joined into pairs, which are stored as a `ValidatedPair.Tuple`. This allows you to present two settings as one, that the user understands are part of the same "unit" of functionality. For example:
+* A range with a max and min. Join these together to create one "range" setting that has both two selectors side by side.
+* An on-off switch and then an Object/`ValidatedAny` setting with the switch as a [condition](../Validation#-conditional-settings-), building a "confirmation gate" where the user first has to enable the setting before they can interact with it.
 
 Other features:
-* Pairs can have custom labels added to better illustrate what each half of the pair is accomplishing. "Min" and "Max" for the above range example, perhaps.
+* Pairs can have labels added to better illustrate what each half of the pair is accomplishing. "Min" and "Max" for the above range example.
 * Pair elements can also be stacked on top of each other. See the constructor method below using `ValidatedPair.LayoutStyle.STACKED`.
 
 <CodeTabs>
@@ -53,3 +53,7 @@ val pairMax: Int = pair1.get().right
 ```
 
 </CodeTabs>
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-pair/index.html">here 🔗</a>
+</Callout>

@@ -6,14 +6,14 @@ title: "@RequiresAction"
 Added in Fzzy Config 0.4.0
 </Callout>
 
-`@RequiresAction` indicates that the user will need to take a certain action if a marked field (or any field in a marked class) is changed, in order for the change to take full effect. The actions available are prioritized based on their Enum ordinal, so you can annotate a class with a certain action, but upgrade particular settings with a separate annotation of higher priority.
+`@RequiresAction` indicates that the user will need to take a certain action if a relevant field is changed in order for the change to take full effect. The actions are prioritized based on their Enum ordinal; you can annotate a class with a certain action, but upgrade certain settings with a separate annotation of higher priority.
 
 The available actions, from highest to lowest priority
-1. `RESTART`: Same action as `@RequiresRestart`. Will prompt the user after a change that a restart is needed, and will disconnect clients joining a server with a synced RESTART change, prompting that they restart their client after the sync to apply the changes.
-2. `RELOG`: Prompts the user that they need to disconnect and reconnect to their current world or server for changes to take effect.
-3. `RELOAD_BOTH`: Prompts the user that both data packs and assets need to be reloaded.
-4. `RELOAD_DATA`: Prompts the user that data packs need to be reloaded.
-5. `RELOAD_RESOURCES`: Prompts the user that resource packs need to be reloaded.
+1. `RESTART`: Same action as ~~`@RequiresRestart`~~. Prompts that a restart is needed, and will disconnect clients joining a server with a synced RESTART, prompting them to restart their client after the sync to apply the changes.
+2. `RELOG`: The user needs to disconnect and reconnect to their current world or server for changes to take effect.
+3. `RELOAD_BOTH`: Both data packs and assets need to be reloaded.
+4. `RELOAD_DATA`: Data packs need to be reloaded.
+5. `RELOAD_RESOURCES`: Resource packs need to be reloaded.
 
 <CodeTabs>
 
@@ -35,6 +35,10 @@ var guiTheme = Identifier.of(MOD_ID, "default_theme") // some sort of reloadable
 
 </CodeTabs>
 
-If `Action.RESTART` is used, a connecting client will be presented with the same restart screen as shown with `@RequiresRestart`
+If `Action.RESTART` is used, a connecting client will see the same restart screen as shown with ~~`@RequiresRestart`~~
 
 ![image](https://github.com/fzzyhmstrs/fconfig/assets/72876796/e3c43b81-b78b-440a-bb88-a682a19d27ea)
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.annotations/-requires-action/index.html">here 🔗</a>
+</Callout>

@@ -6,17 +6,17 @@ title: Validated Keybinds
 Added in Fzzy Config 0.6.5
 </Callout>
 
-A simple keybind implementation of the context handling as explained in [Context Actions](../../features/Context-Actions). This system is used inside Fzzy Config to handle screen inputs made to the Config GUI, but it can be purposed for any input made by the user in screens or otherwise.
+A simple keybind implementation of context handling as explained in [Context Actions](../../features/Context-Actions). This is used inside Fzzy Config to handle screen inputs made to the Config GUI, but it can be purposed for any input made by the user in screens or otherwise.
 
 <Callout variant="warning">
-Keybinds made this way do NOT automatically work. They have to be wired up to something! They are a framework for receiving inputs, alongside the context handler system.
+Keybinds made this way do <b>NOT</b> automatically work. They have to be wired up to something! They are a framework for receiving inputs, alongside the context handler system.
 </Callout>
 
 ### FzzyKeybind
 
-This keybind system starts with the [FzzyKeybind](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.screen.context/-fzzy-keybind/index.html) interface. It implements `ContextAction.Relevant`, making it fully compatible as an input to the Fzzy Config context handling system.
+This system starts with the [FzzyKeybind 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.screen.context/-fzzy-keybind/index.html) interface. It implements `ContextAction.Relevant`, making it compatible with the Fzzy Config context handling system.
 
-Fzzy keybinds work with any modifier keys (ctrl, shift, and/or alt), and can also be compounded together (multiple choice keybinds).
+Fzzy keybinds work with modifier keys (ctrl, shift, and/or alt), and also compound together (multiple choice keybinds).
 
 Keybinds have a `Builder`:
 
@@ -41,7 +41,7 @@ val keybindType: ContextType = ContextType.create("my.keybind.id", ContextInput.
 </CodeTabs>
 
 ### Validation
-Keybinds have a built-in validation type, that also implements `ContextType.Relevant` so they too can be directly used in the `ContextType` registry. This allows for construction of configurable keybinds.
+`ValidatedKeybind` validated `FzzyKeyind`; it also implements `ContextType.Relevant` so they can be used in the `ContextType` registry. This allows for construction of configurable keybinds.
 
 <CodeTabs>
 
@@ -65,3 +65,6 @@ var myCompoundKeybind: ValidatedKeybind = ValidatedKeybind { builder: FzzyKeybin
 
 </CodeTabs>
 
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy -config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-keybind/index.html">here 🔗</a>
+</Callout>

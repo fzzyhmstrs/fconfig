@@ -6,26 +6,26 @@ title: Config Actions
 Added in Fzzy Config 0.5.0
 </Callout>
 
-Define arbitrary on-click action buttons in configs. These actions don't maintain or store any config state (directly), but can be used for any variety of useful secondary functions:
-* Opening a wiki or documentation link
+Define on-click action buttons in configs. These actions don't maintain or store any config state directly, but can be used for a variety of secondary functions:
+* Opening a documentation link
 * Giving the player something, like the mod guide book if they lost theirs
-  * Or, just opening the Patchouli screen directly!
+  * Or, opening the Patchouli screen directly!
 * Performing some specialized action on the config that's outside the normal scope of what Fzzy Config settings can do
 * Clearing some particular player data
 * Basically anything!
 
-### Creation
+## <div><SquarePlusIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Creation</div>
 To define an action button, simply add a `ConfigAction` as a property/field in the config class. The config GUI will gain an action button in the order that you place the action in the classes fields, just like any other setting. It might be helpful for users if you place your special buttons together, and at the top or bottom. Or maybe, place them in an [object](../config-design/Laying-out-Configs#objects) and have all your special actions in one convenient popup!
 
 [`IgnoreVisibility`](Annotations#ignorevisibility-) can be used with action just like any other config field. Also like any other config field, it **can't be final**.
 
-### Actions
+## <div><ClapperboardIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Actions</div>
 Actions can take two general forms
 1. `Runnable` - A generic Runnable lambda or instance. Does whatever you want it to.
 2. `ClickEvent` - Pass a `ClickEvent` for pre-defined vanilla functionality like opening URL links, running commands, and so on.
 
-### Decoration
+## <div><PaintbrushVerticalIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Decorations</div>
 Decorations are the white wireframe icons that appear to the left of certain setting buttons to signify to the user that they perform a certain special functionality. `ConfigAction` is no different.
 * It has a default "mouse pointer clicking a button decoration"
 * For `ClickEvent` actions, there is a decoration defined for each event type.
-* You can define a custom decoration by passing a sprite identifier into the builder or constructor. Fzzy Config provides a modest list of pre-defined decorations in the [`TextureIds`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.screen.widget/-texture-ids/index.html) class that can be used; or define one of your own! Decorations are typically a 20 x 20 pixel texture.
+* You can define a custom decoration by passing a sprite identifier into the builder or constructor. Fzzy Config provides a modest list of pre-defined decorations in the [`TextureIds` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.screen.widget/-texture-ids/index.html) class that can be used; or define one of your own! Decorations are typically a 20 x 20 pixel texture.

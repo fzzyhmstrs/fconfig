@@ -2,7 +2,7 @@
 title: "@NonSync"
 ---
 
-`@NonSync` excludes a field from server-client synchronization, and by extension removes and permission requirements (as the setting can't affect the server anyway). This is primarily useful for client-only settings. Before using this annotation, consider if you can have an entire client-sided config separate from any synced configs. See [New Configs - Config Registration](../../config-design/New-Configs#3-config-registration-) for details.
+`@NonSync` excludes a field from synchronization, and by extension removes permission requirements (as the setting can't affect the server). Before using this annotation, consider if you can have a client-sided config separate from any synced configs. See [New Configs - Config Registration](../../config-design/New-Configs#3-config-registration-) for details.
 
 <CodeTabs>
 
@@ -17,3 +17,7 @@ var myNonSyncedField = 5
 ```
 
 </CodeTabs>
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.annotations/-non-sync/index.html">here 🔗</a>
+</Callout>

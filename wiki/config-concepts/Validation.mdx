@@ -2,14 +2,14 @@
 title: Validation
 ---
 
-One of Fzzy Configs most powerful features is the validation system that is applied to every setting either implicitly or explicitly by the creator.
+The Fzzy Config validation system is applied to every setting either implicitly or explicitly by the creator.
 
-Every setting is tightly controlled and fail-soft; no need to worry about catastrophic failure of a mod system if the config changes and the old file isn't valid. No need to worry if a user modifies the .toml directly. 
+Settings are tightly managed and fail-soft; no catastrophic failure if the config changes and the old file isn't valid, or if a user modifies the .toml directly and makes a mistake. 
 
-Every read, write, and update is checked for errors and problems are either automatically corrected or a fallback is used.
+Every read, write, and update is checked for errors, and problems are reported and either automatically corrected or a fallback is used.
 
-## Validation Options
-Below is a (potentially non-exhaustive) list of types that Fzzy Config has validation tools for.
+## <div><SquareCheckBigIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Validation Options</div>
+Below is a list of types that Fzzy Config has validation tools for.
 * [Int / Long / Short / Byte / Double / Float](validation/Numbers)
 * [Booleans](validation/Booleans)
 * [Lists / Sets / Maps](validation/Collections)
@@ -24,26 +24,30 @@ Below is a (potentially non-exhaustive) list of types that Fzzy Config has valid
 * [Choices of Non-Enum types](validation/Choices)
   * [Choice Lists](validation/Choice-Lists)
 * [Pairs of Values](validation/Pairs)
+* [Keybinds](validation/Keybinds)
+* [TriStates](validation/TriStates)
 
-## Validation Manipulation
+--------------------------------------------
+
+## <div><WrenchIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Validation Manipulation</div>
 ValidatedFields can be manipulated in a variety of ways to enhance their effectiveness in more niche situations
-* [Mapping](#mapping-)
-* [Conditional Settings](#conditional-settings-)
-* [Listeners](#listeners-)
-* [Codecs](#codecs-)
+* [Mapping](#-mapping-)
+* [Conditional Settings](#-conditional-settings-)
+* [Listeners](#-listeners-)
+* [Codecs](#-codecs-)
 
-## Validation Concepts
+## <div><SearchCheckIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Validation Concepts</div>
 
 ### What is it?
-"Validation" is a bit of a misnomer, as the toolset does much more than that. It's a label of convenience stemming from the base class `ValidatedField`. Validation tools handle settings in various ways. To borrow from the KDoc for `Entry`:
-* serialize contents
-* deserialize input
-* validate updates
-* correct errors
-* provide widgets
-* apply inputs
-* supply outputs
-* create instances
+"Validation" is a bit of a misnomer, as the toolset does much more than that. It's a label stemming from the base class `ValidatedField`. To borrow from the KDoc for `Entry`, validation:
+* serializes contents
+* deserializes input
+* validates updates
+* corrects errors
+* provides widgets
+* applies inputs
+* supplies outputs
+* creates instances
 * manages flags
 * accepts listeners
 
@@ -51,30 +55,30 @@ ValidatedFields can be manipulated in a variety of ways to enhance their effecti
 Every setting that appears in a Config GUI is backed by validation. Even when you don't explicitly provide it, Fzzy Config will wrap supported types with basic validation in the background.
 
 <Callout variant="warning">
-If you try to add a setting of an unsupported type, you will need to create custom validation for it, or it will not appear in config GUIs nor will it be serialized in the config files.
+If you add a setting of an unsupported type, you will need to create custom validation for it, or it will not appear in GUIs nor will it be serialized in the config files.
 </Callout>
 
-For advanced control of your settings, in the vein of Minecraft `GameOption`, define the validation for your setting using one of the options above, or make a custom implementation if you are feeling adventurous. This grants you the ability to:
+For advanced control of your settings, like Minecraft `GameOption`, explicitly define the validation for your setting using a `ValidatedField` class. This grants you the ability to:
 * Provide input restrictions
 * Suggest inputs to users
-* In some places define the widget used in-game
+* Define the widget used in-GUI
 * Attach listeners, conditions, and feature flags to the setting
 
 --------------------------------------------
 
-## Mapping [⤴](#validation-manipulation)
+## <div><div style={{display: "inline"}}><MapPinnedIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Mapping</div> <a href="#-validation-manipulation" style={{color: "#B2BFF9"}}>⤴</a></div>
 
 <Callout>
 Added in Fzzy Config 0.5.0
 </Callout>
 
-Validation can be mapped to another convertible type, much like Mojang's Codecs. The validation will be stored as if it were the underlying mapped-from type, enforce limitations using the underlying type, the in-game widgets will be based on the underlying validation, and so on, but in-code you can interact directly with the mapped-to type.
+Validation can be mapped to another convertible type, like Mojang's Codecs. The mapped-from validation type will be used for serialization, GUI widgets, suggestions and corrections, and so on, but in-code you can interact directly with the mapped-to type.
 
 ### Example: Character
 Fzzy Config doesn't have built in validation for Characters. With mapping, we can easily build our own.
 
-<Callout>
-The in-game widget for this will still be based on an int, so will be a slider or a number entry box. This example is illustrative only, as in this case a dedicated validation with a character selection box would probably be better.
+<Callout variant="info">
+The in-game widget for this will still be based on an int, so will be a slider or a number entry box. In this case dedicated validation with a character selection box would be better.
 </Callout>
 
 <CodeTabs>
@@ -101,15 +105,14 @@ var validatedCharacter = ValidatedInt(0, Char.MAX_VALUE, Char.MIN_VALUE).map(
 
 </CodeTabs>
 
-## Conditional Settings [⤴](#validation-manipulation)
-Any validation can be wrapped with conditions that define whether the setting is "active" or not. This allows you to create settings that are based on:
+## <div><div style={{display: "inline"}}><CirclePowerIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Conditional Settings</div> <a href="#-validation-manipulation" style={{color: "#B2BFF9"}}>⤴</a></div>
+Validation can be wrapped with conditions that define whether the setting is "active" or not. You can check:
 * Whether a certain mod is loaded
-* The status of another config setting; `ValidatedBoolean` can be used directly as a condition input
-* Whether the game is multiplayer or not
+* The status of another config setting; `ValidatedBoolean` or `ValidatedTriState` can be used directly
 * Etc. Etc.
 
 <Callout variant="info">
-A conditional setting can have additional conditions added with <code>withCondition</code>. All conditions must pass for the setting to be "active"
+A conditional setting can have more conditions added with <code>withCondition</code>. All conditions must pass for the setting to be "active"
 </Callout>
 
 <CodeTabs>
@@ -132,10 +135,10 @@ A conditional setting can have additional conditions added with <code>withCondit
 
 </CodeTabs>
 
-## Listeners [⤴](#validation-manipulation)
+## <div><div style={{display: "inline"}}><MicIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Listeners</div> <a href="#-validation-manipulation" style={{color: "#B2BFF9"}}>⤴</a></div>
 You can listen to changes made to any `ValidatedField` by supplying a consumer of that field.
 
-Listening works on both server and client and will trigger on config load too, as applicable. The listeners apply any time the stored value is set by anything (with a couple exceptions, see example below)
+Listening works on both server and client and will trigger on config load. The listeners apply any time the stored value is set (with a couple exceptions, see example below).
 
 <CodeTabs>
 
@@ -183,8 +186,8 @@ Listening works on both server and client and will trigger on config load too, a
 
 </CodeTabs>
 
-## Codecs [⤴](#validation-manipulation)
-Any `ValidatedField` instance can be used to generate a `Codec` of the type the validation represents. Importantly, that resulting Codec will be backed by all the validation present in the field.
+## <div><div style={{display: "inline"}}><BracesIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Codecs</div> <a href="#-validation-manipulation" style={{color: "#B2BFF9"}}>⤴</a></div>
+Any `ValidatedField` can be used to generate a `Codec` of the validation's type. The resulting Codec will be backed by the validation present in the field.
 
 <CodeTabs>
 

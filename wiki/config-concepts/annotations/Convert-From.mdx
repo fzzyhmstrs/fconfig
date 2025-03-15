@@ -2,7 +2,7 @@
 title: "@ConvertFrom"
 ---
 
-`@ConvertFrom` provides the deserializer with the path and file name to a pre-existing config file from an old config library. The deserializer will do its best to scrape still-relevant data from the old file, and then discard it.
+`@ConvertFrom` provides the deserializer with the path and file name of a pre-existing config file from an old config library.
 
 Supported file types:
 * `.toml`
@@ -10,7 +10,7 @@ Supported file types:
 * `.json5`
 * `.jsonc`
 
-The below examples will read an old file `./minecraft/config/example/config.json` and attempt to scrape as much relevant data from it as possible by converting it to TOML first and then using that converted file as input to the deserializer.
+The below example will read an old file `./minecraft/config/example/config.json` and scrape relevant data from it by converting it to TOML first and then using that converted file as input to the deserializer. The old file will be deleted afterward.
 
 <CodeTabs>
 
@@ -32,3 +32,7 @@ class ConfigImpl: Config(Identifier.of("example", "config")) {
 ```
 
 </CodeTabs>
+
+<Callout>
+See the documentation page <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.annotations/-convert-from/index.html">here 🔗</a>
+</Callout>
