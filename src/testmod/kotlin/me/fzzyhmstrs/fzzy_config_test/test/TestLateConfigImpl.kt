@@ -15,7 +15,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 
-class TestLateConfigImpl: Config(Identifier.of("fzzy_config_test","never_loaded_config")) {
+class TestLateConfigImpl: Config(Identifier("fzzy_config_test","never_loaded_config")) {
 
     var int1 = 4
     var float2 = 3.4f

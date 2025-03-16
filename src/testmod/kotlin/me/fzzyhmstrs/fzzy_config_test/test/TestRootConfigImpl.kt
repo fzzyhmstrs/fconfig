@@ -29,7 +29,7 @@ import net.minecraft.util.Identifier
 import java.awt.Color
 
 @RootConfig
-class TestRootConfigImpl: Config(Identifier.of("fzzy_config_test","root_config"), subfolder =  "test") {
+class TestRootConfigImpl: Config(Identifier("fzzy_config_test","root_config"), subfolder =  "test") {
 
     var bl1 = true
 
@@ -53,7 +53,7 @@ class TestRootConfigImpl: Config(Identifier.of("fzzy_config_test","root_config")
 
     var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
-    var einsteinMap = ValidatedMap.Builder<ValidatedIngredient.IngredientProvider, ValidatedColor.ColorHolder>().keyHandler(ValidatedIngredient(Identifier.of("stick"))).valueHandler(ValidatedColor()).build()
+    var einsteinMap = ValidatedMap.Builder<ValidatedIngredient.IngredientProvider, ValidatedColor.ColorHolder>().keyHandler(ValidatedIngredient(Identifier("stick"))).valueHandler(ValidatedColor()).build()
 
     var group = ConfigGroup("test_group", collapsedByDefault = true)
 
