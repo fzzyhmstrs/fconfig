@@ -40,10 +40,12 @@ object Popups {
      * - [ContextInput.KEYBOARD]: The popup will appear inline with the x position of the element data of the Position, and slightly below the bottom of the element, unless bounded by the bottom of the screen
      * - [ContextInput.MOUSE]: The popup will appear below and to the right of the mouse position unless bounded by the screen.
      * @param builder [ContextResultBuilder] - a populated builder of context actions. Groups and entries will be displayed in the order they were applied to the builder.
+     * @param immediate Optional boolean, default false. If true, will open the popup immediately instead of on the next tick.
      * @author fzzyhmstrs
-     * @since 0.6.1
+     * @since 0.6.1, immediate added 0.6.6
      */
-    fun openContextMenuPopup(builder: ContextResultBuilder) {
+    @JvmOverloads
+    fun openContextMenuPopup(builder: ContextResultBuilder, immediate: Boolean = false) {
         val positionContext = builder.position()
         val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
             .positionX(PopupWidget.Builder.absScreen(
@@ -58,9 +60,9 @@ object Popups {
                     positionContext.mY))
             .background("widget/popup/background_right_click".fcId())
             .noBlur()
-            .onClick { mX, mY, over, button ->
+            .closeAndPassOnClick()
+            .onClick { _, _, over, button ->
                 if (ContextType.CONTEXT_MOUSE.relevant(button, ctrl = false, shift = false, alt = false) && !over) {
-                    PopupWidget.pop(mX, mY)
                     PopupWidget.ClickResult.PASS
                 } else {
                     PopupWidget.ClickResult.USE
@@ -78,7 +80,10 @@ object Popups {
                 )
             }
         }
-        PopupWidget.push(popup.build())
+        if (immediate)
+            PopupWidget.pushImmediate(popup.build())
+        else
+            PopupWidget.push(popup.build())
     }
 
     internal fun openConfirmPopup(b: Position, desc: Text, restore: Runnable) {
