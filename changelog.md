@@ -34,3 +34,4 @@
 * Popups for `ValidatedIdentifier` and `ValidatedTagKey` properly focus their textboxes on open again, and their textboxes are aligned properly again.
 * Fixed Go-to menu scroll bar disappearing if you were dragging it and moved the mouse off of the menu. The scrollbar disappearing when the menu isn't hovered is intended behavior.
 * Right click menus properly pass clicks "past" themselves, allowing actions to be taken when "clicking off" of them (including "moving" the menu to the newly clicked spot.)
+* Fixed sliders not capturing the change made if the mouse is released off of the slider itself.

@@ -866,6 +866,21 @@ class DynamicListWidget(
             return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
         }
 
+        override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+            if (button == 0 && this.dragging) {
+                dragging = false
+                val r = focusedElement?.mouseReleased(mouseX, mouseY, button)
+                if (r != null) return r
+            }
+            return hoveredElement(mouseX, mouseY).filter { element: Element ->
+                element.mouseReleased(
+                    mouseX,
+                    mouseY,
+                    button
+                )
+            }.isPresent;
+        }
+
         /**
          * Renders the entry. This is the base method of [CustomListWidget.Entry] and generally shouldn't be overridden directly.
          * @param context [DrawContext]
