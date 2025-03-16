@@ -12,6 +12,8 @@ package me.fzzyhmstrs.fzzy_config.screen
 
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.util.TriState
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
 import java.util.*
@@ -80,6 +82,18 @@ interface PopupParentElement: ParentElement, LastSelectable {
         push(PopupEntry(this, widget, mouseX, mouseY))
     }
 
+    /**
+     * Applies a popup widget to this parent. If null is passed, removes the top (newest) popup instead
+     * @param widget [PopupWidget], nullable. If not null, will be added to the top of this parent's popup stack, otherwise the top element will be popped
+     * @param mouseX Double, nullable. If not null, will be used to reset mouse hover context when the last popup is removed.
+     * @param mouseY Double, nullable. If not null, will be used to reset mouse hover context when the last popup is removed.
+     * @author fzzyhmstrs
+     * @since 0.6.6
+     */
+    fun setPopupImmediate(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
+        setPopupInternal(widget, mouseX, mouseY)
+    }
+
     fun setPopupInternal(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
         if(widget == null) {
             if (popupWidgets.isEmpty())
@@ -117,8 +131,10 @@ interface PopupParentElement: ParentElement, LastSelectable {
         val popupWidget = activeWidget() ?: return mouseClick(mouseX, mouseY, button)
         if (popupWidget.mouseClicked(mouseX, mouseY, button) || popupWidget.isMouseOver(mouseX, mouseY)) {
             return true
-        } else if(popupWidget.closesOnMissedClick()) {
-                setPopupInternal(null, mouseX, mouseY)
+        } else if(popupWidget.closesOnMissedClick() != TriState.FALSE) {
+            setPopupInternal(null, mouseX, mouseY)
+            if (popupWidget.closesOnMissedClick().asBoolean)
+                return mouseClick(mouseX, mouseY, button)
         }
         return false
     }
@@ -174,6 +190,11 @@ interface PopupParentElement: ParentElement, LastSelectable {
 
         private fun push(entry: PopupEntry) {
             popupStack.push(entry)
+        }
+
+        internal fun pop() {
+            val popupParentElement = MinecraftClient.getInstance().currentScreen?.nullCast<PopupParentElement>() ?: return
+            popupParentElement.setPopupInternal(null, null, null)
         }
 
         internal fun popAll() {
