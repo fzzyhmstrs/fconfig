@@ -18,6 +18,8 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedMap
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
@@ -51,12 +53,14 @@ class TestRootConfigImpl: Config(Identifier.of("fzzy_config_test","root_config")
 
     var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
+    var einsteinMap = ValidatedMap.Builder<ValidatedIngredient.IngredientProvider, ValidatedColor.ColorHolder>().keyHandler(ValidatedIngredient(Identifier.of("stick"))).valueHandler(ValidatedColor()).build()
+
     var group = ConfigGroup("test_group", collapsedByDefault = true)
 
     var list1 = listOf(1, 3, 5, 7)
     var list2 = listOf(1, 3, 5, 7).validated()
 
-    var color1 = Color(255, 128, 0).validated(true)
+    var color1 = Color(255, 128, 0).validated(false)
 
     var group2 = ConfigGroup("test_group_2")
 
