@@ -33,7 +33,8 @@
   },
 "custom": {
   "fzzy_config": [
-    "fzzy_config_test"
+    "fzzy_config_test",
+    "fzzy_config_test.never_loaded_config"
   ]
 }
 }

@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config_test
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.util.Expression
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -21,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigClient
+import me.fzzyhmstrs.fzzy_config_test.test.TestLateConfigImpl
 import me.fzzyhmstrs.fzzy_config_test.test.screen.TestPopupScreen
 import me.lucko.fabric.api.permissions.v0.PermissionCheckEvent
 import net.fabricmc.api.ClientModInitializer
@@ -200,6 +202,13 @@ object FCC: ClientModInitializer {
 
                 )
 
+        )
+        dispatcher.register(
+            ClientCommandManager.literal("load_late_config")
+                .executes { context ->
+                    ConfigApi.registerAndLoadConfig({ TestLateConfigImpl() }, RegisterType.CLIENT)
+                    1
+                }
         )
         dispatcher.register(
             ClientCommandManager.literal("test_screen_2")
