@@ -217,7 +217,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             .positionY(yPosition)
             .build()
         PopupWidget.push(popup)
-        PopupWidget.focusElement(textField)
+        PopupWidget.focusElement(popup, textField)
         if (isKb)
             textField.keyPressed(key, code, mods)
     }

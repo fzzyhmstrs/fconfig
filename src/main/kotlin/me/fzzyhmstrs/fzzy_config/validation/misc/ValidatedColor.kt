@@ -272,28 +272,25 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
     //client
     private fun openColorEditPopup() {
         val textRenderer = MinecraftClient.getInstance().textRenderer
-        val mutableColor = this.get().mutable(validatedString())
+        val mutableColor = this.get().mutable(validatedString(toHexString(), get().opaque()))
         val popup = PopupWidget.Builder(translation())
             .add("r_name", TextWidget(12, 20, "fc.validated_field.color.r".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("g_name", TextWidget(12, 20, "fc.validated_field.color.g".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("b_name", TextWidget(12, 20, "fc.validated_field.color.b".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("a_name", TextWidget(12, 20, "fc.validated_field.color.a".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("r_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.r }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { r -> mutableColor.updateRGB(r, mutableColor.g, mutableColor.b) }), "r_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            if (this.storedValue.alphaMode)
+                popup.add("a_name", TextWidget(12, 20, "fc.validated_field.color.a".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            popup.add("r_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.r }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { r -> mutableColor.updateRGB(r, mutableColor.g, mutableColor.b) }), "r_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("g_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.g }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { g -> mutableColor.updateRGB(mutableColor.r, g, mutableColor.b) }), "g_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("b_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.b }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { b -> mutableColor.updateRGB(mutableColor.r, mutableColor.g, b) }), "b_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("hl_map", HLMapWidget(mutableColor), "r_box", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            if (this.storedValue.alphaMode)
+                popup.add("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            popup.add("hl_map", HLMapWidget(mutableColor), "r_box", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("s_slider", VerticalSliderWidget({ mutableColor.s.toDouble() }, 0, 0, 20, 68, FcText.EMPTY, { d -> mutableColor.updateHSL(mutableColor.h, d.toFloat(), mutableColor.l) }), "hl_map", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("hex_box", ValidationBackedTextFieldWidget(84, 20, { mutableColor.hex.get() }, ChoiceValidator.any(), mutableColor.hex, {s -> mutableColor.updateHex(s) }), "hl_map", LayoutWidget.Position.BELOW, LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
             .addDoneWidget ({ this.setAndUpdate(mutableColor.createHolder()); PopupWidget.pop()})
             .onClose { this.setAndUpdate(mutableColor.createHolder()) }
             .noCloseOnClick()
-            .build()
-        PopupWidget.push(popup)
-    }
-
-    private fun validatedString(): ValidatedString {
-        return validatedString(toHexString(), this.get().opaque())
+        PopupWidget.push(popup.build())
     }
 
     companion object {
@@ -356,8 +353,8 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
                         ValidationResult.error(s.substring(0, 8), "Too long. 8 characters maximum")
                     else if(s.length == 7 && isNotF(s[0]) && opaque)
                         ValidationResult.error(s.replaceRange(0, 1, if(s[0].isLowerCase())"f" else "F"), "Opaque colors only.")
-                    else if(s.length == 8 && (isNotF(s[0]) || isNotF(s[1])) && opaque)
-                        ValidationResult.error(s.replaceRange(0, 2, "${if(s[0].isLowerCase())"f" else "F"}${if(s[1].isLowerCase())"f" else "F"}"), "Opaque colors only.")
+                    else if(s.length > 6 && opaque)
+                        ValidationResult.error(s.substring(0, 6), "Opaque colors only.")
                     else
                         transform(s).let { if(it == s) ValidationResult.success(it) else ValidationResult.error(it, "Invalid characters found in color string") }
                     ValidationResult.success(s)
@@ -408,7 +405,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
          * @since 0.2.0
          */
         fun toHexString(): String {
-            return if(opaque()) String.format("%06X", toInt()) else String.format("%08X", toInt())
+            return if(opaque()) String.format("%06X", toInt() and 0xFFFFFF) else String.format("%08X", toInt())
         }
 
         /**
@@ -627,7 +624,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             this.r = rr
             this.g = gg
             this.b = bb
-            hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
+            hex.validateAndSet(if(alphaMode) String.format("%08X", argb()) else String.format("%06X", argb() and 0xFFFFFF))
         }
 
         /**
@@ -646,7 +643,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             this.h = hsl[0]
             this.s = hsl[1]
             this.l = hsl[2]
-            hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
+            hex.validateAndSet(if(alphaMode) String.format("%08X", argb()) else String.format("%06X", argb() and 0xFFFFFF))
         }
 
         /**
@@ -657,7 +654,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
          */
         fun updateA(a: Int) {
             this.a = a
-            hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
+            hex.validateAndSet(if(alphaMode) String.format("%08X", argb()) else String.format("%06X", argb() and 0xFFFFFF))
         }
 
         /**
@@ -669,7 +666,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         fun updateHex(new: String) {
             hex.validateAndSet(new)
             val argb = try {
-                Integer.parseUnsignedInt(new, 16)
+                Integer.parseUnsignedInt(hex.get(), 16)
             } catch (e: Throwable) {
                 argb()
             }
