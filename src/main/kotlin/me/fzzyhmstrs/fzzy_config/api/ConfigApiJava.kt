@@ -98,6 +98,18 @@ object ConfigApiJava {
     }
 
     /**
+     * Determines if a Config GUI is open currently.
+     * @param scope String i of the config GUI to check against. Must match to the scope of the screen that is currently open to return true (or an alias).
+     * @return Whether the screen is open currently or not
+     * @author fzzyhmstrs
+     * @since 0.6.6
+     */
+    @JvmStatic
+    fun isScreenOpen(scope: String): Boolean {
+        return ConfigApiImpl.isScreenOpen(scope)
+    }
+
+    /**
      * Whether a config corresponding to the provided scope is registered
      * @author fzzyhmstrs
      * @since 0.5.3
