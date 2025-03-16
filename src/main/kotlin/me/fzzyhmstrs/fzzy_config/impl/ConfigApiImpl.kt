@@ -88,6 +88,8 @@ internal object ConfigApiImpl {
     internal const val IGNORE_NON_SYNC_AND_IGNORE_VISIBILITY: Byte = 5
     internal const val RECORD_RESTARTS: Byte = 8
     internal const val CHECK_ACTIONS_AND_RECORD_RESTARTS: Byte = 10
+    internal const val FLAT_WALK: Byte = 16
+    internal const val IGNORE_NON_SYNC_AND_FLAT_WALK: Byte = 17
 
     private val configClass = Config::class
     private val configSectionClass = ConfigSection::class
@@ -97,15 +99,19 @@ internal object ConfigApiImpl {
             ConfigApiImplClient.openScreen(scope)
     }
 
+    internal fun isScreenOpen(scope: String): Boolean {
+        if (isClient)
+            return ConfigApiImplClient.isScreenOpen(scope)
+        return false
+    }
+
     internal fun openRestartScreen() {
         if (isClient)
             FCC.openRestartScreen()
     }
 
     internal fun getConfig(scope: String): Config? {
-        return SyncedConfigRegistry.syncedConfigs()[scope]
-            ?:
-            if(isClient) ConfigApiImplClient.getClientConfig(scope) else null
+        return SyncedConfigRegistry.syncedConfigs()[scope] ?: if(isClient) ConfigApiImplClient.getClientConfig(scope) else null
     }
 
     internal fun getSyncedConfig(id: Identifier): Config? {
@@ -807,7 +813,7 @@ internal object ConfigApiImpl {
     ///////////////// Reflection /////////////////////////////////////////////////////////
 
     private fun isIgnoreVisibility(clazz: KClass<*>): Boolean {
-        return clazz.annotations.firstOrNull { (it is IgnoreVisibility) }?.let { true } ?: false
+        return clazz.annotations.any { it is IgnoreVisibility }
     }
 
     private fun trySetAccessible(prop: KMutableProperty<*>): Boolean {
@@ -826,6 +832,10 @@ internal object ConfigApiImpl {
 
     internal fun isNonSync(annotations: List<Annotation>): Boolean {
         return annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
+    }
+
+    internal fun isRootConfig(clazz: KClass<*>): Boolean {
+        return clazz.annotations.any { it is RootConfig }
     }
 
     @Suppress("DEPRECATION")
@@ -1018,6 +1028,10 @@ internal object ConfigApiImpl {
         return flags and 8.toByte() == 8.toByte()
     }
 
+    private fun flatWalk(flags: Byte): Boolean {
+        return flags and 16.toByte() == 16.toByte()
+    }
+
     ///////////////// END Flags ///////////////////////////////////////////////////////////
 
     ///////////////// Printing ////////////////////////////////////////////////////////////
@@ -1074,7 +1088,7 @@ internal object ConfigApiImpl {
                         break
                     if (walkCallback.isContinued())
                         continue
-                    if (propVal is Walkable) {
+                    if (propVal is Walkable && !flatWalk(flags)) {
                         val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
                         walk(propVal, newPrefix, newFlags, walkAction)
                     }
@@ -1125,6 +1139,7 @@ internal object ConfigApiImpl {
                     // continue without borking
                 }
             }
+            if (flatWalk(flags)) return
             for ((string, property) in props) {
                 if (target.startsWith(string)) {
                     try {

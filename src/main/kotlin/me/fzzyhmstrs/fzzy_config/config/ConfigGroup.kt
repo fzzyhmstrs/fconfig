@@ -41,6 +41,11 @@ import java.util.*
  * Groups organize a grouping of settings into one unit that can be collapsed and expanded in the GUI
  *
  * [Laying Out Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/Laying-out-Configs) has more information about how groups can be best utilized.
+ * @param groupName Optional, default "". The identifier key for the group. Other groups in the config should not use the same key.
+ * @param decoration [Decorated], default null. The icon shown in the go-to menu
+ * @param offsetX Optional, default null. Horizontal offset in pixels for the goto icon
+ * @param offsetY Optional, default null. Vertical offset in pixels for the goto icon
+ * @param collapsedByDefault Optional, default false. If true, the group will start collapsed when viewing the config GUI
  * @author fzzyhmstrs
  * @since 0.6.0
  */
@@ -48,10 +53,24 @@ class ConfigGroup @JvmOverloads constructor(
     private val groupName: String = "",
     private val decoration: Decorated? = null,
     private val offsetX: Int? = null,
-    private val offsetY: Int? = null)
+    private val offsetY: Int? = null,
+    private val collapsedByDefault: Boolean = false)
     :
     TranslatableEntry, EntryAnchor, EntryCreator, EntryPermissible, EntryTransient
 {
+
+    /**
+     * Defines the start of a config group
+     *
+     * Groups organize a grouping of settings into one unit that can be collapsed and expanded in the GUI
+     *
+     * [Laying Out Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/Laying-out-Configs) has more information about how groups can be best utilized.
+     * @param groupName The identifier key for the group. Other groups in the config should not use the same key.
+     * @param collapsedByDefault Optional, default false. If true, the group will start collapsed when viewing the config GUI
+     * @author fzzyhmstrs
+     * @since 0.6.6
+     */
+    constructor(groupName: String, collapsedByDefault: Boolean = false): this(groupName, null, null, null, collapsedByDefault)
 
     @Transient
     @Internal
@@ -76,7 +95,7 @@ class ConfigGroup @JvmOverloads constructor(
 
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val fieldName = if (groupName != "") groupName else context.scope.substringAfterLast('.')
-        return EntryCreators.createGroupEntry(context, fieldName)
+        return EntryCreators.createGroupEntry(context, fieldName, collapsedByDefault)
     }
 
     /**

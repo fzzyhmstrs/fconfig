@@ -10,9 +10,12 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.config.KeybindsConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.entry.InfoKeybindEntry
@@ -85,6 +88,33 @@ internal class ConfigScreen(
     fun setParent(screen: Screen?): ConfigScreen {
         this.parent = screen
         return this
+    }
+
+    fun scrollToEntry(scope: String) {
+        configList.scrollToEntry(scope)
+    }
+
+    fun openEntry(rawEntryString: String) {
+        val l = rawEntryString.split('.')
+        if (l.isEmpty()) return
+        val entry = l[0]
+        val args = if (l.size > 1) l.subList(1, l.size) else listOf()
+        openEntry(entry, args)
+    }
+
+    fun openEntry(entry: String, args: List<String>) {
+        val configScopePair = ClientConfigRegistry.getValidClientConfig(this.scope)
+        val config = configScopePair.first ?: return
+        val returnedScope = configScopePair.second
+        val e = if (returnedScope == this.scope)
+            entry
+        else
+            this.scope.removePrefix(returnedScope).removePrefix(".") + "." + entry
+        ConfigApiImpl.drill(config, e, '.', ConfigApiImpl.IGNORE_NON_SYNC) { _, _, _, thing, _, _, _, _ ->
+            if (thing is EntryOpener) {
+                thing.open(args)
+            }
+        }
     }
 
     fun scrollToGroup(g: String) {
@@ -297,6 +327,26 @@ internal class ConfigScreen(
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
         val contextTypes = ContextType.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextTypes.isEmpty()) return super.onClick(mouseX, mouseY, button)
+        val activeWidget = activeWidget()
+        if (activeWidget != null || justClosedWidget) {
+            for (contextType in contextTypes) {
+                if (contextType == ContextType.CONTEXT_MOUSE) {
+                    if (activeWidget != null)
+                        PopupWidget.popImmediate()
+                    hoveredElement = children().firstOrNull { it.isMouseOver(mX, mY) }
+                    val builder = ContextProvider.empty(Position(if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE, mX.toInt(), mY.toInt(), activeWidget?.x ?: 0, activeWidget?.y ?: 0, this.width, this.height, this.width, this.height))
+                    this.provideContext(builder)
+                    return if (builder.isNotEmpty()) {
+                        Popups.openContextMenuPopup(builder, true)
+                        true
+                    } else {
+                        false
+                    }
+                }
+            }
+            return super.onClick(mouseX, mouseY, button)
+        }
+
         var bl = false
         for (contextType in contextTypes) {
             bl = bl || handleContext(contextType, Position(ContextInput.MOUSE, mouseX.toInt(), mouseY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
@@ -317,11 +367,31 @@ internal class ConfigScreen(
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         val global = globalInputHandler?.invoke(keyCode, false, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
+
         val contextTypes = ContextType.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
         if (contextTypes.isEmpty()) return super.keyPressed(keyCode, scanCode, modifiers)
+
+        val activeWidget = activeWidget()
+        if (activeWidget != null) {
+            for (contextType in contextTypes) {
+                if (contextType == ContextType.CONTEXT_KEYBOARD) {
+                    PopupWidget.popImmediate()
+                    hoveredElement = children().firstOrNull { it.isMouseOver(mX, mY) }
+                    val builder = ContextProvider.empty(Position(if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE, mX.toInt(), mY.toInt(), activeWidget.x, activeWidget.y, this.width, this.height, this.width, this.height))
+                    this.provideContext(builder)
+                    return if (builder.isNotEmpty()) {
+                        Popups.openContextMenuPopup(builder, true)
+                        true
+                    } else {
+                        false
+                    }
+                }
+            }
+            return super.keyPressed(keyCode, scanCode, modifiers)
+        }
+
         var bl = false
         val input = if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
-
         for (contextType in contextTypes) {
             bl = bl || handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }

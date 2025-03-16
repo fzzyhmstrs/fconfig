@@ -14,6 +14,8 @@ import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
+import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.ListSpec
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -172,6 +174,10 @@ class DynamicListWidget(
 
     fun scrollToGroup(g: String) {
         entries.scrollToGroup(g)
+    }
+
+    fun scrollToEntry(e: String) {
+        entries.scrollToEntry(e)
     }
 
     override fun selectableEntries(): List<Entry> {
@@ -388,9 +394,10 @@ class DynamicListWidget(
 
     override fun provideContext(builder: ContextResultBuilder) {
         if (MinecraftClient.getInstance().navigationType.isKeyboard)
-            focusedElement?.provideContext(builder) ?: hoveredElement?.provideContext(builder)
-        else
-            hoveredElement?.provideContext(builder) ?: focusedElement?.provideContext(builder)
+            focusedElement?.provideContext(builder) ?: resetHover(builder.position().mX.toDouble(), builder.position().mY.toDouble()).also { hoveredElement?.provideContext(builder) }
+        else {
+            resetHover(builder.position().mX.toDouble(), builder.position().mY.toDouble()).let { hoveredElement?.provideContext(builder) } ?: focusedElement?.provideContext(builder)
+        }
     }
 
     //////////////////////////////
@@ -403,7 +410,7 @@ class DynamicListWidget(
             val groupMap: MutableMap<String, GroupPair> = mutableMapOf()
             for (e in delegate) {
                 if (e.getVisibility().group) {
-                    groupMap[e.scope.group] = GroupPair(e, true)
+                    groupMap[e.scope.group] = GroupPair(e, e.getRootVisibility() != Visibility.GROUP_VISIBLE_CLOSED)
                 }
             }
             groupMap
@@ -415,10 +422,14 @@ class DynamicListWidget(
             var previousEntry: Entry? = null
             val pos = ReferencePos { this@DynamicListWidget.top }
             val entryMap: MutableMap<String, MutableMap<String, Entry>> = mutableMapOf()
+            val groupMap: MutableMap<String, Entry> = mutableMapOf()
 
             for ((index, e) in delegate.withIndex()) {
                 e.onAdd(pos, previousEntry, index == delegate.lastIndex)
                 val v = e.getVisibility()
+                if (v.group) {
+                    groupMap[e.scope.group] = e
+                }
                 if (!(v.skip xor v.group)) {
                     for (g in e.scope.inGroups) {
                         if (v.group && e.scope.group == g) continue
@@ -426,6 +437,15 @@ class DynamicListWidget(
                     }
                 }
                 previousEntry = e
+            }
+            for (e in delegate) {
+                for (g in e.scope.inGroups) {
+                    val gV = groupMap[g]?.getRootVisibility() ?: continue
+                    if (gV == Visibility.GROUP_VISIBLE_CLOSED) {
+                        if (e.getVisibility().group && e.scope.group == g) continue
+                        e.applyVisibility(Visibility::hide)
+                    }
+                }
             }
             delegateMap = entryMap
         }
@@ -542,7 +562,7 @@ class DynamicListWidget(
                 for ((s, e) in groupEntries) {
                     e.applyVisibility(Visibility::unhide)
                     if (e.getVisibility().group) {
-                        val otherGroup = delegateMap[s] ?: continue
+                        val otherGroup = delegateMap[e.scope.group] ?: continue
                         if (otherGroup.values.any { it.getVisibility().visible }) {
                             groups[s]?.visible = true
                         }
@@ -600,6 +620,17 @@ class DynamicListWidget(
             val delta = this@DynamicListWidget.top - groupPair.groupEntry.top.get()
             this@DynamicListWidget.handleScrollByBar(delta)
             this@DynamicListWidget.focused = groupPair.groupEntry
+        }
+
+        fun scrollToEntry(e: String) {
+            for (entry in delegate) {
+                if (entry.scope.scope == e) {
+                    val delta = this@DynamicListWidget.top - entry.top.get()
+                    this@DynamicListWidget.handleScrollByBar(delta)
+                    this@DynamicListWidget.focused = entry
+                    break
+                }
+            }
         }
 
         fun scroll(amount: Int) {
@@ -687,6 +718,20 @@ class DynamicListWidget(
             return visibilityProvider.get()
         }
 
+        fun getRootVisibility(): Visibility {
+            return visibilityProvider.getRoot()
+        }
+
+        fun applyVisibility(consumer: Consumer<VisibilityStack>) {
+            if (this.visibilityProvider !is VisibilityStack) {
+                val vs = VisibilityStack(this.getVisibility(), LinkedList())
+                this.visibilityProvider = vs
+                consumer.accept(vs)
+            } else {
+                consumer.accept(this.visibilityProvider as VisibilityStack)
+            }
+        }
+
         protected open val x: Pos = ReferencePos { parentElement.rowX() }
         protected open val w: Pos = ReferencePos { parentElement.rowWidth() }
         protected abstract var h: Int
@@ -768,16 +813,6 @@ class DynamicListWidget(
         fun scroll(dY: Int) {
             if (dY == 0) return
             top.inc(dY)
-        }
-
-        fun applyVisibility(consumer: Consumer<VisibilityStack>) {
-            if (this.visibilityProvider !is VisibilityStack) {
-                val vs = VisibilityStack(this.getVisibility(), LinkedList())
-                this.visibilityProvider = vs
-                consumer.accept(vs)
-            } else {
-                consumer.accept(this.visibilityProvider as VisibilityStack)
-            }
         }
 
         override fun pushLast() {
@@ -1101,19 +1136,25 @@ class DynamicListWidget(
          */
         GROUP_VISIBLE(true, true, true, true, false, { v -> v.group }),
         /**
-         * Filtered entry that represents a group heading
+         * Visible entry that represents a group heading, but should be "closed"/"collapsed" by default
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        GROUP_VISIBLE_CLOSED(true, true, true, true, false, { v -> v.group }),
+        /**
+         * Filtered entry that represents a group heading. Filtering is usually done with a search.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
         GROUP_FILTERED(false, true, false, true, false, { v -> v.group }), //filtering handled externally
         /**
-         * Hidden entry that represents a group heading
+         * Hidden entry that represents a group heading. Hiding is usually done with a button or other toggle.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
         GROUP_HIDDEN(false, true, false, true, true, { v -> v.group }), //hiding handled externally
         /**
-         * A disabled group heading, typically caused by a layout error
+         * A disabled group heading, typically caused by a layout error.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
@@ -1203,6 +1244,15 @@ class DynamicListWidget(
          * @since 0.6.5
          */
         fun get(): Visibility
+
+        /**
+         * Returns the entries root [Visibility] status
+         * @author fzzyhmstrs
+         * @since 0.6.6
+         */
+        fun getRoot(): Visibility {
+            return get()
+        }
     }
 
     /**
@@ -1213,6 +1263,10 @@ class DynamicListWidget(
     data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>): VisibilityProvider {
         override fun get(): Visibility {
             return visibilityStack.firstOrNull() ?: baseVisibility
+        }
+
+        override fun getRoot(): Visibility {
+            return baseVisibility
         }
 
         fun push(v: Visibility) {

@@ -272,6 +272,18 @@ object ConfigApi {
     }
 
     /**
+     * Determines if a Config GUI is open currently.
+     * @param scope String i of the config GUI to check against. Must match to the scope of the screen that is currently open to return true (or an alias).
+     * @return Whether the screen is open currently or not
+     * @author fzzyhmstrs
+     * @since 0.6.6
+     */
+    @JvmStatic
+    fun isScreenOpen(scope: String): Boolean {
+        return ConfigApiImpl.isScreenOpen(scope)
+    }
+
+    /**
      * Serialize a config class to a TomlElement
      *
      * Custom serializer, powered by TomlKt. Serialization occurs in two ways

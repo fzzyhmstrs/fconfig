@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-5 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
@@ -113,6 +114,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
 
 
     init {
+        this.setFlag(EntryFlag.Flag.REQUIRES_WORLD.flag)
         when(storedValue.type()) {
             ProviderType.STACK -> {
                 listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))
@@ -140,6 +142,25 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     @Deprecated("24w34a+: Ingredient creation can now throw UnsupportedOperationException, be sure to handle.")
     fun toIngredient(): Ingredient {
         return storedValue.provide()
+    }
+
+    @Internal
+    override fun set(input: IngredientProvider) {
+        when(input.type()) {
+            ProviderType.STACK -> {
+                listItemValidator.validateAndSet(setOf((input as ItemProvider).id))
+                listTagValidator.validateAndSet(setOf())
+            }
+            ProviderType.LIST -> {
+                listItemValidator.validateAndSet((input as ListProvider).ids)
+                listTagValidator.validateAndSet((input as ListProvider).tags)
+            }
+            ProviderType.TAG -> {
+                listItemValidator.validateAndSet(setOf())
+                listTagValidator.validateAndSet(setOf((input as TagProvider).tag))
+            }
+        }
+        super.set(input)
     }
 
     /**

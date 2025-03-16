@@ -56,6 +56,22 @@ internal object ClientConfigRegistry {
         return clientConfigs[scope]?.active
     }
 
+    internal fun getValidClientConfig(scope: String): Pair<Config?, String> {
+        val s = getValidConfigScope(scope) ?: return Pair(null, scope)
+        return Pair(clientConfigs[s]?.active, s)
+    }
+
+    private fun getValidConfigScope(scope: String): String? {
+        val configScopes = clientConfigs.keys
+        if(configScopes.contains(scope)) return scope
+        var validScopeTry = scope.substringBeforeLast('.')
+        if (validScopeTry == scope) return null
+        while(!configScopes.contains(validScopeTry) && validScopeTry.contains('.')) {
+            validScopeTry = validScopeTry.substringBeforeLast('.')
+        }
+        return if(configScopes.contains(validScopeTry)) validScopeTry else null
+    }
+
     //client
     internal fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
@@ -132,15 +148,27 @@ internal object ClientConfigRegistry {
         }
     }
 
-    //client
-    @Synchronized
-    internal fun getScreenScopes(): Set<String> {
+    private fun scrape() {
         if (!hasScrapedMetadata.get()) {
             for (scope in PlatformUtils.customScopes()) {
-                validCustomScopes.add(scope)
+                if (scope.isEmpty()) continue
+                if (scope.contains(".")) {
+                    val scopes = scope.split(".")
+                    validCustomScopes.add(scopes[0])
+                    if (scopes.size > 1)
+                        validSubScopes.put(scopes[0], scopes[1])
+                } else {
+                    validCustomScopes.add(scope)
+                }
             }
             hasScrapedMetadata.set(true)
         }
+    }
+
+    //client
+    @Synchronized
+    internal fun getScreenScopes(): Set<String> {
+        scrape()
         return validScopes + validCustomScopes
     }
 
@@ -151,7 +179,7 @@ internal object ClientConfigRegistry {
 
     //client
     internal fun openScreen(scope: String) {
-        val namespaceScope = getValidScope(scope)
+        val namespaceScope = getValidScope(scope, true)
         if (namespaceScope == null) {
             FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
             return
@@ -159,14 +187,29 @@ internal object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.mapValues { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
+                validSubScopes[namespaceScope].map { "$namespaceScope.$it" },
+                clientConfigs.filterKeys {
+                    s -> s.startsWith(namespaceScope)
+                }.mapValues {
+                    ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key), ConfigApiImpl.isRootConfig(it.value.active::class))
+                })
         }
         manager.openScreen(scope)
     }
 
+    internal fun isScreenOpen(scope: String): Boolean {
+        val namespaceScope = getValidScope(scope)
+        if (namespaceScope == null) {
+            FC.LOGGER.error("Failed to determine if a config screen is open. Invalid scope provided: [$scope]")
+            return false
+        }
+        val manager = configScreenManagers[namespaceScope] ?: return false
+        return manager.isScreenOpen(scope)
+    }
+
     //client
     internal fun provideScreen(scope: String): Screen? {
-        val namespaceScope = getValidScope(scope)
+        val namespaceScope = getValidScope(scope, true)
         if (namespaceScope == null) {
             FC.LOGGER.error("Failed to provide a FzzyConfig screen. Invalid scope provided: [$scope]")
             return null
@@ -174,7 +217,12 @@ internal object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
-                clientConfigs.filterKeys { s -> s.startsWith(namespaceScope) }.mapValues { ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key)) })
+                validSubScopes[namespaceScope].map { "$namespaceScope.$it" },
+                clientConfigs.filterKeys {
+                    s -> s.startsWith(namespaceScope)
+                }.mapValues {
+                    ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key), ConfigApiImpl.isRootConfig(it.value.active::class))
+                })
         }
         return manager.provideScreen(scope)
     }
@@ -214,26 +262,41 @@ internal object ClientConfigRegistry {
     }
 
     //client
-    private fun getValidScope(scope: String): String? {
-        if(validScopes.contains(scope)) return scope
+    private fun getValidScope(scope: String, useCustom: Boolean = false): String? {
+        val scopes = if (useCustom) getScreenScopes() else validScopes
+        if(scopes.contains(scope)) return scope
         var validScopeTry = scope.substringBeforeLast('.')
         if (validScopeTry == scope) return null
-        while(!validScopes.contains(validScopeTry) && validScopeTry.contains('.')) {
+        while(!scopes.contains(validScopeTry) && validScopeTry.contains('.')) {
             validScopeTry = validScopeTry.substringBeforeLast('.')
         }
-        return if(validScopes.contains(validScopeTry)) validScopeTry else null
+        return if(scopes.contains(validScopeTry)) validScopeTry else null
     }
 
     //client
     internal fun registerConfig(config: Config, baseConfig: Config, noGui: Boolean) {
         if (!noGui) {
-            validScopes.add(config.getId().namespace)
-            validSubScopes.put(config.getId().namespace, config.getId().path)
+            val namespace = config.getId().namespace
+            validScopes.add(namespace)
+            validSubScopes.put(namespace, config.getId().path)
+            if (configScreenManagers.containsKey(namespace)) { //invalidate config screen manager
+                configScreenManagers.remove(namespace)
+            }
         }
-        UpdateManager.applyKeys(config)
         clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config, baseConfig)
         EventApiImpl.fireOnRegisteredClient(config.getId(), config)
     }
 
-    private class ConfigPair(val active: Config, val base: Config)
+    private class ConfigPair(private val _active: Config, val base: Config) {
+        var i: Boolean = false
+
+        val active: Config
+            get() {
+                if (!i) {
+                    i = true
+                    UpdateManager.applyKeys(_active)
+                }
+                return _active
+            }
+    }
 }

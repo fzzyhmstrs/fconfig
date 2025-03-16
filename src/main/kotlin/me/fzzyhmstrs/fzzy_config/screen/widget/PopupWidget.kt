@@ -24,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.renderBlur
+import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.pos.Pos
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
@@ -60,7 +61,7 @@ class PopupWidget
         private var width: Int,
         private var height: Int,
         private val blurBackground: Boolean,
-        private val closeOnOutOfBounds: Boolean,
+        private val closeOnOutOfBounds: TriState,
         private val background: Identifier,
         private val positionX: BiFunction<Int, Int, Int>,
         private val positionY: BiFunction<Int, Int, Int>,
@@ -69,6 +70,7 @@ class PopupWidget
         private val heightFunction: BiFunction<Int, Int, Int>,
         private val onClose: Runnable,
         private val onClick: MouseClickResult,
+        private val onSwitchFocus: Consumer<Element?>,
         private val children: List<Element>,
         private val selectables: List<Selectable>,
         private val drawables: List<Drawable>)
@@ -79,8 +81,8 @@ class PopupWidget
     SuggestionWindowListener
 {
 
-    private var x: Int = 0
-    private var y: Int = 0
+    var x: Int = 0
+    var y: Int = 0
     private var focused: Element? = null
     private var focusedSelectable: Selectable? = null
     private var dragging = false
@@ -101,7 +103,7 @@ class PopupWidget
         this.onClose.run()
     }
 
-    fun closesOnMissedClick(): Boolean {
+    fun closesOnMissedClick(): TriState {
         return closeOnOutOfBounds
     }
 
@@ -209,6 +211,7 @@ class PopupWidget
 
     override fun setFocused(focused: Element?) {
         if (this.focused == focused) return
+        onSwitchFocus.accept(focused)
         this.focused?.let { it.isFocused = false }
         focused?.let { it.isFocused = true }
         this.focused = focused
@@ -258,7 +261,7 @@ class PopupWidget
      */
     companion object Api {
         /**
-         * Sets a [PopupWidget] to the current screen, if the current screen is a [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen]
+         * Sets a [PopupWidget] to the current screen on the next tick, if the current screen is a [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen]
          * @param popup [PopupWidget] or null. If null, the widget will be cleared, otherwise the current widget will be set to the passed one.
          * @author fzzyhmstrs
          * @since 0.2.0, added mouse overloads 0.6.0
@@ -269,7 +272,7 @@ class PopupWidget
         }
 
         /**
-         * Removes the top widget from the current [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen] widget stack, if any
+         * Removes the top widget from the current [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen] widget stack, if any. Pops the popup on the next tick.
          *
          * The closed widget will have its [PopupWidget.onClose] method called
          * @author fzzyhmstrs
@@ -291,6 +294,28 @@ class PopupWidget
         }
 
         /**
+         * Sets a [PopupWidget] to the current screen immediately, if the current screen is a [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen]
+         * @param popup [PopupWidget] or null. If null, the widget will be cleared, otherwise the current widget will be set to the passed one.
+         * @author fzzyhmstrs
+         * @since 0.2.0, added mouse overloads 0.6.0
+         */
+        @JvmOverloads
+        fun pushImmediate(popup: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
+            MinecraftClient.getInstance().currentScreen?.nullCast<PopupParentElement>()?.setPopupImmediate(popup, mouseX, mouseY)
+        }
+
+        /**
+         * Removes the top widget from the current [me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen] widget stack, if any, immediately, rather than on the next tick.
+         *
+         * The closed widget will have its [PopupWidget.onClose] method called
+         * @author fzzyhmstrs
+         * @since 0.6.6
+         */
+        fun popImmediate() {
+            PopupParentElement.pop()
+        }
+
+        /**
          * Provides an element for the current popup widget to focus on.
          *
          * Must be an existing child of the [PopupWidget] for focusing to succeed
@@ -300,6 +325,18 @@ class PopupWidget
          */
         fun focusElement(element: Element) {
             (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.popupWidgets?.peek()?.trySetFocused(element)
+        }
+
+        /**
+         * Provides an element for the current popup widget to focus on.
+         *
+         * Must be an existing child of the [PopupWidget] for focusing to succeed
+         * @param element [Element] the element to focus on
+         * @author fzzyhmstrs
+         * @since 0.6.6
+         */
+        fun focusElement(popup: PopupWidget, element: Element) {
+            popup.trySetFocused(element)
         }
     }
 
@@ -326,8 +363,9 @@ class PopupWidget
 
         private var onClose = Runnable { }
         private var onClick: MouseClickResult = MouseClickResult { _, _, _, _ -> ClickResult.USE }
+        private var onSwitchFocus: Consumer<Element?> = Consumer { _ -> }
         private var blurBackground = true
-        private var closeOnOutOfBounds = true
+        private var closeOnOutOfBounds = TriState.DEFAULT
         private var background = "widget/popup/background".fcId()
         private var additionalTitleNarration: MutableList<Text> = mutableListOf()
 
@@ -752,6 +790,18 @@ class PopupWidget
         }
 
         /**
+         * Defines a consumer that will run when focus is switched to an element in the popup.
+         * @param consumer [Consumer]&lt;[Element]&gt; - Consumes the newly focused element.
+         * @return Builder - this builder for further use
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        fun onSwitchFocus(consumer: Consumer<Element?>): Builder {
+            this.onSwitchFocus = consumer
+            return this
+        }
+
+        /**
          * The widget won't apply a layer of blur behind it when rendering.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
@@ -768,7 +818,17 @@ class PopupWidget
          * @since 0.2.0
          */
         fun noCloseOnClick(): Builder {
-            this.closeOnOutOfBounds = false
+            this.closeOnOutOfBounds = TriState.FALSE
+            return this
+        }
+        /**
+         * The widget will close on a missed click and it will pass the missed click to the screen underneath
+         * @return Builder - this builder for further use
+         * @author fzzyhmstrs
+         * @since 0.6.6
+         */
+        fun closeAndPassOnClick(): Builder {
+            this.closeOnOutOfBounds = TriState.TRUE
             return this
         }
         /**
@@ -829,7 +889,7 @@ class PopupWidget
                 }
             }
 
-            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, onClick, children, selectables, drawables)
+            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, onClick, onSwitchFocus, children, selectables, drawables)
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

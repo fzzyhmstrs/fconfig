@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation.collection
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -80,7 +81,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     private val handler: EntryHandler<T>,
     private val translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) },
     private val descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") },
-    private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<List<T>>(defaultValues), List<T>
+    private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<List<T>>(defaultValues), List<T>, EntryOpener
 {
     init {
         if (!choices.containsAll(defaultValues))
@@ -240,9 +241,16 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
                 LayoutClickableWidget(0, 0, 110, 20 * choices.size, layout)
             }
             WidgetType.SCROLLABLE -> {
-                CustomButtonWidget.builder("fc.validated_field.choice_set".translate()) { b -> openChoicesScrollableEditPopup(b) }.size(110, 20).build()
+                CustomButtonWidget.builder("fc.validated_field.choice_set".translate()) { b ->
+                    openChoicesScrollableEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { b.y - 82 })
+                }.size(110, 20).build()
             }
         }
+    }
+
+    @Internal
+    override fun open(args: List<String>) {
+        openChoicesScrollableEditPopup()
     }
 
     @Internal
@@ -326,7 +334,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         PopupWidget.push(builder.build())
     }
 
-    private fun openChoicesScrollableEditPopup(b: CustomButtonWidget) {
+    private fun openChoicesScrollableEditPopup(xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
         val choiceListTitle = "fc.validated_field.choice_set".translate()
         val textRenderer = MinecraftClient.getInstance().textRenderer
         var buttonWidth = textRenderer.getWidth(choiceListTitle)
@@ -380,8 +388,8 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
             searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
             builder.add("choice_search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
         }
-        builder.positionX(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 })
-        builder.positionY(PopupWidget.Builder.popupContext { b.y - 82 })
+        builder.positionX(xPosition)
+        builder.positionY(yPosition)
         builder.addDoneWidget()
         PopupWidget.push(builder.build())
     }

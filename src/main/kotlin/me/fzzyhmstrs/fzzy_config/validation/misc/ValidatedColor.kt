@@ -12,7 +12,9 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
+import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -30,8 +32,10 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.ColorHolder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.gui.widget.TextWidget
@@ -44,8 +48,10 @@ import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.awt.Color
+import java.util.function.Consumer
 import java.util.function.Predicate
 import java.util.function.Supplier
+import java.util.function.UnaryOperator
 
 /**
  * A validated color value
@@ -59,7 +65,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.1.2
  */
-open class ValidatedColor: ValidatedField<ColorHolder> {
+open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
     /**
      * A validated color value
@@ -246,6 +252,11 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     }
 
     @Internal
+    override fun open(args: List<String>) {
+        openColorEditPopup()
+    }
+
+    @Internal
     override fun entryDeco(): Decorated.DecoratedOffset? {
         return Decorated.DecoratedOffset(ColorDecoration { get().argb() }, 2, 2)
     }
@@ -266,28 +277,57 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
     //client
     private fun openColorEditPopup() {
         val textRenderer = MinecraftClient.getInstance().textRenderer
-        val mutableColor = this.get().mutable(validatedString())
+        val mutableColor = this.get().mutable(validatedString(toHexString(), get().opaque()))
         val popup = PopupWidget.Builder(translation())
             .add("r_name", TextWidget(12, 20, "fc.validated_field.color.r".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("g_name", TextWidget(12, 20, "fc.validated_field.color.g".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("b_name", TextWidget(12, 20, "fc.validated_field.color.b".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("a_name", TextWidget(12, 20, "fc.validated_field.color.a".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("r_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.r }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { r -> mutableColor.updateRGB(r, mutableColor.g, mutableColor.b)}), "r_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("g_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.g }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { g -> mutableColor.updateRGB(mutableColor.r, g, mutableColor.b)}), "g_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("b_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.b }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { b -> mutableColor.updateRGB(mutableColor.r, mutableColor.g, b)}), "b_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("hl_map", HLMapWidget(mutableColor), "r_box", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("s_slider", VerticalSliderWidget({mutableColor.s.toDouble()}, 0, 0, 20, 68, FcText.EMPTY, {d -> mutableColor.updateHSL(mutableColor.h, d.toFloat(), mutableColor.l)}), "hl_map", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("hex_box", ValidationBackedTextFieldWidget(84, 20, {mutableColor.hex.get()}, ChoiceValidator.any(), mutableColor.hex, {s -> mutableColor.updateHex(s) }), "hl_map", LayoutWidget.Position.BELOW, LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
-            .addDoneWidget ({ this.setAndUpdate(mutableColor.createHolder()); PopupWidget.pop()})
+            if (this.storedValue.alphaMode)
+                popup.add("a_name", TextWidget(12, 20, "fc.validated_field.color.a".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            popup.add("r_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.r }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { r -> mutableColor.updateRGB(r, mutableColor.g, mutableColor.b) }), "r_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("g_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.g }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { g -> mutableColor.updateRGB(mutableColor.r, g, mutableColor.b) }), "g_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("b_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.b }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { b -> mutableColor.updateRGB(mutableColor.r, mutableColor.g, b) }), "b_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            if (this.storedValue.alphaMode)
+                popup.add("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            popup.add("hl_map", HLMapWidget(mutableColor), "r_box", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("s_slider", VerticalSliderWidget({ mutableColor.s.toDouble() }, 0, 0, 20, 68, FcText.EMPTY, { d -> mutableColor.updateHSL(mutableColor.h, d.toFloat(), mutableColor.l) }), "hl_map", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            if (this.storedValue.alphaMode) {
+                val hexBox = ClickToSubmitTextFieldWidget(64, 20, mutableColor.hex)
+                val submitButton = CustomButtonWidget.builder { hexBox.submit(); mutableColor.updateFromHex() }
+                    .activeSupplier { hexBox.isSubmittable() }
+                    .textures("widget/action/accept".fcId(),
+                        "widget/action/accept_inactive".fcId(),
+                        "widget/action/accept_highlighted".fcId())
+                    .tooltip("fc.button.accept".translate())
+                    .narrationSupplier { _, _ -> "fc.button.accept".translate() }
+                    .size(20, 20)
+                    .build()
+                hexBox.submitButton = submitButton
+                popup.add("hex_box", hexBox, "hl_map", LayoutWidget.Position.BELOW, LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
+                popup.pushSpacing({ _ -> 0 }, UnaryOperator.identity())
+                popup.add("hex_box_submit", submitButton, "hex_box", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                popup.popSpacing()
+            } else {
+                val hexBox = ClickToSubmitTextFieldWidget(129, 20, mutableColor.hex)
+                val submitButton = CustomButtonWidget.builder { hexBox.submit(); mutableColor.updateFromHex() }
+                    .activeSupplier { hexBox.isSubmittable() }
+                    .textures("widget/action/accept".fcId(),
+                        "widget/action/accept_inactive".fcId(),
+                        "widget/action/accept_highlighted".fcId())
+                    .tooltip("fc.button.accept".translate())
+                    .narrationSupplier { _, _ -> "fc.button.accept".translate() }
+                    .size(20, 20)
+                    .build()
+                hexBox.submitButton = submitButton
+                popup.add("hex_box", hexBox, "b_name", LayoutWidget.Position.BELOW, LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
+                popup.pushSpacing({ _ -> 0 }, UnaryOperator.identity())
+                popup.add("hex_box_submit", submitButton, "hex_box", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+                popup.popSpacing()
+            }
+            popup.addDoneWidget ({ this.setAndUpdate(mutableColor.createHolder()); PopupWidget.pop()})
             .onClose { this.setAndUpdate(mutableColor.createHolder()) }
             .noCloseOnClick()
-            .build()
-        PopupWidget.push(popup)
-    }
-
-    private fun validatedString(): ValidatedString {
-        return validatedString(toHexString(), this.get().opaque())
+        PopupWidget.push(popup.build())
     }
 
     companion object {
@@ -350,8 +390,8 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                         ValidationResult.error(s.substring(0, 8), "Too long. 8 characters maximum")
                     else if(s.length == 7 && isNotF(s[0]) && opaque)
                         ValidationResult.error(s.replaceRange(0, 1, if(s[0].isLowerCase())"f" else "F"), "Opaque colors only.")
-                    else if(s.length == 8 && (isNotF(s[0]) || isNotF(s[1])) && opaque)
-                        ValidationResult.error(s.replaceRange(0, 2, "${if(s[0].isLowerCase())"f" else "F"}${if(s[1].isLowerCase())"f" else "F"}"), "Opaque colors only.")
+                    else if(s.length > 6 && opaque)
+                        ValidationResult.error(s.substring(0, 6), "Opaque colors only.")
                     else
                         transform(s).let { if(it == s) ValidationResult.success(it) else ValidationResult.error(it, "Invalid characters found in color string") }
                     ValidationResult.success(s)
@@ -371,7 +411,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, private val alphaMode: Boolean): EntryHandler<ColorHolder> {
+    data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, val alphaMode: Boolean): EntryHandler<ColorHolder> {
 
         private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
 
@@ -402,7 +442,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          * @since 0.2.0
          */
         fun toHexString(): String {
-            return if(opaque()) String.format("%06X", toInt()) else String.format("%08X", toInt())
+            return if(opaque()) String.format("%06X", toInt() and 0xFFFFFF) else String.format("%08X", toInt())
         }
 
         /**
@@ -473,10 +513,17 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         ): TomlElement {
             val toml = TomlTableBuilder()
             try {
-                toml.element("r", TomlLiteral(r), TomlComment("Red component, 0 to 255"))
-                toml.element("g", TomlLiteral(g), TomlComment("Green component, 0 to 255"))
-                toml.element("b", TomlLiteral(b), TomlComment("Blue component, 0 to 255"))
-                if (alphaMode) toml.element("a", TomlLiteral(a), TomlComment("Alpha component, 0 to 255"))
+                if (input == null) {
+                    toml.element("r", TomlLiteral(r), TomlComment("Red component, 0 to 255"))
+                    toml.element("g", TomlLiteral(g), TomlComment("Green component, 0 to 255"))
+                    toml.element("b", TomlLiteral(b), TomlComment("Blue component, 0 to 255"))
+                    if (alphaMode) toml.element("a", TomlLiteral(a), TomlComment("Alpha component, 0 to 255"))
+                } else {
+                    toml.element("r", TomlLiteral(input.r), TomlComment("Red component, 0 to 255"))
+                    toml.element("g", TomlLiteral(input.g), TomlComment("Green component, 0 to 255"))
+                    toml.element("b", TomlLiteral(input.b), TomlComment("Blue component, 0 to 255"))
+                    if (input.alphaMode) toml.element("a", TomlLiteral(input.a), TomlComment("Alpha component, 0 to 255"))
+                }
             } catch (e: Throwable) {
                 errorBuilder.add("Critical exception while serializing color: ${e.localizedMessage}")
             }
@@ -569,7 +616,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         var h: Float = 0f
         var s: Float = 0f
         var l: Float = 0f
-        private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
+        private val validator: Predicate<Int> = Predicate{ i -> i in 0..255 }
 
         /**
          * ARGB color int representation of this color
@@ -614,7 +661,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             this.r = rr
             this.g = gg
             this.b = bb
-            hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
+            hex.validateAndSet(if(alphaMode) String.format("%08X", argb()) else String.format("%06X", argb() and 0xFFFFFF))
         }
 
         /**
@@ -633,7 +680,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             this.h = hsl[0]
             this.s = hsl[1]
             this.l = hsl[2]
-            hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
+            hex.validateAndSet(if(alphaMode) String.format("%08X", argb()) else String.format("%06X", argb() and 0xFFFFFF))
         }
 
         /**
@@ -644,7 +691,7 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
          */
         fun updateA(a: Int) {
             this.a = a
-            hex.validateAndSet(String.format(if(alphaMode) "%08X" else "%06X", argb()))
+            hex.validateAndSet(if(alphaMode) String.format("%08X", argb()) else String.format("%06X", argb() and 0xFFFFFF))
         }
 
         /**
@@ -656,7 +703,12 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
         fun updateHex(new: String) {
             hex.validateAndSet(new)
             val argb = try {
-                Integer.parseUnsignedInt(new, 16)
+                val i = Integer.parseUnsignedInt(hex.get(), 16)
+                if (!alphaMode) {
+                    ((a and 0xFF) shl 24) or i
+                } else {
+                    i
+                }
             } catch (e: Throwable) {
                 argb()
             }
@@ -665,6 +717,36 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
             val gg = argb shr 8 and 0xFF
             val bb = argb and 0xFF
             updateA(aa)
+            this.r = rr
+            this.g = gg
+            this.b = bb
+            val hsl = Color.RGBtoHSB(r, g, b, null)
+            this.h = hsl[0]
+            this.s = hsl[1]
+            this.l = hsl[2]
+        }
+
+        /**
+         * Updates this color from a new hex-string color representation. Automatically strips common prefixes, and automatically updates HSL and RGB values
+         * @author fzzyhmstrs
+         * @since 0.6.6
+         */
+        fun updateFromHex() {
+            val argb = try {
+                val i = Integer.parseUnsignedInt(hex.get(), 16)
+                if (!alphaMode) {
+                    ((a and 0xFF) shl 24) or i
+                } else {
+                    i
+                }
+            } catch (e: Throwable) {
+                argb()
+            }
+            val aa = argb shr 24 and 0xFF
+            val rr = argb shr 16 and 0xFF
+            val gg = argb shr 8 and 0xFF
+            val bb = argb and 0xFF
+            this.a = aa
             this.r = rr
             this.g = gg
             this.b = bb
@@ -808,6 +890,85 @@ open class ValidatedColor: ValidatedField<ColorHolder> {
                 } else {
                     builder.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.mouse".translate())
                 }
+            }
+        }
+    }
+
+    private class ClickToSubmitTextFieldWidget(width: Int, height: Int, private val input: Entry<String, *>, var submitButton: ClickableWidget? = null):
+        TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, width, height, FcText.EMPTY), Consumer<Element?>
+    {
+
+        private var cachedValue: String = input.get()
+        private var storedValue: String = input.get()
+        private var isValid = true
+        private var dirty = false
+
+        init {
+            input.listenToEntry { e ->
+                cachedValue = e.get()
+                if (!dirty) {
+                    storedValue = e.get()
+                    text = e.get()
+                    isValidTest(text)
+                }
+            }
+            setMaxLength(8)
+            text = input.get()
+            setChangedListener { s ->
+                isValid = isValidTest(s)
+            }
+        }
+
+        fun isSubmittable(): Boolean {
+            return isValid && cachedValue != storedValue
+        }
+
+        fun submit() {
+            if (isSubmittable()) {
+                dirty = false
+                input.accept(storedValue)
+            }
+        }
+
+        fun isValidTest(s: String): Boolean {
+            val result = input.validateEntry(s, EntryValidator.ValidationType.STRONG)
+            return if(result.isError()) {
+                this.tooltip = Tooltip.of(result.getError().lit())
+                setEditableColor(0xFF5555)
+                false
+            } else {
+                this.tooltip = null
+                this.storedValue = result.get()
+                setEditableColor(0xFFFFFF)
+                true
+            }
+        }
+
+        override fun charTyped(chr: Char, modifiers: Int): Boolean {
+            dirty = true
+            return super.charTyped(chr, modifiers)
+        }
+
+        /**
+         * @suppress
+         */
+        override fun getNarrationMessage(): MutableText {
+            return "gui.narrate.editBox".translate("", "")
+        }
+
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
+            builder.put(NarrationPart.TITLE, this.narrationMessage)
+            builder.nextMessage().put(NarrationPart.TITLE, "${this.text}. ")
+            //builder.nextMessage().put(NarrationPart.USAGE, "fc.validated_field.number.editBox.usage".translate())
+        }
+
+        override fun accept(t: Element?) {
+            if (t != this && t != submitButton && isSubmittable()) {
+                storedValue = input.get()
+                cachedValue = input.get()
+                text = input.get()
+                isValidTest(text)
+                dirty = false
             }
         }
     }

@@ -12,38 +12,25 @@
 -------------------------------------
 
 ### Additions
-* Fzzy Config's wiki is now hosted with ModdedMC! Check it out:
-  * [![Wiki Link Icon](https://i.imgur.com/Ber97Pl.png)](https://moddedmc.wiki/en/project/fzzy-config/docs)
-* Added `WidgetEntry` for easy creation of Dynamic Lists wrapping a collection of widgets.
-* New widget type `SCROLLABLE` for `ValidatedChoiceList` and `ValidatedChoice` which opens a scrollable and searchable widget list
-* `ValidatedChoice` now includes the `INLINE` widget type previously only available on the list version
-* `ValidatedChoiceList` now has its own decorator, distinguishing it from a normal list 
-* Added new `TriState` utility enum and corresponding `ValidatedTriState` validation for configs. Like most tri-states, has TRUE, FALSE, and DEFAULT choices, and two different widget options for selecting between them.
-* Added a `FzzyKeybind` system that builds on the `ContextType` system introduced in 0.6.0.
-  * Define basic or compound (multiple choice) keybinds with or without modifiers (ctrl, shift, alt)
-  * `ValidatedKeybind` validation added for configurable keybind handling.
-  * Keybinds still need to be handled by other Fzzy Config context handling methods, this is a structured method for setting up and configuring context types.
-  * For a robust example, see Fzzy Configs built-in keybind config and `ConfigScreen` context handler that is used to handle GUI inputs.
-* Added `wdithFunction` and `heightFunction` to `PopupWidget`, allowing for dynamic sizing based on screen and previous dimension context.
-* Fzzy Config finally has its own config! `keybinds.toml` controls the inputs used for interacting with Config GUIs.
+* `@RootConfig` annotation for marking a config as a "root" config. The settings will appear "inline" with the landing page config buttons, instead of in its own sub-GUI. All other aspects of the config interaction remain unchanged; loading, saving, calling from, etc. so an existing config can be marked as root with no breakage.
+* Added a greyed-out placeholder button for configs that aren't yet loaded but have been promised via the fabric.mod.json or mods.toml.
+* New `ConfigApi.isScreenOpen`/`ConfigApiJava.isSceenOpen` methods for checking if a Config GUI is currently open.
+* `DynamicListWidget` has a new `scrollToEntry` method for scrolling directly to a list element.
+* `ConfigApi.openScreen` now supports passing in scope args for scrolling to them and opening them as applicable. If you have a config `my_mod:config` with a Object setting `coolObject`, passing `my_mod.config.coolObject` to `openScreen` will open the config GUI, scroll to the object setting, and open the object editing popup.
+* New `EntryOpener` interface for entries that have something to open on request. This is typically used for validation that has a popup edit menu.
 
 ### Changes
-* __Registrar System__: `RegistrySupplier` now implements `RegistryEntry` directly, as well as passing its reference entry. This includes a breaking experimental change, `getKey` has changed to `getRegistryKey`
-* Improved the narration of `ValidatedChoice` and `ValidatedChoiceList`
-* Improved the memory footprint of `DynamicListWidget`, deferring several allocations until needed
-* Shortened in-GUI changelogs related to Validated Object changes.
-* In-GUI usage information popup updated with a list widget and configurable keybind entries.
-* The Config GUI info screen has been updated with a list view of the GUI keybinds. These keybinds can be edited (and this list is secretly a custom config GUI for Fzzy Configs built-in Keybinds config)
-* `ConfigScreenManager` now caches config GUI templates incrementally, instead of front-loading all screen templates at once. This has some side effects, namely that each screen now has a separate Update Manager, so restoring defaults, reverting changes, etc. is now sectioned off per-config instead of global to the namespace. The "Root" screen update manager can see any loaded children managers, so changes can be managed from the root screen into any child screens that have been loaded and modified.
-
+* The networking api methods `registerLenient[side]` are now ported to all versions for usage parity.
+* If a config is loaded after screens for a mod have been initialized, the manager will be invalidated and rebuilt (as needed) with the new total loaded config set considered.
+* `ValidatedColor` popups now have a submit button for the hex string textbox, and the alpha edit box will be completely missing if the color doesn't support transparency.
 
 ### Fixes
-* Fixed done button on config screens saying "back" when they should say "done" in certain circumstances
-* Fixed `ValidatedAny` popup saying "Revert Changes" for both the revert and restore defaults button
-* Certain validation types now properly determine their default- and changed-state, namely Validated Objects.
-* `ValidatedCondition` now properly considers its conditions when determining default and changed states. A Validated Condition that has failed conditions will always be considered "default"
-* Fixed various typos and other content issues with some KDoc entries
-* `ConfigScreenNarrator` now properly strips out formatting codes before narrating the text content (this also affects the vanilla screen narrator)
-* Fixed `ValidatedIdentifier` config widgets not being properly navigable with keyboard.
-* (NeoForge) fixed network crash involving clients without Fzzy Config trying to join a server with it.
-* (1.20.1) fixed texture issue with the context and go-to menus.
+* GUI keys are no longer pressable "past" an open popup, and multiple of the same popup can no longer be opened with keybinds.
+* `ConfigGroup` now has an optional constructor parameter to start the config collapsed.
+* Ingredients and Colors now work as keys/values in validated collections. 
+  * Ingredients can no longer be interacted with outside of worlds.
+* The screen manager now locks while constructing a requested screen to prevent recursive screen building if the construction process somehow calls for opening the same screen.
+* `ValidatedColor` properly shows and accepts only 6-digit hex when it doesn't support transparency.
+* Popups for `ValidatedIdentifier` and `ValidatedTagKey` properly focus their textboxes on open again, and their textboxes are aligned properly again.
+* Fixed Go-to menu scroll bar disappearing if you were dragging it and moved the mouse off of the menu. The scrollbar disappearing when the menu isn't hovered is intended behavior.
+* Right click menus properly pass clicks "past" themselves, allowing actions to be taken when "clicking off" of them (including "moving" the menu to the newly clicked spot.)

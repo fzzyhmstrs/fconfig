@@ -246,7 +246,8 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
                 return ValidatedString(defaultValue, EntryChecker.Impl(validator, corrector))
             }
             fun build(): ValidatedString {
-                return ValidatedString(defaultValue, EntryChecker.Impl(validator, this.buildCorrector()))
+                val corrector = this.buildCorrector()
+                return ValidatedString(corrector.correctEntry(defaultValue, EntryValidator.ValidationType.STRONG).get(), EntryChecker.Impl(validator, corrector))
             }
         }
     }
