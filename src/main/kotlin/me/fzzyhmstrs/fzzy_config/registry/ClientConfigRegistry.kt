@@ -174,15 +174,27 @@ internal object ClientConfigRegistry {
         }
     }
 
-    //client
-    @Synchronized
-    internal fun getScreenScopes(): Set<String> {
+    private fun scrape() {
         if (!hasScrapedMetadata.get()) {
             for (scope in PlatformUtils.customScopes()) {
-                validCustomScopes.add(scope)
+                if (scope.isEmpty()) continue
+                if (scope.contains(".")) {
+                    val scopes = scope.split(".")
+                    validCustomScopes.add(scopes[0])
+                    if (scopes.size > 1)
+                        validSubScopes.put(scopes[0], scopes[1])
+                } else {
+                    validCustomScopes.add(scope)
+                }
             }
             hasScrapedMetadata.set(true)
         }
+    }
+
+    //client
+    @Synchronized
+    internal fun getScreenScopes(): Set<String> {
+        scrape()
         return validScopes + validCustomScopes
     }
 
@@ -193,7 +205,7 @@ internal object ClientConfigRegistry {
 
     //client
     internal fun openScreen(scope: String) {
-        val namespaceScope = getValidScope(scope)
+        val namespaceScope = getValidScope(scope, true)
         if (namespaceScope == null) {
             FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
             return
@@ -201,6 +213,7 @@ internal object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
+                validSubScopes[namespaceScope].map { "$namespaceScope.$it" },
                 clientConfigs.filterKeys {
                     s -> s.startsWith(namespaceScope)
                 }.mapValues {
@@ -222,7 +235,7 @@ internal object ClientConfigRegistry {
 
     //client
     internal fun provideScreen(scope: String): Screen? {
-        val namespaceScope = getValidScope(scope)
+        val namespaceScope = getValidScope(scope, true)
         if (namespaceScope == null) {
             FC.LOGGER.error("Failed to provide a FzzyConfig screen. Invalid scope provided: [$scope]")
             return null
@@ -230,6 +243,7 @@ internal object ClientConfigRegistry {
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
+                validSubScopes[namespaceScope].map { "$namespaceScope.$it" },
                 clientConfigs.filterKeys {
                     s -> s.startsWith(namespaceScope)
                 }.mapValues {
@@ -274,14 +288,15 @@ internal object ClientConfigRegistry {
     }
 
     //client
-    private fun getValidScope(scope: String): String? {
-        if(validScopes.contains(scope)) return scope
+    private fun getValidScope(scope: String, useCustom: Boolean = false): String? {
+        val scopes = if (useCustom) getScreenScopes() else validScopes
+        if(scopes.contains(scope)) return scope
         var validScopeTry = scope.substringBeforeLast('.')
         if (validScopeTry == scope) return null
-        while(!validScopes.contains(validScopeTry) && validScopeTry.contains('.')) {
+        while(!scopes.contains(validScopeTry) && validScopeTry.contains('.')) {
             validScopeTry = validScopeTry.substringBeforeLast('.')
         }
-        return if(validScopes.contains(validScopeTry)) validScopeTry else null
+        return if(scopes.contains(validScopeTry)) validScopeTry else null
     }
 
     //client
