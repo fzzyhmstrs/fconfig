@@ -12,18 +12,18 @@
 -------------------------------------
 
 * ✅ Parity on the new lenient networking api methods
-* Root config annotation for applying a config to the root screen
-* Proper dismounting/remounting of reloadable validation (Identifier from dynamic keys)
-* Put a placeholder greyed-out button for custom scopes provided by metadata that haven't been loaded yet.
-* Re-implement List and Map widgets with dynamic lists now that adding and removing is impl.
-* Separate out a `PopupWidgetController` interface that can be more easily implemented into an existing screen.
-* Pop popups before opening one with keybind, or consume that key in the popup and do nothing with it.
-* Add option to constructor to start group collapsed.
-* Get ingredients working as key/values in collections.
-  * Add requires world tag to ingredients
-* Get colors working as values in a collection (and keys)
+* ✅ Root config annotation for applying a config to the root screen
+* ✅ Proper dismounting/remounting of reloadable validation (Identifier from dynamic keys)
+* ✅ Put a placeholder greyed-out button for custom scopes provided by metadata that haven't been loaded yet.
+* ❌ Re-implement List and Map widgets with dynamic lists now that adding and removing is impl.
+* ❌ Separate out a `PopupWidgetController` interface that can be more easily implemented into an existing screen.
+* ✅ Pop popups before opening one with keybind, or consume that key in the popup and do nothing with it.
+* ✅ Add option to constructor to start group collapsed.
+* ✅ Get ingredients working as key/values in collections.
+  * ✅ Add requires world tag to ingredients
+* ✅ Get colors working as values in a collection (and keys)
 * Check on out-of-bounds clicking for sliders in 1.20.1
-* Add locks to screen opening, and add isScreenOpen method
+* ✅ Add locks to screen opening, and add isScreenOpen method
 * ✅ Invalidate config screen manager if scope is added after the manager is loaded the first time
 * ✅ Allow for scrolling to arbitrary entries in a DynamicListWidget
 * ✅ Allow for opening of popups with config screens
