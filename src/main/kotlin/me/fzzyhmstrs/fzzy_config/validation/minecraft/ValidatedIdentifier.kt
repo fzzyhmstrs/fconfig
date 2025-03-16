@@ -201,7 +201,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     private fun openIdentifierPopup(isKb: Boolean, key: Int, code: Int, mods: Int, choicePredicate: ChoiceValidator<Identifier> = ChoiceValidator.any(), xPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center(), yPosition: BiFunction<Int, Int, Int> = PopupWidget.Builder.center()) {
         val textField = PopupIdentifierTextFieldWidget(170, 20, choicePredicate, this)
         val popup = PopupWidget.Builder(this.translation())
-            .add("text_field", textField, LayoutWidget.Position.BELOW)
+            .add("text_field", textField, LayoutWidget.Position.ALIGN_LEFT, LayoutWidget.Position.BELOW)
             .addDoneWidget({ textField.pushChanges(); PopupWidget.pop() })
             .positionX(xPosition)
             .positionY(yPosition)
