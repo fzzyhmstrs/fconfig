@@ -16,22 +16,13 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
-import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
-import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
-import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient
-import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.Companion.withLabels
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import me.fzzyhmstrs.fzzy_config_test.FC
-import net.minecraft.registry.tag.ItemTags
-import net.minecraft.text.ClickEvent
 import net.minecraft.util.Identifier
 import java.awt.Color
 
@@ -60,7 +51,7 @@ class TestRootConfigImpl: Config(Identifier.of("fzzy_config_test","root_config")
 
     var mathTest = ValidatedExpression("x + 5", setOf('x'))
 
-    var group = ConfigGroup("test_group")
+    var group = ConfigGroup("test_group", collapsedByDefault = true)
 
     var list1 = listOf(1, 3, 5, 7)
     var list2 = listOf(1, 3, 5, 7).validated()

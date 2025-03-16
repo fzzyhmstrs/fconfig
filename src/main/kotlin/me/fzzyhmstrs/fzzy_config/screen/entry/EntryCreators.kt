@@ -132,7 +132,7 @@ object EntryCreators {
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
     }
 
-    internal fun createGroupEntry(context: EntryCreator.CreatorContext, group: String): List<EntryCreator.Creator> {
+    internal fun createGroupEntry(context: EntryCreator.CreatorContext, group: String, closedByDefault: Boolean): List<EntryCreator.Creator> {
         val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
             @Suppress("DEPRECATION")
@@ -143,7 +143,7 @@ object EntryCreators {
                     LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
                     LayoutWidget.Position.BELOW)
             }
-            .visibility(DynamicListWidget.Visibility.GROUP_VISIBLE)
+            .visibility(if (closedByDefault) DynamicListWidget.Visibility.GROUP_VISIBLE_CLOSED else DynamicListWidget.Visibility.GROUP_VISIBLE)
             if (group.isNotEmpty()) {
                 contentBuilder.group(group)
             }

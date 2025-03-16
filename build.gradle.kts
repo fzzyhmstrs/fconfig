@@ -232,7 +232,7 @@ tasks.withType<DokkaTask>().configureEach {
             file("src/main/resources/icon.png"))
         customStyleSheets = listOf(file("dokka/style.css"), file("dokka/logo-styles.css"))
         templatesDir = file("dokka")
-        footerMessage = "(c) 2024 fzzyhmstrs"
+        footerMessage = "(c) 2024-5 fzzyhmstrs"
     }
 
     pluginConfiguration<VersioningPlugin, VersioningConfiguration> {

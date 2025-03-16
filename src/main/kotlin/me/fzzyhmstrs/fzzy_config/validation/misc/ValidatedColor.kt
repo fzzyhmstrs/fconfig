@@ -281,8 +281,8 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             .add("b_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.b }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { b -> mutableColor.updateRGB(mutableColor.r, mutableColor.g, b)}), "b_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer, 0, 0, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .add("hl_map", HLMapWidget(mutableColor), "r_box", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("s_slider", VerticalSliderWidget({mutableColor.s.toDouble()}, 0, 0, 20, 68, FcText.EMPTY, {d -> mutableColor.updateHSL(mutableColor.h, d.toFloat(), mutableColor.l)}), "hl_map", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("hex_box", ValidationBackedTextFieldWidget(84, 20, {mutableColor.hex.get()}, ChoiceValidator.any(), mutableColor.hex, {s -> mutableColor.updateHex(s) }), "hl_map", LayoutWidget.Position.BELOW, LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
+            .add("s_slider", VerticalSliderWidget({ mutableColor.s.toDouble() }, 0, 0, 20, 68, FcText.EMPTY, { d -> mutableColor.updateHSL(mutableColor.h, d.toFloat(), mutableColor.l) }), "hl_map", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("hex_box", ValidationBackedTextFieldWidget(84, 20, { mutableColor.hex.get() }, ChoiceValidator.any(), mutableColor.hex, {s -> mutableColor.updateHex(s) }), "hl_map", LayoutWidget.Position.BELOW, LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
             .addDoneWidget ({ this.setAndUpdate(mutableColor.createHolder()); PopupWidget.pop()})
             .onClose { this.setAndUpdate(mutableColor.createHolder()) }
             .noCloseOnClick()
