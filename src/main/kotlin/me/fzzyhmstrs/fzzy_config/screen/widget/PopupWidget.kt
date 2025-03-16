@@ -72,6 +72,7 @@ class PopupWidget
         private val heightFunction: BiFunction<Int, Int, Int>,
         private val onClose: Runnable,
         private val onClick: MouseClickResult,
+        private val onSwitchFocus: Consumer<Element?>,
         private val children: List<Element>,
         private val selectables: List<Selectable>,
         private val drawables: List<Drawable>)
@@ -213,6 +214,7 @@ class PopupWidget
 
     override fun setFocused(focused: Element?) {
         if (this.focused == focused) return
+        onSwitchFocus.accept(focused)
         this.focused?.let { it.isFocused = false }
         focused?.let { it.isFocused = true }
         this.focused = focused
@@ -368,6 +370,7 @@ class PopupWidget
 
         private var onClose = Runnable { }
         private var onClick: MouseClickResult = MouseClickResult { _, _, _, _ -> ClickResult.USE }
+        private var onSwitchFocus: Consumer<Element?> = Consumer { _ -> }
         private var blurBackground = true
         private var closeOnOutOfBounds = TriState.DEFAULT
         private var background = "widget/popup/background".fcId()
@@ -795,6 +798,18 @@ class PopupWidget
         }
 
         /**
+         * Defines a consumer that will run when focus is switched to an element in the popup.
+         * @param consumer [Consumer]&lt;[Element]&gt; - Consumes the newly focused element.
+         * @return Builder - this builder for further use
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        fun onSwitchFocus(consumer: Consumer<Element?>): Builder {
+            this.onSwitchFocus = consumer
+            return this
+        }
+
+        /**
          * The widget won't apply a layer of blur behind it when rendering.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
@@ -882,7 +897,7 @@ class PopupWidget
                 }
             }
 
-            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, onClick, children, selectables, drawables)
+            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, onClick, onSwitchFocus, children, selectables, drawables)
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
