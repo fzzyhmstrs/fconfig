@@ -30,6 +30,7 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.FcText.translation
 import me.fzzyhmstrs.fzzy_config.util.Ref
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
@@ -50,7 +51,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 //client
-internal class ConfigScreenManager(private val scope: String, private val configs: Map<String, ConfigSet>): BasicValidationProvider {
+internal class ConfigScreenManager(private val scope: String, private val subScopes: Collection<String>, private val configs: Map<String, ConfigSet>): BasicValidationProvider {
 
     private val sidebar: Sidebar = Sidebar()
     private val screenCaches: MutableMap<String, ConfigScreenCache> = mutableMapOf()
@@ -263,7 +264,6 @@ internal class ConfigScreenManager(private val scope: String, private val config
         val forwardedUpdates: MutableList<ForwardedUpdate> = previous?.forwardedUpdates ?: mutableListOf()
         val manager = ConfigRootUpdateManager()
 
-
         val functions: MutableList<EntryCreator.Creator> = mutableListOf()
         val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
             .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
@@ -286,6 +286,14 @@ internal class ConfigScreenManager(private val scope: String, private val config
             //config button, if the config spec allows for them
             EntryCreators.createConfigEntry(context).applyToList(functions)
             //Header entry injected into function map at top of config
+        }
+
+        for (s in subScopes) {
+            if (!configs.containsKey(s)) {
+                val result = Translatable.Result(FcText.translatableWithFallback(s, "fc.button.notLoaded"))
+                val context = EntryCreator.CreatorContext(s, ConfigGroup.emptyGroups, false, result, listOf(), setOf(), contextMisc)
+                EntryCreators.createNoPermsEntry(context, "notLoaded").applyToList(functions)
+            }
         }
 
         val builderMap: MutableMap<String, ConfigScreenBuilder> = mutableMapOf()

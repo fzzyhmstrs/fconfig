@@ -205,6 +205,8 @@
 "fc.button.noPerms.desc": "You don't have the proper permissions to edit this entry.",
 "fc.button.outOfGame": "Not in Game",
 "fc.button.outOfGame.desc": "Join a game or connect to a server to edit this entry",
+"fc.button.notLoaded": "Not Loaded",
+"fc.button.notLoaded.desc": "This config hasn't been loaded yet. Joining the game may load it.",
 "fc.button.navigate": "Navigate to %s",
 "fc.button.changes": "Changes...",
 "fc.button.changes.title": "Manage Changes",
