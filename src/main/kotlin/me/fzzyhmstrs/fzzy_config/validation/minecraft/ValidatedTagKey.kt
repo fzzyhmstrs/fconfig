@@ -147,7 +147,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
             .positionY(yPosition)
             .build()
         PopupWidget.push(popup)
-        PopupWidget.focusElement(textField)
+        PopupWidget.focusElement(popup, textField)
         if (isKeyboard)
             textField.keyPressed(keyCode, scanCode, modifiers)
     }

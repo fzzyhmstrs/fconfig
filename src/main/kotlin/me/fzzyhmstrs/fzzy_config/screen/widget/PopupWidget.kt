@@ -324,6 +324,18 @@ class PopupWidget
         fun focusElement(element: Element) {
             (MinecraftClient.getInstance().currentScreen as? PopupWidgetScreen)?.popupWidgets?.peek()?.trySetFocused(element)
         }
+
+        /**
+         * Provides an element for the current popup widget to focus on.
+         *
+         * Must be an existing child of the [PopupWidget] for focusing to succeed
+         * @param element [Element] the element to focus on
+         * @author fzzyhmstrs
+         * @since 0.6.6
+         */
+        fun focusElement(popup: PopupWidget, element: Element) {
+            popup.trySetFocused(element)
+        }
     }
 
     /**
