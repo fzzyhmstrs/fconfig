@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import blue.endless.jankson.api.element.*
 import com.mojang.datafixers.util.Pair
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.DynamicOps
@@ -28,6 +29,39 @@ class TomlOps: DynamicOps<TomlElement> {
     companion object {
         @JvmStatic
         val INSTANCE = TomlOps()
+
+        fun convertToJson5(tomlTable: TomlTable): JsonObject {
+            val obj = JsonObject()
+            for ((key, value) in tomlTable.content) {
+                val comment = tomlTable.annotations[key]?.firstOrNull { it is TomlComment }?.nullCast<TomlComment>()?.text
+                val element = convertElement(value)
+                obj.put(key, element, comment)
+            }
+        }
+
+        private fun convertElement(input: TomlElement): JsonElement {
+            return when (input) {
+                is TomlTable -> {
+                    convertToJson5(input)
+                }
+                is TomlArray -> {
+                    val arr = JsonArray()
+                    for (value in input) {
+                        arr.add(convertElement(input))
+                    }
+                    arr
+                }
+                is TomlLiteral -> {
+                    when (input.type) {
+                        Boolean -> JsonPrimitive(input.toBoolean())
+                        Integer -> JsonPrimitive(input.toLong())
+                        Float -> JsonPrimitive(input.toDouble())
+                        else -> JsonPrimitive(input.toString())
+                    }
+                }
+                else -> JsonNull.INSTANCE
+            }
+        }
     }
 
     override fun empty(): TomlElement {
