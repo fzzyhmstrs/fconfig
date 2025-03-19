@@ -407,11 +407,12 @@ internal object ConfigApiImpl {
         }
     }
 
-    /* internal fun encodeJson5(toml: TomlElement): ValidationResult<String> {
+    internal fun encodeJson5(toml: TomlElement): ValidationResult<String> {
         if (
         return try {
             val table = toml.asTomlTable()
-            TODO()
+            val obj = TomlOps.convertToJson5(table)
+            return ValidationResult.success(obj.toJson(true, true))
         } catch (e: Throwable) {
             return ValidationResult.error("", "Critical error encountered while encoding JSON5")
         }
@@ -426,7 +427,7 @@ internal object ConfigApiImpl {
         } catch (e: Throwable) {
             return  ValidationResult.error(TomlNull, "Critical error encountered while decoding JSON5")
         }
-    } */
+    }
     
     ///////////////// End Encode-Decode //////////////////////////////////////////////////
 
