@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-5 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.ConvertType
 import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
@@ -51,7 +52,6 @@ import org.jetbrains.annotations.ApiStatus.Internal
 @Suppress("unused")
 open class Config @JvmOverloads constructor(protected val identifier: Identifier, val subfolder: String = "", val folder: String = identifier.namespace, val name: String = identifier.path): Walkable, Translatable, EntryAnchor {
 
-
     /**
      * The identifier of this Config.
      *
@@ -88,6 +88,16 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      */
     open fun defaultPermLevel(): Int {
         return 2
+    }
+
+    /**
+     * The file type this config saves as. Default is .toml files.
+     * @return [ConvertType] the output file conversion to use.
+     * @author fzzyhmstrs
+     * @since 0.6.7
+     */
+    open fun fileType(): ConvertType {
+        return ConvertType.TOML
     }
 
     /**
