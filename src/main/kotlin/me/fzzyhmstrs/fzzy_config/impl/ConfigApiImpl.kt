@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.impl
 
 import blue.endless.jankson.Jankson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import com.mojang.serialization.JsonOps
 import kotlinx.serialization.KSerializer
@@ -66,6 +67,14 @@ import kotlin.reflect.jvm.javaSetter
 
 internal object ConfigApiImpl {
 
+    private val gson by lazy {
+        GsonBuilder().setPrettyPrinting().create()
+    }
+
+    private val jankson by lazy {
+        Jankson.builder().build()
+    }
+    
     private val isClient by lazy {
         PlatformUtils.isClient()
     }
@@ -278,8 +287,7 @@ internal object ConfigApiImpl {
                         }
                     } else {
                         try {
-                            val builder = Jankson.builder().build()
-                            val jsonObject = builder.load(oldFile)
+                            val jsonObject = jankson.load(oldFile)
                             val jsonString = jsonObject.toJson(false, false)
                             val tomlElement = JsonOps.INSTANCE.convertTo(TomlOps.INSTANCE, JsonParser.parseString(jsonString))
                             val errorBuilder = mutableListOf<String>()
@@ -365,6 +373,62 @@ internal object ConfigApiImpl {
     }
 
     ///////////////// END Read, Create, Save /////////////////////////////////////////////
+
+    ///////////////// Encode-Decode //////////////////////////////////////////////////////
+
+    internal fun encodeToml(toml: TomlElement): ValidationResult<String> {
+        return ValidationResult.success(Toml.encodeToString(toml))
+    }
+
+    internal fun decodeToml(string: String): ValidationResult<TomlElement> {
+        return try {
+            ValidationResult.success(Toml.parseToTomlTable(string))
+        } catch (e: Throwable) {
+            return  ValidationResult.error(TomlNull, "Critical error encountered while decoding TOML")
+        }
+    }
+
+    internal fun encodeJson(toml: TomlElement): ValidationResult<String> {
+        return try {
+            val jsonElement = TomlOps.INSTANCE.convertTo(JsonOps.INSTANCE, toml)
+            return ValidationResult.success(gson.toJson(jsonElement))
+        } catch (e: Throwable) {
+            return ValidationResult.error("", "Critical error encountered while encoding JSON")
+        }
+    }
+
+    internal fun decodeJson(string: String): ValidationResult<TomlElement> {
+        return try {
+            val json = JsonParser.parseString(jsonString)
+            val tomlElement = JsonOps.INSTANCE.convertTo(TomlOps.INSTANCE, JsonParser.parseString(jsonString))
+            ValidationResult.success(tomlElement)
+        } catch (e: Throwable) {
+            return  ValidationResult.error(TomlNull, "Critical error encountered while decoding JSON")
+        }
+    }
+
+    /* internal fun encodeJson5(toml: TomlElement): ValidationResult<String> {
+        if (
+        return try {
+            val table = toml.asTomlTable()
+            TODO()
+        } catch (e: Throwable) {
+            return ValidationResult.error("", "Critical error encountered while encoding JSON5")
+        }
+    }
+
+    internal fun decodeJson5(string: String): ValidationResult<TomlElement> {
+        return try {
+            val jsonObject = jankson.load(string)
+            val jsonString = jsonObject.toJson(false, false)
+            val tomlElement = JsonOps.INSTANCE.convertTo(TomlOps.INSTANCE, JsonParser.parseString(jsonString))
+            ValidationResult.success(tomlElement)
+        } catch (e: Throwable) {
+            return  ValidationResult.error(TomlNull, "Critical error encountered while decoding JSON5")
+        }
+    } */
+    
+    ///////////////// End Encode-Decode //////////////////////////////////////////////////
 
     ///////////////// Serialize //////////////////////////////////////////////////////////
 
@@ -603,7 +667,7 @@ internal object ConfigApiImpl {
     internal fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val toml = try {
             Toml.parseToTomlTable(string)
-        } catch (e:Exception) {
+        } catch (e: Throwable) {
             return  ValidationResult.error(ConfigContext(config), "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
         }
         val version = if(toml.containsKey("version")) {
@@ -679,7 +743,7 @@ internal object ConfigApiImpl {
     internal fun <T: Any> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val toml = try {
             Toml.parseToTomlTable(string)
-        } catch (e:Exception) {
+        } catch (e: Throwable) {
             return ValidationResult.error(ConfigContext(config), "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing")
         }
         return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
@@ -688,7 +752,7 @@ internal object ConfigApiImpl {
     internal fun <T> deserializeEntry(entry: Entry<T, *>, string: String, scope: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<out T?> {
         val toml = try {
             Toml.parseToTomlTable(string)
-        } catch (e:Exception) {
+        } catch (e: Throwable) {
             return ValidationResult.error(null, "Toml $string isn't properly formatted to be deserialized")
         }
         val element = toml["entry"] ?: return ValidationResult.error(null, "Toml $string doesn't contain needed 'entry' key")
@@ -722,7 +786,7 @@ internal object ConfigApiImpl {
     internal fun validatePermissions(player: ServerPlayerEntity, id: String, config: Config, configString: String, clientPermissions: Int): ValidationResult<List<String>> {
         val toml = try {
             Toml.parseToTomlTable(configString)
-        } catch (e:Exception) {
+        } catch (e: Throwable) {
             return ValidationResult.error(emptyList(), "Update for $id is corrupted or improperly formatted for parsing")
         }
         val list: MutableList<String> = mutableListOf()
