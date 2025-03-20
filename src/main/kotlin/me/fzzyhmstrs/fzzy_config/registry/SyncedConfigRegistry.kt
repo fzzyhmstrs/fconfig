@@ -76,14 +76,12 @@ internal object SyncedConfigRegistry {
             try {
                 config.onSyncServer()
             } catch (e: Throwable) {
-                FC.LOGGER.error("Error encountered with login onSyncServer method of config $id!")
-                e.printStackTrace()
+                FC.LOGGER.error("Error encountered with login onSyncServer method of config $id!", e)
             }
             try {
                 EventApiImpl.fireOnSyncServer(config.getId(), config)
             } catch (e: Throwable) {
-                FC.LOGGER.error("Error encountered while running login onSyncServer event for config $id!")
-                e.printStackTrace()
+                FC.LOGGER.error("Error encountered while running login onSyncServer event for config $id!", e)
             }
         }
     }
@@ -125,14 +123,12 @@ internal object SyncedConfigRegistry {
                 try {
                     config.onSyncServer()
                 } catch (e: Throwable) {
-                    FC.LOGGER.error("Error encountered with reload onSyncServer method of config $id, for player $player!")
-                    e.printStackTrace()
+                    FC.LOGGER.error("Error encountered with reload onSyncServer method of config $id, for player $player!", e)
                 }
                 try {
                     EventApiImpl.fireOnSyncServer(config.getId(), config)
                 } catch (e: Throwable) {
-                    FC.LOGGER.error("Error encountered while running reload onSyncServer event for config $id, for player $player!")
-                    e.printStackTrace()
+                    FC.LOGGER.error("Error encountered while running reload onSyncServer event for config $id, for player $player!", e)
                 }
             }
             if (player.server.isSingleplayer) {
@@ -204,14 +200,12 @@ internal object SyncedConfigRegistry {
                 try {
                     config.onUpdateServer(serverPlayer)
                 } catch (e: Throwable) {
-                    FC.LOGGER.error("Error encountered with onUpdateServer method of config $id!")
-                    e.printStackTrace()
+                    FC.LOGGER.error("Error encountered with onUpdateServer method of config $id!", e)
                 }
                 try {
                     EventApiImpl.fireOnUpdateServer(config.getId(), config, serverPlayer)
                 } catch (e: Throwable) {
-                    FC.LOGGER.error("Error encountered while running onUpdateServer event for config $id!")
-                    e.printStackTrace()
+                    FC.LOGGER.error("Error encountered while running onUpdateServer event for config $id!", e)
                 }
             }
         }

@@ -394,8 +394,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                         try {
                             prop.setter.call(walkable, update.get())
                         } catch (e: Throwable) {
-                            FC.LOGGER.error("Error pushing update to simple property [$new]")
-                            e.printStackTrace()
+                            FC.LOGGER.error("Error pushing update to simple property [$new]", e)
                         }
                     }
                 }

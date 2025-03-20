@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.api.ConvertType
+import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
@@ -92,12 +92,12 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
 
     /**
      * The file type this config saves as. Default is .toml files.
-     * @return [ConvertType] the output file conversion to use.
+     * @return [FileType] the output file conversion to use.
      * @author fzzyhmstrs
      * @since 0.6.7
      */
-    open fun fileType(): ConvertType {
-        return ConvertType.TOML
+    open fun fileType(): FileType {
+        return FileType.TOML
     }
 
     /**
