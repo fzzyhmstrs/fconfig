@@ -97,14 +97,12 @@ internal object ClientConfigRegistry {
                     try {
                         config.onSyncClient()
                     } catch (e: Throwable) {
-                        FC.LOGGER.error("Error encountered with onSyncClient method of config $id!")
-                        e.printStackTrace()
+                        FC.LOGGER.error("Error encountered with onSyncClient method of config $id!", e)
                     }
                     try {
                         EventApiImpl.fireOnSyncClient(result.get().config.getId(), result.get().config)
                     } catch (e: Throwable) {
-                        FC.LOGGER.error("Error encountered while running onSyncClient event for config $id!")
-                        e.printStackTrace()
+                        FC.LOGGER.error("Error encountered while running onSyncClient event for config $id!", e)
                     }
                 }
             }
@@ -134,14 +132,12 @@ internal object ClientConfigRegistry {
                     try {
                         config.onUpdateClient()
                     } catch (e: Throwable) {
-                        FC.LOGGER.error("Error encountered with onUpdateClient method of config $id while receiving an update from the server!")
-                        e.printStackTrace()
+                        FC.LOGGER.error("Error encountered with onUpdateClient method of config $id while receiving an update from the server!", e)
                     }
                     try {
                         EventApiImpl.fireOnUpdateClient(result.get().config.getId(), result.get().config)
                     } catch (e: Throwable) {
-                        FC.LOGGER.error("Error encountered while running onUpdateClient event for config $id while receiving an update from the server!")
-                        e.printStackTrace()
+                        FC.LOGGER.error("Error encountered while running onUpdateClient event for config $id while receiving an update from the server!", e)
                     }
                 }
             }

@@ -10,17 +10,18 @@
 
 package me.fzzyhmstrs.fzzy_config.api
 
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.peanuuutz.tomlkt.TomlElement
 
 import java.util.function.Function
 
 /**
- * Defines the output file type used for the config. 
+ * Defines the output file type used for the config.
  * @author fzzyhmstrs
  * @since 0.6.7
  */
-enum class ConvertType(private val suffix: String, private val encoder: Function<TomlElement, ValidationResult<String>>, private val decoder: Function<String, ValidationResult<TomlElement>>) {
+enum class FileType(private val suffix: String, private val encoder: Function<TomlElement, ValidationResult<String>>, private val decoder: Function<String, ValidationResult<TomlElement>>) {
     /**
      * TOML output format. The standard output.
      * @author fzzyhmstrs
@@ -34,18 +35,25 @@ enum class ConvertType(private val suffix: String, private val encoder: Function
      */
     JSON(".json", ConfigApiImpl::encodeJson, ConfigApiImpl::decodeJson),
     /**
-     * JSON5 output format. Uses Jankson and codecs to parse the json to/from the TOML used internally. Comments will be automatically carried over from any @Comment or @TomlComment annotations applied.
+     * JSON5 output format. Uses Jankson and codecs to parse the json5 to/from the TOML used internally. Comments will be automatically carried over from any @Comment or @TomlComment annotations applied.
      * @author fzzyhmstrs
      * @since 0.6.7
      */
-    JSON5(".json5", ConfigApiImpl::encodeJson5, ConfigApiImpl::decodeJson5);
-    //JSON5(ConfigApiImpl::encodeJson5, ConfigApiImpl::decodeJson5);
+    JSON5(".json5", ConfigApiImpl::encodeJson5, ConfigApiImpl::decodeJson5),
+    /**
+     * JSONC output format. Uses Jankson and codecs to parse the jsonc to/from the TOML used internally. Comments will be automatically carried over from any @Comment or @TomlComment annotations applied.
+     *
+     * Note that this is using the same json5 codec, which by default is set to mimic jsonc structure (quoted keys, no trailing comma, only json data structs).
+     * @author fzzyhmstrs
+     * @since 0.6.7
+     */
+    JSONC(".jsonc", ConfigApiImpl::encodeJson5, ConfigApiImpl::decodeJson5);
 
     fun suffix(): String {
         return suffix
     }
-    
-    fun encode(input: TomlElement): ValidationResult<String>> {
+
+    fun encode(input: TomlElement): ValidationResult<String> {
         return encoder.apply(input)
     }
 
