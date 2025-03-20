@@ -21,7 +21,7 @@ import java.util.*
 /**
  * Basic controller interface for GUIs that want to implement a popup system. This does not handle interaction handling nor rendering, that needs to be integrated into the screen being built.
  *
- * There are some helper methods 
+ * There are some helper methods for rendering popups in a predicatable manner. Make sure to call both!
  * @see me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
  * @see me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
  * @author fzzyhmstrs
@@ -29,7 +29,7 @@ import java.util.*
  */
 //client
 @JvmDefaultWithCompatibility
-interface PopupController: LastSelectable {
+interface PopupController {
     /**
      * A stack for holding popupwidgets while allowing for easy list iteration as needed. For rendering this stack should be traversed in reverse order, which LinkedList makes easy with `descendingIterator`
      * @author fzzyhmstrs
@@ -43,15 +43,6 @@ interface PopupController: LastSelectable {
      * @since 0.6.7, moved from PopupParentElement originally 0.2.0
      */
     var justClosedWidget: Boolean
-
-    override fun pushLast() {
-        this.focused?.isFocused = false
-        this.lastSelected = focused
-    }
-    override fun popLast() {
-        lastSelected?.isFocused = true
-        focused = lastSelected
-    }
 
     fun activeWidget(): PopupWidget? {
         return popupWidgets.peek()
