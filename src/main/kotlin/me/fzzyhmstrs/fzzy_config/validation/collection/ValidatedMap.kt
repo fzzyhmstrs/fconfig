@@ -258,8 +258,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
                 .build()
             PopupWidget.push(popup)
         } catch (e: Throwable) {
-            FC.LOGGER.error("Unexpected exception caught while opening map popup")
-            e.printStackTrace()
+            FC.LOGGER.error("Unexpected exception caught while opening map popup", e)
         }
     }
 

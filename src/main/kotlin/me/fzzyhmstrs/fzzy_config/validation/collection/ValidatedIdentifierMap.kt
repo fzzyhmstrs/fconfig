@@ -227,8 +227,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
                 .build()
             PopupWidget.push(popup)
         } catch (e: Throwable) {
-            FC.LOGGER.error("Unexpected exception caught while opening identifier map popup")
-            e.printStackTrace()
+            FC.LOGGER.error("Unexpected exception caught while opening identifier map popup", e)
         }
     }
 

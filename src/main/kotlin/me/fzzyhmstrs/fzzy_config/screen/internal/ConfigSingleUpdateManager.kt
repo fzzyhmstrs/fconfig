@@ -135,8 +135,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
                     try {
                         prop.setter.call(walkable, update.get())
                     } catch (e: Throwable) {
-                        FC.LOGGER.error("Error pushing update to simple property [$new]")
-                        e.printStackTrace()
+                        FC.LOGGER.error("Error pushing update to simple property [$new]", e)
                     }
                     fireOnUpdate = true
                 }
@@ -166,14 +165,12 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
             try {
                 config.onUpdateClient()
             } catch (e: Throwable) {
-                FC.LOGGER.error("Error encountered while calling `onUpdateClient` for config ${config.getId()}!")
-                e.printStackTrace()
+                FC.LOGGER.error("Error encountered while calling `onUpdateClient` for config ${config.getId()}!", e)
             }
             try {
                 EventApiImpl.fireOnUpdateClient(config.getId(), config)
             } catch (e: Throwable) {
-                FC.LOGGER.error("Error encountered while running `onUpdateClient` event for config ${config.getId()}!")
-                e.printStackTrace()
+                FC.LOGGER.error("Error encountered while running `onUpdateClient` event for config ${config.getId()}!", e)
             }
         }
 

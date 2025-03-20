@@ -21,7 +21,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.util.Identifier
@@ -217,8 +216,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
                 .build()
             PopupWidget.push(popup)
         } catch (e: Throwable) {
-            FC.LOGGER.error("Unexpected exception caught while opening string map popup")
-            e.printStackTrace()
+            FC.LOGGER.error("Unexpected exception caught while opening string map popup", e)
         }
     }
 
