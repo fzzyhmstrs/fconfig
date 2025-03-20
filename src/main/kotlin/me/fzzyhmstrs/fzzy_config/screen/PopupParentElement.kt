@@ -28,20 +28,22 @@ import java.util.*
  */
 //client
 @JvmDefaultWithCompatibility
-interface PopupParentElement: ParentElement, LastSelectable {
+interface PopupParentElement: ParentElement, PopupController, LastSelectable {
     /**
      * A stack for holding popupwidgets while allowing for easy list iteration as needed. For rendering this stack should be traversed in reverse order, which LinkedList makes easy with `descendingIterator`
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, override from PopupController 0.6.7, scheduled for removal 0.7.0
      */
-    val popupWidgets: LinkedList<PopupWidget>
+    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
+    override val popupWidgets: LinkedList<PopupWidget>
 
     /**
      * Boolean prevents `mouseReleased` from triggering on the Popup or Widget underneath the active popup if it's closed on `mouseClicked`
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, override from PopupController 0.6.7, scheduled for removal 0.7.0
      */
-    var justClosedWidget: Boolean
+    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
+    override var justClosedWidget: Boolean
 
     override fun pushLast() {
         this.focused?.isFocused = false
@@ -52,8 +54,9 @@ interface PopupParentElement: ParentElement, LastSelectable {
         focused = lastSelected
     }
 
-    fun activeWidget(): PopupWidget? {
-        return popupWidgets.peek()
+    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
+    override fun activeWidget(): PopupWidget? {
+        return super.activeWidget()
     }
 
     /**
@@ -61,14 +64,16 @@ interface PopupParentElement: ParentElement, LastSelectable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun blurElements()
+    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
+    override fun blurElements()
 
     /**
      * called when a Popup is pushed to this element, after blurring.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun initPopup(widget: PopupWidget)
+    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
+    override fun initPopup(widget: PopupWidget)
 
     /**
      * Applies a popup widget to this parent. If null is passed, removes the top (newest) popup instead
@@ -78,8 +83,9 @@ interface PopupParentElement: ParentElement, LastSelectable {
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    fun setPopup(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
-        push(PopupEntry(this, widget, mouseX, mouseY))
+    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
+    override fun setPopup(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
+        super.setPopup(widget, mouseX, mouseY)
     }
 
     /**
@@ -90,34 +96,14 @@ interface PopupParentElement: ParentElement, LastSelectable {
      * @author fzzyhmstrs
      * @since 0.6.6
      */
-    fun setPopupImmediate(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
+    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
+    override fun setPopupImmediate(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
         setPopupInternal(widget, mouseX, mouseY)
     }
 
-    fun setPopupInternal(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
-        if(widget == null) {
-            if (popupWidgets.isEmpty())
-                return
-            justClosedWidget = true
-            popupWidgets.pop().onClose()
-            popupWidgets.peek()?.blur()
-            if (popupWidgets.isEmpty()) {
-                (lastSelected as? LastSelectable)?.popLast()
-                if (mouseX != null && mouseY != null) {
-                    this.resetHover(mouseX, mouseY)
-                    lastSelected?.nullCast<LastSelectable>()?.resetHover(mouseX, mouseY)
-                }
-                popLast()
-            }
-        } else {
-            if (popupWidgets.isEmpty()) {
-                (focused as? LastSelectable)?.pushLast()
-                pushLast()
-            }
-            this.blurElements()
-            popupWidgets.push(widget)
-            initPopup(widget)
-        }
+    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
+    override fun setPopupInternal(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
+        super.setPopupInternal(widget, mouseX, mouseY)
     }
 
     override fun hoveredElement(mouseX: Double, mouseY: Double): Optional<Element> {
@@ -183,20 +169,25 @@ interface PopupParentElement: ParentElement, LastSelectable {
         return activeWidget()?.charTyped(chr, modifiers) ?: super.charTyped(chr, modifiers)
     }
 
+    @Deprecated("Remove this")
     data class PopupEntry(val parent: PopupParentElement, val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null)
 
     companion object {
+        @Deprecated("Remove this")
         private val popupStack: LinkedList<PopupEntry> = LinkedList()
 
+        @Deprecated("Remove this")
         private fun push(entry: PopupEntry) {
             popupStack.push(entry)
         }
 
+        @Deprecated("Remove this")
         internal fun pop() {
             val popupParentElement = MinecraftClient.getInstance().currentScreen?.nullCast<PopupParentElement>() ?: return
             popupParentElement.setPopupInternal(null, null, null)
         }
 
+        @Deprecated("Remove this")
         internal fun popAll() {
             while (popupStack.isNotEmpty()) {
                 val e = popupStack.pop()
