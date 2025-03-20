@@ -10,11 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import blue.endless.jankson.api.element.*
+import blue.endless.jankson.*
 import com.mojang.datafixers.util.Pair
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.DynamicOps
-import me.fzzyhmstrs.fzzy_config.util.TomlOps.Companion.INSTANCE
+import me.fzzyhmstrs.fzzy_config.nullCast
 import net.peanuuutz.tomlkt.*
 import java.util.stream.Stream
 
@@ -37,6 +37,7 @@ class TomlOps: DynamicOps<TomlElement> {
                 val element = convertElement(value)
                 obj.put(key, element, comment)
             }
+            return obj
         }
 
         private fun convertElement(input: TomlElement): JsonElement {
@@ -47,15 +48,15 @@ class TomlOps: DynamicOps<TomlElement> {
                 is TomlArray -> {
                     val arr = JsonArray()
                     for (value in input) {
-                        arr.add(convertElement(input))
+                        arr.add(convertElement(value))
                     }
                     arr
                 }
                 is TomlLiteral -> {
                     when (input.type) {
-                        Boolean -> JsonPrimitive(input.toBoolean())
-                        Integer -> JsonPrimitive(input.toLong())
-                        Float -> JsonPrimitive(input.toDouble())
+                        TomlLiteral.Type.Boolean -> JsonPrimitive(input.toBoolean())
+                        TomlLiteral.Type.Integer -> JsonPrimitive(input.toLong())
+                        TomlLiteral.Type.Float -> JsonPrimitive(input.toDouble())
                         else -> JsonPrimitive(input.toString())
                     }
                 }

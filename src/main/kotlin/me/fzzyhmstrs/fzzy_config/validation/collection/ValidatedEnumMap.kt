@@ -226,8 +226,7 @@ open class ValidatedEnumMap<K:Enum<*>, V>(defaultValue: Map<K, V>, private val k
                 .build()
             PopupWidget.push(popup)
         } catch (e: Throwable) {
-            FC.LOGGER.error("Unexpected exception caught while opening enum map popup")
-            e.printStackTrace()
+            FC.LOGGER.error("Unexpected exception caught while opening enum map popup", e)
         }
     }
 
