@@ -11,6 +11,8 @@ Creating a brand-new config system based on Fzzy Config? Let's get started! This
 4. [Polish](#4-polish-)
 5. [Integration into the Mod](#5-integration-into-your-mod-)
 
+------------------------------------------
+
 ## 1. Development of a Config Layout <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
 Before you get into your Config implementation, figure out the layout you want (see article link below). This layout will determine how the configs are laid out visually, the user experience of navigating your settings, and how you interact with the config internally.
 
@@ -65,6 +67,18 @@ public class MyConfig extends Config {
             new ValidatedDouble(1.0, 1.0, 0.0) //map values are double restricted between 0.0 and 1.0
         );
     }
+	
+	//Configs have a default permission level needed to edit them (disabled in single player). You can override that default here
+	@Override
+    public int defaultPermLevel() {
+		return 4; 
+    }
+	
+	//Fzzy Config uses TOML files by default. You can override that behavior to any of the supported FileType
+	@Override
+    public FileType fileType() {
+		return FileType.JSON5;
+    }
 }
 ```
 
@@ -89,6 +103,16 @@ internal class MyConfig: Config(Identifier.of(MOD_ID, "my_config")) {
             ValidatedDouble(1.0, 1.0, 0.0) //map values are double restricted between 0.0 and 1.0
         )
     }
+
+    //Configs have a default permission level needed to edit them (disabled in single player). You can override that default here
+    override defaultPermLevel(): Int {
+       return 4
+    }
+    
+    //Fzzy Config uses TOML files by default. You can override that behavior to any of the supported FileType
+    override fileType(): FileType {
+       return FileType.JSON5
+    }
 }
 ```
 
@@ -96,7 +120,7 @@ internal class MyConfig: Config(Identifier.of(MOD_ID, "my_config")) {
 
 ## 3. Config Registration <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
 Configs are accessed via an `INSTANCE` pattern. Access in this manner, with the API calls for registration and loading described below, prevents "too-early" access to a config that hasn't been populated with live data.
-1. [`registerAndLoadConfig` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-config-api/index.html#195300946%2FFunctions%2F769193423). The API call for registering and loading a config from file It will also automatically create the file if none exists. Select your [`RegisterType`](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-register-type/index) based on the user needs for the config settings
+1. [`registerAndLoadConfig` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-config-api/index.html#195300946%2FFunctions%2F769193423). The API call for registering and loading a config from file It will also automatically create the file if none exists. Select your [`RegisterType` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.api/-register-type/index) based on the user needs for the config settings
     1. `BOTH` - Default, will have a GUI client side, and will also auto-sync between servers and clients.
     2. `CLIENT` - Will only have GUI functionality, no syncing to/from servers.
     3. `SERVER` - No GUI, only auto-syncing between servers and clients (Not Recommended, the only way to edit these configs is directly the .toml).
@@ -139,10 +163,10 @@ object Configs {
 </CodeTabs>
 
 ## 4. Polish <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
-Your basic config is complete! But the features are only just beginning. Read on to take your config to the next level! Or don't. Fzzy Config will work for you either way :).
+Your basic config is complete, however you don't have to stop here! Read on to take your config to the next level! Or don't. Fzzy Config will work for you either way :).
 
 ### Validation
-Already mentioned in step 2, Fzzy Config comes with a powerful suite of validation tools. Among many other features, these tools:
+Already mentioned in step 2, Fzzy Config comes with a suite of validation tools. Among other features, these tools:
 * Validate inputs and correct improper inputs
 * Provide input restrictions
 * Suggest inputs to users
@@ -152,28 +176,28 @@ Check out the options at:
 [➡️ Validation](../config-concepts/Validation)
 
 ### Annotations
-Fzzy Config has a variety of annotations that provide secondary functions a config author might have need of:
+Fzzy Config has a variety of annotations that provide secondary functions a config author might need:
 * Version Control
 * Annotation-based validation for primitives
 * Comments
 * Server config permission control
 * Various flags; client only, restart-triggering, and so on.
 
-For the full breakdown of annotations check out:
+For the full breakdown check out:
 
 [➡️ Annotations](../config-concepts/Annotations)
 
 ### Translation
-Most config components are automatically translatable. You don't _have_ to translate anything, but it's strongly recommended. If you don't, Fzzy Config will do its best to generate human-readable names for you.
+Most config components are automatically translatable. You don't _have_ to translate anything, but you should. If you don't, Fzzy Config will do its best to generate human-readable names for you.
 
-To properly translate your column head on over to:
+To translate your config head over to:
 
 [➡️ Translation](../config-concepts/Translation)
 
 ## 5. Integration into your Mod <a href="#steps" style={{color: "#B2BFF9"}}>⤴</a>
 You've got a shiny, polished up config! How do you use it?
 1. Simply call the fields as you normally would.
-2. `ValidatedField` instances are suppliers. Simply add `.get()` to the end.
+2. `ValidatedField` instances are suppliers, so call `.get()`.
 
 <CodeTabs>
 
@@ -187,6 +211,18 @@ boolean myConfigSectionValidated = Configs.myConfig.mySection.sectionBoolean.get
 val myConfigDouble = Configs.myConfig.bareDouble //plain fields are just plain fields. access them like normal!
 
 val myConfigSectionValidated = Configs.myConfig.mySection.sectionBoolean.get() //defined validation wraps your values in a Supplier. 
+```
+
+```groovy !!tabs Groovy
+double myConfigDouble = Configs.myConfig.bareDouble //plain fields are just plain fields. access them like normal!
+
+boolean myConfigSectionValidated = Configs.myConfig.mySection.sectionBoolean.get() //defined validation wraps your values in a Supplier. 
+```
+
+```scala !!tabs Scala
+val myConfigDouble = Configs.myConfig.bareDouble; //plain fields are just plain fields. access them like normal!
+
+val myConfigSectionValidated = Configs.myConfig.mySection.sectionBoolean.get(); //defined validation wraps your values in a Supplier. 
 ```
 
 </CodeTabs>
