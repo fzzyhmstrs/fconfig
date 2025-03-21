@@ -77,7 +77,8 @@ internal object NetworkEvents {
         ConfigApi.network().registerLenientS2C(DynamicIdsS2CCustomPayload.type, DynamicIdsS2CCustomPayload.codec, NetworkEventsClient::receiveDynamicIds)
 
 
-        ServerConfigurationConnectionEvents.CONFIGURE.register { handler, _ ->
+        ServerConfigurationConnectionEvents.CONFIGURE.register { handler, server ->
+            if (server.isSingleplayer) return@register
             SyncedConfigRegistry.onConfigure(
                 { id -> ServerConfigurationNetworking.canSend(handler, id) },
                 { payload -> ServerConfigurationNetworking.send(handler, payload) }

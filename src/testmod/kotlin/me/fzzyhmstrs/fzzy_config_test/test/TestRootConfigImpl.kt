@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config_test.test
 
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
@@ -30,6 +31,10 @@ import java.awt.Color
 
 @RootConfig
 class TestRootConfigImpl: Config(Identifier.of("fzzy_config_test","root_config"), subfolder =  "test") {
+
+    override fun fileType(): FileType {
+        return FileType.TOML
+    }
 
     var bl1 = true
 
