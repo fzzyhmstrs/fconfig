@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl.channelMap
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
+import me.fzzyhmstrs.fzzy_config.screen.PopupController
 import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -158,8 +159,8 @@ internal object NetworkEventsClient {
                 false
         }
 
-        PopupParentElement.popAll()
-    }
+            PopupController.popAll()
+        }
 
     private var initialized = false
 
