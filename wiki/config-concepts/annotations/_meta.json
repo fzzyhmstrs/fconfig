@@ -23,6 +23,10 @@
     "name": "@RequiresRestart",
     "icon": "CirclePower"
   },
+  "Root-Config.mdx": {
+    "name": "@RootConfig",
+    "icon": "FolderRoot"
+  },
   "Translation.mdx": {
     "name": "@Translation",
     "icon": "Languages"
