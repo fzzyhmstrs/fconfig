@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.PopupController
 import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
@@ -312,7 +313,7 @@ class PopupWidget
          * @since 0.6.6
          */
         fun popImmediate() {
-            PopupParentElement.pop()
+            PopupController.pop()
         }
 
         /**
