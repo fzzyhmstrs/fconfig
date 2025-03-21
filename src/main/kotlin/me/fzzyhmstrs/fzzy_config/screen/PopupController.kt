@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
 import java.util.*
@@ -29,7 +30,7 @@ import java.util.*
  */
 //client
 @JvmDefaultWithCompatibility
-interface PopupController {
+interface PopupController: LastSelectable {
     /**
      * A stack for holding popupwidgets while allowing for easy list iteration as needed. For rendering this stack should be traversed in reverse order, which LinkedList makes easy with `descendingIterator`
      * @author fzzyhmstrs
@@ -43,6 +44,8 @@ interface PopupController {
      * @since 0.6.7, moved from PopupParentElement originally 0.2.0
      */
     var justClosedWidget: Boolean
+
+    val child: LastSelectable?
 
     fun activeWidget(): PopupWidget? {
         return popupWidgets.peek()
@@ -103,7 +106,7 @@ interface PopupController {
             }
         } else {
             if (popupWidgets.isEmpty()) {
-                (focused as? LastSelectable)?.pushLast()
+                child?.pushLast()
                 pushLast()
             }
             this.blurElements()
