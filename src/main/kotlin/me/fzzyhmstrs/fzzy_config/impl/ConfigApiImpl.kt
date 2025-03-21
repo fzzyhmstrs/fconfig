@@ -48,7 +48,6 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
-import sun.jvm.hotspot.HelloWorld.e
 import java.io.BufferedReader
 import java.io.File
 import java.io.Reader
@@ -246,12 +245,14 @@ internal object ConfigApiImpl {
                 val readVersion = readConfigResult.get().getInt(VERSIONS)
                 val readConfig = readConfigResult.get().config
                 val needsUpdating = classVersion > readVersion
-                if (readConfigResult.isError()) {
-                    readConfigResult.writeWarning(fErrorsIn)
-                    val fErrorsOut = mutableListOf<String>()
+                if (readConfigResult.isError() || needsUpdating) {
+                    if (readConfigResult.isError()) {
+                        readConfigResult.writeWarning(fErrorsIn)
+                    }
                     if (needsUpdating) {
                         readConfig.update(readVersion)
                     }
+                    val fErrorsOut = mutableListOf<String>()
                     val correctedConfig = serializeConfig(readConfig, fErrorsOut, fileType = files.fOutType)
                     if (fErrorsOut.isNotEmpty()) {
                         val fErrorsOutResult = ValidationResult.error(
@@ -260,19 +261,18 @@ internal object ConfigApiImpl {
                         )
                         fErrorsOutResult.writeError(fErrorsOut)
                     }
-                    writeFile(files.fOut, correctedConfig, name, "correcting errors", files.fIn)
-                } else if (needsUpdating) {
-                    readConfig.update(readVersion)
+                    writeFile(files.fOut, correctedConfig, name, "correcting errors or updating version", files.fIn)
+                } else if (files.fIn != files.fOut) {
                     val fErrorsOut = mutableListOf<String>()
-                    val updatedConfig = serializeConfig(readConfig, fErrorsOut, fileType = files.fOutType)
+                    val newFormatConfig = serializeConfig(readConfig, fErrorsOut, fileType = files.fOutType)
                     if (fErrorsOut.isNotEmpty()) {
                         val fErrorsOutResult = ValidationResult.error(
                             true,
-                            "Critical error(s) encountered while re-serializing updated Config Class! Output may not be complete."
+                            "Critical error(s) encountered while re-serializing corrected Config Class! Output may not be complete."
                         )
                         fErrorsOutResult.writeError(fErrorsOut)
                     }
-                    writeFile(files.fOut, updatedConfig, name, "updating version", files.fIn)
+                    writeFile(files.fOut, newFormatConfig, name, "moving config to new file format", files.fIn)
                 }
                 log(start)
                 return readConfig
@@ -322,9 +322,9 @@ internal object ConfigApiImpl {
 
             val files = findFiles(dir, name, configClass.fileType())
 
-            if (files.fIn.exists()) {
+            if (files.fOut.exists() || files.fOut.createNewFile()) {
                 val fErrorsOut = mutableListOf<String>()
-                val str = serializeConfig(configClass, fErrorsOut)
+                val str = serializeConfig(configClass, fErrorsOut, fileType = files.fOutType)
                 if (fErrorsOut.isNotEmpty()) {
                     val fErrorsOutResult = ValidationResult.error(
                         true,
@@ -333,22 +333,11 @@ internal object ConfigApiImpl {
                     fErrorsOutResult.writeError(fErrorsOut)
                 }
                 writeFile(files.fOut, str, name, "saving config", files.fIn)
-            } else if (!files.fOut.createNewFile()) {
-                FC.LOGGER.error("Failed to create config file ($name), config not saved.")
-            } else {
-                val fErrorsOut = mutableListOf<String>()
-                val str = serializeConfig(configClass, fErrorsOut)
-                if (fErrorsOut.isNotEmpty()) {
-                    val fErrorsOutResult = ValidationResult.error(
-                        true,
-                        "Critical error(s) encountered while saving new Config Class! Output may not be complete."
-                    )
-                    fErrorsOutResult.writeError(fErrorsOut)
-                }
-                writeFile(files.fOut, str, name, "writing new config file")
+            } else  {
+                FC.LOGGER.error("Failed to save config file $name to ${files.fOut}, config not saved.")
             }
         } catch (e: Throwable) {
-            FC.LOGGER.error("Failed to save config file $name!", e)
+            FC.LOGGER.error("Critical error while trying to save config file $name!", e)
         }
     }
 
@@ -925,7 +914,7 @@ internal object ConfigApiImpl {
     }
 
     internal fun isNonSync(annotations: List<Annotation>): Boolean {
-        return annotations.firstOrNull { (it is NonSync) }?.let { true } ?: false
+        return annotations.firstOrNull { (it is NonSync) }?.let { true } == true
     }
 
     internal fun isRootConfig(clazz: KClass<*>): Boolean {

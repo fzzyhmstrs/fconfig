@@ -28,7 +28,7 @@ import java.util.*
  */
 //client
 @JvmDefaultWithCompatibility
-interface PopupParentElement: ParentElement, PopupController, LastSelectable {
+interface PopupParentElement: ParentElement, PopupController {
     /**
      * A stack for holding popupwidgets while allowing for easy list iteration as needed. For rendering this stack should be traversed in reverse order, which LinkedList makes easy with `descendingIterator`
      * @author fzzyhmstrs
@@ -44,6 +44,9 @@ interface PopupParentElement: ParentElement, PopupController, LastSelectable {
      */
     @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
     override var justClosedWidget: Boolean
+
+    override val child: LastSelectable?
+        get() = focused as? LastSelectable
 
     override fun pushLast() {
         this.focused?.isFocused = false
@@ -84,7 +87,7 @@ interface PopupParentElement: ParentElement, PopupController, LastSelectable {
      * @since 0.2.0
      */
     @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override fun setPopup(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
+    override fun setPopup(widget: PopupWidget?, mouseX: Double?, mouseY: Double?) {
         super.setPopup(widget, mouseX, mouseY)
     }
 
@@ -97,12 +100,12 @@ interface PopupParentElement: ParentElement, PopupController, LastSelectable {
      * @since 0.6.6
      */
     @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override fun setPopupImmediate(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
-        setPopupInternal(widget, mouseX, mouseY)
+    override fun setPopupImmediate(widget: PopupWidget?, mouseX: Double?, mouseY: Double?) {
+        super.setPopupInternal(widget, mouseX, mouseY)
     }
 
     @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override fun setPopupInternal(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
+    override fun setPopupInternal(widget: PopupWidget?, mouseX: Double?, mouseY: Double?) {
         super.setPopupInternal(widget, mouseX, mouseY)
     }
 
@@ -167,32 +170,5 @@ interface PopupParentElement: ParentElement, PopupController, LastSelectable {
 
     override fun charTyped(chr: Char, modifiers: Int): Boolean {
         return activeWidget()?.charTyped(chr, modifiers) ?: super.charTyped(chr, modifiers)
-    }
-
-    @Deprecated("Remove this")
-    data class PopupEntry(val parent: PopupParentElement, val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null)
-
-    companion object {
-        @Deprecated("Remove this")
-        private val popupStack: LinkedList<PopupEntry> = LinkedList()
-
-        @Deprecated("Remove this")
-        private fun push(entry: PopupEntry) {
-            popupStack.push(entry)
-        }
-
-        @Deprecated("Remove this")
-        internal fun pop() {
-            val popupParentElement = MinecraftClient.getInstance().currentScreen?.nullCast<PopupParentElement>() ?: return
-            popupParentElement.setPopupInternal(null, null, null)
-        }
-
-        @Deprecated("Remove this")
-        internal fun popAll() {
-            while (popupStack.isNotEmpty()) {
-                val e = popupStack.pop()
-                e.parent.setPopupInternal(e.widget, e.mouseX, e.mouseY)
-            }
-        }
     }
 }

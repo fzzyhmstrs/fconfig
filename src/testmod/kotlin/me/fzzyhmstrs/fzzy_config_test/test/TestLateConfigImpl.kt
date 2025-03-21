@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config_test.test
 
+import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import net.minecraft.text.MutableText
@@ -22,5 +23,9 @@ class TestLateConfigImpl: Config(Identifier.of("fzzy_config_test","never_loaded_
 
     override fun translation(fallback: String?): MutableText {
         return "JK I Loaded".lit()
+    }
+
+    override fun fileType(): FileType {
+        return FileType.JSON
     }
 }
