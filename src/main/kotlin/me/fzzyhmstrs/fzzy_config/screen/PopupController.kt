@@ -115,12 +115,36 @@ interface PopupController: LastSelectable {
         }
     }
 
+    /**
+     * Pushes the current matrix and moves the content rendering back to make room for the popups. This needs to be called with [postRender] or the game will crash from a non-empty matrix stack.
+     *
+     * Generally the render flow should be
+     * 1. misc. preparation
+     * 2. **preRender**
+     * 3. render main screen content
+     * 4. postRender
+     * @see PopupWidgetScreen
+     * @author fzzyhmstrs
+     * @since 0.6.7
+     */
     fun preRender(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.matrices.push()
         if (popupWidgets.isNotEmpty())
             context.matrices.translate(0f, 0f, -500f * popupWidgets.size)
     }
 
+    /**
+     * Renders the current open popups in descending order (oldest first/the farthest back) and then pops matrices. This needs to be called with [preRender] or the game will crash from a non-empty matrix stack.
+     *
+     * Generally the render flow should be
+     * 1. misc. preparation
+     * 2. preRender
+     * 3. render main screen content
+     * 4. **postRender**
+     * @see PopupWidgetScreen
+     * @author fzzyhmstrs
+     * @since 0.6.7
+     */
     fun postRender(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if (popupWidgets.isNotEmpty())
             context.matrices.translate(0f, 0f, 500f)
