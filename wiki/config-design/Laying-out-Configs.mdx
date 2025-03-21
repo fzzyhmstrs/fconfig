@@ -2,28 +2,28 @@
 title: Laying Out Configs
 ---
 
-Proper layout of a config can make or break user and modder experience in and out of game. Determine the flow of your config settings, how they are or will be grouped into common themes, and create a layout matching expectations for navigation, maintenance, and use.
+Proper layout of a config can make or break user and modder experience in and out of game. Determine the flow of your config settings, how they will be grouped, and create a layout matching expectations for navigation, maintenance, and use.
 
 ## 1. How Many Configs?
-The first question to ask; how many config files will there be? For small mods, one config class will almost always be enough. For more complex mods, breaking configs into parts can be very beneficial.
+The first question to ask; how many configs will there be? For small mods, one config will usually be enough. For more complex mods, breaking configs into parts can be beneficial.
 
 <Callout>
 This choice will also affect what the player sees when they open your 'root' config screen.
 </Callout>
 
 <Callout variant="info">
-Config registration can be separated into synced and non-synced (client-side) configs. If you have client-only settings, consider splitting your config and putting all client settings together into their own config(s)
+Config registration can be separated into synced and non-synced (client-side). If you have client-only settings, consider splitting your config and putting all client settings together into their own config(s)
 </Callout>
 
 ### [Simple] One Config
-For small mods or if you want to be quick about things, create one config class with all settings in one place. 
-* _The screen will open to the config settings screen itself, with all options laid out in a list._
-* _There will be one .toml file managing all stored data for your config._
+For small mods or if you want quick and dirty, create one config with all settings in one place. 
+* _The screen will open to the config settings screen, with all options laid out in a list._
+* _There will be one output file managing all stored data for your config._
 
-Fzzy Config maintains the declaration order of settings when displaying them in-game. As such, best practice is to group similar setting together. This makes it easier for users to navigate the setting list in a sensible manner.
+Fzzy Config maintains the declaration order of settings when displaying them in-game. As such, best practice is to group similar setting together. This makes it easier for users to navigate the setting list.
 
 <Callout>
-Don't worry about adding new setting 'in the middle' of a config class later. Fzzy Config will handle the new addition without a hiccup. Focus on keeping your settings organized as your config grows
+Don't worry about adding new setting 'in the middle' of a config later. Fzzy Config will handle the new additions without a hiccup. Focus on keeping your settings organized as your config grows.
 </Callout>
 
 ![SingleConfig](https://github.com/fzzyhmstrs/fconfig/assets/72876796/07e6dce3-4539-470e-b7b9-c56987197a41)
@@ -31,7 +31,8 @@ Don't worry about adding new setting 'in the middle' of a config class later. Fz
 ### [Beyond] Two+ Configs
 Fzzy Config makes organizing and partitioning your config settings easy. Create multiple config classes with the same namespace and they will be automatically grouped together in-game.
 * _The main screen will be a 'config selector', with buttons leading to each individual config screen._
-* _One .toml file will be generated per config class._
+* _One file will be generated per config class._
+* _You can select one of these configs to be your "root config" using the [`@RootConfig`](../config-concepts/annotations/Root-Config) annotation.
 
 Similar settings should be grouped into configs together. A common user expectation is that configs are grouped by in-game 'elements'.
 * One config per registry type: Items config, Blocks config, Enchantments config, etc.
@@ -51,7 +52,7 @@ Large configs benefit from being broken up into parts, if separate config classe
 | [Objects](#objects)   | Opens popup                 | Yes        | No     |
 | [Groups](#groups)     | Collapsible inline grouping | No         | Yes    |
 
-If you use a common subclass for creation of repeating sub-elements, consider using the [`@Translation`](../config-concepts/Translation) annotation, which will let you define common lang for all instances of the repeating element. 
+If you use a common subclass for repeating sub-elements, consider using [`@Translation`](../config-concepts/Translation), which will define common lang for all instances of the repeating element. 
 
 ### Sections
 Sub-config classes can be extended from [`ConfigSection` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section). Sub-configs made this way will open a new, separate config screen of their own on top of the parent config screen.
@@ -121,9 +122,9 @@ class ItemsConfig: Config(Identifier.of(MOD_ID, "items_config")) {
 </CodeTabs>
 
 ### Objects
-[Validation](../config-concepts/Validation) is its own topic, but for the sake of this article, FzzyConfig supports arbitrary Simple Objects (POJO) with its validation engine. Validated Objects (called [`ValidatedAny` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-any) internally) will open a 'popup' window where the user can make selections.
-* _Objects are recommended where you need small, repeating blocks of particular settings that the user may want to copy and paste between settings_
-* _For example, if you have an `EntityConfig, you may have an object per entity that defines common settings like health, damage, movement speed, and so on._
+[Validation](../config-concepts/Validation) is its own topic, but for the sake of this article, FzzyConfig supports arbitrary Simple Objects (POJO). Validated Objects (called [`ValidatedAny` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.validation.misc/-validated-any) internally) will open a 'popup' window where the user can make selections.
+* _Objects are recommended where you need small, repeating blocks of settings that the user may want to copy and paste_
+* _For example, if you have an `EntityConfig, you may have an object per entity with common settings like health, damage, movement speed, and so on._
 
 <CodeTabs>
 
@@ -162,7 +163,7 @@ public class BoisConfig extends Config {
 
     public ValidatedAny<BoiStats> regularBoi = new ValidatedAny(new BoiStats());
 
-    // you don't need to use ValidatedAny! FzzyConfig knows to wrap objects with one internally if they implement Walkable
+    // you don't need to use ValidatedAny! FzzyConfig knows to wrap objects internally if they implement Walkable
     public BoiStats plainBoi = new BoiStats();
 }
 ```
@@ -203,15 +204,16 @@ class BoisConfig: Config(Identifier.of(MOD_ID, "bois_config")) {
 Added in Fzzy Config 0.6.0
 </Callout>
 
-Groups are inline organization elements that don't _structurally_ change the config in-code. They are used for visual organization of information in a config GUI, and as an [anchor](#3-anchors) for quick navigation.
+Groups are inline organizational elements that don't _structurally_ change the config. They are used for visual organization in a config GUI, and as an [anchor](#3-anchors) for navigation. See [`ConfigGroup` 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-group) for details.
 
-For example, say you have a Main config and a Client config. You may want to leave this structure alone without needing to call into specific subsections. In the client config there may be a section for GUI positions, another for sounds, another for particles. The user will be presented with three inline groups of settings that they can collapse out of the way if needed, and can still fast-navigate to with the Go-To menu.
+For example, say you have a Main config and a Client config. You may want to leave this structure alone without needing to call into specific subsections. In the client config there may be GUI positions, sounds, particles, and so on. The user will be presented with three inline groups of settings that they can collapse out of the way if needed, and can still fast-navigate to with the Go-To menu.
 
 Important group concepts
 * Groups work like a stack; you push onto the stack by defining a `ConfigGroup` inline with where you want it to start
 * To close a group, "Pop" it by annotating the last element you want in that group with `ConfigGroup.Pop`
 * Groups nest; if you define multiple groups before popping any of them, you will get a nested subgroup.
 * Pop for each push; not doing so will lead to undefined behavior. You can pop multiple groups on one setting, as many groups will end with that multi-popped field as annotations attached.
+* You can set the group to be closed by default. See the constructors available.
 
 <CodeTabs>
 
@@ -242,18 +244,23 @@ var notInGroupSetting: Any = TODO()
 </CodeTabs>
 
 ## 3. Anchors
-Anchors are a concept introduced in Fzzy Config 0.6.0. Like anchors in webpages, anchors are "points of interest" that you can fast-navigate to in the config GUI. Back in [Organization](#2-organization), two of three anchors were introduced. The third is configs themselves.
+
+<Callout>
+Added in Fzzy Config 0.6.0
+</Callout>
+
+Like anchors in webpages, anchors are "points of interest" that you can navigate to in the config GUI. Back in [Organization](#2-organization), two of three anchors were introduced. The third is configs themselves.
 * Configs
 * Config Sections
 * Groups
 
-<Callout>
+<Callout variant="warning">
 As noted above, `ValidatedAny` Objects are not anchors.
 </Callout>
 
-If your config is laid out with more than one anchor, a `Go To...` menu will be available in the bottom left (also accessible by pressing Ctrl + E). Clicking on any item in the resulting popup will bring the user to the screen and/or place in the screen where the anchor resides.
+If your config setup has more than one anchor, a `Go To...` menu will appear in the bottom left (or with Ctrl + E). Clicking on any item in the resulting popup will bring the user to the screen and/or place in the screen where the anchor resides.
 
 ### Customizing anchors
-Configs, sections, and groups all provide mechanisms for customizing anchors. In the example image below that all elements are using their predefined icon. You can customize this icon, as well as other things like the label. See the documentation for the specific element for information on editing the anchor info for it.
+Anchors for configs, sections, and groups can all be customized. In the example image below all anchors are using their predefined icon. You can customize this icon, as well as other things like the label. See the documentation for the specific element for information on editing the anchor info for it.
 
 ![image-2](https://github.com/user-attachments/assets/b01f92fb-52ed-480b-bcbb-58133de5fd02)
