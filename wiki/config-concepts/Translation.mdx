@@ -5,7 +5,7 @@ title: Translating Configs
 Almost everything in Fzzy Config is automatically translatable. Translation is not strictly *required*, but strongly recommended for better user experience.
 
 ## <div><LanguagesIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Concept</div>
-Translation in Fzzy Config is driven by the [Translatable 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-translatable/index.html) interface or the [@Translation](annotations/Translation) annotation.
+Translation in Fzzy Config is driven by the [Translatable 🗗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-translatable/index.html) interface or the [@Translation](annotations/Translation) annotation.
 
 ### Translatable
 Translatable objects accept a matched triad of keys:
@@ -27,10 +27,10 @@ The below image showcases all three translations in action. The Prefix is the te
 
 The following automatically support these keys:
 * [Config Entries](Validation) (including automatic validation of "plain" values)
-* [Config Classes 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config/index.html)
-* [Config Sections 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section/index.html)
-* [Config Actions 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-action/index.html)
-* [Config Groups 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-group/index.html)
+* [Config Classes 🗗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config/index.html)
+* [Config Sections 🗗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-section/index.html)
+* [Config Actions 🗗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-action/index.html)
+* [Config Groups 🗗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.config/-config-group/index.html)
 
 So almost every piece of your config will automatically support translation, tooltips, and inline descriptions! If there is something that isn't captured, simply implement `Translatable` or use `@Translation` on that escapee.
 
@@ -70,7 +70,7 @@ If not provided with translations, Fzzy Config will do it's best to provide fall
 ```
 
 ## <div><SquareSigmaIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> EnumTranslatable</div>
-Enums can implement a sub-interface of Translatable, [EnumTranslatable 🔗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-enum-translatable/index.html). This interface provides translation methods for each enum constant.
+Enums can implement a sub-interface of Translatable, [EnumTranslatable 🗗](https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util/-enum-translatable/index.html). This interface provides translation methods for each enum constant.
 
 <Callout variant="info">
 This translates the enum constants themselves. The field holding the enum gets its own translation following the rules above
