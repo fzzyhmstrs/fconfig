@@ -12,26 +12,32 @@ A lightweight cross-loader networking API for play-phase networking. This API wa
 Fzzy Config works via the Payload concept introduced in recent Minecraft versions. For older versions of Fzzy Config, there is a `FzzyPayload` class used to take the place of the vanilla `CustomPayload`.
 
 Register a networking interaction **on both server and client (in common initializer)** using either:
-* `ConfigApi.network().registerS2C` - client-bound packets originated on the server and handled on a client
-* `ConfigApi.network().registerC2S` - server-bound packets originated on a client and handled by the server
+* <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.networking.api/-network-api/register-s2-c.html">`ConfigApi.network().registerS2C` 🗗</a> - client-bound packets originated on the server and handled on a client, both sides must be present at runtime
+* <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.networking.api/-network-api/register-c2-s.html">`ConfigApi.network().registerC2S` 🗗</a> - server-bound packets originated on a client and handled by the server, both sides must be present at runtime
+* <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.networking.api/-network-api/register-lenient-s2-c.html">`ConfigApi.network().registerLenientS2C` 🗗</a> - client-bound packets originated on the server and handled on a client, will allow for one of the sides to be missing during runtime
+* <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.networking.api/-network-api/register-lenient-c2-s.html">`ConfigApi.network().registerLenientC2S` 🗗</a> - server-bound packets originated on a client and handled by the server, will allow for one of the sides to be missing during runtime
 
 (For java users)
 * `ConfigApiJava.INSTANCE.network().registerS2C`
 * `ConfigApiJava.INSTANCE.network().registerC2S`
+* `ConfigApiJava.INSTANCE.network().registerLenientS2C`
+* `ConfigApiJava.INSTANCE.network().registerLenientC2S`
 
 <Callout variant="info">
 For bidirectional transactions, register each direction separately.
 </Callout>
 
-The handler parameter uses a custom Context wrapper that will have the lowest common denominator of methods between Fabric and Forge for that version. If some context you are used to is missing, blame the other loader.
+The handler parameter uses a custom context wrapper that will have the lowest common denominator of methods between Fabric and Forge for that version. If some context you are used to is missing, blame the other loader.
 
 <Callout variant="warning">
-For <code>registerS2C</code>, take care to insulate the server from any client-only code that might be in the receiver end. Handling the payload with a method without any client-specific code that then itself passes that handling to the client handler in a separate class is a good way to insulate. For people coming from Fabric-only, I know that this may not seem ideal, but this is done to facilitate 1:1 API surface for NeoForge, which does the registration this way.
+For <code>registerS2C</code> or <code>registerLenientS2C</code>, take care to insulate the server from any client-only code that might be on the receiver end. Handling the payload with a method without any client-specific code that then passes that handling to the client handler in a separate class is good practice. For people coming from Fabric-only, this may not seem ideal, but this is done to facilitate 1:1 API surface for NeoForge, which does the registration this way.
 </Callout>
 
 ## Sending
-To send a payload, simply use `ConfigApi.network().canSend` and `ConfigApi.Network().send`.
-* The player parameter determines which direction the sending will send. If the player instance is a `ServerPlayerEntity`, it will check/send for an S2C/client-bound direction. For a null player or a `ClientPlayerEntity`, it will send C2S/server-bound.
+To send a payload, simply use <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.networking.api/-network-api/can-send.html">`ConfigApi.network().canSend` 🗗</a> and <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.networking.api/-network-api/send.html">`ConfigApi.Network().send` 🗗</a>.
+* The player parameter determines which direction the sending will send. 
+* If the player instance is a `ServerPlayerEntity`, it will check/send for an S2C/client-bound direction. 
+* For a null player or a `ClientPlayerEntity`, it will send C2S/server-bound.
 
 ## Example
 
