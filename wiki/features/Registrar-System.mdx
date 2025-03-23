@@ -10,15 +10,15 @@ Registrars are currently experimental. Stable release is expected by 0.7.0.
 Added in Fzzy Config 0.5.9
 </Callout>
 
-A simple registration system built into the `PlatformApi` for cross-platform registration to built-in or modded `Registry` objects.
+A simple registration system built into [`PlatformApi`](Platform-Utilities) for cross-platform access to built-in or modded `Registry` objects.
 
 ### Registrar Pieces and Parts
 The system is built out of two basic parts
 
-#### `Registrar`
+#### <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util.platform/-registrar/index.html">`Registrar` 🗗</a>
 The registration manager object for a particular `Registry`. Game objects are registered into this, much like a `DeferredRegister` from a (Neo)Forge modding context.
 
-#### `RegistrySupplier`
+#### <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.util.platform/-registry-supplier/index.html">`RegistrySupplier` 🗗</a>
 The output object of a `Registrar`, this supplier performs all the basic registry-reference actions you should need
 
 `RegistrySupplier` provides:
@@ -36,12 +36,12 @@ Create a new Registrar using the `PlatformApi` accessed through the `ConfigApi`.
 
 <CodeTabs>
 
-```kotlin !!tabs Kotlin !!tabs Kotlin
-val myItemRegistrar: Registrar<Item> = ConfigApi.platform().createRegistrar(MOD_ID, Registries.ITEM)
-```
-
 ```java !!tabs Java
 Registrar<Item> myItemRegistrar = ConfigApiJava.platform().createRegistrar(MOD_ID, Registries.ITEM);
+```
+
+```kotlin !!tabs Kotlin
+val myItemRegistrar: Registrar<Item> = ConfigApi.platform().createRegistrar(MOD_ID, Registries.ITEM)
 ```
 
 </CodeTabs>
@@ -53,17 +53,6 @@ Once you have a registrar, there are two primary activities you need to do with 
 
 <CodeTabs>
 
-```kotlin !!tabs Kotlin !!tabs Kotlin
-val myItemRegistrar: Registrar<Item> = ConfigApi.platform().createRegistrar(MOD_ID, Registries.ITEM)
-
-val ITEM_1: RegistrySupplier<Item> = myItemRegistrar.register("item_1", Supplier { Item1() })
-
-//mod initializer, in your mod entrypoint or related initializer
-fun myCommonInit() {
-    myItemRegistrar.init()
-}
-```
-
 ```java !!tabs Java
 Registrar<Item> myItemRegistrar = ConfigApiJava.platform().createRegistrar(MOD_ID, Registries.ITEM);
 
@@ -72,6 +61,17 @@ public RegistrySupplier<Item> ITEM_1  = myItemRegistrar.register("item_1", () ->
 //mod initializer, in your mod entrypoint or related initializer
 public void myCommonInit() {
     myItemRegistrar.init();
+}
+```
+
+```kotlin !!tabs Kotlin
+val myItemRegistrar: Registrar<Item> = ConfigApi.platform().createRegistrar(MOD_ID, Registries.ITEM)
+
+val ITEM_1: RegistrySupplier<Item> = myItemRegistrar.register("item_1", Supplier { Item1() })
+
+//mod initializer, in your mod entrypoint or related initializer
+fun myCommonInit() {
+    myItemRegistrar.init()
 }
 ```
 

@@ -8,10 +8,10 @@ Added in Fzzy Config 0.5.3
 
 The Result Provider system is a framework for retrieving values from a config without directly interacting with that config in-code.
 
-A straightforward example is a loot table with a configurable drop chance for a powerful loot pool. Traditionally, the only way to modify this easily would be to override the loot table with a separate data pack. Result Providers let us define a new loot number provider that draws its value from a config value, allowing the drop chance to be altered in-game from a config GUI.
+A straightforward example is a loot table with a configurable drop chance for a loot pool. Traditionally, the only way to modify this would be to override the loot table with a data pack. Result Providers let us define a new loot number provider that draws its value from a config, allowing the drop chance to be altered in-game from a config GUI.
 
 ### Result Provider
-A result provider is an interface with one job: provide a result based on a passed config `scope`. The [Translation page](../config-concepts/Translation#example) has a decent overview of what `scope` is in Fzzy Config's context. It works similarly to a web address, or forge/luckperms permission ids.
+A result provider is an interface with one job: provide a result based on a passed config `scope`. The [Translation](../config-concepts/Translation#example) page has an overview of what `scope` is in Fzzy Config's context.
 
 <CodeTabs>
 
@@ -34,9 +34,9 @@ fun getMyResult(): Boolean {
 </CodeTabs>
 
 #### Creating a Provider
-Create a simple implementation of a config-backed Result Provider using the `ResultApi` via `ConfigApi.result()` or `ConfigApiJava.result()`
+Create an implementation of a Result Provider using the <a target="_blank" rel="noopener" href="https://fzzyhmstrs.github.io/fconfig/-fzzy%20-config/me.fzzyhmstrs.fzzy_config.result.api/-result-api/index.html">`ResultApi` 🗗</a> via `ConfigApi.result()` or `ConfigApiJava.result()`
 
-Creation of a simple provider is now added to the above example. This system requires a fallback (false in this case)
+Using the example from above, let's now add a simple provider. This system requires a fallback (false in this case).
 
 <CodeTabs>
 
@@ -59,9 +59,13 @@ fun getMyResult(): Boolean {
 </CodeTabs>
 
 #### Using the Provider
-The above examples show a simple usage example. It is important to note that the scope is dynamic; it can point to any valid boolean-producing setting in any registered config. **Including configs of other mods**.
+The above examples show a simple usage example. 
 
-This makes result providers a convenient way to interface with another mod without ever having to depend on it in-code. If for example, you are an addon to another mod, interfacing with a config setting this way is a change-robust way of retrieving the value you need. The parent config can add 5000 other settings, change package name, class name, and so on, and the value retrieval will still work. In the case that the scope becomes invalid, fzzy config will fail soft; throwing a log error and using your fallback approach.
+<Callout variant="info">
+The scope requested is dynamic; it can point to any valid boolean-producing setting in any registered config. **Including configs of other mods**.
+</Callout>
+
+This makes result providers a convenient way to interface with another mod without having to depend on it in-code. If for example, you are an addon to another mod, interfacing with a config setting this way is a change-robust way of retrieving the value you need. The parent config can add 5000 other settings, change package name, class name, and so on, and the value retrieval will still work. In the case that the scope becomes invalid, fzzy config will fail soft; throwing a log error and using your fallback approach.
 
 <CodeTabs>
 
@@ -80,9 +84,9 @@ val mySetting2 = ValidatedBoolean(false)
 </CodeTabs>
 
 ### Example: Loot Table with dynamic drop chance
-Below is the example loot table. It includes a rare drop that is valuable for mod progression, much like a wither skeleton skull.
+Below is an example loot table. It includes a rare drop that is valuable for mod progression, like a wither skeleton skull.
 
-Currently, the drop is hard-wired to exactly the same random chance as a wither skull.
+Currently, the drop is hard-wired to exactly the same random chance as a skull.
 
 Using result providers we can make this table dynamically linked with a config.
 
@@ -142,7 +146,7 @@ val floatProvider = ConfigApi.result().createSimpleResultProvider(0f, Float::cla
 Next we wire this provider into a `LootNumberProvider`. Note the scope param. This is the scope passed in from the loot table definition that we will be providing from our config.
 
 <Callout>
-Methods that are unnecessary to illustrating this example are excluded. Assume that things like codec, type, and so on are implemented.
+Methods that are unnecessary to illustrate this example are excluded. Assume that things like codec, type, and so on are implemented.
 </Callout>
 
 <CodeTabs>
@@ -185,7 +189,7 @@ class ConfigLootNumberProvider(private val scope: String): LootNumberProvider {
 </CodeTabs>
 
 #### Json Integration
-Let's assume our presumptive type and codec are registered under the identifier `my_mod:chance_provider` and takes one string `scope`. The number provider json would look like:
+Let's assume our type and codec are registered under `my_mod:chance_provider` and accepts one string `scope`. The number provider json would look like:
 ```json
 {
   "type": "my_mod:chance_provider",
@@ -196,7 +200,7 @@ Let's assume our presumptive type and codec are registered under the identifier 
 #### The Config
 Our config, registered under the identifier `my_mod:my_config` needs the setting(s) we want to refer to.
 
-It might also be a good idea to include the looting multiplier. _(And an even better idea to move these into a separate section/object/group for organization, but that's outside the example)_
+It might also be a good idea to include the looting multiplier. _(And an even better idea to move these into a separate section/object/group for organization)_
 
 <CodeTabs>
 
@@ -229,7 +233,7 @@ class MyConfig : Config(Identifier.of("my_mod", "my_config")) {
 </CodeTabs>
 
 #### Table Integration
-All the pieces can now be tied together; the new provider condition can be used in loot tables.
+The pieces can now be tied together; the new provider condition can be used in loot tables.
 
 This table will now have its chance dynamically updated from the config definition. Updates to the config values will be applied right away, no resource reload needed.
 ```json
