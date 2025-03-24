@@ -38,32 +38,33 @@ import net.minecraft.registry.Registries
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.text.ClickEvent
 import net.minecraft.util.Identifier
+import java.net.URI
 
 @IgnoreVisibility
 @ConvertFrom("test_config3.json","fzzy_config_test")
 class TestConfigImpl3: Config(Identifier.of("fzzy_config_test","test_config3")) {
 
-    private var configAction = ConfigAction.Builder().title("Open Docs...".lit()).build(ClickEvent(ClickEvent.Action.OPEN_URL, "https://fzzyhmstrs.github.io/fconfig/"))
+    private var configAction = ConfigAction.Builder().title("Open Docs...".lit()).build(ClickEvent.OpenUrl(URI.create("https://fzzyhmstrs.github.io/fconfig/")))
 
-    private var configAction2 = ConfigAction.Builder().title("Say Hi...".lit()).build { MinecraftClient.getInstance().player?.sendChat("Hiya".lit()) }
+    private var configAction2 = ConfigAction.Builder().title("Say Hi...".lit()).build(Runnable { MinecraftClient.getInstance().player?.sendChat("Hiya".lit()) })
 
-    private var configAction3 = ConfigAction.Builder().title("Give Loots...".lit()).build(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/give @s minecraft:diamond"))
+    private var configAction3 = ConfigAction.Builder().title("Give Loots...".lit()).build(ClickEvent.RunCommand("/give @s minecraft:diamond"))
 
-    private var configAction4 = ConfigAction.Builder().decoration(TextureIds.DECO_BOOK).title("Set With Flags...".lit()).build {
+    private var configAction4 = ConfigAction.Builder().decoration(TextureIds.DECO_BOOK).title("Set With Flags...".lit()).build(Runnable {
         FC.LOGGER.warn("A")
         testLootIdentifier.validateAndSetFlagged(LootTables.SHEEP_SHEARING.value, EntryFlag.Flag.STRONG, EntryFlag.Flag.QUIET, EntryFlag.Flag.UPDATE).report(FC.LOGGER::error)
         FC.LOGGER.warn("B")
         testLootIdentifier.validateAndSetFlagged("this_should_fail".fctId(), EntryFlag.Flag.STRONG).report(FC.LOGGER::error)
         FC.LOGGER.warn("C")
         testLootIdentifier.validateAndSetFlagged(LootTables.SHEEP_SHEARING.value, EntryFlag.Flag.STRONG).report(FC.LOGGER::error)
-    }
+    })
 
-    private var configAction5 = ConfigAction.Builder().decoration(TextureIds.DECO_FOLDER).title("Status Registry...".lit()).build {
+    private var configAction5 = ConfigAction.Builder().decoration(TextureIds.DECO_FOLDER).title("Status Registry...".lit()).build(Runnable {
         FC.LOGGER.info("Current status effect entries")
         for ((key, _) in Registries.STATUS_EFFECT.entrySet) {
             FC.LOGGER.info(key.value.toString())
         }
-    }
+    })
 
     var testLootIdentifier = ValidatedIdentifier.ofRegistryKey(RegistryKeys.LOOT_TABLE).withListener { f -> FC.LOGGER.info("My value is ${f.get()}") }
 

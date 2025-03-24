@@ -461,8 +461,6 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
 
         override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             choiceSelected = selectedPredicate.test(thisVal)
-            RenderSystem.enableBlend()
-            RenderSystem.enableDepthTest()
             context.drawNineSlice(textures.get(choiceSelected, this.isSelected), x, y, width, height, this.alpha)
             if (choiceSelected) {
                 context.drawTex(TextureIds.ENTRY_OK, x + width - 20, y, 20, 20)

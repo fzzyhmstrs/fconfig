@@ -76,8 +76,6 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
         if (wrappedValue.get() != value) {
             value = wrappedValue.get()
         }
-        RenderSystem.enableBlend()
-        RenderSystem.enableDepthTest()
         context.drawNineSlice(getTexture(), x, y, getWidth(), getHeight())
         context.drawNineSlice(getHandlerTexture(), x, y + (value * (height - 8).toDouble()).toInt(), getWidth(), 8)
     }

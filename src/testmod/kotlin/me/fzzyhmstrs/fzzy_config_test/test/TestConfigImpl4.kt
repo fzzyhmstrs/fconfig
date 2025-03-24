@@ -70,9 +70,9 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
     var int1 = 6
     var int2 = ValidatedInt(6, 10, 1).also { it.addListener { i2 -> println(i2.get()) } }
 
-    var int1Button = ConfigAction.Builder().title("Int1 Value".lit()).build { println(TestConfig.resultProvider.getResult("fzzy_config_test.test_config4.int1")) }
+    var int1Button = ConfigAction.Builder().title("Int1 Value".lit()).build(Runnable { println(TestConfig.resultProvider.getResult("fzzy_config_test.test_config4.int1")) })
 
-    var int2Button = ConfigAction.Builder().title("Int2 Value".lit()).build { println(TestConfig.resultProvider.getResult("fzzy_config_test.test_config4.int2")) }
+    var int2Button = ConfigAction.Builder().title("Int2 Value".lit()).build(Runnable { println(TestConfig.resultProvider.getResult("fzzy_config_test.test_config4.int2")) })
 
     @RequiresAction(Action.RELOG)
     var mapDouble = ValidatedStringMap(mapOf("a" to 1.0), ValidatedString(), ValidatedDouble(1.0, 1.0, 0.0))
@@ -97,11 +97,11 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
         { item -> Registries.ITEM.getId(item) }
     )
 
-    var itemButton = ConfigAction.Builder().title("Give the Item".lit()).build {
+    var itemButton = ConfigAction.Builder().title("Give the Item".lit()).build(Runnable {
         val item = ItemStack(validatedItem.get())
         MinecraftClient.getInstance().player?.sendChat("This is the current item".lit().styled { s -> s.withHoverEvent(
-        HoverEvent(HoverEvent.Action.SHOW_ITEM, HoverEvent.ItemStackContent(item))
-    ) }) }
+        HoverEvent.ShowItem(item)) })
+    })
 
     var validatedBlock = ValidatedRegistryType.of(Registries.BLOCK)
 
@@ -118,7 +118,7 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
 
     var myKeybind = ValidatedKeybind(GLFW.GLFW_KEY_BACKSPACE, ContextInput.KEYBOARD, ctrl = false, shift = true, alt = false)
 
-    var keybindButton = ConfigAction.Builder().title("Test Keybind".lit()).decoration(TextureDeco.DECO_QUESTION).build {
+    var keybindButton = ConfigAction.Builder().title("Test Keybind".lit()).decoration(TextureDeco.DECO_QUESTION).build(Runnable {
         FC.LOGGER.warn(
             "Testing Shift Backspace combination: {}",
             myKeybind.relevant(GLFW.GLFW_KEY_BACKSPACE, ctrl = false, shift = true, alt = false)
@@ -127,7 +127,7 @@ class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) 
             "Testing Tab key: {}",
             myKeybind.relevant(GLFW.GLFW_KEY_TAB, ctrl = false, shift = false, alt = false)
         )
-    }
+    })
 
     /*
     {

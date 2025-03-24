@@ -50,7 +50,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
     var bl2 = ValidatedBoolean().toCondition({ bl3.get() }, "bl3 needs to be true".lit().formatted(Formatting.RED), { false }).withCondition({ set2.isNotEmpty() }, "Set2 can't be empty".lit().formatted(Formatting.RED)).withFailTitle("Disabled".lit(), "Super disabled".lit())
     var bl3 = ValidatedBoolean(false)
 
-    var bl2Button = ConfigAction.Builder().title("bl2 Conditionally".lit()).build { println("Conditionally:${ bl2.get() }, base: ${ bl2.getUnconditional() }") }
+    var bl2Button = ConfigAction.Builder().title("bl2 Conditionally".lit()).build(Runnable { println("Conditionally:${ bl2.get() }, base: ${ bl2.getUnconditional() }") })
 
     @WithCustomPerms(["my_perm.custom"])
     var int1 = 6
@@ -146,9 +146,9 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
     var list1 = listOf(1, 3, 5, 7)
     var list2 = listOf(1, 3, 5, 7).validated()
 
-    var list2Button = ConfigAction.Builder().title("List2 Contains 9".lit()).build { println(TestConfig.listProvider.getArgResult("fzzy_config_test.test_config2.list2?contains=9", ContainsArg)) }
-    var list2Index = ConfigAction.Builder().title("List2 Index 1".lit()).build { println(TestConfig.listProvider.getArgResult("fzzy_config_test.test_config2.list2?index=1", IndexArg(-666))) }
-    var list2Process = ConfigAction.Builder().title("List2 Process".lit()).build { TestConfig.listProvider.processArgResults("fzzy_config_test.test_config2.list2?contains=9?random?index=1", ContainsArg.to { println(it) }, IndexArg(-666).to { println(it) }, RandomArg(-777).to { println(it) }) }
+    var list2Button = ConfigAction.Builder().title("List2 Contains 9".lit()).build(Runnable { println(TestConfig.listProvider.getArgResult("fzzy_config_test.test_config2.list2?contains=9", ContainsArg)) })
+    var list2Index = ConfigAction.Builder().title("List2 Index 1".lit()).build(Runnable { println(TestConfig.listProvider.getArgResult("fzzy_config_test.test_config2.list2?index=1", IndexArg(-666))) })
+    var list2Process = ConfigAction.Builder().title("List2 Process".lit()).build(Runnable { TestConfig.listProvider.processArgResults("fzzy_config_test.test_config2.list2?contains=9?random?index=1", ContainsArg.to { println(it) }, IndexArg(-666).to { println(it) }, RandomArg(-777).to { println(it) }) })
 
     @Comment("Testing out a comment")
     var color1 = Color(255, 128, 0).validated(true)

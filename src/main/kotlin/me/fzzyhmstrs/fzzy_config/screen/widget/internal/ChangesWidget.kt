@@ -47,7 +47,6 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
     override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = manager.hasChanges() || manager.hasChangeHistory() || manager.hasRestores(scope)
         super.renderCustom(context, x, y, width, height, mouseX, mouseY, delta)
-        RenderSystem.enableBlend()
         if (manager.hasChanges()) {
             if (isFocused || isHovered)
                 context.drawTex(changesHighlightedTex, x + 68, y - 4, 16, 16)

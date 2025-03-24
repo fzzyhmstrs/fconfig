@@ -35,6 +35,7 @@ import net.minecraft.registry.tag.ItemTags
 import net.minecraft.text.ClickEvent
 import net.minecraft.util.Identifier
 import java.awt.Color
+import java.net.URI
 
 @Version(1)
 class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), subfolder =  "test") {
@@ -50,7 +51,7 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
     @RequiresRestart
     var enum2 = TestEnum.BETA.validated()
 
-    var section1Button = ConfigAction.Builder().title("Open Section Object".lit()).build { ConfigApi.openScreen("fzzy_config_test.test_config.section1.object1"); FC.LOGGER.info("Tried opening object") }
+    var section1Button = ConfigAction.Builder().title("Open Section Object".lit()).build(Runnable { ConfigApi.openScreen("fzzy_config_test.test_config.section1.object1"); FC.LOGGER.info("Tried opening object") })
 
     var section1 = TestSectionImpl()
     class TestSectionImpl: ConfigSection() {
@@ -85,8 +86,8 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
         var object1 = ValidatedAny(TestAny())
 
         class TestAny {
-            var testAction = ConfigAction.Builder().title("Open Docs...".lit()).build(ClickEvent(ClickEvent.Action.OPEN_URL, "https://fzzyhmstrs.github.io/fconfig/"))
-            var testAction2 = ConfigAction.Builder().title("Open Wiki...".lit()).decoration(TextureIds.DECO_BOOK).build(ClickEvent(ClickEvent.Action.OPEN_URL, "https://github.com/fzzyhmstrs/fconfig/wiki/"))
+            var testAction = ConfigAction.Builder().title("Open Docs...".lit()).build(ClickEvent.OpenUrl(URI.create("https://fzzyhmstrs.github.io/fconfig/")))
+            var testAction2 = ConfigAction.Builder().title("Open Wiki...".lit()).decoration(TextureIds.DECO_BOOK).build(ClickEvent.OpenUrl(URI.create("https://github.com/fzzyhmstrs/fconfig/wiki/")))
             var testInt = 1
             var testValidated = ValidatedFloat(3f, 6f, 1f)
             var testValidated2 = listOf(1, 3, 5, 7).validated()
@@ -116,7 +117,7 @@ class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), su
 
     var pair3 = ValidatedPair.of(ValidatedInt(1, 10, 0, ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS))
 
-    var tupleProcess = ConfigAction.Builder().title("Tuple Process".lit()).build { openTuplePopup() }
+    var tupleProcess = ConfigAction.Builder().title("Tuple Process".lit()).build(Runnable { openTuplePopup() })
 
     @ConfigGroup.Pop
     var map1 = mapOf(1 to "a", 2 to "c")

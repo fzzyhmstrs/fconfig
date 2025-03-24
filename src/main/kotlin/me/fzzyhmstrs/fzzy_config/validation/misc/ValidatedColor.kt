@@ -778,7 +778,6 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
         override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
             TextureDeco.DECO_FRAME.renderDecoration(context, x, y, delta, enabled, selected)
-            RenderSystem.enableBlend()
             context.fill(x+2, y+2, x+14, y+14, colorSupplier.get())
         }
     }
@@ -804,25 +803,15 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         }
 
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            RenderSystem.enableBlend()
-            RenderSystem.enableDepthTest()
             context.drawTex(if (isSelected) BORDER_HIGHLIGHTED else BORDER, x, y, getWidth(), getHeight())
             if (mutableColor.s == 1f) {
-                RenderSystem.enableBlend()
-                RenderSystem.enableDepthTest()
                 context.drawTex(CENTER, x+4, y+4, 52, 60, (mutableColor.a / 255f))
             } else {
-                RenderSystem.enableBlend()
-                RenderSystem.enableDepthTest()
                 context.drawTex(CENTER_DESAT, x+4, y+4, 52, 60, (mutableColor.a / 255f))
-                RenderSystem.enableBlend()
-                RenderSystem.enableDepthTest()
                 context.drawTex(CENTER, x+4, y+4, 52, 60, (mutableColor.a / 255f)*(mutableColor.s / 1f))
             }
             val cX = x + 4 + MathHelper.clampedMap(mutableColor.l, 0f, 1f, 0f, 52f).toInt() - 2
             val cY = y + 4 + MathHelper.clampedMap(mutableColor.h, 0f, 1f, 0f, 60f).toInt() - 2
-            RenderSystem.enableBlend()
-            RenderSystem.enableDepthTest()
             context.drawTex(CROSSHAIR, cX, cY, 5, 5)
         }
 

@@ -43,12 +43,41 @@ object RenderUtil {
      * @param y Int - the y location of the texture
      * @param width - the width of the texture
      * @param height - the height of the texture
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun DrawContext.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        this.drawGuiTexture(RenderLayer::getGuiTexturedOverlay, id, x, y, width, height)
+    }
+
+    /**
+     * Extension function to replicate drawGuiTexture with overlay render layer from 1.21.5. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * @param id Identifier - The sprite identifier for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width - the width of the texture
+     * @param height - the height of the texture
      * @param color - the color of the texture
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
         this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, color)
+    }
+
+    /**
+     * Extension function to replicate drawGuiTexture with overlay render layer from 1.21.5. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * @param id Identifier - The sprite identifier for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width - the width of the texture
+     * @param height - the height of the texture
+     * @param color - the color of the texture
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
+    fun DrawContext.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
+        this.drawGuiTexture(RenderLayer::getGuiTexturedOverlay, id, x, y, width, height, color)
     }
 
     /**
@@ -67,6 +96,21 @@ object RenderUtil {
     }
 
     /**
+     * Extension function to replicate drawGuiTexture with overlay render layer from 1.21.5. Uses the [RenderLayer.getGuiTextured] method to fill in the function param
+     * @param id Identifier - The sprite identifier for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width - the width of the texture
+     * @param height - the height of the texture
+     * @param alpha - the texture transparency
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
+    fun DrawContext.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
+        this.drawGuiTexture(RenderLayer::getGuiTexturedOverlay, id, x, y, width, height, PortingUtils.getWhite(alpha))
+    }
+
+    /**
      * Extension function to replicate the nine-slice functionality drawGuiTexture from 1.20.2+.
      *
      * __in 1.20.2+ this is a compat method; maintained as-is to avoid needing to alter mod code elsewhere.__
@@ -80,6 +124,22 @@ object RenderUtil {
      */
     fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
         this.drawTex(id, x, y, width, height)
+    }
+
+    /**
+     * Extension function to replicate the nine-slice functionality drawGuiTexture from 1.20.2+.
+     *
+     * __in 1.20.2+ this is a compat method; maintained as-is to avoid needing to alter mod code elsewhere.__
+     * @param id Identifier - The sprite identifier (1.20.2+ style) for the image.
+     * @param x Int - the x location of the texture
+     * @param y Int - the y location of the texture
+     * @param width Int - the width of the drawn texture
+     * @param height Int - the height of the drawn texture
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun DrawContext.drawNineSliceOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
+        this.drawTexOverlay(id, x, y, width, height)
     }
 
     /**
@@ -163,7 +223,6 @@ object RenderUtil {
         context.matrices.translate(x, y, 0f)
         context.draw()
         MinecraftClient.getInstance().gameRenderer.renderBlur()
-        MinecraftClient.getInstance().framebuffer.beginWrite(false)
         context.matrices.pop()
     }
 }

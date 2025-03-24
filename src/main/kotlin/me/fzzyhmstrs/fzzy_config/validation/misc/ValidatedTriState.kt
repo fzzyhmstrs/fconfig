@@ -232,8 +232,6 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
 
         override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
             choiceSelected = state == this@ValidatedTriState.get()
-            RenderSystem.enableBlend()
-            RenderSystem.enableDepthTest()
             context.drawNineSlice(textures.get(choiceSelected, this.isSelected), x, y, width, height, this.alpha)
         }
 

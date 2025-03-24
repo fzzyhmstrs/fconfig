@@ -86,12 +86,12 @@ val testmodImplementation by configurations.getting {
     extendsFrom(configurations.implementation.get())
 }
 
-idea {
+/*idea {
     module {
         testSources.from(sourceSets["testmod"].java.srcDirs)
         testSources.from(sourceSets["testmod"].kotlin.srcDirs)
     }
-}
+}*/
 
 dependencies {
     minecraft("com.mojang:minecraft:$minecraftVersion")

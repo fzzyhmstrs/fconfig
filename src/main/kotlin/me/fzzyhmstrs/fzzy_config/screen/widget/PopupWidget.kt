@@ -134,11 +134,8 @@ class PopupWidget
         if (blurBackground) {
             renderBlur(context, x.toFloat(), y.toFloat(), delta)
         }
-        RenderSystem.enableBlend()
-        RenderSystem.disableDepthTest()
         context.drawNineSlice(background, x, y, width, height)
         for (drawable in drawables) {
-            RenderSystem.disableDepthTest()
             drawable.render(context, mouseX, mouseY, delta)
         }
 

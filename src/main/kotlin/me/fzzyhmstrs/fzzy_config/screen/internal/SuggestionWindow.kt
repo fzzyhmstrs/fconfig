@@ -44,19 +44,14 @@ internal class SuggestionWindow(
     fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.matrices.push()
         context.matrices.translate(0f, 0f, 5f)
-        RenderSystem.disableDepthTest()
         context.fill(x, y-1, x+w, y+h+1, -805306368)
         if (index > 0) {
             if (!up) {
                 for (k in 0..w step 2) {
-                    RenderSystem.enableBlend()
-                    RenderSystem.disableDepthTest()
                     context.fill(x + k, y - 1, x + k + 1, y, -1)
                 }
             } else {
                 for (k in 0..w step 2) {
-                    RenderSystem.enableBlend()
-                    RenderSystem.disableDepthTest()
                     context.fill(x + k, y + h, x + k + 1, y + h + 1, -1)
                 }
             }
@@ -64,22 +59,16 @@ internal class SuggestionWindow(
         if (suggestions.size > suggestionSize + index) {
             if (!up) {
                 for (k in 0..w step 2) {
-                    RenderSystem.enableBlend()
-                    RenderSystem.disableDepthTest()
                     context.fill(x + k, y + h, x + k + 1, y + h + 1, -1)
                 }
             } else {
                 for (k in 0..w step 2) {
-                    RenderSystem.enableBlend()
-                    RenderSystem.disableDepthTest()
                     context.fill(x + k, y - 1, x + k + 1, y, -1)
                 }
             }
         }
         var textY = if(up) y + h - 10 else y + 2
         for (l in index until index + suggestionSize) {
-            RenderSystem.enableBlend()
-            RenderSystem.disableDepthTest()
             if (mouseX > x && mouseX < x + w && mouseY > textY - 2 && mouseY < textY + 10)
                 select(l)
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, suggestions[l].text, x + 1, textY, if(selection == l) Colors.YELLOW else -5592406)

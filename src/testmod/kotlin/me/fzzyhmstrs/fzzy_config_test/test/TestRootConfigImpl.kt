@@ -44,7 +44,7 @@ class TestRootConfigImpl: Config(Identifier.of("fzzy_config_test","root_config")
     @RequiresAction(Action.RELOAD_DATA)
     var enum1 = TestEnum.ALPHA
 
-    var section1Button = ConfigAction.Builder().title("Open Section Object".lit()).build { ConfigApi.openScreen("fzzy_config_test.test_config.section1.object1"); FC.LOGGER.info("Tried opening object") }
+    var section1Button = ConfigAction.Builder().title("Open Section Object".lit()).build(Runnable { ConfigApi.openScreen("fzzy_config_test.test_config.section1.object1"); FC.LOGGER.info("Tried opening object") })
 
     var section1 = TestSectionImpl()
     class TestSectionImpl: ConfigSection() {
