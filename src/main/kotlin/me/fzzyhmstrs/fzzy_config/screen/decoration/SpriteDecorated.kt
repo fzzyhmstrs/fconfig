@@ -62,8 +62,6 @@ interface SpriteDecorated: Decorated {
         get() = 16
 
     override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
-        RenderSystem.enableBlend()
-        RenderSystem.enableDepthTest()
         context.drawTex(textures().get(enabled, selected), x, y, w, h)
     }
 }

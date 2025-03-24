@@ -318,7 +318,7 @@ object FcText {
      * @since 0.4.2
      */
     fun MutableText.command(command: String): MutableText {
-        return this.styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, command)) }
+        return this.styled { s -> s.withClickEvent(ClickEvent.RunCommand(command)) }
     }
 
     /**
@@ -329,7 +329,7 @@ object FcText {
      * @since 0.4.2
      */
     fun MutableText.tooltip(tooltip: Text): MutableText {
-        return this.styled { s -> s.withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, tooltip)) }
+        return this.styled { s -> s.withHoverEvent(HoverEvent.ShowText(tooltip)) }
     }
 
     /**

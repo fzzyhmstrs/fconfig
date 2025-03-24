@@ -80,8 +80,6 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
      * @since 0.6.0
      */
     open fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
-        RenderSystem.enableBlend()
-        RenderSystem.enableDepthTest()
         context.drawNineSlice(textures.get(active, this.isSelected), x, y, width, height, this.alpha)
     }
 

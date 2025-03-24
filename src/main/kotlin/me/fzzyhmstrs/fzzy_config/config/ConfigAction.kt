@@ -260,13 +260,13 @@ class ConfigAction @JvmOverloads constructor(
         fun build(clickEvent: ClickEvent): ConfigAction {
             val runnable = Runnable {
                 val client = MinecraftClient.getInstance()
-                if (clickEvent.action == ClickEvent.Action.OPEN_URL) {
+                if (clickEvent is ClickEvent.OpenUrl) {
                     if (!client.options.chatLinks.value) {
                         return@Runnable
                     }
 
                     try {
-                        val uRI = Util.validateUri(clickEvent.value)
+                        val uRI = clickEvent.uri()
                         if (client.options.chatLinksPrompt.value) {
                             val screen = client.currentScreen
                             client.setScreen(ConfirmLinkScreen({ confirmed: Boolean ->
@@ -274,43 +274,36 @@ class ConfigAction @JvmOverloads constructor(
                                     Util.getOperatingSystem().open(uRI)
                                 }
                                 client.setScreen(screen)
-                            }, clickEvent.value, false))
+                            }, uRI.toString(), false))
                         } else {
                             Util.getOperatingSystem().open(uRI)
                         }
                     } catch (var4: URISyntaxException) {
                         FC.LOGGER.error("Can't open url for {}", clickEvent, var4)
                     }
-                } else if (clickEvent.action == ClickEvent.Action.OPEN_FILE) {
-                    Util.getOperatingSystem().open(File(clickEvent.value))
+                } else if (clickEvent is ClickEvent.OpenFile) {
+                    Util.getOperatingSystem().open(clickEvent.file())
                 } else if (clickEvent.action == ClickEvent.Action.SUGGEST_COMMAND) {
                     FC.LOGGER.error("Can't suggest a command from a config action")
-                } else if (clickEvent.action == ClickEvent.Action.RUN_COMMAND) {
-                    val string = StringHelper.stripInvalidChars(clickEvent.value)
-                    if (string.startsWith("/")) {
-                        if (client.player?.networkHandler?.sendCommand(string.substring(1)) != true) {
-                            FC.LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", string)
-                        }
-                    } else {
-                        FC.LOGGER.error("Failed to run command without '/' prefix from click event: '{}'", string)
+                } else if (clickEvent is ClickEvent.RunCommand) {
+                    val string = clickEvent.command().let { if (it.startsWith("/")) it.substring(1) else it }
+                    if (client.player?.networkHandler?.sendCommand(string) != true) {
+                        FC.LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", string)
                     }
-                } else if (clickEvent.action == ClickEvent.Action.COPY_TO_CLIPBOARD) {
-                    client.keyboard.clipboard = clickEvent.value
+                } else if (clickEvent is ClickEvent.CopyToClipboard) {
+                    client.keyboard.clipboard = clickEvent.value()
                 } else {
                     FC.LOGGER.error("Don't know how to handle {}", clickEvent)
                 }
             }
             val action = clickEvent.action
-            val value = clickEvent.value
             if (desc == null && action != null) {
-                desc = when(action) {
-                    ClickEvent.Action.OPEN_URL -> "fc.button.click.open_url".translate(value)
-                    ClickEvent.Action.OPEN_FILE -> "fc.button.click.open_file".translate(value)
-                    ClickEvent.Action.RUN_COMMAND -> "fc.button.click.run_command".translate(value)
-                    ClickEvent.Action.SUGGEST_COMMAND -> null
-                    ClickEvent.Action.CHANGE_PAGE -> null
-                    ClickEvent.Action.COPY_TO_CLIPBOARD -> "fc.button.click.copy_to_clipboard".translate(value)
-
+                desc = when(clickEvent) {
+                    is ClickEvent.OpenUrl -> "fc.button.click.open_url".translate(clickEvent.uri().toString())
+                    is ClickEvent.OpenFile -> "fc.button.click.open_file".translate(clickEvent.file().toString())
+                    is ClickEvent.RunCommand -> "fc.button.click.run_command".translate(clickEvent.command())
+                    is ClickEvent.CopyToClipboard -> "fc.button.click.copy_to_clipboard".translate(clickEvent.value())
+                    else -> null
                 }
             }
             if (decoration == null  && action != null) {
@@ -318,9 +311,8 @@ class ConfigAction @JvmOverloads constructor(
                     ClickEvent.Action.OPEN_URL -> TextureDeco.DECO_LINK
                     ClickEvent.Action.OPEN_FILE -> TextureDeco.DECO_FOLDER
                     ClickEvent.Action.RUN_COMMAND -> TextureDeco.DECO_COMMAND
-                    ClickEvent.Action.SUGGEST_COMMAND -> TextureDeco.DECO_BUTTON_CLICK
-                    ClickEvent.Action.CHANGE_PAGE -> TextureDeco.DECO_BUTTON_CLICK
                     ClickEvent.Action.COPY_TO_CLIPBOARD -> TextureDeco.DECO_BUTTON_CLICK
+                    else -> TextureDeco.DECO_BUTTON_CLICK
                 }
             }
             when(action) {

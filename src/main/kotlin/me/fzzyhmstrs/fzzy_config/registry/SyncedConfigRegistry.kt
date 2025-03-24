@@ -165,9 +165,9 @@ internal object SyncedConfigRegistry {
                     for (player in server.playerManager.playerList) {
                         if(ConfigApiImpl.isConfigAdmin(player, config))
                             player.sendMessageToClient("fc.networking.permission.cheat".translate(serverPlayer.name), false)
-                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" inspect")) }, false)
-                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" accept")) }, false)
-                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" reject")) }, false)
+                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" inspect")) }, false)
+                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" accept")) }, false)
+                        player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" reject")) }, false)
                     }
                     continue
                 }
@@ -245,8 +245,8 @@ internal object SyncedConfigRegistry {
         for (str in quarantinedUpdate.changeHistory) {
             messageSender.accept(str.lit())
         }
-        messageSender.accept("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" accept")) })
-        messageSender.accept("fc.command.reject".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" reject")) })
+        messageSender.accept("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" accept")) })
+        messageSender.accept("fc.command.reject".translate().styled { s -> s.withClickEvent(ClickEvent.RunCommand("/configure_update \"$id\" reject")) })
     }
 
     internal fun acceptQuarantine(id: String, server: MinecraftServer) {

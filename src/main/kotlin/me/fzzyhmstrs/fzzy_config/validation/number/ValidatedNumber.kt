@@ -312,9 +312,6 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             }
             this.confirmActive = isChanged() && isValid
             val minecraftClient = MinecraftClient.getInstance()
-            RenderSystem.enableBlend()
-            RenderSystem.defaultBlendFunc()
-            RenderSystem.enableDepthTest()
             context.drawTex(getTexture(), x, y, getWidth(), getHeight(), alpha)
             val progress = MathHelper.getLerpProgress(value.toDouble(), minValue.toDouble(), maxValue.toDouble())
             context.drawTex(getHandleTexture(), x + (progress * (width - 8).toDouble()).toInt(), y, 8, getHeight())
