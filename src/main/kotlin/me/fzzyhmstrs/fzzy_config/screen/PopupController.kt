@@ -173,9 +173,11 @@ interface PopupController: LastSelectable {
         }
 
         internal fun popAll() {
-            while (popupStack.isNotEmpty()) {
-                val e = popupStack.pop()
-                e.parent.setPopupInternal(e.widget, e.mouseX, e.mouseY)
+            MinecraftClient.getInstance().execute {
+                while (popupStack.isNotEmpty()) {
+                    val e = popupStack.pop()
+                    e.parent.setPopupInternal(e.widget, e.mouseX, e.mouseY)
+                }
             }
         }
     }

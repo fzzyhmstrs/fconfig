@@ -24,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.util.ThreadUtils
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -94,20 +95,7 @@ internal object NetworkEventsClient {
         }
 
         ClientTickEvents.START_CLIENT_TICK.register { _ ->
-            FCC.withScope { scopeToOpen ->
-                if (scopeToOpen != "") {
-                    ClientConfigRegistry.openScreen(scopeToOpen)
-                }
-            }
-
-            FCC.withRestart { openRestartScreen ->
-                if (openRestartScreen) {
-                    ConfigApiImplClient.openRestartScreen()
-                } else
-                    false
-            }
-
-            PopupController.popAll()
+            ThreadUtils.doTick()
         }
 
         ClientConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.type) { payload, handler ->
