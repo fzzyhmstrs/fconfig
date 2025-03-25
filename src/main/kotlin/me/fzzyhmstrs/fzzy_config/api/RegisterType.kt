@@ -30,8 +30,12 @@ enum class RegisterType {
      * No-GUI server-synced config. Config is registered to only the SyncedConfigRegistry.
      *
      * Will auto-synchronize between clients and server, but will NOT have any client sided GUI support.
+     *
+     * As of 0.6.8, if the config is marked with [SaveType.SEPARATE][me.fzzyhmstrs.fzzy_config.api.SaveType.SEPARATE], the config won't be synced at all since these two together are indicating that client game state is not affected at all by the SERVER-marked config.
+     *
+     * If you still want it to have no GUI and sync, mark the config as [BOTH] using [ConfigApi.registerAndLoadNoGuiConfig]
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, non-sync for SEPARATE save type 0.6.8
      */
     SERVER,
     /**

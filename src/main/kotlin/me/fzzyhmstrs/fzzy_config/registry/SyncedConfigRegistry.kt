@@ -13,10 +13,13 @@ package me.fzzyhmstrs.fzzy_config.registry
 import it.unimi.dsi.fastutil.objects.Object2ObjectLinkedOpenHashMap
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.RegisterType
+import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
+import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl.onUpdateServer
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -29,6 +32,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
+import net.minecraft.util.Identifier
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -46,30 +50,31 @@ import java.util.function.Function
  */
 internal object SyncedConfigRegistry {
 
-    private val syncedConfigs : MutableMap<String, Config> = mutableMapOf()
+    private val syncedConfigs : MutableMap<String, ConfigEntry> = mutableMapOf()
     private val quarantinedUpdates : Object2ObjectLinkedOpenHashMap<String, QuarantinedUpdate> = Object2ObjectLinkedOpenHashMap()
 
-    internal fun syncedConfigs(): Map<String, Config> {
+    internal fun syncedConfigs(): Map<String, ConfigEntry> {
         return syncedConfigs
     }
 
     internal fun onConfigure(canSender: Predicate<CustomPayload.Id<*>>, sender: Consumer<CustomPayload>) {
         if (!canSender.test(ConfigSyncS2CCustomPayload.type)) return
-        for ((id, config) in syncedConfigs) {
+        for ((id, configEntry) in syncedConfigs) {
+            if (configEntry.skipSync()) continue
             val syncErrors = mutableListOf<String>()
-            val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
+            val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(configEntry.config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
             if (syncErrors.isNotEmpty()) {
                 val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C configuration stage sync.")
                 syncError.writeError(syncErrors)
             }
             sender.accept(payload)
             try {
-                config.onSyncServer()
+                configEntry.config.onSyncServer()
             } catch (e: Throwable) {
                 FC.LOGGER.error("Error encountered with login onSyncServer method of config $id!", e)
             }
             try {
-                EventApiImpl.fireOnSyncServer(config.getId(), config)
+                EventApiImpl.fireOnSyncServer(configEntry.getId(), configEntry.config)
             } catch (e: Throwable) {
                 FC.LOGGER.error("Error encountered while running login onSyncServer event for config $id!", e)
             }
@@ -81,11 +86,13 @@ internal object SyncedConfigRegistry {
             ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player)) //for the registries that still need the data in SP
             return
         }
-        if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.type)) return
-        for ((id, config) in syncedConfigs) {
-            val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
-            val payload = ConfigPermissionsS2CCustomPayload(id, perms)
-            sender.accept(player, payload)
+        if (canSender.test(player, ConfigPermissionsS2CCustomPayload.type)) {
+            for ((id, configEntry) in syncedConfigs) {
+                if (configEntry.skipSync()) continue
+                val perms = ConfigApiImpl.generatePermissionsReport(player, configEntry.config, 0)
+                val payload = ConfigPermissionsS2CCustomPayload(id, perms)
+                sender.accept(player, payload)
+            }
         }
         if (!canSender.test(player, DynamicIdsS2CCustomPayload.type)) return
         val dynamicIdSyncs = ValidatedIdentifier.createSyncs(PortingUtils.getDynamicManager(player))
@@ -98,25 +105,26 @@ internal object SyncedConfigRegistry {
     internal fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
         for (player in players) {
             if (!canSender.test(player, ConfigSyncS2CCustomPayload.type)) continue
-            for ((id, config) in syncedConfigs) {
+            for ((id, configEntry) in syncedConfigs) {
+                if (configEntry.skipSync()) continue
                 val syncErrors = mutableListOf<String>()
-                val syncPayload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
+                val syncPayload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(configEntry.config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
                 if (syncErrors.isNotEmpty()) {
                     val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C datapack reload sync.")
                     syncError.writeError(syncErrors)
                 }
                 sender.accept(player, syncPayload)
                 if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.type)) continue
-                val perms = ConfigApiImpl.generatePermissionsReport(player, config, 0)
+                val perms = ConfigApiImpl.generatePermissionsReport(player, configEntry, 0)
                 val permsPayload = ConfigPermissionsS2CCustomPayload(id, perms)
                 sender.accept(player, permsPayload)
                 try {
-                    config.onSyncServer()
+                    configEntry.config.onSyncServer()
                 } catch (e: Throwable) {
                     FC.LOGGER.error("Error encountered with reload onSyncServer method of config $id, for player $player!", e)
                 }
                 try {
-                    EventApiImpl.fireOnSyncServer(config.getId(), config)
+                    EventApiImpl.fireOnSyncServer(configEntry.getId(), configEntry.config)
                 } catch (e: Throwable) {
                     FC.LOGGER.error("Error encountered while running reload onSyncServer event for config $id, for player $player!", e)
                 }
@@ -138,14 +146,14 @@ internal object SyncedConfigRegistry {
         val formatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 
         for ((id, configString) in serializedConfigs) {
-            val config = syncedConfigs[id]
-            if (config == null) {
+            val configEntry = syncedConfigs[id]
+            if (configEntry == null) {
                 FC.LOGGER.error("Config $id wasn't found!, Skipping update")
                 continue
             }
 
             if (!server.isSingleplayer) {
-                val validationResult = ConfigApiImpl.validatePermissions(serverPlayer, id, config, configString, clientPerm)
+                val validationResult = ConfigApiImpl.validatePermissions(serverPlayer, id, configEntry.config, configString, clientPerm)
 
                 if(validationResult.isError()) {
 
@@ -163,7 +171,7 @@ internal object SyncedConfigRegistry {
                     }
 
                     for (player in server.playerManager.playerList) {
-                        if(ConfigApiImpl.isConfigAdmin(player, config))
+                        if(ConfigApiImpl.isConfigAdmin(player, configEntry.config))
                             player.sendMessageToClient("fc.networking.permission.cheat".translate(serverPlayer.name), false)
                         player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" inspect")) }, false)
                         player.sendMessageToClient("fc.command.accept".translate().styled { s -> s.withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND, "/configure_update \"$id\" accept")) }, false)
@@ -173,10 +181,10 @@ internal object SyncedConfigRegistry {
                 }
             }
             val errors = mutableListOf<String>()
-            val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS)
+            val result = ConfigApiImpl.deserializeUpdate(configEntry, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS)
             val actions = result.get().getOrDefault(ACTIONS, setOf())
             result.writeError(errors)
-            result.get().config.save()
+            result.get().config.config.save()
             if (actions.any { it.restartPrompt }) {
                 FC.LOGGER.warn("The server has received a config update that may require a restart. Connected clients have been automatically updated and notified of the potential for restart.")
                 val records = result.get().get(RESTART_RECORDS)
@@ -191,12 +199,12 @@ internal object SyncedConfigRegistry {
             successfulUpdates[id] = configString
             server.execute {
                 try {
-                    config.onUpdateServer(serverPlayer)
+                    configEntry.config.onUpdateServer(serverPlayer)
                 } catch (e: Throwable) {
                     FC.LOGGER.error("Error encountered with onUpdateServer method of config $id!", e)
                 }
                 try {
-                    EventApiImpl.fireOnUpdateServer(config.getId(), config, serverPlayer)
+                    EventApiImpl.fireOnUpdateServer(configEntry.getId(), configEntry.config, serverPlayer)
                 } catch (e: Throwable) {
                     FC.LOGGER.error("Error encountered while running onUpdateServer event for config $id!", e)
                 }
@@ -253,7 +261,7 @@ internal object SyncedConfigRegistry {
             val result = ConfigApiImpl.deserializeUpdate(config, quarantinedUpdate.configString, errors, ConfigApiImpl.CHECK_ACTIONS)
             val actions = result.get().getOrDefault(ACTIONS, setOf())
             result.writeError(errors)
-            result.get().config.save()
+            result.get().config.config.save()
             if (actions.any { it.restartPrompt }) {
                 FC.LOGGER.warn("The server accepted a quarantined config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
             }
@@ -285,13 +293,22 @@ internal object SyncedConfigRegistry {
     }
 
     internal fun getConfig(scope: String): Config? {
-        return syncedConfigs[scope]
+        return syncedConfigs[scope]?.config
     }
 
-    internal fun registerConfig(config: Config) {
-        syncedConfigs[config.getId().toTranslationKey()] = config
+    internal fun registerConfig(config: Config, registerType: RegisterType) {
+        syncedConfigs[config.getId().toTranslationKey()] = ConfigEntry(config, registerType == RegisterType.SERVER)
         EventApiImpl.fireOnRegisteredServer(config.getId(), config)
     }
 
     internal class QuarantinedUpdate(val playerUuid: UUID, val changeHistory: List<String>, val configId: String, val configString: String)
+
+    internal data class ConfigEntry(val config: Config, val server: Boolean) {
+        fun skipSync(): Boolean {
+            return config.saveType() == SaveType.SEPARATE && server
+        }
+        fun getId(): Identifier {
+            return config.getId()
+        }
+    }
 }

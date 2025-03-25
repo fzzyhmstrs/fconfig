@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
+import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
@@ -190,8 +191,13 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
                 }
         }
         //save config updates locally
-
-        configSet.active.save()
+        if (isClient
+            || configSet.active.saveType() == SaveType.OVERWRITE
+            || MinecraftClient.getInstance().isInSingleplayer
+            || outOfGame())
+        {
+            configSet.active.save()
+        }
 
         val syncNeeded = !configSet.clientOnly && updatedConfig
         if (syncNeeded && !MinecraftClient.getInstance().isInSingleplayer) {
@@ -204,6 +210,11 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
         }
         if (!final)
             pushUpdatableStatesInternal()
+    }
+
+    private fun outOfGame(): Boolean {
+        val client = MinecraftClient.getInstance()
+        return (client.world == null || client.networkHandler == null)
     }
 
     private class ForwardEntry(parentElement: DynamicListWidget, private val forwardedUpdate: ConfigScreenManager.ForwardedUpdate, private val manager: ConfigSingleUpdateManager)
