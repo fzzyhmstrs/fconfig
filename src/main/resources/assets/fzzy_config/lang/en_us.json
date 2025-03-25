@@ -115,6 +115,8 @@
 "fc.networking.permission.cheat": "Player [%1$s] may have tried cheating in server config changes!",
 "fc.networking.restart": "Configs require a restart.",
 
+"fc.search.indirect": "Result contains matching sub-entries:",
+
 "fc.narrator.position.list": "List entry %1$s of %2$s",
 "fc.narrator.position.config": "Setting %1$s of %2$s",
 "fc.narrator.position.entry": "Element %1$s of %2$s",
