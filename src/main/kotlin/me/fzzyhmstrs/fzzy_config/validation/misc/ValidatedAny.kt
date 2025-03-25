@@ -276,10 +276,22 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         manager.pushUpdatableStates()
         val spec = DynamicListWidget.ListSpec(leftPadding = 21, rightPadding = 15, verticalFirstPadding = 2)
         val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 288, 160, spec)
+        val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
+        fun setColor(entries: Int) {
+            if(entries > 0)
+                searchField.setEditableColor(Colors.WHITE)
+            else
+                searchField.setEditableColor(0xFF5555)
+        }
+        searchField.setMaxLength(100)
+        searchField.text = ""
+        searchField.setChangedListener { s -> setColor(entryList.search(s)) }
+        searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
         val popup = PopupWidget.Builder(translation())
             .add("list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("revert", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.revert() }.size(142, 20).activeSupplier { manager.hasChanges() }.build(), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("restore", CustomButtonWidget.builder("fc.button.restore".translate()) { manager.restore("") }.size(142, 20).activeSupplier { manager.hasRestores("") }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
+            .add("revert", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.revert() }.size(85, 20).activeSupplier { manager.hasChanges() }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("restore", CustomButtonWidget.builder("fc.button.restore".translate()) { manager.restore("") }.size(85, 20).activeSupplier { manager.hasRestores("") }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .addDoneWidget()
             .onClose { manager.apply(true); if(manager.hasChanges()) setAndUpdate(newThing) }
             .build()
