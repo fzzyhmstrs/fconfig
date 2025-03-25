@@ -78,6 +78,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     private var narratables: List<AbstractTextWidget> = emptyList()
     private var tooltipProviders: List<TooltipChild> = emptyList()
 
+    private val searchResults: Function<String, List<Translatable.Result>> = content.searchResults
     private val contextBuilders: Map<String, Map<ContextType, ContextAction.Builder>> = content.contextActions
     private val context: Map<ContextType, ContextAction> by lazy {
         contextBuilders.entries.stream().collect(
@@ -124,6 +125,10 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         layout.update()
     }
 
+    override fun entrySearchResults(searchInput: String): List<Translatable.Result> {
+        return searchResults.apply(searchInput)
+    }
+
     override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         for (drawable in drawables) {
             drawable.render(context, mouseX, mouseY, delta)
@@ -131,6 +136,10 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         val keyboardFocused = focused && MinecraftClient.getInstance().navigationType.isKeyboard
 
         val tooltipList: MutableList<OrderedText> = mutableListOf()
+        if (tooltipPrefix.isNotEmpty()) {
+            tooltipList.addAll(tooltipPrefix.map { it.asOrderedText() }
+            tooltipList.add(OrderedText.EMPTY)
+        }
         for ((index, provider) in tooltipProviders.withIndex()) {
             val tt = provider.provideTooltipLines(mouseX, mouseY, hovered || keyboardFocused, keyboardFocused)
             for (t in tt) {
@@ -299,7 +308,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         private var visibility: DynamicListWidget.Visibility = DynamicListWidget.Visibility.VISIBLE
         private var contextActions: Map<String, Map<ContextType, ContextAction.Builder>> = mapOf()
         private val popStart = context.groups.size - context.annotations.filterIsInstance<ConfigGroup.Pop>().size
-
+        private var searchResults: Function<String, List<Translatable.Result>> = EMPTY_RESULTS
 
         init {
             val nameSupplier = { context.texts.name }
@@ -385,6 +394,18 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         }
 
         /**
+         * Search results to "pass up" to the parent list when requested. This is used to determine what children should stay visible by indirect search matching.
+         * @param searchResults [Function]&lt;String, List&lt;[Translatable.Result]&gt;&gt; the serach result provider for this entry. Using a [Searcher] is prucent, as the provided string is raw, with special characters still included.
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        fun searchResults(searchResults: Function<String, List<Translatable.Result>>): ContentBuilder {
+            this.contextActions = contextActions
+            return this
+        }
+
+        /**
          * Builds a [BuildResult] for construction of an Entry
          * @return [BuildResult]
          * @author fzzyhmstrs
@@ -415,7 +436,8 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
                 DynamicListWidget.Scope(context.scope, group, context.groups),
                 groupTypes,
                 visibility,
-                contextActions)
+                contextActions,
+                searchResult)
         }
 
         /**
@@ -429,7 +451,8 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             internal val scope: DynamicListWidget.Scope,
             internal val groupTypes: List<Boolean>,
             internal val visibility: DynamicListWidget.Visibility,
-            internal val contextActions: Map<String, Map<ContextType, ContextAction.Builder>>)
+            internal val contextActions: Map<String, Map<ContextType, ContextAction.Builder>>,
+            internal val searchResults: Function<String, List<Translatable.Result>>)
 
     }
 
