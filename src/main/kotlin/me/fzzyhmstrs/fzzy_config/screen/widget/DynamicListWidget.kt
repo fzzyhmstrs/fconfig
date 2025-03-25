@@ -504,7 +504,14 @@ class DynamicListWidget(
             val foundEntries = searcher.search(searchInput)
             for (e in delegate) {
                 if (e.getVisibility().skip) continue
-                e.applyVisibility(Visibility::filter)
+                val eResults = e.entrySearchResults(searchInput)
+                if (eResults.isNotEmpty()) {
+                    e.applyVisibility(Visibility::searched)
+                    e.applyTooltipPrefix(SEARCHED_PREFIX_HEADER + eResults.map { it.name })
+                } else {
+                    e.applyVisibility(Visibility::unsearched)
+                    e.applyVisibility(Visibility::filter)
+                }
             }
             for (e in foundEntries) {
                 e.applyVisibility(Visibility::unfilter)
@@ -711,6 +718,9 @@ class DynamicListWidget(
         ContextProvider,
         LastSelectable
     {
+        companion object {
+            val EMPTY_RESULTS: Function<String, List<Translatable.Result>> = Function { _ -> listOf() }
+        }
 
         private var visibilityProvider: VisibilityProvider = visibility
 
@@ -732,6 +742,9 @@ class DynamicListWidget(
             }
         }
 
+        override val skip: Boolean
+            get() = getVisibility().skip
+
         protected open val x: Pos = ReferencePos { parentElement.rowX() }
         protected open val w: Pos = ReferencePos { parentElement.rowWidth() }
         protected abstract var h: Int
@@ -747,9 +760,22 @@ class DynamicListWidget(
         private var focusedSelectable: Selectable? = null
         private var focusedElement: Element? = null
         private var dragging = false
+        protected var tooltipPrefix: List<Text> = listOf()
 
-        override val skip: Boolean
-            get() = getVisibility().skip
+        fun applyTooltipPrefix(prefix: List<Text>) {
+            this.tooltipPrefix = prefix
+        }
+        
+        /**
+         * Provides a list of indirect search matches to the dynamic list parent. Used to determine which entries should stay visible because they are indirectly relevant.
+         * @param searchInput The raw input string. Has not been parsed for special characters etc. Passing it into a [Searcher] to generate results may be prudent.
+         * @return List&lt;[Translatable.Result]&gt; list of text results relevant to the provided search. Default behavior is an empty list.
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        open fun entrySearchResults(searchInput: String): List<Translatable.Result> {
+            return EMPTY_RESULTS.apply(searchInput)
+        }
 
         /**
          * The children of the entry that comply to [SelectableElement], that is both [Selectable] and an [Element]
@@ -1007,8 +1033,7 @@ class DynamicListWidget(
 
             val listIterator = list.listIterator(j)
             val booleanSupplier = if (bl) listIterator::hasNext else listIterator::hasPrevious
-            val supplier =
-                if (bl) listIterator::next else listIterator::previous
+            val supplier = if (bl) listIterator::next else listIterator::previous
 
             while (booleanSupplier()) {
                 val guiNavigationPath = supplier()?.getNavigationPath(navigation)
@@ -1117,6 +1142,12 @@ class DynamicListWidget(
          */
         VISIBLE(true, false, true, false, false, { v -> !v.group }),
         /**
+         * Visible because it contains valid search results inside it. Applied externally, removed on [unFilter]
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        VISIBLE_SEARCHED(true, false, true, false, false, { v -> !v.group }),
+        /**
          * Entry hidden by a user action like toggling a group, or some visibility button. Not visible nor selectable, but searchable (in case the user reverses the hidden state after searching)
          * @see hide
          * @author fzzyhmstrs
@@ -1179,6 +1210,14 @@ class DynamicListWidget(
                 visibilityStack.remove(FILTERED)
             }
 
+            fun searched(visibilityStack: VisibilityStack) {
+                visibilityStack.push(VISIBLE_SEARCHED)
+            }
+
+            fun unsearched(visibilityStack: VisibilityStack) {
+                visibilityStack.remove(VISIBLE_SEARCHED)
+            }
+
             fun hide(visibilityStack: VisibilityStack) {
                 visibilityStack.push(HIDDEN)
                 visibilityStack.push(GROUP_HIDDEN)
@@ -1191,13 +1230,15 @@ class DynamicListWidget(
 
             fun groupFilter(groupEntries: Collection<Entry>): Consumer<VisibilityStack> {
                 return if (!groupEntries.any { it.getVisibility().visible }) {
-                    Consumer { list -> list.push(GROUP_FILTERED) }
+                    Consumer { stack -> stack.push(GROUP_FILTERED) }
                 } else {
-                    Consumer { list -> list.remove(GROUP_FILTERED) }
+                    Consumer { stack -> stack.remove(GROUP_FILTERED) }
                 }
             }
 
             val EMPTY: Consumer<LinkedList<Visibility>> = Consumer { _-> }
+
+            val SEARCHED_PREFIX_HEADER: List<Text> = listOf(FcText.translatable("fc.search.indirect"))
         }
     }
 
