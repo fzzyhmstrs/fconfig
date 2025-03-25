@@ -275,9 +275,11 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
         val manager = ConfigRootUpdateManager()
 
         val functions: MutableList<EntryCreator.Creator> = mutableListOf()
+        val contentBuffer: Ref<Any> = Ref(this)
         val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
             .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
             .put(EntryCreators.COPY_BUFFER, copyBuffer)
+            .put(EntryCreators.CONTENT_BUFFER, contentBuffer)
 
         fun List<EntryCreator.Creator>.applyToList(functions: MutableList<EntryCreator.Creator>) {
             for (creator in this) {
@@ -291,6 +293,9 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
             val config: Config = set.active
             val prefix = config.getId().toTranslationKey()
             val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, emptyList(), config::class.java.simpleName)
+
+            contentBuffer.set(config)
+            contextMisc.put(EntryCreators.CONFIG, config)
 
             val context = EntryCreator.CreatorContext(prefix, ConfigGroup.emptyGroups, set.clientOnly, configTexts, config::class.annotations, ConfigApiImpl.getActions(config, ConfigApiImpl.IGNORE_NON_SYNC), contextMisc)
             //config button, if the config spec allows for them
@@ -402,14 +407,6 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
         return SidebarData(anchors, anchorWidth + 1)
     }
 
-    private val contextMisc: EntryCreator.CreatorContextMisc by lazy {
-        EntryCreator.CreatorContextMisc()
-            .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
-            .put(EntryCreators.COPY_BUFFER, copyBuffer)
-    }
-
-
-
     private fun walkConfig(
         set: ConfigSet, //the current set of configs to walk
         functionMap: MutableMap<String, MutableList<EntryCreator.Creator>>, //Creators go here, sorted by encounter order and scope
@@ -431,6 +428,14 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
 
         anchorPredicate.test(AnchorResult(prefix, config, configTexts))
 
+        val contentBuffer: Ref<Any> = Ref(config)
+        
+        val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
+            .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
+            .put(EntryCreators.COPY_BUFFER, copyBuffer)
+            .put(EntryCreators.CONFIG, config)
+            .put(EntryCreators.CONTENT_BUFFER, contentBuffer)
+        
         if (configTexts.prefix != null) {
             val context = EntryCreator.CreatorContext(prefix, groups, set.clientOnly, configTexts, config::class.annotations, ConfigApiImpl.getActions(config, ConfigApiImpl.IGNORE_NON_SYNC), contextMisc)
             EntryCreators.createHeaderEntry(context).applyToMap(prefix, functionMap)
@@ -438,6 +443,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
 
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
+            thing?.let { contentBuffer.set(it) }
             val flags = if(thing is EntryFlag) {
                 EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
             } else {
