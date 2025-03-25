@@ -47,6 +47,20 @@ object EntryCreators {
      */
     val COPY_BUFFER = EntryCreator.CreatorContextKey<Ref<Any?>>()
 
+    /**
+     * Provides access to the object relevant to the entry creator being made. For configs, it will be the config, sections the section, etc.
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
+    val CONTENT_BUFFER = EntryCreator.CreatorContextKey<Ref<Any>>()
+
+    /**
+     * Provides access to the config currently responsible for asking for the entry.
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
+    val CONFIG = EntryCreator.CreatorContextKey<Config>()
+
     internal fun createConfigEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, context.actions.map { ConfigEntry.ActionDecorationWidget.config(it) })
@@ -61,6 +75,7 @@ object EntryCreators {
                     LayoutWidget.Position.ALIGN_JUSTIFY,
                     LayoutWidget.Position.BELOW)
             }
+            contentBuilder.searchResults(EntrySearchProvider(context.misc.get(CONFIG) ?: "", context.misc.get(CONTENT_BUFFER)?.get() ?: "", context.scope, context.client))
 
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
@@ -81,6 +96,7 @@ object EntryCreators {
                     LayoutWidget.Position.ALIGN_JUSTIFY,
                     LayoutWidget.Position.BELOW)
             }
+            contentBuilder.searchResults(EntrySearchProvider(context.misc.get(CONFIG) ?: "", context.misc.get(CONTENT_BUFFER)?.get() ?: "", context.scope, context.client))
 
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
@@ -170,5 +186,39 @@ object EntryCreators {
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
+    }
+
+    internal class EntrySearchProvider(config: Any, content: Any, prefix: String, client: Boolean): Function<String, List<Translatable.Result>> {
+
+        private val searcher: Searcher<Translatable.Result> by lazy {
+            val list: MutableList<Translatable.Result> = mutableListOf()
+            ConfigApiImpl.walk(content, prefix, ConfigApiImpl.IGNORE_NON_SYNC) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
+                val flags = if(thing is EntryFlag) {
+                    EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
+                } else {
+                    EntryFlag.Flag.NONE
+                }
+                val permResult = ConfigApiImplClient.hasNeededPermLevel(
+                    thing, 
+                    ConfigApiImplClient.getPlayerPermissionLevel(), 
+                    config, 
+                    config.nullCast<Config>()?.getId()?.toTranslationKey() ?: "", 
+                    new, 
+                    annotations, 
+                    client, 
+                    flags, 
+                    ConfigApiImplClient.getPerms())
+                if (permResult.success) {
+                    val fieldName = new.substringAfterLast('.')
+                    val texts = getText(thing, fieldName, annotations, globalAnnotations)
+                    list.add(texts)
+                }
+            }
+            Searcher(list)
+        }
+
+        override fun apply(t: String): List<Translatable.Result> {
+            return searcher.search(t)
+        }
     }
 }
