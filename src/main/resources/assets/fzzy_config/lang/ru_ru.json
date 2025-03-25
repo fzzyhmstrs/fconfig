@@ -115,6 +115,8 @@
   "fc.networking.permission.cheat": "Игрок [%1$s], возможно, пытался смошенничать при изменении конфигурации сервера!",
   "fc.networking.restart": "Конфигурации требуют перезагрузки.",
 
+  "fc.search.indirect": "Результат содержит соответствующие вложенные записи:",
+
   "fc.narrator.position.list": "Запись списка %1$s из %2$s",
   "fc.narrator.position.config": "Настройка %1$s из %2$s",
   "fc.narrator.position.entry": "Элемент %1$s из %2$s",
@@ -225,6 +227,8 @@
   "fc.button.goto.narration": "Перейти к: %s",
   "fc.button.up": "Увеличение",
   "fc.button.down": "Уменьшение",
+  "fc.button.clear": "Очистить привязку клавиш",
+  "fc.button.compound": "Добавить опцию привязки клавиш",
   "fc.button.slider.usage.focused": "Нажимайте стрелки вверх или вниз, чтобы изменить значение",
   "fc.button.restart.cancel": "Вернуться к титульному экрану",
   "fc.button.click.open_url": "Открывает ссылку на %s",
