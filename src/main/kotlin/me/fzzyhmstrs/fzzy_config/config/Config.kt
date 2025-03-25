@@ -10,15 +10,20 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
+import com.google.common.base.Suppliers
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.FileType
+import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.io.File
 
 /**
  * Base Config class for use with FzzyConfig
@@ -65,6 +70,23 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
     }
 
     /**
+     * Creates and returns a [File] corresponding to this config file directory. Does not include the file name
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
+    fun getDir(): File {
+        return if (subfolder != "") {
+            File(File(PlatformUtils.configDir(), folder), subfolder)
+        } else {
+            if (folder != "") {
+                File(PlatformUtils.configDir(), folder)
+            } else {
+                PlatformUtils.configDir()
+            }
+        }
+    }
+
+    /**
      * Saves the config to file.
      *
      * Called by FzzyConfig every time a config update is pushed from a client. Use if you have some custom method for altering configurations and need to save the changes to file. Only recommended to use this on the client for client-only settings
@@ -98,6 +120,10 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      */
     open fun fileType(): FileType {
         return FileType.TOML
+    }
+
+    open fun saveType(): SaveType {
+        return SaveType.OVERWRITE
     }
 
     /**

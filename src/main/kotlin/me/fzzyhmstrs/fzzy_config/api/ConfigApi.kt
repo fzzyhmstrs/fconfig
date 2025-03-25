@@ -169,7 +169,7 @@ object ConfigApi {
     @JvmOverloads
     @Deprecated("Consider registerAndLoadConfig() instead, or readOrCreateAndValidate(configClass) for consistent application of names")
     fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T {
-        return ConfigApiImpl.readOrCreateAndValidate(name, folder, subfolder, configClass)
+        return ConfigApiImpl.readOrCreateAndValidate(configClass, configClass(), name, folder, subfolder)
     }
 
     /**
@@ -189,7 +189,7 @@ object ConfigApi {
     @JvmOverloads
     @Deprecated("Consider registerAndLoadConfig() instead, or readOrCreateAndValidate(configClass) for consistent application of names")
     fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: Supplier<T>): T {
-        return ConfigApiImpl.readOrCreateAndValidate(name, folder, subfolder) { configClass.get() }
+        return ConfigApiImpl.readOrCreateAndValidate({ configClass.get() }, configClass.get(), name, folder, subfolder)
     }
 
     /**
@@ -215,7 +215,7 @@ object ConfigApi {
      */
     @JvmStatic
     fun <T: Config> readOrCreateAndValidate(configClass: Supplier<T>): T {
-        return ConfigApiImpl.readOrCreateAndValidate { configClass.get() }
+        return ConfigApiImpl.readOrCreateAndValidate({ configClass.get() })
     }
 
     /**
@@ -233,7 +233,7 @@ object ConfigApi {
     @JvmOverloads
     @Deprecated("Consider save(configClass) for consistent application of names")
     fun <T : Config> saveManual(name: String, folder: String = "", subfolder: String = "", configClass: T) {
-        ConfigApiImpl.save(name, folder, subfolder, configClass)
+        ConfigApiImpl.save(name, ConfigApiImpl.makeDir(folder, subfolder).first, configClass)
     }
 
     /**

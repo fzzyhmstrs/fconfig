@@ -165,6 +165,16 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
         } == true
     }
 
+    internal fun provideUpdateManager(scope: String): ConfigBaseUpdateManager? {
+        val realScope = if (scope == this.scope && configs.size == 1)
+            configs.keys.toList()[0]
+        else if (scope == this.scope || scope == this.rootScope)
+            return screenCaches[this.scope]?.manager
+        else
+            getValidScope(scope) ?: return null
+        return screenCaches[realScope]?.manager
+    }
+
     internal fun openScreen(scope: String = this.scope) {
         if (screenLock.get()) {
             FC.DEVLOG.error("Screen open for [$scope] attempted while Screen Manager [${this.scope}] was preparing another screen for [$cachedScope]")
