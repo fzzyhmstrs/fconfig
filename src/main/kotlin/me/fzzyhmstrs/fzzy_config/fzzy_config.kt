@@ -59,7 +59,9 @@ object FC: ModInitializer {
 @Internal
 object FCC: ClientModInitializer {
 
+    @Volatile
     private var scopeToOpen = ""
+    @Volatile
     private var openRestartScreen = false
 
     override fun onInitializeClient() {

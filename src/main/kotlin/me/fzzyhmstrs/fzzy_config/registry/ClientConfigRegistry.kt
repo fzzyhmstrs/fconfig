@@ -13,12 +13,14 @@ package me.fzzyhmstrs.fzzy_config.registry
 import com.google.common.collect.HashMultimap
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
+import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigBaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -75,13 +77,15 @@ internal object ClientConfigRegistry {
     //client
     internal fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
-            val config = SyncedConfigRegistry.syncedConfigs()[id] ?: return
+            val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
             val errors = mutableListOf<String>()
-            val result = ConfigApi.deserializeConfig(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
+            val result = ConfigApi.deserializeConfig(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
             val actions = result.get().getOrDefault(ACTIONS, setOf())
             result.writeError(errors)
             MinecraftClient.getInstance().execute {
-                result.get().config.save()//save config to the client
+                val saveType = result.get().config.saveType()
+                if (saveType == SaveType.OVERWRITE)
+                    result.get().config.save()//save config to the client
                 if (actions.any { it.restartPrompt }) {
                     val records = result.get().get(RESTART_RECORDS)
                     if (!records.isNullOrEmpty()) {
@@ -95,7 +99,7 @@ internal object ClientConfigRegistry {
                     ConfigApiImpl.openRestartScreen()
                 } else {
                     try {
-                        config.onSyncClient()
+                        configEntry.config.onSyncClient()
                     } catch (e: Throwable) {
                         FC.LOGGER.error("Error encountered with onSyncClient method of config $id!", e)
                     }
@@ -119,18 +123,20 @@ internal object ClientConfigRegistry {
     internal fun receiveUpdate(serializedConfigs: Map<String, String>, player: PlayerEntity) {
         for ((id, configString) in serializedConfigs) {
             if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
-                val config = SyncedConfigRegistry.syncedConfigs()[id] ?: return
+                val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
                 val errors = mutableListOf<String>()
-                val result = ConfigApiImpl.deserializeUpdate(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS)
+                val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS)
                 val actions = result.get().getOrDefault(ACTIONS, setOf())
                 result.writeError(errors)
                 MinecraftClient.getInstance().execute {
-                    result.get().config.save()
+                    val saveType = result.get().config.saveType()
+                    if (saveType == SaveType.OVERWRITE)
+                        result.get().config.save()
                     for (action in actions) {
                         MinecraftClient.getInstance().player?.sendChat(action.clientPrompt)
                     }
                     try {
-                        config.onUpdateClient()
+                        configEntry.config.onUpdateClient()
                     } catch (e: Throwable) {
                         FC.LOGGER.error("Error encountered with onUpdateClient method of config $id while receiving an update from the server!", e)
                     }
@@ -201,6 +207,16 @@ internal object ClientConfigRegistry {
         }
         val manager = configScreenManagers[namespaceScope] ?: return false
         return manager.isScreenOpen(scope)
+    }
+
+    internal fun provideUpdateManager(scope: String): ConfigBaseUpdateManager? {
+        val namespaceScope = getValidScope(scope, true)
+        if (namespaceScope == null) {
+            FC.LOGGER.error("Failed to provide an update manager. Invalid scope provided: [$scope]")
+            return null
+        }
+        val manager = configScreenManagers[namespaceScope] ?: return null
+        return manager.provideUpdateManager(scope)
     }
 
     //client

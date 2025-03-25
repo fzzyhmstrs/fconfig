@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config_test;
 
+import me.fzzyhmstrs.fzzy_config.api.SaveType;
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList;
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType;
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble;
@@ -18,6 +19,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +27,12 @@ import java.util.List;
 public class JavaTestConfig2 extends JavaTestConfig {
 
 	public JavaTestConfig2() {super(Identifier.of("fzzy_config_test","java_config_2"));}
+
+	@NotNull
+	@Override
+	public SaveType saveType() {
+		return SaveType.SEPARATE;
+	}
 
 	public int intFrom2 = 2;
 

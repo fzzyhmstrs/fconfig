@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.FCC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
+import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
@@ -51,6 +52,7 @@ import net.peanuuutz.tomlkt.*
 import java.io.BufferedReader
 import java.io.File
 import java.io.Reader
+import java.lang.IllegalStateException
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
 import java.util.*
@@ -123,7 +125,7 @@ internal object ConfigApiImpl {
     }
 
     internal fun getConfig(scope: String): Config? {
-        return SyncedConfigRegistry.syncedConfigs()[scope] ?: if(isClient) ConfigApiImplClient.getClientConfig(scope) else null
+        return SyncedConfigRegistry.getConfig(scope) ?: if(isClient) ConfigApiImplClient.getClientConfig(scope) else null
     }
 
     internal fun getSyncedConfig(id: Identifier): Config? {
@@ -145,11 +147,11 @@ internal object ConfigApiImpl {
     }
 
     private fun <T: Config> registerBoth(config: T, configClass: () -> T, noGui: Boolean): T {
-        SyncedConfigRegistry.registerConfig(config)
+        SyncedConfigRegistry.registerConfig(config, RegisterType.BOTH)
         return registerClient(config, configClass, noGui)
     }
     private fun <T: Config> registerSynced(config: T): T {
-        SyncedConfigRegistry.registerConfig(config)
+        SyncedConfigRegistry.registerConfig(config, RegisterType.SERVER)
         return config
     }
 
@@ -218,7 +220,7 @@ internal object ConfigApiImpl {
 
     //////////////// Read, Create, Save //////////////////////////////////////////////////
 
-    internal fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: () -> T): T {
+    internal fun <T: Config> readOrCreateAndValidate(configClass: () -> T, classInstance: T = configClass(), name: String = classInstance.name, folder: String = classInstance.folder, subfolder: String = classInstance.subfolder): T {
         fun log(start: Long) {
             FC.LOGGER.info("Loaded config {} in {}ms", "$folder:$name", (System.currentTimeMillis() - start))
         }
@@ -232,7 +234,6 @@ internal object ConfigApiImpl {
                 return configClass()
             }
 
-            val classInstance = configClass()
             val files = findFiles(dir, name, classInstance.fileType())
 
             if (files.fIn.exists()) {
@@ -241,6 +242,9 @@ internal object ConfigApiImpl {
 
                 val classVersion = getVersion(classInstance::class)
                 val readConfigResult = deserializeConfig(classInstance, str, fErrorsIn, fileType = files.fInType)
+                if (classInstance.saveType().incompatibleWith(readConfigResult.get().get(ACTIONS))) {
+                    throw IncompatibleSaveTypeException("Config $name uses SaveType SEPARATE but also has incompatible @RequiresAction with Action.RESTART flags")
+                }
                 val readVersion = readConfigResult.get().getInt(VERSIONS)
                 val readConfig = readConfigResult.get().config
                 val needsUpdating = classVersion > readVersion
@@ -300,22 +304,19 @@ internal object ConfigApiImpl {
                 log(start)
                 return classInstance
             }
+        } catch (e: IncompatibleSaveTypeException) {
+            throw IllegalStateException("Config can't be created!", e)
         } catch (e: Throwable) {
             FC.LOGGER.error("Critical error encountered while reading or creating [$name]. Using default config.", e)
             return configClass()
         }
     }
 
-    internal fun <T: Config> readOrCreateAndValidate(configClass: () -> T): T {
-        val tempInstance = configClass()
-        return readOrCreateAndValidate(tempInstance.name, tempInstance.folder, tempInstance.subfolder, configClass)
-    }
-
-    internal fun <T : Config> save(name: String, folder: String = "", subfolder: String = "", configClass: T) {
+    internal fun <T : Config> save(name: String, d: File, configClass: T) {
         try {
-            val (dir, dirCreated) = makeDir(folder, subfolder)
+            val (dir, dirCreated) = makeDir(d)
             if (!dirCreated) {
-                FC.LOGGER.error("Couldn't create directory [${if(subfolder.isNotEmpty()) "./$folder/$subfolder" else "./$folder"}]. Failed to save config file $name!")
+                FC.LOGGER.error("Couldn't create directory [$dir]. Failed to save config file $name!")
                 return
             }
 
@@ -341,7 +342,7 @@ internal object ConfigApiImpl {
     }
 
     internal fun <T : Config> save(configClass: T) {
-        save(configClass.name, configClass.folder, configClass.subfolder, configClass)
+        save(configClass.name, configClass.getDir(), configClass)
     }
 
     internal fun parseReader(reader: Reader): TomlElement {
@@ -679,7 +680,8 @@ internal object ConfigApiImpl {
                 errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
                 return ValidationResult.error(ConfigContext(config), "Improper TOML format passed to deserializeDirtyFromToml")
             }
-            walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { c, _, str, v, prop, annotations, _, _ -> toml[str]?.let {
+            val id = (config as? Config)?.getId()?.toTranslationKey() ?: ""
+            walk(config, id, flags) { c, _, str, v, prop, annotations, _, _ -> toml[str]?.let {
                 if(v is EntryDeserializer<*>) {
                     val action = requiredAction(prop.annotations, globalAction)
                     if(checkActions && v is Supplier<*> && action != null) {
@@ -696,7 +698,7 @@ internal object ConfigApiImpl {
                         v.deserializeEntry(it, errorBuilder, str, flags)
                     }
                 } else if (v != null) {
-                    val basicValidation = UpdateManager.basicValidationStrategy(v, prop.returnType, str, annotations)
+                    val basicValidation = UpdateManager.getValidation(v, prop.returnType, str, id, annotations, this.isClient)
                     if (basicValidation != null) {
                         @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(it, errorBuilder, str, flags)
@@ -818,6 +820,14 @@ internal object ConfigApiImpl {
             i++
         }
         return i - 1
+    }
+
+    private fun makeDir(dir: File): Pair<File, Boolean> {
+        if (!dir.exists() && !dir.mkdirs()) {
+            FC.LOGGER.error("Could not create directory $dir")
+            return Pair(dir, false)
+        }
+        return Pair(dir, true)
     }
 
     internal fun makeDir(folder: String, subfolder: String): Pair<File, Boolean> {
@@ -1269,4 +1279,6 @@ internal object ConfigApiImpl {
             continued = true
         }
     }
+
+    private class IncompatibleSaveTypeException(message: String): RuntimeException(message)
 }

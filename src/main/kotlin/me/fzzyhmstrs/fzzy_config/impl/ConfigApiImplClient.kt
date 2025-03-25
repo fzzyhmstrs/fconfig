@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
+import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigBaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.literal
@@ -73,16 +74,25 @@ internal object ConfigApiImplClient {
     }
 
     internal fun openScreen(scope: String) {
-        ClientConfigRegistry.openScreen(scope)
+        MinecraftClient.getInstance().execute {
+            ClientConfigRegistry.openScreen(scope)
+        }
     }
 
     internal fun isScreenOpen(scope: String): Boolean {
         return ClientConfigRegistry.isScreenOpen(scope)
     }
 
+    internal fun getScreenUpdateManager(scope: String): ConfigBaseUpdateManager? {
+        return ClientConfigRegistry.provideUpdateManager(scope)
+    }
+
     internal fun openRestartScreen(): Boolean {
         if (MinecraftClient.getInstance().currentScreen is RestartScreen) return false
-        MinecraftClient.getInstance().setScreen(RestartScreen())
+        MinecraftClient.getInstance().execute {
+            if (MinecraftClient.getInstance().currentScreen !is RestartScreen)
+                MinecraftClient.getInstance().setScreen(RestartScreen())
+        }
         return true
     }
 
