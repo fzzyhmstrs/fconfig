@@ -79,7 +79,9 @@ class FzzyConfigNeoForgeClient() {
 @Internal
 object FCC {
 
+    @Volatile
     private var scopeToOpen = ""
+    @Volatile
     private var openRestartScreen = false
 
     fun openScopedScreen(scope: String) {
