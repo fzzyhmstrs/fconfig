@@ -77,7 +77,19 @@ object EntryCreators {
             contentBuilder.layoutContent { contentLayout ->
                 contentLayout.add(
                     "open_screen",
-                    CustomButtonWidget.builder(context.texts.name) { context.misc.get(OPEN_SCREEN)?.accept(context.scope) }
+                    CustomButtonWidget.builder(context.texts.name) {
+                        if (Screen.hasShiftDown()) {
+                            val search = MinecraftClient.getInstance().currentScreen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
+                            if (search.isNotEmpty()) {
+                                val scope = "${context.scope}.::$search"
+                                context.misc.get(OPEN_SCREEN)?.accept(scope)
+                            } else {
+                                context.misc.get(OPEN_SCREEN)?.accept(context.scope)
+                            }
+                        } else {
+                            context.misc.get(OPEN_SCREEN)?.accept(context.scope)
+                        }
+                    }
                         .narrationSupplier { _ -> context.texts.name.copyContentOnly() }
                         .width(110)
                         .build(),
@@ -98,7 +110,19 @@ object EntryCreators {
             contentBuilder.layoutContent { contentLayout ->
                 contentLayout.add(
                     "open_screen",
-                    CustomButtonWidget.builder(context.texts.name) { context.misc.get(OPEN_SCREEN)?.accept(context.scope) }
+                    CustomButtonWidget.builder(context.texts.name) {
+                        if (Screen.hasShiftDown()) {
+                            val search = MinecraftClient.getInstance().currentScreen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
+                            if (search.isNotEmpty()) {
+                                val scope = "${context.scope}.::$search"
+                                context.misc.get(OPEN_SCREEN)?.accept(scope)
+                            } else {
+                                context.misc.get(OPEN_SCREEN)?.accept(context.scope)
+                            }
+                        } else {
+                            context.misc.get(OPEN_SCREEN)?.accept(context.scope)
+                        }
+                    }
                         .narrationSupplier { _ -> context.texts.name.copyContentOnly() }
                         .width(110)
                         .build(),
