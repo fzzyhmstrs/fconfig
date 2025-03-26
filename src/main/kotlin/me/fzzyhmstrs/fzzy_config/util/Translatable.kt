@@ -104,9 +104,10 @@ interface Translatable {
      * @param desc [Text], nullable. the tooltip description. Null means no description is present.
      * @param prefix [Text], nullable. the inline prefix text of a config entry. Null means no prefix.
      * @author fzzyhmstrs
-     * @since 0.6.0, data class since 0.6.5, implements [Searcher.SearchContent] since 0.6.8
+     * @since 0.6.0, data class since 0.6.5, implements [Searcher.SearchContent] and deprecated since 0.6.8
      */
-    data class Result(val name: Text, val desc: Text? = null, val prefix: Text? = null): Searcher.SearchContent {
+     @Deprecated("Replace with createResult. Scheduled for removal in 0.7.0")
+    data class Result(override val name: Text, override val desc: Text? = null, override val prefix: Text? = null): ResultProvider, Searcher.SearchContent {
 
         override val texts = this
 
@@ -114,6 +115,98 @@ interface Translatable {
 
         companion object {
             val EMPTY = Result(FcText.empty(), null, null)
+        }
+    }
+
+    /**
+     * Abstract representation of a translation result. Implementations of this class may or may not have all three translation components
+     * @author fzzyhmstrs
+     * @since 0.6.8, will replace Result itself in 0.7.0
+     */
+    abstract class ResultProvider {
+        abstract val name: Text,
+        abstract val desc: Text?
+        abstract val prefix: Text?
+    }
+
+    /**
+     * Provides utilities for creating and caching translation results
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
+    companion object Utils {
+
+        private var cache: SoftReference<ConcurrentHashMap<String, Result>> = SoftReference(ConcurrentHashMap())
+
+        internal fun invalidate() {
+            cache = SoftReference(ConcurrentHashMap())
+        }
+
+        /**
+         * Retrieves a cached result, if any exists. If the cache has been invalidated this will return null
+         * @param scope String representation of the object needing translation
+         * @return [Result], nullable. Null if the cache doesn't contain a result or if it has been invalidated.
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        @JvmStatic
+        fun getScopedResult(scope: String): Result? {
+            val m = cache.get()
+            if (m == null) return null //memory demands have wiped the cache, it will need to be rebuilt
+            return m[scope]
+        }
+
+        /**
+         * Caches the provided result and passes it through.
+         * @param scope String representation of the object needing translation
+         * @param result [Result] input result to cache
+         * @return The input result after caching
+         * @see createScopedResult
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        @JvmStatic
+        fun cacheScopedResult(scope: String, result: Result): Result {
+            val m = cache.get()
+            if (m == null) { //rebuild cache
+                val m2 = ConcurrentHashMap()
+                cache = SoftReference(m2)
+                m2[scope] = result
+                return result
+            }
+            m[scope] = result
+            return result
+        }
+
+        /**
+         * Creates a [Result], caches it, and passes the newly created result through.
+         * @param scope String representation of the object needing translation
+         * @param name [Text] the title of the element, such as "Particle Count"
+         * @param desc [Text], nullable. the tooltip description. Null means no description is present.
+         * @param prefix [Text], nullable. the inline prefix text of a config entry. Null means no prefix.
+         * @return The created result after caching
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        @JvmOverloads
+        @JvmStatic
+        fun createScopedResult(scope: String, name: Text, desc: Text? = null, prefix: Text? = null): Result {
+            return cacheScopedResult(scope, createResult(name, desc, prefix))
+        }
+
+        /**
+         * Creates a [Result] without caching it.
+         * @param name [Text] the title of the element, such as "Particle Count"
+         * @param desc [Text], nullable. the tooltip description. Null means no description is present.
+         * @param prefix [Text], nullable. the inline prefix text of a config entry. Null means no prefix.
+         * @return The created result
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        @JvmOverloads
+        @JvmStatic
+        fun createResult(name: Text, desc: Text? = null, prefix: Text? = null): Result {
+            return Result(name, desc, prefix)
         }
     }
 }
