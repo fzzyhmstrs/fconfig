@@ -30,6 +30,7 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.navigation.GuiNavigationType
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
@@ -41,6 +42,7 @@ import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
+import java.util.function.Function
 import java.util.function.UnaryOperator
 import kotlin.math.min
 
@@ -137,7 +139,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
         val tooltipList: MutableList<OrderedText> = mutableListOf()
         if (tooltipPrefix.isNotEmpty()) {
-            tooltipList.addAll(tooltipPrefix.map { it.asOrderedText() }
+            tooltipList.addAll(tooltipPrefix.map { it.asOrderedText() })
             tooltipList.add(OrderedText.EMPTY)
         }
         for ((index, provider) in tooltipProviders.withIndex()) {
@@ -182,10 +184,23 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     }
 
     override fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
-        if ((hovered && !MinecraftClient.getInstance().navigationType.isKeyboard) || (focused && MinecraftClient.getInstance().navigationType.isKeyboard))
+        val over = (hovered && !MinecraftClient.getInstance().navigationType.isKeyboard) || (focused && MinecraftClient.getInstance().navigationType.isKeyboard)
+        if (over)
             context.drawBorder(x - 2 + groupOffset, y - 2, width + 4 - groupOffset, height + 4, -1)
         else if (focused || hovered)
             context.drawBorder(x - 2 + groupOffset, y - 2, width + 4 - groupOffset, height + 4, -6250336)
+        if (getVisibility() == DynamicListWidget.Visibility.VISIBLE_SEARCHED) {
+            val color = if (over) {
+                if (Screen.hasShiftDown()) {
+                    -256
+                } else {
+                    -1
+                }
+            } else {
+                -6250336
+            }
+            context.drawTex(TextureIds.DASHED, x - 1 + groupOffset, y - 1, width + 2 - groupOffset, height + 2, color)
+        }
     }
 
     override fun renderHighlight(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
@@ -437,7 +452,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
                 groupTypes,
                 visibility,
                 contextActions,
-                searchResult)
+                searchResults)
         }
 
         /**
