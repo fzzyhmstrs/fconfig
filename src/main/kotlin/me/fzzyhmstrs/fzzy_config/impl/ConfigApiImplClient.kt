@@ -110,8 +110,9 @@ internal object ConfigApiImplClient {
         return Supplier { fallback.replace('_', ' ').split(FcText.regex).joinToString(" ") { it.lowercase(); it.replaceFirstChar { c -> c.uppercase() } } }
     }
 
-    internal fun getText(thing: Any, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String = fieldName): Translatable.Result {
-        val nameFallback = fallbackSupplier(fallback)
+    internal fun getText(thing: Any, scope: String, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String = fieldName): Translatable.Result {
+        val cachedText = Translatable.getScopedResult(scope)
+        if (cachedText != null) return cachedText
         var nFinal: Text? = null
         var dFinal: Text? = null
         var pFinal: Text? = null
@@ -119,17 +120,17 @@ internal object ConfigApiImplClient {
             if (annotation is Translation) {
                 for (ga in globalAnnotations) {
                     if (ga is Translation && ga.negate) {
-                        val n = thing.transSupplied(nameFallback)
+                        val n = thing.transSupplied(fallbackSupplier(fallback))
                         val d = thing.descGet { getComments(annotations) }
                         val p = thing.prefixLit("")
-                        return Translatable.Result(n, d, p)
+                        return Translatable.createScopedResult(scope, n, d, p)
                     }
                 }
                 if (annotation.negate) {
-                    val n = thing.transSupplied(nameFallback)
+                    val n = thing.transSupplied(fallbackSupplier(fallback))
                     val d = thing.descGet { getComments(annotations) }
                     val p = thing.prefixLit("")
-                    return Translatable.Result(n, d, p)
+                    return Translatable.createScopedResult(scope, n, d, p)
                 }
                 val keyN = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName" else annotation.prefix
                 val keyD = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.desc" else "${annotation.prefix}.desc"
@@ -151,10 +152,10 @@ internal object ConfigApiImplClient {
                 break
             }
         }
-        nFinal = nFinal ?: thing.transSupplied(nameFallback)
+        nFinal = nFinal ?: thing.transSupplied(fallbackSupplier(fallback))
         dFinal = dFinal ?: thing.descGet { getComments(annotations) }
         pFinal = pFinal ?: thing.prefixLit("")
-        return Translatable.Result(nFinal, dFinal, pFinal)
+        return Translatable.createScopedResult(scope, nFinal, dFinal, pFinal)
     }
 
     private fun Any?.descGet(fallbackSupplier: Supplier<String>): MutableText? {
@@ -204,7 +205,7 @@ internal object ConfigApiImplClient {
     : PrepareResult {
         if (thing == null) return PrepareResult.FAIL
         val fieldName = id.substringAfterLast('.')
-        val texts = getText(thing, fieldName, annotations, globalAnnotations)
+        val texts = getText(thing, id, fieldName, annotations, globalAnnotations)
         val permResult = hasNeededPermLevel(thing, playerPermLevel, config, configId, id, annotations, clientOnly, flags, getPerms())
         if (!permResult.success) {
             return PrepareResult(permResult, setOf(), texts, (thing is EntryParent) && thing.continueWalk(), false)
