@@ -10,8 +10,14 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
@@ -21,10 +27,13 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Ref
+import me.fzzyhmstrs.fzzy_config.util.Searcher
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import java.util.function.BiFunction
 import java.util.function.Consumer
+import java.util.function.Function
 
 /**
  * Built in entry creators (except for [ValidatedField][me.fzzyhmstrs.fzzy_config.validation.ValidatedField]) The methods themselves are internal to FC, but can be used as reference.
@@ -208,9 +217,9 @@ object EntryCreators {
                     client, 
                     flags, 
                     ConfigApiImplClient.getPerms())
-                if (permResult.success) {
+                if (permResult.success && thing != null) {
                     val fieldName = new.substringAfterLast('.')
-                    val texts = getText(thing, fieldName, annotations, globalAnnotations)
+                    val texts = ConfigApiImplClient.getText(thing, fieldName, annotations, globalAnnotations)
                     list.add(texts)
                 }
             }
