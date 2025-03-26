@@ -35,10 +35,12 @@ import net.minecraft.client.gui.navigation.NavigationDirection
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 import java.util.*
 import java.util.function.BiFunction
 import java.util.function.Consumer
+import java.util.function.Function
 import java.util.function.Predicate
 import java.util.function.Supplier
 import kotlin.math.max
@@ -507,7 +509,7 @@ class DynamicListWidget(
                 val eResults = e.entrySearchResults(searchInput)
                 if (eResults.isNotEmpty()) {
                     e.applyVisibility(Visibility::searched)
-                    e.applyTooltipPrefix(SEARCHED_PREFIX_HEADER + eResults.map { it.name })
+                    e.applyTooltipPrefix(Visibility.SEARCHED_PREFIX_HEADER + eResults.map { it.name })
                 } else {
                     e.applyVisibility(Visibility::unsearched)
                     e.applyVisibility(Visibility::filter)
@@ -1157,7 +1159,7 @@ class DynamicListWidget(
          */
         VISIBLE(true, false, true, false, false, { v -> !v.group }),
         /**
-         * Visible because it contains valid search results inside it. Applied externally, removed on [unFilter]
+         * Visible because it contains valid search results inside it.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
