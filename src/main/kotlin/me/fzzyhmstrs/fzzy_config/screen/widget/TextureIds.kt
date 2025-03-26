@@ -22,6 +22,9 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil
  */
 object TextureIds {
 
+    /** a dashed box outline */
+    val DASHED = "widget/dashed".fcId()
+
     /** a green checkmark */
     val ENTRY_OK = "widget/entry_ok".fcId()
 

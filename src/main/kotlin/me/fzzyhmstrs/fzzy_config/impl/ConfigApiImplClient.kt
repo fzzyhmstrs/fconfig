@@ -225,7 +225,7 @@ internal object ConfigApiImplClient {
         }
     }
 
-    private fun hasNeededPermLevel(thing: Any?, playerPermLevel: Int, config: Any, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean, flags: List<EntryFlag.Flag>, cachedPerms:  Map<String, Map<String, Boolean>>): PermResult {
+    internal fun hasNeededPermLevel(thing: Any?, playerPermLevel: Int, config: Any, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean, flags: List<EntryFlag.Flag>, cachedPerms:  Map<String, Map<String, Boolean>>): PermResult {
         if (thing is EntryPermissible) return PermResult.SUCCESS
         val client = MinecraftClient.getInstance()
         val needsWorld = flags.contains(EntryFlag.Flag.REQUIRES_WORLD)

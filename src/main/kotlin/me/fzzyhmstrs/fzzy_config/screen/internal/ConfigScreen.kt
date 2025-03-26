@@ -180,7 +180,7 @@ internal class ConfigScreen(
         searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
         fun setColor(entries: Int) {
             if(entries > 0)
-                searchField.setEditableColor(Colors.WHITE)
+                searchField.setEditableColor(-1)
             else
                 searchField.setEditableColor(0xFF5555)
         }
