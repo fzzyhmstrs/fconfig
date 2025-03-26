@@ -90,16 +90,34 @@ internal class ConfigScreen(
         return this
     }
 
+    fun getCurrentSearch(): String {
+        return try {
+            searchField.text
+        } catch (e: Throwable) {
+            ""
+        }
+    }
+
     fun scrollToEntry(scope: String) {
         configList.scrollToEntry(scope)
     }
 
     fun openEntry(rawEntryString: String) {
+        if (processEntry(rawEntryString)) return 
         val l = rawEntryString.split('.')
         if (l.isEmpty()) return
         val entry = l[0]
         val args = if (l.size > 1) l.subList(1, l.size) else listOf()
         openEntry(entry, args)
+    }
+
+    fun processEntry(rawEntryString: String): Boolean {
+        if (rawEntryString.startsWith("::")) {
+            //check if I have to also prompt a search field change
+            searchField.text = rawEntryString.subString(1)
+            return true
+        }
+        return false
     }
 
     fun openEntry(entry: String, args: List<String>) {
@@ -175,6 +193,11 @@ internal class ConfigScreen(
         directionalLayoutWidget.add(CustomButtonWidget.builder { openInfoPopup() }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignLeft() }
         //directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
+        val searchText = if (this::searchField.isInitialized) {
+            searchField.text
+        } else {
+            ""
+        }
         searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
         fun setColor(entries: Int) {
             if(entries > 0)
@@ -183,8 +206,8 @@ internal class ConfigScreen(
                 searchField.setEditableColor(0xFF5555)
         }
         searchField.setMaxLength(100)
-        searchField.text = ""
         searchField.setChangedListener { s -> setColor(configList.search(s)) }
+        searchField.text = searchText
         searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
         directionalLayoutWidget.add(searchField)
         //forward alert button
