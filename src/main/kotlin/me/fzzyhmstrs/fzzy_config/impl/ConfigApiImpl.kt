@@ -1148,17 +1148,14 @@ internal object ConfigApiImpl {
         try {
             // check for IgnoreVisiblity
             val ignoreVisibility = isIgnoreVisibility(walkable::class) || ignoreVisibility(flags)
-            val orderById = walkable::class.java.declaredFields.filter {
-                !isTransient(it.modifiers)
-            }.withIndex().associate {
-                it.value.name to it.index
-            }
+            val orderById = walkable::class.java.declaredFields.withIndex().associate { it.value.name to it.index }
             val globalAnnotations = walkable::class.annotations
             val walkCallback = WalkCallback(walkable)
             for (property in walkable.javaClass.kotlin.memberProperties
                 .filter {
                     it is KMutableProperty<*>
                             && (if (ignoreNonSync(flags)) true else !isNonSync(it))
+                            && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
                             && if (ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
                 }.sortedBy {
                     orderById[it.name]

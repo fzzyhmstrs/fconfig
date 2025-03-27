@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.util
 import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import java.lang.ref.SoftReference
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Classes that implement [Translatable] can be automatically utilized by many FzzyConfig systems for generating translatable text in-game
@@ -29,13 +31,13 @@ interface Translatable {
      */
     fun translationKey(): String
     /**
-     * translation key of this Translatable's description. the "description" in-game, the descriptions Enchantment Descriptions adds to enchantment tooltips are a good example.
+     * translation key of this Translatable description. the "description" in-game, the descriptions Enchantment Descriptions adds to enchantment tooltips are a good example.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     fun descriptionKey(): String
     /**
-     * translation key of this Translatable's inline prefix text. Unlike descriptions, which are usually displayed in-tooltips, prefixes are displayed inline in the config screen itself
+     * translation key of this Translatable inline prefix text. Unlike descriptions, which are usually displayed in-tooltips, prefixes are displayed inline in the config screen itself
      *
      * Both descriptions and prefixes are narrated like "hints" (tooltips), so usage of either and/or both is equivalent for narration except that prefixes are narrated before descriptions.
      * @author fzzyhmstrs
@@ -47,6 +49,8 @@ interface Translatable {
 
     /**
      * The translated [Text] name from the [translationKey]. Falls back to the implementing classes Simple Name (non-translated)
+     * @param fallback String, default null. Translation key fallback (can be a literal string too, translation will simply provide the literal once translation fails). If null, the class name will be split by uppercase characters and used (MyClassName -> My Class Name)
+     * @return [MutableText] translation result
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -55,6 +59,8 @@ interface Translatable {
     }
     /**
      * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered.
+     * @param fallback String, default null. Translation key fallback (can be a literal string too, translation will simply provide the literal once translation fails). If null will return a blank description.
+     * @return [MutableText] translation result
      * @author fzzyhmstrs
      * @since 0.2.0
      */
@@ -63,11 +69,47 @@ interface Translatable {
     }
     /**
      * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered.
+     * @param fallback String, default null. Translation key fallback (can be a literal string too, translation will simply provide the literal once translation fails). If null will return a blank prefix.
+     * @return [MutableText] translation result
      * @author fzzyhmstrs
      * @since 0.6.0
      */
     fun prefix(fallback: String? = null): MutableText {
         return FcText.translatableWithFallback(prefixKey(), fallback ?: "")
+    }
+
+    /**
+     * The translated [Text] name from the [translationKey]. Falls back to the implementing classes Simple Name (non-translated). If no translation exists when called returns null.
+     * @param fallback String, default null. Translation key fallback (can be a literal string too, translation will simply provide the literal once translation fails). If null, the class name will be split by uppercase characters and used (MyClassName -> My Class Name)
+     * @return [MutableText] translation result or null if no translation is present
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
+    fun translationOrNull(fallback: String? = null): MutableText? {
+        return if (hasTranslation())
+            FcText.translatableWithFallback(translationKey(), fallback ?: this::class.java.simpleName.split(FcText.regex).joinToString(" ").trimStart())
+        else
+            null
+    }
+    /**
+     * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered. If no translation exists when called returns null.
+     * @param fallback String, default null. Translation key fallback (can be a literal string too, translation will simply provide the literal once translation fails). If null will return a blank description.
+     * @return [MutableText] translation result or null if no translation is present
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
+    fun descriptionOrNull(fallback: String? = null): MutableText? {
+        return if(hasDescription()) FcText.translatableWithFallback(descriptionKey(), fallback ?: "") else null
+    }
+    /**
+     * The translated [Text] description from the [descriptionKey]. Falls back to an empty string so no tooltip is rendered. If no translation exists when called returns null.
+     * @param fallback String, default null. Translation key fallback (can be a literal string too, translation will simply provide the literal once translation fails). If null will return a blank prefix.
+     * @return [MutableText] translation result or null if no translation is present
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
+    fun prefixOrNull(fallback: String? = null): MutableText? {
+        return if (hasPrefix()) FcText.translatableWithFallback(prefixKey(), fallback ?: "") else null
     }
 
     /**
@@ -107,7 +149,7 @@ interface Translatable {
      * @since 0.6.0, data class since 0.6.5, implements [Searcher.SearchContent] and deprecated since 0.6.8
      */
      @Deprecated("Replace with createResult. Scheduled for removal in 0.7.0")
-    data class Result(override val name: Text, override val desc: Text? = null, override val prefix: Text? = null): ResultProvider, Searcher.SearchContent {
+    data class Result(override val name: Text, override val desc: Text? = null, override val prefix: Text? = null): ResultProvider(), Searcher.SearchContent {
 
         override val texts = this
 
@@ -118,13 +160,34 @@ interface Translatable {
         }
     }
 
+    data class Name(override val name: Text): ResultProvider() {
+
+        override val desc: Text?
+            get() = null
+
+        override val prefix: Text?
+            get() = null
+    }
+
+    data class NameDesc(override val name: Text, override val desc: Text): ResultProvider() {
+
+        override val prefix: Text?
+            get() = null
+    }
+
+    data class NamePrefix(override val name: Text, override val prefix: Text): ResultProvider() {
+
+        override val desc: Text?
+            get() = null
+    }
+
     /**
      * Abstract representation of a translation result. Implementations of this class may or may not have all three translation components
      * @author fzzyhmstrs
      * @since 0.6.8, will replace Result itself in 0.7.0
      */
     abstract class ResultProvider {
-        abstract val name: Text,
+        abstract val name: Text
         abstract val desc: Text?
         abstract val prefix: Text?
     }
@@ -151,8 +214,8 @@ interface Translatable {
          */
         @JvmStatic
         fun getScopedResult(scope: String): Result? {
-            val m = cache.get()
-            if (m == null) return null //memory demands have wiped the cache, it will need to be rebuilt
+            val m = cache.get() ?: return null //memory demands have wiped the cache, it will need to be rebuilt
+
             return m[scope]
         }
 
@@ -169,7 +232,7 @@ interface Translatable {
         fun cacheScopedResult(scope: String, result: Result): Result {
             val m = cache.get()
             if (m == null) { //rebuild cache
-                val m2 = ConcurrentHashMap()
+                val m2 = ConcurrentHashMap<String, Result>()
                 cache = SoftReference(m2)
                 m2[scope] = result
                 return result

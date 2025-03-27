@@ -72,7 +72,7 @@ class DynamicListWidget(
     height: Int,
     private val spec: ListSpec = ListSpec())
 :
-    CustomListWidget<DynamicListWidget.Entry>(
+    CustomListWidget<Entry>(
     client,
     x,
     y,
@@ -503,16 +503,20 @@ class DynamicListWidget(
 
         fun search(searchInput: String): Int {
             dirty = true
-            val foundEntries = searcher.search(searchInput)
-            for (e in delegate) {
-                if (e.getVisibility().skip) continue
-                val eResults = e.entrySearchResults(searchInput)
-                if (eResults.isNotEmpty()) {
-                    e.applyVisibility(Visibility::searched)
-                    e.applyTooltipPrefix(Visibility.SEARCHED_PREFIX_HEADER + eResults.map { it.name })
-                } else {
-                    e.applyVisibility(Visibility::unsearched)
-                    e.applyVisibility(Visibility::filter)
+            var childrenMatches = 0
+            val foundEntries = if (searchInput.isEmpty()) delegate else searcher.search(searchInput)
+            if (searchInput.isNotEmpty()) {
+                for (e in delegate) {
+                    if (e.getVisibility().skip) continue
+                    val eResults = e.entrySearchResults(searchInput)
+                    if (eResults.isNotEmpty()) {
+                        childrenMatches++
+                        e.applyVisibility(Visibility::searched)
+                        e.applyTooltipPrefix(Visibility.SEARCHED_PREFIX_HEADER + eResults.map { it.name })
+                    } else {
+                        e.applyVisibility(Visibility::unsearched)
+                        e.applyVisibility(Visibility::filter)
+                    }
                 }
             }
             for (e in foundEntries) {
@@ -540,7 +544,7 @@ class DynamicListWidget(
                 this@DynamicListWidget.ensureVisible(last)
             }
             delegate.forEach { it.onScroll(0) }
-            return foundEntries.size
+            return if (childrenMatches > 0) -(foundEntries.size + childrenMatches) else foundEntries.size
         }
 
         fun groupIsVisible(g: String): Boolean {
@@ -767,7 +771,7 @@ class DynamicListWidget(
         fun applyTooltipPrefix(prefix: List<Text>) {
             this.tooltipPrefix = prefix
         }
-        
+
         /**
          * Provides a list of indirect search matches to the dynamic list parent. Used to determine which entries should stay visible because they are indirectly relevant.
          * @param searchInput The raw input string. Has not been parsed for special characters etc. Passing it into a [Searcher] to generate results may be prudent.

@@ -8,6 +8,8 @@
   "fc.test.int2.name": "Textbox Cool Int",
   "fc.test.int2.name.desc": "A number between 0 and 16, that defines how cool the number is.",
 
+  "do.popups.break.enum": "Do I Break",
+
   "fzzy_config_test.never_loaded_config": "I'm Never Loaded",
 
   "fzzy_config_test.test_config.enum1" : "Very Cool Long Enum Name For Testing",
