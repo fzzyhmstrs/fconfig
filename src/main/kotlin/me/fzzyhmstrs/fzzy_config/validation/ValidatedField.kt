@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextAction
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextResultBuilder
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
@@ -31,6 +32,7 @@ import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
@@ -437,7 +439,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
 
     @Internal
     override fun translation(fallback: String?): MutableText {
-        return FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+        return Translatable.getScopedResult(this.getEntryKey())?.name?.nullCast() ?: FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
     }
 
     /////////// END TRANSLATION ///////////////////

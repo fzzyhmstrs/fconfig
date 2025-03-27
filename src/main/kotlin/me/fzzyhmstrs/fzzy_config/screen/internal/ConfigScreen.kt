@@ -43,7 +43,6 @@ import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
-import net.minecraft.util.Colors
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.Util
@@ -103,7 +102,7 @@ internal class ConfigScreen(
     }
 
     fun openEntry(rawEntryString: String) {
-        if (processEntry(rawEntryString)) return 
+        if (processEntry(rawEntryString)) return
         val l = rawEntryString.split('.')
         if (l.isEmpty()) return
         val entry = l[0]
@@ -112,9 +111,9 @@ internal class ConfigScreen(
     }
 
     fun processEntry(rawEntryString: String): Boolean {
-        if (rawEntryString.startsWith("::")) {
+        if (rawEntryString.startsWith("::") && rawEntryString.length > 2) {
             //check if I have to also prompt a search field change
-            searchField.text = rawEntryString.subString(1)
+            searchField.text = rawEntryString.substring(2)
             return true
         }
         return false
@@ -202,8 +201,10 @@ internal class ConfigScreen(
         fun setColor(entries: Int) {
             if(entries > 0)
                 searchField.setEditableColor(-1)
-            else
+            else if (entries == 0)
                 searchField.setEditableColor(0xFF5555)
+            else
+                searchField.setEditableColor(-256)
         }
         searchField.setMaxLength(100)
         searchField.setChangedListener { s -> setColor(configList.search(s)) }
