@@ -16,11 +16,13 @@ import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.server.network.ServerPlayerEntity
+import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.io.File
@@ -213,5 +215,23 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      */
     override fun descriptionKey(): String {
         return getId().toTranslationKey("", ".desc")
+    }
+    /**
+     * @suppress
+     */
+    override fun translation(fallback: String?): MutableText {
+        return Translatable.getScopedResult(translationKey())?.name?.nullCast() ?: super.translation(fallback)
+    }
+    /**
+     * @suppress
+     */
+    override fun description(fallback: String?): MutableText {
+        return Translatable.getScopedResult(translationKey())?.desc?.nullCast() ?: super.description(fallback)
+    }
+    /**
+     * @suppress
+     */
+    override fun prefix(fallback: String?): MutableText {
+        return Translatable.getScopedResult(translationKey())?.prefix?.nullCast() ?: super.prefix(fallback)
     }
 }

@@ -229,7 +229,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
     private fun rootConfigName(): Text {
         if (rootScope != null) {
             val result = configs[rootScope]?.active?.let { config ->
-                ConfigApiImplClient.getText(config, "", config::class.annotations, emptyList(), config::class.java.simpleName)
+                ConfigApiImplClient.getText(config, rootScope, "", config::class.annotations, emptyList(), config::class.java.simpleName)
             }
             if (result != null)
                 return result.name
@@ -291,7 +291,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
             screenCaches[s]?.let { manager.addChild(it.manager) }
             val config: Config = set.active
             val prefix = config.getId().toTranslationKey()
-            val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, emptyList(), config::class.java.simpleName)
+            val configTexts = ConfigApiImplClient.getText(config, prefix, "", config::class.annotations, emptyList(), config::class.java.simpleName)
 
             contentBuffer.set(config)
             contextMisc.put(EntryCreators.CONFIG, config)
@@ -386,7 +386,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
         for (configSet in configs.values) {
             val config = configSet.active
             val prefix = config.getId().toTranslationKey()
-            val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, emptyList(), config::class.java.simpleName)
+            val configTexts = ConfigApiImplClient.getText(config, prefix, "", config::class.annotations, emptyList(), config::class.java.simpleName)
             anchorConsumer.accept(AnchorResult(prefix, config, configTexts))
 
             ConfigApiImpl.walk(config, prefix, 1) { _, _, new, thing, thingProp, annotations, globalAnnotations, callback ->
@@ -397,7 +397,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
                         callback.cont()
                     }
                     val fieldName = new.substringAfterLast('.')
-                    val texts = ConfigApiImplClient.getText(thing, fieldName, annotations, globalAnnotations)
+                    val texts = ConfigApiImplClient.getText(thing, new, fieldName, annotations, globalAnnotations)
                     anchorConsumer.accept(AnchorResult(new, thing, texts))
                 }
             }
@@ -416,7 +416,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
         val config: Config = set.active
         val baseConfig: Config = set.base
         val prefix = config.getId().toTranslationKey()
-        val configTexts = ConfigApiImplClient.getText(config, "", config::class.annotations, emptyList(), config::class.java.simpleName)
+        val configTexts = ConfigApiImplClient.getText(config, prefix, "", config::class.annotations, emptyList(), config::class.java.simpleName)
         val groups: LinkedList<String> = LinkedList()
 
         fun List<EntryCreator.Creator>.applyToMap(parent: String, functionMap: MutableMap<String, MutableList<EntryCreator.Creator>>) {
@@ -428,13 +428,13 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
         anchorPredicate.test(AnchorResult(prefix, config, configTexts))
 
         val contentBuffer: Ref<Any> = Ref(config)
-        
+
         val contextMisc: EntryCreator.CreatorContextMisc = EntryCreator.CreatorContextMisc()
             .put(EntryCreators.OPEN_SCREEN, Consumer { s -> openScopedScreen(s) })
             .put(EntryCreators.COPY_BUFFER, copyBuffer)
             .put(EntryCreators.CONFIG, config)
             .put(EntryCreators.CONTENT_BUFFER, contentBuffer)
-        
+
         if (configTexts.prefix != null) {
             val context = EntryCreator.CreatorContext(prefix, groups, set.clientOnly, configTexts, config::class.annotations, ConfigApiImpl.getActions(config, ConfigApiImpl.IGNORE_NON_SYNC), contextMisc)
             EntryCreators.createHeaderEntry(context).applyToMap(prefix, functionMap)

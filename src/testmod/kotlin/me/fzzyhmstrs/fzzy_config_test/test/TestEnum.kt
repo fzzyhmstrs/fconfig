@@ -29,6 +29,6 @@ enum class TestEnum: EnumTranslatable {
     DELTA,
     EPSILON;
     override fun prefix(): String {
-        return "fzzy_config.test_config"
+        return "fzzy_config_test.test_config"
     }
 }
