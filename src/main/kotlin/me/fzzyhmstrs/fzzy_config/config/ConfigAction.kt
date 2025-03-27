@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryTransient
 import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
@@ -26,6 +27,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
@@ -113,6 +115,16 @@ class ConfigAction @JvmOverloads constructor(
     @Internal
     override fun hasFlag(flag: EntryFlag.Flag): Boolean {
         return this.hasFlag(flag.flag)
+    }
+
+    @Internal
+    override fun hasDescription(): Boolean {
+        return description != null || super.hasDescription()
+    }
+
+    @Internal
+    override fun description(fallback: String?): MutableText {
+        return description?.copy() ?: super.description(fallback)
     }
 
     /**
@@ -326,15 +338,5 @@ class ConfigAction @JvmOverloads constructor(
             q.flags = flags
             return q
         }
-    }
-
-    @Internal
-    override fun hasDescription(): Boolean {
-        return description != null || super.hasDescription()
-    }
-
-    @Internal
-    override fun description(fallback: String?): MutableText {
-        return description?.copy() ?: super.description(fallback)
     }
 }

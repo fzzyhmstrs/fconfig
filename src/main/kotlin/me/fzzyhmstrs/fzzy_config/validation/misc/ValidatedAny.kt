@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
@@ -280,7 +281,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         manager.pushUpdatableStates()
         val spec = DynamicListWidget.ListSpec(leftPadding = 21, rightPadding = 15, verticalFirstPadding = 2)
         val entryList = DynamicListWidget(MinecraftClient.getInstance(), entries.map { it.entry }, 0, 0, 288, 160, spec)
-        val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
+        val searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 94, 20, FcText.EMPTY)
         fun setColor(entries: Int) {
             if(entries > 0)
                 searchField.setEditableColor(-1)
@@ -294,8 +295,8 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         val popup = PopupWidget.Builder(translation())
             .add("list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            .add("revert", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.revert() }.size(85, 20).activeSupplier { manager.hasChanges() }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("restore", CustomButtonWidget.builder("fc.button.restore".translate()) { manager.restore("") }.size(85, 20).activeSupplier { manager.hasRestores("") }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("revert", CustomButtonWidget.builder("fc.button.revert".translate()) { manager.revert() }.size(93, 20).activeSupplier { manager.hasChanges() }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("restore", CustomButtonWidget.builder("fc.button.restore".translate()) { manager.restore("") }.size(93, 20).activeSupplier { manager.hasRestores("") }.build(), LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             .addDoneWidget()
             .onClose { manager.apply(true); if(manager.hasChanges()) setAndUpdate(newThing) }
             .build()
@@ -319,17 +320,23 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
 
     @Internal
     override fun translation(fallback: String?): MutableText {
-        return  (storedValue as? Translatable)?.translation(fallback)?.takeIf { (storedValue as? Translatable)?.hasTranslation() == true } ?: super.translation(fallback)
+        return  Translatable.getScopedResult(this.getEntryKey())?.name?.nullCast()
+            ?: storedValue.nullCast<Translatable>()?.translationOrNull(fallback)
+            ?: FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
     }
 
     @Internal
     override fun description(fallback: String?): MutableText {
-        return (storedValue as? Translatable)?.description(fallback)?.takeIf { (storedValue as? Translatable)?.hasDescription() == true } ?: super.description(fallback)
+        return Translatable.getScopedResult(this.getEntryKey())?.desc?.nullCast()
+            ?: storedValue.nullCast<Translatable>()?.descriptionOrNull(fallback)
+            ?: FcText.translatableWithFallback(descriptionKey(), fallback ?: "")
     }
 
     @Internal
     override fun prefix(fallback: String?): MutableText {
-        return (storedValue as? Translatable)?.prefix(fallback)?.takeIf { (storedValue as? Translatable)?.hasPrefix() == true } ?: super.prefix(fallback)
+        return Translatable.getScopedResult(this.getEntryKey())?.prefix?.nullCast()
+            ?: storedValue.nullCast<Translatable>()?.prefixOrNull(fallback)
+            ?: FcText.translatableWithFallback(prefixKey(), fallback ?: "")
     }
 
     @Internal

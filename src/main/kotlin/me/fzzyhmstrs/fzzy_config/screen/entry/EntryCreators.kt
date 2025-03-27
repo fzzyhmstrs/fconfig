@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
@@ -29,6 +30,8 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Ref
 import me.fzzyhmstrs.fzzy_config.util.Searcher
 import me.fzzyhmstrs.fzzy_config.util.Translatable
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import java.util.function.BiFunction
@@ -71,6 +74,7 @@ object EntryCreators {
     val CONFIG = EntryCreator.CreatorContextKey<Config>()
 
     internal fun createConfigEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
+        val searchProvider = EntrySearchProvider(context.misc.get(CONFIG) ?: "", context.misc.get(CONTENT_BUFFER)?.get() ?: "", context.scope, context.client)
         val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, context.actions.map { ConfigEntry.ActionDecorationWidget.config(it) })
             contentBuilder.decoration(TextureDeco.DECO_OPEN_SCREEN, 2, 2)
@@ -96,7 +100,7 @@ object EntryCreators {
                     LayoutWidget.Position.ALIGN_JUSTIFY,
                     LayoutWidget.Position.BELOW)
             }
-            contentBuilder.searchResults(EntrySearchProvider(context.misc.get(CONFIG) ?: "", context.misc.get(CONTENT_BUFFER)?.get() ?: "", context.scope, context.client))
+            contentBuilder.searchResults(searchProvider)
 
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
@@ -104,6 +108,7 @@ object EntryCreators {
     }
 
     internal fun createSectionEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
+        val searchProvider = EntrySearchProvider(context.misc.get(CONFIG) ?: "", context.misc.get(CONTENT_BUFFER)?.get() ?: "", context.scope, context.client)
         val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, context.actions.map { ConfigEntry.ActionDecorationWidget.section(it) })
             contentBuilder.decoration(TextureDeco.DECO_OPEN_SCREEN, 2, 2)
@@ -129,7 +134,7 @@ object EntryCreators {
                     LayoutWidget.Position.ALIGN_JUSTIFY,
                     LayoutWidget.Position.BELOW)
             }
-            contentBuilder.searchResults(EntrySearchProvider(context.misc.get(CONFIG) ?: "", context.misc.get(CONTENT_BUFFER)?.get() ?: "", context.scope, context.client))
+            contentBuilder.searchResults(searchProvider)
 
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
@@ -232,18 +237,18 @@ object EntryCreators {
                     EntryFlag.Flag.NONE
                 }
                 val permResult = ConfigApiImplClient.hasNeededPermLevel(
-                    thing, 
-                    ConfigApiImplClient.getPlayerPermissionLevel(), 
-                    config, 
-                    config.nullCast<Config>()?.getId()?.toTranslationKey() ?: "", 
-                    new, 
-                    annotations, 
-                    client, 
-                    flags, 
+                    thing,
+                    ConfigApiImplClient.getPlayerPermissionLevel(),
+                    config,
+                    config.nullCast<Config>()?.getId()?.toTranslationKey() ?: "",
+                    new,
+                    annotations,
+                    client,
+                    flags,
                     ConfigApiImplClient.getPerms())
                 if (permResult.success && thing != null) {
                     val fieldName = new.substringAfterLast('.')
-                    val texts = ConfigApiImplClient.getText(thing, fieldName, annotations, globalAnnotations)
+                    val texts = ConfigApiImplClient.getText(thing, new, fieldName, annotations, globalAnnotations)
                     list.add(texts)
                 }
             }

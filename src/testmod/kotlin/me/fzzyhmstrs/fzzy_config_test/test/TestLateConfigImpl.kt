@@ -10,16 +10,20 @@
 
 package me.fzzyhmstrs.fzzy_config_test.test
 
+import me.fzzyhmstrs.fzzy_config.annotations.Translation
 import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
 
+@Translation(prefix = "do.popups.break")
 class TestLateConfigImpl: Config(Identifier.of("fzzy_config_test","never_loaded_config")) {
 
     var int1 = 4
     var float2 = 3.4f
+
+    var enum = TestEnum.ALPHA
 
     override fun translation(fallback: String?): MutableText {
         return "JK I Loaded".lit()
