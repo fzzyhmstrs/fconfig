@@ -137,8 +137,10 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         }
         val keyboardFocused = focused && MinecraftClient.getInstance().navigationType.isKeyboard
 
+        val over = (hovered && !MinecraftClient.getInstance().navigationType.isKeyboard) || keyboardFocused
+
         val tooltipList: MutableList<OrderedText> = mutableListOf()
-        if (tooltipPrefix.isNotEmpty()) {
+        if (tooltipPrefix.isNotEmpty() && over) {
             tooltipList.addAll(tooltipPrefix.map { it.asOrderedText() })
             tooltipList.add(OrderedText.EMPTY)
         }
@@ -154,7 +156,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             }
         }
 
-        if ((hovered && !MinecraftClient.getInstance().navigationType.isKeyboard) || (focused && MinecraftClient.getInstance().navigationType.isKeyboard)) {
+        if (over) {
             tooltipList.addAll(tooltip)
         }
         if (tooltipList.isNotEmpty()) {
@@ -416,7 +418,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
          * @since 0.6.0
          */
         fun searchResults(searchResults: Function<String, List<Translatable.Result>>): ContentBuilder {
-            this.contextActions = contextActions
+            this.searchResults = searchResults
             return this
         }
 

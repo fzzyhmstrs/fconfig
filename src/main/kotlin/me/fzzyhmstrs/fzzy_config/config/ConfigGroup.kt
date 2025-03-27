@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.entry.EntryTransient
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
@@ -24,12 +25,14 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
+import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -49,15 +52,22 @@ import java.util.*
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-class ConfigGroup @JvmOverloads constructor(
-    private val groupName: String = "",
-    private val decoration: Decorated? = null,
-    private val offsetX: Int? = null,
-    private val offsetY: Int? = null,
+class ConfigGroup constructor(
+    private val groupName: String,
+    private val decoration: Decorated?,
+    private val offsetX: Int?,
+    private val offsetY: Int?,
     private val collapsedByDefault: Boolean = false)
     :
     TranslatableEntry, EntryAnchor, EntryCreator, EntryPermissible, EntryTransient
 {
+
+    @JvmOverloads
+    constructor(
+        groupName: String = "",
+        decoration: Decorated? = null,
+        offsetX: Int? = null,
+        offsetY: Int? = null): this(groupName, decoration, offsetX, offsetY, false)
 
     /**
      * Defines the start of a config group
