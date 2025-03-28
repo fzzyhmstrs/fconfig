@@ -251,6 +251,7 @@ object Popups {
         val list: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
         list.add { dlw, _ -> SearchMenuEntry(dlw, "modifier", SearchConfig.INSTANCE.modifier.widgetEntry()) }
         list.add { dlw, _ -> SearchMenuEntry(dlw, "behavior", SearchConfig.INSTANCE.behavior.widgetEntry()) }
+        list.add { dlw, _ -> SearchMenuEntry(dlw, "clearSearch", SearchConfig.INSTANCE.clearSearch.widgetEntry()) }
         val listWidget = DynamicListWidget(MinecraftClient.getInstance(), list, 0, 0, 10000, 0, DynamicListWidget.ListSpec(leftPadding = 10, rightPadding = 4, listNarrationKey = "fc.narrator.position.list"))
         val popup = PopupWidget.Builder(TextureIds.MENU_LANG)
             .add("search_settings", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
