@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
+import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.decoration.AbstractDecorationWidget
@@ -30,7 +31,6 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.navigation.GuiNavigationType
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.FocusedTooltipPositioner
@@ -140,8 +140,9 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         val over = (hovered && !MinecraftClient.getInstance().navigationType.isKeyboard) || keyboardFocused
 
         val tooltipList: MutableList<OrderedText> = mutableListOf()
-        if (tooltipPrefix.isNotEmpty() && over) {
-            tooltipList.addAll(tooltipPrefix.map { it.asOrderedText() })
+        val prefix = tooltipPrefix.get()
+        if (prefix.isNotEmpty() && over) {
+            tooltipList.addAll(prefix.map { it.asOrderedText() })
             tooltipList.add(OrderedText.EMPTY)
         }
         for ((index, provider) in tooltipProviders.withIndex()) {
@@ -193,7 +194,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             context.drawBorder(x - 2 + groupOffset, y - 2, width + 4 - groupOffset, height + 4, -6250336)
         if (getVisibility() == DynamicListWidget.Visibility.VISIBLE_SEARCHED) {
             val color = if (over) {
-                if (Screen.hasShiftDown()) {
+                if (SearchConfig.INSTANCE.willPassSearch()) {
                     -256
                 } else {
                     -1

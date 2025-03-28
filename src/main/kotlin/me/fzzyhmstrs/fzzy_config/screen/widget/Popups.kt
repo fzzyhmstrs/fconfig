@@ -14,18 +14,27 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.config.KeybindsConfig
+import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.screen.context.*
-import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
+import me.fzzyhmstrs.fzzy_config.screen.entry.InfoKeybindEntry
+import me.fzzyhmstrs.fzzy_config.screen.entry.SearchMenuEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.MultilineTextWidget
+import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.command.CommandSource
+import net.minecraft.text.ClickEvent
+import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import java.util.*
 import java.util.function.BiFunction
 import kotlin.math.max
@@ -162,7 +171,7 @@ object Popups {
         NetworkEventsClient.forwardSetting(update, id, key, summary)
     }
 
-    internal fun openGotoPopup(entryBuilders: List<BiFunction<DynamicListWidget, Int, out Entry>>, neededWidth: Int, screenHeight: Int) {
+    internal fun openGotoPopup(entryBuilders: List<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>>, neededWidth: Int, screenHeight: Int) {
         //height - padding * 2 - text spacing - text - divider spacing - divider
         val client = MinecraftClient.getInstance()
         val anchors = DynamicListWidget(
@@ -190,4 +199,66 @@ object Popups {
         PopupWidget.push(popup)
     }
 
+    internal fun openInfoPopup(screen: Screen) {
+        val textRenderer = MinecraftClient.getInstance().textRenderer
+        val list: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "page_up", KeybindsConfig.INSTANCE.pageUp) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "page_down", KeybindsConfig.INSTANCE.pageDown) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "home", KeybindsConfig.INSTANCE.home) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "end", KeybindsConfig.INSTANCE.end) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "copy", KeybindsConfig.INSTANCE.copy) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "paste", KeybindsConfig.INSTANCE.paste) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "find", KeybindsConfig.INSTANCE.find) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "save", KeybindsConfig.INSTANCE.save) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "undo", KeybindsConfig.INSTANCE.undo) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "context_keyboard", KeybindsConfig.INSTANCE.contextKeyboard) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "context_mouse", KeybindsConfig.INSTANCE.contextMouse) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "back", KeybindsConfig.INSTANCE.back) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "search", KeybindsConfig.INSTANCE.search) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "info", KeybindsConfig.INSTANCE.info) }
+        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "full_exit", KeybindsConfig.INSTANCE.fullExit) }
+        val listWidget = DynamicListWidget(MinecraftClient.getInstance(), list, 0, 0, 10000, 0, DynamicListWidget.ListSpec(leftPadding = 10, rightPadding = 4, listNarrationKey = "fc.narrator.position.list"))
+        val popup = PopupWidget.Builder("fc.button.info".translate())
+            .addDivider()
+            .add("header", ClickableTextWidget(screen, "fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
+                style.withFormatting(Formatting.AQUA, Formatting.UNDERLINE)
+                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://moddedmc.wiki/en/project/fzzy-config/docs"))
+                    .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, "fc.button.info.fc.tip".translate()))
+            }), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
+            .addDivider()
+            .add("keybinds", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
+            .addDivider()
+            .add("alert", TextWidget("fc.button.info.alert".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
+            .addDoneWidget()
+            .widthFunction { sw, _ -> (sw * 0.92).toInt() }
+            .heightFunction { sh, h ->
+                val newHeight = (sh * 0.9).toInt()
+                val heightDelta = newHeight - h
+                listWidget.height += heightDelta
+                newHeight
+            }
+            .onClose { KeybindsConfig.INSTANCE.save() }
+            .build()
+        PopupWidget.push(popup)
+    }
+
+    internal fun openSearchMenuPopup() {
+        val list: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
+        list.add { dlw, _ -> SearchMenuEntry(dlw, "modifier", SearchConfig.INSTANCE.modifier.widgetEntry()) }
+        list.add { dlw, _ -> SearchMenuEntry(dlw, "behavior", SearchConfig.INSTANCE.behavior.widgetEntry()) }
+        val listWidget = DynamicListWidget(MinecraftClient.getInstance(), list, 0, 0, 10000, 0, DynamicListWidget.ListSpec(leftPadding = 10, rightPadding = 4, listNarrationKey = "fc.narrator.position.list"))
+        val popup = PopupWidget.Builder(TextureIds.MENU_LANG)
+            .add("search_settings", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
+            .addDoneWidget()
+            .widthFunction { sw, _ -> (sw * 0.92).toInt() }
+            .heightFunction { sh, h ->
+                val newHeight = (sh * 0.9).toInt()
+                val heightDelta = newHeight - h
+                listWidget.height += heightDelta
+                newHeight
+            }
+            .onClose { SearchConfig.INSTANCE.save() }
+            .build()
+        PopupWidget.push(popup)
+    }
 }
