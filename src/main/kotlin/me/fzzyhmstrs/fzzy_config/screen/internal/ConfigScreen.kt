@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
@@ -38,6 +39,7 @@ import net.minecraft.client.gui.widget.DirectionalLayoutWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
 import net.minecraft.screen.ScreenTexts
+import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.StringHelper
@@ -59,6 +61,7 @@ internal class ConfigScreen(
     PopupWidgetScreen(title), ContextHandler, ContextProvider
 {
 
+    private var initialInit = false
     private var parent: Screen? = null
     private var globalInputHandler: ((key: Int, released: Boolean, type: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean) -> TriState)? = null
 
@@ -69,7 +72,10 @@ internal class ConfigScreen(
     private var mX: Double = 0.0
     private var mY: Double = 0.0
 
-    private val narrator: ConfigScreenNarrator = ConfigScreenNarrator()
+    private val narrator: ConfigScreenNarrator by lazy {
+        setElementNarrationDelay(TimeUnit.SECONDS.toMillis(2L))
+        ConfigScreenNarrator()
+    }
     private var elementNarrationStartTime = Long.MIN_VALUE
     private var screenNarrationStartTime = Long.MAX_VALUE
 
@@ -154,6 +160,11 @@ internal class ConfigScreen(
         close()
     }
 
+    override fun onDisplayed() {
+        initialInit = true
+        super.onDisplayed()
+    }
+
     override fun init() {
         layout = ThreePartsLayoutWidget(this)
         super.init()
@@ -161,7 +172,9 @@ internal class ConfigScreen(
         initFooter()
         initBody()
         initLayout()
-        initNarrator()
+        if (isNarratorActive())
+            initNarrator()
+        initialInit = false
     }
     private fun initHeader() {
         val directionalLayoutWidget = layout.addHeader(DirectionalLayoutWidget.horizontal().spacing(2))
@@ -188,7 +201,7 @@ internal class ConfigScreen(
         directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openInfoPopup(this) }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignLeft() }
         //directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
-        val searchText = if (this::searchField.isInitialized) {
+        val searchText = if (this::searchField.isInitialized && !(SearchConfig.INSTANCE.clearSearch.get() && initialInit)) {
             searchField.text
         } else {
             ""
