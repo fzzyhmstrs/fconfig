@@ -259,6 +259,14 @@ class DynamicListWidget(
         return true
     }
 
+    fun scrollToBottomOutEntry(entry: Entry) {
+        ensureVisible(entry)
+        if (entry.bottom.get() < bottom && !noScroll()) {
+            val scrollAmount = bottom - entry.bottom.get()
+            entries.scroll(scrollAmount)
+        }
+    }
+
     override var lastSelected: Element? = null
 
     override fun pushLast() {
@@ -511,9 +519,11 @@ class DynamicListWidget(
                     if (e.getVisibility().skip) continue
                     val eResults = e.entrySearchResults(searchInput)
                     if (eResults.isNotEmpty()) {
+                        var hidden = false
                         for (g in e.scope.inGroups) {
                             val gp = groups[g] ?: continue
                             if (!gp.visible) {
+                                hidden = true
                                 gp.groupEntry.applyVisibility(Visibility::searched)
                                 gPrefixes.computeIfAbsent(g) { mutableListOf() }.addAll(eResults.map {
                                     FcText.translatable("fc.search.child", e.texts.name, it.name).formatted(Formatting.GRAY)
@@ -522,16 +532,18 @@ class DynamicListWidget(
                         }
                         childrenMatches++
                         e.applyVisibility(Visibility::searched)
+                        if (hidden)
+                            e.applyVisibility(Visibility::hideSearched)
                         e.applyTooltipPrefix { SearchConfig.INSTANCE.textPrefix() + eResults.map { it.name.copy().formatted(Formatting.GRAY) } }
                     } else {
-                        e.applyTooltipPrefix{ listOf() }
+                        e.applyTooltipPrefix(Entry.EMPTY_PREFIX)
                         e.applyVisibility(Visibility::unsearched)
                         e.applyVisibility(Visibility::filter)
                     }
                 }
             } else {
                 for (e in delegate) {
-                    e.applyTooltipPrefix { listOf() }
+                    e.applyTooltipPrefix(Entry.EMPTY_PREFIX)
                     e.applyVisibility(Visibility::unsearched)
                 }
             }
@@ -543,7 +555,7 @@ class DynamicListWidget(
                         val gp = groups[g] ?: continue
                         if (!gp.visible) {
                             gp.groupEntry.applyVisibility(Visibility::searched)
-                            g2Prefixes.computeIfAbsent(g) { mutableListOf() }.add(e.texts.name)
+                            g2Prefixes.computeIfAbsent(g) { mutableListOf() }.add(e.texts.name.copy().formatted(Formatting.GRAY))
                         }
                     }
                 }
@@ -554,15 +566,15 @@ class DynamicListWidget(
                 val groupEntries = delegateMap[g]?.values
                 if (groupEntries == null) {
                     FC.LOGGER.error("Errored group $g disabled!")
-                    gp.groupEntry.applyVisibility { l -> l.push(Visibility.GROUP_DISABLED) }
+                    gp.groupEntry.applyVisibility(Visibility::disable)
                     continue
                 }
                 gp.groupEntry.applyVisibility(Visibility.groupFilter(groupEntries))
                 if (gPrefixes.containsKey(g) || g2Prefixes.containsKey(g)) {
                     val l = (g2Prefixes[g] ?: listOf()) + (gPrefixes[g] ?: listOf())
-                    gp.groupEntry.applyTooltipPrefix { l }
+                    gp.groupEntry.applyTooltipPrefix( if(l.isEmpty() Entry.EMPTY_PREFIX else Supplier { l })
                 } else {
-                    gp.groupEntry.applyTooltipPrefix { listOf() }
+                    gp.groupEntry.applyTooltipPrefix(Entry.EMPTY_PREFIX)
                 }
             }
             if (this@DynamicListWidget.focusedElement?.getVisibility()?.selectable != true) {
@@ -572,11 +584,11 @@ class DynamicListWidget(
             val last = lastSelectable()
             if (last == null) {
                 scrollToTop()
-            } else if (last.bottom.get() < this@DynamicListWidget.bottom) {
+            } else {
                 if (this@DynamicListWidget.noScroll()) {
                     scrollToTop()
                 }
-                this@DynamicListWidget.ensureVisible(last)
+                this@DynamicListWidget.scrollToBottomOutEntry(last)
             }
             delegate.forEach { it.onScroll(0) }
             return if (childrenMatches > 0) -(foundEntries.size + childrenMatches) else foundEntries.size
@@ -621,9 +633,11 @@ class DynamicListWidget(
             val last = lastSelectable()
             if (last == null) {
                 scrollToTop()
-            } else if (last.bottom.get() < this@DynamicListWidget.bottom) {
-                scrollToTop()
-                this@DynamicListWidget.ensureVisible(last)
+            } else {
+                if (this@DynamicListWidget.noScroll()) {
+                    scrollToTop()
+                }
+                this@DynamicListWidget.scrollToBottomOutEntry(last)
             }
             delegate.forEach { it.onScroll(0) }
         }
@@ -633,7 +647,7 @@ class DynamicListWidget(
         }
 
         fun bottom(): Int {
-            return lastSelectable()?.bottom?.get()/*?.plus(this@DynamicListWidget.verticalPadding)*/ ?: this@DynamicListWidget.bottom
+            return lastSelectable()?.bottom?.get() ?: this@DynamicListWidget.bottom
         }
 
         fun scrollToTop(): Boolean {
@@ -760,7 +774,10 @@ class DynamicListWidget(
         LastSelectable
     {
         companion object {
+            @JvmField
             val EMPTY_RESULTS: Function<String, List<Translatable.Result>> = Function { _ -> listOf() }
+            @JvmField
+            val EMPTY_PREFIX: Supplier<List<Text>> = Supplier { listOf() }
         }
 
         private var visibilityProvider: VisibilityProvider = visibility
@@ -801,7 +818,7 @@ class DynamicListWidget(
         private var focusedSelectable: Selectable? = null
         private var focusedElement: Element? = null
         private var dragging = false
-        protected var tooltipPrefix: Supplier<List<Text>> = Supplier { listOf() }
+        protected var tooltipPrefix: Supplier<List<Text>> = EMPTY_PREFIX
 
         fun applyTooltipPrefix(prefix: Supplier<List<Text>>) {
             this.tooltipPrefix = prefix
@@ -1158,6 +1175,7 @@ class DynamicListWidget(
             }
 
             companion object {
+                @JvmField
                 val ZERO = object: EntryPos {
                     override val previous: EntryPos? = null
                     override var next: EntryPos? = null
@@ -1190,93 +1208,141 @@ class DynamicListWidget(
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    enum class Visibility(val visible: Boolean, val skip: Boolean, val selectable: Boolean, val group: Boolean, val repeatable: Boolean, val affectedBy: Predicate<Visibility>): VisibilityProvider {
+     //val visible: 1, val skip: 2, val selectable: 4, val group: 8, val repeatable: 16, val searched: 32, val closed: 32
+    enum class Visibility(private val flags: Int, val affectedBy: Predicate<Visibility>): VisibilityProvider {
         /**
          * Standard visibility. The Entry can be seen, searched, and interacted with.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        VISIBLE(true, false, true, false, false, { v -> !v.group }),
+        //true, false, true, false, false
+        VISIBLE(0b00000101, { v -> !v.group }),
         /**
          * Visible because it contains valid search results inside it.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        VISIBLE_SEARCHED(true, false, true, false, false, { v -> !v.group }),
+        //true, false, true, false, false, true
+        VISIBLE_SEARCHED(0b00100101, { v -> !v.group }),
         /**
          * Entry hidden by a user action like toggling a group, or some visibility button. Not visible nor selectable, but searchable (in case the user reverses the hidden state after searching)
          * @see hide
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        HIDDEN(false, false, false, false, true, { v -> !v.group }),
+        //false, false, false, false, true
+        HIDDEN(0b00010000, { v -> !v.group }),
+        /**
+         * Hidden because it contains valid search results inside it, but it's group is currently collapsed.
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        //false, false, false, false, false, true
+        HIDDEN_SEARCHED(0b00100000, { v -> !v.group }),
         /**
          * Entry hidden initially by an initial-closed state
          * @see hide
          * @author fzzyhmstrs
-         * @since 0.6.0
+         * @since 0.6.5
          */
-        HIDDEN_CLOSED(false, false, false, false, false, { v -> !v.group }),
+        //false, false, false, false, false, false, true
+        HIDDEN_CLOSED(0b01000000, { v -> !v.group }),
         /**
          * Entry filtered by searching. Not visible nor selectable
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        FILTERED(false, false, false, false, false, { v -> !v.group }),
+        //false, false, false, false, false
+        FILTERED(0b00000000, { v -> !v.group }),
         /**
          * Visible entry that represents a group heading
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        GROUP_VISIBLE(true, true, true, true, false, { v -> v.group }),
+        //true, true, true, true, false
+        GROUP_VISIBLE(0b00001111, { v -> v.group }),
         /**
          * Visible entry that represents a group heading
          * @author fzzyhmstrs
          * @since 0.6.8
          */
-        GROUP_VISIBLE_SEARCHED(true, true, true, true, false, { v -> v.group }),
+        //true, true, true, true, false, true
+        GROUP_VISIBLE_SEARCHED(0b00101111, { v -> v.group }),
         /**
          * Visible entry that represents a group heading, but should be "closed"/"collapsed" by default
          * @author fzzyhmstrs
-         * @since 0.6.0
+         * @since 0.6.5
          */
-        GROUP_VISIBLE_CLOSED(true, true, true, true, false, { v -> v.group }),
+        //true, true, true, true, false, false, true
+        GROUP_VISIBLE_CLOSED(0b01001111, { v -> v.group }),
         /**
          * Filtered entry that represents a group heading. Filtering is usually done with a search.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        GROUP_FILTERED(false, true, false, true, false, { v -> v.group }), //filtering handled externally
+        //false, true, false, true, false
+        GROUP_FILTERED(0b00001010, { v -> v.group }), //filtering handled externally
         /**
          * Hidden entry that represents a group heading. Hiding is usually done with a button or other toggle.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        GROUP_HIDDEN(false, true, false, true, true, { v -> v.group }), //hiding handled externally
+        //false, true, false, true, true
+        GROUP_HIDDEN(0b00011010, { v -> v.group }), //hiding handled externally
         /**
-         * Hidden entry that represents a group heading. Hiding is usually done with a button or other toggle.
+         * Hidden entry that represents a group heading. This group has valid search results inside it, hence the searched flag
          * @author fzzyhmstrs
          * @since 0.6.8
          */
-        GROUP_HIDDEN_CLOSED(false, true, false, true, true, { v -> v.group }), //hiding handled externally
+        //false, true, false, true, true, true, false
+        GROUP_HIDDEN_SEARCHED(0b00111010, { v -> v.group }), //hiding handled externally
+        /**
+         * Hidden entry that represents a group heading. Group hidden initially by an initial-closed state. Hiding is usually done with a button or other toggle.
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        //false, true, false, true, true, false, true
+        GROUP_HIDDEN_CLOSED(0b01011010, { v -> v.group }), //hiding handled externally
         /**
          * A disabled group heading, typically caused by a layout error.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        GROUP_DISABLED(false, true, false, true, false, { _ -> false }), //problem group with no entries
+        //false, true, false, true, false
+        GROUP_DISABLED(0b00001010, { _ -> false }), //problem group with no entries
         /**
          * A header entry. Always visible, skipped in searching, and not selectable. Visibility of headers can't be changed.
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        HEADER_VISIBLE(true, true, false, false, false, { _ -> false });
+        //true, true, false, false, false
+        HEADER_VISIBLE(0b00000011, { _ -> false });
 
+        val visible: Boolean
+            get() = flags and 1 == 1
+        val skip: Boolean
+            get() = flags and 2 == 2
+        val selectable: Boolean
+            get() = flags and 4 == 4
+        val group: Boolean
+            get() = flags and 8 == 8
+        val repeatable: Boolean
+            get() = flags and 16 == 16
+        val searched: Boolean
+            get() = flags and 32 == 32
+        val closed: Boolean
+            get() = flags and 64 == 64
+
+        
         override fun get(): Visibility {
             return this
         }
 
         companion object {
+            fun disable(visibilityStack: VisibilityStack) {
+                visibilityStack.push(GROUP_DISABLED)
+            }
+            
             fun filter(visibilityStack: VisibilityStack) {
                 visibilityStack.push(FILTERED)
             }
@@ -1305,15 +1371,22 @@ class DynamicListWidget(
                 visibilityStack.push(GROUP_HIDDEN)
             }
 
+            fun hideSearched(visibilityStack: VisibilityStack) {
+                visibilityStack.push(HIDDEN_SEARCHED)
+                visibilityStack.push(GROUP_HIDDEN_SEARCHED)
+            }
+
             fun unhide(visibilityStack: VisibilityStack) {
                 visibilityStack.remove(HIDDEN)
                 visibilityStack.remove(GROUP_HIDDEN)
+                visibilityStack.remove(HIDDEN_SEARCHED)
+                visibilityStack.remove(GROUP_HIDDEN_SEARCHED)
                 visibilityStack.remove(HIDDEN_CLOSED)
                 visibilityStack.remove(GROUP_HIDDEN_CLOSED)
             }
 
             fun groupFilter(groupEntries: Collection<Entry>): Consumer<VisibilityStack> {
-                return if (!groupEntries.any { it.getVisibility().visible || it.getVisibility() == HIDDEN_CLOSED  || it.getVisibility() == GROUP_HIDDEN_CLOSED }) {
+                return if (!groupEntries.any { it.getVisibility().visible || it.getVisibility().closed }) {
                     Consumer { stack -> stack.push(GROUP_FILTERED) }
                 } else {
                     Consumer { stack -> stack.remove(GROUP_FILTERED) }
@@ -1321,6 +1394,9 @@ class DynamicListWidget(
             }
 
             val EMPTY: Consumer<LinkedList<Visibility>> = Consumer { _-> }
+
+            @JvmField
+            internal val GROUP_PREFIX: List<Text> = listOf(FcText.translatable("fc.search.indirect.group"))
         }
     }
 
