@@ -192,7 +192,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             context.drawBorder(x - 2 + groupOffset, y - 2, width + 4 - groupOffset, height + 4, -1)
         else if (focused || hovered)
             context.drawBorder(x - 2 + groupOffset, y - 2, width + 4 - groupOffset, height + 4, -6250336)
-        if (getVisibility() == DynamicListWidget.Visibility.VISIBLE_SEARCHED) {
+        if (getVisibility() == DynamicListWidget.Visibility.VISIBLE_SEARCHED || getVisibility() == DynamicListWidget.Visibility.GROUP_VISIBLE_SEARCHED) {
             val color = if (over) {
                 if (SearchConfig.INSTANCE.willPassSearch()) {
                     -256

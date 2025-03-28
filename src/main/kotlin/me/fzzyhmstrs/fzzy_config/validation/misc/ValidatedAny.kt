@@ -46,6 +46,7 @@ import net.minecraft.text.MutableText
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
+import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Supplier
 import java.util.function.UnaryOperator
@@ -369,18 +370,21 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         return Decorated.DecoratedOffset(TextureDeco.DECO_OBJECT, 2, 2)
     }
 
-    @Internal
-    override fun contentBuilder(context: EntryCreator.CreatorContext): UnaryOperator<ConfigEntry.ContentBuilder> {
+    override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val searchProvider = EntrySearcher.SearchProvider(
             context.misc.get(EntryCreators.CONFIG) ?: "",
-            context.misc.get(EntryCreators.CONTENT_BUFFER)?.get()?.let { it.nullCast<ValidatedAny<*>>()?.get() ?: it } ?: "",
+            this.get(),
             context.scope,
             context.client
         )
-        return UnaryOperator { builder ->
-            super.contentBuilder(context).apply(builder)
-            builder.searchResults(searchProvider)
+        val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
+            val contentBuilder = ConfigEntry.ContentBuilder(context)
+            contentBuilder.contextActions(contextActionBuilder(context))
+            contentBuilder(context).apply(contentBuilder)
+            contentBuilder.searchResults(searchProvider)
+            ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
+        return listOf(EntryCreator.Creator(context.scope, context.texts, function))
     }
 
     @Internal

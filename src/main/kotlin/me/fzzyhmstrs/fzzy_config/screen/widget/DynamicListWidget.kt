@@ -529,6 +529,11 @@ class DynamicListWidget(
                         e.applyVisibility(Visibility::filter)
                     }
                 }
+            } else {
+                for (e in delegate) {
+                    e.applyTooltipPrefix { listOf() }
+                    e.applyVisibility(Visibility::unsearched)
+                }
             }
 
             val g2Prefixes: MutableMap<String, MutableList<Text>> = mutableMapOf()
@@ -1210,6 +1215,12 @@ class DynamicListWidget(
          */
         GROUP_VISIBLE(true, true, true, true, false, { v -> v.group }),
         /**
+         * Visible entry that represents a group heading
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        GROUP_VISIBLE_SEARCHED(true, true, true, true, false, { v -> v.group }),
+        /**
          * Visible entry that represents a group heading, but should be "closed"/"collapsed" by default
          * @author fzzyhmstrs
          * @since 0.6.0
@@ -1227,6 +1238,12 @@ class DynamicListWidget(
          * @since 0.6.0
          */
         GROUP_HIDDEN(false, true, false, true, true, { v -> v.group }), //hiding handled externally
+        /**
+         * Hidden entry that represents a group heading. Hiding is usually done with a button or other toggle.
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        GROUP_HIDDEN_CLOSED(false, true, false, true, true, { v -> v.group }), //hiding handled externally
         /**
          * A disabled group heading, typically caused by a layout error.
          * @author fzzyhmstrs
@@ -1255,14 +1272,17 @@ class DynamicListWidget(
 
             fun searched(visibilityStack: VisibilityStack) {
                 visibilityStack.push(VISIBLE_SEARCHED)
+                visibilityStack.push(GROUP_VISIBLE_SEARCHED)
             }
 
             fun unsearched(visibilityStack: VisibilityStack) {
                 visibilityStack.remove(VISIBLE_SEARCHED)
+                visibilityStack.remove(GROUP_VISIBLE_SEARCHED)
             }
 
             fun close(visibilityStack: VisibilityStack) {
                 visibilityStack.push(HIDDEN_CLOSED)
+                visibilityStack.push(GROUP_HIDDEN_CLOSED)
             }
 
             fun hide(visibilityStack: VisibilityStack) {
@@ -1274,10 +1294,11 @@ class DynamicListWidget(
                 visibilityStack.remove(HIDDEN)
                 visibilityStack.remove(GROUP_HIDDEN)
                 visibilityStack.remove(HIDDEN_CLOSED)
+                visibilityStack.remove(GROUP_HIDDEN_CLOSED)
             }
 
             fun groupFilter(groupEntries: Collection<Entry>): Consumer<VisibilityStack> {
-                return if (!groupEntries.any { it.getVisibility().visible || it.getVisibility() == HIDDEN_CLOSED }) {
+                return if (!groupEntries.any { it.getVisibility().visible || it.getVisibility() == HIDDEN_CLOSED  || it.getVisibility() == GROUP_HIDDEN_CLOSED }) {
                     Consumer { stack -> stack.push(GROUP_FILTERED) }
                 } else {
                     Consumer { stack -> stack.remove(GROUP_FILTERED) }
@@ -1342,12 +1363,17 @@ class DynamicListWidget(
         }
     }
 
+    interface VisibilityStackProvider: VisibilityProvider {
+        fun push(v: Visibility)
+        fun remove(v: Visibility)
+    }
+
     /**
      * A [VisibilityProvider] that tracks the base visibility of an entry as well as the entries visibility history through a stack (linked list).
      * @author fzzyhmstrs
      * @since 0.6.0, implements [VisibilityProvider] as of 0.6.5
      */
-    data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>): VisibilityProvider {
+    data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>): VisibilityStackProvider {
         override fun get(): Visibility {
             return visibilityStack.firstOrNull() ?: baseVisibility
         }
@@ -1356,11 +1382,11 @@ class DynamicListWidget(
             return baseVisibility
         }
 
-        fun push(v: Visibility) {
+        override fun push(v: Visibility) {
             if (baseVisibility.affectedBy.test(v) && (v.repeatable || !visibilityStack.contains(v))) visibilityStack.push(v)
         }
 
-        fun remove(v: Visibility) {
+        override fun remove(v: Visibility) {
             if (baseVisibility.affectedBy.test(v)) visibilityStack.removeFirstOccurrence(v)
         }
     }
