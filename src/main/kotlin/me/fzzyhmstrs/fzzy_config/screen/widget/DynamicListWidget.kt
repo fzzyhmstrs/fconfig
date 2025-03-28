@@ -10,6 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
 import me.fzzyhmstrs.fzzy_config.screen.context.*
@@ -36,13 +38,11 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
 import net.minecraft.util.math.MathHelper
 import java.util.*
-import java.util.function.BiFunction
-import java.util.function.Consumer
+import java.util.function.*
 import java.util.function.Function
-import java.util.function.Predicate
-import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.min
 
@@ -445,7 +445,7 @@ class DynamicListWidget(
                     val gV = groupMap[g]?.getRootVisibility() ?: continue
                     if (gV == Visibility.GROUP_VISIBLE_CLOSED) {
                         if (e.getVisibility().group && e.scope.group == g) continue
-                        e.applyVisibility(Visibility::hide)
+                        e.applyVisibility(Visibility::close)
                     }
                 }
             }
@@ -505,30 +505,60 @@ class DynamicListWidget(
             dirty = true
             var childrenMatches = 0
             val foundEntries = if (searchInput.isEmpty()) delegate else searcher.search(searchInput)
+            val gPrefixes: MutableMap<String, MutableList<Text>> = mutableMapOf()
             if (searchInput.isNotEmpty()) {
                 for (e in delegate) {
                     if (e.getVisibility().skip) continue
                     val eResults = e.entrySearchResults(searchInput)
                     if (eResults.isNotEmpty()) {
+                        for (g in e.scope.inGroups) {
+                            val gp = groups[g] ?: continue
+                            if (!gp.visible) {
+                                gp.groupEntry.applyVisibility(Visibility::searched)
+                                gPrefixes.computeIfAbsent(g) { mutableListOf() }.addAll(eResults.map {
+                                    FcText.translatable("fc.search.child", e.texts.name, it.name).formatted(Formatting.GRAY)
+                                })
+                            }
+                        }
                         childrenMatches++
                         e.applyVisibility(Visibility::searched)
-                        e.applyTooltipPrefix(Visibility.SEARCHED_PREFIX_HEADER + eResults.map { it.name })
+                        e.applyTooltipPrefix { SearchConfig.INSTANCE.textPrefix() + eResults.map { it.name.copy().formatted(Formatting.GRAY) } }
                     } else {
+                        e.applyTooltipPrefix{ listOf() }
                         e.applyVisibility(Visibility::unsearched)
                         e.applyVisibility(Visibility::filter)
                     }
                 }
             }
+
+            val g2Prefixes: MutableMap<String, MutableList<Text>> = mutableMapOf()
             for (e in foundEntries) {
+                if (searchInput.isNotEmpty()) {
+                    for (g in e.scope.inGroups) {
+                        val gp = groups[g] ?: continue
+                        if (!gp.visible) {
+                            gp.groupEntry.applyVisibility(Visibility::searched)
+                            g2Prefixes.computeIfAbsent(g) { mutableListOf() }.add(e.texts.name)
+                        }
+                    }
+                }
                 e.applyVisibility(Visibility::unfilter)
             }
-            for (e in groups.values) {
-                val groupEntries = delegateMap[e.groupEntry.scope.group]?.values
+
+            for ((g, gp) in groups) {
+                val groupEntries = delegateMap[g]?.values
                 if (groupEntries == null) {
-                    e.groupEntry.applyVisibility { l -> l.push(Visibility.GROUP_DISABLED) }
+                    FC.LOGGER.error("Errored group $g disabled!")
+                    gp.groupEntry.applyVisibility { l -> l.push(Visibility.GROUP_DISABLED) }
                     continue
                 }
-                e.groupEntry.applyVisibility(Visibility.groupFilter(groupEntries))
+                gp.groupEntry.applyVisibility(Visibility.groupFilter(groupEntries))
+                if (gPrefixes.containsKey(g) || g2Prefixes.containsKey(g)) {
+                    val l = (g2Prefixes[g] ?: listOf()) + (gPrefixes[g] ?: listOf())
+                    gp.groupEntry.applyTooltipPrefix { l }
+                } else {
+                    gp.groupEntry.applyTooltipPrefix { listOf() }
+                }
             }
             if (this@DynamicListWidget.focusedElement?.getVisibility()?.selectable != true) {
                 val replacement = this@DynamicListWidget.focusedElement?.getNeighbor(true) ?: this@DynamicListWidget.focusedElement?.getNeighbor(false)
@@ -766,9 +796,9 @@ class DynamicListWidget(
         private var focusedSelectable: Selectable? = null
         private var focusedElement: Element? = null
         private var dragging = false
-        protected var tooltipPrefix: List<Text> = listOf()
+        protected var tooltipPrefix: Supplier<List<Text>> = Supplier { listOf() }
 
-        fun applyTooltipPrefix(prefix: List<Text>) {
+        fun applyTooltipPrefix(prefix: Supplier<List<Text>>) {
             this.tooltipPrefix = prefix
         }
 
@@ -1161,6 +1191,13 @@ class DynamicListWidget(
          */
         HIDDEN(false, false, false, false, true, { v -> !v.group }),
         /**
+         * Entry hidden initially by an initial-closed state
+         * @see hide
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
+        HIDDEN_CLOSED(false, false, false, false, false, { v -> !v.group }),
+        /**
          * Entry filtered by searching. Not visible nor selectable
          * @author fzzyhmstrs
          * @since 0.6.0
@@ -1224,6 +1261,10 @@ class DynamicListWidget(
                 visibilityStack.remove(VISIBLE_SEARCHED)
             }
 
+            fun close(visibilityStack: VisibilityStack) {
+                visibilityStack.push(HIDDEN_CLOSED)
+            }
+
             fun hide(visibilityStack: VisibilityStack) {
                 visibilityStack.push(HIDDEN)
                 visibilityStack.push(GROUP_HIDDEN)
@@ -1232,10 +1273,11 @@ class DynamicListWidget(
             fun unhide(visibilityStack: VisibilityStack) {
                 visibilityStack.remove(HIDDEN)
                 visibilityStack.remove(GROUP_HIDDEN)
+                visibilityStack.remove(HIDDEN_CLOSED)
             }
 
             fun groupFilter(groupEntries: Collection<Entry>): Consumer<VisibilityStack> {
-                return if (!groupEntries.any { it.getVisibility().visible }) {
+                return if (!groupEntries.any { it.getVisibility().visible || it.getVisibility() == HIDDEN_CLOSED }) {
                     Consumer { stack -> stack.push(GROUP_FILTERED) }
                 } else {
                     Consumer { stack -> stack.remove(GROUP_FILTERED) }
@@ -1243,8 +1285,6 @@ class DynamicListWidget(
             }
 
             val EMPTY: Consumer<LinkedList<Visibility>> = Consumer { _-> }
-
-            val SEARCHED_PREFIX_HEADER: List<Text> = listOf(FcText.translatable("fc.search.indirect"))
         }
     }
 

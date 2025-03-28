@@ -171,14 +171,14 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
             LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
         layout.add(
             "clear",
-            CustomButtonWidget.builder("fc.button.clear".translate()) {
+            CustomButtonWidget.builder(TextureIds.KEYBIND_CLEAR_LANG) {
                 keybindWidget.compounding = false
                 keybindWidget.resetting = false
                 this.accept(FzzyKeybindUnbound) }
                 .noMessage()
                 .size(11, 10)
                 .activeSupplier { this.get() != FzzyKeybindUnbound }
-                .tooltip("fc.button.clear".translate())
+                .tooltip(TextureIds.KEYBIND_CLEAR_LANG)
                 .textures(TextureIds.KEYBIND_CLEAR, TextureIds.KEYBIND_CLEAR_DISABLED, TextureIds.KEYBIND_CLEAR_HIGHLIGHTED)
                 .build(),
             LayoutWidget.Position.RIGHT,
@@ -186,7 +186,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
             LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         layout.add(
             "compound",
-            CustomButtonWidget.builder("fc.button.compound".translate()) {
+            CustomButtonWidget.builder(TextureIds.KEYBIND_ADD_LANG) {
                 keybindWidget.compounding = true
                 keybindWidget.resetting = true
                 keybindWidget.justCLickedToggle = true
@@ -194,7 +194,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
                 .noMessage()
                 .size(11, 10)
                 .activeSupplier { this.get() != FzzyKeybindUnbound }
-                .tooltip("fc.button.compound".translate())
+                .tooltip(TextureIds.KEYBIND_ADD_LANG)
                 .textures(TextureIds.KEYBIND_ADD, TextureIds.KEYBIND_ADD_DISABLED, TextureIds.KEYBIND_ADD_HIGHLIGHTED)
                 .build(),
             LayoutWidget.Position.BELOW,
