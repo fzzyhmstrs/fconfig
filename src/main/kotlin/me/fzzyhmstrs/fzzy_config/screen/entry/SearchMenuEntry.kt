@@ -45,7 +45,7 @@ internal class SearchMenuEntry(parentElement: DynamicListWidget, scope: String, 
     private val description = CustomMultilineTextWidget(this.texts.desc ?: FcText.empty(), leftPadding = 10)
 
     init {
-        description.width = this.w.get() - 115
+        description.width = this.w.get() - 120
     }
 
     override var h: Int
@@ -65,7 +65,7 @@ internal class SearchMenuEntry(parentElement: DynamicListWidget, scope: String, 
     override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         widget.setPosition(x + width - 110, y)
         widget.render(context, mouseX, mouseY, delta)
-        description.setDimensionsAndPosition(width - 115, 0, x, y + 10)
+        description.setDimensionsAndPosition(width - 120, 0, x, y + 10)
         description.render(context, mouseX, mouseY, delta)
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, this.texts.name, x, y, if (hovered || focused) -171 else -1)
     }
