@@ -10,13 +10,11 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
-import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
-import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
+import me.fzzyhmstrs.fzzy_config.entry.EntrySearcher
+import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
@@ -28,15 +26,12 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Ref
-import me.fzzyhmstrs.fzzy_config.util.Searcher
-import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import java.util.function.BiFunction
 import java.util.function.Consumer
-import java.util.function.Function
 
 /**
  * Built in entry creators (except for [ValidatedField][me.fzzyhmstrs.fzzy_config.validation.ValidatedField]) The methods themselves are internal to FC, but can be used as reference.
@@ -74,7 +69,7 @@ object EntryCreators {
     val CONFIG = EntryCreator.CreatorContextKey<Config>()
 
     internal fun createConfigEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
-        val searchProvider = EntrySearchProvider(context.misc.get(CONFIG) ?: "", context.misc.get(CONTENT_BUFFER)?.get() ?: "", context.scope, context.client)
+        val searchProvider = EntrySearcher.SearchProvider(context.misc.get(CONFIG) ?: "", context.misc.get(CONTENT_BUFFER)?.get() ?: "", context.scope, context.client)
         val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, context.actions.map { ConfigEntry.ActionDecorationWidget.config(it) })
             contentBuilder.decoration(TextureDeco.DECO_OPEN_SCREEN, 2, 2)
@@ -82,7 +77,7 @@ object EntryCreators {
                 contentLayout.add(
                     "open_screen",
                     CustomButtonWidget.builder(context.texts.name) {
-                        if (Screen.hasShiftDown()) {
+                        if (SearchConfig.INSTANCE.willPassSearch()) {
                             val search = MinecraftClient.getInstance().currentScreen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
                             if (search.isNotEmpty()) {
                                 val scope = "${context.scope}.::$search"
@@ -108,7 +103,7 @@ object EntryCreators {
     }
 
     internal fun createSectionEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
-        val searchProvider = EntrySearchProvider(context.misc.get(CONFIG) ?: "", context.misc.get(CONTENT_BUFFER)?.get() ?: "", context.scope, context.client)
+        val searchProvider = EntrySearcher.SearchProvider(context.misc.get(CONFIG) ?: "", context.misc.get(CONTENT_BUFFER)?.get() ?: "", context.scope, context.client)
         val function: BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry> = BiFunction { listWidget, _ ->
             val contentBuilder = ConfigEntry.ContentBuilder(context, context.actions.map { ConfigEntry.ActionDecorationWidget.section(it) })
             contentBuilder.decoration(TextureDeco.DECO_OPEN_SCREEN, 2, 2)
@@ -116,7 +111,7 @@ object EntryCreators {
                 contentLayout.add(
                     "open_screen",
                     CustomButtonWidget.builder(context.texts.name) {
-                        if (Screen.hasShiftDown()) {
+                        if (SearchConfig.INSTANCE.willPassSearch()) {
                             val search = MinecraftClient.getInstance().currentScreen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
                             if (search.isNotEmpty()) {
                                 val scope = "${context.scope}.::$search"
@@ -224,39 +219,5 @@ object EntryCreators {
             ConfigEntry(listWidget, contentBuilder.build(), context.texts)
         }
         return listOf(EntryCreator.Creator(context.scope, context.texts, function))
-    }
-
-    internal class EntrySearchProvider(config: Any, content: Any, prefix: String, client: Boolean): Function<String, List<Translatable.Result>> {
-
-        private val searcher: Searcher<Translatable.Result> by lazy {
-            val list: MutableList<Translatable.Result> = mutableListOf()
-            ConfigApiImpl.walk(content, prefix, ConfigApiImpl.IGNORE_NON_SYNC) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
-                val flags = if(thing is EntryFlag) {
-                    EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
-                } else {
-                    EntryFlag.Flag.NONE
-                }
-                val permResult = ConfigApiImplClient.hasNeededPermLevel(
-                    thing,
-                    ConfigApiImplClient.getPlayerPermissionLevel(),
-                    config,
-                    config.nullCast<Config>()?.getId()?.toTranslationKey() ?: "",
-                    new,
-                    annotations,
-                    client,
-                    flags,
-                    ConfigApiImplClient.getPerms())
-                if (permResult.success && thing != null) {
-                    val fieldName = new.substringAfterLast('.')
-                    val texts = ConfigApiImplClient.getText(thing, new, fieldName, annotations, globalAnnotations)
-                    list.add(texts)
-                }
-            }
-            Searcher(list)
-        }
-
-        override fun apply(t: String): List<Translatable.Result> {
-            return searcher.search(t)
-        }
     }
 }

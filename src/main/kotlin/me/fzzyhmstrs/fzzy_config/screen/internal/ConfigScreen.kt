@@ -13,12 +13,10 @@ package me.fzzyhmstrs.fzzy_config.screen.internal
 import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
-import me.fzzyhmstrs.fzzy_config.impl.config.KeybindsConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.context.*
-import me.fzzyhmstrs.fzzy_config.screen.entry.InfoKeybindEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.ChangesWidget
@@ -42,14 +40,10 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
 import net.minecraft.screen.ScreenTexts
-import net.minecraft.text.ClickEvent
-import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.Util
 import java.util.concurrent.TimeUnit
-import java.util.function.BiFunction
 import java.util.function.Supplier
 
 //client
@@ -191,7 +185,7 @@ internal class ConfigScreen(
         directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openGotoPopup(this.sidebar.getAnchors(), this.sidebar.getAnchorWidth(), this.height) }.size(20, 20).textures(TextureIds.GOTO_SET).narrationSupplier { _, _ -> TextureIds.GOTO_LANG }.activeSupplier { sidebar.needsSidebar() }.tooltip(TextureIds.GOTO_LANG).build()) { p -> p.alignLeft() }
         //directionalLayoutWidget.add(TextlessActionWidget("widget/action/goto".fcId(), "widget/action/goto_inactive".fcId(), "widget/action/goto_highlighted".fcId(), "fc.button.goto".translate(), "fc.button.goto".translate(), { anchors.size > 1 } ) { Popups.openGotoPopup(anchors, anchorWidth, this.height) }) { p -> p.alignLeft() }
         //info button
-        directionalLayoutWidget.add(CustomButtonWidget.builder { openInfoPopup() }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignLeft() }
+        directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openInfoPopup(this) }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignLeft() }
         //directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
         val searchText = if (this::searchField.isInitialized) {
@@ -199,7 +193,7 @@ internal class ConfigScreen(
         } else {
             ""
         }
-        searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 110, 20, FcText.EMPTY)
+        searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 109, 20, FcText.EMPTY)
         fun setColor(entries: Int) {
             if(entries > 0)
                 searchField.setEditableColor(-1)
@@ -212,7 +206,41 @@ internal class ConfigScreen(
         searchField.setChangedListener { s -> setColor(configList.search(s)) }
         searchField.text = searchText
         searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
-        directionalLayoutWidget.add(searchField)
+
+        val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
+        layout.add(
+            "search",
+            searchField,
+            LayoutWidget.Position.LEFT,
+            LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
+        layout.add(
+            "menu",
+            CustomButtonWidget.builder(TextureIds.MENU_LANG) {
+                Popups.openSearchMenuPopup() }
+                .noMessage()
+                .size(11, 10)
+                .tooltip(TextureIds.MENU_LANG)
+                .textures(TextureIds.MENU, TextureIds.MENU_DISABLED, TextureIds.MENU_HIGHLIGHTED)
+                .build(),
+            LayoutWidget.Position.RIGHT,
+            LayoutWidget.Position.ALIGN_RIGHT,
+            LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE
+        )
+        layout.add(
+            "clear",
+            CustomButtonWidget.builder(TextureIds.MENU_CLEAR_LANG) {
+                searchField.text = "" }
+                .noMessage()
+                .size(11, 10)
+                .tooltip(TextureIds.MENU_CLEAR_LANG)
+                .textures(TextureIds.KEYBIND_CLEAR, TextureIds.KEYBIND_CLEAR_DISABLED, TextureIds.KEYBIND_CLEAR_HIGHLIGHTED)
+                .build(),
+            LayoutWidget.Position.BELOW,
+            LayoutWidget.Position.ALIGN_RIGHT,
+            LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE
+        )
+
+        directionalLayoutWidget.add(LayoutClickableWidget(0, 0, 120, 20, layout))
         //forward alert button
         directionalLayoutWidget.add(CustomButtonWidget.builder { manager.forwardsHandler() }.size(20, 20).textures("widget/action/alert".fcId(), "widget/action/alert_inactive".fcId(), "widget/action/alert_highlighted".fcId()).narrationSupplier { a, _ -> if (a) "fc.button.alert.active".translate() else "fc.button.alert.inactive".translate() }.activeSupplier { manager.hasForwards() }.tooltipSupplier { a -> if (a) "fc.button.alert.active".translate() else "fc.button.alert.inactive".translate() }.build()) { p -> p.alignLeft() }
         //directionalLayoutWidget.add(TextlessActionWidget("widget/action/alert".fcId(), "widget/action/alert_inactive".fcId(), "widget/action/alert_highlighted".fcId(), "fc.button.alert.active".translate(), "fc.button.alert.inactive".translate(), { manager.hasForwards() } ) { manager.forwardsHandler() })
@@ -460,7 +488,7 @@ internal class ConfigScreen(
                 }
             }
             ContextType.INFO -> {
-                openInfoPopup()
+                Popups.openInfoPopup(this)
                 true
             }
             ContextType.SAVE -> {
@@ -494,46 +522,5 @@ internal class ConfigScreen(
         builder.add(ContextResultBuilder.CONFIG, ContextType.FIND, find)
     }
 
-    private fun openInfoPopup() {
-        val textRenderer = MinecraftClient.getInstance().textRenderer
-        val list: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "page_up", KeybindsConfig.INSTANCE.pageUp) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "page_down", KeybindsConfig.INSTANCE.pageDown) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "home", KeybindsConfig.INSTANCE.home) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "end", KeybindsConfig.INSTANCE.end) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "copy", KeybindsConfig.INSTANCE.copy) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "paste", KeybindsConfig.INSTANCE.paste) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "find", KeybindsConfig.INSTANCE.find) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "save", KeybindsConfig.INSTANCE.save) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "undo", KeybindsConfig.INSTANCE.undo) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "context_keyboard", KeybindsConfig.INSTANCE.contextKeyboard) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "context_mouse", KeybindsConfig.INSTANCE.contextMouse) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "back", KeybindsConfig.INSTANCE.back) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "search", KeybindsConfig.INSTANCE.search) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "info", KeybindsConfig.INSTANCE.info) }
-        list.add { dlw, i -> InfoKeybindEntry(dlw, i, "full_exit", KeybindsConfig.INSTANCE.fullExit) }
-        val listWidget = DynamicListWidget(MinecraftClient.getInstance(), list, 0, 0, 10000, 0, DynamicListWidget.ListSpec(leftPadding = 10, rightPadding = 4, listNarrationKey = "fc.narrator.position.list"))
-        val popup = PopupWidget.Builder("fc.button.info".translate())
-            .addDivider()
-            .add("header", ClickableTextWidget(this, "fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
-                style.withFormatting(Formatting.AQUA, Formatting.UNDERLINE)
-                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://moddedmc.wiki/en/project/fzzy-config/docs"))
-                    .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, "fc.button.info.fc.tip".translate()))
-            }), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
-            .addDivider()
-            .add("keybinds", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
-            .addDivider()
-            .add("alert", TextWidget("fc.button.info.alert".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
-            .addDoneWidget()
-            .widthFunction { sw, _ -> (sw * 0.92).toInt() }
-            .heightFunction { sh, h ->
-                val newHeight = (sh * 0.9).toInt()
-                val heightDelta = newHeight - h
-                listWidget.setH(listWidget.height + heightDelta)
-                newHeight
-            }
-            .onClose { KeybindsConfig.INSTANCE.save() }
-            .build()
-        PopupWidget.push(popup)
-    }
+
 }
