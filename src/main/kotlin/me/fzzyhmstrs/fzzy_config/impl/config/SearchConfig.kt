@@ -1,6 +1,7 @@
 package me.fzzyhmstrs.fzzy_config.impl.config
 
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
+import me.fzzyhmstrs.fzzy_config.annotations.Translation
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -8,6 +9,7 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.MutableText
@@ -17,12 +19,17 @@ import java.util.function.BooleanSupplier
 import java.util.function.Function
 import java.util.function.Predicate
 
+@Translation("fc.search")
 internal class SearchConfig: Config("search".fcId()) {
 
-    @Comment("Scrolls up a 'page' in the Config GUI")
-    var modifier = ValidatedEnum(Modifier.ALT, ValidatedEnum.WidgetType.POPUP)
-    @Comment("Scrolls down a 'page' in the Config GUI")
+    @Comment("Modifier key relevant to the search-passing behavior. Not relevant if the behavior is ALWAYS or NEVER")
+    var modifier = ValidatedEnum(Modifier.ALT, ValidatedEnum.WidgetType.POPUP).toCondition({ behavior.get().needsMod }, "fc.search.modifier.disabled.desc".translate()) { Modifier.ALT }.withFailTitle("fc.search.modifier.disabled".translate())
+
+    @Comment("How to pass the current search query to a child entry. When satisfied, the child screen will open with the current search term pre-loaded in its search bar.")
     var behavior = ValidatedEnum(SearchBehavior.HOLD_MODIFIER, ValidatedEnum.WidgetType.POPUP)
+
+    @Comment("When true a config GUI will clear its search query when opened, otherwise it will cache and maintain the query.")
+    var clearSearch = ValidatedBoolean()
 
     fun willPassSearch(): Boolean {
         return behavior.get().willPassSearch(modifier.get())
@@ -46,19 +53,23 @@ internal class SearchConfig: Config("search".fcId()) {
         }
     }
 
-    enum class SearchBehavior(private val testModifier: Predicate<Modifier>, private val notMetText: Function<Modifier, List<Text>>, private val metText: Function<Modifier, List<Text>>): EnumTranslatable {
-        HOLD_MODIFIER({ it.test() },
+    enum class SearchBehavior(val needsMod: Boolean, private val testModifier: Predicate<Modifier>, private val notMetText: Function<Modifier, List<Text>>, private val metText: Function<Modifier, List<Text>>): EnumTranslatable {
+        HOLD_MODIFIER(true,
+            { it.test() },
             { listOf("fc.search.behavior.HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
             { listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) }),
-        DONT_HOLD_MODIFIER({ !it.test() },
+        DONT_HOLD_MODIFIER(true,
+            { !it.test() },
             { listOf("fc.search.behavior.DONT_HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
             { listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) }),
-        ALWAYS({ true },
-            { listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
-            { listOf() }),
-        NEVER({ false },
+        ALWAYS(false,
+            { true },
             { listOf() },
-            { listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) });
+            { listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) }),
+        NEVER(false,
+            { false },
+            { listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
+            { listOf() });
 
         fun willPassSearch(modifier: Modifier): Boolean {
             return testModifier.test(modifier)
