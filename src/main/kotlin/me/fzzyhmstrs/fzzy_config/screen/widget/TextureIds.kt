@@ -239,6 +239,8 @@ object TextureIds {
     /** highlighted '+' symbol inside standard MC button texturing. 11x10 */
     val KEYBIND_ADD_HIGHLIGHTED = "widget/validation/keybind/keybind_add_highlighted".fcId()
 
+    val KEYBIND_ADD_LANG = "fc.button.compound".translate()
+
     /** 'X' symbol inside standard MC button texturing. 11x10 */
     val KEYBIND_CLEAR = "widget/validation/keybind/keybind_clear".fcId()
 
@@ -247,6 +249,20 @@ object TextureIds {
 
     /** highlighted 'X' symbol inside standard MC button texturing. 11x10 */
     val KEYBIND_CLEAR_HIGHLIGHTED = "widget/validation/keybind/keybind_clear_highlighted".fcId()
+
+    val KEYBIND_CLEAR_LANG = "fc.button.clear".translate()
+    val MENU_CLEAR_LANG = "fc.search.clear".translate()
+
+    /** 'burger' menu icon inside standard MC button texturing. 11x10 */
+    val MENU = "widget/menu/menu".fcId()
+
+    /** greyed-out 'burger' menu icon inside standard MC button texturing. 11x10 */
+    val MENU_DISABLED = "widget/menu/menu_disabled".fcId()
+
+    /** highlighted 'burger' menu icon inside standard MC button texturing. 11x10 */
+    val MENU_HIGHLIGHTED = "widget/menu/menu_highlighted".fcId()
+
+    val MENU_LANG = "fc.search.title".translate()
 
     init {
         val smolBg = RenderUtil.Background(0, 0, 11, 10)
@@ -262,5 +278,8 @@ object TextureIds {
         RenderUtil.addBackground("widget/validation/keybind/keybind_clear".fcId(), smolBg)
         RenderUtil.addBackground("widget/validation/keybind/keybind_clear_highlighted".fcId(), smolBg)
         RenderUtil.addBackground("widget/validation/keybind/keybind_clear_disabled".fcId(), smolBg)
+        RenderUtil.addBackground("widget/menu/menu".fcId(), smolBg)
+        RenderUtil.addBackground("widget/menu/menu_disabled".fcId(), smolBg)
+        RenderUtil.addBackground("widget/menu/menu_highlighted".fcId(), smolBg)
     }
 }

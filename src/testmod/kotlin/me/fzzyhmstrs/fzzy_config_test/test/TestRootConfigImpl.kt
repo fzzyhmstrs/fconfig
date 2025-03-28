@@ -67,6 +67,8 @@ class TestRootConfigImpl: Config(Identifier("fzzy_config_test","root_config"), s
 
     var color1 = Color(255, 128, 0).validated(false)
 
+    var section2 = TestSectionImpl()
+
     var group2 = ConfigGroup("test_group_2")
 
     var set1 = setOf(0.2, 0.4, 0.6)
