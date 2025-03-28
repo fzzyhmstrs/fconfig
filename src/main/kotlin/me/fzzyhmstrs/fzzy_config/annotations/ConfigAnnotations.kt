@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.annotations
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialInfo
 import me.fzzyhmstrs.fzzy_config.annotations.Action.RESTART
-import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.command
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit

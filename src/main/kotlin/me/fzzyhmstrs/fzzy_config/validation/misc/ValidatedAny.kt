@@ -18,9 +18,12 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
+import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
+import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
+import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
@@ -43,7 +46,9 @@ import net.minecraft.text.MutableText
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
+import java.util.function.Function
 import java.util.function.Supplier
+import java.util.function.UnaryOperator
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaConstructor
 
@@ -63,7 +68,7 @@ import kotlin.reflect.jvm.javaConstructor
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent, EntryOpener {
+open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent, EntryOpener, EntrySearcher {
 
     private var default: Boolean? = null
     private var changed: Boolean? = null
@@ -289,8 +294,13 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                 searchField.setEditableColor(0xFF5555)
         }
         searchField.setMaxLength(100)
-        searchField.text = ""
+        val searchText = if (SearchConfig.INSTANCE.willPassSearch()) {
+            MinecraftClient.getInstance().currentScreen.nullCast<ConfigScreen>()?.getCurrentSearch() ?: ""
+        } else {
+            ""
+        }
         searchField.setChangedListener { s -> setColor(entryList.search(s)) }
+        searchField.text = searchText
         searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
         val popup = PopupWidget.Builder(translation())
             .add("list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
@@ -357,6 +367,25 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     @Internal
     override fun entryDeco(): Decorated.DecoratedOffset {
         return Decorated.DecoratedOffset(TextureDeco.DECO_OBJECT, 2, 2)
+    }
+
+    @Internal
+    override fun contentBuilder(context: EntryCreator.CreatorContext): UnaryOperator<ConfigEntry.ContentBuilder> {
+        val searchProvider = EntrySearcher.SearchProvider(
+            context.misc.get(EntryCreators.CONFIG) ?: "",
+            context.misc.get(EntryCreators.CONTENT_BUFFER)?.get()?.let { it.nullCast<ValidatedAny<*>>()?.get() ?: it } ?: "",
+            context.scope,
+            context.client
+        )
+        return UnaryOperator { builder ->
+            super.contentBuilder(context).apply(builder)
+            builder.searchResults(searchProvider)
+        }
+    }
+
+    @Internal
+    override fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.Result>> {
+        return EntrySearcher.SearchProvider(config, this.get(), scope, client)
     }
 
     @Internal
