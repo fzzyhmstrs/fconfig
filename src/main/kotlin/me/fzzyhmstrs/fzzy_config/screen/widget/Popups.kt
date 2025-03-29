@@ -35,6 +35,7 @@ import net.minecraft.text.ClickEvent
 import net.minecraft.text.HoverEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import java.net.URI
 import java.util.*
 import java.util.function.BiFunction
 import kotlin.math.max
@@ -222,8 +223,8 @@ object Popups {
             .addDivider()
             .add("header", ClickableTextWidget(screen, "fc.button.info.fc".translate("Fzzy Config".lit().styled { style ->
                 style.withFormatting(Formatting.AQUA, Formatting.UNDERLINE)
-                    .withClickEvent(ClickEvent(ClickEvent.Action.OPEN_URL, "https://moddedmc.wiki/en/project/fzzy-config/docs"))
-                    .withHoverEvent(HoverEvent(HoverEvent.Action.SHOW_TEXT, "fc.button.info.fc.tip".translate()))
+                    .withClickEvent(ClickEvent.OpenUrl(URI.create("https://moddedmc.wiki/en/project/fzzy-config/docs")))
+                    .withHoverEvent(HoverEvent.ShowText("fc.button.info.fc.tip".translate()))
             }), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             .addDivider()
             .add("keybinds", listWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
