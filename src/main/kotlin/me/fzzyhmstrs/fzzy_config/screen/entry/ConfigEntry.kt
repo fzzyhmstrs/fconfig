@@ -81,7 +81,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     private var narratables: List<AbstractTextWidget> = emptyList()
     private var tooltipProviders: List<TooltipChild> = emptyList()
 
-    private val searchResults: Function<String, List<Translatable.Result>> = content.searchResults
+    private val searchResults: Function<String, List<Translatable.ResultProvider<*>>> = content.searchResults
     private val contextBuilders: Map<String, Map<ContextType, ContextAction.Builder>> = content.contextActions
     private val context: Map<ContextType, ContextAction> by lazy {
         contextBuilders.entries.stream().collect(
@@ -119,16 +119,19 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         tooltipProviders = t
     }
 
+    @Internal
     override fun onResize() {
         layout.setWidth(this.w.get())
         layout.update()
     }
 
+    @Internal
     override fun onScroll(dY: Int) {
         layout.update()
     }
 
-    override fun entrySearchResults(searchInput: String): List<Translatable.Result> {
+    @Internal
+    override fun entrySearchResults(searchInput: String): List<Translatable.ResultProvider<*>> {
         return searchResults.apply(searchInput)
     }
 
@@ -327,7 +330,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         private var visibility: DynamicListWidget.Visibility = DynamicListWidget.Visibility.VISIBLE
         private var contextActions: Map<String, Map<ContextType, ContextAction.Builder>> = mapOf()
         private val popStart = context.groups.size - context.annotations.filterIsInstance<ConfigGroup.Pop>().size
-        private var searchResults: Function<String, List<Translatable.Result>> = EMPTY_RESULTS
+        private var searchResults: Function<String, List<Translatable.ResultProvider<*>>> = EMPTY_RESULTS
 
         init {
             val nameSupplier = ConstSupplier(context.texts.name)
@@ -414,12 +417,12 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
         /**
          * Search results to "pass up" to the parent list when requested. This is used to determine what children should stay visible by indirect search matching.
-         * @param searchResults [Function]&lt;String, List&lt;[Translatable.Result]&gt;&gt; the serach result provider for this entry. Using a [Searcher] is prucent, as the provided string is raw, with special characters still included.
+         * @param searchResults [Function]&lt;String, List&lt;[Translatable.ResultProvider]&gt;&gt; the search result provider for this entry. Using a [Searcher] is prucent, as the provided string is raw, with special characters still included.
          * @return this builder
          * @author fzzyhmstrs
-         * @since 0.6.0
+         * @since 0.6.8
          */
-        fun searchResults(searchResults: Function<String, List<Translatable.Result>>): ContentBuilder {
+        fun searchResults(searchResults: Function<String, List<Translatable.ResultProvider<*>>>): ContentBuilder {
             this.searchResults = searchResults
             return this
         }
@@ -471,7 +474,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             internal val groupTypes: List<Boolean>,
             internal val visibility: DynamicListWidget.Visibility,
             internal val contextActions: Map<String, Map<ContextType, ContextAction.Builder>>,
-            internal val searchResults: Function<String, List<Translatable.Result>>)
+            internal val searchResults: Function<String, List<Translatable.ResultProvider<*>>>)
 
     }
 

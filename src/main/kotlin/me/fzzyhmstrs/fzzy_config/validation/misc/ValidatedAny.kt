@@ -370,6 +370,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         return Decorated.DecoratedOffset(TextureDeco.DECO_OBJECT, 2, 2)
     }
 
+    @Internal
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val searchProvider = EntrySearcher.SearchProvider(
             context.misc.get(EntryCreators.CONFIG) ?: "",
@@ -388,7 +389,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     @Internal
-    override fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.Result>> {
+    override fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.ResultProvider<*>>> {
         return EntrySearcher.SearchProvider(config, this.get(), scope, client)
     }
 

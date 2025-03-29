@@ -21,7 +21,7 @@ import java.util.*
  * - [SearchType.DESCRIPTION] - '$' in front of search - searches the [Translatable.Result.desc] and [Translatable.Result.prefix] parameters of the provided [SearchContent] list.
  * - [SearchType.NEGATE_DESCRIPTION] - '-$' in front of search - excludes matches from the [Translatable.Result.desc] and [Translatable.Result.prefix] parameters of the provided [SearchContent] list.
  * - [SearchType.EXACT] - surround search with "" - searches for an exact match from the [Translatable.Result.name] parameters of the provided [SearchContent] list.
- * - [SearchType.EXACT] - surround search with -"" - excludes an exact match from the [Translatable.Result.name] parameters of the provided [SearchContent] list.
+ * - [SearchType.NEGATE_EXACT] - surround search with -"" - excludes an exact match from the [Translatable.Result.name] parameters of the provided [SearchContent] list.
  * @param C subclass of [SearchContent]
  * @param searchEntries List&lt;[C]&gt; list of [SearchContent] entries to search through.
  * @author fzzyhmstrs
@@ -48,7 +48,7 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
 
     private val searchDesc: SuffixArray<C> by lazy {
         val array = SuffixArray<C>()
-        for (entry in searchEntries.filter{ it.content.desc != null || it.content.prefix != null }) {
+        for (entry in searchEntries.filter { it.content.desc != null || it.content.prefix != null }) {
             val prefix = entry.content.prefix?.string?.lowercase(Locale.ROOT)
             val desc = entry.content.desc?.string?.lowercase(Locale.ROOT)
             val str = if (prefix == null) {

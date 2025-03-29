@@ -16,6 +16,7 @@ import java.util.function.Supplier
  * Supplier that always returns the pre-computed stored result.
  * @param T supplier type
  * @param t constant result to provide
+ * @see CompositingSupplier
  * @author fzzyhmstrs
  * @since 0.6.8
  */
