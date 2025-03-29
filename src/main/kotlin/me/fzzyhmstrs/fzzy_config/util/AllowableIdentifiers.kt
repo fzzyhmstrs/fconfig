@@ -14,6 +14,8 @@ import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.entry.EntrySuggester
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.util.function.ConstPredicate
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.command.CommandSource
 import net.minecraft.util.Identifier
@@ -101,9 +103,9 @@ class AllowableIdentifiers @JvmOverloads constructor(
         /**
          * An AllowableIdentifiers instance that allows any valid Identifier. The supplier provides an empty list, as a list of every valid Identifier is unbounded.
          * @author fzzyhmstrs
-         * @since 0.2.0
+         * @since 0.2.0, uses Const functions 0.6.8
          */
-        val ANY = AllowableIdentifiers({ true }, { emptyList() })
+        val ANY = AllowableIdentifiers(ConstPredicate(true), ConstSupplier(emptyList()))
     }
 
 }

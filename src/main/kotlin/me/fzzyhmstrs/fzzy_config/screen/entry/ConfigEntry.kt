@@ -28,6 +28,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.navigation.GuiNavigationType
@@ -329,7 +330,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         private var searchResults: Function<String, List<Translatable.Result>> = EMPTY_RESULTS
 
         init {
-            val nameSupplier = { context.texts.name }
+            val nameSupplier = ConstSupplier(context.texts.name)
             val titleWidget = SuppliedTextWidget(nameSupplier, MinecraftClient.getInstance().textRenderer, 70, 20).supplyTooltipOnOverflow(nameSupplier).align(0.0f)
 
             mainLayout.add("content", contentLayout, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_RIGHT)

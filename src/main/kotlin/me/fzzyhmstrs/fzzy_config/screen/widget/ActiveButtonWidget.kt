@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget.Companion.DEFAULT_TEXTURES
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -61,7 +62,7 @@ open class ActiveButtonWidget@JvmOverloads constructor(
         activeSupplier: Supplier<Boolean>,
         pressAction: Consumer<ActiveButtonWidget>)
             :
-            this(Supplier { title }, width, height, activeSupplier, pressAction, background ?: DEFAULT_TEXTURES)
+            this(ConstSupplier(title), width, height, activeSupplier, pressAction, background ?: DEFAULT_TEXTURES)
 
     /**
      * A Button Widget that can supply its message and active state, and render a custom background
