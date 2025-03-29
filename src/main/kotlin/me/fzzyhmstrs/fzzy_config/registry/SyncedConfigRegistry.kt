@@ -49,10 +49,10 @@ import java.util.function.Function
  */
 internal object SyncedConfigRegistry {
 
-    private val syncedConfigs : MutableMap<String, ConfigEntry> = mutableMapOf()
+    private val syncedConfigs : MutableMap<String, SyncedConfigEntry> = mutableMapOf()
     private val quarantinedUpdates : Object2ObjectLinkedOpenHashMap<String, QuarantinedUpdate> = Object2ObjectLinkedOpenHashMap()
 
-    internal fun syncedConfigs(): Map<String, ConfigEntry> {
+    internal fun syncedConfigs(): Map<String, SyncedConfigEntry> {
         return syncedConfigs
     }
 
@@ -302,13 +302,13 @@ internal object SyncedConfigRegistry {
     }
 
     internal fun registerConfig(config: Config, registerType: RegisterType) {
-        syncedConfigs[config.getId().toTranslationKey()] = ConfigEntry(config, registerType == RegisterType.SERVER)
+        syncedConfigs[config.getId().toTranslationKey()] = SyncedConfigEntry(config, registerType == RegisterType.SERVER)
         EventApiImpl.fireOnRegisteredServer(config.getId(), config)
     }
 
     internal class QuarantinedUpdate(val playerUuid: UUID, val changeHistory: List<String>, val configId: String, val configString: String)
 
-    internal data class ConfigEntry(val config: Config, val server: Boolean) {
+    internal data class SyncedConfigEntry(val config: Config, val server: Boolean) {
         fun skipSync(): Boolean {
             return config.saveType() == SaveType.SEPARATE && server
         }
