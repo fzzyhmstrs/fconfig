@@ -22,7 +22,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 
 internal class ChangelogEntry(parentElement: DynamicListWidget, changes: String, private val index: Int) :
-    DynamicListWidget.Entry(parentElement, Translatable.Result(changes.lit()), DynamicListWidget.Scope(index.toString() + changes)) {
+    DynamicListWidget.Entry(parentElement, Translatable.createResult(changes.lit()), DynamicListWidget.Scope(index.toString() + changes)) {
 
     private val widget = CustomMultilineTextWidget(texts.name)
     private val selectables: List<SelectableElement> = listOf(widget).cast()

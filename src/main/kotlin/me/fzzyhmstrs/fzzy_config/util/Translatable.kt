@@ -152,7 +152,10 @@ interface Translatable {
      @Deprecated("Replace with createResult, and use ResultProvider for typing. Constructor and impl will change in 0.7.0")
     data class Result(override val name: Text, override val desc: Text? = null, override val prefix: Text? = null): ResultProvider<Result>(), Searcher.SearchContent {
 
-        override val texts = this
+        @Deprecated("Use content, this is not used directly by Searcher as of 0.6.8. Scheduled for removal 0.7.0")
+        override val texts: Result = this
+
+        override val content = this
 
         override val skip = false
 
@@ -246,12 +249,36 @@ interface Translatable {
         }
     }
 
+    private data object Empty: ResultProvider<Empty>() {
+
+        override val name: Text = FcText.empty()
+        override val desc: Text? = null
+        override val prefix: Text? = null
+
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Empty {
+            return this
+        }
+
+        override fun mapName(nameMapper: UnaryOperator<Text>): Empty {
+            return this
+        }
+
+        override fun mapDesc(descMapper: UnaryOperator<Text>): Empty {
+            return this
+        }
+
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Empty {
+            return this
+        }
+
+    }
+
     /**
      * Abstract representation of a translation result. Implementations of this class may or may not have all three translation components
      * @author fzzyhmstrs
      * @since 0.6.8, will replace Result itself in 0.7.0
      */
-    abstract class ResultProvider<T> {
+    abstract class ResultProvider<T>: Searcher.SearchContent {
         abstract val name: Text
         abstract val desc: Text?
         abstract val prefix: Text?
@@ -260,6 +287,11 @@ interface Translatable {
         abstract fun mapName(nameMapper: UnaryOperator<Text>): T
         abstract fun mapDesc(descMapper: UnaryOperator<Text>): T
         abstract fun mapPrefix(prefixMapper: UnaryOperator<Text>): T
+
+        override val content: ResultProvider<*>
+            get() = this
+
+        override val skip: Boolean = false
     }
 
     /**
@@ -274,6 +306,8 @@ interface Translatable {
         internal fun invalidate() {
             cache = SoftReference(ConcurrentHashMap())
         }
+
+        val EMPTY: ResultProvider<*> =  Empty
 
         /**
          * Retrieves a cached result, if any exists. If the cache has been invalidated this will return null

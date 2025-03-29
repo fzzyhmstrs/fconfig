@@ -194,10 +194,8 @@ internal class ConfigScreen(
         val directionalLayoutWidget = layout.addFooter(DirectionalLayoutWidget.horizontal().spacing(8))
         //goto button
         directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openGotoPopup(this.sidebar.getAnchors(), this.sidebar.getAnchorWidth(), this.height) }.size(20, 20).textures(TextureIds.GOTO_SET).narrationSupplier { _, _ -> TextureIds.GOTO_LANG }.activeSupplier { sidebar.needsSidebar() }.tooltip(TextureIds.GOTO_LANG).build()) { p -> p.alignLeft() }
-        //directionalLayoutWidget.add(TextlessActionWidget("widget/action/goto".fcId(), "widget/action/goto_inactive".fcId(), "widget/action/goto_highlighted".fcId(), "fc.button.goto".translate(), "fc.button.goto".translate(), { anchors.size > 1 } ) { Popups.openGotoPopup(anchors, anchorWidth, this.height) }) { p -> p.alignLeft() }
         //info button
         directionalLayoutWidget.add(CustomButtonWidget.builder { Popups.openInfoPopup(this) }.size(20, 20).textures(TextureIds.INFO_SET).narrationSupplier { _, _ -> TextureIds.INFO_LANG }.tooltip(TextureIds.INFO_LANG).build()) { p -> p.alignLeft() }
-        //directionalLayoutWidget.add(TextlessActionWidget("widget/action/info".fcId(), "widget/action/info_inactive".fcId(), "widget/action/info_highlighted".fcId(), "fc.button.info".translate(), "fc.button.info".translate(), { true } ) { openInfoPopup() }) { p -> p.alignLeft() }
         //search bar
         val searchText = if (this::searchField.isInitialized && !(SearchConfig.INSTANCE.clearSearch.get() && initialInit)) {
             searchField.text
@@ -215,7 +213,8 @@ internal class ConfigScreen(
         }
         searchField.setMaxLength(100)
         searchField.setChangedListener { s -> setColor(configList.search(s)) }
-        searchField.text = searchText
+        if (searchText != searchField.text)
+            searchField.text = searchText
         searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
 
         val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)

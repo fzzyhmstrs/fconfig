@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config_test.test
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.FileType
+import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
@@ -34,6 +35,10 @@ class TestRootConfigImpl: Config(Identifier.of("fzzy_config_test","root_config")
 
     override fun fileType(): FileType {
         return FileType.TOML
+    }
+
+    override fun saveType(): SaveType {
+        return SaveType.SEPARATE
     }
 
     var bl1 = true
