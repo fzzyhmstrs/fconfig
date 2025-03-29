@@ -32,7 +32,7 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
     private val search: SuffixArray<C> by lazy {
         val array = SuffixArray<C>()
         for (entry in searchEntries) {
-            array.add(entry, entry.texts.name.string.lowercase(Locale.ROOT))
+            array.add(entry, entry.content.name.string.lowercase(Locale.ROOT))
         }
         array.build()
         array
@@ -41,16 +41,16 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
     private val searchExact: Map<String, C> by lazy {
         val map: MutableMap<String, C> = mutableMapOf()
         for (entry in searchEntries) {
-            map[entry.texts.name.string.lowercase(Locale.ROOT)] = entry
+            map[entry.content.name.string.lowercase(Locale.ROOT)] = entry
         }
         map
     }
 
     private val searchDesc: SuffixArray<C> by lazy {
         val array = SuffixArray<C>()
-        for (entry in searchEntries.filter{ it.texts.desc != null || it.texts.prefix != null }) {
-            val prefix = entry.texts.prefix?.string?.lowercase(Locale.ROOT)
-            val desc = entry.texts.desc?.string?.lowercase(Locale.ROOT)
+        for (entry in searchEntries.filter{ it.content.desc != null || it.content.prefix != null }) {
+            val prefix = entry.content.prefix?.string?.lowercase(Locale.ROOT)
+            val desc = entry.content.desc?.string?.lowercase(Locale.ROOT)
             val str = if (prefix == null) {
                 desc ?: ""
             } else if (desc == null) {
@@ -170,13 +170,26 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
      * @author fzzyhmstrs
      * @since 0.6.0
      */
+    @JvmDefaultWithoutCompatibility
     interface SearchContent {
         /**
          * The searchable texts. Both desc and prefix of the result are searched as "description"
          * @author fzzyhmstrs
-         * @since 0.6.0
+         * @since 0.6.0, deprecated 0.6.8
          */
+        @Suppress("DeprecatedCallableAddReplaceWith")
+        @Deprecated("Use content, this is not used directly by Searcher as of 0.6.8. Scheduled for removal 0.7.0")
         val texts: Translatable.Result
+            get() = Translatable.Result.EMPTY
+
+        /**
+         * Search content parsed and checked by the [Searcher]
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        val content: Translatable.ResultProvider<*>
+            get() = texts
+
         /**
          * Whether the search should exclude this content from search results. This is active state, so can change between true and false as needed.
          * @author fzzyhmstrs

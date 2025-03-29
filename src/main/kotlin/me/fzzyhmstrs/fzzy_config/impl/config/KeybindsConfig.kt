@@ -47,6 +47,6 @@ internal class KeybindsConfig: Config("keybinds".fcId()) {
     var fullExit = ValidatedKeybind(GLFW.GLFW_KEY_ESCAPE, ContextInput.KEYBOARD, ctrl = false, shift = true, alt = false)
 
     companion object {
-        val INSTANCE = ConfigApi.registerAndLoadNoGuiConfig( { KeybindsConfig() }, RegisterType.CLIENT)
+        val INSTANCE = ConfigApi.registerAndLoadNoGuiConfig(::KeybindsConfig, RegisterType.CLIENT)
     }
 }
