@@ -15,7 +15,7 @@ import net.minecraft.text.Text
 import net.minecraft.util.Colors
 
 class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, index: Int, private val n: Text) :
-    DynamicListWidget.Entry(parentElement, Translatable.Result(scope.lit()), DynamicListWidget.Scope(scope, if (group == index) group.toString() else "", listOf(group.toString())), if (group == index) DynamicListWidget.Visibility.GROUP_VISIBLE else DynamicListWidget.Visibility.VISIBLE)
+    DynamicListWidget.Entry(parentElement, Translatable.createResult(scope.lit()), DynamicListWidget.Scope(scope, if (group == index) group.toString() else "", listOf(group.toString())), if (group == index) DynamicListWidget.Visibility.GROUP_VISIBLE else DynamicListWidget.Visibility.VISIBLE)
     {
 
         private val button: ButtonWidget =

@@ -15,6 +15,8 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import me.fzzyhmstrs.fzzy_config.entry.EntryChecker
 import me.fzzyhmstrs.fzzy_config.entry.EntrySuggester
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.util.function.ConstPredicate
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.command.CommandSource
 import net.minecraft.util.Identifier
@@ -101,9 +103,9 @@ class AllowableStrings(private val predicate: Predicate<String>, private val sup
         /**
          * An AllowableStrings instance that allows any valid String. The supplier provides an empty list, as a list of every valid String is unbounded.
          * @author fzzyhmstrs
-         * @since 0.2.6
+         * @since 0.2.6, uses Const functions as of 0.6.8
          */
-        val ANY = AllowableStrings({true}, {listOf()})
+        val ANY = AllowableStrings(ConstPredicate(true ), ConstSupplier(emptyList()))
     }
 
 }

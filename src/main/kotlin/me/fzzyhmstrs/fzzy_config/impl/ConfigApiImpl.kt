@@ -22,11 +22,11 @@ import me.fzzyhmstrs.fzzy_config.FCC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
-import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.VERSIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
@@ -97,7 +97,7 @@ internal object ConfigApiImpl {
     internal const val CHECK_NON_SYNC: Byte = 0
     internal const val IGNORE_NON_SYNC: Byte = 1
     internal const val CHECK_ACTIONS: Byte = 2
-    internal const val IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
+    internal const val IGNORE_NON_SYNC_AND_CHECK_ACTIONS: Byte = 3
     internal const val IGNORE_VISIBILITY: Byte = 4
     internal const val IGNORE_NON_SYNC_AND_IGNORE_VISIBILITY: Byte = 5
     internal const val RECORD_RESTARTS: Byte = 8
@@ -241,7 +241,7 @@ internal object ConfigApiImpl {
                 val str = files.fIn.readLines().joinToString("\n")
 
                 val classVersion = getVersion(classInstance::class)
-                val readConfigResult = deserializeConfig(classInstance, str, fErrorsIn, fileType = files.fInType)
+                val readConfigResult = deserializeConfig(classInstance, str, fErrorsIn, IGNORE_NON_SYNC_AND_CHECK_ACTIONS, fileType = files.fInType)
                 if (classInstance.saveType().incompatibleWith(readConfigResult.get().get(ACTIONS))) {
                     throw IncompatibleSaveTypeException("Config $name uses SaveType SEPARATE but also has incompatible @RequiresAction with Action.RESTART flags")
                 }
@@ -288,7 +288,7 @@ internal object ConfigApiImpl {
                 if (oldFile != null && oldFile.exists()) {
                     val str = oldFile.readLines().joinToString("\n")
                     val errorBuilder = mutableListOf<String>()
-                    val convertedConfigResult = deserializeConfig(classInstance, str, errorBuilder, fileType = oldFilePair.second)
+                    val convertedConfigResult = deserializeConfig(classInstance, str, errorBuilder, IGNORE_NON_SYNC_AND_CHECK_ACTIONS, fileType = oldFilePair.second)
                     if (convertedConfigResult.isError()) {
                         convertedConfigResult.writeWarning(errorBuilder)
                     }
@@ -533,11 +533,12 @@ internal object ConfigApiImpl {
 
     internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val inboundErrorSize = errorBuilder.size
+        val actionNeeded: MutableSet<Action> = mutableSetOf()
         val restartNeeded: MutableSet<Action> = mutableSetOf()
         val restartRecords: MutableSet<String> = mutableSetOf()
         if (toml !is TomlTable) {
             errorBuilder.add("TomlElement passed not a TomlTable! Using default Config")
-            return ValidationResult.error(ConfigContext(config).withContext(ACTIONS, mutableSetOf()), "Improper TOML format passed to deserializeFromToml")
+            return ValidationResult.error(ConfigContext(config).withContext(RESTART_ACTIONS, mutableSetOf()), "Improper TOML format passed to deserializeFromToml")
         }
         val clazz = config::class
         try {
@@ -579,6 +580,7 @@ internal object ConfigApiImpl {
                 if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
                     val action = requiredAction(prop.annotations, globalAction)
                     val result = if(checkActions && propVal is Supplier<*> && action != null) {
+                        actionNeeded.add(action)
                         val before = propVal.get()
                         val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
                         propVal.deserializeEntry(tomlElement, errorBuilder, name, newFlags).also { r ->
@@ -603,13 +605,15 @@ internal object ConfigApiImpl {
                         val thing = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, flags)
                         try {
                             val action = requiredAction(prop.annotations, globalAction)
-                            if(checkActions && action != null)
+                            if(checkActions && action != null) {
+                                actionNeeded.add(action)
                                 if (basicValidation.deserializedChanged(propVal, thing.get())) {
                                     restartNeeded.add(action)
-                                    if(recordRestarts && action.restartPrompt) {
+                                    if (recordRestarts && action.restartPrompt) {
                                         restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                                     }
                                 }
+                            }
                             if(ignoreVisibility) trySetAccessible(prop)
                             prop.setter.call(config, thing.get())
                         } catch(e: Throwable) {
@@ -641,7 +645,13 @@ internal object ConfigApiImpl {
         } catch (_: Throwable) {
             errorBuilder.add("Critical error encountered while deserializing")
         }
-        return ValidationResult.predicated(ConfigContext(config).withContext(ACTIONS, restartNeeded).withContext(RESTART_RECORDS, restartRecords), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
+        return ValidationResult.predicated(
+            ConfigContext(config)
+                .withContext(ACTIONS, actionNeeded)
+                .withContext(RESTART_ACTIONS, restartNeeded)
+                .withContext(RESTART_RECORDS, restartRecords),
+            errorBuilder.size <= inboundErrorSize,
+            "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
     }
 
     internal fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<ConfigContext<T>> {
@@ -700,7 +710,6 @@ internal object ConfigApiImpl {
                 } else if (v != null) {
                     val basicValidation = UpdateManager.getValidation(v, prop.returnType, str, id, annotations, this.isClient)
                     if (basicValidation != null) {
-                        @Suppress("DEPRECATION")
                         val thing = basicValidation.deserializeEntry(it, errorBuilder, str, flags)
                         try {
                             val action = requiredAction(prop.annotations, globalAction)
@@ -722,7 +731,7 @@ internal object ConfigApiImpl {
         } catch(_: Throwable) {
             errorBuilder.add("Critical error encountered while deserializing update")
         }
-        return ValidationResult.predicated(ConfigContext(config).withContext(ACTIONS, actionsNeeded).withContext(RESTART_RECORDS, restartRecords), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
+        return ValidationResult.predicated(ConfigContext(config).withContext(RESTART_ACTIONS, actionsNeeded).withContext(RESTART_RECORDS, restartRecords), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
     }
 
     internal fun <T: Any> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
@@ -922,7 +931,7 @@ internal object ConfigApiImpl {
         return isNonSync(property.annotations)
     }
     internal fun isNonSync(annotations: List<Annotation>): Boolean {
-        return annotations.firstOrNull { (it is NonSync) }?.let { true } == true
+        return annotations.any { it is NonSync }
     }
 
     internal fun isRootConfig(clazz: KClass<*>): Boolean {

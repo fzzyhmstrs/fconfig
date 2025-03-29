@@ -39,7 +39,7 @@ import kotlin.math.max
 internal class SearchMenuEntry(parentElement: DynamicListWidget, scope: String, private val widget: ClickableWidget):
         DynamicListWidget.Entry(
             parentElement,
-            Translatable.Result("fc.search.$scope".translate(), "fc.search.$scope.desc".translate().formatted(Formatting.ITALIC, Formatting.GRAY)),
+            Translatable.createScopedResult("fc.search.id.$scope", "fc.search.$scope".translate(), "fc.search.$scope.desc".translate().formatted(Formatting.ITALIC, Formatting.GRAY)),
             DynamicListWidget.Scope(scope))
 {
     private val description = CustomMultilineTextWidget(this.texts.desc ?: FcText.empty(), leftPadding = 10)

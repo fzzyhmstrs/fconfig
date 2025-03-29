@@ -23,6 +23,7 @@ class ConfigContext<T: Any>(val config: T) {
 
     companion object Keys {
         val ACTIONS = object: Key<Set<Action>> {}
+        val RESTART_ACTIONS = object: Key<Set<Action>> {}
         val RESTART_RECORDS = object : Key<Set<String>> {}
         val VERSIONS = object: Key<Int> {}
     }

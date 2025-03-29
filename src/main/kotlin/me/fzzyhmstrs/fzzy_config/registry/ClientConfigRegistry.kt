@@ -15,7 +15,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -80,7 +80,7 @@ internal object ClientConfigRegistry {
             val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
             val errors = mutableListOf<String>()
             val result = ConfigApi.deserializeConfig(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
-            val actions = result.get().getOrDefault(ACTIONS, setOf())
+            val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
             result.writeError(errors)
             MinecraftClient.getInstance().execute {
                 val saveType = result.get().config.saveType()
@@ -126,7 +126,7 @@ internal object ClientConfigRegistry {
                 val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
                 val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS)
-                val actions = result.get().getOrDefault(ACTIONS, setOf())
+                val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
                 result.writeError(errors)
                 MinecraftClient.getInstance().execute {
                     val saveType = result.get().config.saveType()

@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget.ActiveNarrationSupplier
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isNotEmpty
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.tooltip.Tooltip
@@ -183,7 +184,7 @@ open class CustomButtonWidget protected constructor(
         private var h = 20
         private var narrationSupplier: ActiveNarrationSupplier = DEFAULT_ACTIVE_NARRATION_SUPPLIER
         private var narrationAppender: Consumer<NarrationMessageBuilder> = Consumer { _-> }
-        private var activeSupplier: Supplier<Boolean> = Supplier { true }
+        private var activeSupplier: Supplier<Boolean> = ConstSupplier(true)
         private var messageSupplier: Supplier<Text>? = null
         private var textures: TextureProvider = DEFAULT_TEXTURES
         private var child: TooltipChild? = null
@@ -336,7 +337,7 @@ open class CustomButtonWidget protected constructor(
          * @since 0.5.?
          */
         fun active(active: Boolean): Builder {
-            this.activeSupplier = Supplier { active }
+            this.activeSupplier = ConstSupplier(active)
             return this
         }
 
@@ -505,6 +506,6 @@ open class CustomButtonWidget protected constructor(
         @JvmStatic
         val DEFAULT_ACTIVE_NARRATION_SUPPLIER: ActiveNarrationSupplier = ActiveNarrationSupplier { _, textSupplier: Supplier<MutableText> -> textSupplier.get() }
 
-        private val DEFAULT_ACTIVE_SUPPLIER = Supplier { true }
+        private val DEFAULT_ACTIVE_SUPPLIER = ConstSupplier(true)
     }
 }
