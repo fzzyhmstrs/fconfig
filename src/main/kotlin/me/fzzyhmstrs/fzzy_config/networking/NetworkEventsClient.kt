@@ -21,11 +21,9 @@ import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl.channelMap
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.PopupController
-import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
-import me.fzzyhmstrs.fzzy_config.util.ThreadUtils
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
@@ -42,6 +40,8 @@ import net.minecraftforge.event.TickEvent
 import net.minecraftforge.fml.ModList
 import net.minecraftforge.network.NetworkEvent
 import java.util.*
+import java.util.function.Consumer
+import java.util.function.Function
 import java.util.function.Supplier
 
 internal object NetworkEventsClient {

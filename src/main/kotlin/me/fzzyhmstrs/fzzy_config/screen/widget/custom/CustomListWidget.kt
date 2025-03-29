@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.RepositioningWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.Scalable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -62,9 +63,9 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     protected open val rightPadding: Int = 10
     protected val scrollWidth: Int = 6
     protected val scrollButtonHeight: Int = 6
-    protected val scrollType: Supplier<ScrollBarType> = Supplier { ScrollBarType.DYNAMIC }
+    protected val scrollType: Supplier<ScrollBarType> = ConstSupplier(ScrollBarType.DYNAMIC)
     protected val scrollFixedHeight: Int = 8
-    protected val scrollButtonType: Supplier<ScrollBarButtons> = Supplier { ScrollBarButtons.SPLIT }
+    protected val scrollButtonType: Supplier<ScrollBarButtons> = ConstSupplier(ScrollBarButtons.SPLIT)
     protected val scrollBarBackground: Identifier = "widget/scroll/vanilla/scroller_background".fcId()
     protected val scrollBar: Identifier = "widget/scroll/vanilla/scroller".fcId()
     protected val scrollBarHighlighted: Identifier = "widget/scroll/vanilla/scroller_highlighted".fcId()

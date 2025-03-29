@@ -339,7 +339,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                     { this@ValidatedChoice.accept(it); choiceOptionRunnable.run(); PopupWidget.pop() })
                 val n = this@ValidatedChoice.translationProvider.apply(const, this@ValidatedChoice.translationKey())
                 val desc = this@ValidatedChoice.descriptionProvider.apply(const, this@ValidatedChoice.descriptionKey()).takeIf { it.string != "" }
-                WidgetEntry(list, "choice$index", Translatable.Result(n, desc, null), 20, button)
+                WidgetEntry(list, "choice$index", Translatable.createResult(n, desc), 20, button)
             })
         }
         var listWidth = buttonWidth

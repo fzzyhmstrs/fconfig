@@ -218,7 +218,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
     }
 
     private class ForwardEntry(parentElement: DynamicListWidget, private val forwardedUpdate: ConfigScreenManager.ForwardedUpdate, private val manager: ConfigSingleUpdateManager)
-        : DynamicListWidget.Entry(parentElement, Translatable.Result(forwardedUpdate.entry.transLit(forwardedUpdate.scope), forwardedUpdate.summary.lit()), DynamicListWidget.Scope(forwardedUpdate.scope))
+        : DynamicListWidget.Entry(parentElement, Translatable.createScopedResult(forwardedUpdate.scope, forwardedUpdate.entry.transLit(forwardedUpdate.scope), forwardedUpdate.summary.lit()), DynamicListWidget.Scope(forwardedUpdate.scope))
     {
 
         override var h: Int = 20

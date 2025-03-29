@@ -9,6 +9,7 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.function.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import net.minecraft.client.gui.screen.Screen
@@ -18,6 +19,7 @@ import net.minecraft.util.Formatting
 import java.util.function.BooleanSupplier
 import java.util.function.Function
 import java.util.function.Predicate
+import java.util.function.Supplier
 
 @Translation("fc.search")
 internal class SearchConfig: Config("search".fcId()) {
@@ -35,8 +37,8 @@ internal class SearchConfig: Config("search".fcId()) {
         return behavior.get().willPassSearch(modifier.get())
     }
 
-    fun textPrefix(): List<Text> {
-        return behavior.get().textPrefix(modifier.get())
+    fun prefixText(suffix: List<Text>): Supplier<List<Text>> {
+        return CompositingSupplier.of(behavior.get().textPrefix(modifier.get()), suffix) { l1: List<Text>, l2: List<Text> -> l1 + l2 }
     }
 
     enum class Modifier(private val tester: BooleanSupplier): EnumTranslatable {
@@ -53,33 +55,33 @@ internal class SearchConfig: Config("search".fcId()) {
         }
     }
 
-    enum class SearchBehavior(val needsMod: Boolean, private val testModifier: Predicate<Modifier>, private val notMetText: Function<Modifier, List<Text>>, private val metText: Function<Modifier, List<Text>>): EnumTranslatable {
+    enum class SearchBehavior(val needsMod: Boolean, private val testModifier: Predicate<Modifier>, private val notMetText: FunctionSupplier<Modifier, List<Text>>, private val metText: FunctionSupplier<Modifier, List<Text>>): EnumTranslatable {
         HOLD_MODIFIER(true,
             { it.test() },
-            { listOf("fc.search.behavior.HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
-            { listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) }),
+            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { listOf("fc.search.behavior.HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
+            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) }),
         DONT_HOLD_MODIFIER(true,
             { !it.test() },
-            { listOf("fc.search.behavior.DONT_HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
-            { listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) }),
+            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { listOf("fc.search.behavior.DONT_HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
+            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) }),
         ALWAYS(false,
-            { true },
-            { listOf() },
-            { listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) }),
+            ConstPredicate(true),
+            ConstFunction(listOf()),
+            ConstFunction(listOf("fc.search.behavior.ALWAYS.desc".translate().formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()))),
         NEVER(false,
-            { false },
-            { listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
-            { listOf() });
+            ConstPredicate(false),
+            ConstFunction(listOf("fc.search.behavior.NEVER.desc".translate().formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())),
+            ConstFunction(listOf()));
 
         fun willPassSearch(modifier: Modifier): Boolean {
             return testModifier.test(modifier)
         }
 
-        fun textPrefix(modifier: Modifier): List<Text> {
+        fun textPrefix(modifier: Modifier): Supplier<List<Text>> {
             return if (willPassSearch(modifier)) {
-                metText.apply(modifier)
+                metText
             } else {
-                notMetText.apply(modifier)
+                notMetText
             }
         }
 
@@ -97,6 +99,6 @@ internal class SearchConfig: Config("search".fcId()) {
     }
 
     companion object {
-        val INSTANCE = ConfigApi.registerAndLoadNoGuiConfig( { SearchConfig() }, RegisterType.CLIENT)
+        val INSTANCE = ConfigApi.registerAndLoadNoGuiConfig(::SearchConfig, RegisterType.CLIENT)
     }
 }

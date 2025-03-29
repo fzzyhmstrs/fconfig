@@ -19,6 +19,7 @@ import java.util.Collections
 import java.util.function.Consumer
 import java.util.function.Function
 
+/*
 internal object ThreadUtils {
 
     @Volatile
@@ -68,6 +69,4 @@ internal object ThreadUtils {
     val fileWorker: Thread = Thread.ofPlatform().name("Fzzy Config File Worker").unstarted {
 
     }
-
-
-}
+}*/
