@@ -180,7 +180,7 @@ interface Translatable {
         }
     }
 
-    data class Name(override val name: Text): ResultProvider<Name>() {
+    data class Name internal constructor(override val name: Text): ResultProvider<Name>() {
 
         override val desc: Text?
             get() = null
@@ -205,7 +205,7 @@ interface Translatable {
         }
     }
 
-    data class NameDesc(override val name: Text, override val desc: Text): ResultProvider<NameDesc>() {
+    data class NameDesc internal constructor(override val name: Text, override val desc: Text): ResultProvider<NameDesc>() {
 
         override val prefix: Text?
             get() = null
@@ -227,7 +227,7 @@ interface Translatable {
         }
     }
 
-    data class NamePrefix(override val name: Text, override val prefix: Text): ResultProvider<NamePrefix>() {
+    data class NamePrefix internal constructor(override val name: Text, override val prefix: Text): ResultProvider<NamePrefix>() {
 
         override val desc: Text?
             get() = null

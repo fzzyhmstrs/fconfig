@@ -10,8 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.util.function
 
-import java.util.function.Function
-
 /**
  * Function that always returns the pre-computed stored result.
  * @param T input type, unused
