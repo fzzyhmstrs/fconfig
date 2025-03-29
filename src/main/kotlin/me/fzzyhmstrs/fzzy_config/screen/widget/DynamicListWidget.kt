@@ -20,9 +20,11 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.ListSpec
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
 import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.function.ConstFunction
 import me.fzzyhmstrs.fzzy_config.util.pos.ImmutableSuppliedPos
 import me.fzzyhmstrs.fzzy_config.util.pos.Pos
 import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
@@ -260,7 +262,6 @@ class DynamicListWidget(
     }
 
     fun scrollToBottomOutEntry(entry: Entry) {
-        ensureVisible(entry)
         if (entry.bottom.get() < bottom && !noScroll()) {
             val scrollAmount = bottom - entry.bottom.get()
             entries.scroll(scrollAmount)
@@ -534,7 +535,7 @@ class DynamicListWidget(
                         e.applyVisibility(Visibility::searched)
                         if (hidden)
                             e.applyVisibility(Visibility::hideSearched)
-                        e.applyTooltipPrefix { SearchConfig.INSTANCE.textPrefix() + eResults.map { it.name.copy().formatted(Formatting.GRAY) } }
+                        e.applyTooltipPrefix(SearchConfig.INSTANCE.prefixText(eResults.map { it.name.copy().formatted(Formatting.GRAY) }))
                     } else {
                         e.applyTooltipPrefix(Entry.EMPTY_PREFIX)
                         e.applyVisibility(Visibility::unsearched)
@@ -572,7 +573,7 @@ class DynamicListWidget(
                 gp.groupEntry.applyVisibility(Visibility.groupFilter(groupEntries))
                 if (gPrefixes.containsKey(g) || g2Prefixes.containsKey(g)) {
                     val l = (g2Prefixes[g] ?: listOf()) + (gPrefixes[g] ?: listOf())
-                    gp.groupEntry.applyTooltipPrefix( if(l.isEmpty() Entry.EMPTY_PREFIX else Supplier { l })
+                    gp.groupEntry.applyTooltipPrefix( if(l.isEmpty()) Entry.EMPTY_PREFIX else ConstSupplier(Visibility.GROUP_PREFIX + l))
                 } else {
                     gp.groupEntry.applyTooltipPrefix(Entry.EMPTY_PREFIX)
                 }
@@ -587,8 +588,9 @@ class DynamicListWidget(
             } else {
                 if (this@DynamicListWidget.noScroll()) {
                     scrollToTop()
+                } else if (searchInput.isNotEmpty()) {
+                    this@DynamicListWidget.scrollToBottomOutEntry(last)
                 }
-                this@DynamicListWidget.scrollToBottomOutEntry(last)
             }
             delegate.forEach { it.onScroll(0) }
             return if (childrenMatches > 0) -(foundEntries.size + childrenMatches) else foundEntries.size
@@ -636,8 +638,9 @@ class DynamicListWidget(
             } else {
                 if (this@DynamicListWidget.noScroll()) {
                     scrollToTop()
+                } else {
+                    ensureVisible(last)
                 }
-                this@DynamicListWidget.scrollToBottomOutEntry(last)
             }
             delegate.forEach { it.onScroll(0) }
         }
@@ -773,11 +776,13 @@ class DynamicListWidget(
         ContextProvider,
         LastSelectable
     {
+
+
         companion object {
             @JvmField
-            val EMPTY_RESULTS: Function<String, List<Translatable.Result>> = Function { _ -> listOf() }
+            val EMPTY_RESULTS: Function<String, List<Translatable.Result>> = ConstFunction(listOf())
             @JvmField
-            val EMPTY_PREFIX: Supplier<List<Text>> = Supplier { listOf() }
+            val EMPTY_PREFIX: Supplier<List<Text>> = ConstSupplier(listOf())
         }
 
         private var visibilityProvider: VisibilityProvider = visibility
@@ -1174,7 +1179,7 @@ class DynamicListWidget(
             }
         }
 
-        inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null, offset: Int = 0) : SuppliedPos(parent, 0, Supplier { offset }), EntryPos {
+        inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null, offset: Int = 0) : SuppliedPos(parent, 0, ConstSupplier(offset)), EntryPos {
 
             override fun getEntry(): Entry? {
                 return this@Entry.takeIf { it.getVisibility().selectable }
@@ -1184,14 +1189,17 @@ class DynamicListWidget(
 
     /**
      * Enum defining how the user sees and can interact with an entry.
-     * @param visible Whether the entry is visible. A non-visible entry will take up 0 width in the list (effectively removed from the list, visually)
-     * @param skip Whether the entry should be skipped when searching
-     * @param selectable Whether the user can interact with the entry
-     * @param group Whether the entry belongs to a group
-     * @param repeatable Whether this visibility can be applied to an entry more than once
+     * - `visible`: 1. Whether the entry is visible. A non-visible entry will take up 0 width in the list (effectively removed from the list, visually)
+     * - `skip`: 2. Whether the entry should be skipped when searching
+     * - `selectable`: 4. Whether the user can interact with the entry
+     * - `group`: 8. Whether the entry belongs to a group
+     * - `repeatable`: 16. Whether this visibility can be applied to an entry more than once
+     * - `searched`: 32. Visibility applied as a result of searching
+     * - `closed`: 64. Visibility applied from an initially-closed state
+     * - `filtered`: 128. Entry has been excluded by a search
      * @param affectedBy Predicate to determine if this visibility is affected by another
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.6.0, uses flags 0.6.8
      */
      //val visible: 1, val skip: 2, val selectable: 4, val group: 8, val repeatable: 16, val searched: 32, val closed: 32
     enum class Visibility(private val flags: Int, val affectedBy: Predicate<Visibility>): VisibilityProvider {
@@ -1237,8 +1245,8 @@ class DynamicListWidget(
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        //false, false, false, false, false
-        FILTERED(0b00000000, { v -> !v.group }),
+        //false, false, false, false, false, false, false, true
+        FILTERED(0b10000000, { v -> !v.group }),
         /**
          * Visible entry that represents a group heading
          * @author fzzyhmstrs
@@ -1265,8 +1273,8 @@ class DynamicListWidget(
          * @author fzzyhmstrs
          * @since 0.6.0
          */
-        //false, true, false, true, false
-        GROUP_FILTERED(0b00001010, { v -> v.group }), //filtering handled externally
+        //false, true, false, true, false, false, false, true
+        GROUP_FILTERED(0b10001010, { v -> v.group }), //filtering handled externally
         /**
          * Hidden entry that represents a group heading. Hiding is usually done with a button or other toggle.
          * @author fzzyhmstrs
@@ -1317,8 +1325,9 @@ class DynamicListWidget(
             get() = flags and 32 == 32
         val closed: Boolean
             get() = flags and 64 == 64
+        val filtered: Boolean
+            get() = flags and 128 == 128
 
-        
         override fun get(): Visibility {
             return this
         }
@@ -1327,7 +1336,7 @@ class DynamicListWidget(
             fun disable(visibilityStack: VisibilityStack) {
                 visibilityStack.push(GROUP_DISABLED)
             }
-            
+
             fun filter(visibilityStack: VisibilityStack) {
                 visibilityStack.push(FILTERED)
             }
@@ -1371,7 +1380,7 @@ class DynamicListWidget(
             }
 
             fun groupFilter(groupEntries: Collection<Entry>): Consumer<VisibilityStack> {
-                return if (!groupEntries.any { it.getVisibility().visible || it.getVisibility().closed }) {
+                return if (groupEntries.all { it.getVisibility().filtered }) {
                     Consumer { stack -> stack.push(GROUP_FILTERED) }
                 } else {
                     Consumer { stack -> stack.remove(GROUP_FILTERED) }
@@ -1447,7 +1456,7 @@ class DynamicListWidget(
     /**
      * A [VisibilityProvider] that tracks the base visibility of an entry as well as the entries visibility history through a stack (linked list).
      * @author fzzyhmstrs
-     * @since 0.6.0, implements [VisibilityProvider] as of 0.6.5
+     * @since 0.6.0, implements [VisibilityProvider] as of 0.6.5, implements [VisibilityStackProvider] as of 0.6.8
      */
     data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>): VisibilityStackProvider {
         override fun get(): Visibility {

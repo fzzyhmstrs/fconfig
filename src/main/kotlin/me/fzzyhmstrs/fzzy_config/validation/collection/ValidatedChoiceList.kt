@@ -358,7 +358,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
                     })
                 val name = this.translationProvider.apply(const, this.translationKey())
                 val desc = this.descriptionProvider.apply(const, this.descriptionKey()).takeIf { it.string != "" }
-                WidgetEntry(list, "choice$index", Translatable.Result(name, desc, null), 20, button)
+                WidgetEntry(list, "choice$index", Translatable.createResult(name, desc), 20, button)
             })
         }
         var listWidth = buttonWidth

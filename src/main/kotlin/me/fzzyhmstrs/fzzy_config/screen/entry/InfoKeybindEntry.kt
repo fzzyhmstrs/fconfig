@@ -39,7 +39,7 @@ import kotlin.math.max
 internal class InfoKeybindEntry(parentElement: DynamicListWidget, index: Int, scope: String, keybind: ValidatedKeybind):
         DynamicListWidget.Entry(
             parentElement,
-            Translatable.Result("fc.button.info.$scope".translate(), "fc.button.info.$scope.desc".translate().formatted(Formatting.ITALIC, Formatting.GRAY)),
+            Translatable.createScopedResult("fc.button.info.$scope", "fc.button.info.$scope".translate(), "fc.button.info.$scope.desc".translate().formatted(Formatting.ITALIC, Formatting.GRAY)),
             DynamicListWidget.Scope(scope))
 {
 
