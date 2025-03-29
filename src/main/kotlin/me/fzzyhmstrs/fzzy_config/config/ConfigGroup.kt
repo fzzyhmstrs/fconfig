@@ -14,7 +14,6 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.entry.EntryTransient
-import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
@@ -25,14 +24,12 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
-import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -50,7 +47,7 @@ import java.util.*
  * @param offsetY Optional, default null. Vertical offset in pixels for the goto icon
  * @param collapsedByDefault Optional, default false. If true, the group will start collapsed when viewing the config GUI
  * @author fzzyhmstrs
- * @since 0.6.0
+ * @since 0.6.0, added collapsedByDefault 0.6.6
  */
 class ConfigGroup constructor(
     private val groupName: String,
@@ -62,6 +59,19 @@ class ConfigGroup constructor(
     TranslatableEntry, EntryAnchor, EntryCreator, EntryPermissible, EntryTransient
 {
 
+    /**
+     * Defines the start of a config group
+     *
+     * Groups organize a grouping of settings into one unit that can be collapsed and expanded in the GUI
+     *
+     * [Laying Out Configs](https://moddedmc.wiki/en/project/fzzy-config/docs/config-design/Laying-out-Configs) has more information about how groups can be best utilized.
+     * @param groupName Optional, default "". The identifier key for the group. Other groups in the config should not use the same key.
+     * @param decoration [Decorated], default null. The icon shown in the go-to menu
+     * @param offsetX Optional, default null. Horizontal offset in pixels for the goto icon
+     * @param offsetY Optional, default null. Vertical offset in pixels for the goto icon
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
     @JvmOverloads
     constructor(
         groupName: String = "",
@@ -86,6 +96,7 @@ class ConfigGroup constructor(
     @Internal
     override var translatableEntryKey = "fc.config.generic.group"
 
+    @Internal
     override fun anchorEntry(anchor: EntryAnchor.Anchor): EntryAnchor.Anchor {
         return anchor
             .decoration(decoration ?: TextureDeco.DECO_LIST,
@@ -94,15 +105,18 @@ class ConfigGroup constructor(
             .type(EntryAnchor.AnchorType.INLINE)
     }
 
+    @Internal
     override fun anchorId(scope: String): String {
         return if (groupName != "") groupName else scope.substringAfterLast('.')
     }
 
+    @Internal
     override fun prepare(scope: String, groups: LinkedList<String>, annotations: List<Annotation>, globalAnnotations: List<Annotation>) {
         val fieldName = if (groupName != "") groupName else scope.substringAfterLast('.')
         groups.push(fieldName)
     }
 
+    @Internal
     override fun createEntry(context: EntryCreator.CreatorContext): List<EntryCreator.Creator> {
         val fieldName = if (groupName != "") groupName else context.scope.substringAfterLast('.')
         return EntryCreators.createGroupEntry(context, fieldName, collapsedByDefault)

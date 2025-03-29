@@ -124,6 +124,12 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
         return FileType.TOML
     }
 
+    /**
+     * The save type for updates received by a client. If the config is registered as SERVER and this returns [SaveType.SEPARATE], the config won't sync at all.
+     * @return [SaveType] the save behavior when a client is updated.
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
     open fun saveType(): SaveType {
         return SaveType.OVERWRITE
     }
