@@ -4,6 +4,7 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SmallSpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import net.minecraft.text.Text
 import java.util.function.Function
 import java.util.function.Supplier
@@ -16,7 +17,7 @@ import java.util.function.UnaryOperator
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-class ContextAction private constructor(val texts: Translatable.Result, val active: Supplier<Boolean>, val forMenu: Boolean, val icon: Decorated?, val action: Function<Position, Boolean>) {
+class ContextAction private constructor(val texts: Translatable.ResultProvider<*>, val active: Supplier<Boolean>, val forMenu: Boolean, val icon: Decorated?, val action: Function<Position, Boolean>) {
 
     /**
      * A builder of [ContextAction]. This is used in [ContextHandler] and [ContextProvider] to incrementally build actions, with modifications applied on different layers of context handling/provision as needed.
@@ -28,7 +29,7 @@ class ContextAction private constructor(val texts: Translatable.Result, val acti
      */
     class Builder(private val name: Text, private val action: Function<Position, Boolean>) {
         private var narration: Text? = null
-        private var active: Supplier<Boolean> = Supplier { true }
+        private var active: Supplier<Boolean> = ConstSupplier(true)
         private var icon: Decorated? = null
         private var forMenu: Boolean = true
 
@@ -113,7 +114,7 @@ class ContextAction private constructor(val texts: Translatable.Result, val acti
          * @since 0.6.0
          */
         fun build(): ContextAction {
-            return ContextAction(Translatable.Result(name, narration), active, forMenu, icon, action)
+            return ContextAction(Translatable.createResult(name, narration), active, forMenu, icon, action)
         }
     }
 }

@@ -29,6 +29,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ConfirmLinkScreen
@@ -133,8 +134,8 @@ class ConfigAction @JvmOverloads constructor(
      * @since 0.5.0
      */
     class Builder {
-        private var titleSupplier: Supplier<Text> = Supplier { FcText.EMPTY }
-        private var activeSupplier: Supplier<Boolean> = Supplier { true }
+        private var titleSupplier: Supplier<Text> = ConstSupplier(FcText.EMPTY)
+        private var activeSupplier: Supplier<Boolean> = ConstSupplier(true)
         private var desc: Text? = null
         private var background: TextureProvider? = null
         private var decoration: Decorated? = null
@@ -148,7 +149,7 @@ class ConfigAction @JvmOverloads constructor(
          * @since 0.5.0
          */
         fun title(title: Text): Builder {
-            this.titleSupplier = Supplier { title }
+            this.titleSupplier = ConstSupplier(title)
             return this
         }
 

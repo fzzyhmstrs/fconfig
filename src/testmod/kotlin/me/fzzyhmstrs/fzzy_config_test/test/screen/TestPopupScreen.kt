@@ -10,13 +10,16 @@
 
 package me.fzzyhmstrs.fzzy_config_test.test.screen
 
+import com.google.common.base.Suppliers
 import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
 import me.fzzyhmstrs.fzzy_config.screen.widget.ConfigScreenWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config_test.FCC.testBoolean
 import me.fzzyhmstrs.fzzy_config_test.FCC.testInt
@@ -42,6 +45,8 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
     val testBooleanWidget = testBoolean.widgetEntry(ChoiceValidator.any())
     val listTestWidget = configWidget(size)
     val groupButton = ButtonWidget.builder("Toggle".lit()) { _ -> listTestWidget.toggleGroup("2") }.size(50, 20).build()
+    val suppliedText = SuppliedTextWidget(Suppliers.memoize { FcText.empty() }, MinecraftClient.getInstance().textRenderer, 100, 20)
+    val suppliedText2 = SuppliedTextWidget(ConstSupplier(FcText.empty()), MinecraftClient.getInstance().textRenderer, 100, 20)
 
     override fun close() {
         super.close()
@@ -59,6 +64,7 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
 
     override fun init() {
         super.init()
+        println(suppliedText)
         addDrawableChild(ButtonWidget.builder("Test Popup".lit()) { openTestPopupWidget() }.dimensions(20, 20, 110, 20).build())
         addDrawableChild(ButtonWidget.builder("Done".lit()) { close() }.dimensions(20, 50, 110, 20).build())
         testIntWidget.setPosition(20, 80)

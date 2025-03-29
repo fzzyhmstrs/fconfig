@@ -23,7 +23,7 @@ enum class SaveType(private vararg val incompatibleActions: Action) {
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    OVERWRITE(Action.RESTART, Action.RELOG),
+    OVERWRITE,
     /**
      * Client config files will be maintained separately from server configs.
      *
@@ -31,7 +31,7 @@ enum class SaveType(private vararg val incompatibleActions: Action) {
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    SEPARATE;
+    SEPARATE(Action.RESTART, Action.RELOG);
 
     internal fun incompatibleWith(actions: Set<Action>?): Boolean {
         return incompatibleActions.any { actions?.contains(it) == true }

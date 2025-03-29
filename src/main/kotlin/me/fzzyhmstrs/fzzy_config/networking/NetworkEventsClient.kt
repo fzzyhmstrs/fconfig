@@ -20,11 +20,9 @@ import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.networking.api.ClientPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.PopupController
-import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
-import me.fzzyhmstrs.fzzy_config.util.ThreadUtils
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
@@ -36,6 +34,8 @@ import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
 import java.util.*
+import java.util.function.Consumer
+import java.util.function.Function
 
 internal object NetworkEventsClient {
 
@@ -94,8 +94,23 @@ internal object NetworkEventsClient {
             registerClientCommands(dispatcher)
         }
 
+        val scopeConsumer: Consumer<String> = Consumer { scopeToOpen ->
+            if (scopeToOpen != "") {
+                ConfigApiImplClient.openScreen(scopeToOpen)
+            }
+        }
+
+        val restartFunction: Function<Boolean, Boolean> = Function { openRestartScreen ->
+            if (openRestartScreen) {
+                ConfigApiImplClient.openRestartScreen()
+            } else
+                false
+        }
+
         ClientTickEvents.START_CLIENT_TICK.register { _ ->
-            ThreadUtils.doTick()
+            FCC.withScope(scopeConsumer)
+            FCC.withRestart(restartFunction)
+            PopupController.popAll()
         }
 
         ClientConfigurationNetworking.registerGlobalReceiver(ConfigSyncS2CCustomPayload.type) { payload, handler ->
