@@ -205,6 +205,11 @@ internal class ConfigScreen(
         } else {
             ""
         }
+        val searchFieldText = if (this::searchField.isInitialized) {
+            searchField.text
+        } else {
+            ""
+        }
         searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 108, 20, FcText.EMPTY)
         fun setColor(entries: Int) {
             if(entries > 0)
@@ -216,7 +221,7 @@ internal class ConfigScreen(
         }
         searchField.setMaxLength(100)
         searchField.setChangedListener { s -> setColor(configList.search(s)) }
-        if (searchText != searchField.text)
+        if (searchText != searchFieldText || searchText.isNotEmpty())
             searchField.text = searchText
         searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
 
