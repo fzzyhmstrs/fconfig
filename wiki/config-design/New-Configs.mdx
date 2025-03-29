@@ -79,40 +79,58 @@ public class MyConfig extends Config {
     public FileType fileType() {
 		return FileType.JSON5;
     }
+
+   //You can define the save type for your config; which determines how clients act when receiving updates from a server.
+   //SaveType.SEPARATE will not save updates to the local config files, keeping them separate for singleplayer play.
+   @Override
+   public SaveType saveType() {
+      return SaveType.SEPARATE;
+   }
 }
 ```
 
 ```kotlin !!tabs Kotlin
-internal class MyConfig: Config(Identifier.of(MOD_ID, "my_config")) {
+internal class MyConfig : Config(Identifier.of(MOD_ID, "my_config")) {
 
-    var bareDouble = 5.0 // A double without validation. It will still have basic type-validation backing it internally.
+   var bareDouble = 5.0 // A double without validation. It will still have basic type-validation backing it internally.
 
-    var booleanThing = false // most primitive types and a wide array of other types are supported by background validation. See Validation for details.
+   var booleanThing = false // most primitive types and a wide array of other types are supported by background validation. See Validation for details.
 
-    var validatedDouble = ValidatedDouble(5.0, 10.0, 0.0) //this field has defined validation, error correction, and will restrict user inputs to doubles between 0 and 10.
+   var validatedDouble = ValidatedDouble(
+      5.0,
+      10.0,
+      0.0
+   ) //this field has defined validation, error correction, and will restrict user inputs to doubles between 0 and 10.
 
-    var mySection = MySection() // a section of the config with its own validated fields and other sections as applicable. This will appear in-game as a separate screen "layer" with a breadcrumb leading back to the parent screen.
+   var mySection = MySection() // a section of the config with its own validated fields and other sections as applicable. This will appear in-game as a separate screen "layer" with a breadcrumb leading back to the parent screen.
 
-    internal class MySection: ConfigSection() { // a Config Section. Self-serializable. Of course it doesn't have to be defined inside of it's parent class, but it may be convenient
+   internal class MySection :
+      ConfigSection() { // a Config Section. Self-serializable. Of course it doesn't have to be defined inside of it's parent class, but it may be convenient
 
-        var sectionBoolean = ValidatedBoolean(true) //booleans can have defined validation, but it's not really necessary
+      var sectionBoolean = ValidatedBoolean(true) //booleans can have defined validation, but it's not really necessary
 
-        var sectionMap = ValidatedIdentifierMap( //validation exists for common collections too, maps, lists, sets, and so on
-            mapOf(), //empty default map
-            ValidatedIdentifier.ofTag(Registries.ITEM.getId(Items.IRON_AXE), ItemTags.AXES), // the keys in this map can only be from the AXES tag
-            ValidatedDouble(1.0, 1.0, 0.0) //map values are double restricted between 0.0 and 1.0
-        )
-    }
+      var sectionMap = ValidatedIdentifierMap( //validation exists for common collections too, maps, lists, sets, and so on
+         mapOf(), //empty default map
+         ValidatedIdentifier.ofTag(Registries.ITEM.getId(Items.IRON_AXE), ItemTags.AXES), // the keys in this map can only be from the AXES tag
+         ValidatedDouble(1.0, 1.0, 0.0) //map values are double restricted between 0.0 and 1.0
+      )
+   }
 
-    //Configs have a default permission level needed to edit them (disabled in single player). You can override that default here
-    override defaultPermLevel(): Int {
-       return 4
-    }
-    
-    //Fzzy Config uses TOML files by default. You can override that behavior to any of the supported FileType
-    override fileType(): FileType {
-       return FileType.JSON5
-    }
+   //Configs have a default permission level needed to edit them (disabled in single player). You can override that default here
+   override fun defaultPermLevel(): Int {
+      return 4
+   }
+
+   //Fzzy Config uses TOML files by default. You can override that behavior to any of the supported FileType
+   override fun fileType(): FileType {
+      return FileType.JSON5
+   }
+
+   //You can define the save type for your config; which determines how clients act when receiving updates from a server.
+   //SaveType.SEPARATE will not save updates to the local config files, keeping them separate for singleplayer play.
+   override fun saveType(): SaveType {
+      return SaveType.SEPARATE
+   }
 }
 ```
 
