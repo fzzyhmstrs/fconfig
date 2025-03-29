@@ -10,16 +10,21 @@
 
 package me.fzzyhmstrs.fzzy_config_test.test
 
+import com.google.common.base.Suppliers
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
+import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig
 import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig2
+import net.minecraft.client.MinecraftClient
 
 object TestConfigClient {
 
     fun init() {
         println("I registered my config")
     }
+
 
     var testConfig = ConfigApi.registerAndLoadConfig({ TestConfigImpl() }, RegisterType.CLIENT)
     var testConfig3 = ConfigApi.registerAndLoadConfig({ TestConfigImpl3() }, RegisterType.CLIENT)

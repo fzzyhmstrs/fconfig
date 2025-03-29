@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import com.google.common.base.Supplier
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -19,6 +19,7 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.text.Text
+import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -29,11 +30,17 @@ import kotlin.math.roundToInt
  * @param width Int - width of the widget in pixels
  * @param height Int - height of the widget in pixels
  * @author fzzyhmstrs
- * @since 0.3.1, removed align:direction: methods and now implements TooltipChild in 0.6.0
+ * @since 0.3.1, removed align:direction: methods and now implements TooltipChild in 0.6.0, uses java.util.Supplier instead of googles in 0.6.8 and deprecates constructors with google Supplier.
  */
 class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): AbstractTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer), TooltipChild {
 
+    @Deprecated("Use constructor with java Supplier. Scheduled for removal 0.7.0")
+    constructor(messageSupplier: com.google.common.base.Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): this(messageSupplier.cast<Supplier<Text>>(), textRenderer, width, height)
+
     constructor(messageSupplier: Supplier<Text>, textRenderer: TextRenderer): this(messageSupplier, textRenderer, textRenderer.getWidth(messageSupplier.get().asOrderedText()), textRenderer.fontHeight)
+
+    @Deprecated("Use constructor with java Supplier. Scheduled for removal 0.7.0")
+    constructor(messageSupplier: com.google.common.base.Supplier<Text>, textRenderer: TextRenderer): this(messageSupplier.cast<Supplier<Text>>(), textRenderer, textRenderer.getWidth(messageSupplier.get().asOrderedText()), textRenderer.fontHeight)
 
     private var horizontalAlignment = 0.5f
     private var overflowTooltip: Supplier<Text>? = null

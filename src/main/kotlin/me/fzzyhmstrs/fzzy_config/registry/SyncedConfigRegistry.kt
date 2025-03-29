@@ -16,10 +16,9 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
-import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl.onUpdateServer
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -182,7 +181,7 @@ internal object SyncedConfigRegistry {
             }
             val errors = mutableListOf<String>()
             val result = ConfigApiImpl.deserializeUpdate(configEntry, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS)
-            val actions = result.get().getOrDefault(ACTIONS, setOf())
+            val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
             result.writeError(errors)
             result.get().config.config.save()
             if (actions.any { it.restartPrompt }) {
@@ -259,7 +258,7 @@ internal object SyncedConfigRegistry {
             val errors = mutableListOf<String>()
 
             val result = ConfigApiImpl.deserializeUpdate(config, quarantinedUpdate.configString, errors, ConfigApiImpl.CHECK_ACTIONS)
-            val actions = result.get().getOrDefault(ACTIONS, setOf())
+            val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
             result.writeError(errors)
             result.get().config.config.save()
             if (actions.any { it.restartPrompt }) {

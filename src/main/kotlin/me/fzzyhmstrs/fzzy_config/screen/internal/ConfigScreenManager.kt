@@ -304,7 +304,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
 
         for (s in subScopes) {
             if (!configs.containsKey(s)) {
-                val result = Translatable.Result(FcText.translatableWithFallback(s, "fc.button.notLoaded"))
+                val result = Translatable.createResult(FcText.translatableWithFallback(s, "fc.button.notLoaded"))
                 val context = EntryCreator.CreatorContext(s, ConfigGroup.emptyGroups, false, result, listOf(), setOf(), contextMisc)
                 EntryCreators.createNoPermsEntry(context, "notLoaded").applyToList(functions)
             }
@@ -360,7 +360,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
                 if (result.thing !is EntryAnchor) return@Consumer
                 val layer = result.scope.split('.').filter { it != this.scope }.size
                 val anchor = result.thing.anchorEntry(EntryAnchor.Anchor(layer, result.texts.name))
-                val anchorTexts = Translatable.Result(anchor.name, result.texts.desc, result.texts.prefix)
+                val anchorTexts = Translatable.createScopedResult("anchor.${result.scope}", anchor.name, result.texts.desc, result.texts.prefix)
                 if (configs.size == 1 && anchor.type == EntryAnchor.AnchorType.INLINE) {
                     anchor.layer++
                 } else if (anchor.type == EntryAnchor.AnchorType.INLINE) {

@@ -128,7 +128,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     private fun createInstance(): T {
         val noArgsConstructor = storedValue::class.constructors.singleOrNull { it.parameters.all(KParameter::isOptional) }
             ?: throw IllegalArgumentException("Class should have a single no-arg constructor: $this")
-        if (storedValue::class.annotations.firstOrNull { (it is IgnoreVisibility) }?.let { true } == true)
+        if (storedValue::class.annotations.any { it is IgnoreVisibility })
             noArgsConstructor.javaConstructor?.trySetAccessible()
         return noArgsConstructor.callBy(emptyMap())
     }
