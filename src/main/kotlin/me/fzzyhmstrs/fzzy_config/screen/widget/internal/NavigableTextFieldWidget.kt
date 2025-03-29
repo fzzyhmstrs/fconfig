@@ -17,7 +17,6 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.math.MathHelper
 import org.lwjgl.glfw.GLFW
 
 internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, width: Int, height: Int, text: Text) : TextFieldWidget(textRenderer, 0, 0, width, height, text) {
@@ -53,14 +52,14 @@ internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, 
         clicked = false
     }
 
-    override fun setCursor(cursor: Int, shiftKeyPressed: Boolean) {
+    override fun setCursor(cursor: Int) {
         if (clicked) {
             this.setSelectionStart(cursor)
-            if (!shiftKeyPressed) {
+            if (!Screen.hasShiftDown()) {
                 this.setSelectionEnd(this.cursor)
             }
         } else {
-            super.setCursor(cursor, shiftKeyPressed)
+            super.setCursor(cursor)
         }
     }
 }

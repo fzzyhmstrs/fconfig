@@ -35,9 +35,10 @@ internal object NetworkEvents {
     }
 
     fun syncConfigs(handler: ServerPlayNetworkHandler) {
-        for ((id, config) in SyncedConfigRegistry.syncedConfigs()) {
+        if (handler.player.server.isSingleplayer) return
+        for ((id, configEntry) in SyncedConfigRegistry.syncedConfigs()) {
             val syncErrors = mutableListOf<String>()
-            val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
+            val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(configEntry.config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
             if (syncErrors.isNotEmpty()) {
                 val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C configuration stage sync.")
                 syncError.writeError(syncErrors)

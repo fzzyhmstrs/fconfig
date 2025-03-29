@@ -47,6 +47,7 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.Util
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
+import java.util.function.UnaryOperator
 
 //client
 internal class ConfigScreen(
@@ -204,7 +205,7 @@ internal class ConfigScreen(
         } else {
             ""
         }
-        searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 109, 20, FcText.EMPTY)
+        searchField = NavigableTextFieldWidget(MinecraftClient.getInstance().textRenderer, 108, 20, FcText.EMPTY)
         fun setColor(entries: Int) {
             if(entries > 0)
                 searchField.setEditableColor(-1)
@@ -220,11 +221,13 @@ internal class ConfigScreen(
         searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
 
         val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
+        layout.pushSpacing({ _-> 1 }, UnaryOperator.identity())
         layout.add(
             "search",
             searchField,
             LayoutWidget.Position.LEFT,
             LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
+        layout.popSpacing()
         layout.add(
             "menu",
             CustomButtonWidget.builder(TextureIds.MENU_LANG) {

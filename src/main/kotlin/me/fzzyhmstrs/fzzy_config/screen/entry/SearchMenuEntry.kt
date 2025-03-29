@@ -65,7 +65,8 @@ internal class SearchMenuEntry(parentElement: DynamicListWidget, scope: String, 
     override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         widget.setPosition(x + width - 110, y)
         widget.render(context, mouseX, mouseY, delta)
-        description.setDimensionsAndPosition(width - 120, 0, x, y + 10)
+        description.setPosition(x, y + 10)
+        description.width = width - 120
         description.render(context, mouseX, mouseY, delta)
         context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, this.texts.name, x, y, if (hovered || focused) -171 else -1)
     }
