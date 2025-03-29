@@ -1,7 +1,0 @@
-{
-  "fzzy_config_test.test_config.enum1" : "Nombre de enumeración largo muy interesante para realizar pruebas",
-  "fzzy_config_test.test_config2.enum1" : "Nombre de enumeración largo muy interesante para realizar pruebas",
-  "fzzy_config_test.test_config2.choice1" : "Opciones con la traducción",
-
-  "do.popups.break.enum": "¿Me Rompo?"
-}
