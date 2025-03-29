@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_ACTIONS
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
@@ -115,9 +116,9 @@ internal object ClientConfigRegistry {
 
     internal fun receiveReloadSync(id: String, configString: String, player: PlayerEntity) {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
-            val config = SyncedConfigRegistry.syncedConfigs()[id] ?: return
+            val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
             val errors = mutableListOf<String>()
-            val result = ConfigApi.deserializeConfig(config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
+            val result = ConfigApi.deserializeConfig(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
             val actions = result.get().getOrDefault(ACTIONS, setOf())
             result.writeError(errors)
             result.get().config.save() //save config to the client
