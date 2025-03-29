@@ -265,6 +265,8 @@ object TextureIds {
     val MENU_LANG = "fc.search.title".translate()
 
     init {
+        RenderUtil.addBackground("widget/dashed".fcId(), RenderUtil.fallbackBg)
+
         val smolBg = RenderUtil.Background(0, 0, 11, 10)
         RenderUtil.addBackground("widget/scroll/increment_up".fcId(), smolBg)
         RenderUtil.addBackground("widget/scroll/increment_up_highlighted".fcId(), smolBg)

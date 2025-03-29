@@ -16,7 +16,6 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.util.Identifier
 import kotlin.math.min
 import java.awt.Color
-import kotlin.math.min
 
 /**
  * Render utils for DrawContext to provide functionality similar to 1.20.2+ sprite rendering
@@ -107,7 +106,10 @@ object RenderUtil {
      * @since 0.6.1
      */
     fun DrawContext.drawNineSlice(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
-        this.drawTex(id, x, y, width, height, color)
+        val colors = Color(color).getRGBComponents(null)
+        RenderSystem.setShaderColor(colors[0], colors[1], colors[2], colors[3])
+        this.drawNineSlice(id, x, y, width, height)
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f)
     }
 
     /**
@@ -279,7 +281,7 @@ object RenderUtil {
 
     private val backgrounds: MutableMap<Identifier, Background> = mutableMapOf()
     internal val defaultBg = Background(20, 4, 200, 20)
-    private val fallbackBg = Background(1, 1, 20, 20)
+    internal val fallbackBg = Background(1, 1, 20, 20)
 
     fun getBackground(id: Identifier): Background {
         return backgrounds[id] ?: fallbackBg

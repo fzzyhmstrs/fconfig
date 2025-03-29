@@ -27,6 +27,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
 import me.fzzyhmstrs.fzzy_config.util.FocusedTooltipPositioner
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
@@ -206,7 +207,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             } else {
                 -6250336
             }
-            context.drawTex(TextureIds.DASHED, x - 1 + groupOffset, y - 1, width + 2 - groupOffset, height + 2, color)
+            context.drawNineSlice(TextureIds.DASHED, x - 1 + groupOffset, y - 1, width + 2 - groupOffset, height + 2, color)
         }
     }
 
