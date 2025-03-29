@@ -121,7 +121,9 @@ internal object ClientConfigRegistry {
             val result = ConfigApi.deserializeConfig(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
             val actions = result.get().getOrDefault(ACTIONS, setOf())
             result.writeError(errors)
-            result.get().config.save() //save config to the client
+            val saveType = result.get().config.saveType()
+            if (saveType == SaveType.OVERWRITE)
+                result.get().config.save()//save config to the client
             if (actions.any { it.restartPrompt }) {
                 MinecraftClient.getInstance().execute {
                     val records = result.get().get(RESTART_RECORDS)
