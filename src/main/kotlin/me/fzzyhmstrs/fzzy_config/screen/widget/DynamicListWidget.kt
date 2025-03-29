@@ -42,6 +42,7 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.MathHelper
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.*
 import java.util.function.Function
@@ -777,24 +778,26 @@ class DynamicListWidget(
         LastSelectable
     {
 
-
         companion object {
             @JvmField
-            val EMPTY_RESULTS: Function<String, List<Translatable.Result>> = ConstFunction(listOf())
+            val EMPTY_RESULTS: Function<String, List<Translatable.ResultProvider<*>>> = ConstFunction(listOf())
             @JvmField
             val EMPTY_PREFIX: Supplier<List<Text>> = ConstSupplier(listOf())
         }
 
         private var visibilityProvider: VisibilityProvider = visibility
 
+        @Internal
         fun getVisibility(): Visibility {
             return visibilityProvider.get()
         }
 
+        @Internal
         fun getRootVisibility(): Visibility {
             return visibilityProvider.getRoot()
         }
 
+        @Internal
         fun applyVisibility(consumer: Consumer<VisibilityStack>) {
             if (this.visibilityProvider !is VisibilityStack) {
                 val vs = VisibilityStack(this.getVisibility(), LinkedList())
@@ -815,6 +818,7 @@ class DynamicListWidget(
         internal var top: EntryPos = EntryPos.ZERO
         internal var bottom: Pos = Pos.ZERO
 
+        @Internal
         fun atY(mouseY: Int): Boolean {
             return mouseY >= top.get() && mouseY < bottom.get()
         }
@@ -825,6 +829,7 @@ class DynamicListWidget(
         private var dragging = false
         protected var tooltipPrefix: Supplier<List<Text>> = EMPTY_PREFIX
 
+        @Internal
         fun applyTooltipPrefix(prefix: Supplier<List<Text>>) {
             this.tooltipPrefix = prefix
         }
@@ -832,11 +837,11 @@ class DynamicListWidget(
         /**
          * Provides a list of indirect search matches to the dynamic list parent. Used to determine which entries should stay visible because they are indirectly relevant.
          * @param searchInput The raw input string. Has not been parsed for special characters etc. Passing it into a [Searcher] to generate results may be prudent.
-         * @return List&lt;[Translatable.Result]&gt; list of text results relevant to the provided search. Default behavior is an empty list.
+         * @return List&lt;[Translatable.ResultProvider]&gt; list of text results relevant to the provided search. Default behavior is an empty list.
          * @author fzzyhmstrs
          * @since 0.6.8
          */
-        open fun entrySearchResults(searchInput: String): List<Translatable.Result> {
+        open fun entrySearchResults(searchInput: String): List<Translatable.ResultProvider<*>> {
             return EMPTY_RESULTS.apply(searchInput)
         }
 
@@ -851,10 +856,12 @@ class DynamicListWidget(
          */
         abstract fun selectableChildren(): List<SelectableElement>
 
+        @Internal
         fun getNeighbor(up: Boolean): Entry? {
             return this.top.getSelectableNeighbor(up)
         }
 
+        @Internal
         fun onAdd(parentPos: Pos, previous: Entry?, last: Boolean) {
             if (previous == null) {
                 top = RelEntryPos(parentPos, null, offset = parentElement.spec.verticalFirstPadding)
@@ -899,6 +906,7 @@ class DynamicListWidget(
          */
         open fun onScroll(dY: Int) {}
 
+        @Internal
         fun scroll(dY: Int) {
             if (dY == 0) return
             top.inc(dY)
@@ -968,6 +976,7 @@ class DynamicListWidget(
          * @author fzzyhmstrs
          * @since 0.6.0
          */
+        @Internal
         @Deprecated("Use renderEntry/renderBorder/renderHighlight for rendering instead")
         override fun render (context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             if (!getVisibility().visible) return
@@ -1142,8 +1151,15 @@ class DynamicListWidget(
             return "Entry:$scope"
         }
 
+        /**
+         * Marks an element as both Selectable and an Element. It should be safe to cast something that is separately both an Element and Selectable to this.
+         * @author fzzyhmstrs
+         * @since 0.6.0
+         */
         interface SelectableElement: Selectable, Element
 
+        @Internal
+        @Deprecated("Will be marked private in 0.7.0")
         interface EntryPos: Pos {
             val previous: EntryPos?
             var next: EntryPos?
@@ -1179,6 +1195,8 @@ class DynamicListWidget(
             }
         }
 
+        @Internal
+        @Deprecated("Will be marked private in 0.7.0")
         inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null, offset: Int = 0) : SuppliedPos(parent, 0, ConstSupplier(offset)), EntryPos {
 
             override fun getEntry(): Entry? {
@@ -1201,7 +1219,7 @@ class DynamicListWidget(
      * @author fzzyhmstrs
      * @since 0.6.0, uses flags 0.6.8
      */
-     //val visible: 1, val skip: 2, val selectable: 4, val group: 8, val repeatable: 16, val searched: 32, val closed: 32
+    //val visible: 1, val skip: 2, val selectable: 4, val group: 8, val repeatable: 16, val searched: 32, val closed: 64, val filtered: 128
     enum class Visibility(private val flags: Int, val affectedBy: Predicate<Visibility>): VisibilityProvider {
         /**
          * Standard visibility. The Entry can be seen, searched, and interacted with.
@@ -1387,6 +1405,7 @@ class DynamicListWidget(
                 }
             }
 
+            @Deprecated("Removal in 0.7.0")
             val EMPTY: Consumer<LinkedList<Visibility>> = Consumer { _-> }
 
             @JvmField
@@ -1448,6 +1467,11 @@ class DynamicListWidget(
         }
     }
 
+    /**
+     * A [VisibilityProvider] that has child visibilities that can be pushed to and removed from.
+     * @author fzzyhmstrs
+     * @since 0.6.8
+     */
     interface VisibilityStackProvider: VisibilityProvider {
         fun push(v: Visibility)
         fun remove(v: Visibility)
@@ -1459,18 +1483,22 @@ class DynamicListWidget(
      * @since 0.6.0, implements [VisibilityProvider] as of 0.6.5, implements [VisibilityStackProvider] as of 0.6.8
      */
     data class VisibilityStack (private val baseVisibility: Visibility, private val visibilityStack: LinkedList<Visibility>): VisibilityStackProvider {
+        /** @suppress */
         override fun get(): Visibility {
             return visibilityStack.firstOrNull() ?: baseVisibility
         }
 
+        /** @suppress */
         override fun getRoot(): Visibility {
             return baseVisibility
         }
 
+        /** @suppress */
         override fun push(v: Visibility) {
             if (baseVisibility.affectedBy.test(v) && (v.repeatable || !visibilityStack.contains(v))) visibilityStack.push(v)
         }
 
+        /** @suppress */
         override fun remove(v: Visibility) {
             if (baseVisibility.affectedBy.test(v)) visibilityStack.removeFirstOccurrence(v)
         }

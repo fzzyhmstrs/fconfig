@@ -16,6 +16,8 @@ import java.util.function.Supplier
 /**
  * Supplier that composites two results together and supplies that result. May or may not be constant
  * @param T supplier type
+ * @see ConstSupplier
+ * @see SuppliedFunctionSupplier
  * @author fzzyhmstrs
  * @since 0.6.8
  */
@@ -46,10 +48,34 @@ sealed interface CompositingSupplier<T>: Supplier<T> {
 
     companion object {
 
+        /**
+         * Composites two constants and supplies the result
+         * @param T supplied type
+         * @param one Constant [T] instance
+         * @param two Constant [T] instance
+         * @param compositingFunction [BiFunction]&lt;[T], [T], [T]&gt;
+         * @return [Supplier] of [T]
+         * @see ConstSupplier
+         * @see SuppliedFunctionSupplier
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
         fun <T> of(one: T, two: T, compositingFunction: BiFunction<T, T, T>): Supplier<T> {
             return DualConstSupplier(one, two, compositingFunction)
         }
 
+        /**
+         * Composites two suppliers and supplies the result. Result is recomputed on every get call
+         * @param T supplied type
+         * @param oneSupplier [Supplier] of [T] instance
+         * @param twoSupplier [Supplier] of [T] instance
+         * @param compositingFunction [BiFunction]&lt;[T], [T], [T]&gt;
+         * @return [Supplier] of [T] that computes the result on every call
+         * @see ConstSupplier
+         * @see SuppliedFunctionSupplier
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
         fun <T> of(oneSupplier: Supplier<T>, twoSupplier: Supplier<T>, compositingFunction: BiFunction<T, T, T>): Supplier<T> {
             return if (oneSupplier is ConstSupplier<*>) {
                 if (twoSupplier is ConstSupplier<*>) {
@@ -66,6 +92,18 @@ sealed interface CompositingSupplier<T>: Supplier<T> {
             }
         }
 
+        /**
+         * Composites a supplier and constant and supplies the result. Result is recomputed on every get call
+         * @param T supplied type
+         * @param oneSupplier [Supplier] of [T] instance
+         * @param two Constant [T] instance
+         * @param compositingFunction [BiFunction]&lt;[T], [T], [T]&gt;
+         * @return [Supplier] of [T] that computes the result on every call
+         * @see ConstSupplier
+         * @see SuppliedFunctionSupplier
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
         fun <T> of(oneSupplier: Supplier<T>, two: T, compositingFunction: BiFunction<T, T, T>): Supplier<T> {
             return if (oneSupplier is ConstSupplier<*>) {
                 DualConstSupplier(oneSupplier.get(), two, compositingFunction)
@@ -74,6 +112,18 @@ sealed interface CompositingSupplier<T>: Supplier<T> {
             }
         }
 
+        /**
+         * Composites a constant and a supplier and supplies the result. Result is recomputed on every get call
+         * @param T supplied type
+         * @param one Constant [T] instance
+         * @param twoSupplier [Supplier] of [T] instance
+         * @param compositingFunction [BiFunction]&lt;[T], [T], [T]&gt;
+         * @return [Supplier] of [T] that computes the result on every call
+         * @see ConstSupplier
+         * @see SuppliedFunctionSupplier
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
         fun <T> of(one: T, twoSupplier: Supplier<T>, compositingFunction: BiFunction<T, T, T>): Supplier<T> {
             return if (twoSupplier is ConstSupplier<*>) {
                 DualConstSupplier(one, twoSupplier.get(), compositingFunction)
