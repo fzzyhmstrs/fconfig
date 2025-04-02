@@ -26,6 +26,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.lwjgl.glfw.GLFW
+import java.util.Locale
 import java.util.function.Consumer
 import java.util.function.Function
 import java.util.function.Supplier
@@ -62,6 +63,23 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     private var isValid = true
     private var confirmActive = false
     private var error: Text? = null
+
+    fun isIntType(): Boolean {
+        return storedValue is Int || storedValue is Long || storedValue is Short || storedValue is Byte
+    }
+
+    private fun isValidChar(chr: Char): Boolean {
+        return if(isIntType()) {
+            chr in '0'..'9'
+        } else {
+            chr in '0'..'9' || chr == '.'
+        }
+    }
+
+    override fun charTyped(chr: Char, modifiers: Int): Boolean {
+        if (!isValidChar(chr)) return false
+        return super.charTyped(chr, modifiers)
+    }
 
     private fun ongoingChanges(): Boolean {
         return System.currentTimeMillis() - lastChangedTime <= 350L

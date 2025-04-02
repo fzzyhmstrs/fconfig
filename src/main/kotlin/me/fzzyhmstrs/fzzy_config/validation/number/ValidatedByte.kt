@@ -98,7 +98,7 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
 
     @Internal
     override fun convert(input: Double): ValidationResult<Byte> {
-        return ValidationResult.predicated(input.toInt().toByte(), input.toLong() == input.toInt().toByte().toLong(), "[$input] out of Bounds for byte value (${Byte.MIN_VALUE} to ${Byte.MAX_VALUE} )")
+        return ValidationResult.predicated(input.toInt().toByte(), input % 1 == 0.0 && input.toLong() == input.toInt().toByte().toLong(), "[$input] not a valid Byte")
     }
 
     @Internal
