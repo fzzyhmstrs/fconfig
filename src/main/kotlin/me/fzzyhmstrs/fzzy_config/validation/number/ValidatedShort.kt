@@ -98,7 +98,7 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
     override var increment: Short? = null
 
     override fun convert(input: Double): ValidationResult<Short> {
-        return ValidationResult.predicated(input.toInt().toShort(), input.toLong() == input.toInt().toShort().toLong(), "[$input] out of Bounds for short value (${Short.MIN_VALUE} to ${Short.MAX_VALUE} )")
+        return ValidationResult.predicated(input.toInt().toShort(), input % 1 == 0.0 && input.toLong() == input.toInt().toShort().toLong(), "[$input] not a valid Short")
     }
 
     override fun minBound(): Short {
