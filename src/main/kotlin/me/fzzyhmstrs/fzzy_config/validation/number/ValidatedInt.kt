@@ -120,7 +120,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
 
     @Internal
     override fun convert(input: Double): ValidationResult<Int> {
-        return ValidationResult.predicated(input.toInt(), input.toLong() == input.toInt().toLong(), "[$input] out of Bounds for int value (${Int.MIN_VALUE} to ${Int.MAX_VALUE} )")
+        return ValidationResult.predicated(input.toInt(), input % 1 == 0.0 && input.toLong() == input.toInt().toLong(), "[$input] not a valid Int")
     }
 
     @Internal
