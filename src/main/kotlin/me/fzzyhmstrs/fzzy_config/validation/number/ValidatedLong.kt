@@ -131,7 +131,7 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
 
     @Internal
     override fun convert(input: Double): ValidationResult<Long> {
-        return ValidationResult.success(input.toLong())
+        return ValidationResult.predicated(input.toLong(), input % 1 == 0.0, "[$input] not a valid Long")
     }
 
     @Internal
