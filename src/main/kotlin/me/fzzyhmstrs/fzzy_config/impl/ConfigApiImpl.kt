@@ -217,13 +217,23 @@ internal object ConfigApiImpl {
         return ConfigApiImplClient.isConfigLoaded(scope)
     }
 
-    ///////////////// Flags //////////////////////////////////////////////////////////////
+    ///////////////////// END Registration ///////////////////////////////////////////////
 
     //////////////// Read, Create, Save //////////////////////////////////////////////////
+
+    /*internal fun <T: Config> readOrCreateAndValidateAsync(configClass: () -> T, classInstance: T = configClass(), name: String = classInstance.name, folder: String = classInstance.folder, subfolder: String = classInstance.subfolder): ConfigHolder<T> {
+        val future = CompletableFuture.supplyAsync {
+            readOrCreateAndValidate(configClass, classInstance, name, folder, subfolder
+        }
+        return FutureConfigHolder(future)
+    }*/
 
     internal fun <T: Config> readOrCreateAndValidate(configClass: () -> T, classInstance: T = configClass(), name: String = classInstance.name, folder: String = classInstance.folder, subfolder: String = classInstance.subfolder): T {
         fun log(start: Long) {
             FC.LOGGER.info("Loaded config {} in {}ms", "$folder:$name", (System.currentTimeMillis() - start))
+        }
+        fun debug(start: Long, point: String) {
+            FC.DEVLOG.info("Reached point {} for config {} in {}ms", point, "$folder:$name", (System.currentTimeMillis() - start))
         }
         //wrap entire method in a try-catch. don't need to have config problems causing a hard crash, just fall back
         try {
@@ -256,6 +266,7 @@ internal object ConfigApiImpl {
                     if (needsUpdating) {
                         readConfig.update(readVersion)
                     }
+                    debug(start, "start of error correction")
                     val fErrorsOut = mutableListOf<String>()
                     val correctedConfig = serializeConfig(readConfig, fErrorsOut, fileType = files.fOutType)
                     if (fErrorsOut.isNotEmpty()) {
@@ -266,7 +277,9 @@ internal object ConfigApiImpl {
                         fErrorsOutResult.writeError(fErrorsOut)
                     }
                     writeFile(files.fOut, correctedConfig, name, "correcting errors or updating version", files.fIn)
+                    debug(start, "end of error correction")
                 } else if (files.fIn != files.fOut) {
+                    debug(start, "start of file type correction")
                     val fErrorsOut = mutableListOf<String>()
                     val newFormatConfig = serializeConfig(readConfig, fErrorsOut, fileType = files.fOutType)
                     if (fErrorsOut.isNotEmpty()) {
@@ -277,6 +290,7 @@ internal object ConfigApiImpl {
                         fErrorsOutResult.writeError(fErrorsOut)
                     }
                     writeFile(files.fOut, newFormatConfig, name, "moving config to new file format", files.fIn)
+                    debug(start, "end of file type correction")
                 }
                 log(start)
                 return readConfig
@@ -856,7 +870,6 @@ internal object ConfigApiImpl {
         }
         return Pair(dir, true)
     }
-
 
     private fun writeFile(file: File, contents: String, name: String, phase: String, oldFile: File? = null) {
         if (file.exists()) {
