@@ -69,7 +69,7 @@ import kotlin.reflect.jvm.javaConstructor
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent, EntryOpener, EntrySearcher {
+open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryDeserializer.Parent<T>, EntryParent, EntryOpener, EntrySearcher {
 
     private var default: Boolean? = null
     private var changed: Boolean? = null

@@ -51,6 +51,8 @@ import kotlin.math.max
  */
 open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
 
+    constructor(clazz: Class<T>): this(clazz.enumConstants[0])
+
     @Suppress("UNCHECKED_CAST")
     private val valuesMap: Map<String, T> = defaultValue.declaringJavaClass.enumConstants.associateBy { (it as Enum<*>).name } as Map<String, T>
 
