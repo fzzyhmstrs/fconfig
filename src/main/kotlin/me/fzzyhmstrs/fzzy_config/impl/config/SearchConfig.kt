@@ -38,7 +38,7 @@ internal class SearchConfig: Config("search".fcId()) {
     }
 
     fun prefixText(suffix: List<Text>): Supplier<List<Text>> {
-        return CompositingSupplier.of(behavior.get().textPrefix(modifier.get()), suffix) { l1: List<Text>, l2: List<Text> -> l1 + l2 }
+        return CompositingSupplier.of(behavior.get().textPrefix(), suffix) { l1: List<Text>, l2: List<Text> -> l1 + l2 }
     }
 
     enum class Modifier(private val tester: BooleanSupplier): EnumTranslatable {
@@ -55,34 +55,36 @@ internal class SearchConfig: Config("search".fcId()) {
         }
     }
 
-    enum class SearchBehavior(val needsMod: Boolean, private val testModifier: Predicate<Modifier>, private val notMetText: FunctionSupplier<Modifier, List<Text>>, private val metText: FunctionSupplier<Modifier, List<Text>>): EnumTranslatable {
+    enum class SearchBehavior(val needsMod: Boolean, private val testModifier: Predicate<Modifier>, private val prefix: FunctionSupplier<Modifier, List<Text>>): EnumTranslatable {
         HOLD_MODIFIER(true,
             { it.test() },
-            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { listOf("fc.search.behavior.HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
-            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) }),
+            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { 
+                if (it.test())
+                    listOf("fc.search.behavior.HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
+                else
+                    listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) 
+            }),
         DONT_HOLD_MODIFIER(true,
             { !it.test() },
-            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { listOf("fc.search.behavior.DONT_HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) },
-            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) }),
+            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { 
+                if (!it.test())
+                    listOf("fc.search.behavior.DONT_HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
+                else
+                    listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
+            }),
         ALWAYS(false,
             ConstPredicate(true),
-            ConstFunction(listOf()),
             ConstFunction(listOf("fc.search.behavior.ALWAYS.desc".translate().formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()))),
         NEVER(false,
             ConstPredicate(false),
-            ConstFunction(listOf("fc.search.behavior.NEVER.desc".translate().formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())),
-            ConstFunction(listOf()));
+            ConstFunction(listOf("fc.search.behavior.NEVER.desc".translate().formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())))
 
         fun willPassSearch(modifier: Modifier): Boolean {
             return testModifier.test(modifier)
         }
 
-        fun textPrefix(modifier: Modifier): Supplier<List<Text>> {
-            return if (willPassSearch(modifier)) {
-                metText
-            } else {
-                notMetText
-            }
+        fun textPrefix(): Supplier<List<Text>> {
+            return prefix
         }
 
         override fun prefix(): String {
