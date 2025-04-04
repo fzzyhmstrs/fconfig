@@ -16,13 +16,18 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.screen.PopupController
 import java.nio.file.Path
 import java.util.Collections
+import java.util.concurrent.Executors
+import java.util.concurrent.ForkJoinPool
 import java.util.function.Consumer
 import java.util.function.Function
+import kotlin.concurrent.thread
 
-/*
+
 internal object ThreadUtils {
 
-    @Volatile
+    internal val EXECUTOR = Executors.newFixedThreadPool(6, Thread.ofVirtual().name("Fzzy Config Worker", 1).factory())
+
+    /*@Volatile
     private var doTick: Boolean = false
 
     fun doTick() {
@@ -68,5 +73,5 @@ internal object ThreadUtils {
 
     val fileWorker: Thread = Thread.ofPlatform().name("Fzzy Config File Worker").unstarted {
 
-    }
-}*/
+    }*/
+}

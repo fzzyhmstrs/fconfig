@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import java.util.function.Consumer
 import java.util.function.Function
+import java.util.function.Supplier
 
 /**
  * A result of any type T that is wrapped with an optional error message
@@ -150,6 +151,22 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          */
         fun <T> predicated(storedVal: T, valid: Boolean, error: String): ValidationResult<T> {
             return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, error)
+        }
+
+        /**
+         * Convenience shortcut for creating a success or error depending on a boolean state.
+         *
+         * Used if the value returned will be the same regardless of validation, eg. in the case of [EntryValidator][me.fzzyhmstrs.fzzy_config.entry.EntryValidator] usage, where no changes are being made to the result
+         * @param T Type of result
+         * @param storedVal default or fallback instance of type T
+         * @param valid test applied to determine validation or error.
+         * @param error supplier of strings with an error message
+         * @return the error ValidationResult
+         * @author fzzyhmstrs
+         * @since 0.6.9
+         */
+        fun <T> predicated(storedVal: T, valid: Boolean, error: Supplier<String>): ValidationResult<T> {
+            return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, error.get())
         }
 
         /**

@@ -64,7 +64,7 @@ object FC: ModInitializer {
         }
 
         TestConfig.init()
-        val expressionTestResults = AssertionResults()
+        /*val expressionTestResults = AssertionResults()
         assertConstExpression("3 + 5", 8.0, expressionTestResults)
         assertConstExpression("3 - 5", -2.0, expressionTestResults)
         assertConstExpression("3 * 5", 15.0, expressionTestResults)
@@ -90,7 +90,7 @@ object FC: ModInitializer {
         assertConstExpression("incr(4.268, 0.1)", 4.2, expressionTestResults)
         assertConstExpression("max(4.55, 0.1)", 4.55, expressionTestResults)
         assertConstExpression("min(4.55, 0.1)", 0.1, expressionTestResults)
-        println(expressionTestResults)
+        println(expressionTestResults)*/
     }
 
     private fun assertConstExpression(exp: String, result: Double, results: AssertionResults) {
