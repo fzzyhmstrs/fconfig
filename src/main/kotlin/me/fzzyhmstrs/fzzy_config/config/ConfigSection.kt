@@ -34,7 +34,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ConfigSection: Walkable, EntryDeserializer.Parent<ConfigSection>, EntrySerializer<ConfigSection>, TranslatableEntry, EntryParent, EntryAnchor, EntryCreator {
+open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySerializer<ConfigSection>, TranslatableEntry, EntryParent, EntryAnchor, EntryCreator {
 
     @Transient
     @Internal
