@@ -96,8 +96,8 @@ internal object ConfigApiImpl {
         return wrapperLookup ?: BuiltinRegistries.createWrapperLookup().also { wrapperLookup = it }
     }
 
-    private fun debug(start: Long, point: String, name: String, prefix: String = " > ") {
-        FC.DEVLOG.info("{}{} for config {} in {}ms", prefix, point, name, (System.currentTimeMillis() - start))
+    private fun debug(start: Long, phase: String, prefix: String = "") {
+        FC.DEVLOG.info("{}{} in {}ms", prefix, phase, (System.currentTimeMillis() - start))
     }
 
     internal const val CHECK_NON_SYNC: Byte = 0
@@ -228,12 +228,10 @@ internal object ConfigApiImpl {
 
     /*internal fun <T: Config> readOrCreateAndValidateAsync(configClass: () -> T, classInstance: T = configClass(), name: String = classInstance.name, folder: String = classInstance.folder, subfolder: String = classInstance.subfolder): ConfigHolder<T> {
         val future = CompletableFuture.supplyAsync {
-            readOrCreateAndValidate(configClass, classInstance, name, folder, subfolder
+            readOrCreateAndValidate(configClass, classInstance, name, folder, subfolder)
         }
-        return FutureConfigHolder(future)
+        return ConfigHolder.Future(future)
     }*/
-
-    private var readStart = 0L
 
     internal fun <T: Config> readOrCreateAndValidate(configClass: () -> T, classInstance: T = configClass(), name: String = classInstance.name, folder: String = classInstance.folder, subfolder: String = classInstance.subfolder): T {
         fun log(start: Long) {
@@ -242,8 +240,7 @@ internal object ConfigApiImpl {
 
         //wrap entire method in a try-catch. don't need to have config problems causing a hard crash, just fall back
         try {
-            readStart = System.currentTimeMillis()
-            val start = readStart
+            val start = System.currentTimeMillis()
             //create our directory, or bail if we can't for some reason
             val (dir, dirCreated) = makeDir(folder, subfolder)
             if (!dirCreated) {
@@ -251,18 +248,15 @@ internal object ConfigApiImpl {
                 return configClass()
             }
 
-            debug(start, "directory created", "$folder:$name")
             val files = findFiles(dir, name, classInstance.fileType())
 
-            debug(start, "files created", "$folder:$name")
             if (files.fIn.exists()) {
                 val fErrorsIn = mutableListOf<String>()
                 val str = files.fIn.readLines().joinToString("\n")
 
                 val classVersion = getVersion(classInstance::class)
-                debug(start, "files prepared", "$folder:$name")
-                val readConfigResult = deserializeConfig(classInstance, str, fErrorsIn, IGNORE_NON_SYNC_AND_CHECK_ACTIONS, fileType = files.fInType)
-                debug(start, "config deserialized", "$folder:$name")
+                val readConfigResult =
+                    deserializeConfig(classInstance, str, fErrorsIn, IGNORE_NON_SYNC_AND_CHECK_ACTIONS, fileType = files.fInType)
                 if (classInstance.saveType().incompatibleWith(readConfigResult.get().get(ACTIONS))) {
                     throw IncompatibleSaveTypeException("Config $name uses SaveType SEPARATE but also has incompatible @RequiresAction with Action.RESTART flags")
                 }
@@ -277,7 +271,6 @@ internal object ConfigApiImpl {
                         readConfig.update(readVersion)
                     }
                     CompletableFuture.runAsync( {
-                        debug(start, "start of error correction", "$folder:$name")
                         val fErrorsOut = mutableListOf<String>()
                         val correctedConfig = serializeConfig(readConfig, fErrorsOut, fileType = files.fOutType)
                         if (fErrorsOut.isNotEmpty()) {
@@ -288,10 +281,8 @@ internal object ConfigApiImpl {
                             fErrorsOutResult.writeError(fErrorsOut)
                         }
                         writeFile(files.fOut, correctedConfig, name, "correcting errors or updating version", files.fIn)
-                        debug(start, "end of error correction", "$folder:$name")
                     }, ThreadUtils.EXECUTOR)
                 } else if (files.fIn != files.fOut) {
-                    debug(start, "start of file type correction", "$folder:$name")
                     val fErrorsOut = mutableListOf<String>()
                     val newFormatConfig = serializeConfig(readConfig, fErrorsOut, fileType = files.fOutType)
                     if (fErrorsOut.isNotEmpty()) {
@@ -302,7 +293,6 @@ internal object ConfigApiImpl {
                         fErrorsOutResult.writeError(fErrorsOut)
                     }
                     writeFile(files.fOut, newFormatConfig, name, "moving config to new file format", files.fIn)
-                    debug(start, "end of file type correction", "$folder:$name")
                 }
                 log(start)
                 return readConfig
@@ -559,8 +549,6 @@ internal object ConfigApiImpl {
     ///////////////// Deserialize ////////////////////////////////////////////////////////
 
     internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<ConfigContext<T>> {
-        val start = readStart
-        val n = config.javaClass.canonicalName
         val inboundErrorSize = errorBuilder.size
         val actionNeeded: MutableSet<Action> = Collections.synchronizedSet(mutableSetOf())
         val restartNeeded: MutableSet<Action> = Collections.synchronizedSet(mutableSetOf())
@@ -570,7 +558,6 @@ internal object ConfigApiImpl {
             return ValidationResult.error(ConfigContext(config).withContext(RESTART_ACTIONS, mutableSetOf()), "Improper TOML format passed to deserializeFromToml")
         }
         val tomlMap = ConcurrentHashMap(toml)
-        debug(start, "prepared deserialization info", n, "   1 > ")
         val clazz = config::class as KClass<T>
         try {
             val checkActions = checkActions(flags)
@@ -579,28 +566,7 @@ internal object ConfigApiImpl {
             val ignoreVisibility = isIgnoreVisibility(clazz) || ignoreVisibility(flags)
 
             val newErrors: Vector<String> = Vector(2)
-            val deferredProps: Vector<CompletableFuture<ValidationResult<*>>> = Vector(2)
-
-            /*val fields = clazz.java.declaredFields
-            for (field in fields) {
-                field.trySetAccessible()
-                if (field.get(config) is EntryDeserializer.Parent<*>)
-            }*/
-
-            /*val fields = clazz.java.declaredFields.toMutableList()
-            for (sup in clazz.allSuperclasses) {
-                if (sup == configClass) continue
-                if (sup == configSectionClass) continue
-                if (sup.java.isInterface) continue
-                fields.addAll(sup.java.declaredFields)
-            }
-
-            val orderById = fields.withIndex().associate { it.value.name to it.index }*/
-            debug(start, "prepared field map", n, "   2 > ")
-
             val propsRaw = clazz.memberProperties
-
-            debug(start, "prepared raw props", n, "   3 > ")
 
             val props = propsRaw.filter {
                 it is KMutableProperty<*>
@@ -608,56 +574,49 @@ internal object ConfigApiImpl {
                         && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
                         && if(ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
             }/*.sortedBy { orderById[it.name] }*/
-            debug(start, "prepared props", n, "   4 > ")
-            for ((index, prop) in props.withIndex()) {
-                debug(start, "started prop ${prop.name}", n, "   4.$index > ")
-                if (prop !is KMutableProperty<*>) continue
+            for (prop in props.cast<List<KMutableProperty1<T, *>>>()) {
                 val propVal = prop.get(config)
                 if (propVal is EntryTransient) continue
                 val name = prop.name
-                val tomlElement = if (tomlMap.containsKey(name)) {
-                    tomlMap[name]
-                } else {
-                    newErrors.add("Key [$name] not found in TOML file.")
-                    continue
-                }
+                val tomlElement = tomlMap[name]
                 if (tomlElement == null || tomlElement is TomlNull) {
                     newErrors.add("TomlElement [$name] was null!.")
                     continue
                 }
                 if (propVal is EntryDeserializer<*>) { //is EntryDeserializer
-                    if (propVal is EntryDeserializer.Parent<*> && propVal.defer()) {
-                        val task: Supplier<ValidationResult<*>> = Supplier {
-                            val action = requiredAction(checkActions, prop, globalAction)
-                            if (propVal is Supplier<*> && action != null) {
-                                actionNeeded.add(action)
-                                val before = propVal.get()
-                                val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
-                                propVal.deserializeEntry(tomlElement, newErrors, name, newFlags).also { r ->
-                                    if (action.restartPrompt) {
-                                        if (propVal.deserializedChanged(before, r.get())) {
-                                            restartNeeded.add(action)
-                                            if (recordRestarts) {
-                                                restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
-                                            }
-                                        }
+                    val action = requiredAction(checkActions, prop, globalAction)
+                    val result = if (propVal is Supplier<*> && action != null) {
+                        actionNeeded.add(action)
+                        val before = propVal.get()
+                        val newFlags = if (ignoreVisibility || isIgnoreVisibility(prop.annotations)) flags or IGNORE_VISIBILITY else flags
+                        propVal.deserializeEntry(tomlElement, newErrors, name, newFlags).also { r ->
+                            if (action.restartPrompt) {
+                                if (propVal.deserializedChanged(before, r.get())) {
+                                    restartNeeded.add(action)
+                                    if (recordRestarts) {
+                                        restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                                     }
                                 }
-                            } else {
-                                val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
-                                propVal.deserializeEntry(tomlElement, newErrors, name, newFlags)
                             }
                         }
-                        deferredProps.add(CompletableFuture.supplyAsync(task, ThreadUtils.EXECUTOR))
                     } else {
-                        val action = requiredAction(checkActions, prop, globalAction)
-                        val result = if (propVal is Supplier<*> && action != null) {
-                            actionNeeded.add(action)
-                            val before = propVal.get()
-                            val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
-                            propVal.deserializeEntry(tomlElement, newErrors, name, newFlags).also { r ->
+                        val newFlags = if (ignoreVisibility || isIgnoreVisibility(prop.annotations)) flags or IGNORE_VISIBILITY else flags
+                        propVal.deserializeEntry(tomlElement, newErrors, name, newFlags)
+                    }
+                    if (result.isError()) {
+                        errorBuilder.add(result.getError())
+                    }
+                } else {
+                    val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop, name)
+                    if (basicValidation != null) {
+                        @Suppress("DEPRECATION")
+                        val thing = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, flags)
+                        try {
+                            val action = requiredAction(checkActions, prop, globalAction)
+                            if (action != null) {
+                                actionNeeded.add(action)
                                 if (action.restartPrompt) {
-                                    if (propVal.deserializedChanged(before, r.get())) {
+                                    if (basicValidation.deserializedChanged(propVal, thing.get())) {
                                         restartNeeded.add(action)
                                         if (recordRestarts) {
                                             restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
@@ -665,65 +624,10 @@ internal object ConfigApiImpl {
                                     }
                                 }
                             }
-                        } else {
-                            val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
-                            propVal.deserializeEntry(tomlElement, newErrors, name, newFlags)
-                        }
-                        if (result.isError()) {
-                            errorBuilder.add(result.getError())
-                        }
-                    }
-                } else {
-                    debug(start, "start basic validation for ${prop.name}", n, "   4.$index.1 > ")
-                    val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop, name)
-                    debug(start, "end basic validation for ${prop.name}", n, "   4.$index.2 > ")
-                    if (basicValidation != null) {
-                        if (basicValidation is EntryDeserializer.Parent<*> && basicValidation.defer()) {
-                            val task: Supplier<ValidationResult<*>> = Supplier {
-                                @Suppress("DEPRECATION")
-                                val thing = basicValidation.deserializeEntry(tomlElement, newErrors, name, flags)
-                                try {
-                                    val action = requiredAction(checkActions, prop, globalAction)
-                                    if (action != null) {
-                                        actionNeeded.add(action)
-                                        if (action.restartPrompt) {
-                                            if (basicValidation.deserializedChanged(propVal, thing.get())) {
-                                                restartNeeded.add(action)
-                                                if (recordRestarts) {
-                                                    restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
-                                                }
-                                            }
-                                        }
-                                    }
-                                    if (ignoreVisibility) trySetAccessible(prop)
-                                    prop.setter.call(config, thing.get())
-                                } catch (e: Throwable) {
-                                    newErrors.add("Error deserializing basic validation [$name]: ${e.localizedMessage}")
-                                }
-                                thing
-                            }
-                            deferredProps.add(CompletableFuture.supplyAsync(task, ThreadUtils.EXECUTOR))
-                        } else {
-                            @Suppress("DEPRECATION")
-                            val thing = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, flags)
-                            try {
-                                val action = requiredAction(checkActions, prop, globalAction)
-                                if (action != null) {
-                                    actionNeeded.add(action)
-                                    if (action.restartPrompt) {
-                                        if (basicValidation.deserializedChanged(propVal, thing.get())) {
-                                            restartNeeded.add(action)
-                                            if (recordRestarts) {
-                                                restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
-                                            }
-                                        }
-                                    }
-                                }
-                                if (ignoreVisibility) trySetAccessible(prop)
-                                prop.setter.call(config, thing.get())
-                            } catch (e: Throwable) {
-                                errorBuilder.add("Error deserializing basic validation [$name]: ${e.localizedMessage}")
-                            }
+                            if (ignoreVisibility) trySetAccessible(prop)
+                            prop.setter.call(config, thing.get())
+                        } catch (e: Throwable) {
+                            errorBuilder.add("Error deserializing basic validation [$name]: ${e.localizedMessage}")
                         }
                     } else {
                         try {
@@ -748,27 +652,14 @@ internal object ConfigApiImpl {
                     }
                 }
             }
-            debug(start, "finished for loop", n, "   5 > ")
             errorBuilder.addAll(newErrors)
-            for (future in deferredProps) {
-                try {
-                    val result = future.get(1000, TimeUnit.MILLISECONDS)
-                    if (result.isError()) {
-                        errorBuilder.add(result.getError())
-                    }
-                } catch (e: Throwable) {
-                    FC.DEVLOG.error("deadlock or long execution encountered, skipping", e)
-                }
-            }
         } catch (e: Throwable) {
             errorBuilder.add("Critical error encountered while deserializing: ${e.message}")
         }
-        debug(start, "finished deserializing", n, "   6 > ")
         val context = ConfigContext(config)
             .withContext(ACTIONS, actionNeeded)
             .withContext(RESTART_ACTIONS, restartNeeded)
             .withContext(RESTART_RECORDS, restartRecords)
-        debug(start, "built deserialization context", n, "   7 > ")
         return ValidationResult.predicated(
             context,
             errorBuilder.size <= inboundErrorSize
@@ -776,8 +667,6 @@ internal object ConfigApiImpl {
     }
 
     internal fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<ConfigContext<T>> {
-        val n = config.javaClass.canonicalName
-
         val toml = try {
             val tomlResult = fileType.decode(string)
             if (tomlResult.isError()) {
@@ -796,9 +685,7 @@ internal object ConfigApiImpl {
         } else {
             -1 //error state, pass back non-valid version number
         }
-        debug(readStart, "built toml table", n, "   0 > ")
         val context = deserializeFromToml(config, toml, errorBuilder, flags).let { it.wrap(it.get().withContext(VERSIONS ,version)) }
-        debug(readStart, "wrapped config results", n, "   8 > ")
         return context
     }
 
@@ -1039,6 +926,10 @@ internal object ConfigApiImpl {
 
     ///////////////// Reflection /////////////////////////////////////////////////////////
 
+    private fun isIgnoreVisibility(annotations: List<Annotation>): Boolean {
+        return annotations.any { it is IgnoreVisibility }
+    }
+
     private fun isIgnoreVisibility(clazz: KClass<*>): Boolean {
         return clazz.annotations.any { it is IgnoreVisibility }
     }
@@ -1088,8 +979,7 @@ internal object ConfigApiImpl {
         }
     }
 
-    private fun requiredAction(checkActions: Boolean, settingAnnotations: List<Annotation>, classAction: Action?): Action? {
-        if (!checkActions) return null
+    private fun requiredAction(settingAnnotations: List<Annotation>, classAction: Action?): Action? {
         val settingAction = getAction(settingAnnotations)
         if (settingAction == null && classAction == null) return null
         if (settingAction == null) return classAction
@@ -1105,7 +995,7 @@ internal object ConfigApiImpl {
         val classAction = getAction(thing::class.annotations)
         val propActions: SortedSet<Action> = sortedSetOf()
         walk(thing, "", flags) { _, _, _, v, _, annotations, _, _ ->
-            val action = requiredAction(true, annotations, classAction)
+            val action = requiredAction(annotations, classAction)
             if (action != null) {
                 propActions.add(action)
             }
