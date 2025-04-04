@@ -22,6 +22,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
+import kotlin.reflect.KCallable
 import kotlin.reflect.KType
 
 open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
@@ -156,10 +157,10 @@ open class BaseUpdateManager: UpdateManager, BasicValidationProvider {
         ConfigApiImpl.walk(config, config.getId().toTranslationKey(), 1) { _, _, _, v, _, _, _, _ -> if (v is Updatable) v.pushState()}
     }
 
-    fun getValidation(input: Any?, inputType: KType, fieldName: String, configScope: String, annotations: List<Annotation>, isClient: Boolean): Entry<*, *>? {
+    fun getValidation(input: Any?, inputType: KCallable<*>, fieldName: String, configScope: String, isClient: Boolean): Entry<*, *>? {
         return if (isClient)
-            ConfigApiImplClient.getScreenUpdateManager(configScope)?.getUpdatableEntry(fieldName).nullCast<Entry<*, *>>() ?: basicValidationStrategy(input, inputType, fieldName, annotations)
+            ConfigApiImplClient.getScreenUpdateManager(configScope)?.getUpdatableEntry(fieldName).nullCast<Entry<*, *>>() ?: basicValidationStrategy(input, inputType, fieldName)
         else
-            basicValidationStrategy(input, inputType, fieldName, annotations)
+            basicValidationStrategy(input, inputType, fieldName)
     }
 }
