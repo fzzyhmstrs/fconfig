@@ -21,8 +21,8 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedTagKey
 import me.fzzyhmstrs.fzzy_config.validation.misc.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
+import net.minecraft.item.AxeItem
 import net.minecraft.item.Items
-import net.minecraft.item.SwordItem
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.ItemTags
 import net.minecraft.util.Identifier
@@ -302,14 +302,14 @@ object ValidatedMiscExamples {
 
         //in a more complex example, we can filter down. Maybe only swords from your mod (we'll pretend your mod is minecraft for this example)
         //Type: ValidatedField<Item>
-        var validatedItemComplex = ValidatedRegistryType.of(Items.WOODEN_SWORD, Registries.ITEM) { id, re -> id.namespace == "minecraft" && re.value() is SwordItem }
+        var validatedItemComplex = ValidatedRegistryType.of(Items.WOODEN_SWORD, Registries.ITEM) { id, re -> id.namespace == "minecraft" && re.value() is AxeItem }
 
         //Since we know all the outputs will be swords, we could map it down to provide SwordItem outputs
         //Type: ValidatedField<SwordItem>
         var validatedItemSword = ValidatedRegistryType.of(Items.WOODEN_SWORD, Registries.ITEM) { id, re ->
-            id.namespace == "minecraft" && re.value() is SwordItem
+            id.namespace == "minecraft" && re.value() is AxeItem
         }.map(
-            { item -> item as SwordItem },
+            { item -> item as AxeItem },
             Function.identity()
         )
     }
