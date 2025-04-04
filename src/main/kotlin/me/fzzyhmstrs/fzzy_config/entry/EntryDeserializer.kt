@@ -45,16 +45,4 @@ fun interface EntryDeserializer<T> {
     fun deserializedChanged(old: Any?, new: Any?): Boolean {
         return old != new
     }
-
-    /**
-     * Marks that a EntryDeserializer is a parent of sub-objects, and it's deserialization should be pushed to the worker executor
-     * @author fzzyhmstrs
-     * @since 0.6.9
-     */
-    @JvmDefaultWithoutCompatibility
-    interface Parent<T>: EntryDeserializer<T> {
-        fun defer(): Boolean {
-            return true
-        }
-    }
 }
