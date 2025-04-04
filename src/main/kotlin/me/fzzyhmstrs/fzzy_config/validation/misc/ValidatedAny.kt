@@ -49,7 +49,6 @@ import java.util.*
 import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Supplier
-import java.util.function.UnaryOperator
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaConstructor
 
@@ -69,7 +68,7 @@ import kotlin.reflect.jvm.javaConstructor
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryDeserializer.Parent<T>, EntryParent, EntryOpener, EntrySearcher {
+open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent, EntryOpener, EntrySearcher {
 
     private var default: Boolean? = null
     private var changed: Boolean? = null
@@ -90,7 +89,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     override fun deserializedChanged(old: Any?, new: Any?): Boolean {
         old as? T ?: return true
         new as? T ?: return true
-        return (ConfigApi.serializeConfig(old, mutableListOf(), 1) != ConfigApi.serializeConfig(new, mutableListOf(), 1))
+        return (ConfigApi.serializeToToml(old, mutableListOf(), 1) != ConfigApi.serializeToToml(new, mutableListOf(), 1))
     }
 
     /**
