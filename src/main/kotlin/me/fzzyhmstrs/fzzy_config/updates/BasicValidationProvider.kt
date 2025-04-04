@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.updates
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.updates.UpdateManager.Base.basicValidationStrategy
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -30,6 +31,7 @@ import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import java.awt.Color
+import kotlin.reflect.KCallable
 import kotlin.reflect.KType
 import kotlin.reflect.full.isSubclassOf
 import kotlin.reflect.jvm.jvmErasure
@@ -37,7 +39,281 @@ import kotlin.reflect.jvm.jvmErasure
 @JvmDefaultWithCompatibility
 internal interface BasicValidationProvider {
 
+    fun basicValidationStrategy(input: Any?, inputType: KCallable<*>, fieldName: String): ValidatedField<*>? {
+        try {
+            return if (input != null) {
+                if (input is ValidatedField<*>) {
+                    return input
+                } else if (input is Walkable && input !is ConfigSection) {
+                    return ValidatedAny(input)
+                } else {
+                    when (val jot = input::class.java) {
+                        intClass -> getIntRestrict(inputType.annotations)?.let {
+                            ValidatedInt(
+                                input as Int,
+                                it.max,
+                                it.min,
+                                if ((it.max == Int.MAX_VALUE || it.min == Int.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedInt(input as Int)
+                        shortClass -> getShortRestrict(inputType.annotations)?.let {
+                            ValidatedShort(
+                                input as Short,
+                                it.max,
+                                it.min,
+                                if ((it.max == Short.MAX_VALUE || it.min == Short.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedShort(input as Short)
+                        byteClass -> getByteRestrict(inputType.annotations)?.let {
+                            ValidatedByte(
+                                input as Byte,
+                                it.max,
+                                it.min,
+                                if ((it.max == Byte.MAX_VALUE || it.min == Byte.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedByte(input as Byte)
+                        longClass -> getLongRestrict(inputType.annotations)?.let {
+                            ValidatedLong(
+                                input as Long,
+                                it.max,
+                                it.min,
+                                if ((it.max == Long.MAX_VALUE || it.min == Long.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedLong(input as Long)
+                        doubleClass -> getDoubleRestrict(inputType.annotations)?.let {
+                            ValidatedDouble(
+                                input as Double,
+                                it.max,
+                                it.min,
+                                if ((it.max == Double.MAX_VALUE || it.min == -Double.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedDouble(input as Double)
+                        floatClass -> getFloatRestrict(inputType.annotations)?.let {
+                            ValidatedFloat(
+                                input as Float,
+                                it.max,
+                                it.min,
+                                if ((it.max == Float.MAX_VALUE || it.min == -Float.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedFloat(input as Float)
+                        booleanClass -> ValidatedBoolean(input as Boolean)
+                        triStateClass -> ValidatedTriState(TriState.DEFAULT)
+                        colorClass -> ValidatedColor(input as Color)
+                        Identifier::class.java -> ValidatedIdentifier(input as Identifier)
+                        stringClass -> ValidatedString(input as String)
+                        TagKey::class.java -> ValidatedTagKey(input as TagKey<*>)
+                        else -> {
+                            if (Item::class.java.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as Item, Registries.ITEM)
+                            } else if (Block::class.java.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as Block, Registries.BLOCK)
+                            } else if (EntityType::class.java.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as EntityType<*>, Registries.ENTITY_TYPE)
+                            } else if (Fluid::class.java.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as Fluid, Registries.FLUID)
+                            } else {
+                                complexStrategy(input, inputType.returnType, fieldName, inputType.annotations)
+                            }
+                        }
+                    }
+                }
+            } else {
+                val ktype = inputType.returnType
+                when (val jot = ktype.jvmErasure.javaObjectType) {
+                    intClass -> ValidatedInt()
+                    shortClass -> ValidatedShort()
+                    byteClass -> ValidatedByte()
+                    longClass -> ValidatedLong()
+                    doubleClass -> ValidatedDouble()
+                    floatClass -> ValidatedFloat()
+                    booleanClass -> ValidatedBoolean()
+                    triStateClass -> ValidatedTriState(TriState.DEFAULT)
+                    colorClass -> ValidatedColor()
+                    Identifier::class.java -> ValidatedIdentifier()
+                    stringClass -> ValidatedString()
+                    else -> {
+                        if (Item::class.java.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.ITEM)
+                        } else if (Block::class.java.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.BLOCK)
+                        } else if (EntityType::class.java.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.ENTITY_TYPE)
+                        } else if (Fluid::class.java.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.FLUID)
+                        } else {
+                            complexStrategy(null, ktype, fieldName, inputType.annotations)
+                        }
+                    }
+                }
+            }
+        } catch (e: Throwable) {
+            FC.DEVLOG.error("Basic Validation Failed:")
+            decorateError(fieldName, inputType, inputType.annotations)
+            FC.DEVLOG.error("   > Possible Cause: ${e.message}")
+            return null
+        }
+    }
+
     fun basicValidationStrategy(input: Any?, inputType: KType, fieldName: String, annotations: List<Annotation>): ValidatedField<*>? {
+        try {
+            return if (input != null) {
+                if (input is ValidatedField<*>) {
+                    return input
+                } else if (input is Walkable && input !is ConfigSection) {
+                    return ValidatedAny(input)
+                } else {
+                    when (val jot = input::class.java) {
+                        booleanClass -> ValidatedBoolean(input as Boolean)
+                        intClass -> getIntRestrict(annotations)?.let {
+                            ValidatedInt(
+                                input as Int,
+                                it.max,
+                                it.min,
+                                if ((it.max == Int.MAX_VALUE || it.min == Int.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedInt(input as Int)
+                        doubleClass -> getDoubleRestrict(annotations)?.let {
+                            ValidatedDouble(
+                                input as Double,
+                                it.max,
+                                it.min,
+                                if ((it.max == Double.MAX_VALUE || it.min == -Double.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedDouble(input as Double)
+                        floatClass -> getFloatRestrict(annotations)?.let {
+                            ValidatedFloat(
+                                input as Float,
+                                it.max,
+                                it.min,
+                                if ((it.max == Float.MAX_VALUE || it.min == -Float.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedFloat(input as Float)
+
+                        triStateClass -> ValidatedTriState(TriState.DEFAULT)
+                        idClass -> ValidatedIdentifier(input as Identifier)
+                        stringClass -> ValidatedString(input as String)
+                        tagClass -> ValidatedTagKey(input as TagKey<*>)
+                        shortClass -> getShortRestrict(annotations)?.let {
+                            ValidatedShort(
+                                input as Short,
+                                it.max,
+                                it.min,
+                                if ((it.max == Short.MAX_VALUE || it.min == Short.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedShort(input as Short)
+                        byteClass -> getByteRestrict(annotations)?.let {
+                            ValidatedByte(
+                                input as Byte,
+                                it.max,
+                                it.min,
+                                if ((it.max == Byte.MAX_VALUE || it.min == Byte.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedByte(input as Byte)
+                        longClass -> getLongRestrict(annotations)?.let {
+                            ValidatedLong(
+                                input as Long,
+                                it.max,
+                                it.min,
+                                if ((it.max == Long.MAX_VALUE || it.min == Long.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
+                                    ValidatedNumber.WidgetType.TEXTBOX
+                                } else {
+                                    it.type
+                                })
+                        } ?: ValidatedLong(input as Long)
+                        colorClass -> ValidatedColor(input as Color)
+                        else -> {
+                            if (itemClass.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as Item, Registries.ITEM)
+                            } else if (blockClass.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as Block, Registries.BLOCK)
+                            } else if (entityClass.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as EntityType<*>, Registries.ENTITY_TYPE)
+                            } else if (fluidClass.isAssignableFrom(jot)) {
+                                ValidatedRegistryType.of(input as Fluid, Registries.FLUID)
+                            } else {
+                                complexStrategy(input, inputType, fieldName, annotations)
+                            }
+                        }
+                    }
+                }
+            } else {
+                when (val jot = inputType.jvmErasure.javaObjectType) {
+                    booleanClass -> ValidatedBoolean()
+                    intClass -> ValidatedInt()
+                    doubleClass -> ValidatedDouble()
+                    floatClass -> ValidatedFloat()
+                    triStateClass -> ValidatedTriState(TriState.DEFAULT)
+                    idClass -> ValidatedIdentifier()
+                    stringClass -> ValidatedString()
+                    longClass -> ValidatedLong()
+                    shortClass -> ValidatedShort()
+                    byteClass -> ValidatedByte()
+                    colorClass -> ValidatedColor()
+                    else -> {
+                        if (itemClass.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.ITEM)
+                        } else if (blockClass.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.BLOCK)
+                        } else if (entityClass.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.ENTITY_TYPE)
+                        } else if (fluidClass.isAssignableFrom(jot)) {
+                            ValidatedRegistryType.of(Registries.FLUID)
+                        } else {
+                            complexStrategy(null, inputType, fieldName, annotations)
+                        }
+                    }
+                }
+            }
+        } catch (e: Throwable) {
+            FC.DEVLOG.error("Basic Validation Failed: ")
+            decorateError(fieldName, inputType, annotations)
+            FC.DEVLOG.error("   > Possible Cause: ${e.message} ")
+            return null
+        }
+    }
+
+
+    companion object {
+
+        private fun decorateError(fieldName: String, inputType: Any, annotations: List<Annotation>) {
+            FC.DEVLOG.error("   > (This error will only show inside development environments)")
+            FC.DEVLOG.error("   > Field: $fieldName")
+            FC.DEVLOG.error("   > Type: $inputType")
+            FC.DEVLOG.error("   > Annotations: $annotations")
+        }
 
         fun complexStrategy(input: Any?, type: KType, fieldName: String, annotations: List<Annotation>): ValidatedField<*>? {
             try {
@@ -75,7 +351,7 @@ internal interface BasicValidationProvider {
                     }
                 } else {
                     FC.DEVLOG.error("Setting isn't eligible for automatic validation")
-                    decorateError(fieldName, inputType, annotations)
+                    decorateError(fieldName, type, annotations)
                     return null
                 }
             } catch (e: Throwable) {
@@ -102,146 +378,38 @@ internal interface BasicValidationProvider {
             return annotations.firstOrNull { it is ValidatedFloat.Restrict } as? ValidatedFloat.Restrict
         }
 
-        try {
-            return if (input != null) {
-                if (input is ValidatedField<*>) {
-                    return input
-                } else if (input is Walkable && input !is ConfigSection) {
-                    return ValidatedAny(input)
-                } else {
-                    when (val jot = inputType.jvmErasure.javaObjectType) {
-                        java.lang.Integer::class.java -> getIntRestrict(annotations)?.let {
-                            ValidatedInt(
-                                input as Int,
-                                it.max,
-                                it.min,
-                                if ((it.max == Int.MAX_VALUE || it.min == Int.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
-                                    ValidatedNumber.WidgetType.TEXTBOX
-                                } else {
-                                    it.type
-                                })
-                        } ?: ValidatedInt(input as Int)
-                        java.lang.Short::class.java -> getShortRestrict(annotations)?.let {
-                            ValidatedShort(
-                                input as Short,
-                                it.max,
-                                it.min,
-                                if ((it.max == Short.MAX_VALUE || it.min == Short.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
-                                    ValidatedNumber.WidgetType.TEXTBOX
-                                } else {
-                                    it.type
-                                })
-                        } ?: ValidatedShort(input as Short)
-                        java.lang.Byte::class.java -> getByteRestrict(annotations)?.let {
-                            ValidatedByte(
-                                input as Byte,
-                                it.max,
-                                it.min,
-                                if ((it.max == Byte.MAX_VALUE || it.min == Byte.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
-                                    ValidatedNumber.WidgetType.TEXTBOX
-                                } else {
-                                    it.type
-                                })
-                        } ?: ValidatedByte(input as Byte)
-                        java.lang.Long::class.java -> getLongRestrict(annotations)?.let {
-                            ValidatedLong(
-                                input as Long,
-                                it.max,
-                                it.min,
-                                if ((it.max == Long.MAX_VALUE || it.min == Long.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
-                                    ValidatedNumber.WidgetType.TEXTBOX
-                                } else {
-                                    it.type
-                                })
-                        } ?: ValidatedLong(input as Long)
-                        java.lang.Double::class.java -> getDoubleRestrict(annotations)?.let {
-                            ValidatedDouble(
-                                input as Double,
-                                it.max,
-                                it.min,
-                                if ((it.max == Double.MAX_VALUE || it.min == -Double.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
-                                    ValidatedNumber.WidgetType.TEXTBOX
-                                } else {
-                                    it.type
-                                })
-                        } ?: ValidatedDouble(input as Double)
-                        java.lang.Float::class.java -> getFloatRestrict(annotations)?.let {
-                            ValidatedFloat(
-                                input as Float,
-                                it.max,
-                                it.min,
-                                if ((it.max == Float.MAX_VALUE || it.min == -Float.MIN_VALUE) && it.type == ValidatedNumber.WidgetType.SLIDER) {
-                                    ValidatedNumber.WidgetType.TEXTBOX
-                                } else {
-                                    it.type
-                                })
-                        } ?: ValidatedFloat(input as Float)
-                        java.lang.Boolean::class.java -> ValidatedBoolean(input as Boolean)
-                        TriState::class.java -> ValidatedTriState(TriState.DEFAULT)
-                        java.awt.Color::class.java -> ValidatedColor(input as Color)
-                        Identifier::class.java -> ValidatedIdentifier(input as Identifier)
-                        java.lang.String::class.java -> ValidatedString(input as String)
-                        TagKey::class.java -> ValidatedTagKey(input as TagKey<*>)
-                        else -> {
-                            if (Item::class.java.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as Item, Registries.ITEM)
-                            } else if (Block::class.java.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as Block, Registries.BLOCK)
-                            } else if (EntityType::class.java.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as EntityType<*>, Registries.ENTITY_TYPE)
-                            } else if (Fluid::class.java.isAssignableFrom(jot)) {
-                                ValidatedRegistryType.of(input as Fluid, Registries.FLUID)
-                            } else {
-                                complexStrategy(input, inputType, fieldName, annotations)
-                            }
-                        }
-                    }
-                }
-            } else {
-                when (val jot = inputType.jvmErasure.javaObjectType) {
-                    java.lang.Integer::class.java -> ValidatedInt()
-                    java.lang.Short::class.java -> ValidatedShort()
-                    java.lang.Byte::class.java -> ValidatedByte()
-                    java.lang.Long::class.java -> ValidatedLong()
-                    java.lang.Double::class.java -> ValidatedDouble()
-                    java.lang.Float::class.java -> ValidatedFloat()
-                    java.lang.Boolean::class.java -> ValidatedBoolean()
-                    TriState::class.java -> ValidatedTriState(TriState.DEFAULT)
-                    java.awt.Color::class.java -> ValidatedColor()
-                    Identifier::class.java -> ValidatedIdentifier()
-                    java.lang.String::class.java -> ValidatedString()
-                    Item::class.java -> ValidatedRegistryType.of(Registries.ITEM)
-                    Block::class.java -> ValidatedRegistryType.of(Registries.BLOCK)
-                    EntityType::class.java -> ValidatedRegistryType.of(Registries.ENTITY_TYPE)
-                    Fluid::class.java -> ValidatedRegistryType.of(Registries.FLUID)
-                    else -> {
-                        if (Item::class.java.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.ITEM)
-                        } else if (Block::class.java.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.BLOCK)
-                        } else if (EntityType::class.java.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.ENTITY_TYPE)
-                        } else if (Fluid::class.java.isAssignableFrom(jot)) {
-                            ValidatedRegistryType.of(Registries.FLUID)
-                        } else {
-                            complexStrategy(null, inputType, fieldName, annotations)
-                        }
-                    }
-                }
-            }
-        } catch (e: Throwable) {
-            FC.DEVLOG.error("Basic Validation Failed:")
-            decorateError(fieldName, inputType, annotations)
-            FC.DEVLOG.error("   > Possible Cause: ${e.message}")
-            return null
-        }
-    }
-
-    private fun decorateError(fieldName: String, inputType: KType, annotations: List<Annotation>) {
-        FC.DEVLOG.error("   > (This error will only show inside development environments)")
-        FC.DEVLOG.error("   > Field: $fieldName")
-        FC.DEVLOG.error("   > Type: $inputType")
-        FC.DEVLOG.error("   > Annotations: $annotations")
+        @JvmField
+        val intClass = java.lang.Integer::class.java
+        @JvmField
+        val shortClass = java.lang.Short::class.java
+        @JvmField
+        val byteClass = java.lang.Byte::class.java
+        @JvmField
+        val longClass = java.lang.Long::class.java
+        @JvmField
+        val doubleClass = java.lang.Double::class.java
+        @JvmField
+        val floatClass = java.lang.Float::class.java
+        @JvmField
+        val booleanClass = java.lang.Boolean::class.java
+        @JvmField
+        val triStateClass = TriState::class.java
+        @JvmField
+        val colorClass = java.awt.Color::class.java
+        @JvmField
+        val stringClass = java.lang.String::class.java
+        @JvmField
+        val idClass = Identifier::class.java
+        @JvmField
+        val tagClass = TagKey::class.java
+        @JvmField
+        val itemClass = Item::class.java
+        @JvmField
+        val blockClass = Block::class.java
+        @JvmField
+        val entityClass = EntityType::class.java
+        @JvmField
+        val fluidClass = Fluid::class.java
     }
 
 }
