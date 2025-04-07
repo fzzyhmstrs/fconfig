@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2025 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
@@ -29,6 +28,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.MutableText
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
+import net.peanuuutz.tomlkt.toBoolean
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BooleanSupplier
 import java.util.function.Supplier
@@ -47,6 +47,10 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<TriState> {
         return try {
+            //catch a manual user input accidentally forgetting the quotation marks
+            if (toml is TomlLiteral && toml.type == TomlLiteral.Type.Boolean) {
+                return ValidationResult.success(TriState.of(toml.toBoolean()))
+            }
             val result = TriState.CODEC.parse(TomlOps.INSTANCE, toml)
             return ValidationResult.mapDataResult(result, storedValue)
         } catch (e: Throwable) {

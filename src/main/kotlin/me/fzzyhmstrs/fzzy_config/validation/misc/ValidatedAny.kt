@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-5 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -75,7 +75,34 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
-        return ConfigApi.deserializeFromToml(copyStoredValue(), toml, mutableListOf()).contextualize()
+        val context = ConfigApi.deserializeFromToml(copyStoredValue(), toml, mutableListOf(), ConfigApiImpl.IGNORE_NON_SYNC_AND_CRITICAL_ERRORS_ONLY)
+        return context.contextualize()
+    }
+
+    /**
+     * @suppress
+     */
+    @Internal
+    @Deprecated("use deserialize to avoid accidentally overwriting validation and error reporting")
+    override fun deserializeEntry(
+        toml: TomlElement,
+        errorBuilder: MutableList<String>,
+        fieldName: String,
+        flags: Byte
+    ): ValidationResult<T> {
+        val errors = mutableListOf<String>()
+        val context = ConfigApi.deserializeFromToml(copyStoredValue(), toml, errors, ConfigApiImpl.IGNORE_NON_SYNC_AND_CRITICAL_ERRORS_ONLY)
+        val tVal = context.contextualize()
+        if (tVal.isError()) { //2
+            return ValidationResult.error(get(), "Error deserializing Object [$fieldName], using default value [${get()}]  >>> Possible reasons: ${tVal.getError()}")
+        }
+        //3
+        val tVal2 = correctEntry(tVal.get(), EntryValidator.ValidationType.WEAK)
+        set(tVal2.get()) //4
+        if (tVal2.isError()) { //5
+            return ValidationResult.error(get(), "Object [$fieldName] had validation errors, corrected to [${tVal2.get()}]  >>> Possible reasons: ${tVal2.getError()}")
+        }
+        return ValidationResult.predicated(get(), errors.isEmpty(), "Encountered non-critical errors while deserializing Object $fieldName")
     }
 
     @Internal
@@ -246,7 +273,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                     basicValidation2.setEntryKey(new)
                     entryCreator = basicValidation2
                     basicValidation2.prepare(new, groups, annotations, globalAnnotations)
-                    ConfigApiImplClient.prepare(thing, ConfigApiImplClient.getPlayerPermissionLevel(), newThing, prefix, new, annotations, globalAnnotations, false, flags)
+                    ConfigApiImplClient.prepare(basicValidation2, ConfigApiImplClient.getPlayerPermissionLevel(), newThing, prefix, new, annotations, globalAnnotations, false, flags)
                 } else {
                     entryCreator = null
                     ConfigApiImplClient.PrepareResult.FAIL

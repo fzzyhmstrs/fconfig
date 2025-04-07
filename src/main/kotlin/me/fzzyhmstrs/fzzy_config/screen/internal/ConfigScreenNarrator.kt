@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Fzzyhmstrs
+ * Copyright (c) 2024-2025 Fzzyhmstrs
  *
  * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
  *
@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import com.google.common.collect.Maps
-import me.fzzyhmstrs.fzzy_config.FC
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.Environment
 import net.minecraft.client.gui.screen.narration.Narration
@@ -128,7 +127,7 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
 
         override fun put(part: NarrationPart, narration: Narration<*>) {
             (this@ConfigScreenNarrator.narrations.computeIfAbsent(PartIndex(part, this.depth)) { _ -> Message() })
-                .setNarration(this@ConfigScreenNarrator.currentMessageIndex, narration)
+                .setNarration(this@ConfigScreenNarrator.currentMessageIndex, narration)//.also { FC.DEVLOG.info("Added message via ${if(MinecraftClient.getInstance().navigationType.isKeyboard) "keyboard" else "mouse"} navigation: $it") }
         }
 
         override fun put(part: NarrationPart, text: Text) {
