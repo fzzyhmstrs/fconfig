@@ -1,3 +1,13 @@
+/*
+* Copyright (c) 2025 Fzzyhmstrs
+*
+* This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+*
+* Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+* You should have received a copy of the TDL-M with this software.
+* If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+* */
+
 package me.fzzyhmstrs.fzzy_config.impl.config
 
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
@@ -17,7 +27,6 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import java.util.function.BooleanSupplier
-import java.util.function.Function
 import java.util.function.Predicate
 import java.util.function.Supplier
 
@@ -38,7 +47,7 @@ internal class SearchConfig: Config("search".fcId()) {
     }
 
     fun prefixText(suffix: List<Text>): Supplier<List<Text>> {
-        return CompositingSupplier.of(behavior.get().textPrefix(), suffix) { l1: List<Text>, l2: List<Text> -> l1 + l2 }
+        return CompositingSupplier.of(Supplier { behavior.get().textPrefix().get() }, suffix) { l1: List<Text>, l2: List<Text> -> l1 + l2 }
     }
 
     enum class Modifier(private val tester: BooleanSupplier): EnumTranslatable {
@@ -58,16 +67,16 @@ internal class SearchConfig: Config("search".fcId()) {
     enum class SearchBehavior(val needsMod: Boolean, private val testModifier: Predicate<Modifier>, private val prefix: FunctionSupplier<Modifier, List<Text>>): EnumTranslatable {
         HOLD_MODIFIER(true,
             { it.test() },
-            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { 
+            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) {
                 if (it.test())
                     listOf("fc.search.behavior.HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
                 else
-                    listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()) 
+                    listOf("fc.search.behavior.ALWAYS.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
             }),
         DONT_HOLD_MODIFIER(true,
             { !it.test() },
-            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) { 
-                if (!it.test())
+            SuppliedFunctionSupplier({ INSTANCE.modifier.get() }) {
+                if (it.test())
                     listOf("fc.search.behavior.DONT_HOLD_MODIFIER.desc".translate(it.translation()).formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
                 else
                     listOf("fc.search.behavior.NEVER.desc".translate(it.translation()).formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())
@@ -77,7 +86,7 @@ internal class SearchConfig: Config("search".fcId()) {
             ConstFunction(listOf("fc.search.behavior.ALWAYS.desc".translate().formatted(Formatting.YELLOW, Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate()))),
         NEVER(false,
             ConstPredicate(false),
-            ConstFunction(listOf("fc.search.behavior.NEVER.desc".translate().formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())))
+            ConstFunction(listOf("fc.search.behavior.NEVER.desc".translate().formatted(Formatting.ITALIC), FcText.empty(), "fc.search.indirect".translate())));
 
         fun willPassSearch(modifier: Modifier): Boolean {
             return testModifier.test(modifier)

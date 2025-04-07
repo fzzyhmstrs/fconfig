@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-2025 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -58,9 +58,8 @@ import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
 import java.util.*
 import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
+import kotlin.collections.HashMap
 import kotlin.experimental.and
 import kotlin.experimental.or
 import kotlin.reflect.*
@@ -109,6 +108,8 @@ internal object ConfigApiImpl {
     internal const val CHECK_ACTIONS_AND_RECORD_RESTARTS: Byte = 10
     internal const val FLAT_WALK: Byte = 16
     internal const val IGNORE_NON_SYNC_AND_FLAT_WALK: Byte = 17
+    internal const val CRITICAL_ERRORS_ONLY: Byte = 32
+    internal const val IGNORE_NON_SYNC_AND_CRITICAL_ERRORS_ONLY: Byte = 33
 
     private val configClass = Config::class
     private val configSectionClass = ConfigSection::class
@@ -350,6 +351,7 @@ internal object ConfigApiImpl {
                     )
                     fErrorsOutResult.writeError(fErrorsOut)
                 }
+                FC.LOGGER.info("Saved config $name to file ${files.fOut}")
                 writeFile(files.fOut, str, name, "saving config", files.fIn)
             } else  {
                 FC.LOGGER.error("Failed to save config file $name to ${files.fOut}, config not saved.")
@@ -507,6 +509,10 @@ internal object ConfigApiImpl {
         return toml.build()
     }
 
+    internal fun <T: Config> serializeConfigSafe(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): String {
+        return serializeConfig(config, errorBuilder, flags, fileType)
+    }
+
     internal fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): String {
         return fileType.encode(serializeToToml(config, errorBuilder, flags)).report(errorBuilder).get()
     }
@@ -559,6 +565,9 @@ internal object ConfigApiImpl {
             return ValidationResult.error(ConfigContext(config).withContext(RESTART_ACTIONS, mutableSetOf()), "Improper TOML format passed to deserializeFromToml")
         }
         val clazz = config::class as KClass<T>
+        var criticalError = false
+        val tomlMap = HashMap(toml)
+
         try {
             val checkActions = checkActions(flags)
             val recordRestarts = if (!checkActions) false else recordRestarts(flags)
@@ -573,12 +582,12 @@ internal object ConfigApiImpl {
                         && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
                         && if(ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
             }
-            
+
             for (prop in props.cast<List<KMutableProperty1<T, *>>>()) {
                 val propVal = prop.get(config)
                 if (propVal is EntryTransient) continue
                 val name = prop.name
-                val tomlElement = toml[name]
+                val tomlElement = tomlMap.remove(name)
                 if (tomlElement == null || tomlElement is TomlNull) {
                     errorBuilder.add("TomlElement [$name] was missing or null.")
                     continue
@@ -609,8 +618,8 @@ internal object ConfigApiImpl {
                 } else {
                     val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop, name)
                     if (basicValidation != null) {
-                        @Suppress("DEPRECATION")
                         val newFlags = if (ignoreVisibility || isIgnoreVisibility(prop.annotations)) flags or IGNORE_VISIBILITY else flags
+                        @Suppress("DEPRECATION")
                         val result = basicValidation.deserializeEntry(tomlElement, errorBuilder, name, newFlags)
                         try {
                             val action = requiredAction(checkActions, prop, globalAction)
@@ -657,7 +666,11 @@ internal object ConfigApiImpl {
                 }
             }
         } catch (e: Throwable) {
+            criticalError = true
             errorBuilder.add("Critical error encountered while deserializing: ${e.message}")
+        }
+        if (tomlMap.keys.any { it != "version" }) {
+            errorBuilder.add("Config file for ${clazz.simpleName} contained obsolete or non-matching keys: ${tomlMap.keys.filter { it != "version" }}")
         }
         val context = ConfigContext(config)
             .withContext(ACTIONS, actionNeeded)
@@ -665,8 +678,12 @@ internal object ConfigApiImpl {
             .withContext(RESTART_RECORDS, restartRecords)
         return ValidationResult.predicated(
             context,
-            errorBuilder.size <= inboundErrorSize
+            if(criticalOnly(flags)) !criticalError else errorBuilder.size <= inboundErrorSize
         ) { "Errors found while deserializing Config ${clazz.simpleName}!" }
+    }
+
+    internal fun <T: Config> deserializeConfigSafe(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<ConfigContext<T>> {
+        return deserializeConfig(config, string, errorBuilder, flags, fileType)
     }
 
     internal fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<ConfigContext<T>> {
@@ -753,7 +770,7 @@ internal object ConfigApiImpl {
         return ValidationResult.predicated(ConfigContext(config).withContext(RESTART_ACTIONS, actionsNeeded).withContext(RESTART_RECORDS, restartRecords), errorBuilder.size <= inboundErrorSize, "Errors found while deserializing Config ${config.javaClass.canonicalName}!")
     }
 
-    internal fun <T: Any> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
+    internal fun <T: Config> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (_: Throwable) {
@@ -1167,6 +1184,10 @@ internal object ConfigApiImpl {
 
     private fun flatWalk(flags: Byte): Boolean {
         return flags and 16.toByte() == 16.toByte()
+    }
+
+    private fun criticalOnly(flags: Byte): Boolean {
+        return flags and 32.toByte() == 32.toByte()
     }
 
     ///////////////// END Flags ///////////////////////////////////////////////////////////

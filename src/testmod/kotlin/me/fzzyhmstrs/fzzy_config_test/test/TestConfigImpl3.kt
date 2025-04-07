@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-5 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.withListener
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
@@ -98,6 +99,31 @@ class TestConfigImpl3: Config(Identifier.of("fzzy_config_test","test_config3")) 
     private var entityTest = EntityType.EGG
 
     private var fluidTest = Fluids.LAVA
+
+    var any1 = MyTestAny()
+    /*var any2 = MyTestAny()
+    var any3 = MyTestAny()
+    var any4 = MyTestAny()
+    var any5 = MyTestAny()
+    var any6 = MyTestAny()
+    var any7 = MyTestAny()
+    var any8 = MyTestAny()
+    var any9 = MyTestAny()
+    var any10 = MyTestAny()
+    var any11 = MyTestAny()
+    var any12 = MyTestAny()
+    var any13 = MyTestAny()
+    var any14 = MyTestAny()
+    var any15 = MyTestAny()
+    var any16 = MyTestAny()*/
+
+    class MyTestAny: Walkable {
+        var test: Int = 5
+        var test2: Double = 4.5
+        var test3: String = "ggg"
+        var test4: Boolean = false
+        var test5: TriState = TriState.DEFAULT
+    }
 
     var testEnum = Test.B
 
