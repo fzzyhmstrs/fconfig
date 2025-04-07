@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-2025 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -80,10 +80,13 @@ internal object ClientConfigRegistry {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
             val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
             val errors = mutableListOf<String>()
-            val result = ConfigApi.deserializeConfig(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
+            val result = ConfigApiImpl.deserializeConfigSafe(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
             val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
             result.writeError(errors)
             MinecraftClient.getInstance().execute {
+                getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
+                    configScreenManagers.remove(it)
+                }
                 val saveType = result.get().config.saveType()
                 if (saveType == SaveType.OVERWRITE)
                     result.get().config.save()//save config to the client
@@ -158,6 +161,9 @@ internal object ClientConfigRegistry {
                 val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
                 result.writeError(errors)
                 MinecraftClient.getInstance().execute {
+                    getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
+                        configScreenManagers.remove(it)
+                    }
                     val saveType = result.get().config.saveType()
                     if (saveType == SaveType.OVERWRITE)
                         result.get().config.save()
