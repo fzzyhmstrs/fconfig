@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-5 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.registry
 
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -68,7 +67,7 @@ internal object SyncedConfigRegistry {
         for ((id, configEntry) in syncedConfigs) {
             if (configEntry.skipSync()) continue
             val syncErrors = mutableListOf<String>()
-            val payload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(configEntry.config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
+            val payload = ConfigSyncS2CCustomPayload(id, ConfigApiImpl.serializeConfigSafe(configEntry.config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
             if (syncErrors.isNotEmpty()) {
                 val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C configuration stage sync.")
                 syncError.writeError(syncErrors)
@@ -113,7 +112,7 @@ internal object SyncedConfigRegistry {
             for ((id, configEntry) in syncedConfigs) {
                 if (configEntry.skipSync()) continue
                 val syncErrors = mutableListOf<String>()
-                val syncPayload = ConfigSyncS2CCustomPayload(id, ConfigApi.serializeConfig(configEntry.config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
+                val syncPayload = ConfigSyncS2CCustomPayload(id, ConfigApiImpl.serializeConfigSafe(configEntry.config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
                 if (syncErrors.isNotEmpty()) {
                     val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C datapack reload sync.")
                     syncError.writeError(syncErrors)
@@ -183,10 +182,10 @@ internal object SyncedConfigRegistry {
                 }
             }
             val errors = mutableListOf<String>()
-            val result = ConfigApiImpl.deserializeUpdate(configEntry, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS)
+            val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS)
             val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
             result.writeError(errors)
-            result.get().config.config.save()
+            result.get().config.save()
             if (actions.any { it.restartPrompt }) {
                 FC.LOGGER.warn("The server has received a config update that may require a restart. Connected clients have been automatically updated and notified of the potential for restart.")
                 val records = result.get().get(RESTART_RECORDS)
@@ -255,15 +254,15 @@ internal object SyncedConfigRegistry {
 
     internal fun acceptQuarantine(id: String, server: MinecraftServer) {
         val quarantinedUpdate = quarantinedUpdates[id] ?: return
-        val config = syncedConfigs[quarantinedUpdate.configId]
+        val configEntry = syncedConfigs[quarantinedUpdate.configId]
         val player = server.playerManager.getPlayer(quarantinedUpdate.playerUuid)
-        if (config != null) {
+        if (configEntry != null) {
             val errors = mutableListOf<String>()
 
-            val result = ConfigApiImpl.deserializeUpdate(config, quarantinedUpdate.configString, errors, ConfigApiImpl.CHECK_ACTIONS)
+            val result = ConfigApiImpl.deserializeUpdate(configEntry.config, quarantinedUpdate.configString, errors, ConfigApiImpl.CHECK_ACTIONS)
             val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
             result.writeError(errors)
-            result.get().config.config.save()
+            result.get().config.save()
             if (actions.any { it.restartPrompt }) {
                 FC.LOGGER.warn("The server accepted a quarantined config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
             }

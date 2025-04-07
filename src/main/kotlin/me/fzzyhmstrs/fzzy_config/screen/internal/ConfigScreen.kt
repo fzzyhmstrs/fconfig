@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-2025 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -32,6 +32,8 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.Drawable
+import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.world.CreateWorldScreen.FOOTER_SEPARATOR_TEXTURE
@@ -41,7 +43,6 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
 import net.minecraft.screen.ScreenTexts
-import net.minecraft.text.OrderedText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Util
@@ -189,7 +190,15 @@ internal class ConfigScreen(
     private fun initBody() {
         this.addDrawableChild(configList)
         layout.forEachChild { drawableElement: ClickableWidget? ->
-            addDrawableChild(drawableElement)
+            if (drawableElement is LayoutClickableWidget) {
+                for (element in drawableElement.children()) {
+                    if (element is Drawable && element is Selectable) {
+                        addDrawableChild(element)
+                    }
+                }
+            } else {
+                addDrawableChild(drawableElement)
+            }
         }
         configList.onReposition()
     }

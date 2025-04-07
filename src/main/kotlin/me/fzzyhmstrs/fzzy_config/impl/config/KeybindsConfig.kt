@@ -1,6 +1,17 @@
+/*
+* Copyright (c) 2025 Fzzyhmstrs
+*
+* This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+*
+* Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+* You should have received a copy of the TDL-M with this software.
+* If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+* */
+
 package me.fzzyhmstrs.fzzy_config.impl.config
 
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
+import me.fzzyhmstrs.fzzy_config.annotations.Version
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -9,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.context.ContextInput
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedKeybind
 import org.lwjgl.glfw.GLFW
 
+@Version(1)
 internal class KeybindsConfig: Config("keybinds".fcId()) {
 
     @Comment("Scrolls up a 'page' in the Config GUI")
