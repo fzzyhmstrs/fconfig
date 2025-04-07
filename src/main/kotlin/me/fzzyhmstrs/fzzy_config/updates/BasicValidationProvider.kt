@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-2025 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -215,8 +215,6 @@ internal interface BasicValidationProvider {
                                     it.type
                                 })
                         } ?: ValidatedFloat(input as Float)
-
-                        triStateClass -> ValidatedTriState(TriState.DEFAULT)
                         idClass -> ValidatedIdentifier(input as Identifier)
                         stringClass -> ValidatedString(input as String)
                         tagClass -> ValidatedTagKey(input as TagKey<*>)
@@ -255,7 +253,9 @@ internal interface BasicValidationProvider {
                         } ?: ValidatedLong(input as Long)
                         colorClass -> ValidatedColor(input as Color)
                         else -> {
-                            if (itemClass.isAssignableFrom(jot)) {
+                            if (triStateClass.isAssignableFrom(jot)) {
+                                ValidatedTriState(TriState.DEFAULT)
+                            } else if (itemClass.isAssignableFrom(jot)) {
                                 ValidatedRegistryType.of(input as Item, Registries.ITEM)
                             } else if (blockClass.isAssignableFrom(jot)) {
                                 ValidatedRegistryType.of(input as Block, Registries.BLOCK)
@@ -283,7 +283,9 @@ internal interface BasicValidationProvider {
                     byteClass -> ValidatedByte()
                     colorClass -> ValidatedColor()
                     else -> {
-                        if (itemClass.isAssignableFrom(jot)) {
+                        if (triStateClass.isAssignableFrom(jot)) {
+                            ValidatedTriState(TriState.DEFAULT)
+                        } else if (itemClass.isAssignableFrom(jot)) {
                             ValidatedRegistryType.of(Registries.ITEM)
                         } else if (blockClass.isAssignableFrom(jot)) {
                             ValidatedRegistryType.of(Registries.BLOCK)
