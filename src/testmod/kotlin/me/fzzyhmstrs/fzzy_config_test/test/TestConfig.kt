@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-5 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -21,7 +21,7 @@ import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig2
 object TestConfig {
 
     fun init() {
-        println("I registered my config")
+        /*println("I registered my config")
         ConfigApi.event().onSyncClient { id, _ ->
             println("Syncing config $id")
             if (id == testConfig4.getId()) {
@@ -46,7 +46,7 @@ object TestConfig {
                 println("I'm on the server thread right?")
                 player.sendMessage("I ran a server update event!!".lit())
             }
-        }
+        }*/
     }
 
     val resultProvider = ConfigApi.result().createSimpleResultProvider(-666, Int::class)
@@ -55,10 +55,11 @@ object TestConfig {
 
     val tupleProvider: ResultProvider<ValidatedPair.Tuple<Int, Int>> = ConfigApi.result().createSimpleResultProvider(ValidatedPair.Tuple(0, 0), ValidatedPair.Tuple(0, 0).javaClass.kotlin)
 
+    var testConfigAny = ConfigApi.registerAndLoadConfig({ TestConfigImplAny() }, RegisterType.BOTH)
 
-    var rootConfig = ConfigApi.registerAndLoadConfig({ TestRootConfigImpl() }, RegisterType.BOTH)
-    var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
-    var testConfig4 = ConfigApi.registerAndLoadConfig({ TestConfigImpl4() }, RegisterType.BOTH)
+    //var rootConfig = ConfigApi.registerAndLoadConfig({ TestRootConfigImpl() }, RegisterType.BOTH)
+    //var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
+    //var testConfig4 = ConfigApi.registerAndLoadConfig({ TestConfigImpl4() }, RegisterType.BOTH)
 
-    var javaConfig2 = ConfigApi.registerAndLoadConfig({ JavaTestConfig2() }, RegisterType.SERVER)
+    //var javaConfig2 = ConfigApi.registerAndLoadConfig({ JavaTestConfig2() }, RegisterType.SERVER)
 }
