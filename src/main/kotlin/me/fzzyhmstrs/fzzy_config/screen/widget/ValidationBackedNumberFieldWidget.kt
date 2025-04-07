@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2024 Fzzyhmstrs
+* Copyright (c) 2024-5 Fzzyhmstrs
 *
 * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
 *
@@ -70,9 +70,9 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
 
     private fun isValidChar(chr: Char): Boolean {
         return if(isIntType()) {
-            chr in '0'..'9'
+            chr in '0'..'9' || chr == '-'
         } else {
-            chr in '0'..'9' || chr == '.'
+            chr in '0'..'9' || chr == '.' || chr == '-'
         }
     }
 

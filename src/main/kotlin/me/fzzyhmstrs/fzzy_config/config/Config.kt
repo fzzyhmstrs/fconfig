@@ -10,12 +10,10 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
-import com.google.common.base.Suppliers
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
-import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
@@ -156,9 +154,9 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
     open fun onSyncClient(){}
 
     /**
-     * Runs on the logical server as  config is about to be synced to a client. This occurs when the player is logging in and when datapacks are reloaded. This is distinct from [onUpdateServer], which fires when _changes_ are made to a config in-game, which are also synced. This is the initial sync of the entire config state.
+     * Runs on the logical server as config is about to be synced to a client. This occurs when the player is logging in and when datapacks are reloaded. This is distinct from [onUpdateServer], which fires when _changes_ are made to a config in-game, which are also synced. This is the initial sync of the entire config state.
      *
-     * This should only perform client logic, and it is good practice to insulate client-only code by putting a method reference to a dedicated client-only class in this call.
+     * Client-only code shouldn't be run here.
      * @see onUpdateServer
      * @author fzzyhmstrs
      * @since 0.5.0
