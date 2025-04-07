@@ -12,27 +12,23 @@
 -------------------------------------
 
 ### Additions
-* Updated to 1.21.5
-* Searches now propagate through sub-menus and other "children" results that aren't themselves valid but contain sub-entries that are valid will show a dashed outline and the tooltip will list the valid sub-entries
-  * Searches can now be automatically passed to sub-menus. By default, alt-click will pass the search
-  * The main search bar now has some buttons! A menu button which opens the new search config menu, and a clear button to quickly clear the search bar.
-* Added new `SaveType` method in `Config`
-  * `OVERWRITE` - Client configs will be overwritten when receiving a sync from a server. Default and previous behavior
-  * `SEPARATE` - Client configs will not be saved locally when updated from a server. Actions that modify gamestate before sync can't be included in these config type (`Action.RESTART` and `Action.RELOG`), as they won't be able to properly sync up this game state if they can't overwrite the local file.
-* New `Translatable.ResultProvider` super-class for more nuanced and efficient storage of translation results. Currently, half-wired-in until 0.7.0.
-  * Scope-based `Result` can be cached with the new `Translatable.createScopedResult`
-* New function utilities for suppliers, functions, and predicates that always return the same value
+* None.
 
 ### Changes
-* `Translatable.Result` now implements `Searcher.SearchContent` directly, and is now deprecated in favor of the new `ResultProvider`
-  * In 0.7.0, all Result constructors will be made internal in favor of using `Translatable.createResult`/`Translatable.createScopedResult`
-* `ConfigEntry` can now process searches using the `ContentBuilder.searchResult` method. This presents valid "child" search results when the parent list is searched.
-* `ValidatedAny` now has its own search bar
-* `ConfigScreenManager` passes Config and entry Content misc. context to entry creators
+* `ValidatedKeybind` now stores the keycode in the output file based on a string key, rather than the raw int; but it will still accept the raw int for up-conversion purposes or if the key falls outside the typical set of GLFW keys.
+  * The format for the key is the same as the minecraft one with the `key.[type]` prefix removed (except for mouse buttons, those start with `mouse.`)
+  * For example, page down is `page.down` versus the minecraft `key.keyboard.page.down`
+  * And right click is `mouse.right` versus `key.mouse.right`
+* `ValidatedTriState` will now accept boolean inputs from the file, if a user accidentally uses `true` or `false` instead of the intended enum form `"true"` or `"false"`
+* "Excess" fields (fields that used to exist in a config but no longer do, for example) are now reported as deserialization errors and removed from the read file. 
 
 ### Fixes
-* Fixed unnecessary re-saving of configs on single player configuration
-* Fix a variety of edge cases and niche issues involving searching
-* Popups for settings that are translated with `@Translation` (or the entire class is marked with `@Translation`) will now properly render the translated name in the popup header
-* Search filtering now properly resets when a screen is returned to. The search bar menu has a setting to enable caching behavior where the search will be maintained when the screen is re-opened from a child.
-* Fixed accidental niche API break of `ConfigGroup` involving kotlin constructors.
+* Integer-type text-box number validation no longer accepts decimal inputs, and the text-box in general no longer accepts any characters except numbers, the minus sign, and decimal if it is a floating-point number.
+* Fixed the search passing text not dynamically updating based on current pass-fail state of the input test.
+* Validated Any now properly translates basic settings (again, don't know when this broke)
+* Fixed servers not properly parsing updates sent from the client, introduced in 0.6.7
+* Config screen managers are now properly invalidated on joining a new world (with potentially new config values to care about)
+* Narration of the search bar and search bar option buttons works better, and can recover better from being "interrupted"
+* Deserialization fixes:
+  * Basic validation (plain fields) now properly report their errors, leading to a correction of the config file as needed.
+  * `ValidatedAny` is now robust against changing the number of fields in the wrapped object. Previously adding fields and then trying to read the pre-existing config file would result in total failure for the object, reverting to defaults.

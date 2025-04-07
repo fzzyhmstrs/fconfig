@@ -260,7 +260,6 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
 
     @Internal
     override fun setDragging(dragging: Boolean) {
-        FC.DEVLOG.info("Drag: $dragging")
         this.dragging = dragging
     }
 
