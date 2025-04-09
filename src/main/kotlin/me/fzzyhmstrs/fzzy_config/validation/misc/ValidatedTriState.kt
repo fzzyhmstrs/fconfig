@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.*

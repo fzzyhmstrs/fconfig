@@ -19,13 +19,13 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.withListener
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedDouble
-import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedFloat
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedInt
 import me.fzzyhmstrs.fzzy_config_test.FC
 import me.fzzyhmstrs.fzzy_config_test.fctId
