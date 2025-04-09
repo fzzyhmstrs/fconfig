@@ -12,7 +12,7 @@
 -------------------------------------
 
 ### Additions
-* Improved average comnfig load time by approx. 10%.
+* Improved average config load time by approx. 10%.
 
 ### Changes
 * `ValidatedKeybind` now stores the keycode in the output file based on a string key, rather than the raw int; but it will still accept the raw int for up-conversion purposes or if the key falls outside the typical set of GLFW keys.
