@@ -17,7 +17,7 @@ import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import net.minecraft.util.Identifier
 
-class TestConfigImplAny: Config(Identifier.of("fzzy_config_test","test_config_any")) {
+class TestConfigImplAny: Config(Identifier("fzzy_config_test","test_config_any")) {
 
     override fun saveType(): SaveType {
         return SaveType.SEPARATE

@@ -18,14 +18,27 @@ import java.nio.file.Path
 import java.util.Collections
 import java.util.concurrent.Executors
 import java.util.concurrent.ForkJoinPool
+import java.util.concurrent.ThreadFactory
+import java.util.concurrent.atomic.AtomicLong
 import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.concurrent.thread
+import java.lang.Thread
 
 
 internal object ThreadUtils {
 
-    internal val EXECUTOR = Executors.newFixedThreadPool(6, Thread.ofVirtual().name("Fzzy Config Worker", 1).factory())
+    internal val EXECUTOR = Executors.newFixedThreadPool(6, Factory)
+
+    private object Factory: ThreadFactory {
+
+        val counter: AtomicLong = AtomicLong(0L)
+
+        override fun newThread(r: Runnable): Thread {
+            return Thread(null, r, "Fzzy Config Worker-${counter.incrementAndGet()}")
+        }
+
+    }
 
     /*@Volatile
     private var doTick: Boolean = false
