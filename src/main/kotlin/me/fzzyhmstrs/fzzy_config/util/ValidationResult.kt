@@ -31,7 +31,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-class ValidationResult<T> private constructor(private val storedVal: T, private val errorContext: ErrorContext? = null) {
+class ValidationResult<T> private constructor(private val storedVal: T, private val errorContext: ErrorEntry = NonErrorEntry) {
     /**
      * Boolean check to determine if this result is valid (no errors)
      *
@@ -40,7 +40,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @since 0.2.0
      */
     fun isValid(): Boolean {
-        return errorContext == null
+        return errorContext.isEmpty()
     }
 
     /**
@@ -51,19 +51,18 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @since 0.1.0
      */
     fun isError(): Boolean {
-        return errorContext != null
+        return errorContext.isError()
     }
 
     /**
      * Supplies the error message stored within
-     *
-     * @return String, the error message stored, or an empty string if no error
+     * @return String, the error message stored or "No Error" if there is no error entry
      * @author fzzyhmstrs
      * @since 0.1.0, deprecated 0.7.0
      */
-    @Deprecated("Replace with inspection of the underlying ErrorContext in most situations")
+    @Deprecated("Replace with logging or inspection of the underlying ErrorEntry in most situations")
     fun getError(): String {
-        return errorContext?.getString() ?: ""
+        return errorContext.getString()
     }
 
     /**
@@ -72,8 +71,8 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    @Deprecated("Replace with inspection of the underlying ErrorContext in most situations")
-    fun getErrorContext(): ErrorContext? {
+    @Deprecated("Replace with logging or inspection of the underlying ErrorEntry in most situations")
+    fun getErrorEntry(): ErrorEntry {
         return errorContext
     }
 
@@ -81,12 +80,22 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * Inspects the error of the result, if any, for errors of a particular type
      * @param C error content type
      * @param t [ErrorContext.Type]&lt;[C]&gt; the error type. If you don't need a particular type (to report errors for example), use the other overload
-     * @param c [Consumer]&lt;[ErrorContext.Entry]&lt;[C]&gt;&gt;
+     * @param c [Consumer]&lt;[ErrorContext.Entry]&lt;[C]&gt;&gt; accepts matching entries
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    fun <C: Any> inspect(t: ErrorContext.Type<C>, c: Consumer<ErrorContext.Entry<C>>) {
-        errorContext?.consumeType(t, c)
+    fun <C: Any> inspect(t: ErrorEntry.Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+        errorContext.consumeType(t, c)
+    }
+
+    /**
+     * Inspects the error of the result, if any, for errors of a particular type
+     * @param c [Consumer]&lt;[ErrorContext.Entry]&gt; accepts all entries within the results ErrorEntry
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    fun inspect(c: Consumer<ErrorEntry.Entry<*>>) {
+        errorContext.consumeAll(c)
     }
 
     /**
@@ -143,15 +152,20 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    fun log(writer: BiConsumer<String, Throwable?>, headerMessage: String = "") {
+    fun log(writer: BiConsumer<String, Throwable?>) {
         if (!isError())return
         writer.accept(">>>>>>>>>>>>>>>", null)
-        if (headerMessage.isNotEmpty()) {
-            writer.accept(headerMessage, null)
-            writer.accept(">>>>>>>>>>>>>>>", null)
-        }
-        errorContext?.log(writer)
+        errorContext.log(writer)
         writer.accept(">>>>>>>>>>>>>>>", null)
+    }
+
+    /**
+     * Log this result if it is errored using the standard Fzzy Config logger.
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    fun log() {
+        log(ErrorEntry.ENTRY_LOGGER_CONSUMER)
     }
 
     /**
@@ -159,42 +173,46 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    class ErrorContext private constructor(private val entries: MutableList<Entry<*>> = mutableListOf()) {
-
+     @JvmDefaultWithoutCompatibility
+    sealed interface ErrorEntry {
         /**
          * TODO()
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        constructor(entry: Entry<*>): this(mutableListOf(entry))
-
+        fun isError(): Boolean
         /**
          * TODO()
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        fun isError(): Boolean {
-            return entries.any { it.type.isError || (it.e != null) }
+        fun isEmpty(): Boolean = false
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        fun isCritical(): Boolean
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        fun addError(other: ErrorEntry): ErrorEntry
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        fun  <C: Any> addError(type: Type<C>, builder: UnaryOperator<Builder>): ErrorEntry
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        fun  addError(builder: UnaryOperator<Builder<String>>): ErrorEntry {
+            return addError(BASIC, builder)
         }
-
-        /**
-         * TODO()
-         * @author fzzyhmstrs
-         * @since 0.7.0
-         */
-        fun <C: Any> addError(type: Type<C>, content: C, e: Throwable? = null, msg: String? = null) {
-            entries.add(Entry.of(type, content, e, msg))
-        }
-
-        /**
-         * TODO()
-         * @author fzzyhmstrs
-         * @since 0.7.0
-         */
-        fun addError(other: ErrorContext) {
-            entries.addAll(other.entries)
-        }
-
         /**
          * TODO()
          * @author fzzyhmstrs
@@ -205,7 +223,6 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 (entry as? Entry<C>)?.let { c.accept(it) }
             }
         }
-
         /**
          * TODO()
          * @author fzzyhmstrs
@@ -216,79 +233,123 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 c.accept(entry)
             }
         }
-
         /**
          * TODO()
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        fun getString(): String {
-            val list: MutableList<String> = mutableListOf()
-            consumeAll { entry ->
-                entry.print { str, _ -> list.add(str) }
-            }
-            return list.joinToString("\n")
-        }
-
+        fun getString(): String
         /**
          * TODO()
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun log(writer: BiConsumer<String, Throwable?>) {
-            consumeAll { entry ->
-                entry.print(writer)
-            }
+            writer.accept(getString(), null)
         }
-
-
-        ////////////////////////////
 
         /**
          * TODO()
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        sealed class Entry<C: Any>(val type: Type<C>, val content: C, val e: Throwable?) {
+        class Type<C: Any>(val name: String, val isString: Boolean = true, val isError: Boolean = true) {
+            fun create(content: C, e: Throwable?, msg: String): ErrorEntry {
+                return 
+            }
+        }
+
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        sealed interface Entry<C: Any> {
+            val type: Type<C>
+            val content: C
+            val e: Throwable?
+        }
+        
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        class Builder<C>(private val type: Type<C> = BASIC) {
+            private var header: String = ""
+            private var content: C? = null
+            private var e: Throwable? = null
+            private val msg: String = ""
 
             /**
              * TODO()
              * @author fzzyhmstrs
              * @since 0.7.0
              */
-            open fun print(c: BiConsumer<String, Throwable?>) {
-                val crit = if (e != null) "Critical " else ""
-                c.accept("$crit${type.name}: $content", e)
+            fun header(header: String): Builder<C> {
+                this.header = header
+                return this
             }
 
-            internal companion object {
-                fun <C: Any> of(type: Type<C>, content: C, e: Throwable? = null, msg: String? = null): Entry<C> {
-                    return if (msg == null) {
-                        BasicEntry(type, content, e)
+            /**
+             * TODO()
+             * @author fzzyhmstrs
+             * @since 0.7.0
+             */
+            fun content(content: C): Builder<C> {
+                this.content = content
+                return this
+            }
+
+            /**
+             * TODO()
+             * @author fzzyhmstrs
+             * @since 0.7.0
+             */
+            fun exception(e: Throwable): Builder<C> {
+                this.e = e
+                return this
+            }
+
+            /**
+             * TODO()
+             * @author fzzyhmstrs
+             * @since 0.7.0
+             */
+            fun message(msg: String): Builder<C> {
+                this.msg = msg
+                return this
+            }
+
+            /**
+             * TODO()
+             * @author fzzyhmstrs
+             * @since 0.7.0
+             */
+            fun build(): ErrorEntry {
+                return if (content == null) {
+                    if (msg.isNotEmpty() && type.isString) {
+                        FC.DEVLOG.warn("String-type ErrorEntry built with message() instead of content()"
+                        val entry = SingleErrorEntry(type as Type<String>, msg, e)
+                        if (header.isNotEmpty()) {
+                            EmptyErrorEntry(header).addError(entry)
+                        } else {
+                            entry
+                        }
                     } else {
-                        MsgEntry(type, content, e, msg)
+                        EmptyErrorEntry(header)
+                    }
+                } else {
+                    val entry = SingleErrorEntry(type, content, e, msg)
+                    if (header.isNotEmpty()) {
+                        EmptyErrorEntry(header).addError(entry)
+                    } else {
+                        entry
                     }
                 }
             }
+            
         }
-
-        private class BasicEntry<C: Any>(type: Type<C>, content: C, e: Throwable?): Entry<C>(type, content, e)
-
-        private class MsgEntry<C: Any>(type: Type<C>, content: C, e: Throwable?, private val msg: String): Entry<C>(type, content, e) {
-            override fun print(c: BiConsumer<String, Throwable?>) {
-                val crit = if (e != null) "Critical " else ""
-                c.accept("$crit${type.name}: $msg", e)
-            }
-        }
-
-        ////////////////////////////
-
-        /**
-         * TODO()
-         * @author fzzyhmstrs
-         * @since 0.7.0
-         */
-        class Type<C: Any>(val name: String, val isError: Boolean = true)
 
         companion object {
             val BASIC = Type<String>("Basic Error")
@@ -296,8 +357,8 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             val DESERIALIZATION = Type<String>("Deserialization Error")
             val OUT_OF_BOUNDS = Type<String>("Value Out of Bounds")
             val FILE_STRUCTURE = Type<String>("File Structure Problem")
-            val RESTART = Type<Action>("Restart Required", false)
-            val ACTION = Type<Action>("Action Required", false)
+            val RESTART = Type<Action>("Restart Required", false, false)
+            val ACTION = Type<Action>("Action Required", false, false)
 
             /**
              * TODO()
@@ -356,26 +417,160 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 }
             }
 
-            /**
-             * TODO()
-             * @author fzzyhmstrs
-             * @since 0.7.0
-             */
-            fun createBasic(error: String): ErrorContext {
-                return create(BASIC, error)
+            fun empty(header: String = ""): ErrorEntry {
+                return EmptyErrorEntry(header)
             }
 
-            /**
-             * TODO()
-             * @author fzzyhmstrs
-             * @since 0.7.0
-             */
-            fun <C: Any> create(type: Type<C>, content: C, e: Throwable? = null, msg: String? = null): ErrorContext {
-                return ErrorContext(Entry.of(type, content, e, msg))
+            fun basic(error: String): ErrorEntry {
+                return SingleErrorEntry(BASIC, error)
+            }
+
+            fun <C: Any> builder(type: Type<C> = BASIC): Builder<C> {
+                return Builder(type)
             }
         }
     }
 
+    private object NonErrorEntry(): ErrorEntry {
+        override fun isError(): Boolean = false
+        override fun isEmpty(): Boolean = true
+        override fun isCritical(): Boolean = false
+        override fun addError(other: ErrorEntry): ErrorEntry {
+            return other
+        }
+        override fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<Builder>): ErrorEntry {
+            return builder.apply(Builder(type)).build()
+        }
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<Entry<C>>) {
+        }
+        override fun consumeAll(c: Consumer<Entry<*>>) {
+        }
+        override fun getString(): String {
+            return "No Error"
+        }
+    }
+    
+    private class EmptyErrorEntry(private val header: String = ""): ErrorEntry {
+        override fun isError(): Boolean = false
+        override fun isEmpty(): Boolean = true
+        override fun isCritical(): Boolean = false
+        override fun addError(other: ErrorEntry): ErrorEntry {
+            return if (other.isEmpty()) {
+                this            
+            } else if (header.isEmpty()) {
+                other
+            } else {
+                CompoundErrorEntry(this, other)
+            }
+        }
+        override fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<Builder>): ErrorEntry {
+            return if (header.isEmpty()) {
+                builder.apply(Builder(type)).build()
+            } else {
+                CompoundErrorEntry(this, builder.apply(Builder(type)).build())
+            }
+        }
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<Entry<C>>) {
+        }
+        override fun consumeAll(c: Consumer<Entry<*>>) {
+        }
+        override fun getString(): String {
+            return if (header.isEmpty()) "Empty Error" else header
+        }
+    }
+
+    private class <T: Any> SingleErrorEntry(
+        override val type: Type<T>
+        override val content: T
+        override val e: Throwable? = null,
+        private val msg: String = ""): ErrorEntry, ErrorEntry.Entry<T> 
+    {
+        override fun isError(): Boolean {
+            return type.isError
+        }
+        override fun isCritical(): Boolean {
+            return e != null
+        }
+        override fun addError(other: ErrorEntry): ErrorEntry {
+            return if (other.isEmpty()) {
+                this            
+            } else {
+                CompoundErrorEntry(this, other)
+            }
+        }
+        override fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<Builder>): ErrorEntry {
+            return CompoundErrorEntry(this, builder.apply(Builder(type)).build())
+        }
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+            if (t != type) return
+            (this as? ErrorEntry.Entry<C>)?.let{ c.accept(it) }
+        }
+        override fun consumeAll(c: Consumer<ErrorEntry.Entry<*>>) {
+            c.accept(this)
+        }
+        override fun getString(): String {
+            val crit = if (e != null) "Critical " else ""
+            return if (msg.isNotEmpty()) 
+                "$crit${type.name}: $msg ($content)"
+            else
+                "$crit${type.name}: $content"
+        }
+        override fun log(writer: BiConsumer<String, Throwable?>) {
+            writer.accept(getString(), e)
+        }
+    }
+
+    private class CompoundErrorEntry(private val headerEntry: ErrorEntry, private val children: MutableList<ErrorEntry>): ErrorEntry {
+
+        constructor(headerEntry: ErrorEntry, childEntry: ErrorEntry): this(headerEntry, mutableListOf(childEntry))
+        
+        override fun isError(): Boolean {
+            return headerEntry.isError() || children.any { it.isError() }
+        }
+        override fun isCritical(): Boolean {
+            return headerEntry.isCritical() || children.any { it.isCritical() }
+        }
+        override fun addError(other: ErrorEntry): ErrorEntry {
+            if (!other.isEmpty()) {
+                children.add(other)
+            }
+            return this
+        }
+        override fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<Builder>): ErrorEntry {
+            val other = builder.apply(Builder(type)).build()
+            returh addError(other)
+        }
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<Entry<C>>) {
+            headerEntry.consumeType(t, c)
+            for (entry in children) {
+                entry.consumeType(t, c)
+            }
+        }
+        override fun consumeAll(c: Consumer<Entry<*>>) {
+            headerEntry.consumeAll(c)
+            for (entry in children) {
+                entry.consumeAll(c)
+            }
+        }
+        override fun getString(): String {
+            val list: MutableList<String> = mutableListOf()
+            list.add(headerEntry.getString())
+            for (entry in children) {
+                list.add(entry.getString())
+            }
+        }
+        override fun log(writer: BiConsumer<String, Throwable?>) {
+            headEntry.log(writer)
+            if (children.isEmpty()) return
+            val consumer: BiConsumer<String, Throwable?> = BiConsumer { str, e ->
+                writer.accept("  $str", e)
+            }
+            for (entry in children) {
+                entry.log(consumer)
+            }
+        }
+    }
+    
     companion object {
         /**
          * Creates a successful validation result.
@@ -404,7 +599,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          */
         @Deprecated("Plain error strings are deprecated but acceptable. Most of the time passing in ErrorContext is preferred")
         fun <T> error(storedVal: T, error: String): ValidationResult<T> {
-            return ValidationResult(storedVal, ErrorContext.createBasic(error))
+            return ValidationResult(storedVal, ErrorEntry.basic(error))
         }
 
         /**
@@ -413,13 +608,13 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * In this case, typically, [storedVal] will be the default value associated with this validation. A valid instance of T must always be passed back. Add a descriptive error message to [errorContext]. If there is no default, you will want to make your result type nullable and pass back null
          * @param T Type of result
          * @param storedVal default or fallback instance of type T
-         * @param errorContext [ErrorContext] the error to pass with this result
+         * @param errorEntry [ErrorEntry] the error to pass with this result
          * @return the errored ValidationResult
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        fun <T> error(storedVal: T, errorContext: ErrorContext): ValidationResult<T> {
-            return ValidationResult(storedVal, errorContext)
+        fun <T> error(storedVal: T, errorEntry: ErrorEntry): ValidationResult<T> {
+            return ValidationResult(storedVal, errorEntry)
         }
 
         /**
@@ -429,16 +624,14 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @param T Type of result
          * @param C Type of error content to store. This is usually a string message
          * @param storedVal default or fallback instance of type T
-         * @param type [ErrorContext.Type]&lt;[C]&gt; the error type. When in doubt, use [ErrorContext.BASIC]
-         * @param content [C] the content of the error. For simple string-based errors, the content is the error message
-         * @param e [Throwable], nullable. An exception that led to this errored result. This automatically flags this result as having a critical error
-         * @param msg Optional supplementary message to accompany the error context. This is most often used when the error content isn't a string message itself.
+         * @param type [ErrorEntry.Type]&lt;[C]&gt; the error type. When in doubt, use [ErrorContext.BASIC]
+         * @param TODO()
          * @return the errored ValidationResult
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        fun <T, C: Any> error(storedVal: T, type: ErrorContext.Type<C>, content: C, e: Throwable? = null, msg: String? = null): ValidationResult<T> {
-            return ValidationResult(storedVal, ErrorContext.create(type, content, e, msg))
+        fun <T, C: Any> error(storedVal: T, type: ErrorEntry.Type<C>, builder: UnaryOperator<Builder<C>>): ValidationResult<T> {
+            return ValidationResult(storedVal, builder.apply(ErrorEntry.Builder(type)).build())
         }
 
         /**
@@ -455,7 +648,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          */
         @Deprecated("Plain error strings are deprecated but acceptable. Most of the time passing in ErrorContext is preferred")
         fun <T> predicated(storedVal: T, valid: Boolean, error: String): ValidationResult<T> {
-            return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, ErrorContext.createBasic(error))
+            return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, ErrorEntry.basic(error))
         }
 
         /**
@@ -465,13 +658,13 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @param T Type of result
          * @param storedVal default or fallback instance of type T
          * @param valid test applied to determine validation or error.
-         * @param error [ErrorContext] providing information about the possible error
+         * @param error [ErrorEntry] providing information about the possible error
          * @return the error ValidationResult
          * @author fzzyhmstrs
          * @since 0.2.0, deprecated 0.7.0
          */
         @Deprecated("Plain error strings are deprecated but acceptable. Most of the time passing in ErrorContext is preferred")
-        fun <T> predicated(storedVal: T, valid: Boolean, error: ErrorContext): ValidationResult<T> {
+        fun <T> predicated(storedVal: T, valid: Boolean, error: ErrorEntry): ValidationResult<T> {
             return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, error)
         }
 
@@ -489,7 +682,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          */
         @Deprecated("Plain error strings are deprecated but acceptable. Most of the time passing in ErrorContext is preferred")
         fun <T> predicated(storedVal: T, valid: Boolean, error: Supplier<String>): ValidationResult<T> {
-            return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, ErrorContext.createBasic(error.get()))
+            return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, ErrorEntry.basic(error.get()))
         }
 
         /**
@@ -504,8 +697,8 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.6.9
          */
-        fun <T> predicated(storedVal: T, valid: Boolean, errorContext: Supplier<ErrorContext>): ValidationResult<T> {
-            return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, errorContext.get())
+        fun <T> predicated(storedVal: T, valid: Boolean, type: ErrorEntry.Type<C>, builder: UnaryOperator<Builder<C>>): ValidationResult<T> {
+            return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, builder.apply(ErrorEntry.Builder(type)).build())
         }
 
         /**
@@ -557,7 +750,8 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          */
         @Deprecated("Plain error strings are deprecated but acceptable. Most of the time passing in ErrorContext is preferred")
         fun <T> ValidationResult<T>.also(newTest: Boolean, error: String): ValidationResult<T> {
-            if (!newTest) {
+            TODO()
+            /*if (!newTest) {
                 val thisError = errorContext
                 if (thisError == null) {
                     return error(storedVal, ErrorContext.createBasic(error))
@@ -565,7 +759,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                     thisError.addError(ErrorContext.createBasic(error))
                 }
             }
-            return this
+            return this*/
         }
 
         /**
@@ -575,9 +769,12 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.2.0, deprecated 0.7.0
          */
-        @Deprecated("Errors should be built using addError onto a root validation result")
+        @Deprecated("Errors should be reported with log or the overload that takes a biConsumer")
         fun <T> ValidationResult<T>.report(errorBuilder: MutableList<String>): ValidationResult<T> {
-            errorContext?.let { errorBuilder.add(it.getString()) }
+            val consumer: BiConsumer<String, Throwable?> = BiConsumer { s, _ ->
+                errorBuilder.add(s)
+            }
+            errorContext.log(consumer)
             return this
         }
 
@@ -588,9 +785,22 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.5.9, deprecated 0.7.0
          */
-        @Deprecated("Errors should be built using addError onto a root validation result")
+        @Deprecated("Errors should be reported with log or the overload that takes a biConsumer")
         fun <T> ValidationResult<T>.report(errorReporter: Consumer<String>): ValidationResult<T> {
-            errorContext?.let { errorReporter.accept(it.getString()) }
+            val consumer: BiConsumer<String, Throwable?> = BiConsumer { s, _ ->
+                errorReporter.accept(s)
+            }
+            errorContext.log(consumer)
+            return this
+        }
+
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.?.?
+         */
+        fun <T> ValidationResult<T>.report(errorReporter: BiConsumer<String, Throwable?>): ValidationResult<T> {
+            errorContext.log(errorReporter)
             return this
         }
 
