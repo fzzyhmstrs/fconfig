@@ -48,6 +48,7 @@ import net.minecraft.network.PacketByteBuf
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
+import net.peanuuutz.tomlkt.TomlNull
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.*
 import java.util.function.Function
@@ -56,6 +57,7 @@ import kotlin.experimental.or
 import kotlin.reflect.KType
 import kotlin.reflect.full.allSupertypes
 import kotlin.reflect.jvm.jvmErasure
+import kotlin.reflect.jvm.jvmName
 
 /**
  * Validated Field Collection - serialization is indistinguishable from their wrapped values, but deserialized into a validated wrapper
@@ -160,12 +162,25 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     }
 
     @Internal
+    @Deprecated("Scheduled for removal 0.8.0")
     fun trySerialize(input: Any?, errorBuilder: MutableList<String>, flags: Byte): TomlElement? {
         return try {
             @Suppress("DEPRECATION", "UNCHECKED_CAST")
             serializeEntry(input as T?, errorBuilder, flags)
         } catch (e: Throwable) {
+            errorBuilder.add("Incompatible input type. Field of type ${this::class.jvmName} can't accept input of type ${input?.let { it::class.jvmName }}")
             null
+        }
+    }
+
+    @Internal
+    fun trySerialize(input: Any?, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte): TomlElement {
+        return try {
+            @Suppress("UNCHECKED_CAST")
+            serializeEntry(input as T?, errorBuilder, flags)
+        } catch (e: Throwable) {
+            errorBuilder.addError(ValidationResult.ErrorEntry.SERIALIZATION, "Incompatible input type. Field of type ${this::class.jvmName} can't accept input of type ${input?.let { it::class.jvmName }}")
+            TomlNull
         }
     }
 

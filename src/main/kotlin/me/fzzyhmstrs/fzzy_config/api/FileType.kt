@@ -21,25 +21,29 @@ import java.util.function.Function
  * @author fzzyhmstrs
  * @since 0.6.7
  */
-enum class FileType(private val suffix: String, private val encoder: Function<TomlElement, ValidationResult<String>>, private val decoder: Function<String, ValidationResult<TomlElement>>) {
+enum class FileType(private val suffix: String,
+                    private val encoder: Function<TomlElement, ValidationResult<String>>,
+                    private val decoder: Function<String, ValidationResult<TomlElement>>,
+                    internal val encodeType: ValidationResult.ErrorEntry.Type<String>,
+                    internal val decodeType: ValidationResult.ErrorEntry.Type<String>) {
     /**
      * TOML output format. The standard output.
      * @author fzzyhmstrs
      * @since 0.6.7
      */
-    TOML(".toml", ConfigApiImpl::encodeToml, ConfigApiImpl::decodeToml),
+    TOML(".toml", ConfigApiImpl::encodeToml, ConfigApiImpl::decodeToml, ValidationResult.ErrorEntry.Type("TOML Encoding Problem"), ValidationResult.ErrorEntry.Type("TOML Decoding Problem")),
     /**
      * JSON output format. Uses GSON and codecs to parse the json to/from the TOML used internally.
      * @author fzzyhmstrs
      * @since 0.6.7
      */
-    JSON(".json", ConfigApiImpl::encodeJson, ConfigApiImpl::decodeJson),
+    JSON(".json", ConfigApiImpl::encodeJson, ConfigApiImpl::decodeJson, ValidationResult.ErrorEntry.Type("JSON Encoding Problem"), ValidationResult.ErrorEntry.Type("JSON Decoding Problem")),
     /**
      * JSON5 output format. Uses Jankson and codecs to parse the json5 to/from the TOML used internally. Comments will be automatically carried over from any @Comment or @TomlComment annotations applied.
      * @author fzzyhmstrs
      * @since 0.6.7
      */
-    JSON5(".json5", ConfigApiImpl::encodeJson5, ConfigApiImpl::decodeJson5),
+    JSON5(".json5", ConfigApiImpl::encodeJson5, ConfigApiImpl::decodeJson5, ValidationResult.ErrorEntry.Type("JSON5 Encoding Problem"), ValidationResult.ErrorEntry.Type("JSON5 Decoding Problem")),
     /**
      * JSONC output format. Uses Jankson and codecs to parse the jsonc to/from the TOML used internally. Comments will be automatically carried over from any @Comment or @TomlComment annotations applied.
      *
@@ -47,7 +51,7 @@ enum class FileType(private val suffix: String, private val encoder: Function<To
      * @author fzzyhmstrs
      * @since 0.6.7
      */
-    JSONC(".jsonc", ConfigApiImpl::encodeJson5, ConfigApiImpl::decodeJson5);
+    JSONC(".jsonc", ConfigApiImpl::encodeJson5, ConfigApiImpl::decodeJson5, ValidationResult.ErrorEntry.Type("JSONC Encoding Problem"), ValidationResult.ErrorEntry.Type("JSONC Decoding Problem"));
 
     fun suffix(): String {
         return suffix

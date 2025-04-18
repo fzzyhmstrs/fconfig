@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.entry
 
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import net.peanuuutz.tomlkt.TomlElement
 
 /**
@@ -21,6 +22,7 @@ import net.peanuuutz.tomlkt.TomlElement
  * @since 0.1.1
  */
 @FunctionalInterface
+@JvmDefaultWithoutCompatibility
 fun interface EntrySerializer<T> {
     /**
      * Serializes either the provided input or stored value to a [TomlElement]
@@ -31,7 +33,25 @@ fun interface EntrySerializer<T> {
      * @param flags serialization flags for passing to built in serialization methods as needed.
      * @return [TomlElement] with the serialized result.
      * @author fzzyhmstrs
-     * @since 0.1.1
+     * @since 0.1.1, deprecated 0.7.0 and scheduled for removal 0.8.0
      */
+    @Deprecated("Implement the override using ValidationResult.ErrorEntry.Mutable. Scheduled for removal in 0.8.0.")
     fun serializeEntry(input: T?, errorBuilder: MutableList<String>, flags: Byte): TomlElement
+
+    /**
+     * Serializes either the provided input or stored value to a [TomlElement]
+     *
+     * If the input is not null, it should be serialized, otherwise the stored value of this serializer (or a fallback value) should be serialized. Serialization of the correct type should occur either way.
+     * @param input [T], nullable. The optional external value to serialize
+     * @param errorBuilder [ValidationResult.ErrorEntry.Mutable] for appending error messages. Serialization should fail soft, returning a fallback TomlElement or [TomlNull][net.peanuuutz.tomlkt.TomlNull] as a last resort instead of crashing. Problems should be appended to the builder.
+     * @param flags serialization flags for passing to built in serialization methods as needed.
+     * @return [TomlElement] with the serialized result.
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    fun serializeEntry(input: T?, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte): TomlElement {
+        val errors: MutableList<String> = mutableListOf()
+        @Suppress("DEPRECATION")
+        return serializeEntry(input, errors, flags)
+    }
 }
