@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.entry
 
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
 import net.peanuuutz.tomlkt.TomlElement
 
 /**
@@ -22,6 +23,7 @@ import net.peanuuutz.tomlkt.TomlElement
  * @since 0.2.0, added [deserializedChanged] 0.6.0
  */
 @FunctionalInterface
+@JvmDefaultWithCompatibility
 fun interface EntryDeserializer<T> {
     /**
      * Deserializes the provided [TomlElement]. This deserialization should store the result within this deserializer (deserialize "in-place") as well as returning the result. The return has to have a fallback value.
@@ -31,9 +33,25 @@ fun interface EntryDeserializer<T> {
      * @param flags deserialization flags for use with built-in deserialization methods if needed.
      * @return [ValidationResult]&lt;[T]&gt; wrapped deserialization result or a fallback value on total failure, with any applicable direct error messages stored in the result. The [errorBuilder] can be used for populating detail error information while providing a general alert in this error.
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, deprecated 0.7.0 and scheduled for removal by 0.8.0
      */
+    @Deprecated("Implement the override without an errorBuilder. Scheduled for removal in 0.8.0. In 0.7.0, the provided ValidationResult should encapsulate all encountered errors, and all passed errors will be incorporated into a parent result as applicable.")
     fun deserializeEntry(toml: TomlElement, errorBuilder: MutableList<String>, fieldName: String, flags: Byte): ValidationResult<T>
+
+    /**
+     * TODO()
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    fun deserializeEntry(toml: TomlElement, fieldName: String, flags: Byte): ValidationResult<T> {
+        val errors: MutableList<String> = mutableListOf()
+        @Suppress("DEPRECATION")
+        var result = deserializeEntry(toml, errors, fieldName, flags)
+        for (error in errors) {
+            result = result.also(false, ValidationResult.ErrorEntry.DESERIALIZATION, error)
+        }
+        return result
+    }
 
     /**
      * Specialized `equals` method for determining if a newly deserialized value is *effectively* equal to its old counterpart.

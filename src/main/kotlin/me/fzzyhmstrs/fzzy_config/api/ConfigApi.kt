@@ -362,11 +362,42 @@ object ConfigApi {
      * - IGNORE_VISIBILITY: Byte = 4
      * @return Returns a [ValidationResult] of [ConfigContext] and applicable error, containing the config and any flag information
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, deprecated 0.7.0 and scheduled for removal 0.8.0
      */
     @JvmStatic
     @JvmOverloads
+    @Deprecated("Use overload that takes a ValidationResult.ErrorEntry.Mutable. Scheduled for removal 0.8.0")
     fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
+        return ConfigApiImpl.deserializeFromToml(config, toml, errorBuilder, flags)
+    }
+
+    /**
+     * Deserializes a config class from a TomlElement
+     *
+     * Custom deserializer, powered by TomlKt. Deserialization focuses on validation and building a useful error message. Deserialization happens in two ways
+     * 1) [EntrySerializer] elements are deserialized with their custom `deserializeEntry` method
+     * 2) "Raw" properties and fields are deserialized with the TomlKt by-class-type deserialization.
+     *
+     * Configs are deserialized "in place". That is to say, the deserializer iterates over the relevant fields and properties of a pre-instantiated "default" config class. Each relevant field/property is filled in with the results of deserializing from the TomlElement at the matching TomlTable key. If for some reason there is a critical error, the initial config passed in, with whatever deserialization was successfully completed, will be returned as a fallback.
+     *
+     * Should be called as a matched pair to [serializeToToml]. Ex: if `ignoreNonSync` is false on one end, it needs to be false on the other.
+     * @param T the config type. Can be any Non-Null type.
+     * @param config the config pre-deserialization
+     * @param toml the TomlElement to deserialize from. Needs to be a TomlTable
+     * @param errorBuilder [ValidationResult.ErrorEntry.Mutable] instance that the deserializer will apply errors to and then use when building it's [ValidationResult]. Using `ValidationResult.ErrorEntry.empty().mutable()` is a good way to provide a fresh empty mutable error, with an optional header error message.
+     * @param flags default IGNORE_NON_SYNC. With the default, elements with the [NonSync] annotation will be skipped. See the flag options below to serialize the entire config (ex: saving to file), fully syncing (ex: initial sync server -> client), etc.
+     * - CHECK_NON_SYNC: Byte = 0
+     * - IGNORE_NON_SYNC: Byte = 1
+     * - CHECK_RESTART: Byte = 2
+     * - IGNORE_NON_SYNC_AND_CHECK_RESTART: Byte = 3
+     * - IGNORE_VISIBILITY: Byte = 4
+     * @return Returns a [ValidationResult] of [ConfigContext] and applicable error, containing the config and any flag information
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    @JvmStatic
+    @JvmOverloads
+    fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
         return ConfigApiImpl.deserializeFromToml(config, toml, errorBuilder, flags)
     }
 
@@ -387,10 +418,11 @@ object ConfigApi {
      * - IGNORE_VISIBILITY: Byte = 4
      * @return Returns [ValidationResult] of [ConfigContext]. The validation result includes the config and any applicable errors, and any flag information
      * @author fzzyhmstrs
-     * @since 0.2.0
+     * @since 0.2.0, deprecated 0.7.0 and scheduled for removal 0.8.0
      */
     @JvmStatic
     @JvmOverloads
+    @Deprecated("Use overload that takes a ValidationResult.ErrorEntry.Mutable. Scheduled for removal 0.8.0")
     fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
         return ConfigApiImpl.deserializeConfig(config, string, errorBuilder, flags)
     }
