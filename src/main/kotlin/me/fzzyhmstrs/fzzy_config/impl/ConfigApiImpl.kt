@@ -422,11 +422,16 @@ internal object ConfigApiImpl {
 
     ///////////////// Serialize //////////////////////////////////////////////////////////
 
+    @Deprecated("Use overload with Mutable")
     internal fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<TomlTable> {
         val builder = ValidationResult.ErrorEntry.empty().mutable()
         val result = serializeToToml(config, builder, flags)
         builder.entry.log { s, _ -> errorBuilder.add(s) }
         return result
+    }
+
+    internal fun <T: Any> serializeToToml(config: T, errorHeader: String = "", flags: Byte = IGNORE_NON_SYNC): ValidationResult<TomlTable> {
+        return serializeToToml(config, ValidationResult.ErrorEntry.empty(errorHeader).mutable(), flags)
     }
 
     internal fun <T: Any> serializeToToml(config: T, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = IGNORE_NON_SYNC): ValidationResult<TomlTable> {
@@ -522,6 +527,10 @@ internal object ConfigApiImpl {
     @Deprecated("Use overload with Mutable param")
     internal fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<String> {
         return serializeToToml(config, errorBuilder, flags).outmap(fileType::encode)
+    }
+
+    internal fun <T: Any> serializeConfig(config: T, errorHeader: String = "", flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<String> {
+        return serializeToToml(config, ValidationResult.ErrorEntry.empty(errorHeader).mutable(), flags).outmap(fileType::encode)
     }
 
     internal fun <T: Any> serializeConfig(config: T, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<String> {
