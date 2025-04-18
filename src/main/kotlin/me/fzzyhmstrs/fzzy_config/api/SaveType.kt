@@ -36,4 +36,8 @@ enum class SaveType(private vararg val incompatibleActions: Action) {
     internal fun incompatibleWith(actions: Set<Action>?): Boolean {
         return incompatibleActions.any { actions?.contains(it) == true }
     }
+
+    internal fun incompatibleWith(action: Action): Boolean {
+        return incompatibleActions.contains(action)
+    }
 }
