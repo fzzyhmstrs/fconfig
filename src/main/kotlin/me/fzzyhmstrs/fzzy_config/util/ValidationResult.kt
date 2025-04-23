@@ -522,6 +522,18 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         /**
+         * Reports errors in this validation to an error consumer.
+         * @param mutable [ErrorEntry.Mutable] mutable error to attach any applicable error to
+         * @return this validation
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        fun <T> ValidationResult<T>.attachTo(mutable: ErrorEntry.Mutable): ValidationResult<T> {
+            mutable.addError(this)
+            return this
+        }
+
+        /**
          * Maps this validation's stored value to a new type using a mapping function
          * @param N new type to store
          * @param T old type stored in this validation to map
