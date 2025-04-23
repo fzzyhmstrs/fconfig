@@ -469,37 +469,35 @@ internal object ConfigApiImpl {
                 //things name
                 val name = prop.name
                 //serialize the element. EntrySerializer elements will have a set serialization method
-                val el = if (propVal is EntrySerializer<*>) { //is EntrySerializer
+                val elResult = if (propVal is EntrySerializer<*>) { //is EntrySerializer
                     try {
                         val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
-                        propVal.serializeEntry(null, errorBuilder, newFlags)
+                        propVal.serializeEntry(null, newFlags)
                     } catch (e: Throwable) {
-                        errorBuilder.addError(ValidationResult.ErrorEntry.SERIALIZATION, "Exception encountered serializing [$name]", e)
-                        TomlNull
+                        ValidationResult.error(TomlNull, ValidationResult.ErrorEntry.SERIALIZATION, "Exception encountered serializing [$name]", e)
                     }
                     //fallback is to use by-type TOML serialization
                 } else if (propVal != null) {
                     val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop, name)
                     if (basicValidation != null) {
                         val newFlags = if (ignoreVisibility) flags or IGNORE_VISIBILITY else flags
-                        basicValidation.trySerialize(propVal, errorBuilder, newFlags) ?: TomlNull
+                        basicValidation.trySerialize(propVal, newFlags)
                     } else {
                         try {
-                            encodeToTomlElement(propVal, prop.returnType) ?: TomlNull
+                            encodeToTomlElement(propVal, prop.returnType)?.let(ValidationResult::success) ?: ValidationResult.error(TomlNull, ValidationResult.ErrorEntry.SERIALIZATION, "Couldn't serialize raw field [$name]")
                         } catch (e: Throwable) {
-                            errorBuilder.addError(ValidationResult.ErrorEntry.SERIALIZATION, "Exception encountered with raw data while serializing [$name]", e)
-                            TomlNull
+                            ValidationResult.error(TomlNull, ValidationResult.ErrorEntry.SERIALIZATION, "Exception encountered with raw data while serializing [$name]", e)
                         }
                     }
                     //TomlNull for properties with Null state (improper state, no config values should be nullable)
                 } else {
-                    errorBuilder.addError(ValidationResult.ErrorEntry.SERIALIZATION, "Property [$name] was null during serialization!")
-                    TomlNull
+                    ValidationResult.error(TomlNull, ValidationResult.ErrorEntry.SERIALIZATION, "Property [$name] was null during serialization!")
                 }
+                errorBuilder.addError(elResult)
                 //scrape all the TomlAnnotations associated
                 val tomlAnnotations = tomlAnnotations(prop)
                 //add the element to the TomlTable, with annotations
-                toml.element(name, el, tomlAnnotations)
+                toml.element(name, elResult.get(), tomlAnnotations)
 
             }
         } catch (e: Throwable) {
@@ -535,39 +533,54 @@ internal object ConfigApiImpl {
     internal fun <T: Any> serializeConfig(config: T, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<String> {
         return serializeToToml(config, errorBuilder, flags).outmap(fileType::encode)
     }
-
-    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): TomlTable where M: UpdateManager, M: BasicValidationProvider {
+    
+    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = CHECK_NON_SYNC): ValidationResult<TomlTable> where M: UpdateManager, M: BasicValidationProvider {
         val toml = TomlTableBuilder()
         try {
             walk(config, config.getId().toTranslationKey(), flags) { _, _, str, v, prop, _, _, _ ->
                 if(manager.hasUpdate(str)) {
                     if(v is EntrySerializer<*>) {
-                        toml.element(str, v.serializeEntry(null, errorBuilder, flags))
+                        toml.element(str, v.serializeEntry(null, flags).attachTo(errorBuilder))
                     } else if (v != null) {
                         val basicValidation = manager.basicValidationStrategy(v, prop, str)
                         if (basicValidation != null) {
-                            val el = basicValidation.trySerialize(v, errorBuilder, flags)
-                            if (el != null)
-                                toml.element(str, el)
+                            toml.element(str, basicValidation.trySerialize(v, flags).attachTo(errorBuilder))
                         }
                     }
                 }
             }
         } catch (e: Throwable) {
-            errorBuilder.add("Critical error encountered while serializing config update!: ${e.localizedMessage}")
-            return toml.build()
+            errorBuilder.addError(ValidationResult.ErrorEntry.SERIALIZATION, "Critical error encountered while serializing config update, update may be incomplete!", e)
+            return ValidationResult.ofMutable(toml.build(), errorBuilder)
         }
-        return toml.build()
+        return ValidationResult.ofMutable(toml.build(), errorBuilder)
     }
 
+    @Deprecated("Use overload with Mutable param")
     internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): String where M: UpdateManager, M: BasicValidationProvider {
-        return Toml.encodeToString(serializeUpdateToToml(config, manager, errorBuilder, flags))
+        val builder = ValidationResult.ErrorEntry.empty().mutable()
+        val result = serializeUpdateToToml(config, manager, builder, flags)
+        builder.entry.log { s, _ -> errorBuilder.add(s) }
+        return Toml.encodeToString(result.get())
     }
 
+    internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorHeader: String = "", flags: Byte = CHECK_NON_SYNC): ValidationResult<String> where M: UpdateManager, M: BasicValidationProvider {
+        return serializeUpdateToToml(config, manager, ValidationResult.ErrorEntry.empty(errorHeader).mutable(), flags)
+    }
+
+    internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = CHECK_NON_SYNC): ValidationResult<String> where M: UpdateManager, M: BasicValidationProvider {
+        return serializeUpdateToToml(config, manager, errorBuilder, flags).map(Toml::encodeToString)
+    }
+
+    @Deprecated("Use overload without errorBuilder")
     internal fun serializeEntry(entry: Entry<*, *>, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): String {
         val toml = TomlTableBuilder()
-        toml.element("entry", entry.serializeEntry(null, errorBuilder, flags))
+        toml.element("entry", entry.serializeEntry(null, flags))
         return Toml.encodeToString(toml.build())
+    }
+
+    internal fun serializeEntry(entry: Entry<*, *>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<String> {
+        return entry.serializeEntry(null, flags).map { TomlTableBuilder().element("entry", it }.map { Toml::encodeToString }
     }
 
     ///////////////// END Serialize //////////////////////////////////////////////////////
