@@ -117,7 +117,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @suppress
      */
     @Internal
-    @Deprecated("use deserialize to avoid accidentally overwriting validation and error reporting")
+    @Deprecated("Implement the override without an errorBuilder. Scheduled for removal in 0.8.0. In 0.7.0, the provided ValidationResult should encapsulate all encountered errors, and all passed errors will be incorporated into a parent result as applicable.")
     override fun deserializeEntry(
         toml: TomlElement,
         errorBuilder: MutableList<String>,
@@ -138,6 +138,24 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     }
 
     /**
+     * @suppress
+     */
+    @Internal
+    override fun deserializeEntry(toml: TomlElement, fieldName: String, flags: Byte): ValidationResult<T> {
+        val tVal = deserialize(toml, fieldName) //1
+        if (tVal.isCritical()){ //2
+            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Config entry [$fieldName] threw an exception, using default value [${get()}]").addError(tVal) }
+        }
+        //3
+        val tVal2 = correctEntry(tVal.get(), EntryValidator.ValidationType.WEAK)
+        set(tVal2.get()) //4
+        if (tVal2.isError() || tVal2.isCritical()) { //5
+            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]").addError(tVal2) }
+        }
+        return ValidationResult.success(get())
+    }
+
+    /**
      * deserializes the fields stored value from TomlElement. This should not set the fields stored value, or interact with the field at all except to get the stored value for error reporting. [deserializeEntry] handles that.
      *
      * Any of the built-in validations can be used for inspiration and help in parsing Toml Elements or using ValidationResult.
@@ -153,13 +171,23 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @suppress
      */
     @Internal
-    @Deprecated(
-        "use serialize for consistency and to enable usage in list- and map-based Fields",
-        ReplaceWith("serializeEntry(input: T)")
-    )
+    @Deprecated("Implement the override using ValidationResult.ErrorEntry.Mutable. Scheduled for removal in 0.8.0.")
     override fun serializeEntry(input: T?, errorBuilder: MutableList<String>, flags: Byte): TomlElement {
         return (if(input != null) serialize(input) else serialize(get())).report(errorBuilder).get()
     }
+
+    fun serializeEntry(input: T?, flags: Byte): ValidationResult<TomlElement> {
+        return if(input != null) serialize(input) else serialize(get())
+    }
+
+    /**
+     * Serializes the provided input to a [TomlElement]
+     * @param input [T] the value to serialize. This may not be the stored value, if this validation is being used as a parser for something else.
+     * @return [ValidationResult]&lt;[TomlElement]&gt; - the resulting TomlElement, or a [TomlNull][net.peanuuutz.tomlkt.TomlNull] along with an error message if there is a problem.
+     * @author fzzyhmstrs
+     * @since 0.5.0
+     */
+    abstract fun serialize(input: T): ValidationResult<TomlElement>
 
     @Internal
     @Deprecated("Scheduled for removal 0.8.0")
@@ -174,24 +202,14 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     }
 
     @Internal
-    fun trySerialize(input: Any?, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte): TomlElement {
+    fun trySerialize(input: Any?, flags: Byte): ValidationResult<TomlElement> {
         return try {
             @Suppress("UNCHECKED_CAST")
-            serializeEntry(input as T?, errorBuilder, flags)
+            serializeEntry(input as T?, flags)
         } catch (e: Throwable) {
-            errorBuilder.addError(ValidationResult.ErrorEntry.SERIALIZATION, "Incompatible input type. Field of type ${this::class.jvmName} can't accept input of type ${input?.let { it::class.jvmName }}")
-            TomlNull
+            ValidationResult.error(TomlNull, ValidationResult.ErrorEntry.SERIALIZATION) { b -> b.content("Incompatible input type. Field of type ${this::class.jvmName} can't accept input of type ${input?.let { it::class.jvmName }}").exception(e) }
         }
     }
-
-    /**
-     * Serializes the provided input to a [TomlElement]
-     * @param input [T] the value to serialize. This may not be the stored value, if this validation is being used as a parser for something else.
-     * @return [ValidationResult]&lt;[TomlElement]&gt; - the resulting TomlElement, or a [TomlNull][net.peanuuutz.tomlkt.TomlNull] along with an error message if there is a problem.
-     * @author fzzyhmstrs
-     * @since 0.5.0
-     */
-    abstract fun serialize(input: T): ValidationResult<TomlElement>
 
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         return validateEntry(input, type)
