@@ -55,6 +55,17 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
     }
 
     /**
+     * Boolean check to determine if this result is holding a critical (exception-caused) error
+     *
+     * @return Boolean, true is a critical error, false not.
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    fun isCritical(): Boolean {
+        return errorContext.isCritical()
+    }
+
+    /**
      * Supplies the error message stored within
      * @return String, the error message stored or "No Error" if there is no error entry
      * @author fzzyhmstrs
