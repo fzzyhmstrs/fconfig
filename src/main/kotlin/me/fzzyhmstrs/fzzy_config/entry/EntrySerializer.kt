@@ -45,13 +45,21 @@ fun interface EntrySerializer<T> {
      * @param input [T], nullable. The optional external value to serialize
      * @param errorBuilder [ValidationResult.ErrorEntry.Mutable] for appending error messages. Serialization should fail soft, returning a fallback TomlElement or [TomlNull][net.peanuuutz.tomlkt.TomlNull] as a last resort instead of crashing. Problems should be appended to the builder.
      * @param flags serialization flags for passing to built in serialization methods as needed.
-     * @return [TomlElement] with the serialized result.
+     * @return validation result wrapping a [TomlElement] with the serialized result.
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    fun serializeEntry(input: T?, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte): TomlElement {
+    fun serializeEntry(input: T?, flags: Byte): ValidationResult<TomlElement> {
         val errors: MutableList<String> = mutableListOf()
         @Suppress("DEPRECATION")
-        return serializeEntry(input, errors, flags)
+        val result = serializeEntry(input, errors, flags)
+        if (errors.isNotEmpty()) {
+            val err = ValidationResult.ErrorEntry.empty().mutable()
+            for (error in errors) {
+                error.addError(ValidationResult.ErrorEntry.SERIALIZATION, error)
+            }
+        } else {
+            return ValidationResult.success(result)
+        }
     }
 }
