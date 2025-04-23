@@ -150,7 +150,7 @@ interface Translatable {
      * @since 0.6.0, data class since 0.6.5, implements [Searcher.SearchContent] and [ResultProvider], and deprecated, since 0.6.8
      */
      @Deprecated("Replace with createResult, and use ResultProvider for typing. Constructor and impl will change in 0.7.0")
-    data class Result(override val name: Text, override val desc: Text? = null, override val prefix: Text? = null): ResultProvider<Result>(), Searcher.SearchContent {
+    data class Result(override val name: Text, override val desc: Text? = null, override val prefix: Text? = null): ResultProvider(), Searcher.SearchContent {
 
         @Deprecated("Use content, this is not used directly by Searcher as of 0.6.8. Scheduled for removal 0.7.0")
         override val texts: Result = this
@@ -163,24 +163,24 @@ interface Translatable {
             val EMPTY = Result(FcText.empty(), null, null)
         }
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result {
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider {
             return Result(nameMapper.apply(name), desc?.let { descMapper.apply(it) }, prefix?.let { prefixMapper.apply(it) })
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): Result {
+        override fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider {
             return Result(nameMapper.apply(name), desc, prefix)
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): Result {
+        override fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider {
             return Result(name, desc?.let { descMapper.apply(it) }, prefix)
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider {
             return Result(name, desc, prefix?.let { prefixMapper.apply(it) })
         }
     }
 
-    data class Name internal constructor(override val name: Text): ResultProvider<Name>() {
+    data class Named internal constructor(override val name: Text): ResultProvider() {
 
         override val desc: Text?
             get() = null
@@ -188,89 +188,77 @@ interface Translatable {
         override val prefix: Text?
             get() = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Name {
-            return Name(nameMapper.apply(name))
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider {
+            return Named(nameMapper.apply(name))
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): Name {
-            return Name(nameMapper.apply(name))
+        override fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider {
+            return Named(nameMapper.apply(name))
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): Name {
+        override fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider {
             return this
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Name {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider {
             return this
         }
     }
 
-    data class NameDesc internal constructor(override val name: Text, override val desc: Text): ResultProvider<NameDesc>() {
+    data class NameDesc internal constructor(override val name: Text, override val desc: Text): ResultProvider() {
 
         override val prefix: Text?
             get() = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): NameDesc {
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider {
             return NameDesc(nameMapper.apply(name), descMapper.apply(desc))
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): NameDesc {
+        override fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider {
             return NameDesc(nameMapper.apply(name), desc)
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): NameDesc {
+        override fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider {
             return NameDesc(name, descMapper.apply(desc))
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): NameDesc {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider {
             return this
         }
     }
 
-    data class NamePrefix internal constructor(override val name: Text, override val prefix: Text): ResultProvider<NamePrefix>() {
+    data class NamePrefix internal constructor(override val name: Text, override val prefix: Text): ResultProvider() {
 
         override val desc: Text?
             get() = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): NamePrefix {
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider {
             return NamePrefix(nameMapper.apply(name), prefixMapper.apply(prefix))
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): NamePrefix {
+        override fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider {
             return NamePrefix(nameMapper.apply(name), prefix)
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): NamePrefix {
+        override fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider {
             return this
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): NamePrefix {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider {
             return NamePrefix(name, prefixMapper.apply(prefix))
         }
     }
 
-    private data object Empty: ResultProvider<Empty>() {
+    private data object Empty: ResultProvider() {
 
         override val name: Text = FcText.empty()
         override val desc: Text? = null
         override val prefix: Text? = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Empty {
-            return this
-        }
-
-        override fun mapName(nameMapper: UnaryOperator<Text>): Empty {
-            return this
-        }
-
-        override fun mapDesc(descMapper: UnaryOperator<Text>): Empty {
-            return this
-        }
-
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Empty {
-            return this
-        }
-
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider = this
+        override fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider = this
+        override fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider = this
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider = this
     }
 
     /**
@@ -278,22 +266,47 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.6.8, will replace Result itself in 0.7.0
      */
-    abstract class ResultProvider<T>: Searcher.SearchContent {
+    abstract class ResultProvider: Searcher.SearchContent {
         abstract val name: Text
         abstract val desc: Text?
         abstract val prefix: Text?
 
-        abstract fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): T
-        abstract fun mapName(nameMapper: UnaryOperator<Text>): T
-        abstract fun mapDesc(descMapper: UnaryOperator<Text>): T
-        abstract fun mapPrefix(prefixMapper: UnaryOperator<Text>): T
+        abstract fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider
+        abstract fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider
+        abstract fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider
+        abstract fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider
 
-        override val content: ResultProvider<*>
+        override val content: ResultProvider
             get() = this
 
-        override val skip: Boolean = false
+        override val skip: Boolean
+            get() = false
     }
 
+    /**
+     * TODO()
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+    annotation class Name(val value: String, val lang: String = "en_us")
+
+    /**
+     * TODO()
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+    annotation class Desc(val value: String, val lang: String = "en_us")
+
+    /**
+     * TODO()
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+    annotation class Prefix(val value: String, val lang: String = "en_us")
+    
     /**
      * Provides utilities for creating and caching translation results
      * @author fzzyhmstrs
@@ -327,13 +340,13 @@ interface Translatable {
          * Caches the provided result and passes it through.
          * @param scope String representation of the object needing translation
          * @param result [Result] input result to cache
-         * @return The input result after caching
+         * @return The input result provider after caching
          * @see createScopedResult
          * @author fzzyhmstrs
-         * @since 0.6.8
+         * @since 0.6.8, returns ResultProvider 0.7.0
          */
         @JvmStatic
-        fun cacheScopedResult(scope: String, result: Result): Result {
+        fun cacheScopedResult(scope: String, result: ResultProvider): ResultProvider {
             val m = cache.get()
             if (m == null) { //rebuild cache
                 val m2 = ConcurrentHashMap<String, Result>()
@@ -353,11 +366,11 @@ interface Translatable {
          * @param prefix [Text], nullable. the inline prefix text of a config entry. Null means no prefix.
          * @return The created result after caching
          * @author fzzyhmstrs
-         * @since 0.6.8
+         * @since 0.6.8, returns ResultProvider 0.7.0
          */
         @JvmOverloads
         @JvmStatic
-        fun createScopedResult(scope: String, name: Text, desc: Text? = null, prefix: Text? = null): Result {
+        fun createScopedResult(scope: String, name: Text, desc: Text? = null, prefix: Text? = null): ResultProvider {
             return cacheScopedResult(scope, createResult(name, desc, prefix))
         }
 
@@ -368,12 +381,22 @@ interface Translatable {
          * @param prefix [Text], nullable. the inline prefix text of a config entry. Null means no prefix.
          * @return The created result
          * @author fzzyhmstrs
-         * @since 0.6.8
+         * @since 0.6.8, returns ResultProvider 0.7.0
          */
         @JvmOverloads
         @JvmStatic
-        fun createResult(name: Text, desc: Text? = null, prefix: Text? = null): Result {
-            return Result(name, desc, prefix)
+        fun createResult(name: Text, desc: Text? = null, prefix: Text? = null): ResultProvider {
+            return if (desc == null) {
+                if (prefix == null) {
+                    Named(name)
+                } else {
+                    NamePrefix(name, prefix)
+                }
+            } else if (prefix == null) {
+                NameDesc(name, desc)
+            } else {
+                Result(name, desc, prefix)
+            }
         }
     }
 }
