@@ -165,7 +165,7 @@ object Popups {
 
     private fun forwardUpdate(field: ValidatedField<*>, playerListEntry: PlayerListEntry?) {
         if (playerListEntry == null) return
-        val update = ConfigApiImpl.serializeEntry(field, mutableListOf())
+        val update = ConfigApiImpl.serializeEntry(field).log().get()
         val id = playerListEntry.profile.id
         val key = field.getEntryKey()
         val summary = field.get().toString()

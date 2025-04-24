@@ -12,7 +12,6 @@ package me.fzzyhmstrs.fzzy_config.registry
 
 import com.google.common.collect.HashMultimap
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
@@ -26,6 +25,7 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
@@ -79,24 +79,20 @@ internal object ClientConfigRegistry {
     internal fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
             val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
-            val errors = mutableListOf<String>()
-            val result = ConfigApiImpl.deserializeConfigSafe(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
-            val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
-            result.writeError(errors)
+            val result = ConfigApiImpl.deserializeConfigSafe(configEntry.config, configString, "Error(s) encountered receiving sync for $id from server", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
             MinecraftClient.getInstance().execute {
                 getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
                     configScreenManagers.remove(it)
                 }
                 val saveType = result.get().config.saveType()
                 if (saveType == SaveType.OVERWRITE)
-                    result.get().config.save()//save config to the client
-                if (actions.any { it.restartPrompt }) {
-                    val records = result.get().get(RESTART_RECORDS)
-                    if (!records.isNullOrEmpty()) {
+                    result.get().config.save() //save config to the client
+                if (result.test(ValidationResult.ErrorEntry.ACTION) { it.content.restartPrompt }) {
+                    if (result.has(ValidationResult.ErrorEntry.RESTART)) {
                         FC.LOGGER.info("Client prompted for a restart due to received config updates")
                         FC.LOGGER.info("Restart-prompting updates:")
-                        for (record in records) {
-                            FC.LOGGER.info(record)
+                        for (record in result.iterate(ValidationResult.ErrorEntry.RESTART)) {
+                            record.log(ValidationResult.ErrorEntry.ENTRY_INFO_LOGGER)
                         }
                     }
                     disconnector.accept(FcText.translatable("fc.networking.restart"))
@@ -157,9 +153,7 @@ internal object ClientConfigRegistry {
             if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
                 val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
                 val errors = mutableListOf<String>()
-                val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS)
-                val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
-                result.writeError(errors)
+                val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, "Error(s) encountered receiving update for $id from server", ConfigApiImpl.CHECK_ACTIONS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
                 MinecraftClient.getInstance().execute {
                     getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
                         configScreenManagers.remove(it)
@@ -167,8 +161,8 @@ internal object ClientConfigRegistry {
                     val saveType = result.get().config.saveType()
                     if (saveType == SaveType.OVERWRITE)
                         result.get().config.save()
-                    for (action in actions) {
-                        MinecraftClient.getInstance().player?.sendChat(action.clientPrompt)
+                    for (action in result.iterate(ValidationResult.ErrorEntry.ACTION)) {
+                        MinecraftClient.getInstance().player?.sendChat(action.content.clientPrompt)
                     }
                     try {
                         configEntry.config.onUpdateClient()
