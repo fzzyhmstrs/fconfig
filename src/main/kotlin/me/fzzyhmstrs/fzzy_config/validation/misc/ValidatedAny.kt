@@ -183,9 +183,9 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     override fun setAndUpdate(input: T) {
         if (input == get()) return
         val oldVal = get()
-        val oldVersion = ConfigApiImpl.serializeToToml(oldVal, mutableListOf(), 1)
+        val oldVersion = ConfigApiImpl.serializeToToml(oldVal, "", 1).get()
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
-        val newVersion = ConfigApiImpl.serializeToToml(tVal1.get(), mutableListOf(), 1)
+        val newVersion = ConfigApiImpl.serializeToToml(tVal1.get(), "", 1).get()
         var oldStr = ""
         var newStr = ""
         for ((key, oldEl) in oldVersion) {
@@ -415,7 +415,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     @Internal
-    override fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.ResultProvider<*>>> {
+    override fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.ResultProvider>> {
         return EntrySearcher.SearchProvider(config, this.get(), scope, client)
     }
 
