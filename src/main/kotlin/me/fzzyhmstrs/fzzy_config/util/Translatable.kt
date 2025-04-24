@@ -141,6 +141,128 @@ interface Translatable {
         return I18n.hasTranslation(prefixKey())
     }
 
+    internal object Impls {
+    
+        internal fun getText(thing: Any, scope: String, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String = fieldName): ResultProvider {
+            val cachedText = Utils.getScopedResult(scope)
+            if (cachedText != null) return cachedText
+            var nFinal: Text? = null
+            var dFinal: Text? = null
+            var pFinal: Text? = null
+            for (annotation in annotations) {
+                if (annotation is Translation) {
+                    for (ga in globalAnnotations) {
+                        if (ga is Translation && ga.negate) {
+                            if (ga.negate) {
+                                return createScopedResult(thing, annotations, fallback, scope)
+                            } else {
+                                return createKeyedScopedResult(scope, fieldName, ga, annotations, fallback) 
+                            }
+                        }
+                    }
+                    if (annotation.negate) {
+                        return createScopedResult(thing, annotations, fallback, scope)
+                    }
+                    return createKeyedScopedResult(scope, fieldName, annotation, annotations, fallback) 
+                }
+            }
+            for (annotation in globalAnnotations) {
+                if (annotation is Translation && !annotation.negate) {
+                    return createKeyedScopedResult(scope, fieldName, annotation, annotations, fallback) 
+                }
+            }
+            return createScopedResult(thing, annnotations, fallback, scope)
+        }
+
+        private fun createScopedResult(thing: Any, annotations: List<Annotation>, fallback: String, scope: String) {
+            val n = thing.transSupplied { getNameFallback(annotations, fallback) }
+            val d = thing.descGet { getDescFallback(annotations) }
+            val p = thing.prefixGet { getPrefixFallback(annotations) }
+            return Utils.createScopedResult(scope, n, d, p)
+        }
+
+        private fun createKeyedScopedResult(scope: String, fieldName: String, annotation: Translation, annotations: List<Annotation>, fallback: String) {
+            val bl = fieldName.isNotEmpty()
+            val keyN = if(bl) "${annotation.prefix}.$fieldName" else annotation.prefix
+            val keyD = if(bl) "${annotation.prefix}.$fieldName.desc" else "${annotation.prefix}.desc"
+            val keyP = if(bl) "${annotation.prefix}.$fieldName.prefix" else "${annotation.prefix}.prefix"
+            val n = if (I18n.hasTranslation(keyN)) keyN.translate() else thing.transSupplied { getNameFallback(annotations, fallback) }
+            val d = if (I18n.hasTranslation(keyD)) keyD.translate() else thing.descGet { getDescFallback(annotations) }
+            val p = if (I18n.hasTranslation(keyP)) keyP.translate() else thing.prefixGet { getPrefixFallback(annotations) }
+            return Util.createScopedResult(scope, n, d, p)
+        }
+    
+        private fun Any?.descGet(fallbackSupplier: Supplier<String>): MutableText? {
+            if(this is Translatable) {
+                if (this.hasDescription()) {
+                    return this.description()
+                }
+            }
+            val fallback = fallbackSupplier.get()
+            return if (fallback != "")
+                literal(fallback).formatted(Formatting.ITALIC)
+            else
+                null
+        }
+
+        private fun Any?.prefixGet(fallbackSupplier: Supplier<String>): MutableText? {
+            if(this is Translatable) {
+                if (this.hasPrefix()) {
+                    return this.prefix()
+                }
+            }
+            val fallback = fallbackSupplier.get()
+            return if (fallback != "")
+                literal(fallback).formatted(Formatting.ITALIC)
+            else
+                null
+        }
+    
+        private const val SPACER = ". "
+
+        private fun getNameFallback(annotations: List<Annotation>, fallback: String): String {
+            return annotations.filterIsInstance<Translatable.Name>().let { l -> 
+                l.firstOrNull { a -> a.lang == "en_us" }?.value ?: l.firstOrNull()?.value
+            } ?: fallback.replace('_', ' ').split(FcText.regex).joinToString(" ") { it.lowercase(); it.replaceFirstChar { c -> c.uppercase() } } 
+        }
+    
+        private fun getDescFallback(annotations: List<Annotation>): String {
+            val comment = StringBuilder()
+            for (annotation in annotations) {
+                if (annotation is TomlComment) {
+                    if (comment.isNotEmpty())
+                        comment.append(SPACER)
+                    comment.append(annotation.text)
+                } else if(annotation is Comment) {
+                    if (comment.isNotEmpty())
+                        comment.append(SPACER)
+                    comment.append(annotation.value)
+                } else if(annotation is Translatable.Desc && annotation.lang == "en_us") {
+                    if (comment.isNotEmpty())
+                        comment.append(SPACER)
+                    comment.append(annotation.value)
+                }
+            }
+            if (comment.isNotEmpty())
+                comment.append(".")
+            return comment.toString()
+        }
+
+        private fun getPrefixFallback(annotations: List<Annotation>): String {
+            val comment = StringBuilder()
+            for (annotation in annotations) {
+                if(annotation is Translatable.Prefix && annotation.lang == "en_us") {
+                    if (comment.isNotEmpty())
+                        comment.append(SPACER)
+                    comment.append(annotation.value)
+                }
+            }
+            if (comment.isNotEmpty())
+                comment.append(".")
+            return comment.toString()
+        }
+    }
+    
     /**
      * A translation result from a [Translatable] instance. This is generated internally, but is passed into many builder methods for config GUIs. Think of it, as the name implies, as the result of Fzzy Config generating a translation set for the relevant element.
      * @param name [Text] the title of the element, such as "Particle Count"
@@ -320,8 +442,13 @@ interface Translatable {
             cache = SoftReference(ConcurrentHashMap())
         }
 
-        val EMPTY: ResultProvider<*> =  Empty
-
+        /**
+         * An empty translation result with null description, null prefix, and empty text name.
+         * @author fzzyhmstrs
+         * @since 0.6.8
+         */
+        val EMPTY: ResultProvider =  Empty
+        
         /**
          * Retrieves a cached result, if any exists. If the cache has been invalidated this will return null
          * @param scope String representation of the object needing translation
