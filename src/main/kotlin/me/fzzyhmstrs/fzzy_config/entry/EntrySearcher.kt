@@ -40,7 +40,7 @@ fun interface EntrySearcher {
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.ResultProvider<*>>>
+    fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.ResultProvider>>
 
     /**
      * A built-in searcher function that builds a searcher by reflectively walking the provided content, mapping text [Translatable.ResultProvider] from each member within
@@ -51,11 +51,11 @@ fun interface EntrySearcher {
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    class SearchProvider(config: Any, content: Any, prefix: String, client: Boolean): Function<String, List<Translatable.ResultProvider<*>>> {
+    class SearchProvider(config: Any, content: Any, prefix: String, client: Boolean): Function<String, List<Translatable.ResultProvider>> {
 
-        private val delegate: Function<String, List<Translatable.ResultProvider<*>>> by lazy {
-            val list: MutableList<Translatable.ResultProvider<*>> = mutableListOf()
-            val nestedSearchers: MutableList<Pair<Translatable.ResultProvider<*>, Function<String, List<Translatable.ResultProvider<*>>>>> = mutableListOf()
+        private val delegate: Function<String, List<Translatable.ResultProvider>> by lazy {
+            val list: MutableList<Translatable.ResultProvider> = mutableListOf()
+            val nestedSearchers: MutableList<Pair<Translatable.ResultProvider, Function<String, List<Translatable.ResultProvider>>>> = mutableListOf()
             ConfigApiImpl.walk(content, prefix, ConfigApiImpl.IGNORE_NON_SYNC) { _, _, new, thing, _, annotations, globalAnnotations, _ ->
                 val flags = if(thing is EntryFlag) {
                     EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
@@ -93,7 +93,7 @@ fun interface EntrySearcher {
             }
         }
 
-        override fun apply(t: String): List<Translatable.ResultProvider<*>> {
+        override fun apply(t: String): List<Translatable.ResultProvider> {
             return delegate.apply(t)
         }
     }
