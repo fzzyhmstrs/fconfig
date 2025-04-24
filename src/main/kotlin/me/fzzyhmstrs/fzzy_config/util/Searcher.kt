@@ -22,6 +22,8 @@ import java.util.*
  * - [SearchType.NEGATE_DESCRIPTION] - '-$' in front of search - excludes matches from the [Translatable.Result.desc] and [Translatable.Result.prefix] parameters of the provided [SearchContent] list.
  * - [SearchType.EXACT] - surround search with "" - searches for an exact match from the [Translatable.Result.name] parameters of the provided [SearchContent] list.
  * - [SearchType.NEGATE_EXACT] - surround search with -"" - excludes an exact match from the [Translatable.Result.name] parameters of the provided [SearchContent] list.
+ * - [SearchType.REGEX] - surround search with // - searches the [Translatable.Result.name] parameters of the provided [SearchContent] list by matching them against the provided regex pattern. This is not efficient.
+ * - [SearchType.NEGATE_REGEX] - surround search with -// - excludes matches from the [Translatable.Result.name] parameters of the provided [SearchContent] list by matching them against the provided regex pattern. This is not efficient.
  * @param C subclass of [SearchContent]
  * @param searchEntries List&lt;[C]&gt; list of [SearchContent] entries to search through.
  * @author fzzyhmstrs
@@ -91,42 +93,38 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
             } else if (searchInput.startsWith("-\"")) {
                 if (searchInput.length > 2 && searchInput.endsWith('"')) {
                     type = SearchType.NEGATE_EXACT
-                    if (searchInput.length == 3) {
-                        ""
-                    } else {
-                        searchInput.substring(2, searchInput.lastIndex)
-                    }
+                    if (searchInput.length == 3) "" else searchInput.substring(2, searchInput.lastIndex)
                 } else {
                     type = SearchType.NEGATION
-                    if (searchInput.length == 2) {
-                        ""
-                    } else {
-                        searchInput.substring(2)
-                    }
+                    if (searchInput.length == 2) "" else searchInput.substring(2)
+                }
+            } else if (searchInput.startsWith("-/")) {
+                if (searchInput.length > 2 && searchInput.endsWith('/')) {
+                    type = SearchType.NEGATE_REGEX
+                    if (searchInput.length == 3) "" else searchInput.substring(2, searchInput.lastIndex)
+                } else {
+                    type = SearchType.NEGATION
+                    if (searchInput.length == 2) "" else searchInput.substring(2)
                 }
             } else {
                 type = SearchType.NEGATION
-                if (searchInput.length == 1) {
-                    ""
-                } else {
-                    searchInput.substring(1)
-                }
+                if (searchInput.length == 1) "" else searchInput.substring(1)
             }
         } else if (searchInput.startsWith('"')) {
             if (searchInput.length > 1 && searchInput.endsWith('"')) {
                 type = SearchType.EXACT
-                if (searchInput.length == 2) {
-                    ""
-                } else {
-                    searchInput.substring(1, searchInput.lastIndex)
-                }
+                if (searchInput.length == 2) "" else searchInput.substring(1, searchInput.lastIndex)
             } else {
                 type = SearchType.NORMAL
-                if (searchInput.length == 1) {
-                    ""
-                } else {
-                    searchInput.substring(1)
-                }
+                if (searchInput.length == 1) "" else searchInput.substring(1)
+            }
+        } else if (searchInput.startsWith('/')) {
+            if (searchInput.length > 1 && searchInput.endsWith('/')) {
+                type = SearchType.REGEX
+                if (searchInput.length == 2) "" else searchInput.substring(1, searchInput.lastIndex)
+            } else {
+                type = SearchType.NORMAL
+                if (searchInput.length == 1) "" else searchInput.substring(1)
             }
         } else {
             type = SearchType.NORMAL
@@ -157,6 +155,14 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
             SearchType.NEGATE_EXACT -> {
                 val result = searchExact[trimmedSearchInput.lowercase(Locale.ROOT)]
                 list = searchEntries.filter { e -> e != result  && !e.skip }
+            }
+            SearchType.REGEX -> {
+                val regex = Regex(trimmedSearchInput)
+                list = searchEntries.filter { regex.containsMatchIn(it.content.name.string.lowercase(Locale.ROOT)) }
+            }
+            SearchType.NEGATE_REGEX -> {
+                val regex = Regex(trimmedSearchInput)
+                list = searchEntries.filter { !regex.containsMatchIn(it.content.name.string.lowercase(Locale.ROOT)) }
             }
             SearchType.NORMAL -> {
                 list = search.findAll(trimmedSearchInput.lowercase(Locale.ROOT)).filter { !it.skip }
@@ -194,6 +200,8 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
         NEGATE_DESCRIPTION,
         EXACT,
         NEGATE_EXACT,
+        REGEX,
+        NEGATE_REGEX,
         NORMAL
     }
 }
