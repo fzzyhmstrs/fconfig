@@ -143,11 +143,10 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     @Internal
     override fun deserializeEntry(toml: TomlElement, fieldName: String, flags: Byte): ValidationResult<T> {
         val tVal = deserialize(toml, fieldName) //1
-        if (tVal.isCritical()){ //2
+        if (tVal.isCritical()) { //2
             return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Config entry [$fieldName] threw an exception, using default value [${get()}]").addError(tVal) }
         }
-        //3
-        val tVal2 = correctEntry(tVal.get(), EntryValidator.ValidationType.WEAK)
+        val tVal2 = correctEntry(tVal.get(), EntryValidator.ValidationType.WEAK) //3
         set(tVal2.get()) //4
         if (tVal2.isError() || tVal2.isCritical()) { //5
             return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]").addError(tVal2) }
@@ -176,7 +175,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         return (if(input != null) serialize(input) else serialize(get())).report(errorBuilder).get()
     }
 
-    fun serializeEntry(input: T?, flags: Byte): ValidationResult<TomlElement> {
+    override fun serializeEntry(input: T?, flags: Byte): ValidationResult<TomlElement> {
         return if(input != null) serialize(input) else serialize(get())
     }
 

@@ -15,7 +15,6 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.outmap
 import org.slf4j.Logger
 import org.slf4j.event.Level
 import java.util.function.*
@@ -133,6 +132,18 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * TODO()
      * @param C error content type
      * @param t [ErrorEntry.Type]&lt;[C]&gt; the error type. If you don't need a particular type (to report errors for example), use the other overload
+     * @return whether the error context for this validation contains an entry of the given type
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    fun <C: Any> has(t: ErrorEntry.Type<C>): Boolean {
+        return errorContext.hasType(t)
+    }
+
+    /**
+     * TODO()
+     * @param C error content type
+     * @param t [ErrorEntry.Type]&lt;[C]&gt; the error type. If you don't need a particular type (to report errors for example), use the other overload
      * @param p TODO()
      * @author fzzyhmstrs
      * @since 0.7.0
@@ -207,11 +218,12 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @since 0.7.0
      */
     @JvmOverloads
-    fun log(writer: BiConsumer<String, Throwable?> = ErrorEntry.ENTRY_LOGGER_CONSUMER) {
-        if (!isError())return
+    fun log(writer: BiConsumer<String, Throwable?> = ErrorEntry.ENTRY_WARN_LOGGER): ValidationResult<T> {
+        if (isValid()) return this
         writer.accept(">>>>>>>>>>>>>>>", null)
         errorContext.log(writer)
         writer.accept(">>>>>>>>>>>>>>>", null)
+        return this
     }
 
 
@@ -294,7 +306,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @since 0.7.0
          */
         @JvmOverloads
-        fun <T> error(storedVal: T, type: ErrorEntry.Type<String>, error: String, e: Throwable = null): ValidationResult<T> {
+        fun <T> error(storedVal: T, type: ErrorEntry.Type<String>, error: String, e: Throwable? = null): ValidationResult<T> {
             return ValidationResult(storedVal, ErrorEntry.Builder(type).content(error).exception(e).build())
         }
 
@@ -511,7 +523,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * Reports errors in this validation to an error consumer.
          * @param errorReporter [BiConsumer]&lt;String, Throwable?&gt; consumes error messages, which may include an optional throwable instance
          * @return this validation
-         * @see [ErrorEntry.ENTRY_LOGGER_CONSUMER]
+         * @see [ErrorEntry.ENTRY_WARN_LOGGER]
          * @see [ErrorEntry.createEntryLogger]
          * @author fzzyhmstrs
          * @since 0.7.0
@@ -662,6 +674,12 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.7.0
          */
+        fun <C: Any> hasType(t: Type<C>): Boolean
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
         fun <C: Any> predicateType(t: Type<C>, p: Predicate<Entry<C>>): Boolean
         /**
          * TODO()
@@ -796,7 +814,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 this.children.add(child.getErrorEntry())
                 return this
             }
-            
+
             /**
              * TODO()
              * @author fzzyhmstrs
@@ -900,14 +918,28 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
              * @author fzzyhmstrs
              * @since 0.7.0
              */
-            val LOGGER_CONSUMER: Consumer<Entry<*>> = createLogger(FC.LOGGER)
+            val LOGGER: Consumer<Entry<*>> = createLogger(FC.LOGGER)
 
             /**
              * TODO()
              * @author fzzyhmstrs
              * @since 0.7.0
              */
-            val ENTRY_LOGGER_CONSUMER: BiConsumer<String, Throwable?> = createEntryLogger(FC.LOGGER)
+            val ENTRY_ERROR_LOGGER: BiConsumer<String, Throwable?> = createEntryLogger(FC.LOGGER, Level.ERROR)
+
+            /**
+             * TODO()
+             * @author fzzyhmstrs
+             * @since 0.7.0
+             */
+            val ENTRY_WARN_LOGGER: BiConsumer<String, Throwable?> = createEntryLogger(FC.LOGGER)
+
+            /**
+             * TODO()
+             * @author fzzyhmstrs
+             * @since 0.7.0
+             */
+            val ENTRY_INFO_LOGGER: BiConsumer<String, Throwable?> = createEntryLogger(FC.LOGGER, Level.INFO)
 
             /**
              * TODO()
@@ -991,6 +1023,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
             return listOf()
         }
+        override fun <C : Any> hasType(t: ErrorEntry.Type<C>): Boolean {
+            return false
+        }
         override fun <C : Any> predicateType(t: ErrorEntry.Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
             return false
         }
@@ -1006,7 +1041,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         override fun isError(): Boolean = false
         override fun isEmpty(): Boolean = true
         override fun isCritical(): Boolean = false
-        override fun isLoggable(): Boolean = true
+        override fun isLoggable(): Boolean = header.isNotEmpty()
         override fun addError(other: ErrorEntry): ErrorEntry {
             return if (other.isEmpty()) {
                 this
@@ -1032,6 +1067,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
         override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
             return listOf()
+        }
+        override fun <C : Any> hasType(t: ErrorEntry.Type<C>): Boolean {
+            return false
         }
         override fun <C : Any> predicateType(t: ErrorEntry.Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
             return false
@@ -1083,6 +1121,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
         override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
             return listOf(this)
+        }
+        override fun <C : Any> hasType(t: ErrorEntry.Type<C>): Boolean {
+            return t == type
         }
         override fun <C : Any> predicateType(t: ErrorEntry.Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
             if (t != type) return false
@@ -1145,13 +1186,15 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
             return children.flatMap { it.iterateAll() }
         }
-
+        override fun <C : Any> hasType(t: ErrorEntry.Type<C>): Boolean {
+            return children.any { it.hasType(t) } || headerEntry.hasType(t)
+        }
         override fun <C : Any> predicateType(t: ErrorEntry.Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
-            return children.any { it.predicateType(t, p) }
+            return children.any { it.predicateType(t, p) } || headerEntry.predicateType(t, p)
         }
 
         override fun predicateAll(p: Predicate<ErrorEntry.Entry<*>>): Boolean {
-            return children.any { it.predicateAll(p) }
+            return children.any { it.predicateAll(p) } || headerEntry.predicateAll(p)
         }
         override fun getString(): String {
             val list: MutableList<String> = mutableListOf()
