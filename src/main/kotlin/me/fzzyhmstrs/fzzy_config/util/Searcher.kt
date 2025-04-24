@@ -173,21 +173,11 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
     @JvmDefaultWithoutCompatibility
     interface SearchContent {
         /**
-         * The searchable texts. Both desc and prefix of the result are searched as "description"
-         * @author fzzyhmstrs
-         * @since 0.6.0, deprecated 0.6.8
-         */
-        @Suppress("DeprecatedCallableAddReplaceWith")
-        @Deprecated("Use content, this is not used directly by Searcher as of 0.6.8. Scheduled for removal 0.7.0")
-        val texts: Translatable.Result
-            get() = Translatable.Result.EMPTY
-
-        /**
          * Search content parsed and checked by the [Searcher]
          * @author fzzyhmstrs
          * @since 0.6.8
          */
-        val content: Translatable.ResultProvider<*>
+        val content: Translatable.ResultProvider
             get() = texts
 
         /**
