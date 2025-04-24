@@ -194,7 +194,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     }
 
     @Internal
-    @Deprecated("use deserialize to avoid accidentally overwriting validation and error reporting")
+    @Deprecated("Implement the override using ValidationResult.ErrorEntry.Mutable. Scheduled for removal in 0.8.0.")
     override fun deserializeEntry(
         toml: TomlElement,
         errorBuilder: MutableList<String>,
@@ -203,6 +203,30 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     ): ValidationResult<IngredientProvider> {
         @Suppress("DEPRECATION")
         val result = super.deserializeEntry(toml, errorBuilder, fieldName, flags)
+        when(storedValue.type()) {
+            ProviderType.STACK -> {
+                listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))
+                listTagValidator.validateAndSet(setOf())
+            }
+            ProviderType.LIST -> {
+                listItemValidator.validateAndSet((storedValue as ListProvider).ids)
+                listTagValidator.validateAndSet((storedValue as ListProvider).tags)
+            }
+            ProviderType.TAG -> {
+                listItemValidator.validateAndSet(setOf())
+                listTagValidator.validateAndSet(setOf((storedValue as TagProvider).tag))
+            }
+        }
+        return result
+    }
+
+    @Internal
+    override fun deserializeEntry(
+        toml: TomlElement,
+        fieldName: String,
+        flags: Byte
+    ): ValidationResult<IngredientProvider> {
+        val result = super.deserializeEntry(toml, fieldName, flags)
         when(storedValue.type()) {
             ProviderType.STACK -> {
                 listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))
