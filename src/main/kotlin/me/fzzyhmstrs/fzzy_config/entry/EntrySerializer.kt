@@ -56,8 +56,9 @@ fun interface EntrySerializer<T> {
         if (errors.isNotEmpty()) {
             val err = ValidationResult.ErrorEntry.empty().mutable()
             for (error in errors) {
-                error.addError(ValidationResult.ErrorEntry.SERIALIZATION, error)
+                err.addError(ValidationResult.ErrorEntry.SERIALIZATION, error)
             }
+            return ValidationResult.ofMutable(result, err)
         } else {
             return ValidationResult.success(result)
         }
