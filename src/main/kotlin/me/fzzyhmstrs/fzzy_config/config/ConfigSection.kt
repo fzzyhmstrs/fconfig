@@ -12,13 +12,13 @@ package me.fzzyhmstrs.fzzy_config.config
 
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.contextualize
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -41,22 +41,29 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
     final override var translatableEntryKey: String = "fc.config.generic.section"
 
     @Internal
-    override fun serializeEntry(
-        input: ConfigSection?,
-        errorBuilder: MutableList<String>,
-        flags: Byte
-    ): TomlElement {
-        return ConfigApi.serializeToToml(input ?: this, errorBuilder, flags)
+    @Deprecated("Implement the override using ValidationResult.ErrorEntry.Mutable. Scheduled for removal in 0.8.0.",
+        ReplaceWith("serializeEntry(input, flags).get()")
+    )
+    final override fun serializeEntry(input: ConfigSection?, errorBuilder: MutableList<String>, flags: Byte): TomlElement {
+        return serializeEntry(input, flags).log { s, _ -> errorBuilder.add(s) }.get()
     }
 
     @Internal
-    override fun deserializeEntry(
-        toml: TomlElement,
-        errorBuilder: MutableList<String>,
-        fieldName: String,
-        flags: Byte
-    ): ValidationResult<ConfigSection> {
-        return ConfigApi.deserializeFromToml(this, toml, errorBuilder, flags).contextualize()
+    final override fun serializeEntry(input: ConfigSection?, flags: Byte): ValidationResult<TomlElement> {
+        return ConfigApiImpl.serializeToToml(input ?: this, "Error(s) encountered serializing config section", flags).cast()
+    }
+
+    @Internal
+    @Deprecated("Implement the override without an errorBuilder. Scheduled for removal in 0.8.0. In 0.7.0, the provided ValidationResult should encapsulate all encountered errors, and all passed errors will be incorporated into a parent result as applicable.",
+        ReplaceWith("deserializeEntry(toml, fieldName, flags)")
+    )
+    final override fun deserializeEntry(toml: TomlElement, errorBuilder: MutableList<String>, fieldName: String, flags: Byte): ValidationResult<ConfigSection> {
+        return deserializeEntry(toml, fieldName, flags).log { s, _ -> errorBuilder.add(s) }
+    }
+
+    @Internal
+    final override fun deserializeEntry(toml: TomlElement, fieldName: String, flags: Byte): ValidationResult<ConfigSection> {
+        return ConfigApiImpl.deserializeFromToml(this, toml, "Error(s) encountered deserializing config section", flags)
     }
 
     /**

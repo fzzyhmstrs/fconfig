@@ -762,13 +762,13 @@ class DynamicListWidget(
     /**
      * Base entry class for list widget entries. This is typically built using a BiFunction that supplies the [parentElement] and an entry index
      * @param parentElement The [DynamicListWidget] this entry belongs to.
-     * @param texts [Translatable.Result] text set for this entry. This is used when searching entries.
+     * @param content [Translatable.Result] text set for this entry. This is used when searching entries.
      * @param scope [Scope] defines the entries personal scope as well as any entry groups this entry owns and/or belongs to. Basic entries will only need to provide the personal scope id, which might be as simple as the index in string form.
      * @param visibility [Visibility], default [Visibility.VISIBLE]. The starting visibility setting for the entry.
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    abstract class Entry(parentElement: DynamicListWidget, override val texts: Translatable.Result, val scope: Scope, visibility: Visibility = Visibility.VISIBLE)
+    abstract class Entry(parentElement: DynamicListWidget, override val content: Translatable.Result, val scope: Scope, visibility: Visibility = Visibility.VISIBLE)
         :
         CustomListWidget.Entry<DynamicListWidget>(parentElement),
         ParentElement,
@@ -780,10 +780,13 @@ class DynamicListWidget(
 
         companion object {
             @JvmField
-            val EMPTY_RESULTS: Function<String, List<Translatable.ResultProvider<*>>> = ConstFunction(listOf())
+            val EMPTY_RESULTS: Function<String, List<Translatable.Result>> = ConstFunction(listOf())
             @JvmField
             val EMPTY_PREFIX: Supplier<List<Text>> = ConstSupplier(listOf())
         }
+
+        val texts: Translatable.Result
+            get() = content
 
         private var visibilityProvider: VisibilityProvider = visibility
 
@@ -837,11 +840,11 @@ class DynamicListWidget(
         /**
          * Provides a list of indirect search matches to the dynamic list parent. Used to determine which entries should stay visible because they are indirectly relevant.
          * @param searchInput The raw input string. Has not been parsed for special characters etc. Passing it into a [Searcher] to generate results may be prudent.
-         * @return List&lt;[Translatable.ResultProvider]&gt; list of text results relevant to the provided search. Default behavior is an empty list.
+         * @return List&lt;[Translatable.Result]&gt; list of text results relevant to the provided search. Default behavior is an empty list.
          * @author fzzyhmstrs
          * @since 0.6.8
          */
-        open fun entrySearchResults(searchInput: String): List<Translatable.ResultProvider<*>> {
+        open fun entrySearchResults(searchInput: String): List<Translatable.Result> {
             return EMPTY_RESULTS.apply(searchInput)
         }
 
