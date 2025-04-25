@@ -30,6 +30,7 @@ import me.fzzyhmstrs.fzzy_config.result.api.ResultApi
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
 import net.peanuuutz.tomlkt.*
@@ -380,7 +381,6 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    @Deprecated("Use overload that takes a ValidationResult.ErrorEntry.Mutable. Scheduled for removal 0.8.0")
     fun <T: Any> serializeToToml(config: T, errorHeader: String = "", flags: Byte = 1): ValidationResult<TomlElement> {
         return ConfigApiImpl.serializeToToml(config, errorHeader, flags).cast()
     }
@@ -483,7 +483,7 @@ object ConfigApi {
     @JvmOverloads
     @Deprecated("Use overload that takes a ValidationResult.ErrorEntry.Mutable. Scheduled for removal 0.8.0")
     fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
-        return ConfigApiImpl.deserializeFromToml(config, toml, errorBuilder, flags)
+        return ConfigApiImpl.deserializeFromToml(config, toml, errorBuilder, flags).map(::ConfigContext)
     }
 
     /**
@@ -512,7 +512,7 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
+    fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = 1): ValidationResult<T> {
         return ConfigApiImpl.deserializeFromToml(config, toml, errorBuilder, flags)
     }
 
@@ -542,7 +542,7 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorHeader: String = "", flags: Byte = 1): ValidationResult<ConfigContext<T>> {
+    fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorHeader: String = "", flags: Byte = 1): ValidationResult<T> {
         return ConfigApiImpl.deserializeFromToml(config, toml, errorHeader, flags)
     }
 
@@ -569,7 +569,7 @@ object ConfigApi {
     @JvmOverloads
     @Deprecated("Use overload that takes a ValidationResult.ErrorEntry.Mutable. Scheduled for removal 0.8.0")
     fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
-        return ConfigApiImpl.deserializeConfig(config, string, errorBuilder, flags)
+        return ConfigApiImpl.deserializeConfig(config, string, errorBuilder, flags).map(::ConfigContext)
     }
 
     /**
@@ -593,7 +593,7 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
+    fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = 1): ValidationResult<T> {
         return ConfigApiImpl.deserializeConfig(config, string, errorBuilder, flags)
     }
 
@@ -618,7 +618,7 @@ object ConfigApi {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Any> deserializeConfig(config: T, string: String, errorHeader: String = "", flags: Byte = 1): ValidationResult<ConfigContext<T>> {
+    fun <T: Any> deserializeConfig(config: T, string: String, errorHeader: String = "", flags: Byte = 1): ValidationResult<T> {
         return ConfigApiImpl.deserializeConfig(config, string, errorHeader, flags)
     }
 
