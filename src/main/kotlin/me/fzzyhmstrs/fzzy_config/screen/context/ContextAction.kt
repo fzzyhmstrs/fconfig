@@ -17,7 +17,7 @@ import java.util.function.UnaryOperator
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-class ContextAction private constructor(val texts: Translatable.ResultProvider<*>, val active: Supplier<Boolean>, val forMenu: Boolean, val icon: Decorated?, val action: Function<Position, Boolean>) {
+class ContextAction private constructor(val texts: Translatable.Result, val active: Supplier<Boolean>, val forMenu: Boolean, val icon: Decorated?, val action: Function<Position, Boolean>) {
 
     /**
      * A builder of [ContextAction]. This is used in [ContextHandler] and [ContextProvider] to incrementally build actions, with modifications applied on different layers of context handling/provision as needed.
