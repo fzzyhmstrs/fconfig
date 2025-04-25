@@ -202,7 +202,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
         val syncNeeded = !configSet.clientOnly && updatedConfig
         if (syncNeeded && !MinecraftClient.getInstance().isInSingleplayer) {
             //send updates to the server for distribution and saving there
-            val updates = mapOf(this.configSet.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(configSet.active, this, mutableListOf()))
+            val updates = mapOf(this.configSet.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(configSet.active, this, "Error(s) while serializing update to send to the server").log().get())
             NetworkEventsClient.updateServer(updates, flush(), perms)
             ConfigApiImpl.printChangeHistory(flush(), configSet.active.getId().toTranslationKey(), MinecraftClient.getInstance().player)
         } else {

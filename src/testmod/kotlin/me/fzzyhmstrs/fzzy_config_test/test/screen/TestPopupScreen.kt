@@ -45,7 +45,7 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
     val testBooleanWidget = testBoolean.widgetEntry(ChoiceValidator.any())
     val listTestWidget = configWidget(size)
     val groupButton = ButtonWidget.builder("Toggle".lit()) { _ -> listTestWidget.toggleGroup("2") }.size(50, 20).build()
-    val suppliedText = SuppliedTextWidget(Suppliers.memoize { FcText.empty() }, MinecraftClient.getInstance().textRenderer, 100, 20)
+    val suppliedText = SuppliedTextWidget(ConstSupplier(FcText.empty()), MinecraftClient.getInstance().textRenderer, 100, 20)
     val suppliedText2 = SuppliedTextWidget(ConstSupplier(FcText.empty()), MinecraftClient.getInstance().textRenderer, 100, 20)
 
     override fun close() {

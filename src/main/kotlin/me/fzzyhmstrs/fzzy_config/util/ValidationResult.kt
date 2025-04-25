@@ -378,6 +378,22 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         /**
+         * Convenience shortcut for creating a success or error depending on a boolean state.
+         *
+         * Used if the value returned will be the same regardless of validation, e.g. in the case of [EntryValidator][me.fzzyhmstrs.fzzy_config.entry.EntryValidator] usage, where no changes are being made to the result
+         * @param T Type of result
+         * @param storedVal default or fallback instance of type T
+         * @param valid test applied to determine validation or error.
+         * @param builder [UnaryOperator]&lt;[ErrorEntry.Builder]&gt; operator for applying content to a provided error builder
+         * @return the error ValidationResult
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        fun <T, C: Any> predicated(storedVal: T, valid: Predicate<T>, type: ErrorEntry.Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ValidationResult<T> {
+            return if(valid.test(storedVal)) ValidationResult(storedVal) else ValidationResult(storedVal, builder.apply(ErrorEntry.Builder(type)).build())
+        }
+
+        /**
          * Create a validation result with a built error context stored in a [ErrorEntry.Mutable]
          *
          * This is used internally by processes that build error contexts in multiple steps, so the final result might or might not be errored
@@ -496,10 +512,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          */
         @Deprecated("Errors should be reported with log or the overload that takes a biConsumer")
         fun <T> ValidationResult<T>.report(errorBuilder: MutableList<String>): ValidationResult<T> {
-            val consumer: BiConsumer<String, Throwable?> = BiConsumer { s, _ ->
+            errorContext.log { s, _ ->
                 errorBuilder.add(s)
             }
-            errorContext.log(consumer)
             return this
         }
 
@@ -597,11 +612,6 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         fun <N, T> ValidationResult<T>.bimap(to: Function<ValidationResult<T>, ValidationResult<out N>>): ValidationResult<N> {
             val result = to.apply(this)
             return ValidationResult(result.get(), this.errorContext.addError(result.errorContext))
-        }
-
-        @Deprecated("For removal")
-        fun <T: Any> ValidationResult<ConfigContext<T>>.contextualize(): ValidationResult<T> {
-            return this.wrap(this.get().config)
         }
     }
 
@@ -714,6 +724,11 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             if (isLoggable())
                 writer.accept(getString(), null)
         }
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
         fun mutable(): Mutable {
             return Mutable(this)
         }
@@ -912,6 +927,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             val RESTART = Type<Action>("Restart Required", isString = false, isLoggable = true, isError = false)
             val ACTION = Type<Action>("Action Required", isString = false, isLoggable = false, isError = false)
             val VERSION = Type<Int>("Version Number", isString = false, isLoggable = false, isError = false)
+            val ACCESS_VIOLATION = Type<String>("Access Violation")
 
             /**
              * TODO()

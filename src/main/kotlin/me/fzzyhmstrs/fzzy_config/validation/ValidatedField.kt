@@ -35,6 +35,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.outmap
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
@@ -113,9 +114,6 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
 
     /////////////// SERIALIZATION /////////////////
 
-    /**
-     * @suppress
-     */
     @Internal
     @Deprecated("Implement the override without an errorBuilder. Scheduled for removal in 0.8.0. In 0.7.0, the provided ValidationResult should encapsulate all encountered errors, and all passed errors will be incorporated into a parent result as applicable.")
     override fun deserializeEntry(
@@ -125,33 +123,29 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         flags: Byte
     ): ValidationResult<T> {
         val tVal = deserialize(toml, fieldName) //1
-        if (tVal.isError()){ //2
-            return ValidationResult.error(get(), "Error deserializing config entry [$fieldName], using default value [${tVal.get()}]  >>> Possible reasons: ${tVal.getError()}")
+        if (tVal.isCritical()){ //2
+            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Exception deserializing entry [$fieldName], using default value [${get()}]").addError(tVal) }.report(errorBuilder)
         }
-        //3
-        val tVal2 = correctEntry(tVal.get(), EntryValidator.ValidationType.WEAK)
+        val tVal2 = tVal.outmap { correctEntry(it, EntryValidator.ValidationType.WEAK) } //3
         set(tVal2.get()) //4
-        if (tVal2.isError()){ //5
-            return ValidationResult.error(get(), "Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]  >>> Possible reasons: ${tVal2.getError()}")
+        if (tVal2.isCritical()) { //5
+            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Config entry [$fieldName] had validation errors, corrected to [${get()}]").addError(tVal2) }.report(errorBuilder)
         }
-        return ValidationResult.success(get())
+        return ValidationResult.predicated(get(), tVal2.isValid(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2) }.report(errorBuilder)
     }
 
-    /**
-     * @suppress
-     */
     @Internal
     override fun deserializeEntry(toml: TomlElement, fieldName: String, flags: Byte): ValidationResult<T> {
         val tVal = deserialize(toml, fieldName) //1
         if (tVal.isCritical()) { //2
-            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Config entry [$fieldName] threw an exception, using default value [${get()}]").addError(tVal) }
+            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Exception deserializing entry [$fieldName], using default value [${get()}]").addError(tVal) }
         }
-        val tVal2 = correctEntry(tVal.get(), EntryValidator.ValidationType.WEAK) //3
+        val tVal2 = tVal.outmap { correctEntry(it, EntryValidator.ValidationType.WEAK) } //3
         set(tVal2.get()) //4
-        if (tVal2.isError() || tVal2.isCritical()) { //5
-            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Config entry [$fieldName] had validation errors, corrected to [${tVal2.get()}]").addError(tVal2) }
+        if (tVal2.isCritical()) { //5
+            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Exception correcting deserialized entry [$fieldName], using value [${get()}]").addError(tVal2) }
         }
-        return ValidationResult.success(get())
+        return ValidationResult.predicated(get(), tVal2.isValid(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2) }
     }
 
     /**
@@ -166,15 +160,13 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      */
     abstract fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T>
 
-    /**
-     * @suppress
-     */
     @Internal
     @Deprecated("Implement the override using ValidationResult.ErrorEntry.Mutable. Scheduled for removal in 0.8.0.")
     override fun serializeEntry(input: T?, errorBuilder: MutableList<String>, flags: Byte): TomlElement {
         return (if(input != null) serialize(input) else serialize(get())).report(errorBuilder).get()
     }
 
+    @Internal
     override fun serializeEntry(input: T?, flags: Byte): ValidationResult<TomlElement> {
         return if(input != null) serialize(input) else serialize(get())
     }
@@ -695,22 +687,20 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     fun codec(): Codec<T> {
         return Codec.STRING.flatXmap(
             { str ->
-                val errors: MutableList<String> = mutableListOf()
-                val result = ConfigApiImpl.deserializeEntry(this.instanceEntry(), str, "Field Codec", errors, ConfigApiImpl.IGNORE_NON_SYNC)
+                val result = ConfigApiImpl.deserializeEntry(this.instanceEntry(), str, "Field Codec", ConfigApiImpl.IGNORE_NON_SYNC)
                 if(result.isError())
-                    DataResult.error { "Deserialization failed: ${result.getError()}, with errors: $errors" }
+                    DataResult.error { "Deserialization failed, with errors: ${result.getError()}" }
                 else
                     DataResult.success(result.get())
             },
             { t ->
-                val errors: MutableList<String> = mutableListOf()
                 val serializer = this.instanceEntry()
                 serializer.trySet(t)
-                val result = ConfigApiImpl.serializeEntry(serializer, errors, ConfigApiImpl.CHECK_NON_SYNC)
-                if(errors.isNotEmpty())
-                    DataResult.error { "Serialization failed with errors: $errors" }
+                val result = ConfigApiImpl.serializeEntry(serializer, ConfigApiImpl.CHECK_NON_SYNC)
+                if(result.isError())
+                    DataResult.error { "Serialization failed with errors: ${result.getError()}" }
                 else
-                    DataResult.success(result)
+                    DataResult.success(result.get())
             }
         )
     }
