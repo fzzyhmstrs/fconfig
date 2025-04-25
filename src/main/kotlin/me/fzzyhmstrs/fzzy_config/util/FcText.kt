@@ -19,6 +19,7 @@ import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
 import net.minecraft.util.Language
 import net.minecraft.util.math.ChunkPos
+import java.lang.StringBuilder
 import java.util.*
 import java.util.function.Supplier
 
@@ -405,5 +406,26 @@ object FcText {
     fun trim(text: Text, width: Int, textRenderer: TextRenderer): OrderedText? {
         val stringVisitable = textRenderer.trimToWidth(text, width - textRenderer.getWidth(ScreenTexts.ELLIPSIS))
         return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
+    }
+
+    fun concat(str: String, str2: String): String {
+        val builder = StringBuilder(str)
+        builder.append(str2)
+        return builder.toString()
+    }
+
+    fun concat(str: String, str2: String, str3: String): String {
+        val builder = StringBuilder(str)
+        builder.append(str2)
+        builder.append(str3)
+        return builder.toString()
+    }
+
+    fun concat(str: String, str2: String, str3: String, str4: String): String {
+        val builder = StringBuilder(str)
+        builder.append(str2)
+        builder.append(str3)
+        builder.append(str4)
+        return builder.toString()
     }
 }

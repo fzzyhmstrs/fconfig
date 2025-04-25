@@ -18,20 +18,9 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigBaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
-import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.literal
-import me.fzzyhmstrs.fzzy_config.util.FcText.prefixLit
-import me.fzzyhmstrs.fzzy_config.util.FcText.transSupplied
-import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.resource.language.I18n
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
-import net.peanuuutz.tomlkt.TomlComment
-import java.util.function.Supplier
 
 internal object ConfigApiImplClient {
 
@@ -141,7 +130,7 @@ internal object ConfigApiImplClient {
 
     class PrepareResult(val perms: PermResult, val actions: Set<Action>, val texts: Translatable.Result, val cont: Boolean, val fail: Boolean) {
         companion object {
-            val FAIL = PrepareResult(PermResult.FAILURE, setOf(), Translatable.Result.EMPTY, cont = false, fail = true)
+            val FAIL = PrepareResult(PermResult.FAILURE, setOf(), Translatable.EMPTY, cont = false, fail = true)
         }
     }
 

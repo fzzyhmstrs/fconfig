@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.annotations.IgnoreVisibility
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -36,7 +37,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.contextualize
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.minecraft.client.MinecraftClient
@@ -73,40 +73,12 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
-        val context = ConfigApi.deserializeFromToml(copyStoredValue(), toml, mutableListOf(), ConfigApiImpl.IGNORE_NON_SYNC_AND_CRITICAL_ERRORS_ONLY)
-        return context.contextualize()
-    }
-
-    /**
-     * @suppress
-     */
-    @Internal
-    @Deprecated("use deserialize to avoid accidentally overwriting validation and error reporting")
-    override fun deserializeEntry(
-        toml: TomlElement,
-        errorBuilder: MutableList<String>,
-        fieldName: String,
-        flags: Byte
-    ): ValidationResult<T> {
-        val errors = mutableListOf<String>()
-        val context = ConfigApi.deserializeFromToml(copyStoredValue(), toml, errors, ConfigApiImpl.IGNORE_NON_SYNC_AND_CRITICAL_ERRORS_ONLY)
-        val tVal = context.contextualize()
-        if (tVal.isError()) { //2
-            return ValidationResult.error(get(), "Error deserializing Object [$fieldName], using default value [${get()}]  >>> Possible reasons: ${tVal.getError()}")
-        }
-        //3
-        val tVal2 = correctEntry(tVal.get(), EntryValidator.ValidationType.WEAK)
-        set(tVal2.get()) //4
-        if (tVal2.isError()) { //5
-            return ValidationResult.error(get(), "Object [$fieldName] had validation errors, corrected to [${tVal2.get()}]  >>> Possible reasons: ${tVal2.getError()}")
-        }
-        return ValidationResult.predicated(get(), errors.isEmpty(), "Encountered non-critical errors while deserializing Object $fieldName")
+        return ConfigApiImpl.deserializeFromToml(copyStoredValue(), toml, "Error(s) encountered deserializing Object", ConfigApiImpl.IGNORE_NON_SYNC_AND_CRITICAL_ERRORS_ONLY)
     }
 
     @Internal
     override fun serialize(input: T): ValidationResult<TomlElement> {
-        val errors = mutableListOf<String>()
-        return ValidationResult.predicated(ConfigApi.serializeToToml(input, errors), errors.isEmpty(), "Errors encountered while serializing Object: $errors")
+        return ConfigApiImpl.serializeToToml(input, "Error(s) encountered serializing Object").cast()
     }
 
     @Internal
@@ -114,7 +86,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     override fun deserializedChanged(old: Any?, new: Any?): Boolean {
         old as? T ?: return true
         new as? T ?: return true
-        return (ConfigApi.serializeToToml(old, mutableListOf(), 1) != ConfigApi.serializeToToml(new, mutableListOf(), 1))
+        return (ConfigApiImpl.serializeToToml(old, "", 1) != ConfigApiImpl.serializeToToml(new, "", 1))
     }
 
     /**
@@ -413,7 +385,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     @Internal
-    override fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.ResultProvider>> {
+    override fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.Result>> {
         return EntrySearcher.SearchProvider(config, this.get(), scope, client)
     }
 

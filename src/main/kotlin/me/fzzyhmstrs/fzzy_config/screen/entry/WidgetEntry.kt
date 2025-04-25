@@ -11,21 +11,12 @@
 package me.fzzyhmstrs.fzzy_config.screen.entry
 
 import me.fzzyhmstrs.fzzy_config.cast
-import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
-import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
-import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.Widget
 
 /**
@@ -41,19 +32,19 @@ import net.minecraft.client.gui.widget.Widget
  */
 open class WidgetEntry<T>(parentElement: DynamicListWidget, scope: String, texts: Translatable.Result, height: Int, private val widget: T):
         DynamicListWidget.Entry(parentElement, texts, DynamicListWidget.Scope(scope)) where T: Selectable, T: Element, T: Drawable, T: Widget {
-    
+
         override var h: Int = height
         private val selectables: List<SelectableElement> = listOf(widget).cast()
         private val children = mutableListOf(widget)
-    
+
         override fun selectableChildren(): List<SelectableElement> {
             return selectables
         }
-    
+
         override fun children(): MutableList<out Element> {
             return children
         }
-    
+
         override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
             widget.setPosition(x, y)
             widget.render(context, mouseX, mouseY, delta)
