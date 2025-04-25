@@ -23,6 +23,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIngredient.IngredientProvider
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -40,6 +41,7 @@ import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Predicate
+import java.util.function.Supplier
 
 /**
  * A validated provider of [Ingredient]
@@ -153,7 +155,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
             }
             ProviderType.LIST -> {
                 listItemValidator.validateAndSet((input as ListProvider).ids)
-                listTagValidator.validateAndSet((input as ListProvider).tags)
+                listTagValidator.validateAndSet(input.tags)
             }
             ProviderType.TAG -> {
                 listItemValidator.validateAndSet(setOf())
@@ -212,20 +214,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     ): ValidationResult<IngredientProvider> {
         @Suppress("DEPRECATION")
         val result = super.deserializeEntry(toml, errorBuilder, fieldName, flags)
-        when(storedValue.type()) {
-            ProviderType.STACK -> {
-                listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))
-                listTagValidator.validateAndSet(setOf())
-            }
-            ProviderType.LIST -> {
-                listItemValidator.validateAndSet((storedValue as ListProvider).ids)
-                listTagValidator.validateAndSet((storedValue as ListProvider).tags)
-            }
-            ProviderType.TAG -> {
-                listItemValidator.validateAndSet(setOf())
-                listTagValidator.validateAndSet(setOf((storedValue as TagProvider).tag))
-            }
-        }
+        updateHandlers()
         return result
     }
 
@@ -236,6 +225,11 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         flags: Byte
     ): ValidationResult<IngredientProvider> {
         val result = super.deserializeEntry(toml, fieldName, flags)
+        updateHandlers()
+        return result
+    }
+
+    private fun updateHandlers() {
         when(storedValue.type()) {
             ProviderType.STACK -> {
                 listItemValidator.validateAndSet(setOf((storedValue as ItemProvider).id))
@@ -250,15 +244,14 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
                 listTagValidator.validateAndSet(setOf((storedValue as TagProvider).tag))
             }
         }
-        return result
     }
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<IngredientProvider> {
         return try {
-            ValidationResult.success(IngredientProvider.deserialize(toml, fieldName))
+            IngredientProvider.deserialize(toml, fieldName).map { it ?: storedValue }
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, "Critical error while deserializing ValidatedIngredient [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(storedValue, ValidationResult.ErrorEntry.DESERIALIZATION, "Exception deserializing ValidatedIngredient [$fieldName]", e)
         }
     }
 
@@ -518,21 +511,22 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
             private val STACK_INSTANCE = ItemProvider("dummy".simpleId())
             private val STACKS_INSTANCE = ListProvider(setOf())
             private val TAG_INSTANCE = TagProvider("dummy".simpleId())
+
             fun serialize(provider: IngredientProvider): TomlElement {
                 val toml = TomlTableBuilder(2)
                 toml.element("type", TomlLiteral(provider.type().type()))
                 toml.element("value", provider.serialize())
                 return toml.build()
             }
-            fun deserialize(toml: TomlElement, fieldName: String): IngredientProvider {
+            fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<IngredientProvider?> {
                 val table = toml.asTomlTable()
-                val type = table["type"]?.asTomlLiteral()?.toString() ?: throw IllegalStateException("Unknown or missing type in IngredientProvider [$fieldName]")
-                val value = table["value"] ?: throw IllegalStateException("Unknown or missing value in IngredientProvider [$fieldName]")
+                val type = table["type"]?.asTomlLiteral()?.toString() ?: return ValidationResult.error(null, ValidationResult.ErrorEntry.DESERIALIZATION, "Unknown or missing type in IngredientProvider [$fieldName]")
+                val value = table["value"] ?: return ValidationResult.error(null, ValidationResult.ErrorEntry.DESERIALIZATION, "Unknown or missing value in IngredientProvider [$fieldName]")
                 return when(type) {
-                    "stack" -> STACK_INSTANCE.deserialize(value)
-                    "stacks"-> STACKS_INSTANCE.deserialize(value)
-                    "tag"-> TAG_INSTANCE.deserialize(value)
-                    else -> throw IllegalStateException("Unknown or missing type in IngredientProvider [$fieldName]: [$type]")
+                    "stack" -> ValidationResult.success(STACK_INSTANCE.deserialize(value))
+                    "stacks"-> ValidationResult.success(STACKS_INSTANCE.deserialize(value))
+                    "tag"-> ValidationResult.success(TAG_INSTANCE.deserialize(value))
+                    else -> return ValidationResult.error(null, ValidationResult.ErrorEntry.DESERIALIZATION, "Unknown type in IngredientProvider [$fieldName]: [$type]")
                 }
             }
         }

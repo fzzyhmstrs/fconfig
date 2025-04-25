@@ -10,11 +10,19 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import me.fzzyhmstrs.fzzy_config.annotations.Comment
+import me.fzzyhmstrs.fzzy_config.annotations.Translation
+import me.fzzyhmstrs.fzzy_config.util.FcText.transSupplied
+import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.util.Formatting
+import net.minecraft.util.Language
+import net.peanuuutz.tomlkt.TomlComment
 import java.lang.ref.SoftReference
 import java.util.concurrent.ConcurrentHashMap
+import java.util.function.Supplier
 import java.util.function.UnaryOperator
 
 /**
@@ -141,57 +149,54 @@ interface Translatable {
         return I18n.hasTranslation(prefixKey())
     }
 
-    internal object Impls {
-    
-        internal fun getText(thing: Any, scope: String, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String = fieldName): ResultProvider {
-            val cachedText = Utils.getScopedResult(scope)
+    object Impls {
+
+        internal fun getText(thing: Any, scope: String, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String = fieldName): Result {
+            val cachedText = getScopedResult(scope)
             if (cachedText != null) return cachedText
-            var nFinal: Text? = null
-            var dFinal: Text? = null
-            var pFinal: Text? = null
             for (annotation in annotations) {
                 if (annotation is Translation) {
                     for (ga in globalAnnotations) {
-                        if (ga is Translation && ga.negate) {
-                            if (ga.negate) {
-                                return createScopedResult(thing, annotations, fallback, scope)
+                        if (ga is Translation) {
+                            return if (ga.negate) {
+                                createScopedResult(thing, annotations, fallback, scope)
                             } else {
-                                return createKeyedScopedResult(scope, fieldName, ga, annotations, fallback) 
+                                createKeyedScopedResult(thing, scope, fieldName, ga, annotations, fallback)
                             }
                         }
                     }
                     if (annotation.negate) {
                         return createScopedResult(thing, annotations, fallback, scope)
                     }
-                    return createKeyedScopedResult(scope, fieldName, annotation, annotations, fallback) 
+                    return createKeyedScopedResult(thing, scope, fieldName, annotation, annotations, fallback)
                 }
             }
             for (annotation in globalAnnotations) {
                 if (annotation is Translation && !annotation.negate) {
-                    return createKeyedScopedResult(scope, fieldName, annotation, annotations, fallback) 
+                    return createKeyedScopedResult(thing, scope, fieldName, annotation, annotations, fallback)
                 }
             }
-            return createScopedResult(thing, annnotations, fallback, scope)
+            return createScopedResult(thing, annotations, fallback, scope)
         }
 
-        private fun createScopedResult(thing: Any, annotations: List<Annotation>, fallback: String, scope: String) {
+        private fun createScopedResult(thing: Any, annotations: List<Annotation>, fallback: String, scope: String): Result {
             val n = thing.transSupplied { getNameFallback(annotations, fallback) }
             val d = thing.descGet { getDescFallback(annotations) }
             val p = thing.prefixGet { getPrefixFallback(annotations) }
             return Utils.createScopedResult(scope, n, d, p)
         }
 
-        private fun createKeyedScopedResult(scope: String, fieldName: String, annotation: Translation, annotations: List<Annotation>, fallback: String) {
+        private fun createKeyedScopedResult(thing: Any, scope: String, fieldName: String, annotation: Translation, annotations: List<Annotation>, fallback: String): Result {
             val bl = fieldName.isNotEmpty()
-            val keyN = if(bl) "${annotation.prefix}.$fieldName" else annotation.prefix
-            val keyD = if(bl) "${annotation.prefix}.$fieldName.desc" else "${annotation.prefix}.desc"
-            val keyP = if(bl) "${annotation.prefix}.$fieldName.prefix" else "${annotation.prefix}.prefix"
+            val keyN = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName) else annotation.prefix
+            val keyD = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName, DESC) else FcText.concat(annotation.prefix, DESC)
+            val keyP = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName, PREFIX) else FcText.concat(annotation.prefix, PREFIX)
             val n = if (I18n.hasTranslation(keyN)) keyN.translate() else thing.transSupplied { getNameFallback(annotations, fallback) }
             val d = if (I18n.hasTranslation(keyD)) keyD.translate() else thing.descGet { getDescFallback(annotations) }
             val p = if (I18n.hasTranslation(keyP)) keyP.translate() else thing.prefixGet { getPrefixFallback(annotations) }
-            return Util.createScopedResult(scope, n, d, p)
+            return Utils.createScopedResult(scope, n, d, p)
         }
-    
+
         private fun Any?.descGet(fallbackSupplier: Supplier<String>): MutableText? {
             if(this is Translatable) {
                 if (this.hasDescription()) {
@@ -200,7 +205,7 @@ interface Translatable {
             }
             val fallback = fallbackSupplier.get()
             return if (fallback != "")
-                literal(fallback).formatted(Formatting.ITALIC)
+                FcText.literal(fallback).formatted(Formatting.ITALIC)
             else
                 null
         }
@@ -213,96 +218,72 @@ interface Translatable {
             }
             val fallback = fallbackSupplier.get()
             return if (fallback != "")
-                literal(fallback).formatted(Formatting.ITALIC)
+                FcText.literal(fallback).formatted(Formatting.ITALIC)
             else
                 null
         }
-    
+
         private const val SPACER = ". "
+        private const val PERIOD = "."
+        internal const val DESC = ".desc"
+        internal const val PREFIX = ".prefix"
 
         private fun getNameFallback(annotations: List<Annotation>, fallback: String): String {
-            return annotations.filterIsInstance<Translatable.Name>().let { l -> 
+            return annotations.filterIsInstance<Name>().let { l ->
                 l.firstOrNull { a -> a.lang == "en_us" }?.value ?: l.firstOrNull()?.value
-            } ?: fallback.replace('_', ' ').split(FcText.regex).joinToString(" ") { it.lowercase(); it.replaceFirstChar { c -> c.uppercase() } } 
+            } ?: fallback.replace('_', ' ').split(FcText.regex).joinToString(" ") { it.lowercase(); it.replaceFirstChar { c -> c.uppercase() } }
         }
-    
+
         private fun getDescFallback(annotations: List<Annotation>): String {
-            val comment = StringBuilder()
+            val comment = mutableListOf<String>()
             for (annotation in annotations) {
                 if (annotation is TomlComment) {
-                    if (comment.isNotEmpty())
-                        comment.append(SPACER)
-                    comment.append(annotation.text)
+                    comment.add(annotation.text)
                 } else if(annotation is Comment) {
-                    if (comment.isNotEmpty())
-                        comment.append(SPACER)
-                    comment.append(annotation.value)
-                } else if(annotation is Translatable.Desc && annotation.lang == "en_us") {
-                    if (comment.isNotEmpty())
-                        comment.append(SPACER)
-                    comment.append(annotation.value)
+                    comment.add(annotation.value)
+                } else if(annotation is Desc && annotation.lang == "en_us") {
+                    comment.add(annotation.value)
                 }
+                Language.getInstance()
             }
-            if (comment.isNotEmpty())
-                comment.append(".")
-            return comment.toString()
+            return if (comment.isEmpty()) "" else comment.joinToString(separator = SPACER, postfix = PERIOD)
         }
 
         private fun getPrefixFallback(annotations: List<Annotation>): String {
-            val comment = StringBuilder()
+            val comment = mutableListOf<String>()
             for (annotation in annotations) {
-                if(annotation is Translatable.Prefix && annotation.lang == "en_us") {
-                    if (comment.isNotEmpty())
-                        comment.append(SPACER)
-                    comment.append(annotation.value)
+                if(annotation is Prefix && annotation.lang == "en_us") {
+                    comment.add(annotation.value)
                 }
             }
-            if (comment.isNotEmpty())
-                comment.append(".")
-            return comment.toString()
+            return if (comment.isEmpty()) "" else comment.joinToString(separator = SPACER, postfix = PERIOD)
         }
     }
-    
-    /**
-     * A translation result from a [Translatable] instance. This is generated internally, but is passed into many builder methods for config GUIs. Think of it, as the name implies, as the result of Fzzy Config generating a translation set for the relevant element.
-     * @param name [Text] the title of the element, such as "Particle Count"
-     * @param desc [Text], nullable. the tooltip description. Null means no description is present.
-     * @param prefix [Text], nullable. the inline prefix text of a config entry. Null means no prefix.
-     * @author fzzyhmstrs
-     * @since 0.6.0, data class since 0.6.5, implements [Searcher.SearchContent] and [ResultProvider], and deprecated, since 0.6.8
-     */
-     @Deprecated("Replace with createResult, and use ResultProvider for typing. Constructor and impl will change in 0.7.0")
-    data class Result(override val name: Text, override val desc: Text? = null, override val prefix: Text? = null): ResultProvider(), Searcher.SearchContent {
 
-        @Deprecated("Use content, this is not used directly by Searcher as of 0.6.8. Scheduled for removal 0.7.0")
-        override val texts: Result = this
+    private data class Full(override val name: Text, override val desc: Text? = null, override val prefix: Text? = null): Result(), Searcher.SearchContent {
 
         override val content = this
 
         override val skip = false
 
-        companion object {
-            val EMPTY = Result(FcText.empty(), null, null)
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result {
+            return Full(nameMapper.apply(name), desc?.let { descMapper.apply(it) }, prefix?.let { prefixMapper.apply(it) })
         }
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider {
-            return Result(nameMapper.apply(name), desc?.let { descMapper.apply(it) }, prefix?.let { prefixMapper.apply(it) })
+        override fun mapName(nameMapper: UnaryOperator<Text>): Result {
+            return Full(nameMapper.apply(name), desc, prefix)
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider {
-            return Result(nameMapper.apply(name), desc, prefix)
+        override fun mapDesc(descMapper: UnaryOperator<Text>): Result {
+            return Full(name, desc?.let { descMapper.apply(it) }, prefix)
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider {
-            return Result(name, desc?.let { descMapper.apply(it) }, prefix)
-        }
-
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider {
-            return Result(name, desc, prefix?.let { prefixMapper.apply(it) })
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result {
+            return Full(name, desc, prefix?.let { prefixMapper.apply(it) })
         }
     }
 
-    data class Named internal constructor(override val name: Text): ResultProvider() {
+    private data class Named(override val name: Text): Result() {
 
         override val desc: Text?
             get() = null
@@ -310,77 +291,77 @@ interface Translatable {
         override val prefix: Text?
             get() = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider {
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result {
             return Named(nameMapper.apply(name))
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider {
+        override fun mapName(nameMapper: UnaryOperator<Text>): Result {
             return Named(nameMapper.apply(name))
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider {
+        override fun mapDesc(descMapper: UnaryOperator<Text>): Result {
             return this
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result {
             return this
         }
     }
 
-    data class NameDesc internal constructor(override val name: Text, override val desc: Text): ResultProvider() {
+    private data class NameDesc(override val name: Text, override val desc: Text): Result() {
 
         override val prefix: Text?
             get() = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider {
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result {
             return NameDesc(nameMapper.apply(name), descMapper.apply(desc))
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider {
+        override fun mapName(nameMapper: UnaryOperator<Text>): Result {
             return NameDesc(nameMapper.apply(name), desc)
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider {
+        override fun mapDesc(descMapper: UnaryOperator<Text>): Result {
             return NameDesc(name, descMapper.apply(desc))
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result {
             return this
         }
     }
 
-    data class NamePrefix internal constructor(override val name: Text, override val prefix: Text): ResultProvider() {
+    private data class NamePrefix(override val name: Text, override val prefix: Text): Result() {
 
         override val desc: Text?
             get() = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider {
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result {
             return NamePrefix(nameMapper.apply(name), prefixMapper.apply(prefix))
         }
 
-        override fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider {
+        override fun mapName(nameMapper: UnaryOperator<Text>): Result {
             return NamePrefix(nameMapper.apply(name), prefix)
         }
 
-        override fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider {
+        override fun mapDesc(descMapper: UnaryOperator<Text>): Result {
             return this
         }
 
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider {
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result {
             return NamePrefix(name, prefixMapper.apply(prefix))
         }
     }
 
-    private data object Empty: ResultProvider() {
+    private data object Empty: Result() {
 
         override val name: Text = FcText.empty()
         override val desc: Text? = null
         override val prefix: Text? = null
 
-        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider = this
-        override fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider = this
-        override fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider = this
-        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider = this
+        override fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result = this
+        override fun mapName(nameMapper: UnaryOperator<Text>): Result = this
+        override fun mapDesc(descMapper: UnaryOperator<Text>): Result = this
+        override fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result = this
     }
 
     /**
@@ -388,17 +369,17 @@ interface Translatable {
      * @author fzzyhmstrs
      * @since 0.6.8, will replace Result itself in 0.7.0
      */
-    abstract class ResultProvider: Searcher.SearchContent {
+    abstract class Result: Searcher.SearchContent {
         abstract val name: Text
         abstract val desc: Text?
         abstract val prefix: Text?
 
-        abstract fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): ResultProvider
-        abstract fun mapName(nameMapper: UnaryOperator<Text>): ResultProvider
-        abstract fun mapDesc(descMapper: UnaryOperator<Text>): ResultProvider
-        abstract fun mapPrefix(prefixMapper: UnaryOperator<Text>): ResultProvider
+        abstract fun map(nameMapper: UnaryOperator<Text>, descMapper: UnaryOperator<Text>, prefixMapper: UnaryOperator<Text>): Result
+        abstract fun mapName(nameMapper: UnaryOperator<Text>): Result
+        abstract fun mapDesc(descMapper: UnaryOperator<Text>): Result
+        abstract fun mapPrefix(prefixMapper: UnaryOperator<Text>): Result
 
-        override val content: ResultProvider
+        override val content: Result
             get() = this
 
         override val skip: Boolean
@@ -428,7 +409,7 @@ interface Translatable {
      */
     @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
     annotation class Prefix(val value: String, val lang: String = "en_us")
-    
+
     /**
      * Provides utilities for creating and caching translation results
      * @author fzzyhmstrs
@@ -447,12 +428,12 @@ interface Translatable {
          * @author fzzyhmstrs
          * @since 0.6.8
          */
-        val EMPTY: ResultProvider =  Empty
-        
+        val EMPTY: Result =  Empty
+
         /**
          * Retrieves a cached result, if any exists. If the cache has been invalidated this will return null
          * @param scope String representation of the object needing translation
-         * @return [Result], nullable. Null if the cache doesn't contain a result or if it has been invalidated.
+         * @return [Full], nullable. Null if the cache doesn't contain a result or if it has been invalidated.
          * @author fzzyhmstrs
          * @since 0.6.8
          */
@@ -466,14 +447,14 @@ interface Translatable {
         /**
          * Caches the provided result and passes it through.
          * @param scope String representation of the object needing translation
-         * @param result [Result] input result to cache
+         * @param result [Full] input result to cache
          * @return The input result provider after caching
          * @see createScopedResult
          * @author fzzyhmstrs
          * @since 0.6.8, returns ResultProvider 0.7.0
          */
         @JvmStatic
-        fun cacheScopedResult(scope: String, result: ResultProvider): ResultProvider {
+        fun cacheScopedResult(scope: String, result: Result): Result {
             val m = cache.get()
             if (m == null) { //rebuild cache
                 val m2 = ConcurrentHashMap<String, Result>()
@@ -486,7 +467,7 @@ interface Translatable {
         }
 
         /**
-         * Creates a [Result], caches it, and passes the newly created result through.
+         * Creates a [Full], caches it, and passes the newly created result through.
          * @param scope String representation of the object needing translation
          * @param name [Text] the title of the element, such as "Particle Count"
          * @param desc [Text], nullable. the tooltip description. Null means no description is present.
@@ -497,12 +478,12 @@ interface Translatable {
          */
         @JvmOverloads
         @JvmStatic
-        fun createScopedResult(scope: String, name: Text, desc: Text? = null, prefix: Text? = null): ResultProvider {
+        fun createScopedResult(scope: String, name: Text, desc: Text? = null, prefix: Text? = null): Result {
             return cacheScopedResult(scope, createResult(name, desc, prefix))
         }
 
         /**
-         * Creates a [Result] without caching it.
+         * Creates a [Full] without caching it.
          * @param name [Text] the title of the element, such as "Particle Count"
          * @param desc [Text], nullable. the tooltip description. Null means no description is present.
          * @param prefix [Text], nullable. the inline prefix text of a config entry. Null means no prefix.
@@ -512,7 +493,7 @@ interface Translatable {
          */
         @JvmOverloads
         @JvmStatic
-        fun createResult(name: Text, desc: Text? = null, prefix: Text? = null): ResultProvider {
+        fun createResult(name: Text, desc: Text? = null, prefix: Text? = null): Result {
             return if (desc == null) {
                 if (prefix == null) {
                     Named(name)
@@ -522,7 +503,7 @@ interface Translatable {
             } else if (prefix == null) {
                 NameDesc(name, desc)
             } else {
-                Result(name, desc, prefix)
+                Full(name, desc, prefix)
             }
         }
     }

@@ -27,7 +27,7 @@ import java.util.*
  * @param C subclass of [SearchContent]
  * @param searchEntries List&lt;[C]&gt; list of [SearchContent] entries to search through.
  * @author fzzyhmstrs
- * @since 0.6.0
+ * @since 0.6.0, added regex searching 0.7.0
  */
 class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
 
@@ -174,17 +174,15 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
     /**
      * A searchable item. It can provide a name, an optional description, and whether it should be skipped in the current search.
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.6.0, removed texts 0.7.0
      */
-    @JvmDefaultWithoutCompatibility
     interface SearchContent {
         /**
          * Search content parsed and checked by the [Searcher]
          * @author fzzyhmstrs
          * @since 0.6.8
          */
-        val content: Translatable.ResultProvider
-            get() = texts
+        val content: Translatable.Result
 
         /**
          * Whether the search should exclude this content from search results. This is active state, so can change between true and false as needed.
