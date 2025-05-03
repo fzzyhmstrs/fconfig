@@ -43,13 +43,33 @@ import kotlin.math.max
  * @param T the enum type. Any [Enum]
  * @param defaultValue Enum Constant used as the default for this setting
  * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
- * @see me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedEnumMap
  * @author fzzyhmstrs
  * @since 0.2.0
  */
 open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue) {
 
+    /**
+     * A validated Enum Class, initialized with the enum class.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Enums) for more details and examples.
+     * @param T the enum type. Any [Enum]
+     * @param clazz Enum class. The first constant will be used as the default value.
+     * @author fzzyhmstrs
+     * @since Unknown
+     */
     constructor(clazz: Class<T>): this(clazz.enumConstants[0])
+
+    /**
+     * A validated Enum Class, initialized with the enum class.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/validation/Enums) for more details and examples.
+     * @param T the enum type. Any [Enum]
+     * @param clazz Enum class. The first constant will be used as the default value.
+     * @param widgetType [WidgetType] defines the GUI selection type. Defaults to POPUP
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    constructor(clazz: Class<T>, widgetType: WidgetType): this(clazz.enumConstants[0], widgetType)
 
     @Suppress("UNCHECKED_CAST")
     private val valuesMap: Map<String, T> = defaultValue.declaringJavaClass.enumConstants.associateBy { (it as Enum<*>).name } as Map<String, T>
@@ -57,11 +77,11 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
-            val string = toml.toString()
-            val chkEnum = valuesMap[string] ?: return ValidationResult.error(storedValue, "Invalid enum selection at setting [$fieldName]. Possible values are: [${valuesMap.keys}]")
+            val string = toml.toString().uppercase()
+            val chkEnum = valuesMap[string] ?: return ValidationResult.error(storedValue, ValidationResult.ErrorEntry.DESERIALIZATION, "Invalid enum for [$fieldName]. Possible values are: [${valuesMap.keys}]")
             ValidationResult.success(chkEnum)
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, "Critical error deserializing enum [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(storedValue, ValidationResult.ErrorEntry.DESERIALIZATION, "Exception deserializing enum [$fieldName]", e)
         }
     }
 
