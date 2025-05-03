@@ -339,10 +339,7 @@ internal interface BasicValidationProvider {
                     val valueArgument = type.arguments[1]
                     val valueArgumentType = valueArgument.type ?: return null
                     val valueProjectionValidation = basicValidationStrategy(null, valueArgumentType, fieldName, annotations) ?: return null
-                    return if(keyArgumentType.jvmErasure.javaObjectType.isEnum) {
-                        @Suppress("UNCHECKED_CAST")
-                        ValidatedEnumMap.tryMake(if (input != null) input as Map<Enum<*>, *> else mapOf(), keyProjectionValidation, valueProjectionValidation)
-                    } else if (keyArgumentType.jvmErasure.javaObjectType.isInstance("")) {
+                    return if (keyArgumentType.jvmErasure.javaObjectType.isInstance("")) {
                         @Suppress("UNCHECKED_CAST")
                         ValidatedStringMap.tryMake(if (input != null)input as Map<String, *> else mapOf(), keyProjectionValidation, valueProjectionValidation)
                     } else if (keyArgumentType.jvmErasure.javaObjectType.isInstance("i".fcId())) {

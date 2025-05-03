@@ -62,7 +62,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     private var lastChangedTime: Long = 0L
     private var isValid = true
     private var confirmActive = false
-    private var error: Text? = null
+    private var error: List<Text> = emptyList()
 
     fun isIntType(): Boolean {
         return storedValue is Int || storedValue is Long || storedValue is Short || storedValue is Byte
@@ -122,20 +122,20 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     private fun isValidTest(s: String): Boolean {
         val test = s.toDoubleOrNull()
         if (test == null) {
-            this.error = "fc.validated_field.number.textbox.invalid".translate()
+            this.error = listOf("fc.validated_field.number.textbox.invalid".translate())
             setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
             return false
         }
         val result = validationProvider.apply(test)
         return if(result.isError()) {
-            this.error = result.getError().lit()
+            this.error = mutableListOf<String>().apply { result.logPlain{ s, _ -> this.add(s) } }.map { it.lit() }
             setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
             false
         } else {
-            this.error = null
+            this.error = emptyList()
             val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
             if (result2.isError()) {
-                this.error = result.getError().lit()
+                this.error = mutableListOf<String>().apply { result2.logPlain{ s, _ -> this.add(s) } }.map { it.lit() }
                 setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
                 false
             } else {
@@ -212,8 +212,8 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     }
 
     override fun provideTooltipLines(mouseX: Int, mouseY: Int, parentSelected: Boolean, keyboardFocused: Boolean): List<Text> {
-        if (!parentSelected || error == null) return TooltipChild.EMPTY
-        return error?.let { listOf(it) } ?: return TooltipChild.EMPTY
+        if (!parentSelected) return TooltipChild.EMPTY
+        return error
     }
 
     init {
