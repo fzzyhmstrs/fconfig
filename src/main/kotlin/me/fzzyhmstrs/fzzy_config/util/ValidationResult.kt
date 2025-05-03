@@ -226,6 +226,19 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         return this
     }
 
+    /**
+     * Log this result if it is errored.
+     * @param writer [BiConsumer]&lt;String, Throwable?&gt; consumer of logging information for printing to console. See the various helper methods
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    @JvmOverloads
+    fun logPlain(writer: BiConsumer<String, Throwable?> = ErrorEntry.ENTRY_WARN_LOGGER): ValidationResult<T> {
+        if (isValid()) return this
+        errorContext.log(writer)
+        return this
+    }
+
 
     companion object {
         /**
@@ -720,7 +733,22 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.7.0
          */
+        fun getPlainString(): String
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
         fun log(writer: BiConsumer<String, Throwable?>) {
+            if (isLoggable())
+                writer.accept(getString(), null)
+        }
+        /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        fun logPlain(writer: BiConsumer<String, Throwable?>) {
             if (isLoggable())
                 writer.accept(getString(), null)
         }
@@ -895,6 +923,15 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
              * @author fzzyhmstrs
              * @since 0.7.0
              */
+            fun addError(other: Mutable): Mutable {
+                this.entry = entry.addError(other.entry)
+                return this
+            }
+            /**
+             * TODO()
+             * @author fzzyhmstrs
+             * @since 0.7.0
+             */
             fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<Builder<C>>): Mutable {
                 this.entry = entry.addError(type, builder)
                 return this
@@ -919,7 +956,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         companion object {
-            val BASIC = Type<String>("Basic Error")
+            val BASIC = Type<String>("Error")
             val SERIALIZATION = Type<String>("Serialization Error")
             val DESERIALIZATION = Type<String>("Deserialization Error")
             val OUT_OF_BOUNDS = Type<String>("Value Out of Bounds")
@@ -1051,6 +1088,10 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         override fun getString(): String {
             return "No Error"
         }
+
+        override fun getPlainString(): String {
+            return "No Error"
+        }
     }
 
     private class EmptyErrorEntry(private val header: String = ""): ErrorEntry {
@@ -1094,6 +1135,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             return false
         }
         override fun getString(): String {
+            return header.ifEmpty { "Empty Error" }
+        }
+        override fun getPlainString(): String {
             return header.ifEmpty { "Empty Error" }
         }
     }
@@ -1154,6 +1198,12 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 "$crit${type.name}: $msg ($content)"
             else
                 "$crit${type.name}: $content"
+        }
+        override fun getPlainString(): String {
+            return if (msg.isNotEmpty())
+                "$msg ($content)"
+            else
+                "$content"
         }
         override fun log(writer: BiConsumer<String, Throwable?>) {
             writer.accept(getString(), e)
@@ -1221,6 +1271,15 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             }
             return list.joinToString(" ")
         }
+        override fun getPlainString(): String {
+            val list: MutableList<String> = mutableListOf()
+            list.add(headerEntry.getPlainString())
+            for (entry in children) {
+                if (entry.isLoggable())
+                    list.add(entry.getPlainString())
+            }
+            return list.joinToString(" ")
+        }
         override fun log(writer: BiConsumer<String, Throwable?>) {
             headerEntry.log(writer)
             if (children.isEmpty()) return
@@ -1229,6 +1288,16 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             }
             for (entry in children) {
                 entry.log(consumer)
+            }
+        }
+        override fun logPlain(writer: BiConsumer<String, Throwable?>) {
+            headerEntry.logPlain(writer)
+            if (children.isEmpty()) return
+            val consumer: BiConsumer<String, Throwable?> = BiConsumer { str, e ->
+                writer.accept("  $str", e)
+            }
+            for (entry in children) {
+                entry.logPlain(consumer)
             }
         }
     }
