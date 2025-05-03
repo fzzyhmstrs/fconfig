@@ -302,10 +302,10 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         if (input == get()) return ValidationResult.success(get())
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.WEAK)
         set(tVal1.get())
-        if (tVal1.isError()) {
-            return ValidationResult.error(tVal1.get(), "Error validating and setting input [$input]. Corrected to [${tVal1.get()}] >>>> Possible reasons: [${tVal1.getError()}]")
+        if (tVal1.isCritical()) {
+            return ValidationResult.error(get(), ValidationResult.ErrorEntry.BASIC) { b -> b.content("Exception validating and setting input [$input]. Setting to [${get()}]").addError(tVal1) }
         }
-        return ValidationResult.success(get())
+        return ValidationResult.predicated(get(), tVal1.isValid(), ValidationResult.ErrorEntry.BASIC) { b -> b.content("Encountered non-critical errors validating and setting input [$input]").addError(tVal1) }
     }
 
     /**
@@ -328,7 +328,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
             correctEntry(input, EntryValidator.ValidationType.WEAK)
         }
         if (hasFlag(EntryFlag.Flag.UPDATE) || flag.contains(EntryFlag.Flag.UPDATE)) {
-            val message = if (tVal1.isError()) {
+            val message = if (tVal1.isError() || tVal1.isCritical()) {
                 FcText.translatable("fc.validated_field.update.error", translation(), get().toString(), tVal1.get().toString(), tVal1.getError())
             } else {
                 updateMessage(get(), tVal1.get())
@@ -340,10 +340,10 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         } else {
             set(tVal1.get())
         }
-        if (tVal1.isError()) {
-            return ValidationResult.error(tVal1.get(), "Error validating and setting flagged input [$input]. Corrected to [${tVal1.get()}] >>>> Flags: ${flag.toList()} >>>> Possible reasons: [${tVal1.getError()}]")
+        if (tVal1.isCritical()) {
+            return ValidationResult.error(get(), ValidationResult.ErrorEntry.BASIC) { b -> b.content("Exception validating and setting input [$input] with flags $flags. Setting to [${get()}]").addError(tVal1) }
         }
-        return ValidationResult.success(get())
+        return ValidationResult.predicated(get(), tVal1.isValid(), ValidationResult.ErrorEntry.BASIC) { b -> b.content("Encountered non-critical errors validating and setting input [$input] with flags $flags").addError(tVal1) }
     }
 
     @Internal
@@ -352,7 +352,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         val oldVal = get()
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
         set(tVal1.get())
-        val message = if (tVal1.isError()) {
+        val message = if (tVal1.isError() || tVal1.isCritical()) {
             FcText.translatable("fc.validated_field.update.error", translation(), oldVal.toString(), get().toString(), tVal1.getError())
         } else {
             updateMessage(oldVal, get())
