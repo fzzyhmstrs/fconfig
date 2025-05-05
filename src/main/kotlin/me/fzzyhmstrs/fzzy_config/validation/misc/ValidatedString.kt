@@ -63,7 +63,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
             return validateEntry(input, type).wrap(newVal)
         }
         override fun validateEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
-            return ValidationResult.predicated(input, re.matches(input), "String doesn't meet regex [$regex]")
+            return ValidationResult.predicated(input, re.matches(input), ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("String doesn't match pattern [$regex]") }
         }
 
         override fun toString(): String {
@@ -95,7 +95,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
         return try {
             ValidationResult.success(toml.asTomlLiteral().toString())
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, "Critical error deserializing string [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing string [$fieldName]: ${e.localizedMessage}")
         }
     }
 

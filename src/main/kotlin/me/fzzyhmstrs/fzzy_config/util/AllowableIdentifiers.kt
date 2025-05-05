@@ -89,14 +89,14 @@ class AllowableIdentifiers @JvmOverloads constructor(
 
     /**
      * Validates the provided Identifier versus the provided Predicate
-     * @param input Identifer - the Identifier to test
+     * @param input Identifier - the Identifier to test
      * @param type EntryValidator.ValidationType - whether this is testing with weak or strong validation
      */
     override fun validateEntry(input: Identifier, type: EntryValidator.ValidationType): ValidationResult<Identifier> {
         return if (type == EntryValidator.ValidationType.WEAK)
             ValidationResult.success(input)
         else
-            ValidationResult.predicated(input, this.test(input), "Identifier invalid or not allowed")
+            ValidationResult.predicated(input, this.test(input), ValidationResult.Errors.INVALID) { b -> b.content("Identifier invalid or not allowed") }
     }
 
     companion object {

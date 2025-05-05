@@ -27,7 +27,7 @@ import java.util.function.Predicate
 open class ChoiceValidator<T>(private val predicate: ValuesPredicate<T>): EntryValidator<T> {
 
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
-        return ValidationResult.predicated(input, predicate.test(input), "Value not allowed")
+        return ValidationResult.predicated(input, predicate.test(input), ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("Value not allowed") }
     }
 
 

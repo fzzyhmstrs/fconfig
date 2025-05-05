@@ -118,8 +118,8 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         return try {
             val new = createInstance()
             val toml = serialize(input).get()
-            val result = ConfigApi.deserializeFromToml(new, toml, mutableListOf())
-            if (result.isError()) storedValue else result.get().config
+            val result = ConfigApiImpl.deserializeFromToml(new, toml)
+            if (result.isCritical()) storedValue else result.get()
         } catch(e: Throwable) {
             storedValue //object doesn't have an empty constructor. no prob.
         }
@@ -171,6 +171,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         newStr = newStr.trim()
         set(tVal1.get())
         val message = if (tVal1.isError()) {
+            @Suppress("DEPRECATION")
             FcText.translatable("fc.validated_field.update.error", translation(), oldStr, newStr, tVal1.getError())
         } else {
             FcText.translatable("fc.validated_field.update", translation(), oldStr, newStr)
@@ -405,7 +406,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
      * @suppress
      */
     override fun toString(): String {
-        return "Validated Walkable[value=${ConfigApi.serializeConfig(get(), mutableListOf(), 1).lines().joinToString(" ", transform = { s -> s.trim() })}, validation=per contained member validation]"
+        return "Validated Any[value=${ConfigApiImpl.serializeConfig(get(), "", 1).get().lines().joinToString(" ", transform = { s -> s.trim() })}, validation=per contained member validation]"
     }
 
     //client

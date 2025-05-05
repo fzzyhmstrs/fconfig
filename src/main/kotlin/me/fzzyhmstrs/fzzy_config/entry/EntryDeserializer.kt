@@ -48,7 +48,7 @@ fun interface EntryDeserializer<T> {
         @Suppress("DEPRECATION")
         var result = deserializeEntry(toml, errors, fieldName, flags)
         for (error in errors) {
-            result = result.also(false, ValidationResult.ErrorEntry.DESERIALIZATION, error)
+            result = result.also(false, ValidationResult.Errors.DESERIALIZATION, error)
         }
         return result
     }

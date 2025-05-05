@@ -26,7 +26,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -72,16 +72,16 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         return try {
             val array = toml.asTomlArray()
             val set: MutableSet<T> = mutableSetOf()
-            val errors: MutableList<String> = mutableListOf()
+            val errors = ValidationResult.createMutable("Error(s) found deserializing set $fieldName")
             for ((index, el) in array.content.withIndex()) {
-                val result = entryHandler.deserializeEntry(el, errors, "$fieldName[$index]", 1).report(errors)
+                val result = entryHandler.deserializeEntry(el,  "$fieldName[$index]", 1).attachTo(errors)
                 if (!result.isError()) {
                     set.add(result.get())
                 }
             }
-            ValidationResult.predicated(set, errors.isEmpty(), "Error(s) encountered while deserializing set, some entries were skipped: $errors")
+            ValidationResult.ofMutable(set, errors)
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Critical error encountered while deserializing set [$fieldName], using defaults.")
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Exception while deserializing set [$fieldName], using defaults", e)
         }
     }
 
@@ -89,10 +89,10 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     override fun serialize(input: Set<T>): ValidationResult<TomlElement> {
         val toml = TomlArrayBuilder()
-        val errors: MutableList<String> = mutableListOf()
+        val errors = ValidationResult.createMutable("Error(s) found serializing set")
         try {
             for (entry in input) {
-                val tomlEntry = entryHandler.serializeEntry(entry, errors, 1)
+                val tomlEntry = entryHandler.serializeEntry(entry, 1).attachTo(errors)
                 val annotations = if (entry != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(entry!!::class)
@@ -101,12 +101,12 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
                     }
                 else
                     emptyList()
-                toml.element(tomlEntry, annotations)
+                toml.element(tomlEntry.get(), annotations)
             }
+            return ValidationResult.ofMutable(toml.build(), errors)
         } catch (e: Throwable) {
-            return ValidationResult.error(toml.build(), "Critical error encountered while serializing set: ${e.localizedMessage}")
+            return ValidationResult.error(toml.build(), ValidationResult.Errors.DESERIALIZATION, "Exception while serializing set", e)
         }
-        return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
 
     @Internal
@@ -127,23 +127,21 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     @Internal
     override fun correctEntry(input: Set<T>, type: EntryValidator.ValidationType): ValidationResult<Set<T>> {
         val set: MutableSet<T> = mutableSetOf()
-        val errors: MutableList<String> = mutableListOf()
+        val errors = ValidationResult.createMutable("Set correction found errors")
         for (entry in input) {
-            val result = entryHandler.correctEntry(entry, type)
+            val result = entryHandler.correctEntry(entry, type).attachTo(errors)
             set.add(result.get())
-            if (result.isError()) errors.add(result.getError())
         }
-        return ValidationResult.predicated(set, errors.isEmpty(), "Errors corrected in set: $errors")
+        return ValidationResult.ofMutable(set, errors)
     }
 
     @Internal
     override fun validateEntry(input: Set<T>, type: EntryValidator.ValidationType): ValidationResult<Set<T>> {
-        val errors: MutableList<String> = mutableListOf()
+        val errors = ValidationResult.createMutable("Set validation found errors")
         for (entry in input) {
-            val result = entryHandler.validateEntry(entry, type)
-            if (result.isError()) errors.add(result.getError())
+            entryHandler.validateEntry(entry, type).attachTo(errors)
         }
-        return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in set: $errors")
+        return ValidationResult.ofMutable(input, errors)
     }
 
     /**
