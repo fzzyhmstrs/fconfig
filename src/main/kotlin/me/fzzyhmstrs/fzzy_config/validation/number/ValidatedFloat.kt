@@ -69,7 +69,7 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
         return try {
             ValidationResult.success(toml.asTomlLiteral().toFloat())
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing float [$fieldName]", e)
         }
     }
 
@@ -97,7 +97,10 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
 
     @Internal
     override fun convert(input: Double): ValidationResult<Float> {
-        return ValidationResult.predicated(input.toFloat(), input <= Float.MAX_VALUE.toDouble() && input >= (-Float.MAX_VALUE).toDouble(), "[$input] out of Bounds for float value (${-Float.MIN_VALUE} to ${Float.MAX_VALUE} )")
+        return ValidationResult.predicated(
+            input.toFloat(),
+            input <= Float.MAX_VALUE.toDouble() && input >= (-Float.MAX_VALUE).toDouble(),
+            ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("[$input] out of Bounds for float value (${-Float.MIN_VALUE} to ${Float.MAX_VALUE} )") }
     }
 
     @Internal

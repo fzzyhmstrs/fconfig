@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.number
 
-import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutClickableWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
@@ -23,7 +22,8 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.ofMutable
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.*
@@ -63,18 +63,18 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     @Internal
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
-            return ValidationResult.error(minValue, "Validated number [$input] below the valid range [$minValue] to [$maxValue]")
+            return ValidationResult.error(minValue, ValidationResult.Errors.OUT_OF_BOUNDS, "Validated number [$input] below the valid range [$minValue] to [$maxValue]")
         else if(input > maxValue)
-            return ValidationResult.error(maxValue, "Validated number [$input] above the valid range [$minValue] to [$maxValue]")
+            return ValidationResult.error(maxValue, ValidationResult.Errors.OUT_OF_BOUNDS, "Validated number [$input] above the valid range [$minValue] to [$maxValue]")
         return ValidationResult.success(input)
     }
 
     @Internal
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
         if(input < minValue)
-            return ValidationResult.error(input, "Validated number [$input] below the valid range [$minValue] to [$maxValue]")
+            return ValidationResult.error(input, ValidationResult.Errors.OUT_OF_BOUNDS, "Validated number [$input] below the valid range [$minValue] to [$maxValue]")
         else if(input > maxValue)
-            return ValidationResult.error(input, "Validated number [$input] above the valid range [$minValue] to [$maxValue]")
+            return ValidationResult.error(input, ValidationResult.Errors.OUT_OF_BOUNDS, "Validated number [$input] above the valid range [$minValue] to [$maxValue]")
         return ValidationResult.success(input)
     }
 
@@ -166,8 +166,10 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     protected fun validator(): Function<Double, ValidationResult<T>> {
         return Function { d ->
-            val result = convert(d)
-            this.correctEntry(result.get(), EntryValidator.ValidationType.STRONG).also(result.isValid(), result.getError())
+            val mutable = ValidationResult.createMutable("Number validation found errors")
+            val result = convert(d).attachTo(mutable)
+            val result2 = this.correctEntry(result.get(), EntryValidator.ValidationType.STRONG).attachTo(mutable)
+            ofMutable(result2.get(), mutable)
         }
     }
 

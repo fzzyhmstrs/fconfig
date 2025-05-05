@@ -91,7 +91,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
         return try {
             ValidationResult.success(toml.asTomlLiteral().toInt())
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Problem deserializing ValidatedInt [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing int [$fieldName]", e)
         }
     }
 
@@ -120,7 +120,10 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
 
     @Internal
     override fun convert(input: Double): ValidationResult<Int> {
-        return ValidationResult.predicated(input.toInt(), input % 1 == 0.0 && input.toLong() == input.toInt().toLong(), "[$input] not a valid Int")
+        return ValidationResult.predicated(
+            input.toInt(),
+            input % 1 == 0.0 && input.toLong() == input.toInt().toLong(),
+            ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("[$input] not a valid Int") }
     }
 
     @Internal

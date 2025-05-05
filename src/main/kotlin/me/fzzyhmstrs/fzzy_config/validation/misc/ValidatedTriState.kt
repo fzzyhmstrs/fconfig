@@ -54,7 +54,7 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
             val result = TriState.CODEC.parse(TomlOps.INSTANCE, toml)
             return ValidationResult.mapDataResult(result, storedValue)
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, "Critical error deserializing TriState [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing TriState [$fieldName]", e)
         }
     }
 

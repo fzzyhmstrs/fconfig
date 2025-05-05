@@ -173,12 +173,12 @@ internal object SyncedConfigRegistry {
             }
             val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, "Error(s) encountered while receiving config update for $id", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             result.get().config.save()
-            if (result.test(ValidationResult.ErrorEntry.ACTION) { it.content.restartPrompt }) {
+            if (result.test(ValidationResult.Errors.ACTION) { it.content.restartPrompt }) {
                 FC.LOGGER.warn("The server has received a config update that may require a restart. Connected clients have been automatically updated and notified of the potential for restart.")
-                if (result.has(ValidationResult.ErrorEntry.RESTART)) {
+                if (result.has(ValidationResult.Errors.RESTART)) {
                     FC.LOGGER.info("Server prompted for a restart due to received config changes")
                     FC.LOGGER.info("Restart-prompting changes:")
-                    for (record in result.iterate(ValidationResult.ErrorEntry.RESTART)) {
+                    for (record in result.iterate(ValidationResult.Errors.RESTART)) {
                         record.log(ValidationResult.ErrorEntry.ENTRY_INFO_LOGGER)
                     }
                 }
@@ -251,12 +251,12 @@ internal object SyncedConfigRegistry {
         if (configEntry != null) {
             val result = ConfigApiImpl.deserializeUpdate(configEntry.config, quarantinedUpdate.configString, "Error(s) encountered while receiving config update for $id", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             result.get().config.save()
-            if (result.test(ValidationResult.ErrorEntry.ACTION) { it.content.restartPrompt }) {
+            if (result.test(ValidationResult.Errors.ACTION) { it.content.restartPrompt }) {
                 FC.LOGGER.warn("A quarantined update has been accepted that may require a restart. Connected clients have been automatically updated and notified of the potential for restart.")
-                if (result.has(ValidationResult.ErrorEntry.RESTART)) {
+                if (result.has(ValidationResult.Errors.RESTART)) {
                     FC.LOGGER.info("Quarantined update requires a restart due to received config changes")
                     FC.LOGGER.info("Restart-prompting updates:")
-                    for (record in result.iterate(ValidationResult.ErrorEntry.RESTART)) {
+                    for (record in result.iterate(ValidationResult.Errors.RESTART)) {
                         record.log(ValidationResult.ErrorEntry.ENTRY_INFO_LOGGER)
                     }
                 }

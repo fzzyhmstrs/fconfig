@@ -19,7 +19,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutClickableWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.LayoutStyle
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair.Tuple
@@ -120,42 +120,42 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Tuple<A, B>> {
         return try {
             val table = toml.asTomlTable()
-            val errors: MutableList<String> = mutableListOf()
+            val errors = ValidationResult.createMutable("Error(s) found deserializing pair $fieldName")
             val aToml = table["left"] ?: TomlNull
             val bToml = table["right"] ?: TomlNull
-            val aResult = leftHandler.deserializeEntry(aToml, errors, "$fieldName.left", 1)
-            val bResult = rightHandler.deserializeEntry(bToml, errors, "$fieldName.right", 1)
-            ValidationResult.predicated(Tuple(aResult.get(), bResult.get()), errors.isEmpty(), "Errors encountered while deserializing pair [$fieldName]: $errors")
+            val aResult = leftHandler.deserializeEntry(aToml, "$fieldName.left", 1).attachTo(errors)
+            val bResult = rightHandler.deserializeEntry(bToml, "$fieldName.right", 1).attachTo(errors)
+            ValidationResult.ofMutable(Tuple(aResult.get(), bResult.get()), errors)
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, "Critical error deserializing pair [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing pair [$fieldName]", e)
         }
     }
 
     @Internal
     override fun serialize(input: Tuple<A, B>): ValidationResult<TomlElement> {
         val builder = TomlTableBuilder()
-        val errors: MutableList<String> = mutableListOf()
-        val aElement = leftHandler.serializeEntry(input.left, errors, 1)
-        val bElement = rightHandler.serializeEntry(input.right, errors, 1)
-        builder.element("left", aElement)
-        builder.element("right", bElement)
-        return ValidationResult.predicated(builder.build(), errors.isEmpty(), "Errors encountered serializing pair: $errors")
+        val errors = ValidationResult.createMutable("Error(s) found deserializing pair")
+        val aElement = leftHandler.serializeEntry(input.left, 1).attachTo(errors)
+        val bElement = rightHandler.serializeEntry(input.right, 1).attachTo(errors)
+        builder.element("left", aElement.get())
+        builder.element("right", bElement.get())
+        return ValidationResult.ofMutable(builder.build(), errors)
     }
 
     @Internal
     override fun correctEntry(input: Tuple<A, B>, type: EntryValidator.ValidationType): ValidationResult<Tuple<A, B>> {
-        val errors: MutableList<String> = mutableListOf()
-        val aResult = leftHandler.correctEntry(input.left, type).report(errors)
-        val bResult = rightHandler.correctEntry(input.right, type).report(errors)
-        return ValidationResult.predicated(Tuple(aResult.get(), bResult.get()), errors.isEmpty(), "Errors corrected in pair: $errors")
+        val errors = ValidationResult.createMutable("Pair correction found errors")
+        val aResult = leftHandler.correctEntry(input.left, type).attachTo(errors)
+        val bResult = rightHandler.correctEntry(input.right, type).attachTo(errors)
+        return ValidationResult.ofMutable(Tuple(aResult.get(), bResult.get()), errors)
     }
 
     @Internal
     override fun validateEntry(input: Tuple<A, B>, type: EntryValidator.ValidationType): ValidationResult<Tuple<A, B>> {
-        val errors: MutableList<String> = mutableListOf()
-        leftHandler.validateEntry(input.left, type).report(errors)
-        rightHandler.validateEntry(input.right, type).report(errors)
-        return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in pair: $errors")
+        val errors = ValidationResult.createMutable("Pair validation found errors")
+        leftHandler.validateEntry(input.left, type).attachTo(errors)
+        rightHandler.validateEntry(input.right, type).attachTo(errors)
+        return ValidationResult.ofMutable(input, errors)
     }
 
     @Internal
