@@ -19,12 +19,14 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
+import net.peanuuutz.tomlkt.TomlLiteral
 import net.peanuuutz.tomlkt.TomlTableBuilder
 import net.peanuuutz.tomlkt.asTomlTable
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -62,20 +64,23 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
         return try {
             val table = toml.asTomlTable()
             val map: MutableMap<String, V> = mutableMapOf()
-            val keyErrors: MutableList<String> = mutableListOf()
-            val valueErrors: MutableList<String> = mutableListOf()
-            for ((key, el) in table.entries) {
-                val keyResult = keyHandler.validateEntry(key, EntryValidator.ValidationType.WEAK)
-                if(keyResult.isError()) {
-                    keyErrors.add("Skipping key!: ${keyResult.getError()}")
+            val keyErrors = ValidationResult.createMutable("Skipped keys")
+            val valueErrors = ValidationResult.createMutable("Value errors")
+            for ((keyToml, el) in table.entries) {
+                val field = "{$fieldName, @key: $keyToml}"
+                val keyResult = keyHandler.deserializeEntry(TomlLiteral(keyToml), field, 1).attachTo(keyErrors)
+                if(!keyResult.isValid()) {
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(el, valueErrors, "{$fieldName, @key: $key}", 1).report(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(el, field, 1).attachTo(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
-            ValidationResult.predicated(map, keyErrors.isEmpty() && valueErrors.isEmpty(), "Errors found deserializing map [$fieldName]: Key Errors = $keyErrors, Value Errors = $valueErrors")
+            val totalErrors = ValidationResult.createMutable("Errors found deserializing string map [$fieldName]")
+            totalErrors.addError(keyErrors)
+            totalErrors.addError(valueErrors)
+            ValidationResult.ofMutable(map, totalErrors)
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Critical exception encountered during map [$fieldName] deserialization, using default map: ${e.localizedMessage}")
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Exception during string map [$fieldName] deserialization, using default map", e)
         }
     }
 
@@ -83,8 +88,8 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
     @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     override fun serialize(input: Map<String, V>): ValidationResult<TomlElement> {
         val table = TomlTableBuilder()
-        val errors: MutableList<String> = mutableListOf()
         return try {
+            val errors = ValidationResult.createMutable("Errors found serializing string map")
             for ((key, value) in input) {
                 val annotations = if (value != null)
                     try {
@@ -94,12 +99,12 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
                     }
                 else
                     emptyList()
-                val el = valueHandler.serializeEntry(value, errors, 1)
-                table.element(key, el, annotations)
+                val el = valueHandler.serializeEntry(value, 1).attachTo(errors)
+                table.element(key, el.get(), annotations)
             }
-            return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors found while serializing map!")
+            return ValidationResult.ofMutable(table.build(), errors)
         } catch (e: Throwable) {
-            ValidationResult.predicated(table.build(), errors.isEmpty(), "Critical exception encountered while serializing map: ${e.localizedMessage}")
+            ValidationResult.error(table.build(), ValidationResult.Errors.SERIALIZATION, "Exception while serializing string map", e)
         }
     }
 
@@ -122,32 +127,35 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
     }
 
     @Internal
-    override fun validateEntry(input: Map<String, V>, type: EntryValidator.ValidationType): ValidationResult<Map<String, V>> {
-        val keyErrors: MutableList<String> = mutableListOf()
-        val valueErrors: MutableList<String> = mutableListOf()
-        for ((key, value) in input) {
-            keyHandler.validateEntry(key, type).report(keyErrors)
-            valueHandler.validateEntry(value, type).report(valueErrors)
-        }
-        return ValidationResult.predicated(input, keyErrors.isEmpty() && valueErrors.isEmpty(), "Map validation had errors: key=${keyErrors}, value=$valueErrors")
-    }
-
-    @Internal
-    override fun correctEntry(
-        input: Map<String, V>,
-        type: EntryValidator.ValidationType
-    ): ValidationResult<Map<String, V>> {
+    override fun correctEntry(input: Map<String, V>, type: EntryValidator.ValidationType): ValidationResult<Map<String, V>> {
         val map: MutableMap<String, V> = mutableMapOf()
-        val keyErrors: MutableList<String> = mutableListOf()
-        val valueErrors: MutableList<String> = mutableListOf()
+        val keyErrors = ValidationResult.createMutable("Key errors")
+        val valueErrors = ValidationResult.createMutable("Value errors")
         for ((key, value) in input) {
-            val keyResult = keyHandler.validateEntry(key, type).report(keyErrors)
+            val keyResult = keyHandler.validateEntry(key, type).attachTo(keyErrors)
             if (keyResult.isError()) {
                 continue
             }
-            map[key] = valueHandler.correctEntry(value, type).report(valueErrors).report(valueErrors).get()
+            map[key] = valueHandler.correctEntry(value, type).attachTo(valueErrors).get()
         }
-        return ValidationResult.predicated(map.toMap(), keyErrors.isEmpty() && valueErrors.isEmpty(), "Map correction had errors: key=${keyErrors}, value=$valueErrors")
+        val totalErrors = ValidationResult.createMutable("Map correction found errors")
+        totalErrors.addError(keyErrors)
+        totalErrors.addError(valueErrors)
+        return ValidationResult.ofMutable(map, totalErrors)
+    }
+
+    @Internal
+    override fun validateEntry(input: Map<String, V>, type: EntryValidator.ValidationType): ValidationResult<Map<String, V>> {
+        val keyErrors = ValidationResult.createMutable("Key errors")
+        val valueErrors = ValidationResult.createMutable("Value errors")
+        for ((key, value) in input) {
+            keyHandler.validateEntry(key, type).attachTo(keyErrors)
+            valueHandler.validateEntry(value, type).attachTo(valueErrors)
+        }
+        val totalErrors = ValidationResult.createMutable("Map validation found errors")
+        totalErrors.addError(keyErrors)
+        totalErrors.addError(valueErrors)
+        return ValidationResult.ofMutable(input, totalErrors)
     }
 
     override fun instanceEntry(): ValidatedStringMap<V> {

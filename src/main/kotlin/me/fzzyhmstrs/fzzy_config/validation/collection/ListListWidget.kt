@@ -215,8 +215,9 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             return ValidationResult.predicated(
                 input,
                 !disallowed.apply(self).contains(input),
-                "No duplicate values in a set"
-            ).also { self.isValid = it.isValid() }
+                ValidationResult.Errors.INVALID) { b ->
+                b.content("No duplicate values in a set")
+            }.also { self.isValid = it.isValid() }
         }
 
     }
