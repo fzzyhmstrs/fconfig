@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
-import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
 import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
@@ -34,7 +33,7 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedChoiceList.WidgetType
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -93,25 +92,21 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         return try {
             val array = toml.asTomlArray()
             val list: MutableList<T> = mutableListOf()
-            val errors: MutableList<String> = mutableListOf()
+            val errors = ValidationResult.createMutable("Error(s) found deserializing choice list $fieldName")
             for ((index, el) in array.content.withIndex()) {
-                val result = handler.deserializeEntry(el, errors, "$fieldName[$index]", 1).report(errors)
-                if (!result.isError()) {
+                val result = handler.deserializeEntry(el, "$fieldName[$index]", 1).attachTo(errors)
+                if (result.isValid()) {
                     val candidate = result.get()
                     if (!choices.contains(candidate)) {
-                        errors.add("$fieldName[$index] is not a valid option. Options: $choices")
+                        errors.addError(ValidationResult.Errors.DESERIALIZATION, "$fieldName[$index] is not a valid option. Options: $choices")
                     } else {
                         list.add(index, candidate)
                     }
                 }
             }
-            if (errors.isNotEmpty()) {
-                ValidationResult.error(list, "Error(s) encountered while deserializing choice list, some entries were skipped: $errors")
-            } else {
-                ValidationResult.success(list)
-            }
+            ValidationResult.ofMutable(list, errors)
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Critical error encountered while deserializing choice list [$fieldName], using defaults: ${e.message}.")
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Exception while deserializing choice list [$fieldName], using defaults", e)
         }
     }
 
@@ -119,10 +114,10 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     override fun serialize(input: List<T>): ValidationResult<TomlElement> {
         val toml = TomlArrayBuilder()
-        val errors: MutableList<String> = mutableListOf()
         try {
+            val errors = ValidationResult.createMutable("Error(s) found serializing choice list")
             for (entry in input) {
-                val tomlEntry = handler.serializeEntry(entry, errors, 1)
+                val tomlEntry = handler.serializeEntry(entry, 1).attachTo(errors)
                 val annotations = if (entry != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(entry!!::class)
@@ -131,12 +126,12 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
                     }
                 else
                     emptyList()
-                toml.element(tomlEntry, annotations)
+                toml.element(tomlEntry.get(), annotations)
             }
+            return ValidationResult.ofMutable(toml.build(), errors)
         } catch (e: Throwable) {
-            return ValidationResult.error(toml.build(), "Critical error encountered while serializing choice list: ${e.localizedMessage}")
+            return ValidationResult.error(toml.build(), ValidationResult.Errors.DESERIALIZATION, "Exception while serializing choice list", e)
         }
-        return ValidationResult.predicated(toml.build(), errors.isEmpty(), errors.toString())
     }
 
     @Internal
@@ -155,28 +150,28 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     @Internal
     override fun correctEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val list: MutableList<T> = mutableListOf()
-        val errors: MutableList<String> = mutableListOf()
+        val errors = ValidationResult.createMutable("Choice List correction found errors")
         for ((index, entry) in input.withIndex()) {
-            val result = handler.correctEntry(entry, type).report(errors)
+            val result = handler.correctEntry(entry, type).attachTo(errors)
             val candidate = result.get()
             if (!choices.contains(candidate)) {
-                errors.add("Entry $entry at index [$index] is not a valid option. Options: $choices")
+                errors.addError(ValidationResult.Errors.OUT_OF_BOUNDS, "Entry $entry at index [$index] is not a valid option. Options: $choices")
             }
             list.add(result.get())
         }
-        return ValidationResult.predicated(list, errors.isEmpty(), "Errors corrected in choice list: $errors")
+        return ValidationResult.ofMutable(list, errors)
     }
 
     @Internal
     override fun validateEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
-        val errors: MutableList<String> = mutableListOf()
+        val errors = ValidationResult.createMutable("Choice List validation found errors")
         for ((index, entry) in input.withIndex()) {
-            handler.validateEntry(entry, type).report(errors)
+            handler.validateEntry(entry, type).attachTo(errors)
             if (!choices.contains(entry)) {
-                errors.add("Entry $entry at index [$index] is not a valid option. Options: $choices")
+                errors.addError(ValidationResult.Errors.OUT_OF_BOUNDS, "Entry $entry at index [$index] is not a valid option. Options: $choices")
             }
         }
-        return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in choice list: $errors")
+        return ValidationResult.ofMutable(input, errors)
     }
 
     /**

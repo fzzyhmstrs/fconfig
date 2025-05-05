@@ -28,7 +28,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedChoiceList
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.WidgetType
@@ -140,26 +140,22 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
-            val errors = mutableListOf<String>()
-            val value =  handler.deserializeEntry(toml, errors, fieldName, 1).report(errors)
-            if (errors.isNotEmpty()) {
-                ValidationResult.error(value.get(), "Error(s) encountered while deserializing choice: $errors")
-            } else {
-                value
-            }
+            val errors = ValidationResult.createMutable("Error(s) found deserializing choice [$fieldName]")
+            val value =  handler.deserializeEntry(toml, fieldName, 1).attachTo(errors)
+            ValidationResult.ofMutable(value.get(), errors)
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, "Critical error deserializing choices [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing choice [$fieldName]", e)
         }
     }
 
     @Internal
     override fun serialize(input: T): ValidationResult<TomlElement> {
-        return ValidationResult.success(handler.serializeEntry(input, mutableListOf(), 1))
+        return handler.serializeEntry(input, 1)
     }
 
     @Internal
     override fun validateEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
-        return handler.validateEntry(input, type).also(choices.contains(input), "[$input] not a valid choice: [$choices]")
+        return handler.validateEntry(input, type).also(choices.contains(input), ValidationResult.Errors.OUT_OF_BOUNDS, "[$input] not a valid choice: [$choices]")
     }
 
     /**

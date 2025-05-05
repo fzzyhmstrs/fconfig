@@ -57,7 +57,6 @@ import kotlin.reflect.typeOf
  * @author fzzyhmstrs
  * @since 0.2.0, min/max since 0.3.7
  */
-@Suppress("DEPRECATION")
 @FunctionalInterface
 @JvmDefaultWithCompatibility
 fun interface Expression {
@@ -83,6 +82,7 @@ fun interface Expression {
      */
     fun evalSafe(vars: Map<Char, Double>, fallback: Double): Double {
         return try {
+            @Suppress("DEPRECATION")
             this.eval(vars)
         } catch(e: Throwable) {
             fallback
@@ -97,8 +97,8 @@ fun interface Expression {
          * @author fzzyhmstrs
          * @since 0.2.0
          */
-        val CODEC = Codec.STRING.comapFlatMap(
-            {s -> try{ DataResult.success(parse(s, s)) } catch(e:Exception) { DataResult.error { "Error while deserializing math equation: ${e.localizedMessage}" }}},
+        val CODEC: Codec<Expression> = Codec.STRING.comapFlatMap(
+            {s -> try{ @Suppress("DEPRECATION") DataResult.success(parse(s, s)) } catch(e:Exception) { DataResult.error { "Error while deserializing math equation: ${e.localizedMessage}" }}},
             {e -> e.toString()}
         )
 
@@ -113,6 +113,7 @@ fun interface Expression {
          */
         @JvmStatic
         fun parse(str: String): Expression {
+            @Suppress("DEPRECATION")
             return parse(str, str)
         }
         /**
@@ -149,7 +150,7 @@ fun interface Expression {
                 val reader = StringReader(str)
                 ValidationResult.success(parseExpression(reader, str, 1000))
             } catch (e: Throwable) {
-                ValidationResult.error(null, e.localizedMessage)
+                ValidationResult.error(null, ValidationResult.Errors.BASIC, "Expression parsing expression $str", e)
             }
         }
 
@@ -164,13 +165,14 @@ fun interface Expression {
         @JvmStatic
         fun tryTest(str: String, vars: Set<Char>): ValidationResult<Expression?> {
             val result = tryParse(str)
-            if (result.isError() || vars.isEmpty()) return result
+            if (result.isInvalid() || vars.isEmpty()) return result
             val varMap = vars.associateWith { 0.0 }
             return try {
+                @Suppress("DEPRECATION")
                 result.get()?.eval(varMap)
                 result
             } catch(e: Throwable) {
-                ValidationResult.error(null, "Incorrect variables used in expression: [$str], available: [$vars]")
+                ValidationResult.error(null, ValidationResult.Errors.INVALID, "Incorrect variables used in expression: [$str], supplied: [$vars]")
             }
         }
 
@@ -456,18 +458,24 @@ fun interface Expression {
         }
 
         private fun parentheses(e1: Expression): Expression {
-            return if (e1 is Const) {
-                ConstParentheses(e1.c(), e1.toString())
-            } else if (e1 is ConstParentheses) {
-                ConstParentheses(e1.c1, e1.s1)
-            } else if (e1 is ExpParentheses) {
-                ExpParentheses(e1.e1)
-            } else {
-                ExpParentheses(e1)
+            return when (e1) {
+                is Const -> {
+                    ConstParentheses(e1.c(), e1.toString())
+                }
+                is ConstParentheses -> {
+                    ConstParentheses(e1.c1, e1.s1)
+                }
+                is ExpParentheses -> {
+                    ExpParentheses(e1.e1)
+                }
+                else -> {
+                    ExpParentheses(e1)
+                }
             }
         }
         private class ExpParentheses(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars)
             }
             override fun toString(): String {
@@ -539,6 +547,7 @@ fun interface Expression {
         }
         private class ExpPlus(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars) + e2.eval(vars)
             }
             override fun toString(): String {
@@ -558,6 +567,7 @@ fun interface Expression {
         }
         private class ConstFirstPlus(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return c1 + e2.eval(vars)
             }
             override fun toString(): String {
@@ -578,6 +588,7 @@ fun interface Expression {
         }
         private class ConstSecondPlus(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars) + c2
             }
             override fun toString(): String {
@@ -638,6 +649,7 @@ fun interface Expression {
         }
         private class ExpMinus(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars) - e2.eval(vars)
             }
             override fun toString(): String {
@@ -657,6 +669,7 @@ fun interface Expression {
         }
         private class ConstFirstMinus(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return c1 - e2.eval(vars)
             }
             override fun toString(): String {
@@ -677,6 +690,7 @@ fun interface Expression {
         }
         private class ConstSecondMinus(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars) - c2
             }
             override fun toString(): String {
@@ -733,6 +747,7 @@ fun interface Expression {
         }
         private class ExpTimes(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars) * e2.eval(vars)
             }
             override fun toString(): String {
@@ -752,6 +767,7 @@ fun interface Expression {
         }
         private class ConstFirstTimes(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return c1 * e2.eval(vars)
             }
             override fun toString(): String {
@@ -772,6 +788,7 @@ fun interface Expression {
         }
         private class ConstSecondTimes(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars) * c2
             }
             override fun toString(): String {
@@ -828,6 +845,7 @@ fun interface Expression {
         }
         private class ExpDivide(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars) / e2.eval(vars)
             }
             override fun toString(): String {
@@ -847,6 +865,7 @@ fun interface Expression {
         }
         private class ConstFirstDivide(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return c1 / e2.eval(vars)
             }
             override fun toString(): String {
@@ -867,6 +886,7 @@ fun interface Expression {
         }
         private class ConstSecondDivide(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars) / c2
             }
             override fun toString(): String {
@@ -923,6 +943,7 @@ fun interface Expression {
         }
         private class ExpMod(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars) % e2.eval(vars)
             }
             override fun toString(): String {
@@ -942,6 +963,7 @@ fun interface Expression {
         }
         private class ConstFirstMod(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return c1 % e2.eval(vars)
             }
             override fun toString(): String {
@@ -962,6 +984,7 @@ fun interface Expression {
         }
         private class ConstSecondMod(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars) % c2
             }
             override fun toString(): String {
@@ -1074,6 +1097,7 @@ fun interface Expression {
         }
         private class OneExpPower(val e1: Expression, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars)
             }
             override fun toString(): String {
@@ -1123,6 +1147,7 @@ fun interface Expression {
                 e2 = exp
             }
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e2.eval(vars)
             }
             override fun toString(): String {
@@ -1143,6 +1168,7 @@ fun interface Expression {
         }
         private class ExpConstPower(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars).pow(c2)
             }
             override fun toString(): String {
@@ -1163,6 +1189,7 @@ fun interface Expression {
         }
         private class ConstExpPower(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return c1.pow(e2.eval(vars))
             }
             override fun toString(): String {
@@ -1183,6 +1210,7 @@ fun interface Expression {
         }
         private class ExpPower(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return e1.eval(vars).pow(e2.eval(vars))
             }
             override fun toString(): String {
@@ -1234,6 +1262,7 @@ fun interface Expression {
         }
         private class ExpSqrt(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.sqrt(e1.eval(vars))
             }
             override fun toString(): String {
@@ -1284,6 +1313,7 @@ fun interface Expression {
         }
         private class ExpCeil(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.ceil(e1.eval(vars))
             }
             override fun toString(): String {
@@ -1334,6 +1364,7 @@ fun interface Expression {
         }
         private class ExpFloor(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.floor(e1.eval(vars))
             }
             override fun toString(): String {
@@ -1384,6 +1415,7 @@ fun interface Expression {
         }
         private class ExpRound(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.round(e1.eval(vars))
             }
             override fun toString(): String {
@@ -1450,6 +1482,7 @@ fun interface Expression {
         }
         private class ConstBaseLog(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.log(e1.eval(vars), c2)
             }
             override fun toString(): String {
@@ -1473,6 +1506,7 @@ fun interface Expression {
         }
         private class ConstOperandLog(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.log(c1, e2.eval(vars))
             }
             override fun toString(): String {
@@ -1496,6 +1530,7 @@ fun interface Expression {
         }
         private class ExpLog(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.log(e1.eval(vars), e2.eval(vars))
             }
             override fun toString(): String {
@@ -1550,6 +1585,7 @@ fun interface Expression {
         }
         private class ExpLog10(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.log10(e1.eval(vars))
             }
             override fun toString(): String {
@@ -1599,6 +1635,7 @@ fun interface Expression {
         }
         private class ExpLog2(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.log2(e1.eval(vars))
             }
             override fun toString(): String {
@@ -1649,6 +1686,7 @@ fun interface Expression {
         }
         private class ExpLn(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.ln(e1.eval(vars))
             }
             override fun toString(): String {
@@ -1698,6 +1736,7 @@ fun interface Expression {
         }
         private class ExpAbs(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.abs(e1.eval(vars))
             }
             override fun toString(): String {
@@ -1747,6 +1786,7 @@ fun interface Expression {
         }
         private class ExpSin(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return MathHelper.sin(e1.eval(vars).toFloat()).toDouble()
             }
             override fun toString(): String {
@@ -1797,6 +1837,7 @@ fun interface Expression {
         }
         private class ExpCos(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return MathHelper.cos(e1.eval(vars).toFloat()).toDouble()
             }
             override fun toString(): String {
@@ -1829,7 +1870,9 @@ fun interface Expression {
         }
         private class ExpIncr(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 val base = e1.eval(vars)
+                @Suppress("DEPRECATION")
                 val increment = e2.eval(vars)
                 return base - (base % increment)
             }
@@ -1850,6 +1893,7 @@ fun interface Expression {
         }
         private class ConstFirstIncr(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 val increment = e2.eval(vars)
                 return c1 - (c1 % increment)
             }
@@ -1871,6 +1915,7 @@ fun interface Expression {
         }
         private class ConstSecondIncr(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 val base = e1.eval(vars)
                 return base - (base % c2)
             }
@@ -1928,6 +1973,7 @@ fun interface Expression {
         }
         private class ExpMin(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.min(e1.eval(vars), e2.eval(vars))
             }
             override fun toString(): String {
@@ -1947,6 +1993,7 @@ fun interface Expression {
         }
         private class ConstFirstMin(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.min(c1, e2.eval(vars))
             }
             override fun toString(): String {
@@ -1967,6 +2014,7 @@ fun interface Expression {
         }
         private class ConstSecondMin(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.min(e1.eval(vars), c2)
             }
             override fun toString(): String {
@@ -2023,6 +2071,7 @@ fun interface Expression {
         }
         private class ExpMax(val e1: Expression, val e2: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.max(e1.eval(vars), e2.eval(vars))
             }
             override fun toString(): String {
@@ -2042,6 +2091,7 @@ fun interface Expression {
         }
         private class ConstFirstMax(val c1: Double, val e2: Expression, val s1: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.max(c1, e2.eval(vars))
             }
             override fun toString(): String {
@@ -2062,6 +2112,7 @@ fun interface Expression {
         }
         private class ConstSecondMax(val e1: Expression, val c2: Double, val s2: String): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
+                @Suppress("DEPRECATION")
                 return kotlin.math.max(e1.eval(vars), c2)
             }
             override fun toString(): String {
@@ -2148,6 +2199,7 @@ fun interface Expression {
             }
             return object: Expression {
                 override fun eval(vars: Map<Char, Double>): Double {
+                    @Suppress("DEPRECATION")
                     return member.call(*params.mapIndexed{index, kParameter -> if(kParameter.type.classifier == randomClassifier) inputs[index] else (inputs[index] as Expression).eval(vars) }.toTypedArray()) as Double
                 }
 

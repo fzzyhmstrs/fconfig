@@ -78,10 +78,10 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
             val string = toml.toString().uppercase()
-            val chkEnum = valuesMap[string] ?: return ValidationResult.error(storedValue, ValidationResult.ErrorEntry.DESERIALIZATION, "Invalid enum for [$fieldName]. Possible values are: [${valuesMap.keys}]")
+            val chkEnum = valuesMap[string] ?: return ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Invalid enum for [$fieldName]. Possible values are: [${valuesMap.keys}]")
             ValidationResult.success(chkEnum)
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, ValidationResult.ErrorEntry.DESERIALIZATION, "Exception deserializing enum [$fieldName]", e)
+            ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing enum [$fieldName]", e)
         }
     }
 
