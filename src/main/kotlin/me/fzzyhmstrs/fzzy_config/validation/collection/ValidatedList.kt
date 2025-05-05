@@ -27,7 +27,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -73,7 +72,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         return try {
             val array = toml.asTomlArray()
             val list: MutableList<T> = mutableListOf()
-            val errors = ValidationResult.ErrorEntry.empty("Error(s) found deserializing list $fieldName").mutable()
+            val errors = ValidationResult.createMutable("Error(s) found deserializing list $fieldName")
             for ((index, el) in array.content.withIndex()) {
                 val result = entryHandler.deserializeEntry(el, "$fieldName[$index]", 1).attachTo(errors)
                 if (result.isValid()) {
@@ -82,7 +81,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
             }
             ValidationResult.ofMutable(list, errors)
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, ValidationResult.ErrorEntry.DESERIALIZATION, "Exception while deserializing list [$fieldName], using defaults", e)
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Exception while deserializing list [$fieldName], using defaults", e)
         }
     }
 
@@ -90,8 +89,8 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
     @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     override fun serialize(input: List<T>): ValidationResult<TomlElement> {
         val toml = TomlArrayBuilder()
-        val errors = ValidationResult.ErrorEntry.empty("Error(s) found serializing list").mutable()
         try {
+            val errors = ValidationResult.createMutable("Error(s) found serializing list")
             for (entry in input) {
                 val tomlEntry = entryHandler.serializeEntry(entry, 1).attachTo(errors)
                 val annotations = if (entry != null)
@@ -106,7 +105,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
             }
             return ValidationResult.ofMutable(toml.build(), errors)
         } catch (e: Throwable) {
-            return ValidationResult.error(toml.build(), ValidationResult.ErrorEntry.DESERIALIZATION, "Exception while serializing list", e)
+            return ValidationResult.error(toml.build(), ValidationResult.Errors.DESERIALIZATION, "Exception while serializing list", e)
         }
     }
 
@@ -126,7 +125,7 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
     @Internal
     override fun correctEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val list: MutableList<T> = mutableListOf()
-        val errors = ValidationResult.ErrorEntry.empty("Error(s) found correcting list").mutable()
+        val errors = ValidationResult.createMutable("List correction found errors")
         for (entry in input) {
             val result = entryHandler.correctEntry(entry, type).attachTo(errors)
             list.add(result.get())
@@ -136,11 +135,11 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
 
     @Internal
     override fun validateEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
-        val errors: MutableList<String> = mutableListOf()
+        val errors = ValidationResult.createMutable("List validation found errors")
         for (entry in input) {
-            entryHandler.validateEntry(entry, type).report(errors)
+            entryHandler.validateEntry(entry, type).attachTo(errors)
         }
-        return ValidationResult.predicated(input, errors.isEmpty(), "Errors found in list: $errors")
+        return ValidationResult.ofMutable(input, errors)
     }
 
     /**

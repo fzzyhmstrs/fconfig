@@ -31,7 +31,6 @@ import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
 import net.peanuuutz.tomlkt.*
 import java.io.File
@@ -328,7 +327,7 @@ object ConfigApi {
      * Should be called as a matched pair to [deserializeFromToml]. Ex: if `ignoreNonSync` is false on one end, it needs to be false on the other.
      * @param T Type of the config to serialize. Can be any Non-Null type.
      * @param config the config instance to serialize from
-     * @param errorBuilder [ValidationResult.ErrorEntry.Mutable] instance that the deserializer will apply errors to and then use when building it's [ValidationResult]. Using `ValidationResult.ErrorEntry.empty().mutable()` is a good way to provide a fresh empty mutable error, with an optional header error message.
+     * @param errorBuilder [ValidationResult.ErrorEntry.Mutable] instance that the deserializer will apply errors to and then use when building it's [ValidationResult]. Using `ValidationResult.createMutable()` is a good way to provide a fresh empty mutable error, with an optional header error message.
      * @param flags default IGNORE_NON_SYNC. With the default, elements with the [NonSync] annotation will be skipped. See the flag options below to serialize the entire config (ex: saving to file), fully syncing (ex: initial sync server -> client), etc.
      * - CHECK_NON_SYNC: Byte = 0
      * - IGNORE_NON_SYNC: Byte = 1
@@ -489,7 +488,7 @@ object ConfigApi {
      * @param T the config type. Can be any Non-Null type.
      * @param config the config pre-deserialization
      * @param toml the TomlElement to deserialize from. Needs to be a TomlTable
-     * @param errorBuilder [ValidationResult.ErrorEntry.Mutable] instance that the deserializer will apply errors to and then use when building it's [ValidationResult]. Using `ValidationResult.ErrorEntry.empty().mutable()` is a good way to provide a fresh empty mutable error, with an optional header error message.
+     * @param errorBuilder [ValidationResult.ErrorEntry.Mutable] instance that the deserializer will apply errors to and then use when building it's [ValidationResult]. Using `ValidationResult.createMutable()` is a good way to provide a fresh empty mutable error, with an optional header error message.
      * @param flags default IGNORE_NON_SYNC. With the default, elements with the [NonSync] annotation will be skipped. See the flag options below to serialize the entire config (ex: saving to file), fully syncing (ex: initial sync server -> client), etc.
      * - CHECK_NON_SYNC: Byte = 0
      * - IGNORE_NON_SYNC: Byte = 1
@@ -565,7 +564,7 @@ object ConfigApi {
      * @param T the config type. can be Any non-null type.
      * @param config the config pre-deserialization
      * @param string the string to deserialize from. Needs to be valid Toml.
-     * @param errorBuilder [ValidationResult.ErrorEntry.Mutable] instance that the deserializer will apply errors to and then use when building it's [ValidationResult]. Using `ValidationResult.ErrorEntry.empty().mutable()` is a good way to provide a fresh empty mutable error, with an optional header error message.
+     * @param errorBuilder [ValidationResult.ErrorEntry.Mutable] instance that the deserializer will apply errors to and then use when building it's [ValidationResult]. Using `ValidationResult.createMutable()` is a good way to provide a fresh empty mutable error, with an optional header error message.
      * @param flags default IGNORE_NON_SYNC. With the default, elements with the [NonSync] annotation will be skipped. See the flag options below to serialize the entire config (ex: saving to file), fully syncing (ex: initial sync server -> client), etc.
      * - CHECK_NON_SYNC: Byte = 0
      * - IGNORE_NON_SYNC: Byte = 1

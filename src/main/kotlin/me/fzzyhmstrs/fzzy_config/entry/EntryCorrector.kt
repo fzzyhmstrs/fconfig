@@ -71,7 +71,9 @@ fun interface EntryCorrector<T> {
          * @since 0.2.0
          */
         fun strong(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
-            ifStrong = EntryCorrector { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            ifStrong = EntryCorrector { i, _ ->
+                if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, ValidationResult.Errors.BASIC, errorMsg)
+            }
             return builder()
         }
 
@@ -96,7 +98,9 @@ fun interface EntryCorrector<T> {
          * @since 0.2.0
          */
         fun weak(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
-            ifWeak = EntryCorrector { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            ifWeak = EntryCorrector { i, _ ->
+                if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, ValidationResult.Errors.BASIC, errorMsg)
+            }
             return builder()
         }
 
@@ -120,8 +124,12 @@ fun interface EntryCorrector<T> {
          * @since 0.2.0
          */
         fun both(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
-            ifStrong = EntryCorrector { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
-            ifWeak = EntryCorrector { i, t -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            ifStrong = EntryCorrector { i, _ ->
+                if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, ValidationResult.Errors.BASIC, errorMsg)
+            }
+            ifWeak = EntryCorrector { i, _ ->
+                if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, ValidationResult.Errors.BASIC, errorMsg)
+            }
             return builder()
         }
 

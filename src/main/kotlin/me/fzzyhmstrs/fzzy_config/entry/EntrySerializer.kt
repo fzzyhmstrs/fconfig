@@ -54,9 +54,9 @@ fun interface EntrySerializer<T> {
         @Suppress("DEPRECATION")
         val result = serializeEntry(input, errors, flags)
         if (errors.isNotEmpty()) {
-            val err = ValidationResult.ErrorEntry.empty().mutable()
+            val err = ValidationResult.createMutable()
             for (error in errors) {
-                err.addError(ValidationResult.ErrorEntry.SERIALIZATION, error)
+                err.addError(ValidationResult.Errors.SERIALIZATION, error)
             }
             return ValidationResult.ofMutable(result, err)
         } else {

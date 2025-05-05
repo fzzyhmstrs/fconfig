@@ -69,7 +69,7 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
         return try {
             ValidationResult.success(toml.asTomlLiteral().toByte())
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Problem deserializing ValidatedByte [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing byte [$fieldName]", e)
         }
     }
 
@@ -98,7 +98,10 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
 
     @Internal
     override fun convert(input: Double): ValidationResult<Byte> {
-        return ValidationResult.predicated(input.toInt().toByte(), input % 1 == 0.0 && input.toLong() == input.toInt().toByte().toLong(), "[$input] not a valid Byte")
+        return ValidationResult.predicated(
+            input.toInt().toByte(),
+            input % 1 == 0.0 && input.toLong() == input.toInt().toByte().toLong(),
+            ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("[$input] not a valid Byte") }
     }
 
     @Internal
