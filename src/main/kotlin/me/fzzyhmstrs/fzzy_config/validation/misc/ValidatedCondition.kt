@@ -146,6 +146,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         for (condition in conditions) {
             if (!condition.get()) return true
         }
+        @Suppress("DEPRECATION")
         return delegate.isDefault()
     }
 
@@ -156,6 +157,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             if (!condition.get()) return
         }
         reset()
+        @Suppress("DEPRECATION")
         getUpdateManager()?.addUpdateMessage(this, FcText.translatable("fc.validated_field.default", translation(), defaultValue.toString()))
     }
 
