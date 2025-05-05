@@ -14,7 +14,7 @@ import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.cast
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.ErrorEntry.Type
 import org.slf4j.Logger
 import org.slf4j.event.Level
 import java.util.function.*
@@ -43,8 +43,23 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
     }
 
     /**
+     * Boolean check to determine if this result isn't valid (errors or exception encountered)
+     * - [isInvalid]: No errors nor exceptions
+     * - [isError]: Contains an error (non-critical)
+     * - [isCritical]: Contains a critical exception
+     * @return Boolean, true is an error or exception, false if there are no problems.
+     * @author fzzyhmstrs
+     * @since 0.2.0
+     */
+    fun isInvalid(): Boolean {
+        return errorContext.isEmpty()
+    }
+
+    /**
      * Boolean check to determine if this result is holding an error
-     *
+     * - [isInvalid]: No errors nor exceptions
+     * - [isError]: Contains an error (non-critical)
+     * - [isCritical]: Contains a critical exception
      * @return Boolean, true is an error, false not.
      * @author fzzyhmstrs
      * @since 0.1.0
@@ -55,7 +70,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
     /**
      * Boolean check to determine if this result is holding a critical (exception-caused) error
-     *
+     * - [isInvalid]: No errors nor exceptions
+     * - [isError]: Contains an error (non-critical)
+     * - [isCritical]: Contains a critical exception
      * @return Boolean, true is a critical error, false not.
      * @author fzzyhmstrs
      * @since 0.7.0
@@ -295,7 +312,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @param T Type of result
          * @param C Type of error content to store. This is usually a string message
          * @param storedVal default or fallback instance of type T
-         * @param type [ErrorEntry.Type]&lt;[C]&gt; the error type. When in doubt, use [ErrorEntry.BASIC]
+         * @param type [ErrorEntry.Type]&lt;[C]&gt; the error type. When in doubt, use [Errors.BASIC]
          * @param builder [UnaryOperator]&lt;[ErrorEntry.Builder]&gt; operator for applying content to a provided error builder
          * @return the errored ValidationResult
          * @author fzzyhmstrs
@@ -311,7 +328,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * In this case, typically, [storedVal] will be the default value associated with this validation. A valid instance of T must always be passed back. Add a descriptive error message to [errorContext]. If there is no default, you will want to make your result type nullable and pass back null
          * @param T Type of result
          * @param storedVal default or fallback instance of type T
-         * @param type [ErrorEntry.Type]&lt;String&gt; the string-based error type. When in doubt, use [ErrorEntry.BASIC]
+         * @param type [ErrorEntry.Type]&lt;String&gt; the string-based error type. When in doubt, use [Errors.BASIC]
          * @param error string with error message
          * @param e [Throwable], optional, default null. Exception to pass if this result is critically errored
          * @return the errored ValidationResult
@@ -386,7 +403,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        fun <T, C: Any> predicated(storedVal: T, valid: Boolean, type: ErrorEntry.Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ValidationResult<T> {
+        fun <T, C: Any> predicated(storedVal: T, valid: Boolean, type: Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ValidationResult<T> {
             return if(valid) ValidationResult(storedVal) else ValidationResult(storedVal, builder.apply(ErrorEntry.Builder(type)).build())
         }
 
@@ -402,7 +419,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        fun <T, C: Any> predicated(storedVal: T, valid: Predicate<T>, type: ErrorEntry.Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ValidationResult<T> {
+        fun <T, C: Any> predicated(storedVal: T, valid: Predicate<T>, type: Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ValidationResult<T> {
             return if(valid.test(storedVal)) ValidationResult(storedVal) else ValidationResult(storedVal, builder.apply(ErrorEntry.Builder(type)).build())
         }
 
@@ -453,6 +470,15 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         /**
+         * TODO()
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        fun createMutable(header: String = ""): ErrorEntry.Mutable {
+            return ErrorEntry.empty(header).mutable()
+        }
+
+        /**
          * Creates a new ValidationResult of type T wrapping the new value with the error(if any) from the receiver ValdiationResult (of any type, does not need to match T)
          *
          * Useful if the Validation is performed on an incompatible type, and the error needs to be passed along with type T.
@@ -486,13 +512,13 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * Adds another test, and potentially another error, to a Validation.
          * @param C Type of error content to store. This is usually a string message
          * @param newTest Boolean result of another validation test
-         * @param type [ErrorEntry.Type]&lt;[C]&gt; the error type. When in doubt, use [ErrorEntry.BASIC]
+         * @param type [ErrorEntry.Type]&lt;[C]&gt; the error type. When in doubt, use [Errors.BASIC]
          * @param builder [UnaryOperator]&lt;[ErrorEntry.Builder]&gt; operator for applying content to a provided error builder.
          * @return ValidationResult with this stored value, possibly a new error state and new error message
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        fun <T, C: Any> ValidationResult<T>.also(newTest: Boolean, type: ErrorEntry.Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ValidationResult<T> {
+        fun <T, C: Any> ValidationResult<T>.also(newTest: Boolean, type: Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ValidationResult<T> {
             if (!newTest) {
                 return error(this.storedVal, this.errorContext.addError(builder.apply(ErrorEntry.Builder(type)).build()))
             }
@@ -502,14 +528,14 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         /**
          * Adds another test, and potentially another error, to a Validation.
          * @param newTest Boolean result of another validation test
-         * @param type [ErrorEntry.Type]&lt;String&gt; the string-based error type. When in doubt, use [ErrorEntry.BASIC]
+         * @param type [ErrorEntry.Type]&lt;String&gt; the string-based error type. When in doubt, use [Errors.BASIC]
          * @param error The error message
          * @param e Optional [Throwable] if the error is a critical one
          * @return ValidationResult with this stored value, and possibly a new error state and new error message
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        fun <T> ValidationResult<T>.also(newTest: Boolean, type: ErrorEntry.Type<String>, error: String, e: Throwable? = null): ValidationResult<T> {
+        fun <T> ValidationResult<T>.also(newTest: Boolean, type: Type<String>, error: String, e: Throwable? = null): ValidationResult<T> {
             if (!newTest) {
                 return error(this.storedVal, this.errorContext.addError(ErrorEntry.Builder(type).content(error).exception(e).build()))
             }
@@ -556,7 +582,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @author fzzyhmstrs
          * @since 0.7.0
          */
-        fun <T> ValidationResult<T>.report(errorReporter: BiConsumer<String, Throwable?>): ValidationResult<T> {
+        fun <T> ValidationResult<T>.reportTo(errorReporter: BiConsumer<String, Throwable?>): ValidationResult<T> {
             errorContext.log(errorReporter)
             return this
         }
@@ -628,6 +654,19 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
     }
 
+    object Errors {
+        val BASIC = Type<String>("Error")
+        val SERIALIZATION = Type<String>("Serialization Error")
+        val DESERIALIZATION = Type<String>("Deserialization Error")
+        val OUT_OF_BOUNDS = Type<String>("Value(s) Out of Bounds")
+        val INVALID = Type<String>("Value(s) Invalid")
+        val FILE_STRUCTURE = Type<String>("File Structure Problem")
+        val RESTART = Type<Action>("Restart Required", isString = false, isLoggable = true, isError = false)
+        val ACTION = Type<Action>("Action Required", isString = false, isLoggable = false, isError = false)
+        val VERSION = Type<Int>("Version Number", isString = false, isLoggable = false, isError = false)
+        val ACCESS_VIOLATION = Type<String>("Access Violation")
+    }
+
 
     /**
      * TODO()
@@ -678,7 +717,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @since 0.7.0
          */
         fun  addError(builder: UnaryOperator<Builder<String>>): ErrorEntry {
-            return addError(BASIC, builder)
+            return addError(Errors.BASIC, builder)
         }
         /**
          * TODO()
@@ -942,7 +981,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
              * @since 0.7.0
              */
             fun addError(builder: UnaryOperator<Builder<String>>): Mutable {
-                return addError(BASIC, builder)
+                return addError(Errors.BASIC, builder)
             }
             /**
              * TODO()
@@ -953,19 +992,14 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 this.entry = entry.addError(Builder(type).content(error).exception(e).build())
                 return this
             }
+
+            fun <T> report(value: T, type: Type<String>, error: String, e: Throwable? = null): T {
+                this.entry = entry.addError(Builder(type).content(error).exception(e).build())
+                return value
+            }
         }
 
         companion object {
-            val BASIC = Type<String>("Error")
-            val SERIALIZATION = Type<String>("Serialization Error")
-            val DESERIALIZATION = Type<String>("Deserialization Error")
-            val OUT_OF_BOUNDS = Type<String>("Value Out of Bounds")
-            val FILE_STRUCTURE = Type<String>("File Structure Problem")
-            val RESTART = Type<Action>("Restart Required", isString = false, isLoggable = true, isError = false)
-            val ACTION = Type<Action>("Action Required", isString = false, isLoggable = false, isError = false)
-            val VERSION = Type<Int>("Version Number", isString = false, isLoggable = false, isError = false)
-            val ACCESS_VIOLATION = Type<String>("Access Violation")
-
             /**
              * TODO()
              * @author fzzyhmstrs
@@ -1042,7 +1076,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             }
 
             fun basic(error: String): ErrorEntry {
-                return SingleErrorEntry(BASIC, error)
+                return SingleErrorEntry(Errors.BASIC, error)
             }
 
             fun <C: Any> builder(type: Type<C>): Builder<C> {
@@ -1050,7 +1084,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             }
 
             fun builder(): Builder<String> {
-                return Builder(BASIC)
+                return Builder(Errors.BASIC)
             }
         }
     }

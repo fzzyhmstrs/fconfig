@@ -42,7 +42,6 @@ import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Predicate
-import java.util.function.Supplier
 
 /**
  * A validated provider of [Ingredient]
@@ -241,7 +240,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
         return try {
             IngredientProvider.deserialize(toml, fieldName).map { it ?: storedValue }
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, ValidationResult.ErrorEntry.DESERIALIZATION, "Exception deserializing ValidatedIngredient [$fieldName]", e)
+            ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing ValidatedIngredient [$fieldName]", e)
         }
     }
 
@@ -510,13 +509,13 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
             }
             fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<IngredientProvider?> {
                 val table = toml.asTomlTable()
-                val type = table["type"]?.asTomlLiteral()?.toString() ?: return ValidationResult.error(null, ValidationResult.ErrorEntry.DESERIALIZATION, "Unknown or missing type in IngredientProvider [$fieldName]")
-                val value = table["value"] ?: return ValidationResult.error(null, ValidationResult.ErrorEntry.DESERIALIZATION, "Unknown or missing value in IngredientProvider [$fieldName]")
+                val type = table["type"]?.asTomlLiteral()?.toString() ?: return ValidationResult.error(null, ValidationResult.Errors.DESERIALIZATION, "Unknown or missing type in IngredientProvider [$fieldName]")
+                val value = table["value"] ?: return ValidationResult.error(null, ValidationResult.Errors.DESERIALIZATION, "Unknown or missing value in IngredientProvider [$fieldName]")
                 return when(type) {
                     "stack" -> ValidationResult.success(STACK_INSTANCE.deserialize(value))
                     "stacks"-> ValidationResult.success(STACKS_INSTANCE.deserialize(value))
                     "tag"-> ValidationResult.success(TAG_INSTANCE.deserialize(value))
-                    else -> return ValidationResult.error(null, ValidationResult.ErrorEntry.DESERIALIZATION, "Unknown type in IngredientProvider [$fieldName]: [$type]")
+                    else -> return ValidationResult.error(null, ValidationResult.Errors.DESERIALIZATION, "Unknown type in IngredientProvider [$fieldName]: [$type]")
                 }
             }
         }

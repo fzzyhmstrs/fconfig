@@ -25,7 +25,6 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
@@ -72,8 +71,8 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
         return try {
             val table = toml.asTomlTable()
             val map: MutableMap<K, V> = mutableMapOf()
-            val keyErrors = ValidationResult.ErrorEntry.empty("Skipped keys").mutable()
-            val valueErrors = ValidationResult.ErrorEntry.empty("Value errors").mutable()
+            val keyErrors = ValidationResult.createMutable("Skipped keys")
+            val valueErrors = ValidationResult.createMutable("Value errors")
             for ((keyToml, el) in table.entries) {
                 val field = "{$fieldName, @key: $keyToml}"
                 val keyResult = keyHandler.deserializeEntry(TomlLiteral(keyToml), field, 1).attachTo(keyErrors)
@@ -83,12 +82,12 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
                 val valueResult = valueHandler.deserializeEntry(el, field, 1).attachTo(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
-            val totalErrors = ValidationResult.ErrorEntry.empty("Errors found deserializing map [$fieldName]").mutable()
+            val totalErrors = ValidationResult.createMutable("Errors found deserializing map [$fieldName]")
             totalErrors.addError(keyErrors)
             totalErrors.addError(valueErrors)
             ValidationResult.ofMutable(map, totalErrors)
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, ValidationResult.ErrorEntry.DESERIALIZATION, "Exception during map [$fieldName] deserialization, using default map", e)
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Exception during map [$fieldName] deserialization, using default map", e)
         }
     }
 
@@ -96,8 +95,8 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
     @Suppress("UNNECESSARY_NOT_NULL_ASSERTION")
     override fun serialize(input: Map<K, V>): ValidationResult<TomlElement> {
         val mapArray = TomlArrayBuilder(input.size)
-        val keyErrors = ValidationResult.ErrorEntry.empty("Skipped keys").mutable()
-        val valueErrors = ValidationResult.ErrorEntry.empty("Value errors").mutable()
+        val keyErrors = ValidationResult.createMutable("Skipped keys")
+        val valueErrors = ValidationResult.createMutable("Value errors")
         return try {
             for ((key, value) in input) {
 
@@ -127,12 +126,12 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
                 pairArray.element(valueEl.get(), valueAnnotations)
                 mapArray.element(pairArray.build())
             }
-            val totalErrors = ValidationResult.ErrorEntry.empty("Errors found serializing map").mutable()
+            val totalErrors = ValidationResult.createMutable("Errors found serializing map")
             totalErrors.addError(keyErrors)
             totalErrors.addError(valueErrors)
             return ValidationResult.ofMutable(mapArray.build(), totalErrors)
         } catch (e: Throwable) {
-            ValidationResult.error(mapArray.build(), ValidationResult.ErrorEntry.SERIALIZATION, "Exception encountered serializing map", e)
+            ValidationResult.error(mapArray.build(), ValidationResult.Errors.SERIALIZATION, "Exception encountered serializing map", e)
         }
     }
 
@@ -155,24 +154,10 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
     }
 
     @Internal
-    override fun validateEntry(input: Map<K, V>, type: EntryValidator.ValidationType): ValidationResult<Map<K, V>> {
-        val keyErrors = ValidationResult.ErrorEntry.empty("Key errors").mutable()
-        val valueErrors = ValidationResult.ErrorEntry.empty("Value errors").mutable()
-        for ((key, value) in input) {
-            keyHandler.validateEntry(key, type).attachTo(keyErrors)
-            valueHandler.validateEntry(value, type).attachTo(valueErrors)
-        }
-        val totalErrors = ValidationResult.ErrorEntry.empty("Map validation found errors").mutable()
-        totalErrors.addError(keyErrors)
-        totalErrors.addError(valueErrors)
-        return ValidationResult.ofMutable(input, totalErrors)
-    }
-
-    @Internal
     override fun correctEntry(input: Map<K, V>, type: EntryValidator.ValidationType): ValidationResult<Map<K, V>> {
         val map: MutableMap<K, V> = mutableMapOf()
-        val keyErrors = ValidationResult.ErrorEntry.empty("Key errors").mutable()
-        val valueErrors = ValidationResult.ErrorEntry.empty("Value errors").mutable()
+        val keyErrors = ValidationResult.createMutable("Key errors")
+        val valueErrors = ValidationResult.createMutable("Value errors")
         for ((key, value) in input) {
             val keyResult = keyHandler.validateEntry(key, type).attachTo(keyErrors)
             if (keyResult.isError()) {
@@ -180,10 +165,24 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
             }
             map[key] = valueHandler.correctEntry(value, type).attachTo(valueErrors).get()
         }
-        val totalErrors = ValidationResult.ErrorEntry.empty("Map correction found errors").mutable()
+        val totalErrors = ValidationResult.createMutable("Map correction found errors")
         totalErrors.addError(keyErrors)
         totalErrors.addError(valueErrors)
         return ValidationResult.ofMutable(map, totalErrors)
+    }
+
+    @Internal
+    override fun validateEntry(input: Map<K, V>, type: EntryValidator.ValidationType): ValidationResult<Map<K, V>> {
+        val keyErrors = ValidationResult.createMutable("Key errors")
+        val valueErrors = ValidationResult.createMutable("Value errors")
+        for ((key, value) in input) {
+            keyHandler.validateEntry(key, type).attachTo(keyErrors)
+            valueHandler.validateEntry(value, type).attachTo(valueErrors)
+        }
+        val totalErrors = ValidationResult.createMutable("Map validation found errors")
+        totalErrors.addError(keyErrors)
+        totalErrors.addError(valueErrors)
+        return ValidationResult.ofMutable(input, totalErrors)
     }
 
     /**

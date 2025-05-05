@@ -84,14 +84,14 @@ internal object ClientConfigRegistry {
                 getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
                     configScreenManagers.remove(it)
                 }
-                val saveType = result.get().config.saveType()
+                val saveType = result.get().saveType()
                 if (saveType == SaveType.OVERWRITE)
-                    result.get().config.save() //save config to the client
-                if (result.test(ValidationResult.ErrorEntry.ACTION) { it.content.restartPrompt }) {
-                    if (result.has(ValidationResult.ErrorEntry.RESTART)) {
+                    result.get().save() //save config to the client
+                if (result.test(ValidationResult.Errors.ACTION) { it.content.restartPrompt }) {
+                    if (result.has(ValidationResult.Errors.RESTART)) {
                         FC.LOGGER.info("Client prompted for a restart due to received config updates")
                         FC.LOGGER.info("Restart-prompting updates:")
-                        for (record in result.iterate(ValidationResult.ErrorEntry.RESTART)) {
+                        for (record in result.iterate(ValidationResult.Errors.RESTART)) {
                             record.log(ValidationResult.ErrorEntry.ENTRY_INFO_LOGGER)
                         }
                     }
@@ -104,7 +104,7 @@ internal object ClientConfigRegistry {
                         FC.LOGGER.error("Error encountered with onSyncClient method of config $id!", e)
                     }
                     try {
-                        EventApiImpl.fireOnSyncClient(result.get().config.getId(), result.get().config)
+                        EventApiImpl.fireOnSyncClient(result.get().getId(), result.get())
                     } catch (e: Throwable) {
                         FC.LOGGER.error("Error encountered while running onSyncClient event for config $id!", e)
                     }
@@ -161,7 +161,7 @@ internal object ClientConfigRegistry {
                     val saveType = result.get().config.saveType()
                     if (saveType == SaveType.OVERWRITE)
                         result.get().config.save()
-                    for (action in result.iterate(ValidationResult.ErrorEntry.ACTION)) {
+                    for (action in result.iterate(ValidationResult.Errors.ACTION)) {
                         MinecraftClient.getInstance().player?.sendChat(action.content.clientPrompt)
                     }
                     try {

@@ -81,7 +81,7 @@ class AllowableStrings(private val predicate: Predicate<String>, private val sup
         return if (type == EntryValidator.ValidationType.WEAK)
             ValidationResult.success(input)
         else
-            ValidationResult.predicated(input, this.test(input), "Identifier invalid or not allowed")
+            ValidationResult.predicated(input, this.test(input), ValidationResult.Errors.INVALID) { b -> b.content("String invalid or not allowed") }
     }
 
     /**
