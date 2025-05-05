@@ -69,7 +69,7 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
         return try {
             ValidationResult.success(toml.asTomlLiteral().toShort())
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Problem deserializing ValidatedShort [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Problem deserializing short [$fieldName]: ${e.localizedMessage}")
         }
     }
 
@@ -96,7 +96,10 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
     override var increment: Short? = null
 
     override fun convert(input: Double): ValidationResult<Short> {
-        return ValidationResult.predicated(input.toInt().toShort(), input % 1 == 0.0 && input.toLong() == input.toInt().toShort().toLong(), "[$input] not a valid Short")
+        return ValidationResult.predicated(
+            input.toInt().toShort(),
+            input % 1 == 0.0 && input.toLong() == input.toInt().toShort().toLong(),
+            ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("[$input] not a valid Short") }
     }
 
     override fun minBound(): Short {

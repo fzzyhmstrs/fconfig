@@ -90,7 +90,7 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
         return try {
             ValidationResult.success(toml.asTomlLiteral().toLong())
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Problem deserializing ValidatedLong [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing long [$fieldName]", e)
         }
     }
 
@@ -119,7 +119,10 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
 
     @Internal
     override fun convert(input: Double): ValidationResult<Long> {
-        return ValidationResult.predicated(input.toLong(), input % 1 == 0.0, "[$input] not a valid Long")
+        return ValidationResult.predicated(
+            input.toLong(),
+            input % 1 == 0.0,
+            ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("[$input] not a valid Long") }
     }
 
     @Internal

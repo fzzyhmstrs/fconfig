@@ -40,9 +40,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.Condition
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionSupplierImpl
-import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.ConditionBooleanSupplierImpl
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
 import net.minecraft.network.PacketByteBuf
@@ -96,6 +94,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      */
     @Deprecated("Use listenToEntry instead")
     open fun addListener(listener: Consumer<ValidatedField<T>>) {
+        @Suppress("UNCHECKED_CAST")
         this.listener = listener as? Consumer<Entry<T, *>>
     }
 
@@ -124,28 +123,31 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     ): ValidationResult<T> {
         val tVal = deserialize(toml, fieldName) //1
         if (tVal.isCritical()){ //2
-            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Exception deserializing entry [$fieldName], using default value [${get()}]").addError(tVal) }.report(errorBuilder)
+            @Suppress("DEPRECATION")
+            return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Exception deserializing entry [$fieldName], using default value [${get()}]").addError(tVal) }.report(errorBuilder)
         }
         val tVal2 = tVal.outmap { correctEntry(it, EntryValidator.ValidationType.WEAK) } //3
         set(tVal2.get()) //4
         if (tVal2.isCritical()) { //5
-            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Config entry [$fieldName] had validation errors, corrected to [${get()}]").addError(tVal2) }.report(errorBuilder)
+            @Suppress("DEPRECATION")
+            return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Config entry [$fieldName] had validation errors, corrected to [${get()}]").addError(tVal2) }.report(errorBuilder)
         }
-        return ValidationResult.predicated(get(), tVal2.isValid(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2) }.report(errorBuilder)
+        @Suppress("DEPRECATION")
+        return ValidationResult.predicated(get(), tVal2.isValid(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2) }.report(errorBuilder)
     }
 
     @Internal
     override fun deserializeEntry(toml: TomlElement, fieldName: String, flags: Byte): ValidationResult<T> {
         val tVal = deserialize(toml, fieldName) //1
         if (tVal.isCritical()) { //2
-            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Exception deserializing entry [$fieldName], using default value [${get()}]").addError(tVal) }
+            return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Exception deserializing entry [$fieldName], using default value [${get()}]").addError(tVal) }
         }
         val tVal2 = tVal.outmap { correctEntry(it, EntryValidator.ValidationType.WEAK) } //3
         set(tVal2.get()) //4
         if (tVal2.isCritical()) { //5
-            return ValidationResult.error(get(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Exception correcting deserialized entry [$fieldName], using value [${get()}]").addError(tVal2) }
+            return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Exception correcting deserialized entry [$fieldName], using value [${get()}]").addError(tVal2) }
         }
-        return ValidationResult.predicated(get(), tVal2.isValid(), ValidationResult.ErrorEntry.DESERIALIZATION) { b -> b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2) }
+        return ValidationResult.predicated(get(), tVal2.isValid(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2) }
     }
 
     /**
@@ -161,8 +163,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     abstract fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T>
 
     @Internal
-    @Deprecated("Implement the override using ValidationResult.ErrorEntry.Mutable. Scheduled for removal in 0.8.0.")
+    @Deprecated("Implement the override returning a ValidationResult. Scheduled for removal in 0.8.0.")
     override fun serializeEntry(input: T?, errorBuilder: MutableList<String>, flags: Byte): TomlElement {
+        @Suppress("DEPRECATION")
         return (if(input != null) serialize(input) else serialize(get())).report(errorBuilder).get()
     }
 
@@ -198,7 +201,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
             @Suppress("UNCHECKED_CAST")
             serializeEntry(input as T?, flags)
         } catch (e: Throwable) {
-            ValidationResult.error(TomlNull, ValidationResult.ErrorEntry.SERIALIZATION) { b -> b.content("Incompatible input type. Field of type ${this::class.jvmName} can't accept input of type ${input?.let { it::class.jvmName }}").exception(e) }
+            ValidationResult.error(TomlNull, ValidationResult.Errors.SERIALIZATION) { b -> b.content("Incompatible input type. Field of type ${this::class.jvmName} can't accept input of type ${input?.let { it::class.jvmName }}").exception(e) }
         }
     }
 
@@ -303,9 +306,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.WEAK)
         set(tVal1.get())
         if (tVal1.isCritical()) {
-            return ValidationResult.error(get(), ValidationResult.ErrorEntry.BASIC) { b -> b.content("Exception validating and setting input [$input]. Setting to [${get()}]").addError(tVal1) }
+            return ValidationResult.error(get(), ValidationResult.Errors.BASIC) { b -> b.content("Exception validating and setting input [$input]. Setting to [${get()}]").addError(tVal1) }
         }
-        return ValidationResult.predicated(get(), tVal1.isValid(), ValidationResult.ErrorEntry.BASIC) { b -> b.content("Encountered non-critical errors validating and setting input [$input]").addError(tVal1) }
+        return ValidationResult.predicated(get(), tVal1.isValid(), ValidationResult.Errors.BASIC) { b -> b.content("Encountered non-critical errors validating and setting input [$input]").addError(tVal1) }
     }
 
     /**
@@ -341,9 +344,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
             set(tVal1.get())
         }
         if (tVal1.isCritical()) {
-            return ValidationResult.error(get(), ValidationResult.ErrorEntry.BASIC) { b -> b.content("Exception validating and setting input [$input] with flags $flags. Setting to [${get()}]").addError(tVal1) }
+            return ValidationResult.error(get(), ValidationResult.Errors.BASIC) { b -> b.content("Exception validating and setting input [$input] with flags $flags. Setting to [${get()}]").addError(tVal1) }
         }
-        return ValidationResult.predicated(get(), tVal1.isValid(), ValidationResult.ErrorEntry.BASIC) { b -> b.content("Encountered non-critical errors validating and setting input [$input] with flags $flags").addError(tVal1) }
+        return ValidationResult.predicated(get(), tVal1.isValid(), ValidationResult.Errors.BASIC) { b -> b.content("Encountered non-critical errors validating and setting input [$input] with flags $flags").addError(tVal1) }
     }
 
     @Internal
@@ -689,7 +692,10 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
             { str ->
                 val result = ConfigApiImpl.deserializeEntry(this.instanceEntry(), str, "Field Codec", ConfigApiImpl.IGNORE_NON_SYNC)
                 if(result.isError())
-                    DataResult.error { "Deserialization failed, with errors: ${result.getError()}" }
+                    DataResult.error {
+                        @Suppress("DEPRECATION")
+                        "Deserialization failed, with errors: ${result.getError()}"
+                    }
                 else
                     DataResult.success(result.get())
             },
@@ -698,7 +704,10 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
                 serializer.trySet(t)
                 val result = ConfigApiImpl.serializeEntry(serializer, ConfigApiImpl.CHECK_NON_SYNC)
                 if(result.isError())
-                    DataResult.error { "Serialization failed with errors: ${result.getError()}" }
+                    DataResult.error {
+                        @Suppress("DEPRECATION")
+                        "Serialization failed with errors: ${result.getError()}"
+                    }
                 else
                     DataResult.success(result.get())
             }
