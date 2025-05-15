@@ -4,6 +4,7 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.util.Ref
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -13,6 +14,7 @@ import java.util.function.Consumer
 
 internal class ContextActionWidget(
     private val action: ContextAction,
+    private val ref: Ref<Runnable?>,
     position: Position,
     width: Int)
     :
@@ -22,7 +24,7 @@ internal class ContextActionWidget(
         width,
         14,
         action.texts.name,
-        { _ -> PopupWidget.pop(); action.action.apply(position) },
+        { _ -> PopupWidget.pop(); ref.set { action.action.apply(position) } },
         DEFAULT_ACTIVE_NARRATION_SUPPLIER,
         Consumer { _-> },
         null,

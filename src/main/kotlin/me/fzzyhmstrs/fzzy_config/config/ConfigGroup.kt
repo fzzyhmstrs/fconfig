@@ -136,7 +136,7 @@ class ConfigGroup constructor(
         internal val emptyGroups: LinkedList<String> = LinkedList()
 
         internal fun pop(annotations: List<Annotation>, groups: LinkedList<String>) {
-            if (annotations.firstOrNull { it is Pop } != null) {
+            annotations.filterIsInstance<Pop>().forEach {
                 groups.poll()
             }
         }
