@@ -64,7 +64,6 @@ import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaGetter
 import kotlin.reflect.jvm.javaSetter
 
-@Suppress("DeprecatedCallableAddReplaceWith")
 internal object ConfigApiImpl {
 
     private val gson by lazy {
@@ -159,8 +158,8 @@ internal object ConfigApiImpl {
     }
 
     private fun <T: Config> registerClient(config: T, configClass: () -> T, noGui: Boolean): T {
-        if(isClient)
-            ConfigApiImplClient.registerConfig(config, configClass(), noGui)
+            if(isClient)
+                ConfigApiImplClient.registerConfig(config, configClass(), noGui)
         return config
     }
 
