@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -548,6 +549,7 @@ internal class ConfigScreen(
             .active { manager.hasChanges() }
             .icon(TextureDeco.CONTEXT_SAVE)
         val find = ContextAction.Builder("fc.config.search".translate()) {
+                FC.DEVLOG.warn("Setting searchfield focus")
                 if (this::searchField.isInitialized) { this.focused = searchField; true } else false
             }
             .icon(TextureDeco.CONTEXT_FIND)
