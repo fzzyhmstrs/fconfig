@@ -47,7 +47,7 @@ class ContextType private constructor(private val id: String, private val releva
     }
 
     /**
-     * Subclasses or lambdas determine whether a user key input is relevant or not.
+     * Subclasses or lambdas determine whether a user key input is relevant or not. They should also provide a way for actively determining if they are pressed, though this behavior is deferred.
      * @author fzzyhmstrs
      * @since 0.6.0
      */
@@ -64,6 +64,15 @@ class ContextType private constructor(private val id: String, private val releva
          * @since 0.6.0
          */
         fun relevant(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): Boolean
+
+        /**
+         *
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        fun isPressed(): Boolean {
+            return false
+        }
     }
 
     companion object {
