@@ -57,11 +57,6 @@ interface PopupParentElement: ParentElement, PopupController {
         focused = lastSelected
     }
 
-    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override fun activeWidget(): PopupWidget? {
-        return super.activeWidget()
-    }
-
     /**
      * Called by this parent element when it pushes a PopupWidget to its stack. This method should "blur" the focus of the underlying children in this parent element; using `blur()` from Screen, for example.
      * @author fzzyhmstrs
@@ -77,37 +72,6 @@ interface PopupParentElement: ParentElement, PopupController {
      */
     @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
     override fun initPopup(widget: PopupWidget)
-
-    /**
-     * Applies a popup widget to this parent. If null is passed, removes the top (newest) popup instead
-     * @param widget [PopupWidget], nullable. If not null, will be added to the top of this parent's popup stack, otherwise the top element will be popped
-     * @param mouseX Double, nullable. If not null, will be used to reset mouse hover context when the last popup is removed.
-     * @param mouseY Double, nullable. If not null, will be used to reset mouse hover context when the last popup is removed.
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override fun setPopup(widget: PopupWidget?, mouseX: Double?, mouseY: Double?) {
-        super.setPopup(widget, mouseX, mouseY)
-    }
-
-    /**
-     * Applies a popup widget to this parent. If null is passed, removes the top (newest) popup instead
-     * @param widget [PopupWidget], nullable. If not null, will be added to the top of this parent's popup stack, otherwise the top element will be popped
-     * @param mouseX Double, nullable. If not null, will be used to reset mouse hover context when the last popup is removed.
-     * @param mouseY Double, nullable. If not null, will be used to reset mouse hover context when the last popup is removed.
-     * @author fzzyhmstrs
-     * @since 0.6.6
-     */
-    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override fun setPopupImmediate(widget: PopupWidget?, mouseX: Double?, mouseY: Double?) {
-        super.setPopupInternal(widget, mouseX, mouseY)
-    }
-
-    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override fun setPopupInternal(widget: PopupWidget?, mouseX: Double?, mouseY: Double?) {
-        super.setPopupInternal(widget, mouseX, mouseY)
-    }
 
     override fun hoveredElement(mouseX: Double, mouseY: Double): Optional<Element> {
         return if (popupWidgets.isEmpty())

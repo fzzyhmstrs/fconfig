@@ -158,7 +158,7 @@ interface PopupController: LastSelectable {
         context.matrices.pop()
     }
 
-    data class PopupEntry(val parent: PopupController, val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null)
+    data class PopupEntry(val parent: PopupController, val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null, val popAction: Runnable = Runnable { })
 
     companion object {
         private val popupStack: LinkedList<PopupEntry> = LinkedList()
@@ -177,6 +177,7 @@ interface PopupController: LastSelectable {
                 while (popupStack.isNotEmpty()) {
                     val e = popupStack.pop()
                     e.parent.setPopupInternal(e.widget, e.mouseX, e.mouseY)
+                    e.popAction.run()
                 }
             }
         }
