@@ -88,7 +88,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     override fun deserializedChanged(old: Any?, new: Any?): Boolean {
         old as? T ?: return true
         new as? T ?: return true
-        return (ConfigApiImpl.serializeToToml(old, "", 1) != ConfigApiImpl.serializeToToml(new, "", 1))
+        return (ConfigApiImpl.serializeToToml(old, "", 1).get() != ConfigApiImpl.serializeToToml(new, "", 1).get())
     }
 
     /**
