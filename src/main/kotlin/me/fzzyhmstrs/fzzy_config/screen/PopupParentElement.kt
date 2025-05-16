@@ -10,10 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.screen
 
-import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.TriState
-import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
 import java.util.*
@@ -29,21 +27,6 @@ import java.util.*
 //client
 @JvmDefaultWithCompatibility
 interface PopupParentElement: ParentElement, PopupController {
-    /**
-     * A stack for holding popupwidgets while allowing for easy list iteration as needed. For rendering this stack should be traversed in reverse order, which LinkedList makes easy with `descendingIterator`
-     * @author fzzyhmstrs
-     * @since 0.2.0, override from PopupController 0.6.7, scheduled for removal 0.7.0
-     */
-    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override val popupWidgets: LinkedList<PopupWidget>
-
-    /**
-     * Boolean prevents `mouseReleased` from triggering on the Popup or Widget underneath the active popup if it's closed on `mouseClicked`
-     * @author fzzyhmstrs
-     * @since 0.2.0, override from PopupController 0.6.7, scheduled for removal 0.7.0
-     */
-    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override var justClosedWidget: Boolean
 
     override val child: LastSelectable?
         get() = focused as? LastSelectable
@@ -57,22 +40,6 @@ interface PopupParentElement: ParentElement, PopupController {
         focused = lastSelected
     }
 
-    /**
-     * Called by this parent element when it pushes a PopupWidget to its stack. This method should "blur" the focus of the underlying children in this parent element; using `blur()` from Screen, for example.
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override fun blurElements()
-
-    /**
-     * called when a Popup is pushed to this element, after blurring.
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    @Deprecated("Override of PopupController Method. This instance scheduled for removal 0.7.0")
-    override fun initPopup(widget: PopupWidget)
-
     override fun hoveredElement(mouseX: Double, mouseY: Double): Optional<Element> {
         return if (popupWidgets.isEmpty())
             return super.hoveredElement(mouseX, mouseY)
@@ -85,7 +52,7 @@ interface PopupParentElement: ParentElement, PopupController {
         if (popupWidget.mouseClicked(mouseX, mouseY, button) || popupWidget.isMouseOver(mouseX, mouseY)) {
             return true
         } else if(popupWidget.closesOnMissedClick() != TriState.FALSE) {
-            setPopupInternal(null, mouseX, mouseY)
+            setPopupInternal(null, mouseX, mouseY, false)
             if (popupWidget.closesOnMissedClick().asBoolean)
                 return mouseClick(mouseX, mouseY, button)
         }

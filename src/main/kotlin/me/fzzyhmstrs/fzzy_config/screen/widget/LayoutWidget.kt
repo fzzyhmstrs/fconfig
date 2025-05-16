@@ -847,8 +847,7 @@ class LayoutWidget @JvmOverloads constructor(
     }
 
     //client
-    @Suppress("DEPRECATION")
-    internal enum class PositionRelativePos: PopupWidget.Builder.Position, Position {
+    internal enum class PositionRelativePos: Position {
         @Deprecated("Use Positions Impl values")
         BELOW {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
@@ -870,8 +869,7 @@ class LayoutWidget @JvmOverloads constructor(
     }
 
     //client
-    @Suppress("DEPRECATION")
-    internal enum class PositionRelativeAlignment: PopupWidget.Builder.Position, Position {
+    internal enum class PositionRelativeAlignment: Position {
         @Deprecated("Use Positions Impl values")
         HORIZONTAL_TO_TOP_EDGE {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
@@ -911,8 +909,7 @@ class LayoutWidget @JvmOverloads constructor(
     }
 
     //client
-    @Suppress("DEPRECATION")
-    sealed interface PositionAlignment: PopupWidget.Builder.Position, Position {
+    sealed interface PositionAlignment: Position {
         fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
     }
 

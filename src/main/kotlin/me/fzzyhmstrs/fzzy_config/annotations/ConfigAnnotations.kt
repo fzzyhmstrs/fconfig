@@ -161,7 +161,7 @@ annotation class Version(val version: Int)
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-@Deprecated("Use RequiresInfo instead. If your setting or config doesn't require a full restart, consider one of the other Action options.", replaceWith = ReplaceWith("@RequiresInfo(ConfigInfo.RESTART)", "me.fzzyhmstrs.fzzy_config.config.ConfigInfo"))
+@Deprecated("Use RequiresAction instead. If your setting or config doesn't require a full restart, consider one of the other Action options.", replaceWith = ReplaceWith("@RequiresAction(Action.RESTART)", "me.fzzyhmstrs.fzzy_config.config.Action"))
 @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
 annotation class RequiresRestart
 
