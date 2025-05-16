@@ -33,6 +33,7 @@ import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
+import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -81,6 +82,11 @@ internal class ConfigScreen(
 
     private val menuListBackground: Identifier = "textures/gui/menu_list_background.png".simpleId()
     private val inWorldMenuListBackground: Identifier = "textures/gui/inworld_menu_list_background.png".simpleId()
+
+    override fun setFocused(focused: Element?) {
+        FC.DEVLOG.error("Setting Focus on $focused", Exception())
+        super.setFocused(focused)
+    }
 
     fun setGlobalInputHandler(handler: ((key: Int, released: Boolean, type: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean) -> TriState)?) {
         this.globalInputHandler = handler
@@ -549,7 +555,6 @@ internal class ConfigScreen(
             .active { manager.hasChanges() }
             .icon(TextureDeco.CONTEXT_SAVE)
         val find = ContextAction.Builder("fc.config.search".translate()) {
-                FC.DEVLOG.warn("Setting searchfield focus")
                 if (this::searchField.isInitialized) { this.focused = searchField; true } else false
             }
             .icon(TextureDeco.CONTEXT_FIND)
