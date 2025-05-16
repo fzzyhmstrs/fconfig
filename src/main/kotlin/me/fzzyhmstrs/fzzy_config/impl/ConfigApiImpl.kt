@@ -29,6 +29,7 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.updates.BasicValidationProvider
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.*
@@ -118,6 +119,11 @@ internal object ConfigApiImpl {
         if (isClient)
             return ConfigApiImplClient.isScreenOpen(scope)
         return false
+    }
+
+    internal fun registerScreenProvider(namespace: String, provider: ConfigScreenProvider) {
+        if (isClient)
+            ConfigApiImplClient.registerScreenProvider(namespace, provider)
     }
 
     internal fun openRestartScreen() {
