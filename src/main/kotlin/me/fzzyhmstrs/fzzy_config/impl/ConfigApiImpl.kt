@@ -509,12 +509,6 @@ internal object ConfigApiImpl {
         return ValidationResult.ofMutable(toml.build(), errorBuilder)
     }
 
-    @Deprecated("Use overload with Mutable params")
-    internal fun <T: Config> serializeConfigSafe(config: T, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<String> {
-        @Suppress("DEPRECATION")
-        return serializeConfig(config, errorBuilder, flags, fileType)
-    }
-
     internal fun <T: Config> serializeConfigSafe(config: T, errorHeader: String = "", flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<String> {
         return serializeConfig(config, ValidationResult.createMutable(errorHeader), flags, fileType)
     }
@@ -559,14 +553,6 @@ internal object ConfigApiImpl {
         return ValidationResult.ofMutable(toml.build(), errorBuilder)
     }
 
-    /*@Deprecated("Use overload with Mutable param")
-    internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): String where M: UpdateManager, M: BasicValidationProvider {
-        val builder = ValidationResult.createMutable()
-        val result = serializeUpdateToToml(config, manager, builder, flags)
-        builder.entry.log { s, _ -> errorBuilder.add(s) }
-        return Toml.encodeToString(result.get())
-    }*/
-
     internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorHeader: String = "", flags: Byte = CHECK_NON_SYNC): ValidationResult<String> where M: UpdateManager, M: BasicValidationProvider {
         return serializeUpdateToToml(config, manager, ValidationResult.createMutable(errorHeader), flags).map(Toml::encodeToString)
     }
@@ -574,14 +560,6 @@ internal object ConfigApiImpl {
     internal fun <T: Config, M> serializeUpdate(config: T, manager: M, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = CHECK_NON_SYNC): ValidationResult<String> where M: UpdateManager, M: BasicValidationProvider {
         return serializeUpdateToToml(config, manager, errorBuilder, flags).map(Toml::encodeToString)
     }
-
-    /*@Deprecated("Use overload without errorBuilder")
-    internal fun serializeEntry(entry: Entry<*, *>, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC): String {
-        val toml = TomlTableBuilder()
-        @Suppress("DEPRECATION")
-        toml.element("entry", entry.serializeEntry(null, flags).report(errorBuilder).get())
-        return Toml.encodeToString(toml.build())
-    }*/
 
     internal fun serializeEntry(entry: Entry<*, *>, flags: Byte = IGNORE_NON_SYNC): ValidationResult<String> {
         return entry.serializeEntry(null, flags).map { TomlTableBuilder().element("entry", it) }.map (Toml::encodeToString)
@@ -716,18 +694,8 @@ internal object ConfigApiImpl {
         return ValidationResult.ofMutable(config, errorBuilder)
     }
 
-    /*@Deprecated("Use overload with Mutable input")
-    internal fun <T: Config> deserializeConfigSafe(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<T> {
-        @Suppress("DEPRECATION")
-        return deserializeConfig(config, string, errorBuilder, flags, fileType)
-    }*/
-
     internal fun <T: Config> deserializeConfigSafe(config: T, string: String, errorHeader: String = "", flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<T> {
         return deserializeConfig(config, string, errorHeader, flags, fileType)
-    }
-
-    internal fun <T: Config> deserializeConfigSafe(config: T, string: String, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<T> {
-        return deserializeConfig(config, string, errorBuilder, flags, fileType)
     }
 
     @Deprecated("Use overload with Mutable input")
@@ -765,14 +733,6 @@ internal object ConfigApiImpl {
         }
         return deserializeFromToml(config, toml, errorBuilder, flags)
     }
-
-    /*@Deprecated("Use overload with a mutable")
-    private fun <T: Any> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
-        val builder = ValidationResult.createMutable()
-        val result = deserializeUpdateFromToml(config, toml, builder, flags)
-        result.log { s, _ -> errorBuilder.add(s) }
-        return result
-    }*/
 
     private fun <T: Any> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
         try {
@@ -838,17 +798,6 @@ internal object ConfigApiImpl {
         return ValidationResult.ofMutable(ConfigContext(config), errorBuilder)
     }
 
-    /*@Deprecated("Use overload with a mutable")
-    internal fun <T: Config> deserializeUpdate(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
-        val toml = try {
-            Toml.parseToTomlTable(string)
-        } catch (e: Throwable) {
-            return ValidationResult.error(ConfigContext(config), ValidationResult.Errors.FILE_STRUCTURE, "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing", e)
-        }
-        @Suppress("DEPRECATION")
-        return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
-    }*/
-
     internal fun <T: Config> deserializeUpdate(config: T, string: String, errorHeader: String = "", flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
         return deserializeUpdate(config, string, ValidationResult.createMutable(errorHeader), flags)
     }
@@ -861,18 +810,6 @@ internal object ConfigApiImpl {
         }
         return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
     }
-
-    /*@Deprecated("Use param without error list")
-    internal fun <T> deserializeEntry(entry: Entry<T, *>, string: String, scope: String, errorBuilder: MutableList<String>, flags: Byte = CHECK_NON_SYNC): ValidationResult<out T?> {
-        val toml = try {
-            Toml.parseToTomlTable(string)
-        } catch (e: Throwable) {
-            return ValidationResult.error(null, ValidationResult.Errors.FILE_STRUCTURE, "Toml $string isn't properly formatted to be deserialized", e)
-        }
-        val element = toml["entry"] ?: return ValidationResult.error(null, ValidationResult.Errors.DESERIALIZATION, "Toml $string doesn't contain needed 'entry' key")
-        @Suppress("DEPRECATION")
-        return entry.deserializeEntry(element, errorBuilder, scope, flags)
-    }*/
 
     internal fun <T> deserializeEntry(entry: Entry<T, *>, string: String, scope: String, flags: Byte = CHECK_NON_SYNC): ValidationResult<out T?> {
         val toml = try {
