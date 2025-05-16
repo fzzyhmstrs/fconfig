@@ -13,9 +13,7 @@ package me.fzzyhmstrs.fzzy_config_test.test
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.result.ResultProvider
-import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
-import me.fzzyhmstrs.fzzy_config_test.JavaTestConfig2
 
 
 object TestConfig {
@@ -58,7 +56,7 @@ object TestConfig {
     var testConfigAny = ConfigApi.registerAndLoadConfig({ TestConfigImplAny() }, RegisterType.BOTH)
 
     //var rootConfig = ConfigApi.registerAndLoadConfig({ TestRootConfigImpl() }, RegisterType.BOTH)
-    //var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
+    var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
     //var testConfig4 = ConfigApi.registerAndLoadConfig({ TestConfigImpl4() }, RegisterType.BOTH)
 
     //var javaConfig2 = ConfigApi.registerAndLoadConfig({ JavaTestConfig2() }, RegisterType.SERVER)

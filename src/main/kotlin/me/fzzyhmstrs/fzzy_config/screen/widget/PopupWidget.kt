@@ -10,23 +10,16 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
-import me.fzzyhmstrs.fzzy_config.screen.PopupController
-import me.fzzyhmstrs.fzzy_config.screen.PopupParentElement
-import me.fzzyhmstrs.fzzy_config.screen.PopupWidgetScreen
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.MouseClickResult
+import me.fzzyhmstrs.fzzy_config.screen.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.renderBlur
 import me.fzzyhmstrs.fzzy_config.util.TriState
-import me.fzzyhmstrs.fzzy_config.util.pos.Pos
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
 import net.minecraft.client.gui.navigation.GuiNavigation
@@ -40,7 +33,6 @@ import net.minecraft.client.gui.widget.*
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
 import java.util.function.*
 import java.util.function.Function
@@ -61,20 +53,7 @@ class PopupWidget
         private var message: Text,
         private var width: Int,
         private var height: Int,
-        private val blurBackground: Boolean,
-        private val closeOnOutOfBounds: TriState,
-        private val background: Identifier,
-        private val positionX: BiFunction<Int, Int, Int>,
-        private val positionY: BiFunction<Int, Int, Int>,
-        private val positioner: Positioner,
-        private val widthFunction: BiFunction<Int, Int, Int>,
-        private val heightFunction: BiFunction<Int, Int, Int>,
-        private val onClose: Runnable,
-        private val onClick: MouseClickResult,
-        private val onSwitchFocus: Consumer<Element?>,
-        private val children: List<Element>,
-        private val selectables: List<Selectable>,
-        private val drawables: List<Drawable>)
+        private val context: Context)
     :
     ParentElement,
     Narratable,
@@ -90,7 +69,7 @@ class PopupWidget
     private var suggestionWindowElement: Element? = null
 
     init {
-        for (child in children) {
+        for (child in context.children) {
             if (child is SuggestionWindowProvider)
                 child.addListener(this)
         }
@@ -101,11 +80,15 @@ class PopupWidget
     }
 
     fun onClose() {
-        this.onClose.run()
+        this.context.onClose.run()
+    }
+
+    fun afterClose() {
+        this.context.afterClose.run()
     }
 
     fun closesOnMissedClick(): TriState {
-        return closeOnOutOfBounds
+        return context.closeOnOutOfBounds
     }
 
      fun blur() {
@@ -114,12 +97,12 @@ class PopupWidget
     }
 
     fun position(screenWidth: Int, screenHeight: Int) {
-        this.width = widthFunction.apply(screenWidth, width)
-        this.height = heightFunction.apply(screenHeight, height)
-        this.x = positionX.apply(screenWidth, width) //screenWidth/2 - width/2
-        this.y = positionY.apply(screenHeight, height) //screenHeight/2 - height/2
-        positioner.position(this.x, this.y, this.width, this.height)
-        for (el in children) {
+        this.width = context.widthFunction.apply(screenWidth, width)
+        this.height = context.heightFunction.apply(screenHeight, height)
+        this.x = context.positionX.apply(screenWidth, width) //screenWidth/2 - width/2
+        this.y = context.positionY.apply(screenHeight, height) //screenHeight/2 - height/2
+        context.positioner.position(this.x, this.y, this.width, this.height)
+        for (el in context.children) {
             if (el is RepositioningWidget) {
                 el.onReposition()
             }
@@ -127,17 +110,17 @@ class PopupWidget
     }
 
     override fun children(): List<Element> {
-        return children
+        return context.children
     }
 
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        if (blurBackground) {
+        if (this.context.blurBackground) {
             renderBlur(context, x.toFloat(), y.toFloat(), delta)
         }
         RenderSystem.enableBlend()
         RenderSystem.disableDepthTest()
-        context.drawNineSlice(background, x, y, width, height)
-        for (drawable in drawables) {
+        context.drawNineSlice(this.context.background, x, y, width, height)
+        for (drawable in this.context.drawables) {
             RenderSystem.disableDepthTest()
             drawable.render(context, mouseX, mouseY, delta)
         }
@@ -149,7 +132,7 @@ class PopupWidget
     }
 
     fun preClick(mouseX: Double, mouseY: Double, button: Int): ClickResult {
-        return onClick.onClick(mouseX, mouseY, isMouseOver(mouseX, mouseY), button)
+        return context.onClick.onClick(mouseX, mouseY, isMouseOver(mouseX, mouseY), button)
     }
 
     override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -212,7 +195,7 @@ class PopupWidget
 
     override fun setFocused(focused: Element?) {
         if (this.focused == focused) return
-        onSwitchFocus.accept(focused)
+        context.onSwitchFocus.accept(focused)
         this.focused?.let { it.isFocused = false }
         focused?.let { it.isFocused = true }
         this.focused = focused
@@ -239,7 +222,7 @@ class PopupWidget
 
     override fun appendNarrations(builder: NarrationMessageBuilder) {
         builder.put(NarrationPart.TITLE, message)
-        val list: List<Selectable> = this.selectables.filter { it.isNarratable }
+        val list: List<Selectable> = this.context.selectables.filter { it.isNarratable }
         val selectedElementNarrationData = Screen.findSelectedElementData(list, focusedSelectable)
         if (selectedElementNarrationData != null) {
             if (selectedElementNarrationData.selectType.isFocused) {
@@ -352,7 +335,7 @@ class PopupWidget
      * @author fzzyhmstrs
      * @since 0.2.0
      */
-    @Suppress("DEPRECATION", "UNUSED")
+    @Suppress("UNUSED")
     //client
     class Builder @JvmOverloads constructor(private val title: Text, spacingW: Int = 4, spacingH: Int = spacingW) {
 
@@ -363,6 +346,7 @@ class PopupWidget
         private var heightFunction: BiFunction<Int, Int, Int> = BiFunction { _, h -> h }
 
         private var onClose = Runnable { }
+        private var afterClose = Runnable { }
         private var onClick: MouseClickResult = MouseClickResult { _, _, _, _ -> ClickResult.USE }
         private var onSwitchFocus: Consumer<Element?> = Consumer { _ -> }
         private var blurBackground = true
@@ -392,13 +376,13 @@ class PopupWidget
          * @param parent String - the id of the parent to key layout of this new element off of.
          * @param spacingW Int - the custom horizontal padding
          * @param spacingH Int - the custom vertical padding
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
+         * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedBoth(id: String, element: E, parent: String, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Widget {
+        fun <E> addElementSpacedBoth(id: String, element: E, parent: String, spacingW: Int, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
             layoutWidget.pushSpacing({ _ -> spacingW }, { _ -> spacingH })
             layoutWidget.add(id, element, parent, *positions)
             layoutWidget.popSpacing()
@@ -413,13 +397,13 @@ class PopupWidget
          * @param element E - the widget
          * @param parent String - the id of the parent to key layout of this new element off of.
          * @param spacingW Int - the custom horizontal padding
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
+         * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedW(id: String, element: E, parent: String, spacingW: Int, vararg positions: Position): Builder where E: Widget {
+        fun <E> addElementSpacedW(id: String, element: E, parent: String, spacingW: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
             layoutWidget.pushSpacing({ _ -> spacingW }, UnaryOperator.identity())
             layoutWidget.add(id, element, parent, *positions)
             layoutWidget.popSpacing()
@@ -434,13 +418,13 @@ class PopupWidget
          * @param element E - the widget
          * @param parent String - the id of the parent to key layout of this new element off of.
          * @param spacingH Int - the custom vertical padding
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
+         * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedH(id: String, element: E, parent: String, spacingH: Int, vararg positions: Position): Builder where E: Widget {
+        fun <E> addElementSpacedH(id: String, element: E, parent: String, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
             layoutWidget.pushSpacing(UnaryOperator.identity()) { _ -> spacingH }
             layoutWidget.add(id, element, parent, *positions)
             layoutWidget.popSpacing()
@@ -455,13 +439,13 @@ class PopupWidget
          * @param element E - the widget
          * @param spacingW Int - the custom horizontal padding
          * @param spacingH Int - the custom vertical padding
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
+         * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedBoth(id: String, element: E, spacingW: Int, spacingH: Int, vararg positions: Position): Builder where E: Widget {
+        fun <E> addElementSpacedBoth(id: String, element: E, spacingW: Int, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
             layoutWidget.pushSpacing({ _ -> spacingW }, { _ -> spacingH })
             layoutWidget.add(id, element, *positions)
             layoutWidget.popSpacing()
@@ -475,13 +459,13 @@ class PopupWidget
          * @param id String - the id of this element, used when an element refers to this one as a parent
          * @param element E - the widget
          * @param spacingW Int - the custom horizontal padding
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
+         * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedW(id: String, element: E, spacingW: Int, vararg positions: Position): Builder where E: Widget {
+        fun <E> addElementSpacedW(id: String, element: E, spacingW: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
             layoutWidget.pushSpacing({ _ -> spacingW }, UnaryOperator.identity())
             layoutWidget.add(id, element, *positions)
             layoutWidget.popSpacing()
@@ -495,13 +479,13 @@ class PopupWidget
          * @param id String - the id of this element, used when an element refers to this one as a parent
          * @param element E - the widget
          * @param spacingH Int - the custom vertical padding
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
+         * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
          * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
-        fun <E> addElementSpacedH(id: String, element: E, spacingH: Int, vararg positions: Position): Builder where E: Widget {
+        fun <E> addElementSpacedH(id: String, element: E, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
             layoutWidget.pushSpacing(UnaryOperator.identity()) { _ -> spacingH }
             layoutWidget.add(id, element, *positions)
             layoutWidget.popSpacing()
@@ -515,13 +499,13 @@ class PopupWidget
          * @param id String - the id of this element, used when an element refers to this one as a parent
          * @param element E - the widget
          * @param parent String - the id of the parent to key layout of this new element off of.
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
+         * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
          * @since 0.2.0
          */
         @Deprecated("Use 'add' instead")
-        fun <E> addElement(id: String, element: E, parent: String, vararg positions: Position): Builder where E: Widget {
+        fun <E> addElement(id: String, element: E, parent: String, vararg positions: LayoutWidget.Position): Builder where E: Widget {
             layoutWidget.add(id, element, parent, *positions)
             return this
         }
@@ -532,13 +516,13 @@ class PopupWidget
          * @param E - Any subclass of [Widget]
          * @param id String - the id of this element, used when an element refers to this one as a parent
          * @param element E - the widget
-         * @param positions vararg [Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
+         * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
          * @since 0.2.0
          */
         @Deprecated("Use 'add' instead")
-        fun <E> addElement(id: String, element: E, vararg positions: Position): Builder where E: Widget {
+        fun <E> addElement(id: String, element: E, vararg positions: LayoutWidget.Position): Builder where E: Widget {
             layoutWidget.add(id, element, *positions)
             return this
         }
@@ -768,6 +752,9 @@ class PopupWidget
 
         /**
          * Defines an action to perform when this widget is closed
+         * - `onClose`
+         * - Underlying element restored
+         * - `afterClose`
          * @param onClose [Runnable] - the action to be performed
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
@@ -775,6 +762,21 @@ class PopupWidget
          */
         fun onClose(onClose: Runnable): Builder {
             this.onClose = onClose
+            return this
+        }
+
+        /**
+         * Defines an action to perform after this widget has been closed and focus returned to the underlying widget or screen
+         * - `onClose`
+         * - Underlying element restored
+         * - `afterClose`
+         * @param afterClose [Runnable] - the action to be performed
+         * @return Builder - this builder for further use
+         * @author fzzyhmstrs
+         * @since 0.7.0
+         */
+        fun afterClose(afterClose: Runnable): Builder {
+            this.afterClose = afterClose
             return this
         }
 
@@ -823,7 +825,7 @@ class PopupWidget
             return this
         }
         /**
-         * The widget will close on a missed click and it will pass the missed click to the screen underneath
+         * The widget will close on a missed click, and it will pass the missed click to the screen underneath
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
          * @since 0.6.6
@@ -890,7 +892,7 @@ class PopupWidget
                 }
             }
 
-            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, onClick, onSwitchFocus, children, selectables, drawables)
+            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, Context(blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, afterClose, onClick, onSwitchFocus, children, selectables, drawables))
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -989,153 +991,6 @@ class PopupWidget
                 return BiFunction { sd, d -> max(min(sd - d, (sd/2 - d/2 + o.get())), 0) }
             }
         }
-
-        /**
-         * A layout position to apply to a popup element
-         *
-         * Typical implementation requires at least two positions, a relative position and an alignment
-         * Positions are broken down into 3 sub-categories:
-         * - [LayoutWidget.PositionRelativePos] - How to generally position an element relative to its parent
-         * - [LayoutWidget.PositionRelativeAlignment] - How to align an element in relation to the dimension features of its parent (top, bottom, left, and right edges etc.)
-         * - [LayoutWidget.PositionGlobalAlignment] - How to align an element in relation to the global dimensions of the Popup as a whole
-         * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-         */
-        //client
-        @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-        sealed interface Position: LayoutWidget.Position {
-            override fun position(parent: LayoutWidget.LayoutElement, el: Widget, globalSet: LayoutWidget.PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos>
-
-            /**
-             * Collection of all implemented [Position]. Preferred practice is to use this collection rather than referring directly to the underlying Enums
-             * @author fzzyhmstrs
-             * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-             */
-            @Suppress("DEPRECATION", "UNUSED")
-            @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-            companion object Impl {
-                /**
-                 * Positions an element below its parent. Does not define horizontal alignment or positioning.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val BELOW: Position = LayoutWidget.PositionRelativePos.BELOW
-                /**
-                 * Positions an element to the left of its parent. Does not define vertical alignment or positioning.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val LEFT: Position = LayoutWidget.PositionRelativePos.LEFT
-                /**
-                 * Positions an element to the right of its parent. Does not define vertical alignment or positioning.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val RIGHT: Position = LayoutWidget.PositionRelativePos.RIGHT
-                /**
-                 * Aligns an elements top edge horizontally with the top edge of its parent. Does not define any other position or alignment.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val HORIZONTAL_TO_TOP_EDGE: Position = LayoutWidget.PositionRelativeAlignment.HORIZONTAL_TO_TOP_EDGE
-                /**
-                 * Aligns an elements bottom edge horizontally with the bottom edge of its parent. Does not define any other position or alignment.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val HORIZONTAL_TO_BOTTOM_EDGE: Position = LayoutWidget.PositionRelativeAlignment.HORIZONTAL_TO_BOTTOM_EDGE
-                /**
-                 * Aligns an elements left edge vertically with the left edge of its parent. Does not define any other position or alignment.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val VERTICAL_TO_LEFT_EDGE: Position = LayoutWidget.PositionRelativeAlignment.VERTICAL_TO_LEFT_EDGE
-                /**
-                 * Aligns an elements right edge vertically with the right edge of its parent. Does not define any other position or alignment.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val VERTICAL_TO_RIGHT_EDGE: Position = LayoutWidget.PositionRelativeAlignment.VERTICAL_TO_RIGHT_EDGE
-                /**
-                 * Centers an element vertically relative to the vertical dimensions of its parent (top and bottom edges). Does not define any other position or alignment.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val CENTERED_VERTICALLY: Position = LayoutWidget.PositionRelativeAlignment.CENTERED_VERTICALLY
-                /**
-                 * Centers an element horizontally relative to the horizontal dimensions of its parent (left and right edge). Does not define any other position or alignment.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val CENTERED_HORIZONTALLY: Position = LayoutWidget.PositionRelativeAlignment.CENTERED_HORIZONTALLY
-                /**
-                 * Aligns an element to the left side of the Popup widget. Does not define any other position or alignment.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val ALIGN_LEFT: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT
-                /**
-                 * Aligns an element to the right side of the Popup widget. Does not define any other position or alignment.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val ALIGN_RIGHT: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT
-                /**
-                 * Centers an element relative to the width of the Popup widget. Does not define any other position or alignment.
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val ALIGN_CENTER: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_CENTER
-                /**
-                 * Centers an element relative to the width of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
-                 *
-                 * Justification of this element won't take any overlapping elemnts into consideration, it will justify to the global left and right edges of the Popup regardless.
-                 *
-                 * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val ALIGN_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_JUSTIFY
-                /**
-                 * Aligns an element to the left side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
-                 *
-                 * Justification of this element WILL take elements to the right of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
-                 *
-                 * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val ALIGN_LEFT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_LEFT_AND_JUSTIFY
-                /**
-                 * Aligns an element to the right side of the Popup widget and justifies it (fits to width). Does not define any other position or alignment.
-                 *
-                 * Justification of this element WILL take elements to the left of this one into account; it will stretch to fit up to the next element or other side of the widget, allowing for the default padding in between elements.
-                 *
-                 * Requires a [ClickableWidget] or instance of [Scalable] to enable resizing
-                 * @author fzzyhmstrs
-                 * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
-                 */
-                @Deprecated("Moved to LayoutWidget in 0.6.0, scheduled for removal 0.7.0")
-                val ALIGN_RIGHT_AND_JUSTIFY: Position = LayoutWidget.PositionGlobalAlignment.ALIGN_RIGHT_AND_JUSTIFY
-            }
-        }
-
-        //client
-        sealed interface PositionAlignment: Position
     }
 
     private fun interface Positioner {
@@ -1183,4 +1038,22 @@ class PopupWidget
          */
         USE
     }
+
+    private class Context(
+        val blurBackground: Boolean,
+        val closeOnOutOfBounds: TriState,
+        val background: Identifier,
+        val positionX: BiFunction<Int, Int, Int>,
+        val positionY: BiFunction<Int, Int, Int>,
+        val positioner: Positioner,
+        val widthFunction: BiFunction<Int, Int, Int>,
+        val heightFunction: BiFunction<Int, Int, Int>,
+        val onClose: Runnable,
+        val afterClose: Runnable,
+        val onClick: MouseClickResult,
+        val onSwitchFocus: Consumer<Element?>,
+        val children: List<Element>,
+        val selectables: List<Selectable>,
+        val drawables: List<Drawable>
+    )
 }

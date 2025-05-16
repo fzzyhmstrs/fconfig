@@ -46,7 +46,9 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
     }
 
     override fun getHeight(): Int {
-        return (cache.map(getKey(width - leftPadding - rightPadding)).count() * lineHeight) + topPadding + bottomPadding
+        val text = cache.map(getKey(width - leftPadding - rightPadding))
+        val lines = text.count()
+        return (lines * lineHeight) + topPadding + bottomPadding
     }
 
     override fun setHeight(height: Int) {
@@ -101,8 +103,8 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
                 return create(renderer, maxWidth, Int.MAX_VALUE, *texts)
             }
 
-            fun create(renderer: TextRenderer, text: Text?, maxWidth: Int): MultilineText {
-                return create(renderer, maxWidth, Int.MAX_VALUE, (text)!!)
+            fun create(renderer: TextRenderer, text: Text, maxWidth: Int): MultilineText {
+                return create(renderer, maxWidth, Int.MAX_VALUE, text)
             }
 
             fun create(renderer: TextRenderer, maxWidth: Int, maxLines: Int, vararg texts: Text): MultilineText {
@@ -121,15 +123,15 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
                             for (text in texts) {
                                 list.addAll(renderer.wrapLines(text, maxWidth))
                             }
-                            val iterator: Iterator<OrderedText> = list.subList(0, min(list.size.toDouble(), maxLines.toDouble()).toInt()).iterator()
+                            val iterator: Iterator<OrderedText> = list.subList(0, min(list.size, maxLines)).iterator()
 
                             val list2: MutableList<Line> = mutableListOf()
                             while (iterator.hasNext()) {
                                 val orderedText: OrderedText = iterator.next()
                                 list2.add(Line(orderedText, renderer.getWidth(orderedText)))
                             }
-
-                            return list2
+                            lines = list2
+                            return lines
                         }
                     }
 
