@@ -266,18 +266,6 @@ object RenderUtil {
         RenderSystem.disableBlend()
     }
 
-    /**
-     * Applies the blur shader to the current drawn elements. This is used to blur stuff behind guis, but can be used for whatever else.
-     *
-     * You'll still have to write to the buffers after using this.
-     * @author fzzyhmstrs
-     * @since 0.6.0
-     */
-    @Suppress("DeprecatedCallableAddReplaceWith")
-    @Deprecated("Planned for removal 0.7.0, use applyBlur(DrawContextFFF) instead")
-    fun renderBlur() {
-    }
-
 
     private val backgrounds: MutableMap<Identifier, Background> = mutableMapOf()
     internal val defaultBg = Background(20, 4, 200, 20)

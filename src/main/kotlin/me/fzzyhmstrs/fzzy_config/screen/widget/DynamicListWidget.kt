@@ -14,17 +14,17 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
+import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.context.*
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.ListSpec
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
-import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.function.ConstFunction
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.util.pos.ImmutableSuppliedPos
 import me.fzzyhmstrs.fzzy_config.util.pos.Pos
 import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
@@ -1176,9 +1176,7 @@ class DynamicListWidget(
          */
         interface SelectableElement: Selectable, Element
 
-        @Internal
-        @Deprecated("Will be marked private in 0.7.0")
-        interface EntryPos: Pos {
+        internal interface EntryPos: Pos {
             val previous: EntryPos?
             var next: EntryPos?
             fun getEntry(): Entry?
@@ -1213,9 +1211,7 @@ class DynamicListWidget(
             }
         }
 
-        @Internal
-        @Deprecated("Will be marked private in 0.7.0")
-        inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null, offset: Int = 0) : SuppliedPos(parent, 0, ConstSupplier(offset)), EntryPos {
+        private inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null, offset: Int = 0) : SuppliedPos(parent, 0, ConstSupplier(offset)), EntryPos {
 
             override fun getEntry(): Entry? {
                 return this@Entry.takeIf { it.getVisibility().selectable }
