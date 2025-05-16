@@ -28,10 +28,12 @@ import me.fzzyhmstrs.fzzy_config.networking.api.NetworkApi
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
 import me.fzzyhmstrs.fzzy_config.result.api.ResultApi
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
+import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
+import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.*
 import java.io.File
 import java.io.Reader
@@ -283,6 +285,18 @@ object ConfigApi {
     @JvmStatic
     fun isScreenOpen(scope: String): Boolean {
         return ConfigApiImpl.isScreenOpen(scope)
+    }
+
+    /**
+     * Registers a [ConfigScreenProvider] to the client config registry. This provider will have priority over the default screen manager if it provides a non-null screen or successfully opens its own screen.
+     * @param namespace the mod id or other namespace to register the provider under. Only scopes relevant to this namespace will attempt to use this provider.
+     * @param provider [ConfigScreenProvider] provider implementation
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    @JvmStatic
+    fun registerScreenProvider(namespace: String, provider: ConfigScreenProvider) {
+        ConfigApiImpl.registerScreenProvider(namespace, provider)
     }
 
     /**
