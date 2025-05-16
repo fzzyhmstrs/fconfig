@@ -80,7 +80,7 @@ object Popups {
                     PopupWidget.ClickResult.USE
                 }
             }
-            .onClose { closeAction.get()?.run() }
+            .afterClose { closeAction.get()?.run() }
         for ((group, actions) in builder.build()) {
             if (actions.isEmpty()) continue
             popup.addDivider()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Fzzyhmstrs
+ * Copyright (c) 2025 Fzzyhmstrs
  *
  * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
  *
@@ -8,9 +8,10 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.screen.internal
+package me.fzzyhmstrs.fzzy_config.screen
 
-@Deprecated("Moving out of internal package by 0.7.0")
-interface SuggestionWindowProvider {
-    fun addListener(listener: SuggestionWindowListener)
+import net.minecraft.client.gui.Element
+
+interface SuggestionWindowListener {
+    fun setSuggestionWindowElement(element: Element?)
 }

@@ -29,10 +29,6 @@ open class SpriteDecoration @JvmOverloads constructor(
     override val h: Int = 16)
     : SpriteDecorated
 {
-
-    @Deprecated("Use primary constructor instead")
-    constructor(tex: TextureSet, w: Int = 16, h: Int = 16): this(tex.cast<TextureProvider>(), w, h)
-
     /**
      * [SpriteDecorated] that uses one texture in all circumstances
      * @param id [Identifier] Sprite id to render
