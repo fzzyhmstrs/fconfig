@@ -26,24 +26,11 @@ import net.minecraft.client.gui.DrawContext
 interface SpriteDecorated: Decorated {
 
     /**
-     * [TextureSet] this decoration will render from
-     * @author fzzyhmstrs
-     * @since 0.6.0
-     */
-    @Deprecated("Use textures() instead. Scheduled for removal 0.7.0")
-    fun textureSet(): TextureSet {
-        throw UnsupportedOperationException("Implement textures() to provide a TextureProvider impl")
-    }
-
-    /**
      * [TextureProvider] this decoration will render from
      * @author fzzyhmstrs
      * @since 0.6.4
      */
-    @Suppress("DEPRECATION")
-    fun textures(): TextureProvider {
-        return textureSet()
-    }
+    fun textures(): TextureProvider
 
     /**
      * Width of the texture set in pixels
