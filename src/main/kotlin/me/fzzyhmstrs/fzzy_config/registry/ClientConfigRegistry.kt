@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
+import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigBaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
@@ -50,6 +51,7 @@ internal object ClientConfigRegistry {
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
     private var validCustomScopes: MutableSet<String> = mutableSetOf()
     private var hasScrapedMetadata: AtomicBoolean = AtomicBoolean(false)
+    private val screenProviders: HashMultimap<String, ConfigScreenProvider> = HashMultimap.create()
 
     internal fun hasClientConfig(scope: String): Boolean {
         return getClientConfig(scope) != null
@@ -152,7 +154,6 @@ internal object ClientConfigRegistry {
         for ((id, configString) in serializedConfigs) {
             if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
                 val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
-                val errors = mutableListOf<String>()
                 val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, "Error(s) encountered receiving update for $id from server", ConfigApiImpl.CHECK_ACTIONS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
                 MinecraftClient.getInstance().execute {
                     getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
@@ -215,6 +216,10 @@ internal object ClientConfigRegistry {
             FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
             return
         }
+        val providers = screenProviders[namespaceScope]
+        if (providers.any { it.openScreen(namespaceScope, scope) }) {
+            return
+        }
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
@@ -238,6 +243,11 @@ internal object ClientConfigRegistry {
         return manager.isScreenOpen(scope)
     }
 
+    internal fun registerScreenProvider(namespace: String, provider: ConfigScreenProvider) {
+        validScopes.add(namespace)
+        screenProviders.put(namespace, provider)
+    }
+
     internal fun provideUpdateManager(scope: String): ConfigBaseUpdateManager? {
         val namespaceScope = getValidScope(scope, true)
         if (namespaceScope == null) {
@@ -254,6 +264,11 @@ internal object ClientConfigRegistry {
         if (namespaceScope == null) {
             FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
             return null
+        }
+        val providers = screenProviders[namespaceScope]
+        val providedScreen = providers.firstNotNullOfOrNull { it.provideScreen(namespaceScope, scope) }
+        if (providedScreen != null) {
+            return providedScreen
         }
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
