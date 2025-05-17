@@ -140,14 +140,20 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     override fun deserializeEntry(toml: TomlElement, fieldName: String, flags: Byte): ValidationResult<T> {
         val tVal = deserialize(toml, fieldName) //1
         if (tVal.isCritical()) { //2
-            return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Exception deserializing entry [$fieldName], using default value [${get()}]").addError(tVal) }
+            return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b ->
+                b.content("Exception deserializing entry [$fieldName], using default value [${get()}]").addError(tVal)
+            }
         }
         val tVal2 = tVal.outmap { correctEntry(it, EntryValidator.ValidationType.WEAK) } //3
         set(tVal2.get()) //4
         if (tVal2.isCritical()) { //5
-            return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Exception correcting deserialized entry [$fieldName], using value [${get()}]").addError(tVal2) }
+            return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b ->
+                b.content("Exception correcting deserialized entry [$fieldName], using value [${get()}]").addError(tVal2)
+            }
         }
-        return ValidationResult.predicated(get(), tVal2.isValid(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2) }
+        return ValidationResult.predicated(get(), tVal2.isValid(), ValidationResult.Errors.DESERIALIZATION) { b ->
+            b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2)
+        }
     }
 
     /**

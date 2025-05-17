@@ -45,7 +45,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
     /**
      * Boolean check to determine if this result isn't valid (errors or exception encountered)
-     * - [isInvalid]: No errors nor exceptions
+     * - [isInvalid]: Errors or exceptions
      * - [isError]: Contains an error (non-critical)
      * - [isCritical]: Contains a critical exception
      * @return Boolean, true is an error or exception, false if there are no problems.
@@ -53,7 +53,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      * @since 0.2.0
      */
     fun isInvalid(): Boolean {
-        return errorContext.isEmpty()
+        return !errorContext.isEmpty()
     }
 
     /**
@@ -274,6 +274,19 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         if (isValid()) return this
         errorContext.log(writer)
         return this
+    }
+
+    override fun toString(): String {
+        val type = if (isInvalid()) {
+            if (isCritical()) {
+                "critical error"
+            } else {
+                "error"
+            }
+        } else {
+            "success"
+        }
+        return "ValidationResult($type:$storedVal)"
     }
 
 
@@ -881,6 +894,10 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             internal fun create(content: C, e: Throwable?, msg: String = ""): ErrorEntry {
                 return SingleErrorEntry(this, content, e, msg)
             }
+
+            override fun toString(): String {
+                return "Type: $name"
+            }
         }
 
         /**
@@ -1221,31 +1238,34 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         override fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ErrorEntry {
             return builder.apply(ErrorEntry.Builder(type)).build()
         }
-        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<Entry<C>>) {
         }
-        override fun consumeAll(c: Consumer<ErrorEntry.Entry<*>>) {
+        override fun consumeAll(c: Consumer<Entry<*>>) {
         }
-        override fun <C : Any> iterateType(t: Type<C>): Iterable<ErrorEntry.Entry<C>> {
+        override fun <C : Any> iterateType(t: Type<C>): Iterable<Entry<C>> {
             return listOf()
         }
-        override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
+        override fun iterateAll(): Iterable<Entry<*>> {
             return listOf()
         }
         override fun <C : Any> hasType(t: Type<C>): Boolean {
             return false
         }
-        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
+        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<Entry<C>>): Boolean {
             return false
         }
-        override fun predicateAll(p: Predicate<ErrorEntry.Entry<*>>): Boolean {
+        override fun predicateAll(p: Predicate<Entry<*>>): Boolean {
             return false
         }
         override fun getString(): String {
             return "No Error"
         }
-
         override fun getPlainString(): String {
             return "No Error"
+        }
+
+        override fun toString(): String {
+            return "Non-Error Entry"
         }
     }
 
@@ -1270,23 +1290,23 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 CompoundErrorEntry(this, builder.apply(ErrorEntry.Builder(type)).build())
             }
         }
-        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<Entry<C>>) {
         }
-        override fun consumeAll(c: Consumer<ErrorEntry.Entry<*>>) {
+        override fun consumeAll(c: Consumer<Entry<*>>) {
         }
-        override fun <C : Any> iterateType(t: Type<C>): Iterable<ErrorEntry.Entry<C>> {
+        override fun <C : Any> iterateType(t: Type<C>): Iterable<Entry<C>> {
             return listOf()
         }
-        override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
+        override fun iterateAll(): Iterable<Entry<*>> {
             return listOf()
         }
         override fun <C : Any> hasType(t: Type<C>): Boolean {
             return false
         }
-        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
+        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<Entry<C>>): Boolean {
             return false
         }
-        override fun predicateAll(p: Predicate<ErrorEntry.Entry<*>>): Boolean {
+        override fun predicateAll(p: Predicate<Entry<*>>): Boolean {
             return false
         }
         override fun getString(): String {
@@ -1295,13 +1315,17 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         override fun getPlainString(): String {
             return header.ifEmpty { "Empty Error" }
         }
+
+        override fun toString(): String {
+            return if(header.isNotEmpty()) "Empty Error Entry: $header" else "Empty Error Entry"
+        }
     }
 
     private class SingleErrorEntry <T: Any>(
         override val type: Type<T>,
         override val content: T,
         override val e: Throwable? = null,
-        private val msg: String = ""): ErrorEntry, ErrorEntry.Entry<T>
+        private val msg: String = ""): ErrorEntry, Entry<T>
     {
         override fun isError(): Boolean {
             return type.isError
@@ -1323,28 +1347,28 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         override fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ErrorEntry {
             return CompoundErrorEntry(this, builder.apply(ErrorEntry.Builder(type)).build())
         }
-        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<Entry<C>>) {
             if (t != type) return
             @Suppress("UNCHECKED_CAST")
-            (this as? ErrorEntry.Entry<C>)?.let{ c.accept(it) }
+            (this as? Entry<C>)?.let{ c.accept(it) }
         }
-        override fun consumeAll(c: Consumer<ErrorEntry.Entry<*>>) {
+        override fun consumeAll(c: Consumer<Entry<*>>) {
             c.accept(this)
         }
-        override fun <C : Any> iterateType(t: Type<C>): Iterable<ErrorEntry.Entry<C>> {
+        override fun <C : Any> iterateType(t: Type<C>): Iterable<Entry<C>> {
             return if (t != type) listOf() else listOf(this).cast()
         }
-        override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
+        override fun iterateAll(): Iterable<Entry<*>> {
             return listOf(this)
         }
         override fun <C : Any> hasType(t: Type<C>): Boolean {
             return t == type
         }
-        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
+        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<Entry<C>>): Boolean {
             if (t != type) return false
             return p.test(this.cast())
         }
-        override fun predicateAll(p: Predicate<ErrorEntry.Entry<*>>): Boolean {
+        override fun predicateAll(p: Predicate<Entry<*>>): Boolean {
             return p.test(this)
         }
         override fun getString(): String {
@@ -1363,6 +1387,10 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         override fun log(writer: BiConsumer<String, Throwable?>) {
             if (isLoggable())
                 writer.accept(getString(), e)
+        }
+
+        override fun toString(): String {
+            return "Single Error Entry - [$type]"
         }
     }
 
@@ -1390,32 +1418,32 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             val other = builder.apply(ErrorEntry.Builder(type)).build()
             return addError(other)
         }
-        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<Entry<C>>) {
             headerEntry.consumeType(t, c)
             for (entry in children) {
                 entry.consumeType(t, c)
             }
         }
-        override fun consumeAll(c: Consumer<ErrorEntry.Entry<*>>) {
+        override fun consumeAll(c: Consumer<Entry<*>>) {
             headerEntry.consumeAll(c)
             for (entry in children) {
                 entry.consumeAll(c)
             }
         }
-        override fun <C : Any> iterateType(t: Type<C>): Iterable<ErrorEntry.Entry<C>> {
+        override fun <C : Any> iterateType(t: Type<C>): Iterable<Entry<C>> {
             return listOf(headerEntry).flatMap { it.iterateType(t) } + children.flatMap { it.iterateType(t) }
         }
-        override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
+        override fun iterateAll(): Iterable<Entry<*>> {
             return listOf(headerEntry).flatMap { it.iterateAll() } + children.flatMap { it.iterateAll() }
         }
         override fun <C : Any> hasType(t: Type<C>): Boolean {
             return children.any { it.hasType(t) } || headerEntry.hasType(t)
         }
-        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
+        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<Entry<C>>): Boolean {
             return children.any { it.predicateType(t, p) } || headerEntry.predicateType(t, p)
         }
 
-        override fun predicateAll(p: Predicate<ErrorEntry.Entry<*>>): Boolean {
+        override fun predicateAll(p: Predicate<Entry<*>>): Boolean {
             return children.any { it.predicateAll(p) } || headerEntry.predicateAll(p)
         }
         override fun getString(): String {
@@ -1455,6 +1483,10 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             for (entry in children) {
                 entry.logPlain(consumer)
             }
+        }
+
+        override fun toString(): String {
+            return "Compound Error Entry - Header[$headerEntry] Children[${children.size}]"
         }
     }
 }

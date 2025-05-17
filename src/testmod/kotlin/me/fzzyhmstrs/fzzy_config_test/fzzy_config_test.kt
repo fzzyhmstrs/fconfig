@@ -9,12 +9,15 @@
 * */
 
 package me.fzzyhmstrs.fzzy_config_test
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.util.Expression
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
@@ -23,7 +26,9 @@ import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber
 import me.fzzyhmstrs.fzzy_config_test.loot.ConfigLootCondition
 import me.fzzyhmstrs.fzzy_config_test.loot.ConfigLootNumberProvider
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfig
+import me.fzzyhmstrs.fzzy_config_test.test.TestConfig.gson
 import me.fzzyhmstrs.fzzy_config_test.test.TestConfigClient
+import me.fzzyhmstrs.fzzy_config_test.test.TestConfigImplAny
 import me.fzzyhmstrs.fzzy_config_test.test.TestLateConfigImpl
 import me.fzzyhmstrs.fzzy_config_test.test.screen.TestPopupScreen
 import me.lucko.fabric.api.permissions.v0.PermissionCheckEvent
@@ -38,7 +43,7 @@ import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectCategory
 import net.minecraft.registry.Registries
-import net.minecraft.util.math.MathHelper
+import net.minecraft.registry.Registry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -50,11 +55,21 @@ object FC: ModInitializer {
 
     private val TEST_REGISTRAR = ConfigApi.platform().createRegistrar(MOD_ID, Registries.STATUS_EFFECT)
 
+    init {
+        TEST_REGISTRAR.init()
+    }
+
+    @Translatable.Name("Test Status 1")
+    val TEST_STATUS_1 = TEST_REGISTRAR.register("test_1") { object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){} }
+    @Translatable.Name("Test Status 2")
+    val TEST_STATUS_2 = TEST_REGISTRAR.register("test_2") { object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){} }
+    @Translatable.Name("Test Direct Status")
+    val TEST_DIRECT_STATUS_ID = Identifier.of("fzzy_config_test", "direct")
+    val TEST_DIRECT_STATUS = Registry.register(Registries.STATUS_EFFECT, TEST_DIRECT_STATUS_ID, object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){})
+
     override fun onInitialize() {
 
-        TEST_REGISTRAR.init()
-
-        TEST_REGISTRAR.register("test") { object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){} }
+        buildRegTranslation("en_us", "effect")
 
         PermissionCheckEvent.EVENT.register { _, permission ->
             if (permission == TEST_PERMISSION_GOOD)
@@ -95,6 +110,32 @@ object FC: ModInitializer {
         assertConstExpression("max(4.55, 0.1)", 4.55, expressionTestResults)
         assertConstExpression("min(4.55, 0.1)", 0.1, expressionTestResults)
         println(expressionTestResults)*/
+    }
+
+    internal fun buildTranslation(lang: String) {
+        val testObj = JsonObject()
+
+        fun add(key: String, value: String) {
+            testObj.add(key, JsonPrimitive(value))
+        }
+
+        ConfigApi.buildTranslations(TestConfigImplAny::class, Identifier.of("fzzy_config_test","test_config_any"), lang, true, ::add)
+
+        LOGGER.info("Test translation for $lang")
+        LOGGER.info(gson.toJson(testObj))
+    }
+
+    internal fun buildRegTranslation(lang: String, prefix: String) {
+        val testObj = JsonObject()
+
+        fun add(key: String, value: String) {
+            testObj.add(key, JsonPrimitive(value))
+        }
+
+        ConfigApi.platform().buildRegistryTranslations(this, prefix, lang, true, ::add)
+
+        LOGGER.info("Test $prefix registry translation for $lang")
+        LOGGER.info(gson.toJson(testObj))
     }
 
     private fun assertConstExpression(exp: String, result: Double, results: AssertionResults) {
