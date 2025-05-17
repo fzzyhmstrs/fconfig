@@ -392,14 +392,22 @@ interface Translatable {
      * @since 0.7.0
      */
     @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+    @Repeatable
     annotation class Name(val value: String, val lang: String = "en_us")
 
     /**
-     * TODO()
+     * Description string for datagen or as a "fallback" description implementation.
+     *
+     * If there is no [Comment] or [TomlComment] annotation and there is an en_us Desc attached, it will be used as the toml comment. Conversely, [Comment] or [TomlComment] will also be utilized for en_us datagen if available and no Desc is provided.
+     *
+     * This annotation is repeatable, so can be used to provide lang values for any number of languages.
+     * @param value the description string
+     * @param lang Default "en_us" the lang key applicable to this desc
      * @author fzzyhmstrs
      * @since 0.7.0
      */
     @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+    @Repeatable
     annotation class Desc(val value: String, val lang: String = "en_us")
 
     /**
@@ -408,6 +416,7 @@ interface Translatable {
      * @since 0.7.0
      */
     @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+    @Repeatable
     annotation class Prefix(val value: String, val lang: String = "en_us")
 
     /**
