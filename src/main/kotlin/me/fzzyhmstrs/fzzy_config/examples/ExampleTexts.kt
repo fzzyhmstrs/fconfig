@@ -11,6 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.examples
 
 import com.mojang.brigadier.LiteralMessage
+import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.bold
@@ -23,6 +25,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.FcText.underline
 import me.fzzyhmstrs.fzzy_config.util.Translatable
+import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider.TranslationBuilder
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
@@ -119,4 +122,29 @@ object ExampleTexts {
             """
     }
 
+    fun translationAnnotations() {
+
+        //Translations can be defined using the Name, Desc, and Prefix annotations in Translatable.
+        //The annotation is repeatable, to allow definition of multiple languages.
+        //Let's assume this field is part of "BoisConfig"
+        @Translatable.Name("My Setting") //en_us lang by default
+        @Translatable.Name("Mi Configuración", lang = "es_es")
+        @Translatable.Desc("True does this thing, false this other thing")
+        @Translatable.Prefix("Setting for this important thing")
+        var mySetting = true
+
+        //Then in datagen, these annotations will be automatically applied to the provided translation builder
+        fun buildTranslations(lang: String, builder: TranslationBuilder) {
+            ConfigApi.buildTranslations(BoisConfig::class, Identifier.of(FC.MOD_ID, "bois_config"), lang, true, builder::add)
+        }
+
+        //output will be:
+        val outputLang = """
+            {
+                "fzzy_config.bois_config.mySetting": "My Setting",
+                "fzzy_config.bois_config.mySetting.desc": "True does this thing, false this other thing",
+                "fzzy_config.bois_config.mySetting": "Setting for this important thing",
+            }
+            """
+    }
 }
