@@ -10,10 +10,14 @@
 
 package me.fzzyhmstrs.fzzy_config_test.test
 
+import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.result.ResultProvider
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedPair
+import me.fzzyhmstrs.fzzy_config_test.FC
+import net.minecraft.util.Identifier
 
 
 object TestConfig {
@@ -45,6 +49,22 @@ object TestConfig {
                 player.sendMessage("I ran a server update event!!".lit())
             }
         }*/
+
+        buildTranslation("en_us")
+        buildTranslation("es_es")
+    }
+
+    private fun buildTranslation(lang: String) {
+        val testObj = JsonObject()
+
+        fun add(key: String, value: String) {
+            testObj.add(key, JsonPrimitive(value))
+        }
+
+        ConfigApi.buildTranslations(TestConfigImplAny::class, Identifier.of("fzzy_config_test","test_config_any"), lang, true, ::add)
+
+        FC.LOGGER.info("Test translation for $lang")
+        FC.LOGGER.info(testObj.toString())
     }
 
     val resultProvider = ConfigApi.result().createSimpleResultProvider(-666, Int::class)
