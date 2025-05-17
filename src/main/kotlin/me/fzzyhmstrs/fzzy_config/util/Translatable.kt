@@ -12,6 +12,8 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.annotations.Translation
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava
 import me.fzzyhmstrs.fzzy_config.util.FcText.transSupplied
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.resource.language.I18n
@@ -387,35 +389,56 @@ interface Translatable {
     }
 
     /**
-     * TODO()
+     * Name string for data generation or used as a "fallback" name implementation. Use this on the config class itself to translate the config name.
+     *
+     * This annotation is repeatable, so can be used to provide lang values for any number of languages.
+     * @param value the name string
+     * @param lang Default "en_us", the lang key applicable to this name
+     * @see [ConfigApi.buildTranslations]
+     * @see [ConfigApiJava.buildTranslations]
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ExampleTexts.translationAnnotations]
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS, AnnotationTarget.LOCAL_VARIABLE)
     @Repeatable
     annotation class Name(val value: String, val lang: String = "en_us")
 
     /**
-     * Description string for datagen or as a "fallback" description implementation.
+     * Description string for data generation or used as a "fallback" description implementation. Outputs in the lang file will have the suffix ".desc". Use this on the config class itself to translate the config description for a config screen button in the landing page.
      *
      * If there is no [Comment] or [TomlComment] annotation and there is an en_us Desc attached, it will be used as the toml comment. Conversely, [Comment] or [TomlComment] will also be utilized for en_us datagen if available and no Desc is provided.
      *
      * This annotation is repeatable, so can be used to provide lang values for any number of languages.
+     *
+     * You can use "\n" in the string to break up lines.
      * @param value the description string
-     * @param lang Default "en_us" the lang key applicable to this desc
+     * @param lang Default "en_us", the lang key applicable to this desc
+     * @see [ConfigApi.buildTranslations]
+     * @see [ConfigApiJava.buildTranslations]
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ExampleTexts.translationAnnotations]
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS, AnnotationTarget.LOCAL_VARIABLE)
     @Repeatable
     annotation class Desc(val value: String, val lang: String = "en_us")
 
     /**
-     * TODO()
+     * Prefix string for data generation or used as a "fallback" name implementation. Outputs in the lang file will have the suffix ".prefix". Use this on the config class itself to translate the config prefix for a header and to put above a config screen button in the landing page.
+     *
+     * This annotation is repeatable, so can be used to provide lang values for any number of languages.
+     *
+     * You can use "\n" in the string to break up lines.
+     * @param value the prefix string
+     * @param lang Default "en_us", the lang key applicable to this prefix
+     * @see [ConfigApi.buildTranslations]
+     * @see [ConfigApiJava.buildTranslations]
+     * @sample [me.fzzyhmstrs.fzzy_config.examples.ExampleTexts.translationAnnotations]
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS)
+    @Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD, AnnotationTarget.CLASS, AnnotationTarget.LOCAL_VARIABLE)
     @Repeatable
     annotation class Prefix(val value: String, val lang: String = "en_us")
 
