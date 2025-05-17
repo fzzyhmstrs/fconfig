@@ -39,7 +39,11 @@ fun interface EntryDeserializer<T> {
     fun deserializeEntry(toml: TomlElement, errorBuilder: MutableList<String>, fieldName: String, flags: Byte): ValidationResult<T>
 
     /**
-     * TODO()
+     * Deserializes the provided [TomlElement]. This deserialization should store the result within this deserializer (deserialize "in-place") as well as returning the result. The return has to have a fallback value.
+     * @param toml [TomlElement] incoming data to deserialize. This should be deserialized both into this object and returned
+     * @param fieldName String scope of the field being deserialized
+     * @param flags deserialization flags for use with built-in deserialization methods if needed.
+     * @return [ValidationResult]&lt;[T]&gt; wrapped deserialization result or a fallback value on total failure, with any applicable direct error messages stored in the result. The [errorBuilder] can be used for populating detail error information while providing a general alert in this error.
      * @author fzzyhmstrs
      * @since 0.7.0
      */

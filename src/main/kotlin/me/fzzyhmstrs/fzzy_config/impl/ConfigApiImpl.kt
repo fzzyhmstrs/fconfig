@@ -27,6 +27,7 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.*
+import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
@@ -52,6 +53,7 @@ import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.function.BiConsumer
 import java.util.function.Supplier
 import kotlin.experimental.and
 import kotlin.math.min
@@ -110,6 +112,7 @@ internal object ConfigApiImpl {
 
     private val configClass = Config::class
     private val configSectionClass = ConfigSection::class
+    private val walkableClass = Walkable::class
 
     internal fun openScreen(scope: String) {
         if (isClient)
@@ -1004,6 +1007,114 @@ internal object ConfigApiImpl {
         }
     }
 
+    internal fun <T: Config> buildTranslations(jclazz: Class<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
+        buildTranslations(jclazz.kotlin, id, lang, builder, logWarnings)
+    }
+
+    internal fun <T: Config> buildTranslations(clazz: KClass<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
+        buildTranslations(clazz, id.toTranslationKey(), lang, builder, logWarnings)
+    }
+
+    private fun buildTranslations(clazz: KClass<*>, prefix: String, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean) {
+
+        val orderById = clazz.java.declaredFields.filter { !isTransient(it.modifiers) }.withIndex().associate { it.value.name to it.index }.toMutableMap()
+        for (sup in clazz.allSuperclasses) {
+            if (sup == configClass) continue //ignore Config itself, as that has state we don't need
+            if (sup == configSectionClass) continue //ignore ConfigSection itself, as that has state we don't need
+            orderById.putAll(sup.java.declaredFields.filter { !isTransient(it.modifiers) }.withIndex().associate { it.value.name to it.index })
+        }
+
+        val props = clazz.memberProperties.filter {
+            it is KMutableProperty<*> && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
+        }.sortedBy { orderById[it.name] }
+
+        FC.LOGGER.info("Building $lang entries for ${clazz.simpleName} @ $prefix")
+
+        //base config lang itself
+        val clazzAnnotations = clazz.annotations
+        val clazzPrefix = clazzPrefix(prefix, clazzAnnotations)
+        applyTranslation(clazzPrefix, clazzAnnotations, lang, builder, logWarnings)
+
+        for (prop in props) {
+            val name = prop.name
+            val annotations = prop.annotations
+            val propPrefix = getPrefix(prefix, annotations, clazzAnnotations)
+            val key = "$propPrefix.$name"
+            applyTranslation(key, annotations, lang, builder, logWarnings)
+            val propClass = prop.javaField?.type
+            if (propClass != null && (configSectionClass.java.isAssignableFrom(propClass) || walkableClass.java.isAssignableFrom(propClass))) {
+                //burrow into sections and walkables
+                buildTranslations(propClass.kotlin, key, lang, builder, logWarnings)
+            }
+        }
+    }
+
+    private fun applyTranslation(key: String, annotations: List<Annotation>, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean) {
+        annotations.filterIsInstance<Translatable.Name>().firstOrNull { it.lang == lang }.also{
+            if (it == null) FC.LOGGER.error("  No $lang prefix entry for $key")
+        }?.apply {
+            builder.accept(key, value)
+        }
+        annotations.filterIsInstance<Translatable.Desc>().firstOrNull { it.lang == lang }.also {
+            if (it == null) {
+                val comment = annotations.firstNotNullOfOrNull { a -> a.nullCast<Comment>() }
+                if (comment != null) {
+                    builder.accept("$key.desc", comment.value)
+                } else {
+                    val tomlComment = annotations.firstNotNullOfOrNull { a -> a.nullCast<TomlComment>() }
+                    if (tomlComment != null) {
+                        builder.accept("$key.desc", tomlComment.text)
+                    } else if (logWarnings) {
+                        FC.LOGGER.warn("  No $lang description entry for $key")
+                    }
+                }
+            }
+        }?.apply {
+            builder.accept("$key.desc", value)
+        }
+        annotations.filterIsInstance<Translatable.Prefix>().firstOrNull { it.lang == lang }.also {
+            if (it == null && logWarnings) FC.LOGGER.warn("  No $lang prefix entry for $key")
+        }?.apply {
+            builder.accept("$key.prefix", value)
+        }
+    }
+
+    private fun getPrefix(basePrefix: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): String {
+        for (annotation in annotations) {
+            if (annotation is Translation) {
+                for (ga in globalAnnotations) {
+                    if (ga is Translation) {
+                        return if (ga.negate) {
+                            basePrefix
+                        } else {
+                            annotation.prefix
+                        }
+                    }
+                }
+                return if (annotation.negate) {
+                    basePrefix
+                } else {
+                    annotation.prefix
+                }
+            }
+        }
+        for (ga in globalAnnotations) {
+            if (ga is Translation && !ga.negate) {
+                return ga.prefix
+            }
+        }
+        return basePrefix
+    }
+
+    private fun clazzPrefix(basePrefix: String, globalAnnotations: List<Annotation>): String {
+        for (ga in globalAnnotations) {
+            if (ga is Translation && !ga.negate) {
+                return ga.prefix
+            }
+        }
+        return basePrefix
+    }
+
     ///////////////// END Utilities //////////////////////////////////////////////////////
 
     ///////////////// Reflection /////////////////////////////////////////////////////////
@@ -1101,9 +1212,11 @@ internal object ConfigApiImpl {
         }
     }
     internal fun tomlAnnotations(property: KAnnotatedElement): List<Annotation> {
-        return property.annotations.map { mapJvmAnnotations(it) }.filter { it is TomlComment || it is TomlInline || it is TomlBlockArray || it is TomlMultilineString || it is TomlLiteralString || it is TomlInteger }
+        val noComment = property.annotations.none { it is Comment || it is TomlComment }
+        return property.annotations.map { mapJvmAnnotations(it, noComment) }.filter { it is TomlComment || it is TomlInline || it is TomlBlockArray || it is TomlMultilineString || it is TomlLiteralString || it is TomlInteger }
     }
-    private fun mapJvmAnnotations(input: Annotation): Annotation {
+
+    private fun mapJvmAnnotations(input: Annotation, noComment: Boolean): Annotation {
         return when(input) {
             is Comment -> TomlComment(input.value)
             is Inline -> TomlInline()
@@ -1111,6 +1224,7 @@ internal object ConfigApiImpl {
             is MultilineString -> TomlMultilineString()
             is LiteralString -> TomlLiteralString()
             is Integer -> TomlInteger(input.base, input.group)
+            is Translatable.Desc -> if (noComment && input.lang == "en_us") TomlComment(input.value) else input
             else -> input
         }
     }

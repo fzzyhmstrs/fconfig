@@ -12,10 +12,7 @@
 
 package me.fzzyhmstrs.fzzy_config.api
 
-import me.fzzyhmstrs.fzzy_config.annotations.Action
-import me.fzzyhmstrs.fzzy_config.annotations.NonSync
-import me.fzzyhmstrs.fzzy_config.annotations.TomlHeaderComment
-import me.fzzyhmstrs.fzzy_config.annotations.Version
+import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.deserializeFromToml
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -30,6 +27,7 @@ import me.fzzyhmstrs.fzzy_config.result.api.ResultApi
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
@@ -37,7 +35,9 @@ import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.*
 import java.io.File
 import java.io.Reader
+import java.util.function.BiConsumer
 import java.util.function.Supplier
+import kotlin.reflect.KClass
 
 /**
  * API for management of config files. If writing in Java, consider using [ConfigApiJava] where possible.
@@ -321,6 +321,7 @@ object ConfigApi {
     @JvmOverloads
     @Deprecated("Use overload that takes a ValidationResult.ErrorEntry.Mutable. Scheduled for removal 0.8.0")
     fun <T: Any> serializeToToml(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): TomlElement {
+        @Suppress("DEPRECATION")
         return ConfigApiImpl.serializeToToml(config, errorBuilder, flags).get()
     }
 
@@ -414,6 +415,7 @@ object ConfigApi {
     @JvmOverloads
     @Deprecated("Use overload that takes a ValidationResult.ErrorEntry.Mutable. Scheduled for removal 0.8.0")
     fun <T: Any> serializeConfig(config: T, errorBuilder: MutableList<String>, flags: Byte = 1): String {
+        @Suppress("DEPRECATION")
         return ConfigApiImpl.serializeConfig(config, errorBuilder, flags).get()
     }
 
@@ -486,6 +488,7 @@ object ConfigApi {
     @JvmOverloads
     @Deprecated("Use overload that takes a ValidationResult.ErrorEntry.Mutable. Scheduled for removal 0.8.0")
     fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
+        @Suppress("DEPRECATION")
         return ConfigApiImpl.deserializeFromToml(config, toml, errorBuilder, flags).map(::ConfigContext)
     }
 
@@ -567,6 +570,7 @@ object ConfigApi {
     @JvmOverloads
     @Deprecated("Use overload that takes a ValidationResult.ErrorEntry.Mutable. Scheduled for removal 0.8.0")
     fun <T: Any> deserializeConfig(config: T, string: String, errorBuilder: MutableList<String>, flags: Byte = 1): ValidationResult<ConfigContext<T>> {
+        @Suppress("DEPRECATION")
         return ConfigApiImpl.deserializeConfig(config, string, errorBuilder, flags).map(::ConfigContext)
     }
 
@@ -683,6 +687,21 @@ object ConfigApi {
     @JvmStatic
     fun actions(thing: Any): Set<Action> {
         return ConfigApiImpl.getActions(thing, ConfigApiImpl.IGNORE_NON_SYNC)
+    }
+
+    /**
+     * Applies a set of translations to the provided [builder] for data generation. Uses [Translatable.Name], [Translatable.Desc], and [Translatable.Prefix] annotations to power the generation. [TomlComment] and [Comment] can be used to provide en_us description lang.
+     * @param kClass KClass instance for the config to generate lang for
+     * @param id [Identifier] the identifier used to register the config
+     * @param lang The applicable lang code to generate for, e.g. "en_us" or "es_mx". The builder will look for annotations with matching codes to apply.
+     * @param logWarnings If true, Fzzy Config will log warnings for every missing name, description, and prefix; if false only missing names will be logged.
+     * @param builder [BiConsumer]&lt;String, String&gt; that accepts new lang entries. For fabric lang generation this could be `TranslationBuilder::add`
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    @JvmStatic
+    fun <T: Config> buildTranslations(kClass: KClass<T>, id: Identifier, lang: String, logWarnings: Boolean, builder: BiConsumer<String, String>) {
+        ConfigApiImpl.buildTranslations(kClass, id, lang, builder, logWarnings)
     }
 
     /**
