@@ -14,6 +14,7 @@ import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.ErrorEntry.Entry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.ErrorEntry.Type
 import org.slf4j.Logger
 import org.slf4j.event.Level
@@ -95,6 +96,10 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
     /**
      * Supplies the error context stored within, if any
      * @return [ErrorEntry], or null if this isn't an errored result
+     * @see log
+     * @see consume
+     * @see test
+     * @see iterate
      * @author fzzyhmstrs
      * @since 0.7.0
      */
@@ -105,76 +110,91 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
     /**
      * Inspects the error of the result, if any, for errors of a particular type
+     *
+     * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
      * @param C error content type
      * @param t [ErrorEntry.Type]&lt;[C]&gt; the error type. If you don't need a particular type (to report errors for example), use the other overload
      * @param c [Consumer]&lt;[ErrorEntry.Entry]&lt;[C]&gt;&gt; accepts matching entries
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    fun <C: Any> consume(t: ErrorEntry.Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+    fun <C: Any> consume(t: Type<C>, c: Consumer<Entry<C>>) {
         errorContext.consumeType(t, c)
     }
 
     /**
      * Inspects the error of the result, if any, for errors of a particular type
+     *
+     * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
      * @param c [Consumer]&lt;[ErrorEntry.Entry]&gt; accepts all entries within the results ErrorEntry
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    fun consume(c: Consumer<ErrorEntry.Entry<*>>) {
+    fun consume(c: Consumer<Entry<*>>) {
         errorContext.consumeAll(c)
     }
 
     /**
-     * TODO()
+     * Provides an iterable containing any applicable [ErrorEntry.Entry] of the provided type
+     *
+     * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
      * @param C error content type
      * @param t [ErrorEntry.Type]&lt;[C]&gt; the error type. If you don't need a particular type (to report errors for example), use the other overload
+     * @return [Iterable] with all applicable entries. May be empty.
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    fun <C: Any> iterate(t: ErrorEntry.Type<C>): Iterable<ErrorEntry.Entry<C>> {
+    fun <C: Any> iterate(t: Type<C>): Iterable<Entry<C>> {
         return errorContext.iterateType(t)
     }
 
     /**
-     * TODO()
+     * Iterates over all [ErrorEntry.Entry] contained in this result
+     *
+     * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
+     * @return [Iterable] containing all entries in this result. May be empty.
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    fun iterate(c: Consumer<ErrorEntry.Entry<*>>) {
-        errorContext.consumeAll(c)
+    fun iterate(): Iterable<Entry<*>> {
+        return errorContext.iterateAll()
     }
 
     /**
-     * TODO()
+     * Tests whether this results error entry contains the specified error type.
      * @param C error content type
-     * @param t [ErrorEntry.Type]&lt;[C]&gt; the error type. If you don't need a particular type (to report errors for example), use the other overload
+     * @param t [ErrorEntry.Type]&lt;[C]&gt; the error type.
      * @return whether the error context for this validation contains an entry of the given type
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    fun <C: Any> has(t: ErrorEntry.Type<C>): Boolean {
+    fun <C: Any> has(t: Type<C>): Boolean {
         return errorContext.hasType(t)
     }
 
     /**
-     * TODO()
+     * Performs the provided predicate test on this results error entry and any of its children if they are of the provided type. Generally returns true on the first success.
+     *
+     * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
      * @param C error content type
-     * @param t [ErrorEntry.Type]&lt;[C]&gt; the error type. If you don't need a particular type (to report errors for example), use the other overload
-     * @param p TODO()
+     * @param t [ErrorEntry.Type]&lt;[C]&gt; the error type.
+     * @param p [Predicate]&lt;[ErrorEntry.Entry]&lt;[C]&gt;&gt; tester for each entry of the given type present
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    fun <C: Any> test(t: ErrorEntry.Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
+    fun <C: Any> test(t: Type<C>, p: Predicate<Entry<C>>): Boolean {
         return errorContext.predicateType(t, p)
     }
 
     /**
-     * TODO()
+     * Performs the provided predicate test on this results error entry and any of its children. Generally returns true on the first success.
+     *
+     * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
+     * @param p [Predicate]&lt;[ErrorEntry.Entry]&gt; tester for each entry
      * @author fzzyhmstrs
      * @since 0.7.0
      */
-    fun test(p: Predicate<ErrorEntry.Entry<*>>) {
+    fun test(p: Predicate<Entry<*>>) {
         errorContext.predicateAll(p)
     }
 
@@ -470,7 +490,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         /**
-         * TODO()
+         * Creates a new [ErrorEntry.Mutable] instance for filling with error context
+         * @param header Default "", the information string that will appear at the top of any error logging. If left empty, the starting error context will be replaced by whatever actual error content is applied first, instead of it being appended to the header context.
+         * @return [ErrorEntry.Mutable]
          * @author fzzyhmstrs
          * @since 0.7.0
          */
@@ -669,50 +691,66 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
 
     /**
-     * TODO()
+     * Error context stored in a [ValidationResult]. This can represent an errored or non-errored state, can include multiple children contexts, and can include non-textual information (see [ValidationResult.Errors.ACTION] for example)
+     *
+     * All Validation Results include an error entry; starting with a [NonErrorEntry] by default for a successful (non-errored) result.
      * @author fzzyhmstrs
      * @since 0.7.0
      */
      @JvmDefaultWithoutCompatibility
     sealed interface ErrorEntry {
         /**
-         * TODO()
+         * Whether the entry caontains an errored state. This is usually true for textual error types, false for empty entries or entries containing non-text information.
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun isError(): Boolean
         /**
-         * TODO()
+         * Whether this entry is empty. An empty error is non-errored
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun isEmpty(): Boolean = false
         /**
-         * TODO()
+         * Whether this entry contains a critical error. It will have one or more exceptions attached to it
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun isCritical(): Boolean
         /**
-         * TODO()
+         * Whether this entry is loggable. Entries with a non-text type generally aren't.
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun isLoggable(): Boolean
         /**
-         * TODO()
+         * Adds another error entry as a child to this one. Entries are immutable, so the updated entry is returned. The entry this is called on is not changed.
+         *
+         * For entries that are empty or otherwise not able to accept a child, they may return the provided entry as a new root entry instead.
+         * @param other New error entry to collate onto this one
+         * @return A new error entry based on the combination, the other entry as a new root if this one is empty, or this entry if the other entry is empty.
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun addError(other: ErrorEntry): ErrorEntry
         /**
-         * TODO()
+         * Adds another error entry of the given type as a child to this one, using the builder to build that entry. Entries are immutable, so the updated entry is returned. The entry this is called on is not changed.
+         *
+         * For entries that are empty or otherwise not able to accept a child, they may return the provided entry as a new root entry instead.
+         * @param C Non-null type of the error entry
+         * @param type [Type]&lt;[C]&gt; the error entry type to build for
+         * @param builder [UnaryOperator]&lt;[Builder]&gt; operator for applying features to the provided stub builder instance
+         * @return A new error entry based on the combination, the other entry as a new root if this one is empty, or this entry if the other entry is empty.
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun  <C: Any> addError(type: Type<C>, builder: UnaryOperator<Builder<C>>): ErrorEntry
         /**
-         * TODO()
+         * Adds another error entry using [ValidationResult.Errors.BASIC] as the type, as a child to this one, using the builder to build that entry. Entries are immutable, so the updated entry is returned. The entry this is called on is not changed.
+         *
+         * For entries that are empty or otherwise not able to accept a child, they may return the provided entry as a new root entry instead.
+         * @param builder [UnaryOperator]&lt;[Builder]&gt; operator for applying features to the provided stub builder instance
+         * @return A new error entry based on the combination, the other entry as a new root if this one is empty, or this entry if the other entry is empty.
          * @author fzzyhmstrs
          * @since 0.7.0
          */
@@ -720,61 +758,89 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             return addError(Errors.BASIC, builder)
         }
         /**
-         * TODO()
+         * Performs the provided consumer action on this and any children entries if they are of the provided type.
+         *
+         * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
+         * @param C Non-null type of the error entry
+         * @param t [Type]&lt;[C]&gt; the error entry type to consume
+         * @param c [Consumer]&lt;[Entry]&gt; action to perform on all entries of the given type
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun <C: Any> consumeType(t: Type<C>, c: Consumer<Entry<C>>)
         /**
-         * TODO()
+         * Performs the provided consumer action on this and any children entries.
+         *
+         * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
+         * @param c [Consumer]&lt;[Entry]&gt; action to perform on all entries.
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun consumeAll(c: Consumer<Entry<*>>)
         /**
-         * TODO()
+         * Whether this entry or one or more of its children is of the given type
+         * @param C Non-null error type
+         * @param t [Type]&lt;[C]&gt; the error entry type to check for
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun <C: Any> hasType(t: Type<C>): Boolean
         /**
-         * TODO()
+         * Performs the provided predicate test on this and any children entries if they are of the provided type. Generally returns true on the first success.
+         *
+         * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
+         * @param C Non-null error type
+         * @param t [Type]&lt;[C]&gt; the error entry type to check for
+         * @param p [Predicate]&lt;[Entry]&gt; test to perform on each entry of the given type
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun <C: Any> predicateType(t: Type<C>, p: Predicate<Entry<C>>): Boolean
         /**
-         * TODO()
+         * Performs the provided predicate test on this and any children entries. Generally returns true on the first success.
+         *
+         * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
+         * @param p [Predicate]&lt;[Entry]&gt; test to perform on each entry
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun predicateAll(p: Predicate<Entry<*>>): Boolean
         /**
-         * TODO()
+         * Provides an [Iterable] containing this and any children entries as applicable based on the provided type.
+         *
+         * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
+         * @param C Non-null error type
+         * @param t [Type]&lt;[C]&gt; the error type to iterate over
+         * @return [Iterable]&lt;[Entry]&gt; containing all relevant entries based on type.
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun <C: Any> iterateType(t: Type<C>): Iterable<Entry<C>>
         /**
-         * TODO()
+         * Provides an [Iterable] containing this and any children entries.
+         *
+         * NOTE: this performs actions on [Entry], not [ErrorEntry]. Entry is a container stored within most error entries containing content information only.
+         * @return [Iterable]&lt;[Entry]&gt; containing all entries
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun iterateAll(): Iterable<Entry<*>>
         /**
-         * TODO()
+         * Returns the string representation of the logging for this entry
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun getString(): String
         /**
-         * TODO()
+         * Return the string representation of the logging for this entry without extra styling and type information.
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun getPlainString(): String
         /**
-         * TODO()
+         * Logs this entry with the provided writer
+         * @param writer [BiConsumer]&lt;String, Throwable?&gt; writer for applying log lines. This is often a logger created with [createEntryLogger]
+         * @see [createEntryLogger]
          * @author fzzyhmstrs
          * @since 0.7.0
          */
@@ -783,16 +849,16 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 writer.accept(getString(), null)
         }
         /**
-         * TODO()
+         * Logs this entry with the provided writer using plain content information
+         * @param writer [BiConsumer]&lt;String, Throwable?&gt; writer for applying log lines. This is often a logger created with [createEntryLogger]
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         fun logPlain(writer: BiConsumer<String, Throwable?>) {
-            if (isLoggable())
-                writer.accept(getString(), null)
+                writer.accept(getPlainString(), null)
         }
         /**
-         * TODO()
+         * Converts this entry to a [Mutable]
          * @author fzzyhmstrs
          * @since 0.7.0
          */
@@ -801,18 +867,24 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         /**
-         * TODO()
+         * Type class representing a certain category of error content. This styles logged lines and can be used to store non-string content information.
+         * @param C Non-null error content type
+         * @param name The prefix used in logging; if the name is "Deserialization Error", the output looks something like "Deserialization Error: provided TOML element isn't a table"
+         * @param isString Default true; whether this type represents textual information
+         * @param isLoggable Default true; whether this type should be logged when `log` or similar is called
+         * @param isError Default true; whether this type represents an errored state. Types that contain miscellaneous information like [ValidationResult.Errors.ACTION] set this to false; they don't represent actual problems, simply a state
+         * @param
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         class Type<C: Any>(val name: String, val isString: Boolean = true, val isLoggable: Boolean = true, val isError: Boolean = true) {
-            fun create(content: C, e: Throwable?, msg: String = ""): ErrorEntry {
+            internal fun create(content: C, e: Throwable?, msg: String = ""): ErrorEntry {
                 return SingleErrorEntry(this, content, e, msg)
             }
         }
 
         /**
-         * TODO()
+         * Represents the actual content stored within an error entry. This is used as a buffer between the error entry and code-facing interactions with it
          * @author fzzyhmstrs
          * @since 0.7.0
          */
@@ -825,7 +897,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         /**
-         * TODO()
+         * Builds error entries. This is used in the [UnaryOperator] pattern seen in several places in this class, but can be used "freely" with [builder]
+         * @param C Non-null error type being built
+         * @param type [Type] the type of this error builder
          * @author fzzyhmstrs
          * @since 0.7.0
          */
@@ -838,7 +912,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             private var children: MutableList<ErrorEntry> = mutableListOf()
 
             /**
-             * TODO()
+             * Adds a header message to this error entry. This will prompt the builder to create a parent entry, and the actual entry being built will be its first child.
+             * @param header The header message to display
+             * @return this builder
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -848,7 +924,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             }
 
             /**
-             * TODO()
+             * The content of this entry. For string-based errors, use this instead of [message]
+             * @param content [C] instance to store in the error entry
+             * @return this builder
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -858,7 +936,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             }
 
             /**
-             * TODO()
+             * If this error is caused by a thrown exception, adds it to the entry
+             * @param e [Throwable] to attach to this entry
+             * @return this builder
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -868,7 +948,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             }
 
             /**
-             * TODO()
+             * Adds a string-based message to a non-string error type. Should not be used with string-based error (most of them)
+             * @param msg String message to append to the non-string content
+             * @return this builder
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -878,7 +960,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             }
 
             /**
-             * TODO()
+             * Adds a child entry to this builder. When this entry is built, this child will be attached to it.
+             * @param child [ErrorEntry]
+             * @return this builder
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -888,17 +972,20 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             }
 
             /**
-             * TODO()
+             * Adds a child entry to this builder from the provided [ValidationResult]. When this entry is built, this child will be attached to it.
+             * @param child [ValidationResult] A validation result. It's error entry will be attached to this as a child. If its error is empty it will be ignored.
+             * @return this builder
              * @author fzzyhmstrs
              * @since 0.7.0
              */
             fun addError(child: ValidationResult<*>): Builder<C> {
+                @Suppress("DEPRECATION")
                 this.children.add(child.getErrorEntry())
                 return this
             }
 
             /**
-             * TODO()
+             * Builds an [ErrorEntry] from provided inputs. Usually you don't have to do this yourself.
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -932,13 +1019,20 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         /**
-         * TODO()
+         * A mutable wrapper of an error entry. This is typically used to provide an "entrypoint" for building errors based on a pre-defined header message. Use it with other validation results by calling [ValidationResult.attachTo], and then build your final compound result with [ValidationResult.ofMutable]
+         *
+         * Build the error directly by calling one of the various [addError] methods
+         * @param entry [ErrorEntry] the wrapped error entry instance
+         * @see ErrorEntry.mutable
+         * @see ValidationResult.createMutable
          * @author fzzyhmstrs
          * @since 0.7.0
          */
         class Mutable(internal var entry: ErrorEntry) {
             /**
-             * TODO()
+             * Adds a child error to this mutable
+             * @param result [ValidationResult]; its error entry will be added as a child. If the error is empty it will be ignored.
+             * @return this mutable
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -949,7 +1043,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 return this
             }
             /**
-             * TODO()
+             * Adds a child error to this mutable
+             * @param other [ErrorEntry] child entry to add
+             * @return this mutable
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -958,7 +1054,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 return this
             }
             /**
-             * TODO()
+             * Adds the entries from another mutable to this one
+             * @param other [Mutable] the other mutable instance to copy in
+             * @return this mutable
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -967,7 +1065,11 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 return this
             }
             /**
-             * TODO()
+             * Builds and adds a child entry to this mutable of the given type
+             * @param C Non-null error type
+             * @param type [Type]&lt;[C]&gt; error type to build
+             * @param builder [UnaryOperator]&lt;[Builder]&gt; operator for applying features to a pre-created builder instance
+             * @return this
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -976,7 +1078,9 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 return this
             }
             /**
-             * TODO()
+             * Builds and adds a string-based child entry to this mutable
+             * @param builder [UnaryOperator]&lt;[Builder]&gt; operator for applying features to a pre-created builder instance. Will use the [ValidationResult.Errors.BASIC] type
+             * return this mutable
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -984,7 +1088,11 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 return addError(Errors.BASIC, builder)
             }
             /**
-             * TODO()
+             * Builds and adds a string-based child entry to this mutable
+             * @param type [Type]&lt;String&gt; a string-based error type
+             * @param error The error message
+             * @param e [Throwable], nullable exception if the error was caused by a throw
+             * @return this mutable
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -993,6 +1101,19 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 return this
             }
 
+            /**
+             * Pass-through method that attaches a string-based error to this mutable and then provides the value back that prompted the error
+             *
+             * You can see an example of this in [ValidatedColor][me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor]
+             * @param T the value type to pass through
+             * @param value [T] instance that will be returned by this method
+             * @param type [Type]&lt;String&gt; a string-based error type
+             * @param error The error message
+             * @param e [Throwable], nullable exception if the error was caused by a throw
+             * @return [value] out the other end
+             * @author fzzyhmstrs
+             * @since 0.7.0
+             */
             fun <T> report(value: T, type: Type<String>, error: String, e: Throwable? = null): T {
                 this.entry = entry.addError(Builder(type).content(error).exception(e).build())
                 return value
@@ -1001,35 +1122,35 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
         companion object {
             /**
-             * TODO()
+             * Standard logger using a warning level and Fzzy Configs logger
              * @author fzzyhmstrs
              * @since 0.7.0
              */
             val LOGGER: Consumer<Entry<*>> = createLogger(FC.LOGGER)
 
             /**
-             * TODO()
+             * Standard error-level entry logger using Fzzy Configs logger
              * @author fzzyhmstrs
              * @since 0.7.0
              */
             val ENTRY_ERROR_LOGGER: BiConsumer<String, Throwable?> = createEntryLogger(FC.LOGGER, Level.ERROR)
 
             /**
-             * TODO()
+             * Standard warn-level entry logger using Fzzy Configs logger
              * @author fzzyhmstrs
              * @since 0.7.0
              */
             val ENTRY_WARN_LOGGER: BiConsumer<String, Throwable?> = createEntryLogger(FC.LOGGER)
 
             /**
-             * TODO()
+             * Standard info-level entry logger using Fzzy Configs logger
              * @author fzzyhmstrs
              * @since 0.7.0
              */
             val ENTRY_INFO_LOGGER: BiConsumer<String, Throwable?> = createEntryLogger(FC.LOGGER, Level.INFO)
 
             /**
-             * TODO()
+             * Creates a consumer of [Entry] that will log
              * @author fzzyhmstrs
              * @since 0.7.0
              */
@@ -1097,23 +1218,23 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         override fun addError(other: ErrorEntry): ErrorEntry {
             return other
         }
-        override fun <C: Any> addError(type: ErrorEntry.Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ErrorEntry {
+        override fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ErrorEntry {
             return builder.apply(ErrorEntry.Builder(type)).build()
         }
-        override fun <C: Any> consumeType(t: ErrorEntry.Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
         }
         override fun consumeAll(c: Consumer<ErrorEntry.Entry<*>>) {
         }
-        override fun <C : Any> iterateType(t: ErrorEntry.Type<C>): Iterable<ErrorEntry.Entry<C>> {
+        override fun <C : Any> iterateType(t: Type<C>): Iterable<ErrorEntry.Entry<C>> {
             return listOf()
         }
         override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
             return listOf()
         }
-        override fun <C : Any> hasType(t: ErrorEntry.Type<C>): Boolean {
+        override fun <C : Any> hasType(t: Type<C>): Boolean {
             return false
         }
-        override fun <C : Any> predicateType(t: ErrorEntry.Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
+        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
             return false
         }
         override fun predicateAll(p: Predicate<ErrorEntry.Entry<*>>): Boolean {
@@ -1142,27 +1263,27 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 CompoundErrorEntry(this, other)
             }
         }
-        override fun <C: Any> addError(type: ErrorEntry.Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ErrorEntry {
+        override fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ErrorEntry {
             return if (header.isEmpty()) {
                 builder.apply(ErrorEntry.Builder(type)).build()
             } else {
                 CompoundErrorEntry(this, builder.apply(ErrorEntry.Builder(type)).build())
             }
         }
-        override fun <C: Any> consumeType(t: ErrorEntry.Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
         }
         override fun consumeAll(c: Consumer<ErrorEntry.Entry<*>>) {
         }
-        override fun <C : Any> iterateType(t: ErrorEntry.Type<C>): Iterable<ErrorEntry.Entry<C>> {
+        override fun <C : Any> iterateType(t: Type<C>): Iterable<ErrorEntry.Entry<C>> {
             return listOf()
         }
         override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
             return listOf()
         }
-        override fun <C : Any> hasType(t: ErrorEntry.Type<C>): Boolean {
+        override fun <C : Any> hasType(t: Type<C>): Boolean {
             return false
         }
-        override fun <C : Any> predicateType(t: ErrorEntry.Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
+        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
             return false
         }
         override fun predicateAll(p: Predicate<ErrorEntry.Entry<*>>): Boolean {
@@ -1177,7 +1298,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
     }
 
     private class SingleErrorEntry <T: Any>(
-        override val type: ErrorEntry.Type<T>,
+        override val type: Type<T>,
         override val content: T,
         override val e: Throwable? = null,
         private val msg: String = ""): ErrorEntry, ErrorEntry.Entry<T>
@@ -1199,10 +1320,10 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 CompoundErrorEntry(this, other)
             }
         }
-        override fun <C: Any> addError(type: ErrorEntry.Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ErrorEntry {
+        override fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ErrorEntry {
             return CompoundErrorEntry(this, builder.apply(ErrorEntry.Builder(type)).build())
         }
-        override fun <C: Any> consumeType(t: ErrorEntry.Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
             if (t != type) return
             @Suppress("UNCHECKED_CAST")
             (this as? ErrorEntry.Entry<C>)?.let{ c.accept(it) }
@@ -1210,16 +1331,16 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         override fun consumeAll(c: Consumer<ErrorEntry.Entry<*>>) {
             c.accept(this)
         }
-        override fun <C : Any> iterateType(t: ErrorEntry.Type<C>): Iterable<ErrorEntry.Entry<C>> {
+        override fun <C : Any> iterateType(t: Type<C>): Iterable<ErrorEntry.Entry<C>> {
             return if (t != type) listOf() else listOf(this).cast()
         }
         override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
             return listOf(this)
         }
-        override fun <C : Any> hasType(t: ErrorEntry.Type<C>): Boolean {
+        override fun <C : Any> hasType(t: Type<C>): Boolean {
             return t == type
         }
-        override fun <C : Any> predicateType(t: ErrorEntry.Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
+        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
             if (t != type) return false
             return p.test(this.cast())
         }
@@ -1240,7 +1361,8 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 "$content"
         }
         override fun log(writer: BiConsumer<String, Throwable?>) {
-            writer.accept(getString(), e)
+            if (isLoggable())
+                writer.accept(getString(), e)
         }
     }
 
@@ -1264,11 +1386,11 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
             }
             return this
         }
-        override fun <C: Any> addError(type: ErrorEntry.Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ErrorEntry {
+        override fun <C: Any> addError(type: Type<C>, builder: UnaryOperator<ErrorEntry.Builder<C>>): ErrorEntry {
             val other = builder.apply(ErrorEntry.Builder(type)).build()
             return addError(other)
         }
-        override fun <C: Any> consumeType(t: ErrorEntry.Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
+        override fun <C: Any> consumeType(t: Type<C>, c: Consumer<ErrorEntry.Entry<C>>) {
             headerEntry.consumeType(t, c)
             for (entry in children) {
                 entry.consumeType(t, c)
@@ -1280,16 +1402,16 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
                 entry.consumeAll(c)
             }
         }
-        override fun <C : Any> iterateType(t: ErrorEntry.Type<C>): Iterable<ErrorEntry.Entry<C>> {
-            return children.flatMap { it.iterateType(t) }
+        override fun <C : Any> iterateType(t: Type<C>): Iterable<ErrorEntry.Entry<C>> {
+            return listOf(headerEntry).flatMap { it.iterateType(t) } + children.flatMap { it.iterateType(t) }
         }
         override fun iterateAll(): Iterable<ErrorEntry.Entry<*>> {
-            return children.flatMap { it.iterateAll() }
+            return listOf(headerEntry).flatMap { it.iterateAll() } + children.flatMap { it.iterateAll() }
         }
-        override fun <C : Any> hasType(t: ErrorEntry.Type<C>): Boolean {
+        override fun <C : Any> hasType(t: Type<C>): Boolean {
             return children.any { it.hasType(t) } || headerEntry.hasType(t)
         }
-        override fun <C : Any> predicateType(t: ErrorEntry.Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
+        override fun <C : Any> predicateType(t: Type<C>, p: Predicate<ErrorEntry.Entry<C>>): Boolean {
             return children.any { it.predicateType(t, p) } || headerEntry.predicateType(t, p)
         }
 
