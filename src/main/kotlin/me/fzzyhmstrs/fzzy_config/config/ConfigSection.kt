@@ -61,7 +61,8 @@ open class ConfigSection: Walkable, EntryDeserializer<ConfigSection>, EntrySeria
 
     @Internal
     final override fun deserializeEntry(toml: TomlElement, fieldName: String, flags: Byte): ValidationResult<ConfigSection> {
-        return ConfigApiImpl.deserializeFromToml(this, toml, "Error(s) encountered deserializing config section", flags)
+        val result = ConfigApiImpl.deserializeFromToml(this, toml, "Error(s) encountered deserializing config section", flags)
+        return result
     }
 
     /**

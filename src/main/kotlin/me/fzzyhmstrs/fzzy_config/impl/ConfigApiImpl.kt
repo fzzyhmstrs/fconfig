@@ -501,8 +501,7 @@ internal object ConfigApiImpl {
                     //TomlNull for properties with Null state (improper state, no config values should be nullable)
                 } else {
                     ValidationResult.error(TomlNull, ValidationResult.Errors.SERIALIZATION, "Property [$name] was null during serialization!")
-                }
-                errorBuilder.addError(elResult)
+                }.attachTo(errorBuilder)
                 //scrape all the TomlAnnotations associated
                 val tomlAnnotations = tomlAnnotations(prop)
                 //add the element to the TomlTable, with annotations
@@ -983,62 +982,72 @@ internal object ConfigApiImpl {
         }
     }
 
-    internal fun <T: Config> buildTranslations(jclazz: Class<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
+    internal fun <T: Any> buildTranslations(jclazz: Class<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
         buildTranslations(jclazz.kotlin, id, lang, builder, logWarnings)
     }
 
-    internal fun <T: Config> buildTranslations(clazz: KClass<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
+    internal fun <T: Any> buildTranslations(clazz: KClass<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
         buildTranslations(clazz, id.toTranslationKey(), lang, builder, logWarnings)
     }
 
-    private fun buildTranslations(clazz: KClass<*>, prefix: String, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean) {
+    private fun buildTranslations(clazz: KClass<*>, prefix: String, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean, keyComposer: (String, String) -> String = { a, b -> "$a.$b" }) {
 
-        val orderById = clazz.java.declaredFields.filter { !isTransient(it.modifiers) }.withIndex().associate { it.value.name to it.index }.toMutableMap()
-        for (sup in clazz.allSuperclasses) {
-            if (sup == configClass) continue //ignore Config itself, as that has state we don't need
-            if (sup == configSectionClass) continue //ignore ConfigSection itself, as that has state we don't need
-            orderById.putAll(sup.java.declaredFields.filter { !isTransient(it.modifiers) }.withIndex().associate { it.value.name to it.index })
-        }
-
-        val props = clazz.memberProperties.filter {
-            it is KMutableProperty<*> && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-        }.sortedBy { orderById[it.name] }
-
-        FC.LOGGER.info("Building $lang entries for ${clazz.simpleName} @ $prefix")
-
-        //base config lang itself
-        val clazzAnnotations = clazz.annotations
-        val clazzPrefix = clazzPrefix(prefix, clazzAnnotations)
-        applyTranslation(clazzPrefix, clazzAnnotations, lang, builder, logWarnings)
-
-        for (prop in props) {
-            val name = prop.name
-            val annotations = prop.annotations
-            val propPrefix = getPrefix(prefix, annotations, clazzAnnotations)
-            val key = "$propPrefix.$name"
-            applyTranslation(key, annotations, lang, builder, logWarnings)
-            val propClass = prop.javaField?.type
-            if (propClass != null && (configSectionClass.java.isAssignableFrom(propClass) || walkableClass.java.isAssignableFrom(propClass))) {
-                //burrow into sections and walkables
-                buildTranslations(propClass.kotlin, key, lang, builder, logWarnings)
+        try {
+            val orderById =
+                clazz.java.declaredFields.filter { !isTransient(it.modifiers) }.withIndex().associate { it.value.name to it.index }.toMutableMap()
+            for (sup in clazz.allSuperclasses) {
+                if (sup == configClass) continue //ignore Config itself, as that has state we don't need
+                if (sup == configSectionClass) continue //ignore ConfigSection itself, as that has state we don't need
+                orderById.putAll(sup.java.declaredFields.filter { !isTransient(it.modifiers) }.withIndex().associate { it.value.name to it.index })
             }
+
+            val props = clazz.memberProperties.filter {
+                it is KMutableProperty<*> && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
+            }.sortedBy { orderById[it.name] }
+
+            FC.LOGGER.info("Building $lang entries for ${clazz.simpleName} @ $prefix")
+
+            //base config lang itself
+            val clazzAnnotations = clazz.annotations
+            val clazzPrefix = clazzPrefix(prefix, clazzAnnotations)
+            if (configClass.java.isAssignableFrom(clazz.java))
+                applyTranslation(clazzPrefix, clazzAnnotations, lang, builder, logWarnings)
+
+            for (prop in props) {
+                try {
+                    val name = prop.name
+                    val annotations = prop.annotations
+                    val propPrefix = getPrefix(prefix, annotations, clazzAnnotations)
+                    val key = keyComposer(propPrefix, name)
+                    applyTranslation(key, annotations, lang, builder, logWarnings)
+                    val propClass = prop.javaField?.type
+                    if (propClass != null && (configSectionClass.java.isAssignableFrom(propClass) || walkableClass.java.isAssignableFrom(propClass))) {
+                        //burrow into sections and walkables
+                        buildTranslations(propClass.kotlin, key, lang, builder, logWarnings)
+                    }
+                } catch (e: Exception) {
+                    FC.LOGGER.error("Critical error building translation for ${prop.name} in ${clazz.simpleName}", e)
+                }
+            }
+        } catch (e: Exception) {
+            FC.LOGGER.error("Exception while building translations for ${clazz.simpleName}", e)
         }
     }
 
     private fun applyTranslation(key: String, annotations: List<Annotation>, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean) {
-        annotations.filterIsInstance<Translatable.Name>().firstOrNull { it.lang == lang }.also{
-            if (it == null) FC.LOGGER.error("  No $lang prefix entry for $key")
+        annotations.filterIsInstance<Translatable.Name>().firstOrNull { it.lang == lang }.also {
+            if (it == null) FC.LOGGER.error("  No $lang name entry for $key")
         }?.apply {
             builder.accept(key, value)
         }
         annotations.filterIsInstance<Translatable.Desc>().firstOrNull { it.lang == lang }.also {
             if (it == null) {
                 val comment = annotations.firstNotNullOfOrNull { a -> a.nullCast<Comment>() }
-                if (comment != null) {
+                if (comment != null && lang == "en_us") {
                     builder.accept("$key.desc", comment.value)
                 } else {
                     val tomlComment = annotations.firstNotNullOfOrNull { a -> a.nullCast<TomlComment>() }
-                    if (tomlComment != null) {
+                    if (tomlComment != null && lang == "en_us") {
                         builder.accept("$key.desc", tomlComment.text)
                     } else if (logWarnings) {
                         FC.LOGGER.warn("  No $lang description entry for $key")
