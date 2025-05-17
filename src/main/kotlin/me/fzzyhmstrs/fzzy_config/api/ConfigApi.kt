@@ -710,7 +710,7 @@ object ConfigApi {
     }
 
     /**
-     * Applies a set of translations to the provided [builder] for data generation. Uses [Translatable.Name], [Translatable.Desc], and [Translatable.Prefix] annotations to power the generation. [TomlComment] and [Comment] can be used to provide en_us description lang.
+     * Applies a set of translations for the provided class object to the provided [builder]. Uses [Translatable.Name], [Translatable.Desc], and [Translatable.Prefix] annotations to power the generation. [TomlComment] and [Comment] can be used to provide en_us description lang.
      * @param kClass KClass instance for the config to generate lang for
      * @param id [Identifier] the identifier used to register the config
      * @param lang The applicable lang code to generate for, e.g. "en_us" or "es_mx". The builder will look for annotations with matching codes to apply.
@@ -720,7 +720,7 @@ object ConfigApi {
      * @since 0.7.0
      */
     @JvmStatic
-    fun <T: Config> buildTranslations(kClass: KClass<T>, id: Identifier, lang: String, logWarnings: Boolean, builder: BiConsumer<String, String>) {
+    fun <T: Any> buildTranslations(kClass: KClass<T>, id: Identifier, lang: String, logWarnings: Boolean, builder: BiConsumer<String, String>) {
         ConfigApiImpl.buildTranslations(kClass, id, lang, builder, logWarnings)
     }
 

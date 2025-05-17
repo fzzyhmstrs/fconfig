@@ -10,12 +10,15 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
 import net.minecraft.registry.Registry
+import net.peanuuutz.tomlkt.TomlComment
 import org.jetbrains.annotations.ApiStatus
 import org.slf4j.Logger
 import java.io.File
 import java.util.*
+import java.util.function.BiConsumer
 
 /**
  * API for abstraction of simple ModLoader requests
@@ -86,6 +89,21 @@ interface PlatformApi {
      */
     @ApiStatus.Experimental
     fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T>
+
+    /**
+     * Applies a set of translations for the provided registry instance to the provided [builder]. Uses [Translatable.Name], [Translatable.Desc], and [Translatable.Prefix] annotations to power the generation. [TomlComment] and [Comment] can be used to provide en_us description lang.
+     *
+     * This translation only works using an INSTANCE pattern. Kotlin objects, for example. In Java, you will have to define your items, blocks, etc. as member fields in the class and create a static INSTANCE that is referenced wherever.
+     * @param T Non-null registry type
+     * @param obj [T] instance to scrape
+     * @param prefix String prefix applicable to the registry type. For example, an items registry will use "item". This will create keys like "item.namespace.path"
+     * @param lang The applicable lang code to generate for, e.g. "en_us" or "es_mx". The builder will look for annotations with matching codes to apply.
+     * @param logWarnings If true, Fzzy Config will log warnings for every missing name, description, and prefix; if false only missing names will be logged.
+     * @param builder [BiConsumer]&lt;String, String&gt; that accepts new lang entries. For fabric lang generation this could be `TranslationBuilder::add`
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    fun <T: Any> buildRegistryTranslations(obj: T, prefix: String, lang: String, logWarnings: Boolean, builder: BiConsumer<String, String>)
 
     /**
      * Tests the version of the provided mod (or minecraft)

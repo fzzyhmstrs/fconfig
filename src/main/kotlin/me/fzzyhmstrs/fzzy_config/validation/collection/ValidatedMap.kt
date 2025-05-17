@@ -71,17 +71,20 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Map<K, V>> {
         return try {
-            val table = toml.asTomlTable()
+            val table = toml.asTomlArray()
             val map: MutableMap<K, V> = mutableMapOf()
             val keyErrors = ValidationResult.createMutable("Skipped keys")
             val valueErrors = ValidationResult.createMutable("Value errors")
-            for ((keyToml, el) in table.entries) {
+            for (el in table.content) {
+                val pairEl = el.asTomlArray()
+                val keyToml = pairEl[0]
+                val valueToml = pairEl[1]
                 val field = "{$fieldName, @key: $keyToml}"
-                val keyResult = keyHandler.deserializeEntry(TomlLiteral(keyToml), field, 1).attachTo(keyErrors)
+                val keyResult = keyHandler.deserializeEntry(keyToml, field, 1).attachTo(keyErrors)
                 if(!keyResult.isValid()) {
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(el, field, 1).attachTo(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(valueToml, field, 1).attachTo(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
             val totalErrors = ValidationResult.createMutable("Errors found deserializing map [$fieldName]")
@@ -101,7 +104,6 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
         val valueErrors = ValidationResult.createMutable("Value errors")
         return try {
             for ((key, value) in input) {
-
                 val keyEl = keyHandler.serializeEntry(key, 1).attachTo(keyErrors)
                 if (!keyEl.isValid()) {
                     continue //skip adding a pair that has an errored key, would be skipped in deserialize anyway
