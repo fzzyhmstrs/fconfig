@@ -342,7 +342,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             val str = this.replace("#", "").replace("0x", "")
             val validatedString = validatedString(str, !transparent)
             val result = validatedString.validateEntry(str, EntryValidator.ValidationType.WEAK)
-            if (result.isInvalid()) {
+            if (result.isError()) {
                 result.log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
                 throw IllegalStateException("Invalid color string")
             }
@@ -583,7 +583,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         @Internal
         override fun correctEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
             return validateEntry(input, type).bimap { v ->
-                if (v.isInvalid()) {
+                if (v.isError()) {
                     val newR = MathHelper.clamp(v.get().r, 0, 255)
                     val newG = MathHelper.clamp(v.get().g, 0, 255)
                     val newB = MathHelper.clamp(v.get().b, 0, 255)
