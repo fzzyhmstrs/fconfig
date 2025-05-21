@@ -116,7 +116,7 @@ open class ValidatedExpression @JvmOverloads constructor(
     @Internal
     override fun correctEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
         val result = validator.validateEntry(input, type)
-        return if(result.isInvalid()) {
+        return if(result.isError()) {
             ValidationResult.error(storedValue, ValidationResult.Errors.OUT_OF_BOUNDS, "Invalid math expression [$input] found, using current value [$storedValue]")}
         else
             result

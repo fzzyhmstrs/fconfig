@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -85,11 +84,6 @@ internal class ConfigScreen(
 
     private val menuListBackground: Identifier = "textures/gui/menu_list_background.png".simpleId()
     private val inWorldMenuListBackground: Identifier = "textures/gui/inworld_menu_list_background.png".simpleId()
-
-    override fun setFocused(focused: Element?) {
-        FC.DEVLOG.error("Setting Focus on $focused", Exception())
-        super.setFocused(focused)
-    }
 
     fun setGlobalInputHandler(handler: ((key: Int, released: Boolean, type: ContextInput, ctrl: Boolean, shift: Boolean, alt: Boolean) -> TriState)?) {
         this.globalInputHandler = handler

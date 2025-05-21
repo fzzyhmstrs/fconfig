@@ -248,6 +248,15 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
     }
 
     /**
+     * Tests whether the keybind is currently being pressed.
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    override fun isPressed(): Boolean {
+        return storedValue.isPressed()
+    }
+
+    /**
      * @suppress
      */
     override fun toString(): String {

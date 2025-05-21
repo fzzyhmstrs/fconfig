@@ -167,8 +167,8 @@ internal object ConfigApiImpl {
     }
 
     private fun <T: Config> registerClient(config: T, configClass: () -> T, noGui: Boolean): T {
-            if(isClient)
-                ConfigApiImplClient.registerConfig(config, configClass(), noGui)
+        if(isClient)
+            ConfigApiImplClient.registerConfig(config, configClass(), noGui)
         return config
     }
 
@@ -238,9 +238,14 @@ internal object ConfigApiImpl {
         return ConfigHolder.Future(future)
     }*/
 
+    private val seenLogs: MutableSet<String> = mutableSetOf()
+
     internal fun <T: Config> readOrCreateAndValidate(configClass: () -> T, classInstance: T = configClass(), name: String = classInstance.name, folder: String = classInstance.folder, subfolder: String = classInstance.subfolder): T {
         fun log(start: Long) {
-            FC.LOGGER.info("Loaded config {} in {}ms", "$folder:$name", (System.currentTimeMillis() - start))
+            val cfg = "$folder:$name"
+            if (seenLogs.contains(cfg)) return //log once
+            seenLogs.add(cfg)
+            FC.LOGGER.info("Loaded config {} in {}ms", cfg, (System.currentTimeMillis() - start))
         }
 
         //wrap entire method in a try-catch. don't need to have config problems causing a hard crash, just fall back
@@ -344,6 +349,7 @@ internal object ConfigApiImpl {
                     result.log()
                 }
                 FC.LOGGER.info("Saved config $name to file ${files.fOut}")
+                files.fOut.lastModified()
                 writeFile(files.fOut, result.get(), name, "saving config", files.fIn)
             } else  {
                 FC.LOGGER.error("Failed to save config file $name to ${files.fOut}, config not saved.")
