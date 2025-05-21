@@ -21,9 +21,8 @@ import java.util.function.Supplier
  * Scheduled for stability by 0.7.0
  * @see [me.fzzyhmstrs.fzzy_config.util.PlatformApi.createRegistrar]
  * @author fzzyhmstrs
- * @since 0.5.9
+ * @since 0.5.9, no longer experimental 0.7.0
  */
-@ApiStatus.Experimental
 interface Registrar<T> {
 
     /**
