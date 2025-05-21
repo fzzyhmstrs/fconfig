@@ -166,7 +166,7 @@
 "fc.config.back.desc" : "Return to %s\n(Hold shift to exit fully)",
 "fc.config.done.desc" : "Save config and close screen",
 "fc.config.search": "Search",
-"fc.config.search.desc": "Filter settings by name\n\n$ : search descriptions\n- : negate search\n-$ : negate description\n\"\" : exact search\n-\"\" : negate exact search",
+"fc.config.search.desc": "Filter settings by name\n\n$ : search descriptions\n- : negate search\n-$ : negate description\n\"\" : exact search\n-\"\" : negate exact search\n// : regex search\n-// : negate regex search",
 "fc.config.forwarded": "Forwarded Settings",
 "fc.config.forwarded_error.c2s": "Failed to forward the setting(s). The server isn't accepting this type of data, please contact an admin for help.",
 "fc.config.forwarded_error.s2c": "Failed to forward the setting(s). The player you are trying to forward the setting to doesn't have a compatible client.",

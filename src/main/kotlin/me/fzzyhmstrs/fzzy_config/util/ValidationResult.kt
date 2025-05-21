@@ -34,31 +34,20 @@ import java.util.function.Function
 class ValidationResult<T> private constructor(private val storedVal: T, private val errorContext: ErrorEntry = NonErrorEntry) {
     /**
      * Boolean check to determine if this result is valid (no errors)
-     *
+     * - [isValid]: No errors, critical or otherwise
+     * - [isError]: Contains an error (non-critical)
+     * - [isCritical]: Contains a critical exception
      * @return Boolean, true is NOT an error, false if there is an error.
      * @author fzzyhmstrs
      * @since 0.2.0
      */
     fun isValid(): Boolean {
-        return errorContext.isEmpty()
-    }
-
-    /**
-     * Boolean check to determine if this result isn't valid (errors or exception encountered)
-     * - [isInvalid]: Errors or exceptions
-     * - [isError]: Contains an error (non-critical)
-     * - [isCritical]: Contains a critical exception
-     * @return Boolean, true is an error or exception, false if there are no problems.
-     * @author fzzyhmstrs
-     * @since 0.2.0
-     */
-    fun isInvalid(): Boolean {
-        return !errorContext.isEmpty()
+        return !errorContext.isError()
     }
 
     /**
      * Boolean check to determine if this result is holding an error
-     * - [isInvalid]: No errors nor exceptions
+     * - [isValid]: No errors, critical or otherwise
      * - [isError]: Contains an error (non-critical)
      * - [isCritical]: Contains a critical exception
      * @return Boolean, true is an error, false not.
@@ -71,7 +60,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
     /**
      * Boolean check to determine if this result is holding a critical (exception-caused) error
-     * - [isInvalid]: No errors nor exceptions
+     * - [isValid]: No errors, critical or otherwise
      * - [isError]: Contains an error (non-critical)
      * - [isCritical]: Contains a critical exception
      * @return Boolean, true is a critical error, false not.
@@ -277,7 +266,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
     }
 
     override fun toString(): String {
-        val type = if (isInvalid()) {
+        val type = if (isError()) {
             if (isCritical()) {
                 "critical error"
             } else {
@@ -514,7 +503,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         }
 
         /**
-         * Creates a new ValidationResult of type T wrapping the new value with the error(if any) from the receiver ValdiationResult (of any type, does not need to match T)
+         * Creates a new ValidationResult of type T wrapping the new value with the error(if any) from the receiver ValidationResult (of any type, does not need to match T)
          *
          * Useful if the Validation is performed on an incompatible type, and the error needs to be passed along with type T.
          * @param T type of result
@@ -691,6 +680,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
 
     object Errors {
         val BASIC = Type<String>("Error")
+        val PARSE = Type<String>("Parsing Error")
         val SERIALIZATION = Type<String>("Serialization Error")
         val DESERIALIZATION = Type<String>("Deserialization Error")
         val OUT_OF_BOUNDS = Type<String>("Value(s) Out of Bounds")
@@ -713,7 +703,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
      @JvmDefaultWithoutCompatibility
     sealed interface ErrorEntry {
         /**
-         * Whether the entry caontains an errored state. This is usually true for textual error types, false for empty entries or entries containing non-text information.
+         * Whether the entry contains an errored state. This is usually true for textual error types, false for empty entries or entries containing non-text information.
          * @author fzzyhmstrs
          * @since 0.7.0
          */
@@ -1397,6 +1387,10 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
     private class CompoundErrorEntry(private val headerEntry: ErrorEntry, private val children: MutableList<ErrorEntry>): ErrorEntry {
 
         constructor(headerEntry: ErrorEntry, childEntry: ErrorEntry): this(headerEntry, mutableListOf(childEntry))
+
+        override fun isEmpty(): Boolean {
+            return headerEntry.isEmpty() && children.all { it.isEmpty() }
+        }
 
         override fun isError(): Boolean {
             return headerEntry.isError() || children.any { it.isError() }
