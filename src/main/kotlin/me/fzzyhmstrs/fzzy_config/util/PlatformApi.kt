@@ -85,9 +85,8 @@ interface PlatformApi {
      * @param registry [Registry] registry to wrap
      * @return [Registrar] platform-agnostic wrapper that registers objects
      * @author fzzyhmstrs
-     * @since 0.5.9
+     * @since 0.5.9, no longer experimental 0.7.0
      */
-    @ApiStatus.Experimental
     fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T>
 
     /**

@@ -86,13 +86,11 @@ internal object ClientConfigRegistry {
                 val saveType = result.get().saveType()
                 if (saveType == SaveType.OVERWRITE)
                     result.get().save() //save config to the client
-                if (result.test(ValidationResult.Errors.ACTION) { it.content.restartPrompt }) {
-                    if (result.has(ValidationResult.Errors.RESTART)) {
-                        FC.LOGGER.info("Client prompted for a restart due to received config updates")
-                        FC.LOGGER.info("Restart-prompting updates:")
-                        for (record in result.iterate(ValidationResult.Errors.RESTART)) {
-                            record.log(ValidationResult.ErrorEntry.ENTRY_INFO_LOGGER)
-                        }
+                if (result.has(ValidationResult.Errors.RESTART)) {
+                    FC.LOGGER.info("Client prompted for a restart due to received config updates")
+                    FC.LOGGER.info("Restart-prompting updates:")
+                    for (record in result.iterate(ValidationResult.Errors.RESTART)) {
+                        record.log(ValidationResult.ErrorEntry.ENTRY_INFO_LOGGER)
                     }
                     disconnector.accept(FcText.translatable("fc.networking.restart"))
                     ConfigApiImpl.openRestartScreen()

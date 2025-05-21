@@ -135,7 +135,7 @@ fun interface Expression {
                 val reader = StringReader(str)
                 return parseExpression(reader, context, 1000)
             } catch (e: Throwable) {
-                throw IllegalStateException("Error parsing math equation [$context]: ${e.localizedMessage}")
+                throw IllegalStateException("Error parsing math equation [$context]", e)
             }
         }
 
@@ -152,7 +152,7 @@ fun interface Expression {
                 val reader = StringReader(str)
                 ValidationResult.success(parseExpression(reader, str, 1000))
             } catch (e: Throwable) {
-                ValidationResult.error(null, ValidationResult.Errors.BASIC, "Expression parsing expression $str", e)
+                ValidationResult.error(null, ValidationResult.Errors.PARSE, "Exception parsing expression $str", e)
             }
         }
 
@@ -167,7 +167,7 @@ fun interface Expression {
         @JvmStatic
         fun tryTest(str: String, vars: Set<Char>): ValidationResult<Expression?> {
             val result = tryParse(str)
-            if (result.isInvalid() || vars.isEmpty()) return result
+            if (result.isError() || vars.isEmpty()) return result
             val varMap = vars.associateWith { 0.0 }
             return try {
                 @Suppress("DEPRECATION")
