@@ -151,7 +151,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     @Internal
     override fun correctEntry(input: Identifier, type: EntryValidator.ValidationType): ValidationResult<Identifier> {
         val result = validator.validateEntry(input, type)
-        return if(result.isInvalid()) {
+        return if(result.isError()) {
             ValidationResult.error(storedValue, ValidationResult.Errors.OUT_OF_BOUNDS, "Invalid identifier [$input] found, using current value [$storedValue]")}
         else
             result
