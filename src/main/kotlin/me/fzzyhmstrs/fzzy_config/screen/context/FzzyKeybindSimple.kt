@@ -13,9 +13,12 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType.Relevant
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.TriState
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.InputUtil
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import org.lwjgl.glfw.GLFW
 
 /**
  * Basic implementation of [Relevant] that uses [TriState] for processing modifier inputs. [TriState.DEFAULT] auto-passes the modifier key (either pressed or not-pressed will be considered relevant)
@@ -35,6 +38,13 @@ data class FzzyKeybindSimple(val inputCode: Int, val type: ContextInput, val ctr
                 && this.ctrl.validate(ctrl)
                 && this.shift.validate(shift)
                 && this.alt.validate(alt)
+    }
+
+    override fun isPressed(): Boolean {
+        return InputUtil.isKeyPressed(MinecraftClient.getInstance().window.handle, inputCode)
+                && this.ctrl.validate(Screen.hasControlDown())
+                && this.shift.validate(Screen.hasShiftDown())
+                && this.alt.validate(Screen.hasAltDown())
     }
 
     override fun keybind(): MutableText {
