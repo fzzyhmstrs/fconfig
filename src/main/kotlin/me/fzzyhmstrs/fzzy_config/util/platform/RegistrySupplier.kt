@@ -18,9 +18,8 @@ import java.util.stream.Stream
  * **Warning! Certain usages of RegistryEntry require RegistryEntry.Reference to be passed and MC will crash if that specific subclass isn't passed in. Only use this as an RegistryEntry directly when you need to use it for construction of other registry objects!**
  * @param T the registered object type
  * @author fzzyhmstrs
- * @since 0.5.9, implements RegistryEntry itself as of 0.6.5
+ * @since 0.5.9, implements RegistryEntry itself as of 0.6.5, no longer experimental 0.7.0
  */
-@ApiStatus.Experimental
 interface RegistrySupplier<T>: Supplier<T>, RegistryEntry<T> {
 
     /**

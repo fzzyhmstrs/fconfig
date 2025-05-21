@@ -36,4 +36,8 @@ class Ref<T>(@Volatile private var value: T) {
     fun set(value: T) {
         this.value = value
     }
+
+    override fun toString(): String {
+        return "Ref(value=$value)"
+    }
 }
