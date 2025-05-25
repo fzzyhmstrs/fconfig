@@ -16,22 +16,12 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
 import me.fzzyhmstrs.fzzy_config.entry.EntryPermissible
 import me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry
+import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigBaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
-import me.fzzyhmstrs.fzzy_config.util.FcText
-import me.fzzyhmstrs.fzzy_config.util.FcText.literal
-import me.fzzyhmstrs.fzzy_config.util.FcText.prefixLit
-import me.fzzyhmstrs.fzzy_config.util.FcText.transSupplied
-import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.resource.language.I18n
-import net.minecraft.text.MutableText
-import net.minecraft.text.Text
-import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
-import net.peanuuutz.tomlkt.TomlComment
-import java.util.function.Supplier
 
 internal object ConfigApiImplClient {
 
@@ -83,6 +73,10 @@ internal object ConfigApiImplClient {
         return ClientConfigRegistry.isScreenOpen(scope)
     }
 
+    internal fun registerScreenProvider(namespace: String, provider: ConfigScreenProvider) {
+        ClientConfigRegistry.registerScreenProvider(namespace, provider)
+    }
+
     internal fun getScreenUpdateManager(scope: String): ConfigBaseUpdateManager? {
         return ClientConfigRegistry.provideUpdateManager(scope)
     }
@@ -106,89 +100,8 @@ internal object ConfigApiImplClient {
         return i - 1
     }
 
-    private fun fallbackSupplier(fallback: String): Supplier<String> {
-        return Supplier { fallback.replace('_', ' ').split(FcText.regex).joinToString(" ") { it.lowercase(); it.replaceFirstChar { c -> c.uppercase() } } }
-    }
-
     internal fun getText(thing: Any, scope: String, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String = fieldName): Translatable.Result {
-        val cachedText = Translatable.getScopedResult(scope)
-        if (cachedText != null) return cachedText
-        var nFinal: Text? = null
-        var dFinal: Text? = null
-        var pFinal: Text? = null
-        for (annotation in annotations) {
-            if (annotation is Translation) {
-                for (ga in globalAnnotations) {
-                    if (ga is Translation && ga.negate) {
-                        val n = thing.transSupplied(fallbackSupplier(fallback))
-                        val d = thing.descGet { getComments(annotations) }
-                        val p = thing.prefixLit("")
-                        return Translatable.createScopedResult(scope, n, d, p)
-                    }
-                }
-                if (annotation.negate) {
-                    val n = thing.transSupplied(fallbackSupplier(fallback))
-                    val d = thing.descGet { getComments(annotations) }
-                    val p = thing.prefixLit("")
-                    return Translatable.createScopedResult(scope, n, d, p)
-                }
-                val keyN = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName" else annotation.prefix
-                val keyD = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.desc" else "${annotation.prefix}.desc"
-                val keyP = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.prefix" else "${annotation.prefix}.prefix"
-                if (I18n.hasTranslation(keyN)) nFinal = keyN.translate()
-                if (I18n.hasTranslation(keyD)) dFinal = keyD.translate()
-                if (I18n.hasTranslation(keyP)) pFinal = keyP.translate()
-                break
-            }
-        }
-        for (annotation in globalAnnotations) {
-            if (annotation is Translation) {
-                val keyN = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName" else annotation.prefix
-                val keyD = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.desc" else "${annotation.prefix}.desc"
-                val keyP = if(fieldName.isNotEmpty()) "${annotation.prefix}.$fieldName.prefix" else "${annotation.prefix}.prefix"
-                if (I18n.hasTranslation(keyN)) nFinal = keyN.translate()
-                if (I18n.hasTranslation(keyD)) dFinal = keyD.translate()
-                if (I18n.hasTranslation(keyP)) pFinal = keyP.translate()
-                break
-            }
-        }
-        nFinal = nFinal ?: thing.transSupplied(fallbackSupplier(fallback))
-        dFinal = dFinal ?: thing.descGet { getComments(annotations) }
-        pFinal = pFinal ?: thing.prefixLit("")
-        return Translatable.createScopedResult(scope, nFinal, dFinal, pFinal)
-    }
-
-    private fun Any?.descGet(fallbackSupplier: Supplier<String>): MutableText? {
-        if(this is Translatable) {
-            if (this.hasDescription()) {
-                return this.description()
-            }
-        }
-        val fallback = fallbackSupplier.get()
-        return if (fallback != "")
-            literal(fallback).formatted(Formatting.ITALIC)
-        else
-            null
-    }
-
-    private const val SPACER = ". "
-
-    private fun getComments(annotations: List<Annotation>): String {
-        val comment = StringBuilder()
-        for (annotation in annotations) {
-            if (annotation is TomlComment) {
-                if (comment.isNotEmpty())
-                    comment.append(SPACER)
-                comment.append(annotation.text)
-            } else if(annotation is Comment) {
-                if (comment.isNotEmpty())
-                    comment.append(SPACER)
-                comment.append(annotation.value)
-            }
-        }
-        if (comment.isNotEmpty())
-            comment.append(".")
-        return comment.toString()
+        return Translatable.Impls.getText(thing, scope, fieldName, annotations, globalAnnotations, fallback)
     }
 
     //////////////////////////
@@ -222,7 +135,7 @@ internal object ConfigApiImplClient {
 
     class PrepareResult(val perms: PermResult, val actions: Set<Action>, val texts: Translatable.Result, val cont: Boolean, val fail: Boolean) {
         companion object {
-            val FAIL = PrepareResult(PermResult.FAILURE, setOf(), Translatable.Result.EMPTY, cont = false, fail = true)
+            val FAIL = PrepareResult(PermResult.FAILURE, setOf(), Translatable.EMPTY, cont = false, fail = true)
         }
     }
 

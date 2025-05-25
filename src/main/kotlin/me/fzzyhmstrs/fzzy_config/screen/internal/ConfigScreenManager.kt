@@ -53,7 +53,7 @@ import kotlin.math.min
 internal class ConfigScreenManager(private val scope: String, private val subScopes: Collection<String>, private val configs: Map<String, ConfigSet>): BasicValidationProvider {
 
     private val sidebar: Sidebar = Sidebar()
-    private val screenCaches: MutableMap<String, ConfigScreenCache> = mutableMapOf()
+    private val screenCaches: MutableMap<String, ConfigScreenCache> = hashMapOf()
 
     private var copyBuffer: Ref<Any?> = Ref(null)
     private var cachedPerms:  Map<String, Map<String, Boolean>> = mapOf()
@@ -239,7 +239,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
 
     private fun prepareConfigScreenCache(configSet: ConfigSet, playerPerms: Int, customPermsKey: Int, outOfGame: Boolean, previous: ConfigScreenCache? = null): ConfigScreenCache {
         val functionMap: MutableMap<String, MutableList<EntryCreator.Creator>> = mutableMapOf()
-        val nameMap: MutableMap<String, Text> = mutableMapOf()
+        val nameMap: MutableMap<String, Text> = hashMapOf()
         val anchorPredicate: Predicate<AnchorResult> =
             Predicate { result ->
                 if (result.thing !is EntryAnchor) return@Predicate false

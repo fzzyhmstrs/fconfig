@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.Builder
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
@@ -29,6 +30,7 @@ import me.fzzyhmstrs.fzzy_config_test.test.TestBasicConfigManager
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.TextWidget
+import net.minecraft.text.ClickEvent
 import org.lwjgl.glfw.GLFW
 import java.util.function.BiFunction
 import java.util.function.Supplier
@@ -45,8 +47,13 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
     val testBooleanWidget = testBoolean.widgetEntry(ChoiceValidator.any())
     val listTestWidget = configWidget(size)
     val groupButton = ButtonWidget.builder("Toggle".lit()) { _ -> listTestWidget.toggleGroup("2") }.size(50, 20).build()
-    val suppliedText = SuppliedTextWidget(Suppliers.memoize { FcText.empty() }, MinecraftClient.getInstance().textRenderer, 100, 20)
+    val suppliedText = SuppliedTextWidget(ConstSupplier(FcText.empty()), MinecraftClient.getInstance().textRenderer, 100, 20)
     val suppliedText2 = SuppliedTextWidget(ConstSupplier(FcText.empty()), MinecraftClient.getInstance().textRenderer, 100, 20)
+
+    val multilineTextWidget = CustomMultilineTextWidget(
+        "Lorem ipsum dolor sit amet, consectetur adipiscing elit,".lit()
+            .append("sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.".lit().styled { s -> s.withUnderline(true).withClickEvent(ClickEvent.RunCommand("/give @s minecraft:stick")) })
+            .append("Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."))
 
     override fun close() {
         super.close()
@@ -79,6 +86,8 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
         addDrawableChild(listTestWidget)
         groupButton.setPosition(260, 80)
         addDrawableChild(groupButton)
+        multilineTextWidget.setDimensionsAndPosition(240, 320, 140, 4)
+        addDrawableChild(multilineTextWidget)
 
         addDrawableChild(ConfigScreenWidget.of("fzzy_config_test", ConfigScreenWidget.Position.Corner.TOP_LEFT))
     }

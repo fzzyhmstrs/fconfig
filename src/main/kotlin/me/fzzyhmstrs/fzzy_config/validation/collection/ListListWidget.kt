@@ -11,8 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
+import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -215,8 +215,9 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             return ValidationResult.predicated(
                 input,
                 !disallowed.apply(self).contains(input),
-                "No duplicate values in a set"
-            ).also { self.isValid = it.isValid() }
+                ValidationResult.Errors.INVALID) { b ->
+                b.content("No duplicate values in a set")
+            }.also { self.isValid = it.isValid() }
         }
 
     }

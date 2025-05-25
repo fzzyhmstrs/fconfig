@@ -15,8 +15,6 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_ACTIONS
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.*
@@ -24,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.MinecraftServer
@@ -48,7 +47,7 @@ import java.util.function.Function
  */
 internal object SyncedConfigRegistry {
 
-    private val syncedConfigs : MutableMap<String, SyncedConfigEntry> = mutableMapOf()
+    private val syncedConfigs : MutableMap<String, SyncedConfigEntry> = hashMapOf()
     private val quarantinedUpdates : Object2ObjectLinkedOpenHashMap<String, QuarantinedUpdate> = Object2ObjectLinkedOpenHashMap()
 
     internal fun syncedConfigs(): Map<String, SyncedConfigEntry> {
@@ -59,13 +58,10 @@ internal object SyncedConfigRegistry {
         if (!canSender.test(ConfigSyncS2CCustomPayload.type)) return
         for ((id, configEntry) in syncedConfigs) {
             if (configEntry.skipSync()) continue
-            val syncErrors = mutableListOf<String>()
-            val payload = ConfigSyncS2CCustomPayload(id, ConfigApiImpl.serializeConfigSafe(configEntry.config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
-            if (syncErrors.isNotEmpty()) {
-                val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C configuration stage sync.")
-                syncError.writeError(syncErrors)
-            }
-            sender.accept(payload)
+            val payloadResult = ConfigApiImpl.serializeConfigSafe(configEntry.config, "Error(s) encountered serializing config for S2C configuration sync.", 0).map{
+                ConfigSyncS2CCustomPayload(id, it)
+            }.log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+            sender.accept(payloadResult.get())
             try {
                 configEntry.config.onSyncServer()
             } catch (e: Throwable) {
@@ -102,16 +98,17 @@ internal object SyncedConfigRegistry {
 
     internal fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
         for (player in players) {
+            if (player.server.isSingleplayer) {
+                ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player))
+                continue
+            }
             if (!canSender.test(player, ConfigSyncS2CCustomPayload.type)) continue
             for ((id, configEntry) in syncedConfigs) {
                 if (configEntry.skipSync()) continue
-                val syncErrors = mutableListOf<String>()
-                val syncPayload = ConfigSyncS2CCustomPayload(id, ConfigApiImpl.serializeConfigSafe(configEntry.config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
-                if (syncErrors.isNotEmpty()) {
-                    val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C datapack reload sync.")
-                    syncError.writeError(syncErrors)
-                }
-                sender.accept(player, syncPayload)
+                val payloadResult = ConfigApiImpl.serializeConfigSafe(configEntry.config, "Error encountered serializing config for S2C data reload sync.", 0).map {
+                    ConfigSyncS2CCustomPayload(id, it)
+                }.log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+                sender.accept(player, payloadResult.get())
                 if (!canSender.test(player, ConfigPermissionsS2CCustomPayload.type)) continue
                 val perms = ConfigApiImpl.generatePermissionsReport(player, configEntry, 0)
                 val permsPayload = ConfigPermissionsS2CCustomPayload(id, perms)
@@ -127,14 +124,10 @@ internal object SyncedConfigRegistry {
                     FC.LOGGER.error("Error encountered while running reload onSyncServer event for config $id, for player $player!", e)
                 }
             }
-            if (player.server.isSingleplayer) {
-                ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player))
-            } else {
-                val dynamicIdSyncs = ValidatedIdentifier.createSyncs(PortingUtils.getDynamicManager(player))
-                if (dynamicIdSyncs.isEmpty()) continue
-                for (sync in dynamicIdSyncs) {
-                    sender.accept(player, sync)
-                }
+            val dynamicIdSyncs = ValidatedIdentifier.createSyncs(PortingUtils.getDynamicManager(player))
+            if (dynamicIdSyncs.isEmpty()) continue
+            for (sync in dynamicIdSyncs) {
+                sender.accept(player, sync)
             }
         }
     }
@@ -178,19 +171,15 @@ internal object SyncedConfigRegistry {
                     continue
                 }
             }
-            val errors = mutableListOf<String>()
-            val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS)
-            val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
-            result.writeError(errors)
+            val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, "Error(s) encountered while receiving config update for $id", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             result.get().config.save()
-            if (actions.any { it.restartPrompt }) {
+            if (result.test(ValidationResult.Errors.ACTION) { it.content.restartPrompt }) {
                 FC.LOGGER.warn("The server has received a config update that may require a restart. Connected clients have been automatically updated and notified of the potential for restart.")
-                val records = result.get().get(RESTART_RECORDS)
-                if (!records.isNullOrEmpty()) {
+                if (result.has(ValidationResult.Errors.RESTART)) {
                     FC.LOGGER.info("Server prompted for a restart due to received config changes")
                     FC.LOGGER.info("Restart-prompting changes:")
-                    for (record in records) {
-                        FC.LOGGER.info(record)
+                    for (record in result.iterate(ValidationResult.Errors.RESTART)) {
+                        record.log(ValidationResult.ErrorEntry.ENTRY_INFO_LOGGER)
                     }
                 }
             }
@@ -254,14 +243,17 @@ internal object SyncedConfigRegistry {
         val configEntry = syncedConfigs[quarantinedUpdate.configId]
         val player = server.playerManager.getPlayer(quarantinedUpdate.playerUuid)
         if (configEntry != null) {
-            val errors = mutableListOf<String>()
-
-            val result = ConfigApiImpl.deserializeUpdate(configEntry.config, quarantinedUpdate.configString, errors, ConfigApiImpl.CHECK_ACTIONS)
-            val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
-            result.writeError(errors)
+            val result = ConfigApiImpl.deserializeUpdate(configEntry.config, quarantinedUpdate.configString, "Error(s) encountered while receiving config update for $id", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             result.get().config.save()
-            if (actions.any { it.restartPrompt }) {
-                FC.LOGGER.warn("The server accepted a quarantined config update that may require a restart, please consult the change history below for details. Connected clients have been automatically updated and notified of the potential for restart.")
+            if (result.test(ValidationResult.Errors.ACTION) { it.content.restartPrompt }) {
+                FC.LOGGER.warn("A quarantined update has been accepted that may require a restart. Connected clients have been automatically updated and notified of the potential for restart.")
+                if (result.has(ValidationResult.Errors.RESTART)) {
+                    FC.LOGGER.info("Quarantined update requires a restart due to received config changes")
+                    FC.LOGGER.info("Restart-prompting updates:")
+                    for (record in result.iterate(ValidationResult.Errors.RESTART)) {
+                        record.log(ValidationResult.ErrorEntry.ENTRY_INFO_LOGGER)
+                    }
+                }
             }
             for (p in server.playerManager.playerList) {
                 if (p == player) continue // don't push back to the player that just sent the update

@@ -12,11 +12,9 @@ package me.fzzyhmstrs.fzzy_config.screen
 
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.ParentElement
+import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 
 /**
@@ -89,12 +87,15 @@ interface PopupController: LastSelectable {
         setPopupInternal(widget, mouseX, mouseY)
     }
 
-    fun setPopupInternal(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null) {
+    @Internal
+    fun setPopupInternal(widget: PopupWidget?, mouseX: Double? = null, mouseY: Double? = null, setJustClosed: Boolean = true) {
         if(widget == null) {
             if (popupWidgets.isEmpty())
                 return
-            justClosedWidget = true
-            popupWidgets.pop().onClose()
+            if (setJustClosed)
+                justClosedWidget = true
+            val pu = popupWidgets.pop()
+            pu.onClose()
             popupWidgets.peek()?.blur()
             if (popupWidgets.isEmpty()) {
                 (lastSelected as? LastSelectable)?.popLast()
@@ -104,6 +105,7 @@ interface PopupController: LastSelectable {
                 }
                 popLast()
             }
+            pu.afterClose()
         } else {
             if (popupWidgets.isEmpty()) {
                 child?.pushLast()
@@ -158,7 +160,7 @@ interface PopupController: LastSelectable {
         context.matrices.pop()
     }
 
-    data class PopupEntry(val parent: PopupController, val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null)
+    data class PopupEntry(val parent: PopupController, val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null, val popAction: Runnable = Runnable { })
 
     companion object {
         private val popupStack: LinkedList<PopupEntry> = LinkedList()
@@ -177,6 +179,7 @@ interface PopupController: LastSelectable {
                 while (popupStack.isNotEmpty()) {
                     val e = popupStack.pop()
                     e.parent.setPopupInternal(e.widget, e.mouseX, e.mouseY)
+                    e.popAction.run()
                 }
             }
         }

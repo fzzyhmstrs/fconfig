@@ -32,6 +32,7 @@ import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
+import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder

@@ -11,8 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.validation.collection
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
+import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -223,7 +223,12 @@ internal class MapListWidget<K, V>(
     ) {
         override fun validateEntry(input: K, type: EntryValidator.ValidationType): ValidationResult<K> {
             if (self == null) return ValidationResult.success(input)
-            return ValidationResult.predicated(input, !disallowed.apply(self).containsKey(input), "No duplicate map keys").also { self.isValid = it.isValid() }
+            return ValidationResult.predicated(
+                input,
+                !disallowed.apply(self).containsKey(input),
+                ValidationResult.Errors.INVALID) { b ->
+                b.content("No duplicate map keys")
+            }.also { self.isValid = it.isValid() }
         }
 
     }

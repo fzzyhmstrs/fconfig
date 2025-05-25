@@ -22,5 +22,9 @@
   "Context-Actions.mdx": {
     "name": "Context Actions",
     "icon": "SquareMousePointer"
+  },
+  "Data-Generation.mdx": {
+    "name": "Data Generation",
+    "icon": "Grid2x2Plus"
   }
 }

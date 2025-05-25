@@ -1,34 +1,42 @@
-## Reminder of breaking changes in 0.6.x
-* `ValidatedEntityAttribute` is removed
-* `Custom[Widgets]` are moved from the internal widget package to the custom package
-* Several widgets and other classes have been deleted
-* `PopupWidget` has many deprecations, and probably at least one breaking change despite my best efforts. Deprecations scheduled for removal 0.7.0
-* As of 0.6.3, `ActiveButtonWidget` is unused and deprecated, marked for removal by 0.7.0
-* As of 0.6.3, `TextlessActionWidget` is unused and deprecated, marked for removal by 0.7.0
-* Possibly more, I didn't take great notes
-
-## As of 0.6.0, 1.20.4 and 1.20.6 will no longer be receiving active updates.
+## Breaking changes in 0.7.0
+* `ValidatedEnumMap` is removed
+* Removed all methods and properties marked as Deprecated and for removal 0.7.0
+  * `SmallSpriteDecoration#<init>`
+  * `SpriteDecorated#textureSet` & `textures` is now a required override
+  * `SpriteDecoration#<init>`
+  * `CustomButtonWidget#<init>` & builder is now only non-override method for adding custom button
+  * Removed `ActiveButtonWidget`
+  * Removed `TextlessActionWidget`
+  * `DynamicListWidget.EntryPos` and implementations made `internal`
+  * `PopupWidget` position elements; `LayoutWidget` no longer inherits from the PopupWidget variant
+  * Removed deprecated overrides of `PopupController` from `PopupParentElement`
+  * `SuggestionWindowListener` and `SuggestionWindowProvider` moved out of `internal` sub-package
+  * Removed `ImmutableRelPos`
+  * `RenderUtil#renderBlur`
+* Throughout FzzyConfig `Translatable.Result` has been replaced with `Translatable.ResultProvider`. This affects `EntrySearcher` as well as `Searcher.SearchContent`
 
 -------------------------------------
 
 ### Additions
-* Improved average config load time by approx. 10%.
+* New `Translatable.Name`, `Translatable.Desc`, and `Translatable.Prefix` annotations for data generation of lang files
+  * Corresponding `ConfigApi.buildTranslations` and `ConfigApiJava.buildTranslations` methods for hooking a config into a data generator
+  * Also created a simple registered objects translation builder at `ConfigApi.platform().buildRegistryTranslations` Used for either `RegistrySupplier` objects built by a `Registrar` or `Identifier` used in a traditional registration system
+* Added `ConfigScreenProvider`, allowing for registering of custom screen implementations in place of the Fzzy Config built in
+  * API Call `registerScreenProvider` added for registering your provider
+* `afterClose` event in `PopupWidget`
+* `isPressed` method in `Relevant` interface (which is used by `FzzyKeybind` and `ValidatedKeybind`), which allows for assertive checking for a key state, above the existing reactive response method `relevant`
+* Overhauled the error handling system in `ValidationResult` with a new `ErrorEntry` system and dramatically improved process flow for building complex errors and passing exceptions and other context information
+  * Also introduced more functional methods like `inmap`, `outmap`, and `bimap`
 
 ### Changes
-* `ValidatedKeybind` now stores the keycode in the output file based on a string key, rather than the raw int; but it will still accept the raw int for up-conversion purposes or if the key falls outside the typical set of GLFW keys.
-  * The format for the key is the same as the minecraft one with the `key.[type]` prefix removed (except for mouse buttons, those start with `mouse.`)
-  * For example, page down is `page.down` versus the minecraft `key.keyboard.page.down`
-  * And right click is `mouse.right` versus `key.mouse.right`
-* `ValidatedTriState` will now accept boolean inputs from the file, if a user accidentally uses `true` or `false` instead of the intended enum form `"true"` or `"false"`
-* "Excess" fields (fields that used to exist in a config but no longer do, for example) are now reported as deserialization errors and removed from the read file. 
+* Upgraded `CustomMultilineTextWidget` to handle click and hover events, as well as now implementing a custom `MultilineText` implementation
+* `ValidatedField` bails out of deserialization only on critical errors, now letting correction take its course more often
+* The `Registrar` system is no longer marked as experimental. Any further changes to the system will follow the standard released content deprecation and update system
+* Methods using the old error handling system of string lists are marked for removal 0.8.0
+* Slight improvements of overall memory footprint
 
 ### Fixes
-* Integer-type text-box number validation no longer accepts decimal inputs, and the text-box in general no longer accepts any characters except numbers, the minus sign, and decimal if it is a floating-point number.
-* Fixed the search passing text not dynamically updating based on current pass-fail state of the input test.
-* Validated Any now properly translates basic settings (again, don't know when this broke)
-* Fixed servers not properly parsing updates sent from the client, introduced in 0.6.7
-* Config screen managers are now properly invalidated on joining a new world (with potentially new config values to care about)
-* Narration of the search bar and search bar option buttons works better, and can recover better from being "interrupted"
-* Deserialization fixes:
-  * Basic validation (plain fields) now properly report their errors, leading to a correction of the config file as needed.
-  * `ValidatedAny` is now robust against changing the number of fields in the wrapped object. Previously adding fields and then trying to read the pre-existing config file would result in total failure for the object, reverting to defaults.
+* `ConfigGroup.Pop` properly pops multiple times if attached to one setting multiple times
+* Clicking off of a context menu into a slider properly updates the slider value
+* Search and Restore Defaults options in the context menu work again
+* `ClickableTextWidget` and `CustomMultilineTextWidget` now properly show hover events

@@ -54,9 +54,13 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
 
     @Internal
     @Suppress("DEPRECATION")
-    @Deprecated("use deserialize to avoid accidentally overwriting validation and error reporting")
+    @Deprecated("Implement the override without an errorBuilder. Scheduled for removal in 0.8.0. In 0.7.0, the provided ValidationResult should encapsulate all encountered errors, and all passed errors will be incorporated into a parent result as applicable.")
     override fun deserializeEntry(toml: TomlElement, errorBuilder: MutableList<String>, fieldName: String, flags: Byte): ValidationResult<N> {
         return delegate.deserializeEntry(toml, errorBuilder, fieldName, flags).map(to)
+    }
+
+    override fun deserializeEntry(toml: TomlElement, fieldName: String, flags: Byte): ValidationResult<N> {
+        return delegate.deserializeEntry(toml, fieldName, flags).map(to)
     }
 
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<N> {
@@ -64,10 +68,7 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
     }
 
     @Internal
-    @Deprecated(
-        "use serialize for consistency and to enable usage in list- and map-based Fields",
-        replaceWith = ReplaceWith("serializeEntry(input: T)")
-    )
+    @Deprecated("Implement the override using ValidationResult.ErrorEntry.Mutable. Scheduled for removal in 0.8.0.")
     override fun serializeEntry(input: N?, errorBuilder: MutableList<String>, flags: Byte): TomlElement {
         return if(input == null) {
             @Suppress("DEPRECATION")
@@ -75,6 +76,14 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
         } else {
             @Suppress("DEPRECATION")
             delegate.serializeEntry(from.apply(input), errorBuilder, flags)
+        }
+    }
+
+    override fun serializeEntry(input: N?, flags: Byte): ValidationResult<TomlElement> {
+        return if(input == null) {
+            delegate.serializeEntry(null, flags)
+        } else {
+            delegate.serializeEntry(from.apply(input), flags)
         }
     }
 

@@ -35,15 +35,15 @@ fun interface EntrySearcher {
      * @param config The parent config object. If this is a child of a child, the config will be its parent's parent (always the main config object)
      * @param scope The scope of this entry
      * @param client Whether the config is client-only or not
-     * @return [Function]&lt;String, [Translatable.ResultProvider]&gt; that converts search strings into a list of found results
+     * @return [Function]&lt;String, [Translatable.Result]&gt; that converts search strings into a list of found results
      * @see SearchProvider
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.ResultProvider<*>>>
+    fun searchEntry(config: Any, scope: String, client: Boolean): Function<String, List<Translatable.Result>>
 
     /**
-     * A built-in searcher function that builds a searcher by reflectively walking the provided content, mapping text [Translatable.ResultProvider] from each member within
+     * A built-in searcher function that builds a searcher by reflectively walking the provided content, mapping text [Translatable.Result] from each member within
      * @param config The parent config object. If this is a child of a child, the config will be its parent's parent (always the main config object)
      * @param content The entry to walk and search from. Typically, a Config, Section, or Walkable
      * @param prefix The scope of the content
@@ -51,11 +51,11 @@ fun interface EntrySearcher {
      * @author fzzyhmstrs
      * @since 0.6.8
      */
-    class SearchProvider(config: Any, content: Any, prefix: String, client: Boolean): Function<String, List<Translatable.ResultProvider<*>>> {
+    class SearchProvider(config: Any, content: Any, prefix: String, client: Boolean): Function<String, List<Translatable.Result>> {
 
-        private val delegate: Function<String, List<Translatable.ResultProvider<*>>> by lazy {
-            val list: MutableList<Translatable.ResultProvider<*>> = mutableListOf()
-            val nestedSearchers: MutableList<Pair<Translatable.ResultProvider<*>, Function<String, List<Translatable.ResultProvider<*>>>>> = mutableListOf()
+        private val delegate: Function<String, List<Translatable.Result>> by lazy {
+            val list: MutableList<Translatable.Result> = mutableListOf()
+            val nestedSearchers: MutableList<Pair<Translatable.Result, Function<String, List<Translatable.Result>>>> = mutableListOf()
             ConfigApiImpl.walk(content, prefix, ConfigApiImpl.IGNORE_NON_SYNC) { _, _, new, thing, _, annotations, globalAnnotations, _ ->
                 val flags = if(thing is EntryFlag) {
                     EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
@@ -93,7 +93,7 @@ fun interface EntrySearcher {
             }
         }
 
-        override fun apply(t: String): List<Translatable.ResultProvider<*>> {
+        override fun apply(t: String): List<Translatable.Result> {
             return delegate.apply(t)
         }
     }

@@ -77,7 +77,7 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
         return try {
             ValidationResult.success(toml.asTomlLiteral().toDouble())
         } catch (e: Throwable) {
-            ValidationResult.error(defaultValue, "Problem deserializing ValidatedDouble [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(defaultValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing double [$fieldName]", e)
         }
     }
 

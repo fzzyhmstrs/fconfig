@@ -12,6 +12,7 @@
 
 package me.fzzyhmstrs.fzzy_config.api
 
+import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.readOrCreateAndValidate
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.registerAndLoadConfig
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.registerConfig
@@ -23,9 +24,15 @@ import me.fzzyhmstrs.fzzy_config.networking.api.NetworkApi
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
 import me.fzzyhmstrs.fzzy_config.result.api.ResultApiJava
 import me.fzzyhmstrs.fzzy_config.result.impl.ResultApiJavaImpl
+import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformApiImpl
+import net.minecraft.util.Identifier
+import net.peanuuutz.tomlkt.TomlComment
+import java.util.function.BiConsumer
 import java.util.function.Supplier
+import kotlin.reflect.KClass
 
 /**
  * API for management of config files, with better compile-time friendliness for Java-only builds.
@@ -88,6 +95,26 @@ object ConfigApiJava {
     }
 
     /**
+     * Creates and registers a Config. Use this over [registerConfig] and [readOrCreateAndValidate] if possible.
+     *
+     * Performs the entire creation, loading, validation, and registration process on a config class. Internally performs the two steps
+     * 1) [readOrCreateAndValidate]
+     * 2) [registerConfig]
+     *
+     * This method avoids registering a GUI. Use this if you want to implement your own GUI.
+     * @param T the config type, any subclass of [Config]
+     * @param configClass Supplier of config class instances
+     * @param registerType [RegisterType], default [RegisterType.CLIENT]. Where to register the config. [RegisterType.SERVER] doesn't make much sense here.
+     * @return loaded, validated, and registered instance of T
+     * @author fzzyhmstrs
+     * @since 0.6.5
+     */
+    @JvmStatic
+    fun <T: Config> registerAndLoadNoGuiConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.CLIENT): T {
+        return ConfigApi.registerAndLoadNoGuiConfig(configClass, registerType)
+    }
+
+    /**
      * Opens a config GUI. Does nothing on the server (But is not marked with @Environment, allowing for safe inclusion anywhere in code)
      *
      * In order for a screen to exist, Configs must be registered to the [ClientConfigRegistry][me.fzzyhmstrs.fzzy_config.registry.ClientConfigRegistry] via [registerConfig] or [registerAndLoadConfig]
@@ -115,6 +142,18 @@ object ConfigApiJava {
     }
 
     /**
+     * Registers a [ConfigScreenProvider] to the client config registry. This provider will have priority over the default screen manager if it provides a non-null screen or successfully opens its own screen.
+     * @param namespace the mod id or other namespace to register the provider under. Only scopes relevant to this namespace will attempt to use this provider.
+     * @param provider [ConfigScreenProvider] provider implementation
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    @JvmStatic
+    fun registerScreenProvider(namespace: String, provider: ConfigScreenProvider) {
+        ConfigApiImpl.registerScreenProvider(namespace, provider)
+    }
+
+    /**
      * Whether a config corresponding to the provided scope is registered
      * @author fzzyhmstrs
      * @since 0.5.3
@@ -135,6 +174,21 @@ object ConfigApiJava {
     @JvmStatic
     fun isConfigLoaded(scope: String, type: RegisterType): Boolean {
         return ConfigApiImpl.isConfigLoaded(scope, type)
+    }
+
+    /**
+     * Applies a set of translations for the provided class object to the provided [builder]. Uses [Translatable.Name], [Translatable.Desc], and [Translatable.Prefix] annotations to power the generation. [TomlComment] and [Comment] can be used to provide en_us description lang.
+     * @param jClass Class instance for the config to generate lang for
+     * @param id [Identifier] the identifier used to register the config
+     * @param lang The applicable lang code to generate for, e.g. "en_us" or "es_mx". The builder will look for annotations with matching codes to apply.
+     * @param logWarnings If true, Fzzy Config will log warnings for every missing name, description, and prefix; if false only missing names will be logged.
+     * @param builder [BiConsumer]&lt;String, String&gt; that accepts new lang entries. For fabric lang generation this could be `TranslationBuilder::add`
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    @JvmStatic
+    fun <T: Any> buildTranslations(jClass: Class<T>, id: Identifier, lang: String, logWarnings: Boolean, builder: BiConsumer<String, String>) {
+        ConfigApiImpl.buildTranslations(jClass, id, lang, builder, logWarnings)
     }
 
     /**

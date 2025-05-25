@@ -14,17 +14,17 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.LastSelectable
+import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.context.*
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.ListSpec
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
-import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.function.ConstFunction
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.util.pos.ImmutableSuppliedPos
 import me.fzzyhmstrs.fzzy_config.util.pos.Pos
 import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
@@ -419,7 +419,7 @@ class DynamicListWidget(
         //map <group, map <scope, entry> >
         private val delegateMap: Map<String, Map<String, Entry>>
         private val groups: Map<String, GroupPair> by lazy {
-            val groupMap: MutableMap<String, GroupPair> = mutableMapOf()
+            val groupMap: MutableMap<String, GroupPair> = hashMapOf()
             for (e in delegate) {
                 if (e.getVisibility().group) {
                     groupMap[e.scope.group] = GroupPair(e, e.getRootVisibility() != Visibility.GROUP_VISIBLE_CLOSED)
@@ -433,8 +433,8 @@ class DynamicListWidget(
         init {
             var previousEntry: Entry? = null
             val pos = ReferencePos { this@DynamicListWidget.top }
-            val entryMap: MutableMap<String, MutableMap<String, Entry>> = mutableMapOf()
-            val groupMap: MutableMap<String, Entry> = mutableMapOf()
+            val entryMap: MutableMap<String, MutableMap<String, Entry>> = hashMapOf()
+            val groupMap: MutableMap<String, Entry> = hashMapOf()
 
             for ((index, e) in delegate.withIndex()) {
                 e.onAdd(pos, previousEntry, index == delegate.lastIndex)
@@ -445,7 +445,7 @@ class DynamicListWidget(
                 if (!(v.skip xor v.group)) {
                     for (g in e.scope.inGroups) {
                         if (v.group && e.scope.group == g) continue
-                        entryMap.computeIfAbsent(g) { _ -> mutableMapOf() }[e.scope.scope] = e
+                        entryMap.computeIfAbsent(g) { _ -> hashMapOf() }[e.scope.scope] = e
                     }
                 }
                 previousEntry = e
@@ -515,7 +515,7 @@ class DynamicListWidget(
             dirty = true
             var childrenMatches = 0
             val foundEntries = if (searchInput.isEmpty()) delegate else searcher.search(searchInput)
-            val gPrefixes: MutableMap<String, MutableList<Text>> = mutableMapOf()
+            val gPrefixes: MutableMap<String, MutableList<Text>> = hashMapOf()
             if (searchInput.isNotEmpty()) {
                 for (e in delegate) {
                     if (e.getVisibility().skip) continue
@@ -762,13 +762,13 @@ class DynamicListWidget(
     /**
      * Base entry class for list widget entries. This is typically built using a BiFunction that supplies the [parentElement] and an entry index
      * @param parentElement The [DynamicListWidget] this entry belongs to.
-     * @param texts [Translatable.Result] text set for this entry. This is used when searching entries.
+     * @param content [Translatable.Result] text set for this entry. This is used when searching entries.
      * @param scope [Scope] defines the entries personal scope as well as any entry groups this entry owns and/or belongs to. Basic entries will only need to provide the personal scope id, which might be as simple as the index in string form.
      * @param visibility [Visibility], default [Visibility.VISIBLE]. The starting visibility setting for the entry.
      * @author fzzyhmstrs
      * @since 0.6.0
      */
-    abstract class Entry(parentElement: DynamicListWidget, override val texts: Translatable.Result, val scope: Scope, visibility: Visibility = Visibility.VISIBLE)
+    abstract class Entry(parentElement: DynamicListWidget, override val content: Translatable.Result, val scope: Scope, visibility: Visibility = Visibility.VISIBLE)
         :
         CustomListWidget.Entry<DynamicListWidget>(parentElement),
         ParentElement,
@@ -780,10 +780,13 @@ class DynamicListWidget(
 
         companion object {
             @JvmField
-            val EMPTY_RESULTS: Function<String, List<Translatable.ResultProvider<*>>> = ConstFunction(listOf())
+            val EMPTY_RESULTS: Function<String, List<Translatable.Result>> = ConstFunction(listOf())
             @JvmField
             val EMPTY_PREFIX: Supplier<List<Text>> = ConstSupplier(listOf())
         }
+
+        val texts: Translatable.Result
+            get() = content
 
         private var visibilityProvider: VisibilityProvider = visibility
 
@@ -837,11 +840,11 @@ class DynamicListWidget(
         /**
          * Provides a list of indirect search matches to the dynamic list parent. Used to determine which entries should stay visible because they are indirectly relevant.
          * @param searchInput The raw input string. Has not been parsed for special characters etc. Passing it into a [Searcher] to generate results may be prudent.
-         * @return List&lt;[Translatable.ResultProvider]&gt; list of text results relevant to the provided search. Default behavior is an empty list.
+         * @return List&lt;[Translatable.Result]&gt; list of text results relevant to the provided search. Default behavior is an empty list.
          * @author fzzyhmstrs
          * @since 0.6.8
          */
-        open fun entrySearchResults(searchInput: String): List<Translatable.ResultProvider<*>> {
+        open fun entrySearchResults(searchInput: String): List<Translatable.Result> {
             return EMPTY_RESULTS.apply(searchInput)
         }
 
@@ -1158,9 +1161,7 @@ class DynamicListWidget(
          */
         interface SelectableElement: Selectable, Element
 
-        @Internal
-        @Deprecated("Will be marked private in 0.7.0")
-        interface EntryPos: Pos {
+        internal interface EntryPos: Pos {
             val previous: EntryPos?
             var next: EntryPos?
             fun getEntry(): Entry?
@@ -1195,9 +1196,7 @@ class DynamicListWidget(
             }
         }
 
-        @Internal
-        @Deprecated("Will be marked private in 0.7.0")
-        inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null, offset: Int = 0) : SuppliedPos(parent, 0, ConstSupplier(offset)), EntryPos {
+        private inner class RelEntryPos(parent: Pos, override val previous: EntryPos?, override var next: EntryPos? = null, offset: Int = 0) : SuppliedPos(parent, 0, ConstSupplier(offset)), EntryPos {
 
             override fun getEntry(): Entry? {
                 return this@Entry.takeIf { it.getVisibility().selectable }
@@ -1404,9 +1403,6 @@ class DynamicListWidget(
                     Consumer { stack -> stack.remove(GROUP_FILTERED) }
                 }
             }
-
-            @Deprecated("Removal in 0.7.0")
-            val EMPTY: Consumer<LinkedList<Visibility>> = Consumer { _-> }
 
             @JvmField
             internal val GROUP_PREFIX: List<Text> = listOf(FcText.translatable("fc.search.indirect.group"))

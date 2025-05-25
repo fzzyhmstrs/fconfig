@@ -23,7 +23,8 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
@@ -92,68 +93,68 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
     private val modifierHandler = ValidatedTriState(TriState.DEFAULT)
 
     @Internal
-    @Suppress("DEPRECATION")
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<FzzyKeybind> {
         return try {
             if (toml is TomlTable) {
                 val table = toml.asTomlTable()
-                val errors: MutableList<String> = mutableListOf()
+                val errors = ValidationResult.createMutable("Error(s) found deserializing simple keybind [$fieldName]")
                 val ctrlToml = table["ctrl"] ?: TomlNull
                 val shiftToml = table["shift"] ?: TomlNull
                 val altToml = table["alt"] ?: TomlNull
                 val typeToml = table["type"] ?: TomlNull
                 val keyToml = table["key"] ?: TomlNull
-                val ctrlResult = modifierHandler.deserializeEntry(ctrlToml, errors, "$fieldName.ctrl", 1)
-                val shiftResult = modifierHandler.deserializeEntry(shiftToml, errors, "$fieldName.shift", 1)
-                val altResult = modifierHandler.deserializeEntry(altToml, errors, "$fieldName.alt", 1)
-                val typeResult = ValidationResult.mapDataResult(ContextInput.CODEC.parse(TomlOps.INSTANCE, typeToml), ContextInput.KEYBOARD).report(errors)
-                val keyResult = deserialize(keyToml).report(errors)
-                ValidationResult.predicated(
+                val ctrlResult = modifierHandler.deserializeEntry(ctrlToml, "$fieldName.ctrl", 1).attachTo(errors)
+                val shiftResult = modifierHandler.deserializeEntry(shiftToml, "$fieldName.shift", 1).attachTo(errors)
+                val altResult = modifierHandler.deserializeEntry(altToml, "$fieldName.alt", 1).attachTo(errors)
+                val typeResult = ValidationResult.mapDataResult(ContextInput.CODEC.parse(TomlOps.INSTANCE, typeToml), ContextInput.KEYBOARD).attachTo(errors)
+                val keyResult = deserializeKey(keyToml).attachTo(errors)
+                ValidationResult.ofMutable(
                     FzzyKeybindSimple(keyResult.get(), typeResult.get(), ctrlResult.get(), shiftResult.get(), altResult.get()),
-                    errors.isEmpty(),
-                    "Errors encountered while deserializing simple keybind [$fieldName]: $errors"
-                )
+                    errors)
             } else if (toml is TomlArray) {
                 val kbs: MutableList<FzzyKeybind> = mutableListOf()
-                val errors: MutableList<String> = mutableListOf()
+                val errors = ValidationResult.createMutable("Error(s) found deserializing compound keybind [$fieldName]")
                 for ((index, el) in toml.asTomlArray().withIndex()) {
-                    kbs.add(deserialize(el, "fieldName$index").report(errors).get())
+                    kbs.add(deserialize(el, "fieldName @index:$index").attachTo(errors).get())
                 }
-                ValidationResult.predicated(FzzyKeybindCompound(kbs), errors.isEmpty(), "Errors encountered while deserializing compound keybind [$fieldName]: $errors")
-            } else if (toml is TomlLiteral && toml.toString().lowercase() == "unbound") {
-                ValidationResult.success(FzzyKeybindUnbound)
+                ValidationResult.ofMutable(FzzyKeybindCompound(kbs), errors)
+            } else if (toml is TomlLiteral) {
+                if (toml.toString().lowercase() == "unbound") {
+                    ValidationResult.success(FzzyKeybindUnbound)
+                } else {
+                    deserializeKeyTyped(toml).map { FzzyKeybindSimple(it.second, it.first, ctrl = false, shift = false, alt = false) }
+                }
             } else {
-                ValidationResult.error(storedValue, "Error in TOML representation of Keybind $fieldName. Excepted table or string value 'unbound'")
+                ValidationResult.error(storedValue, ValidationResult.Errors.INVALID, "Invalid TOML representation of Keybind $fieldName. Expected keybind table, list of keybinds, integer or keycode matching a keybind, or 'unbound'")
             }
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, "Critical error deserializing Keybind [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing Keybind [$fieldName]", e)
         }
     }
 
     @Internal
-    @Suppress("DEPRECATION")
     override fun serialize(input: FzzyKeybind): ValidationResult<TomlElement> {
         when (input) {
             is FzzyKeybindSimple -> {
                 val table = TomlTableBuilder(4)
-                val errors: MutableList<String> = mutableListOf()
-                table.element("ctrl", modifierHandler.serializeEntry(input.ctrl, errors, 1))
-                table.element("shift", modifierHandler.serializeEntry(input.shift, errors, 1))
-                table.element("alt", modifierHandler.serializeEntry(input.alt, errors, 1))
+                val errors = ValidationResult.createMutable("Errors encountered serializing simple keybind")
+                table.element("ctrl", modifierHandler.serializeEntry(input.ctrl, 1).attachTo(errors).get())
+                table.element("shift", modifierHandler.serializeEntry(input.shift, 1).attachTo(errors).get())
+                table.element("alt", modifierHandler.serializeEntry(input.alt, 1).attachTo(errors).get())
                 table.element("type", ContextInput.CODEC.encodeStart(TomlOps.INSTANCE, input.type).mapOrElse(Function.identity()) { _ -> ContextInput.fallback() }, TomlComment("'keyboard' or 'mouse'"))
                 table.element("key", serialize(input.inputCode), TomlComment("""
                     |String representation of the key, or the integer keycode
                     |Convert minecraft names: 'key.keyboard.pause' -> 'pause' or 'key.mouse.right' -> 'mouse.right'.
                     """.trimMargin()))
-                return ValidationResult.predicated(table.build(), errors.isEmpty(), "Errors encountered serializing simple keybind: $errors")
+                return ValidationResult.ofMutable(table.build(), errors)
             }
             is FzzyKeybindCompound -> {
                 val array = TomlArrayBuilder(input.keybinds.size)
-                val errors: MutableList<String> = mutableListOf()
+                val errors = ValidationResult.createMutable("Errors encountered serializing compound keybind")
                 for (kb in input.keybinds) {
-                    array.element(serialize(kb).report(errors).get())
+                    array.element(serialize(kb).attachTo(errors).get())
                 }
-                return ValidationResult.predicated(array.build(), errors.isEmpty(), "Errors encountered serializing compound keybind: $errors")
+                return ValidationResult.ofMutable(array.build(), errors)
             }
             FzzyKeybindUnbound -> {
                 return ValidationResult.success(TomlLiteral("unbound"))
@@ -243,6 +244,15 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
      */
     override fun relevant(inputCode: Int, ctrl: Boolean, shift: Boolean, alt: Boolean): Boolean {
         return storedValue.relevant(inputCode, ctrl, shift, alt)
+    }
+
+    /**
+     * Tests whether the keybind is currently being pressed.
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    override fun isPressed(): Boolean {
+        return storedValue.isPressed()
     }
 
     /**
@@ -352,26 +362,52 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
             }
         }
 
-        private fun deserialize(element: TomlElement): ValidationResult<Int> {
+        private fun deserializeKey(element: TomlElement): ValidationResult<Int> {
             var key2Int = key2int.get()
             if (key2Int.isNullOrEmpty()) {
                 key2Int = initKey2Int()
             }
             if (element !is TomlLiteral) {
-                return ValidationResult.error(-1, "Keybind toml element not a TomlLiteral")
+                return ValidationResult.error(-1, ValidationResult.Errors.DESERIALIZATION, "Keybind toml element not a TomlLiteral")
             }
             return when (element.type) {
                 TomlLiteral.Type.String -> {
                     val key = element.toString().lowercase()
                     val int = key2Int[key] ?: -1
-                    ValidationResult.predicated(int, int != -1, "String key [$key] not valid")
+                    ValidationResult.predicated(int, int != -1, ValidationResult.Errors.INVALID) { b -> b.content("String key [$key] not valid") }
                 }
                 TomlLiteral.Type.Integer -> {
                     val int = element.toIntOrNull() ?: -1
-                    ValidationResult.predicated(int, int != -1, "Int key [$element] not valid")
+                    ValidationResult.predicated(int, int != -1, ValidationResult.Errors.INVALID) { b -> b.content("Int key [$element] not valid") }
                 }
                 else -> {
-                    return ValidationResult.error(-1, "Keybind toml element not a TomlLiteral")
+                    return ValidationResult.error(-1, ValidationResult.Errors.INVALID, "Keybind element invalid")
+                }
+            }
+        }
+
+        private fun deserializeKeyTyped(element: TomlElement): ValidationResult<Pair<ContextInput, Int>> {
+            var key2Int = key2int.get()
+            if (key2Int.isNullOrEmpty()) {
+                key2Int = initKey2Int()
+            }
+            if (element !is TomlLiteral) {
+                return ValidationResult.error(Pair(ContextInput.KEYBOARD, -1), ValidationResult.Errors.DESERIALIZATION, "Keybind toml element not a TomlLiteral")
+            }
+            return when (element.type) {
+                TomlLiteral.Type.String -> {
+                    val key = element.toString().lowercase()
+                    val int = key2Int[key] ?: -1
+                    val type = if (int in 0..7) ContextInput.MOUSE else ContextInput.KEYBOARD
+                    ValidationResult.predicated(Pair(type, int), int != -1, ValidationResult.Errors.INVALID) { b -> b.content("String key [$key] not valid") }
+                }
+                TomlLiteral.Type.Integer -> {
+                    val int = element.toIntOrNull() ?: -1
+                    val type = if (int in 0..7) ContextInput.MOUSE else ContextInput.KEYBOARD
+                    ValidationResult.predicated(Pair(type, int), int != -1, ValidationResult.Errors.INVALID) { b -> b.content("Int key [$element] not valid") }
+                }
+                else -> {
+                    return ValidationResult.error(Pair(ContextInput.KEYBOARD, -1), ValidationResult.Errors.INVALID, "Keybind element invalid")
                 }
             }
         }

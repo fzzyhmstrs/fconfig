@@ -12,19 +12,18 @@ package me.fzzyhmstrs.fzzy_config.registry
 
 import com.google.common.collect.HashMultimap
 import me.fzzyhmstrs.fzzy_config.FC
-import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_ACTIONS
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
+import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigBaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
@@ -43,12 +42,13 @@ import java.util.function.Consumer
 internal object ClientConfigRegistry {
 
     private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
-    private val configScreenManagers: MutableMap<String, ConfigScreenManager> = mutableMapOf()
-    private val customPermissions: MutableMap<String, Map<String, Boolean>> = mutableMapOf()
-    private var validScopes: MutableSet<String> = Collections.synchronizedSet(mutableSetOf()) //configs are sorted into Managers by namespace
+    private val configScreenManagers: MutableMap<String, ConfigScreenManager> = hashMapOf()
+    private val customPermissions: MutableMap<String, Map<String, Boolean>> = hashMapOf()
+    private var validScopes: MutableSet<String> = Collections.synchronizedSet(hashSetOf()) //configs are sorted into Managers by namespace
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
-    private var validCustomScopes: MutableSet<String> = mutableSetOf()
+    private var validCustomScopes: MutableSet<String> = hashSetOf()
     private var hasScrapedMetadata: AtomicBoolean = AtomicBoolean(false)
+    private val screenProviders: HashMultimap<String, ConfigScreenProvider> = HashMultimap.create()
 
     internal fun hasClientConfig(scope: String): Boolean {
         return getClientConfig(scope) != null
@@ -78,25 +78,19 @@ internal object ClientConfigRegistry {
     internal fun receiveSync(id: String, configString: String, disconnector: Consumer<Text>) {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
             val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
-            val errors = mutableListOf<String>()
-            val result = ConfigApiImpl.deserializeConfigSafe(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
-            val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
-            result.writeError(errors)
+            val result = ConfigApiImpl.deserializeConfigSafe(configEntry.config, configString, "Error(s) encountered receiving sync for $id from server", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
             MinecraftClient.getInstance().execute {
                 getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
                     configScreenManagers.remove(it)
                 }
-                val saveType = result.get().config.saveType()
+                val saveType = result.get().saveType()
                 if (saveType == SaveType.OVERWRITE)
-                    result.get().config.save()//save config to the client
-                if (actions.any { it.restartPrompt }) {
-                    val records = result.get().get(RESTART_RECORDS)
-                    if (!records.isNullOrEmpty()) {
-                        FC.LOGGER.info("Client prompted for a restart due to received config updates")
-                        FC.LOGGER.info("Restart-prompting updates:")
-                        for (record in records) {
-                            FC.LOGGER.info(record)
-                        }
+                    result.get().save() //save config to the client
+                if (result.has(ValidationResult.Errors.RESTART)) {
+                    FC.LOGGER.info("Client prompted for a restart due to received config updates")
+                    FC.LOGGER.info("Restart-prompting updates:")
+                    for (record in result.iterate(ValidationResult.Errors.RESTART)) {
+                        record.log(ValidationResult.ErrorEntry.ENTRY_INFO_LOGGER)
                     }
                     disconnector.accept(FcText.translatable("fc.networking.restart"))
                     ConfigApiImpl.openRestartScreen()
@@ -107,7 +101,7 @@ internal object ClientConfigRegistry {
                         FC.LOGGER.error("Error encountered with onSyncClient method of config $id!", e)
                     }
                     try {
-                        EventApiImpl.fireOnSyncClient(result.get().config.getId(), result.get().config)
+                        EventApiImpl.fireOnSyncClient(result.get().getId(), result.get())
                     } catch (e: Throwable) {
                         FC.LOGGER.error("Error encountered while running onSyncClient event for config $id!", e)
                     }
@@ -127,10 +121,7 @@ internal object ClientConfigRegistry {
         for ((id, configString) in serializedConfigs) {
             if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
                 val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
-                val errors = mutableListOf<String>()
-                val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS)
-                val actions = result.get().getOrDefault(RESTART_ACTIONS, setOf())
-                result.writeError(errors)
+                val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, "Error(s) encountered receiving update for $id from server", ConfigApiImpl.CHECK_ACTIONS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
                 MinecraftClient.getInstance().execute {
                     getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
                         configScreenManagers.remove(it)
@@ -138,8 +129,8 @@ internal object ClientConfigRegistry {
                     val saveType = result.get().config.saveType()
                     if (saveType == SaveType.OVERWRITE)
                         result.get().config.save()
-                    for (action in actions) {
-                        MinecraftClient.getInstance().player?.sendChat(action.clientPrompt)
+                    for (action in result.iterate(ValidationResult.Errors.ACTION)) {
+                        MinecraftClient.getInstance().player?.sendChat(action.content.clientPrompt)
                     }
                     try {
                         configEntry.config.onUpdateClient()
@@ -192,6 +183,10 @@ internal object ClientConfigRegistry {
             FC.LOGGER.error("Failed to open a FzzyConfig screen. Invalid scope provided: [$scope]")
             return
         }
+        val providers = screenProviders[namespaceScope]
+        if (providers.any { it.openScreen(namespaceScope, scope) }) {
+            return
+        }
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(
                 namespaceScope,
@@ -215,6 +210,11 @@ internal object ClientConfigRegistry {
         return manager.isScreenOpen(scope)
     }
 
+    internal fun registerScreenProvider(namespace: String, provider: ConfigScreenProvider) {
+        validScopes.add(namespace)
+        screenProviders.put(namespace, provider)
+    }
+
     internal fun provideUpdateManager(scope: String): ConfigBaseUpdateManager? {
         val namespaceScope = getValidScope(scope, true)
         if (namespaceScope == null) {
@@ -231,6 +231,11 @@ internal object ClientConfigRegistry {
         if (namespaceScope == null) {
             FC.LOGGER.error("Failed to provide a FzzyConfig screen. Invalid scope provided: [$scope]")
             return null
+        }
+        val providers = screenProviders[namespaceScope]
+        val providedScreen = providers.firstNotNullOfOrNull { it.provideScreen(namespaceScope, scope) }
+        if (providedScreen != null) {
+            return providedScreen
         }
         val manager = configScreenManagers.computeIfAbsent(namespaceScope) {
             ConfigScreenManager(

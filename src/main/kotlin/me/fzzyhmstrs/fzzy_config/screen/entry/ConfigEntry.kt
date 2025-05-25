@@ -16,12 +16,12 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.decoration.AbstractDecorationWidget
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.DecorationWidget
 import me.fzzyhmstrs.fzzy_config.screen.entry.ConfigEntry.ContentBuilder
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
@@ -56,7 +56,7 @@ import kotlin.math.min
  * @see [ContentBuilder]
  * @sample me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators.createConfigEntry
  * @author fzzyhmstrs
- * @since 0.6.0
+ * @since 0.6.0, uses Translatable.ResultProvider as of 0.7.0
  */
 class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.BuildResult, texts: Translatable.Result) :
     DynamicListWidget.Entry(parentElement, texts, content.scope, content.visibility)
@@ -82,7 +82,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     private var narratables: List<AbstractTextWidget> = emptyList()
     private var tooltipProviders: List<TooltipChild> = emptyList()
 
-    private val searchResults: Function<String, List<Translatable.ResultProvider<*>>> = content.searchResults
+    private val searchResults: Function<String, List<Translatable.Result>> = content.searchResults
     private val contextBuilders: Map<String, Map<ContextType, ContextAction.Builder>> = content.contextActions
     private val context: Map<ContextType, ContextAction> by lazy {
         contextBuilders.entries.stream().collect(
@@ -132,7 +132,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     }
 
     @Internal
-    override fun entrySearchResults(searchInput: String): List<Translatable.ResultProvider<*>> {
+    override fun entrySearchResults(searchInput: String): List<Translatable.Result> {
         return searchResults.apply(searchInput)
     }
 
@@ -331,7 +331,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         private var visibility: DynamicListWidget.Visibility = DynamicListWidget.Visibility.VISIBLE
         private var contextActions: Map<String, Map<ContextType, ContextAction.Builder>> = mapOf()
         private val popStart = context.groups.size - context.annotations.filterIsInstance<ConfigGroup.Pop>().size
-        private var searchResults: Function<String, List<Translatable.ResultProvider<*>>> = EMPTY_RESULTS
+        private var searchResults: Function<String, List<Translatable.Result>> = EMPTY_RESULTS
 
         init {
             val nameSupplier = ConstSupplier(context.texts.name)
@@ -418,12 +418,12 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
         /**
          * Search results to "pass up" to the parent list when requested. This is used to determine what children should stay visible by indirect search matching.
-         * @param searchResults [Function]&lt;String, List&lt;[Translatable.ResultProvider]&gt;&gt; the search result provider for this entry. Using a [Searcher] is prucent, as the provided string is raw, with special characters still included.
+         * @param searchResults [Function]&lt;String, List&lt;[Translatable.Result]&gt;&gt; the search result provider for this entry. Using a [Searcher] is prucent, as the provided string is raw, with special characters still included.
          * @return this builder
          * @author fzzyhmstrs
          * @since 0.6.8
          */
-        fun searchResults(searchResults: Function<String, List<Translatable.ResultProvider<*>>>): ContentBuilder {
+        fun searchResults(searchResults: Function<String, List<Translatable.Result>>): ContentBuilder {
             this.searchResults = searchResults
             return this
         }
@@ -475,7 +475,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             internal val groupTypes: List<Boolean>,
             internal val visibility: DynamicListWidget.Visibility,
             internal val contextActions: Map<String, Map<ContextType, ContextAction.Builder>>,
-            internal val searchResults: Function<String, List<Translatable.ResultProvider<*>>>)
+            internal val searchResults: Function<String, List<Translatable.Result>>)
 
     }
 

@@ -19,10 +19,13 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.DynamicIdsS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.nsId
+import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowListener
+import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowListener
-import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindowProvider
-import me.fzzyhmstrs.fzzy_config.screen.widget.*
+import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.OnClickTextFieldWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.util.AllowableIdentifiers
@@ -35,8 +38,10 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofDynamicKey
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofList
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofRegistry
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofRegistryKey
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofRegistryTags
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofSuppliedList
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofTag
@@ -141,10 +146,10 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Identifier> {
         return try {
             val string = toml.toString()
-            val id = Identifier.tryParse(string) ?: return ValidationResult.error(storedValue, "Invalid identifier [$fieldName].")
+            val id = Identifier.tryParse(string) ?: return ValidationResult.error(storedValue, ValidationResult.Errors.INVALID, "Unparseable identifier for [$fieldName]: $string.")
             ValidationResult.success(id)
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, "Critical error deserializing identifier [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing identifier [$fieldName]", e)
         }
     }
 
@@ -153,13 +158,13 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         return ValidationResult.success(TomlLiteral(input.toString()))
     }
 
-
-
     @Internal
     override fun correctEntry(input: Identifier, type: EntryValidator.ValidationType): ValidationResult<Identifier> {
         val result = validator.validateEntry(input, type)
         return if(result.isError()) {
-            ValidationResult.error(storedValue, "Invalid identifier [$input] found, corrected to [$storedValue]: ${result.getError()}")} else result
+            ValidationResult.error(storedValue, ValidationResult.Errors.OUT_OF_BOUNDS, "Invalid identifier [$input] found, using current value [$storedValue]")}
+        else
+            result
     }
 
     @Internal
@@ -298,8 +303,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     companion object {
 
         private val keyFilterOffsets: MutableMap<RegistryKey<out Registry<*>>, AtomicInteger> = mutableMapOf()
-        private val dynamicRegistrySyncsNeeded: MutableSet<RegistryKey<out Registry<*>>> = mutableSetOf()
-        private val filteredDynamicRegistrySyncsNeeded: MutableSet<Triple<RegistryKey<out Registry<*>>, Identifier, Predicate<RegistryEntry<*>>>> = mutableSetOf()
+        private val dynamicRegistrySyncsNeeded: MutableSet<RegistryKey<out Registry<*>>> = hashSetOf()
+        private val filteredDynamicRegistrySyncsNeeded: MutableSet<Triple<RegistryKey<out Registry<*>>, Identifier, Predicate<RegistryEntry<*>>>> = hashSetOf()
 
         private fun getOffset(key: RegistryKey<out Registry<*>>): Int {
             return keyFilterOffsets.computeIfAbsent(key) { _ -> AtomicInteger() }.getAndIncrement()
@@ -334,7 +339,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             dynamicIds[payload.key] = payload.ids
         }
 
-        private val dynamicIds: MutableMap<Identifier, List< Identifier>> = mutableMapOf()
+        private val dynamicIds: MutableMap<Identifier, List<Identifier>> = hashMapOf()
 
         @JvmStatic
         val DEFAULT_WEAK: EntryValidator<Identifier> = EntryValidator { i, _ -> ValidationResult.success(i) }
@@ -351,7 +356,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         fun default(allowableIds: AllowableIdentifiers): EntryValidator<Identifier> {
             return EntryValidator.Builder<Identifier>()
                 .weak(DEFAULT_WEAK)
-                .strong { i, _ -> ValidationResult.predicated(i, allowableIds.test(i), "Identifier invalid or not allowed") }
+                .strong { i, _ -> ValidationResult.predicated(i, allowableIds.test(i), ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("Identifier invalid or not allowed") } }
                 .buildValidator()
         }
 
@@ -368,8 +373,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         @JvmStatic
         fun strong(allowableIds: AllowableIdentifiers): EntryValidator<Identifier> {
             return EntryValidator.Builder<Identifier>()
-                .weak { i, _ -> ValidationResult.predicated(i, allowableIds.test(i), "Identifier invalid or not allowed") }
-                .strong { i, _ -> ValidationResult.predicated(i, allowableIds.test(i), "Identifier invalid or not allowed") }
+                .weak { i, _ -> ValidationResult.predicated(i, allowableIds.test(i), ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("Identifier invalid or not allowed") } }
+                .strong { i, _ -> ValidationResult.predicated(i, allowableIds.test(i), ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("Identifier invalid or not allowed") } }
                 .buildValidator()
         }
 

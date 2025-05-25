@@ -106,7 +106,7 @@ open class ValidatedExpression @JvmOverloads constructor(
             val string = toml.toString()
             ValidationResult.success(string)
         } catch (e: Throwable) {
-            ValidationResult.error(storedValue, "Critical error deserializing math expression [$fieldName]: ${e.localizedMessage}")
+            ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing math expression [$fieldName]", e)
         }
     }
 
@@ -117,9 +117,11 @@ open class ValidatedExpression @JvmOverloads constructor(
 
     @Internal
     override fun correctEntry(input: String, type: EntryValidator.ValidationType): ValidationResult<String> {
-        val result = validateEntry(input, type)
+        val result = validator.validateEntry(input, type)
         return if(result.isError()) {
-            ValidationResult.error(storedValue, "Invalid identifier [$input] found, reset to [$storedValue]: ${result.getError()}")} else result
+            ValidationResult.error(storedValue, ValidationResult.Errors.OUT_OF_BOUNDS, "Invalid math expression [$input] found, using current value [$storedValue]")}
+        else
+            result
     }
 
     @Internal

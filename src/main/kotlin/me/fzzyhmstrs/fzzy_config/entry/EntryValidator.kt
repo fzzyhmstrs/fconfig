@@ -60,7 +60,9 @@ fun interface EntryValidator<T> {
             return builder()
         }
         fun strong(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
-            ifStrong = EntryValidator { i, _ -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            ifStrong = EntryValidator { i, _ ->
+                if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, ValidationResult.Errors.BASIC, errorMsg)
+            }
             return builder()
         }
         fun weak(validator: EntryValidator<T>): E {
@@ -68,7 +70,9 @@ fun interface EntryValidator<T> {
             return builder()
         }
         fun weak(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
-            ifWeak = EntryValidator { i, _ -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            ifWeak = EntryValidator { i, _ ->
+                if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, ValidationResult.Errors.BASIC, errorMsg)
+            }
             return builder()
         }
         fun both(validator: EntryValidator<T>): E {
@@ -77,8 +81,12 @@ fun interface EntryValidator<T> {
             return builder()
         }
         fun both(predicate: Predicate<T>, errorMsg: String = "Problem validating Entry!"): E {
-            ifStrong = EntryValidator { i, _ -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
-            ifWeak = EntryValidator { i, _ -> if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, errorMsg) }
+            ifStrong = EntryValidator { i, _ ->
+                if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, ValidationResult.Errors.BASIC, errorMsg)
+            }
+            ifWeak = EntryValidator { i, _ ->
+                if (predicate.test(i)) ValidationResult.success(i) else ValidationResult.error(i, ValidationResult.Errors.BASIC, errorMsg)
+            }
             return builder()
         }
         fun buildValidator(): EntryValidator<T> {

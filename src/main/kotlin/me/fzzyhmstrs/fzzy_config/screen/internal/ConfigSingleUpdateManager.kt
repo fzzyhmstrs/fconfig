@@ -49,7 +49,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
         return configSet.active.getId().toTranslationKey()
     }
 
-    private val updatableEntries: MutableMap<String, Updatable> = mutableMapOf()
+    private val updatableEntries: MutableMap<String, Updatable> = hashMapOf()
 
     override fun setUpdatableEntry(entry: Updatable) {
         updatableEntries[entry.getEntryKey()] = entry
@@ -115,8 +115,8 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
     override fun apply(final: Boolean) {
         if (updateMap.isEmpty()) return
         //push updates from basic validation to the configs
-        val clientActions: MutableSet<Action> = mutableSetOf()
-        val serverActions: MutableSet<Action> = mutableSetOf()
+        val clientActions: MutableSet<Action> = hashSetOf()
+        val serverActions: MutableSet<Action> = hashSetOf()
         var updatedConfig: Boolean = false
         val config = configSet.active
         val isClient = configSet.clientOnly
@@ -202,7 +202,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
         val syncNeeded = !configSet.clientOnly && updatedConfig
         if (syncNeeded && !MinecraftClient.getInstance().isInSingleplayer) {
             //send updates to the server for distribution and saving there
-            val updates = mapOf(this.configSet.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(configSet.active, this, mutableListOf()))
+            val updates = mapOf(this.configSet.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(configSet.active, this, "Error(s) while serializing update to send to the server").log().get())
             NetworkEventsClient.updateServer(updates, flush(), perms)
             ConfigApiImpl.printChangeHistory(flush(), configSet.active.getId().toTranslationKey(), MinecraftClient.getInstance().player)
         } else {

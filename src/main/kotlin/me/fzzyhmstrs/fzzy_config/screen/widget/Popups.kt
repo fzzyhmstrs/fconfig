@@ -23,6 +23,7 @@ import me.fzzyhmstrs.fzzy_config.screen.entry.SearchMenuEntry
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Ref
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
@@ -57,6 +58,7 @@ object Popups {
     @JvmOverloads
     fun openContextMenuPopup(builder: ContextResultBuilder, immediate: Boolean = false) {
         val positionContext = builder.position()
+        val closeAction: Ref<Runnable?> = Ref(null)
         val popup = PopupWidget.Builder("fc.config.right_click".translate(), 2, 2)
             .positionX(PopupWidget.Builder.absScreen(
                 if (positionContext.contextInput == ContextInput.KEYBOARD)
@@ -78,13 +80,14 @@ object Popups {
                     PopupWidget.ClickResult.USE
                 }
             }
+            .afterClose { closeAction.get()?.run() }
         for ((group, actions) in builder.build()) {
             if (actions.isEmpty()) continue
             popup.addDivider()
             for ((type, action) in actions) {
                 popup.add(
                     "${group}_$type",
-                    ContextActionWidget(action, positionContext, ContextActionWidget.getNeededWidth(action)),
+                    ContextActionWidget(action, closeAction, positionContext, ContextActionWidget.getNeededWidth(action)),
                     LayoutWidget.Position.BELOW,
                     LayoutWidget.Position.ALIGN_LEFT
                 )
@@ -165,7 +168,7 @@ object Popups {
 
     private fun forwardUpdate(field: ValidatedField<*>, playerListEntry: PlayerListEntry?) {
         if (playerListEntry == null) return
-        val update = ConfigApiImpl.serializeEntry(field, mutableListOf())
+        val update = ConfigApiImpl.serializeEntry(field).log().get()
         val id = playerListEntry.profile.id
         val key = field.getEntryKey()
         val summary = field.get().toString()

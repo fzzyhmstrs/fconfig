@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.entry.Entry
 import me.fzzyhmstrs.fzzy_config.entry.EntryHandler
@@ -26,6 +25,9 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.bimap
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.predicated
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.ColorHolder
@@ -200,13 +202,12 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<ColorHolder> {
-        return storedValue.deserializeEntry(toml, mutableListOf(), fieldName, ConfigApiImpl.IGNORE_NON_SYNC)
+        return storedValue.deserializeEntry(toml, fieldName, ConfigApiImpl.IGNORE_NON_SYNC)
     }
 
     @Internal
     override fun serialize(input: ColorHolder): ValidationResult<TomlElement> {
-        val errors: MutableList<String> = mutableListOf()
-        return ValidationResult.predicated(storedValue.serializeEntry(input, errors, ConfigApiImpl.IGNORE_NON_SYNC), errors.isEmpty(), errors.toString())
+        return storedValue.serializeEntry(input, ConfigApiImpl.IGNORE_NON_SYNC)
     }
 
     @Internal
@@ -343,12 +344,14 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             val str = this.replace("#", "").replace("0x", "")
             val validatedString = validatedString(str, !transparent)
             val result = validatedString.validateEntry(str, EntryValidator.ValidationType.WEAK)
-            if (result.isError())
-                throw IllegalStateException(result.getError())
+            if (result.isError()) {
+                result.log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+                throw IllegalStateException("Invalid color string")
+            }
             val colorInt = try {
                 Integer.parseUnsignedInt(str, 16)
             } catch (e: Throwable) {
-                throw IllegalStateException("Error parsing shorthand Expression [$this]")
+                throw IllegalStateException("Error parsing shorthand color [$this]")
             }
             return Color(colorInt, transparent).validated(transparent)
         }
@@ -371,29 +374,29 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             return ValidatedString.Builder(str)
                 .both { s, _ ->
                     if (s.length > 8)
-                        ValidationResult.error(s, "String too long for a valid color Integer")
+                        ValidationResult.error(s, ValidationResult.Errors.OUT_OF_BOUNDS, "String too long for a color Integer")
                     else
                         try {
                             Integer.parseUnsignedInt(s, 16)
                             ValidationResult.success(s)
                         }catch (e: Throwable) {
-                            ValidationResult.error(s, "String not parsable as color Integer: ${e.localizedMessage}")
+                            ValidationResult.error(s, ValidationResult.Errors.INVALID, "String not parsable as color Integer", e)
                         }
                 }
                 .withCorrector()
                 .both { s, _ ->
                     if(s.contains('#'))
-                        ValidationResult.error(s.replace("#", ""), "'#' prefixes not allowed")
+                        ValidationResult.error(s.replace("#", ""), ValidationResult.Errors.INVALID, "'#' prefixes not allowed")
                     else if(s.contains("0x"))
-                        ValidationResult.error(s.replace("0x", ""), "'0x' prefixes not allowed")
+                        ValidationResult.error(s.replace("0x", ""), ValidationResult.Errors.INVALID, "'0x' prefixes not allowed")
                     else if(s.length > 8)
-                        ValidationResult.error(s.substring(0, 8), "Too long. 8 characters maximum")
+                        ValidationResult.error(s.substring(0, 8), ValidationResult.Errors.OUT_OF_BOUNDS, "Too long. 8 characters maximum")
                     else if(s.length == 7 && isNotF(s[0]) && opaque)
-                        ValidationResult.error(s.replaceRange(0, 1, if(s[0].isLowerCase())"f" else "F"), "Opaque colors only.")
+                        ValidationResult.error(s.replaceRange(0, 1, if(s[0].isLowerCase())"f" else "F"), ValidationResult.Errors.INVALID, "Opaque colors only.")
                     else if(s.length > 6 && opaque)
-                        ValidationResult.error(s.substring(0, 6), "Opaque colors only.")
+                        ValidationResult.error(s.substring(0, 6), ValidationResult.Errors.INVALID, "Opaque colors only.")
                     else
-                        transform(s).let { if(it == s) ValidationResult.success(it) else ValidationResult.error(it, "Invalid characters found in color string") }
+                        transform(s).let { predicated(it, it == s, ValidationResult.Errors.INVALID) { b -> b.content("Invalid characters found in color string") } }
                     ValidationResult.success(s)
                 }
                 .build()
@@ -413,7 +416,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
      */
     data class ColorHolder(val r: Int, val g: Int, val b: Int, val a: Int, val alphaMode: Boolean): EntryHandler<ColorHolder> {
 
-        private val validator: Predicate<Int> = Predicate{i -> i in 0..255 }
+        private val validator: Predicate<Int> = Predicate { i -> i in 0..255 }
 
         /**
          * If this color holder supports transparency
@@ -506,13 +509,16 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         }
 
         @Internal
-        override fun serializeEntry(
-            input: ColorHolder?,
-            errorBuilder: MutableList<String>,
-            flags: Byte
-        ): TomlElement {
+        @Deprecated("Implement the override using ValidationResult.ErrorEntry.Mutable. Scheduled for removal in 0.8.0.")
+        override fun serializeEntry(input: ColorHolder?, errorBuilder: MutableList<String>, flags: Byte): TomlElement {
+            @Suppress("DEPRECATION")
+            return serializeEntry(input, flags).report(errorBuilder).get()
+        }
+
+        @Internal
+        override fun serializeEntry(input: ColorHolder?, flags: Byte): ValidationResult<TomlElement> {
             val toml = TomlTableBuilder()
-            try {
+            return try {
                 if (input == null) {
                     toml.element("r", TomlLiteral(r), TomlComment("Red component, 0 to 255"))
                     toml.element("g", TomlLiteral(g), TomlComment("Green component, 0 to 255"))
@@ -524,71 +530,72 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
                     toml.element("b", TomlLiteral(input.b), TomlComment("Blue component, 0 to 255"))
                     if (input.alphaMode) toml.element("a", TomlLiteral(input.a), TomlComment("Alpha component, 0 to 255"))
                 }
+                ValidationResult.success(toml.build())
             } catch (e: Throwable) {
-                errorBuilder.add("Critical exception while serializing color: ${e.localizedMessage}")
+                ValidationResult.error(toml.build(), ValidationResult.Errors.SERIALIZATION, "Exception serializing color", e)
             }
-            return toml.build()
         }
 
         @Internal
+        @Deprecated("Implement the override without an errorBuilder. Scheduled for removal in 0.8.0. In 0.7.0, the provided ValidationResult should encapsulate all encountered errors, and all passed errors will be incorporated into a parent result as applicable.")
         override fun deserializeEntry(
             toml: TomlElement,
             errorBuilder: MutableList<String>,
             fieldName: String,
             flags: Byte
         ): ValidationResult<ColorHolder> {
+            @Suppress("DEPRECATION")
+            return deserializeEntry(toml, fieldName, flags).report(errorBuilder)
+        }
+
+        @Internal
+        override fun deserializeEntry(
+            toml: TomlElement,
+            fieldName: String,
+            flags: Byte
+        ): ValidationResult<ColorHolder> {
             return try {
+                val errors = ValidationResult.createMutable("Error(s) deserializing color [$fieldName]")
                 val table = toml.asTomlTable()
-                val tomlR = table["r"]?.asTomlLiteral()?.toInt() ?: return ValidationResult.error(this, "Error deserializing 'r' component of color [$fieldName], using previous value.")
-                val tomlG = table["g"]?.asTomlLiteral()?.toInt() ?: return ValidationResult.error(this, "Error deserializing 'g' component of color [$fieldName], using previous value.")
-                val tomlB = table["b"]?.asTomlLiteral()?.toInt() ?: return ValidationResult.error(this, "Error deserializing 'b' component of color [$fieldName], using previous value.")
+                val tomlR = table["r"]?.asTomlLiteral()?.toInt() ?: errors.report(this.r, ValidationResult.Errors.DESERIALIZATION, "Error with 'r' component, using previous value.")
+                val tomlG = table["g"]?.asTomlLiteral()?.toInt() ?: errors.report(this.g, ValidationResult.Errors.DESERIALIZATION, "Error with 'g' component, using previous value.")
+                val tomlB = table["b"]?.asTomlLiteral()?.toInt() ?: errors.report(this.b, ValidationResult.Errors.DESERIALIZATION, "Error with 'b' component, using previous value.")
                 val tomlA = if(!alphaMode) 255 else table["a"]?.asTomlLiteral()?.toInt() ?: 255
 
-                ValidationResult.success(ColorHolder(tomlR, tomlG, tomlB, tomlA, this.alphaMode))
+                ValidationResult.ofMutable(ColorHolder(tomlR, tomlG, tomlB, tomlA, this.alphaMode), errors)
             } catch (e: Throwable) {
-                ValidationResult.error(this, "Critical error encountered deserializing color [$fieldName], using previous value.")
+                ValidationResult.error(this, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing color [$fieldName], using previous value.")
             }
         }
 
         @Internal
         override fun validateEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
-            val errors: MutableList<String> = mutableListOf()
-            if (!validator.test(input.r)) errors.add("Red component out of bounds: ${input.r} outside 0-255")
-            if (!validator.test(input.g)) errors.add("Green component out of bounds: ${input.g} outside 0-255")
-            if (!validator.test(input.b)) errors.add("Blue component out of bounds: ${input.b} outside 0-255")
+            val errors = ValidationResult.createMutable()
+            if (!validator.test(input.r)) errors.addError(ValidationResult.Errors.OUT_OF_BOUNDS, "Red component ${input.r} outside 0-255")
+            if (!validator.test(input.g)) errors.addError(ValidationResult.Errors.OUT_OF_BOUNDS, "Green component ${input.g} outside 0-255")
+            if (!validator.test(input.b)) errors.addError(ValidationResult.Errors.OUT_OF_BOUNDS, "Blue component ${input.b} outside 0-255")
             if (input.alphaMode) {
-                if (!validator.test(input.a)) errors.add("Alpha component out of bounds: ${input.a} outside 0-255")
+                if (!validator.test(input.a)) errors.addError(ValidationResult.Errors.OUT_OF_BOUNDS, "Alpha component ${input.a} outside 0-255")
             } else {
-                if (input.a != 255) errors.add("Non-transparent color with <255 Alpha")
+                if (input.a != 255) errors.addError(ValidationResult.Errors.OUT_OF_BOUNDS, "Non-transparent color can't have alpha value other than 255")
             }
-            return if (errors.isNotEmpty()) {
-                ValidationResult.error(input, "Errors validating color: $errors")
-            } else {
-                ValidationResult.success(input)
-            }
+            return ValidationResult.ofMutable(input, errors)
         }
 
         @Internal
         override fun correctEntry(input: ColorHolder, type: EntryValidator.ValidationType): ValidationResult<ColorHolder> {
-            val errors: MutableList<String> = mutableListOf()
-            if (!validator.test(input.r)) errors.add("Red component out of bounds: ${input.r} outside 0-255")
-            if (!validator.test(input.g)) errors.add("Green component out of bounds: ${input.g} outside 0-255")
-            if (!validator.test(input.b)) errors.add("Blue component out of bounds: ${input.b} outside 0-255")
-            if (input.alphaMode) {
-                if (!validator.test(input.a)) errors.add("Alpha component out of bounds: ${input.a} outside 0-255")
-            } else {
-                if (input.a != 255) errors.add("Non-transparent color with <255 Alpha")
-            }
-
-            return if (errors.isNotEmpty()) {
-                val newR = MathHelper.clamp(input.r, 0, 255)
-                val newG = MathHelper.clamp(input.g, 0, 255)
-                val newB = MathHelper.clamp(input.b, 0, 255)
-                val newA = if(input.alphaMode) MathHelper.clamp(input.r, 0, 255) else 255
-                val newColorHolder = ColorHolder(newR, newG, newB, newA, input.alphaMode)
-                ValidationResult.error(newColorHolder, "Errors validating color, corrected to $newColorHolder: $errors")
-            } else {
-                ValidationResult.success(input)
+            return validateEntry(input, type).bimap { v ->
+                if (v.isError()) {
+                    val newR = MathHelper.clamp(v.get().r, 0, 255)
+                    val newG = MathHelper.clamp(v.get().g, 0, 255)
+                    val newB = MathHelper.clamp(v.get().b, 0, 255)
+                    val newA = if (v.get().alphaMode) MathHelper.clamp(input.a, 0, 255) else 255
+                    val newColorHolder = ColorHolder(newR, newG, newB, newA, v.get().alphaMode)
+                    @Suppress("DEPRECATION")
+                    ValidationResult.error(newColorHolder, v.getErrorEntry())
+                } else {
+                    v
+                }
             }
         }
 
@@ -758,7 +765,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
         @Internal
         fun validate(input: Int): ValidationResult<Int> {
-            return ValidationResult.predicated(input, validator.test(input), "Out of bounds [0-255]")
+            return ValidationResult.predicated(input, validator.test(input), ValidationResult.Errors.OUT_OF_BOUNDS) { b -> b.content("Not in valid range [0-255]") }
         }
 
         /**
