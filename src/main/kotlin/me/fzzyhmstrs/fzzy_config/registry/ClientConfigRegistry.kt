@@ -42,11 +42,11 @@ import java.util.function.Consumer
 internal object ClientConfigRegistry {
 
     private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
-    private val configScreenManagers: MutableMap<String, ConfigScreenManager> = mutableMapOf()
-    private val customPermissions: MutableMap<String, Map<String, Boolean>> = mutableMapOf()
-    private var validScopes: MutableSet<String> = Collections.synchronizedSet(mutableSetOf()) //configs are sorted into Managers by namespace
+    private val configScreenManagers: MutableMap<String, ConfigScreenManager> = hashMapOf()
+    private val customPermissions: MutableMap<String, Map<String, Boolean>> = hashMapOf()
+    private var validScopes: MutableSet<String> = Collections.synchronizedSet(hashSetOf()) //configs are sorted into Managers by namespace
     private var validSubScopes: HashMultimap<String, String> = HashMultimap.create()
-    private var validCustomScopes: MutableSet<String> = mutableSetOf()
+    private var validCustomScopes: MutableSet<String> = hashSetOf()
     private var hasScrapedMetadata: AtomicBoolean = AtomicBoolean(false)
     private val screenProviders: HashMultimap<String, ConfigScreenProvider> = HashMultimap.create()
 
