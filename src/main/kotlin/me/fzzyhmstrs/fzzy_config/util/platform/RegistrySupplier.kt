@@ -6,7 +6,6 @@ import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.entry.RegistryEntryOwner
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
-import org.jetbrains.annotations.ApiStatus
 import java.util.*
 import java.util.function.Predicate
 import java.util.function.Supplier

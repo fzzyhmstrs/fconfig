@@ -303,8 +303,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
     companion object {
 
         private val keyFilterOffsets: MutableMap<RegistryKey<out Registry<*>>, AtomicInteger> = mutableMapOf()
-        private val dynamicRegistrySyncsNeeded: MutableSet<RegistryKey<out Registry<*>>> = mutableSetOf()
-        private val filteredDynamicRegistrySyncsNeeded: MutableSet<Triple<RegistryKey<out Registry<*>>, Identifier, Predicate<RegistryEntry<*>>>> = mutableSetOf()
+        private val dynamicRegistrySyncsNeeded: MutableSet<RegistryKey<out Registry<*>>> = hashSetOf()
+        private val filteredDynamicRegistrySyncsNeeded: MutableSet<Triple<RegistryKey<out Registry<*>>, Identifier, Predicate<RegistryEntry<*>>>> = hashSetOf()
 
         private fun getOffset(key: RegistryKey<out Registry<*>>): Int {
             return keyFilterOffsets.computeIfAbsent(key) { _ -> AtomicInteger() }.getAndIncrement()
@@ -339,7 +339,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             dynamicIds[payload.key] = payload.ids
         }
 
-        private val dynamicIds: MutableMap<Identifier, List< Identifier>> = mutableMapOf()
+        private val dynamicIds: MutableMap<Identifier, List<Identifier>> = hashMapOf()
 
         @JvmStatic
         val DEFAULT_WEAK: EntryValidator<Identifier> = EntryValidator { i, _ -> ValidationResult.success(i) }

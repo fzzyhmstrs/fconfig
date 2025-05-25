@@ -239,7 +239,7 @@ internal object ConfigApiImpl {
         return ConfigHolder.Future(future)
     }*/
 
-    private val seenLogs: MutableSet<String> = mutableSetOf()
+    private val seenLogs: MutableSet<String> = hashSetOf()
 
     internal fun <T: Config> readOrCreateAndValidate(configClass: () -> T, classInstance: T = configClass(), name: String = classInstance.name, folder: String = classInstance.folder, subfolder: String = classInstance.subfolder): T {
         fun log(start: Long) {
@@ -864,7 +864,7 @@ internal object ConfigApiImpl {
     }*/
 
     internal fun <T: Any> generatePermissionsReport(player: PlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
-        val map: MutableMap<String, Boolean> = mutableMapOf()
+        val map: MutableMap<String, Boolean> = hashMapOf()
 
         walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _, _ ->
             annotations.firstOrNull { it is WithCustomPerms }?.cast<WithCustomPerms>()?.let {
