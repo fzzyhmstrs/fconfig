@@ -39,6 +39,10 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
         val l = y + (getHeight() - textRenderer.fontHeight) / 2
         val orderedText = if (j > i) FcText.trim(text, i, textRenderer) else text.asOrderedText()
         context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
+        if (!isMouseOver(mouseX.toDouble(), mouseY.toDouble())) return
+        val d = mouseX - this.x
+        val style = textRenderer.textHandler.getStyleAt(message.asOrderedText(), d) ?: return
+        context.drawHoverEvent(textRenderer, style, mouseX, mouseY)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

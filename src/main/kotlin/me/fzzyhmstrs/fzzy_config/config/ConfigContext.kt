@@ -10,23 +10,15 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
-import me.fzzyhmstrs.fzzy_config.annotations.Action
-
 /**
  * Holds a config and any applicable secondary flags and their associated information
  * @param T any Non-null type
  * @param config the Config wrapped by this context
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.2.0, deprecated 0.7.0 for removal by 0.8.0
  */
+@Deprecated("Removal by 0.8.0")
 class ConfigContext<T: Any>(val config: T) {
-
-    companion object Keys {
-        val ACTIONS = object: Key<Set<Action>> {}
-        val RESTART_ACTIONS = object: Key<Set<Action>> {}
-        val RESTART_RECORDS = object : Key<Set<String>> {}
-        val VERSIONS = object: Key<Int> {}
-    }
 
     private val contextFlags: MutableMap<Key<*>, Any> = mutableMapOf()
 

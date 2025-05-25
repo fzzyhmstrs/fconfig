@@ -419,7 +419,7 @@ class DynamicListWidget(
         //map <group, map <scope, entry> >
         private val delegateMap: Map<String, Map<String, Entry>>
         private val groups: Map<String, GroupPair> by lazy {
-            val groupMap: MutableMap<String, GroupPair> = mutableMapOf()
+            val groupMap: MutableMap<String, GroupPair> = hashMapOf()
             for (e in delegate) {
                 if (e.getVisibility().group) {
                     groupMap[e.scope.group] = GroupPair(e, e.getRootVisibility() != Visibility.GROUP_VISIBLE_CLOSED)
@@ -433,8 +433,8 @@ class DynamicListWidget(
         init {
             var previousEntry: Entry? = null
             val pos = ReferencePos { this@DynamicListWidget.top }
-            val entryMap: MutableMap<String, MutableMap<String, Entry>> = mutableMapOf()
-            val groupMap: MutableMap<String, Entry> = mutableMapOf()
+            val entryMap: MutableMap<String, MutableMap<String, Entry>> = hashMapOf()
+            val groupMap: MutableMap<String, Entry> = hashMapOf()
 
             for ((index, e) in delegate.withIndex()) {
                 e.onAdd(pos, previousEntry, index == delegate.lastIndex)
@@ -445,7 +445,7 @@ class DynamicListWidget(
                 if (!(v.skip xor v.group)) {
                     for (g in e.scope.inGroups) {
                         if (v.group && e.scope.group == g) continue
-                        entryMap.computeIfAbsent(g) { _ -> mutableMapOf() }[e.scope.scope] = e
+                        entryMap.computeIfAbsent(g) { _ -> hashMapOf() }[e.scope.scope] = e
                     }
                 }
                 previousEntry = e
@@ -515,7 +515,7 @@ class DynamicListWidget(
             dirty = true
             var childrenMatches = 0
             val foundEntries = if (searchInput.isEmpty()) delegate else searcher.search(searchInput)
-            val gPrefixes: MutableMap<String, MutableList<Text>> = mutableMapOf()
+            val gPrefixes: MutableMap<String, MutableList<Text>> = hashMapOf()
             if (searchInput.isNotEmpty()) {
                 for (e in delegate) {
                     if (e.getVisibility().skip) continue
@@ -1418,9 +1418,6 @@ class DynamicListWidget(
                     Consumer { stack -> stack.remove(GROUP_FILTERED) }
                 }
             }
-
-            @Deprecated("Removal in 0.7.0")
-            val EMPTY: Consumer<LinkedList<Visibility>> = Consumer { _-> }
 
             @JvmField
             internal val GROUP_PREFIX: List<Text> = listOf(FcText.translatable("fc.search.indirect.group"))
