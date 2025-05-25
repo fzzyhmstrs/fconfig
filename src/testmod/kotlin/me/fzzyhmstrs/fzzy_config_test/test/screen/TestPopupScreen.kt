@@ -52,7 +52,7 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
 
     val multilineTextWidget = CustomMultilineTextWidget(
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit,".lit()
-            .append("sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.".lit().styled { s -> s.withUnderline(true).withClickEvent(ClickEvent.RunCommand("/give @s minecraft:stick")) })
+            .append("sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.".lit().styled { s -> s.withUnderline(true).withClickEvent(ClickEvent(ClickEvent.Action.RUN_COMMAND ,"/give @s minecraft:stick")) })
             .append("Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."))
 
     override fun close() {
