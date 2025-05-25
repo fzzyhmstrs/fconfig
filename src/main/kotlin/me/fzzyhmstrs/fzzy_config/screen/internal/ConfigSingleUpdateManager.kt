@@ -49,7 +49,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
         return configSet.active.getId().toTranslationKey()
     }
 
-    private val updatableEntries: MutableMap<String, Updatable> = mutableMapOf()
+    private val updatableEntries: MutableMap<String, Updatable> = hashMapOf()
 
     override fun setUpdatableEntry(entry: Updatable) {
         updatableEntries[entry.getEntryKey()] = entry
@@ -115,8 +115,8 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
     override fun apply(final: Boolean) {
         if (updateMap.isEmpty()) return
         //push updates from basic validation to the configs
-        val clientActions: MutableSet<Action> = mutableSetOf()
-        val serverActions: MutableSet<Action> = mutableSetOf()
+        val clientActions: MutableSet<Action> = hashSetOf()
+        val serverActions: MutableSet<Action> = hashSetOf()
         var updatedConfig: Boolean = false
         val config = configSet.active
         val isClient = configSet.clientOnly
