@@ -29,7 +29,7 @@ class ConfigPermissionsS2CCustomPayload(val id: String, val permissions: Mutable
         val codec: PacketCodec<ByteBuf, ConfigPermissionsS2CCustomPayload> = PacketCodec.tuple(
             PortingUtils.Codecs.STRING,
             ConfigPermissionsS2CCustomPayload::id,
-            PacketCodecs.map({ mutableMapOf() }, PortingUtils.Codecs.STRING, PortingUtils.Codecs.BOOL),
+            PacketCodecs.map({ hashMapOf() }, PortingUtils.Codecs.STRING, PortingUtils.Codecs.BOOL),
             ConfigPermissionsS2CCustomPayload::permissions,
             ::ConfigPermissionsS2CCustomPayload
         )
