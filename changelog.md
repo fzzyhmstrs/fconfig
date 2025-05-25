@@ -20,7 +20,7 @@
 ### Additions
 * New `Translatable.Name`, `Translatable.Desc`, and `Translatable.Prefix` annotations for data generation of lang files
   * Corresponding `ConfigApi.buildTranslations` and `ConfigApiJava.buildTranslations` methods for hooking a config into a data generator
-  * Also created a simple registered objects translation builder at `ConfigApi.platform().buildRegistryTranslations` Used for either `RegistrySupplier` objects built by a `Registrar` or `Identifier` used in a traditional registration system.
+  * Also created a simple registered objects translation builder at `ConfigApi.platform().buildRegistryTranslations` Used for either `RegistrySupplier` objects built by a `Registrar` or `Identifier` used in a traditional registration system
 * Added `ConfigScreenProvider`, allowing for registering of custom screen implementations in place of the Fzzy Config built in
   * API Call `registerScreenProvider` added for registering your provider
 * `afterClose` event in `PopupWidget`
@@ -31,10 +31,12 @@
 ### Changes
 * Upgraded `CustomMultilineTextWidget` to handle click and hover events, as well as now implementing a custom `MultilineText` implementation
 * `ValidatedField` bails out of deserialization only on critical errors, now letting correction take its course more often
-* The `Registrar` system is no longer marked as experimental. Any further changes to the system will follow the standard released content deprecation and update system.
-* Methods using the old error handling system of string lists are marked for removal 0.8.0.
+* The `Registrar` system is no longer marked as experimental. Any further changes to the system will follow the standard released content deprecation and update system
+* Methods using the old error handling system of string lists are marked for removal 0.8.0
+* Slight improvements of overall memory footprint
 
 ### Fixes
 * `ConfigGroup.Pop` properly pops multiple times if attached to one setting multiple times
 * Clicking off of a context menu into a slider properly updates the slider value
 * Search and Restore Defaults options in the context menu work again
+* `ClickableTextWidget` and `CustomMultilineTextWidget` now properly show hover events

@@ -23,8 +23,8 @@ internal object EventApiImpl: EventApi {
     private val onSyncServerListeners: MutableList<OnSyncServerListener> = mutableListOf()
     private val onUpdateClientListeners: MutableList<OnUpdateClientListener> = mutableListOf()
     private val onUpdateServerListeners: MutableList<OnUpdateServerListener> = mutableListOf()
-    private val onRegisteredClientListeners: MutableMap<Identifier, MutableList<OnRegisteredClientListener>> = mutableMapOf()
-    private val onRegisteredServerListeners: MutableMap<Identifier, MutableList<OnRegisteredServerListener>> = mutableMapOf()
+    private val onRegisteredClientListeners: MutableMap<Identifier, MutableList<OnRegisteredClientListener>> = hashMapOf()
+    private val onRegisteredServerListeners: MutableMap<Identifier, MutableList<OnRegisteredServerListener>> = hashMapOf()
 
     /////////////////////
 

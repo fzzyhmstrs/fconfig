@@ -56,7 +56,6 @@ internal object SyncedConfigRegistry {
         override fun removeEldestEntry(eldest: MutableMap.MutableEntry<K, V>?): Boolean {
             return this.size > 128
         }
-
     }
 
     internal fun syncedConfigs(): Map<String, SyncedConfigEntry> {

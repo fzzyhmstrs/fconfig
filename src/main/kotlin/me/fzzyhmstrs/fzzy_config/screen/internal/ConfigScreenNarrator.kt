@@ -28,7 +28,7 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
             .thenComparing { partIndex: PartIndex -> partIndex.depth })
 
     private var currentMessageIndex: Int = 0
-    private var seenOnce: MutableSet<String> = mutableSetOf()
+    private var seenOnce: MutableSet<String> = hashSetOf()
 
     private companion object {
 
@@ -70,7 +70,7 @@ internal class ConfigScreenNarrator(vararg narrateOnceStrings: String) {
         val stringBuilder = StringBuilder()
         val consumer: Consumer<String> = object : Consumer<String> {
             private var first = true
-            private val seen: MutableSet<String> = mutableSetOf()
+            private val seen: MutableSet<String> = hashSetOf()
 
             override fun accept(string: String) {
                 if (!this.first) {
