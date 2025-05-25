@@ -21,10 +21,10 @@ internal class CachedConfigValueProvider<T: Any>(private val delegate: Function<
         ResultApiImpl.resultProviders.add(SoftReference(this))
     }
 
-    private var cachedResults: MutableMap<String, Supplier<T>> = mutableMapOf()
+    private var cachedResults: MutableMap<String, Supplier<T>> = hashMapOf()
 
     internal fun invalidateResults() {
-        cachedResults = mutableMapOf()
+        cachedResults = hashMapOf()
     }
 
     override fun getResult(scope: String): T {

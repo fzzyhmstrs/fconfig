@@ -41,7 +41,7 @@ internal class ConfigUpdateS2CCustomPayload(val updates: Map<String, String>): C
 
         private fun readMap(buf: PacketByteBuf): Map<String, String> {
             val size = buf.readVarInt()
-            val map: MutableMap<String, String> = mutableMapOf()
+            val map: MutableMap<String, String> = hashMapOf()
             for (i in 1..size) {
                 map[buf.readString()] = buf.readString()
             }

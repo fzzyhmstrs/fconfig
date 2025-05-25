@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
-import me.fzzyhmstrs.fzzy_config.FC
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
@@ -44,6 +43,12 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = cache.map(getKey(width - leftPadding - rightPadding))
         text.drawWithShadow(context, x + leftPadding, y + topPadding, lineHeight, textColor)
+        if (!isMouseOver(mouseX.toDouble(), mouseY.toDouble())) return
+        val d = mouseX - this.x - leftPadding
+        val dd = mouseY - this.y - topPadding
+        val line = dd / lineHeight
+        val style = text.getStyleAt(MinecraftClient.getInstance(), line, d.toDouble()) ?: return
+        context.drawHoverEvent(textRenderer, style, mouseX, mouseY)
     }
 
     override fun getHeight(): Int {

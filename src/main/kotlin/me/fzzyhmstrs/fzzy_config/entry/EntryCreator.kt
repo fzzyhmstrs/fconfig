@@ -73,7 +73,7 @@ fun interface EntryCreator {
 
     class CreatorContextMisc internal constructor() {
 
-        private val map: MutableMap<CreatorContextKey<*>, Any> = mutableMapOf()
+        private val map: MutableMap<CreatorContextKey<*>, Any> = hashMapOf()
 
         /**
          * Retrieves the information stored with the provided [CreatorContextKey], or null if none is present.

@@ -410,7 +410,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     //client
     private class ValidatedObjectUpdateManager<T: Any>(private val thing: T, private val key: String): BaseUpdateManager() {
 
-        private val updatableEntries: MutableMap<String, Updatable> = mutableMapOf()
+        private val updatableEntries: MutableMap<String, Updatable> = hashMapOf()
 
         fun setUpdatableEntry(entry: Updatable) {
             updatableEntries[entry.getEntryKey()] = entry
