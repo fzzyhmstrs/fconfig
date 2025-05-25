@@ -41,7 +41,7 @@ class Searcher<C: SearchContent>(private val searchEntries: List<C>) {
     }
 
     private val searchExact: Map<String, C> by lazy {
-        val map: MutableMap<String, C> = mutableMapOf()
+        val map: MutableMap<String, C> = hashMapOf()
         for (entry in searchEntries) {
             map[entry.content.name.string.lowercase(Locale.ROOT)] = entry
         }

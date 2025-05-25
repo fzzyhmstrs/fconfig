@@ -239,7 +239,7 @@ internal object ConfigApiImpl {
         return ConfigHolder.Future(future)
     }*/
 
-    private val seenLogs: MutableSet<String> = mutableSetOf()
+    private val seenLogs: MutableSet<String> = hashSetOf()
 
     internal fun <T: Config> readOrCreateAndValidate(configClass: () -> T, classInstance: T = configClass(), name: String = classInstance.name, folder: String = classInstance.folder, subfolder: String = classInstance.subfolder): T {
         fun log(start: Long) {
