@@ -25,7 +25,6 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.FcText.underline
 import me.fzzyhmstrs.fzzy_config.util.Translatable
-import net.fabricmc.fabric.api.datagen.v1.provider.FabricLanguageProvider.TranslationBuilder
 import net.minecraft.registry.RegistryKeys
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
@@ -132,11 +131,6 @@ object ExampleTexts {
         @Translatable.Desc("True does this thing, false this other thing")
         @Translatable.Prefix("Setting for this important thing")
         var mySetting = true
-
-        //Then in datagen, these annotations will be automatically applied to the provided translation builder
-        fun buildTranslations(lang: String, builder: TranslationBuilder) {
-            ConfigApi.buildTranslations(BoisConfig::class, Identifier.of(FC.MOD_ID, "bois_config"), lang, true, builder::add)
-        }
 
         //output will be:
         val outputLang = """
