@@ -185,7 +185,6 @@ internal object NetworkEventsClient {
         MinecraftForge.EVENT_BUS.addListener(this::registerCommands)
         MinecraftForge.EVENT_BUS.addListener(this::handleTick)
         MinecraftForge.EVENT_BUS.addListener(this::registerConfigs)
-
     }
 
     private fun registerCommands(event: RegisterClientCommandsEvent) {

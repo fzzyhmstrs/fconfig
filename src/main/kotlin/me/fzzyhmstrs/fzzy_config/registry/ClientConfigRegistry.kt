@@ -14,9 +14,6 @@ import com.google.common.collect.HashMultimap
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.ACTIONS
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_ACTIONS
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext.Keys.RESTART_RECORDS
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
@@ -116,27 +113,31 @@ internal object ClientConfigRegistry {
     internal fun receiveReloadSync(id: String, configString: String, player: PlayerEntity) {
         if (SyncedConfigRegistry.syncedConfigs().containsKey(id)) {
             val configEntry = SyncedConfigRegistry.syncedConfigs()[id] ?: return
-            val errors = mutableListOf<String>()
-            val result = ConfigApi.deserializeConfig(configEntry.config, configString, errors, ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
-            val actions = result.get().getOrDefault(ACTIONS, setOf())
-            result.writeError(errors)
-            val saveType = result.get().config.saveType()
-            if (saveType == SaveType.OVERWRITE)
-                result.get().config.save()//save config to the client
-            if (actions.any { it.restartPrompt }) {
-                MinecraftClient.getInstance().execute {
-                    val records = result.get().get(RESTART_RECORDS)
-                    if (!records.isNullOrEmpty()) {
-                        FC.LOGGER.info("Client prompted for a restart due to received config updates")
-                        FC.LOGGER.info("Restart-prompting updates:")
-                        for (record in records) {
-                            FC.LOGGER.info(record)
-                        }
+            val result = ConfigApiImpl.deserializeConfigSafe(configEntry.config, configString, "Error(s) encountered receiving sync for $id from server", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER) //0: Don't ignore NonSync on a synchronization action, 2: Watch for RequiresRestart
+            MinecraftClient.getInstance().execute {
+                getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
+                    configScreenManagers.remove(it)
+                }
+                val saveType = result.get().saveType()
+                if (saveType == SaveType.OVERWRITE)
+                    result.get().save() //save config to the client
+                if (result.has(ValidationResult.Errors.RESTART)) {
+                    FC.LOGGER.info("Client prompted for a restart due to reloaded config updates")
+                    FC.LOGGER.info("Restart-prompting reloaded updates:")
+                    for (record in result.iterate(ValidationResult.Errors.RESTART)) {
+                        record.log(ValidationResult.ErrorEntry.ENTRY_INFO_LOGGER)
                     }
                 }
-            }
-            for (action in actions) {
-                player.sendMessage(action.clientPrompt)
+                try {
+                    configEntry.config.onSyncClient()
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Error encountered with onSyncClient method of config $id!", e)
+                }
+                try {
+                    EventApiImpl.fireOnSyncClient(result.get().getId(), result.get())
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Error encountered while running onSyncClient event for config $id!", e)
+                }
             }
         }
     }
