@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
+import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
@@ -160,6 +161,15 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
             FzzyKeybindUnbound -> {
                 return ValidationResult.success(TomlLiteral("unbound"))
             }
+        }
+    }
+
+    private fun <T> DataResult<T>.mapOrElse(onSuccess: Function<T, T>, onFailure: Function<DataResult.PartialResult<T>, T>): T {
+        val r = this.result()
+        return if (r.isPresent) {
+            onSuccess.apply(r.get())
+        } else {
+            onFailure.apply(this.error().get())
         }
     }
 
