@@ -60,27 +60,6 @@ internal object SyncedConfigRegistry {
         return syncedConfigs
     }
 
-    internal fun onConfigure(canSender: Predicate<Identifier>, sender: Consumer<FzzyPayload>) {
-        if (!canSender.test(ConfigSyncS2CCustomPayload.id)) return
-        for ((id, configEntry) in syncedConfigs) {
-            if (configEntry.skipSync()) continue
-            val payloadResult = ConfigApiImpl.serializeConfigSafe(configEntry.config, "Error(s) encountered serializing config for S2C configuration sync.", 0).map{
-                ConfigSyncS2CCustomPayload(id, it)
-            }.log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-            sender.accept(payloadResult.get())
-            try {
-                configEntry.config.onSyncServer()
-            } catch (e: Throwable) {
-                FC.LOGGER.error("Error encountered with login onSyncServer method of config $id!", e)
-            }
-            try {
-                EventApiImpl.fireOnSyncServer(configEntry.getId(), configEntry.config)
-            } catch (e: Throwable) {
-                FC.LOGGER.error("Error encountered while running login onSyncServer event for config $id!", e)
-            }
-        }
-    }
-
     internal fun onJoin(player: ServerPlayerEntity, server: MinecraftServer, canSender: BiPredicate<ServerPlayerEntity, Identifier>, sender: BiConsumer<ServerPlayerEntity, FzzyPayload>) {
         if (server.isSingleplayer) {
             ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player)) //for the registries that still need the data in SP

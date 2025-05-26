@@ -470,10 +470,13 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @since 0.6.5
          */
         fun <T> mapDataResult(result: DataResult<T>, fallback: T): ValidationResult<T> {
-            return result.mapOrElse({ r -> success(r) }, { e ->
+            val r = result.result()
+            return if (r.isPresent) {
+                success(r.get())
+            } else {
                 @Suppress("DEPRECATION")
-                error(fallback, e.message())
-            })
+                error(fallback, result.error().get().message())
+            }
         }
 
         /**
@@ -485,10 +488,13 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @since 0.6.5
          */
         fun <T> mapDataResult(result: DataResult<T>): ValidationResult<T?> {
-            return result.mapOrElse({ r -> success(r) }, { e ->
+            val r = result.result()
+            return if (r.isPresent) {
+                success(r.get())
+            } else {
                 @Suppress("DEPRECATION")
-                error(null, e.message())
-            })
+                error(null, result.error().get().message())
+            }
         }
 
         /**

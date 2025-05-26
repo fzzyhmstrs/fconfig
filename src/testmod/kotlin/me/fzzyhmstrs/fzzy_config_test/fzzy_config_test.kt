@@ -115,7 +115,7 @@ object FC: ModInitializer {
             testObj.add(key, JsonPrimitive(value))
         }
 
-        ConfigApi.buildTranslations(TestConfigImplAny::class, Identifier.of("fzzy_config_test","test_config_any"), lang, true, ::add)
+        ConfigApi.buildTranslations(TestConfigImplAny::class, Identifier("fzzy_config_test","test_config_any"), lang, true, ::add)
 
         LOGGER.info("Test translation for $lang")
         LOGGER.info(gson.toJson(testObj))

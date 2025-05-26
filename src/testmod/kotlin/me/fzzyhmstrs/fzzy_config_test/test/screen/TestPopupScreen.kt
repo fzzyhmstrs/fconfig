@@ -86,7 +86,8 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
         addDrawableChild(listTestWidget)
         groupButton.setPosition(260, 80)
         addDrawableChild(groupButton)
-        multilineTextWidget.setDimensionsAndPosition(240, 320, 140, 4)
+        multilineTextWidget.setPosition(140, 4)
+        multilineTextWidget.width = 240
         addDrawableChild(multilineTextWidget)
 
         addDrawableChild(ConfigScreenWidget.of("fzzy_config_test", ConfigScreenWidget.Position.Corner.TOP_LEFT))

@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.api.ServerPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.networking.v1.*
 import net.minecraft.server.network.ServerPlayNetworkHandler
@@ -37,14 +38,11 @@ internal object NetworkEvents {
     fun syncConfigs(handler: ServerPlayNetworkHandler) {
         if (handler.player.server.isSingleplayer) return
         for ((id, configEntry) in SyncedConfigRegistry.syncedConfigs()) {
-            val syncErrors = mutableListOf<String>()
-            val payload = ConfigSyncS2CCustomPayload(id, ConfigApiImpl.serializeConfigSafe(configEntry.config, syncErrors, 0)) //Don't ignore NonSync on a synchronization action
-            if (syncErrors.isNotEmpty()) {
-                val syncError = ValidationResult.error(true, "Error encountered while serializing config for S2C configuration stage sync.")
-                syncError.writeError(syncErrors)
-            }
+            val payloadResult = ConfigApiImpl.serializeConfigSafe(configEntry.config, "Error(s) encountered serializing config for S2C configuration sync.", 0).map{
+                ConfigSyncS2CCustomPayload(id, it)
+            }.log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             val buf = PacketByteBufs.create()
-            payload.write(buf)
+            payloadResult.get().write(buf)
             ServerPlayNetworking.send(handler.player, ConfigSyncS2CCustomPayload.id, buf)
         }
     }
