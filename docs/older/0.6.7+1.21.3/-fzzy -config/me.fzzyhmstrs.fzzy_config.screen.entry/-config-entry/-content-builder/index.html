@@ -1,0 +1,251 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>ContentBuilder</title>
+    <link href="../../../../images/icon.png" rel="icon" type="image/png">
+    <script>var pathToRoot = "../../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async></script>
+<script type="text/javascript" src="../../../../scripts/sourceset_dependencies.js" async></script>
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/main.css" rel="Stylesheet">
+<link href="../../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../../scripts/clipboard.js" async></script>
+<script type="text/javascript" src="../../../../scripts/navigation-loader.js" async></script>
+<script type="text/javascript" src="../../../../scripts/platform-content-handler.js" async></script>
+<script type="text/javascript" src="../../../../scripts/main.js" defer></script>
+<script type="text/javascript" src="../../../../scripts/prism.js" async></script>
+<script type="text/javascript" src="../../../../scripts/symbol-parameters-wrapper_deferred.js" defer></script>
+<link href="../../../../styles/multimodule.css" rel="Stylesheet">
+<link href="../../../../images/fc_banner.png">
+<link href="../../../../images/discord_banner.png">
+<link href="../../../../images/discord_small_banner.png">
+<link href="../../../../images/wiki_banner.png">
+<link href="../../../../images/wiki_small_banner.png">
+<link href="../../../../images/docs_banner.png">
+<link href="../../../../images/docs_small_banner.png">
+<link href="../../../../images/cf_banner.png">
+<link href="../../../../images/modrinth_banner.png">
+<link href="../../../../images/icon.png">
+<link href="../../../../styles/style.css" rel="Stylesheet">
+<link href="../../../../styles/logo-styles.css" rel="Stylesheet">
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../../index.html">
+                    </a>
+            </div>
+            <div class="library-version">
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.screen.entry/-config-entry/-content-builder/index.html&quot;}"><div class="versions-dropdown">
+  <div class="versions-dropdown-button">0.6.7+1.21.3</div>
+  <div class="versions-dropdown-data"><a href="..\..\..\..\..\..\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.entry\-config-entry\-content-builder\index.html">0.7.0+1.21.5</a><a href="index.html">0.6.7+1.21.3</a><a href="..\..\..\..\..\0.6.5+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.entry\-config-entry\-content-builder\index.html">0.6.5+1.21.3</a><a href="..\..\..\..\..\0.6.4+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.entry\-config-entry\-content-builder\index.html">0.6.4+1.21.3</a><a href="..\..\..\..\..\0.6.3+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.entry\-config-entry\-content-builder\index.html">0.6.3+1.21.3</a><a href="..\..\..\..\..\0.6.1+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.entry\-config-entry\-content-builder\index.html">0.6.1+1.21.3</a><a href="..\..\..\..\..\0.6.0+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.screen.entry\-config-entry\-content-builder\index.html">0.6.0+1.21.3</a><a href="..\..\..\..\..\..\not-found-version.html?v=0.5.9%2B1.21.3">0.5.9+1.21.3</a><a href="..\..\..\..\..\..\not-found-version.html?v=0.5.7%2B1.21.2">0.5.7+1.21.2</a><a href="..\..\..\..\..\..\not-found-version.html?v=0.5.6%2B1.21.2">0.5.6+1.21.2</a><a href="..\..\..\..\..\..\not-found-version.html?v=0.5.5%2B1.21.2">0.5.5+1.21.2</a><a href="..\..\..\..\..\..\not-found-version.html?v=0.5.3%2B1.21">0.5.3+1.21</a><a href="..\..\..\..\..\..\not-found-version.html?v=0.5.0%2B1.21">0.5.0+1.21</a></div>
+</div>
+</dokka-template-command>            </div>
+        </div>
+    <div class="links-section" id="links-section">
+        <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
+            <a class="wiki-section" href="https://moddedmc.wiki/en/project/fzzy-config/docs" rel="nofollow">
+            </a>
+        </div>
+        <div class="modrinth-section-wrapper" id="modrinth-section-wrapper" title="Open Modrinth page">
+            <a class="modrinth-section" href="https://modrinth.com/mod/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="cf-section-wrapper" id="cf-section-wrapper" title="Open Curseforge page">
+            <a class="cf-section" href="https://www.curseforge.com/minecraft/mc-mods/fzzy-config" rel="nofollow">
+            </a>
+        </div>
+        <div class="discord-section-wrapper" id="discord-section-wrapper" title="Discord invite link">
+            <a class="discord-section" href="https://discord.gg/Fnw2UbE72x" rel="nofollow">
+            </a>
+        </div>
+            <div class="filter-section" id="filter-section">
+                    <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":dokkaHtml/main">jvm</button>
+            </div>
+    </div>
+
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageids="Fzzy Config::me.fzzyhmstrs.fzzy_config.screen.entry/ConfigEntry.ContentBuilder///PointingToDeclaration//769193423">
+  <div class="breadcrumbs"><a href="../../../../index.html">Fzzy Config</a><span class="delimiter">/</span><a href="../../index.html">me.fzzyhmstrs.fzzy_config.screen.entry</a><span class="delimiter">/</span><a href="../index.html">ConfigEntry</a><span class="delimiter">/</span><span class="current">ContentBuilder</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Content</span><wbr><span><span>Builder</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="index.html">ContentBuilder</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="../../../me.fzzyhmstrs.fzzy_config.entry/-entry-creator/-creator-context/index.html">EntryCreator.CreatorContext</a><span class="token punctuation">, </span></span><span class="parameter ">actionWidgets<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../me.fzzyhmstrs.fzzy_config.screen.decoration/-abstract-decoration-widget/index.html">AbstractDecorationWidget</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><p class="paragraph">Builds content information for constructing a <a href="../index.html">ConfigEntry</a></p><span class="kdoc-tag"><h4 class="">Author</h4><p class="paragraph">fzzyhmstrs</p></span><span class="kdoc-tag"><h4 class="">Since</h4><p class="paragraph">0.6.0</p></span><h4 class="">Parameters</h4><div class="table"><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span><span>context</span></span></u></div></span></div><div><div class="title"><p class="paragraph"><a href="../../../me.fzzyhmstrs.fzzy_config.entry/-entry-creator/-creator-context/index.html">EntryCreator.CreatorContext</a> creator context used by this builder for a variety of information</p></div></div></div></div><div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><u><span>action</span><wbr><span><span>Widgets</span></span></u></div></span></div><div><div class="title"><p class="paragraph">List$lt;<a href="../../../me.fzzyhmstrs.fzzy_config.screen.decoration/-abstract-decoration-widget/index.html">AbstractDecorationWidget</a>$gt; decorations drawn on the left side of the screen to provide usage alerts (requires restart etc.). the creator context provides a list of actions that can be converted into <a href="../-action-decoration-widget/index.html">ActionDecorationWidget</a> for this purpose. See <a href="../-action-decoration-widget/-companion/setting.html">ActionDecorationWidget.setting</a> and other methods for details.</p></div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="CONSTRUCTOR">
+        <h2 class="">Constructors</h2>
+        <div class="table"><a data-name="-1111319206%2FConstructors%2F769193423" anchor-label="ContentBuilder" id="-1111319206%2FConstructors%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-togglable="CONSTRUCTOR" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-content-builder.html"><span>Content</span><wbr><span><span>Builder</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1111319206%2FConstructors%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="../../../me.fzzyhmstrs.fzzy_config.entry/-entry-creator/-creator-context/index.html">EntryCreator.CreatorContext</a><span class="token punctuation">, </span></span><span class="parameter ">actions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-set/index.html">Set</a><span class="token operator">&lt;</span><a href="../../../me.fzzyhmstrs.fzzy_config.annotations/-action/index.html">Action</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Builds content information for constructing a <a href="../index.html">ConfigEntry</a></p></div><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="../../../me.fzzyhmstrs.fzzy_config.entry/-entry-creator/-creator-context/index.html">EntryCreator.CreatorContext</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Builds content information for constructing a <a href="../index.html">ConfigEntry</a>. Automatically uses the set of <a href="../../../me.fzzyhmstrs.fzzy_config.annotations/-action/index.html">Action</a> inside the context to build action widgets.</p></div><div class="symbol monospace"><span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">context<span class="token operator">: </span><a href="../../../me.fzzyhmstrs.fzzy_config.entry/-entry-creator/-creator-context/index.html">EntryCreator.CreatorContext</a><span class="token punctuation">, </span></span><span class="parameter ">actionWidgets<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../../me.fzzyhmstrs.fzzy_config.screen.decoration/-abstract-decoration-widget/index.html">AbstractDecorationWidget</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="152715763%2FClasslikes%2F769193423" anchor-label="BuildResult" id="152715763%2FClasslikes%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-build-result/index.html"><span>Build</span><wbr><span><span>Result</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="152715763%2FClasslikes%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">class </span><a href="-build-result/index.html">BuildResult</a></div><div class="brief "><p class="paragraph">Built entry content for construction of a <a href="../index.html">ConfigEntry</a>. These values are used internally by the entry during instantiation.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-126786435%2FFunctions%2F769193423" anchor-label="build" id="-126786435%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="build.html"><span><span>build</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-126786435%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="build.html"><span class="token function">build</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="-build-result/index.html">ConfigEntry.ContentBuilder.BuildResult</a></div><div class="brief "><p class="paragraph">Builds a <a href="-build-result/index.html">BuildResult</a> for construction of an Entry</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1047953118%2FFunctions%2F769193423" anchor-label="contextActions" id="1047953118%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="context-actions.html"><span>context</span><wbr><span><span>Actions</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1047953118%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="context-actions.html"><span class="token function">contextActions</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">contextActions<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><a href="../../../me.fzzyhmstrs.fzzy_config.screen.context/-context-type/index.html">ContextType</a><span class="token punctuation">, </span><a href="../../../me.fzzyhmstrs.fzzy_config.screen.context/-context-action/-builder/index.html">ContextAction.Builder</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">ConfigEntry.ContentBuilder</a></div><div class="brief "><p class="paragraph">A map of context actions for the entry to use in context handling. These are the right-click and keybind actions relevant to the setting.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="551939078%2FFunctions%2F769193423" anchor-label="decoration" id="551939078%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="decoration.html"><span><span>decoration</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="551939078%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="decoration.html"><span class="token function">decoration</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">decoration<span class="token operator">: </span><a href="../../../me.fzzyhmstrs.fzzy_config.screen.decoration/-decorated/index.html">Decorated</a><span class="token punctuation">, </span></span><span class="parameter ">offsetX<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span><span class="token punctuation">, </span></span><span class="parameter ">offsetY<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html">Int</a><span class="token operator"> = </span><span class="token constant">0</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">ConfigEntry.ContentBuilder</a></div><div class="brief "><p class="paragraph">Applies a decoration to this entry.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1538437135%2FFunctions%2F769193423" anchor-label="layoutContent" id="-1538437135%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="layout-content.html"><span>layout</span><wbr><span><span>Content</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1538437135%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="layout-content.html"><span class="token function">layoutContent</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">layoutOperations<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/UnaryOperator.html">UnaryOperator</a><span class="token operator">&lt;</span><a href="../../../me.fzzyhmstrs.fzzy_config.screen.widget/-layout-widget/index.html">LayoutWidget</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">ConfigEntry.ContentBuilder</a></div><div class="brief "><p class="paragraph">Modify the content area of the entry. The content area is the "button" area of a standard entry layout. It is common to apply one widget to this area, which is the entire "setting button" for the entry.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-162327487%2FFunctions%2F769193423" anchor-label="layoutMain" id="-162327487%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="layout-main.html"><span>layout</span><wbr><span><span>Main</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-162327487%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="layout-main.html"><span class="token function"><strike>layoutMain</strike></span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">layoutOperations<span class="token operator">: </span><a href="https://docs.oracle.com/javase/8/docs/api/java/util/function/UnaryOperator.html">UnaryOperator</a><span class="token operator">&lt;</span><a href="../../../me.fzzyhmstrs.fzzy_config.screen.widget/-layout-widget/index.html">LayoutWidget</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">ConfigEntry.ContentBuilder</a></div><div class="brief "><p class="paragraph">Modify the main layout of the entry. This should only be used if the structure of the entry needs to change substantially. For most circumstances, <a href="layout-content.html">layoutContent</a> is proper</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1843188584%2FFunctions%2F769193423" anchor-label="visibility" id="-1843188584%2FFunctions%2F769193423" data-filterable-set=":dokkaHtml/main"></a>
+          <div class="table-row" data-filterable-current=":dokkaHtml/main" data-filterable-set=":dokkaHtml/main">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="visibility.html"><span><span>visibility</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1843188584%2FFunctions%2F769193423"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":dokkaHtml/main"><div class="symbol monospace"><span class="token keyword">fun </span><a href="visibility.html"><span class="token function">visibility</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">visibility<span class="token operator">: </span><a href="../../../me.fzzyhmstrs.fzzy_config.screen.widget/-dynamic-list-widget/-visibility/index.html">DynamicListWidget.Visibility</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="index.html">ConfigEntry.ContentBuilder</a></div><div class="brief "><p class="paragraph">Defines a starting visibility for the entry. Default is <a href="../../../me.fzzyhmstrs.fzzy_config.screen.widget/-dynamic-list-widget/-visibility/-v-i-s-i-b-l-e/index.html">DynamicListWidget.Visibility.VISIBLE</a></p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>(c) 2024-5 fzzyhmstrs</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
