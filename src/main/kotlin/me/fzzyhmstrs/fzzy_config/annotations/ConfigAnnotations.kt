@@ -36,6 +36,16 @@ import net.minecraft.util.Identifier
 annotation class IgnoreVisibility
 
 /**
+ * Turns off Fzzy Config using `@Comment` and `@TomlComment` annotations as description fallbacks for the annotated class.
+ *
+ * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/config-concepts/annotations/Ignore-Comments-For-Desc) for more details and examples.
+ * @author fzzyhmstrs
+ * @since 0.7.1
+ */
+@Target(AnnotationTarget.CLASS)
+annotation class IgnoreCommentsForDesc
+
+/**
  * Marks the annotated config entry as modifiable by any player, not just Ops.
  *
  * Typically, the opposite of using [WithPerms]. Should be used with caution, as this will enable any player, moderator, admin, or otherwise to modify a server-synced config setting. By default, all settings need Op Level 2.
