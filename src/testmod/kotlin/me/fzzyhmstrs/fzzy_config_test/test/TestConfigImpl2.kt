@@ -41,6 +41,7 @@ import net.peanuuutz.tomlkt.TomlComment
 import java.awt.Color
 
 @Version(1)
+@IgnoreVisibility
 class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) {
 
     @ClientModifiable
