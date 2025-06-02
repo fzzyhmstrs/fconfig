@@ -614,8 +614,8 @@ internal object ConfigApiImpl {
             val props = propsRaw.filter {
                 it is KMutableProperty<*>
                         && (if (ignoreNonSync(flags)) true else !isNonSync(it))
-                        && if(ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
                         && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
+                        && if(ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
             }
 
             for (prop in props.cast<List<KMutableProperty1<T, *>>>()) {
