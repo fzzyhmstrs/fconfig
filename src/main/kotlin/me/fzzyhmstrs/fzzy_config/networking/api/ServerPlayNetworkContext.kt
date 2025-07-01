@@ -34,7 +34,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        server().execute(runnable)
+        context.server().execute(runnable)
     }
 
     /**
@@ -77,7 +77,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      */
     @JvmOverloads
     fun sendToAllPlayers(payload: CustomPayload, skipCurrentPlayer: Boolean = true) {
-        for (player in server().playerManager.playerList) {
+        for (player in context.server().playerManager.playerList) {
             if (skipCurrentPlayer && player == player()) continue
             ConfigApi.network().send(payload, player)
         }
@@ -91,16 +91,6 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      */
     override fun player(): ServerPlayerEntity {
         return context.player()
-    }
-
-    /**
-     * The server associated with this context.
-     * @return [MinecraftServer]
-     * @author fzzyhmstrs
-     * @since 0.7.0
-     */
-    fun server(): MinecraftServer {
-        return context.server()
     }
 
     /**
