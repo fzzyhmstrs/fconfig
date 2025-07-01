@@ -43,7 +43,7 @@ object PortingUtils {
     }
 
     fun getDynamicManager(player: ServerPlayerEntity): RegistryWrapper.WrapperLookup {
-        return player.server.reloadableRegistries.createRegistryLookup().cast()
+        return player.world.getRegistryManager().cast()
     }
 
     fun <T> Registry<T>.optional(id: Identifier): Optional<T> {
@@ -101,7 +101,7 @@ object PortingUtils {
     }
 
     fun tagIngredient(tag: TagKey<Item>): Ingredient {
-        return Ingredient.fromTag(Registries.ITEM.namedEntryList(tag).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
+        return Ingredient.ofTag(Registries.ITEM.namedEntryList(tag).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
     }
 
     object Codecs {

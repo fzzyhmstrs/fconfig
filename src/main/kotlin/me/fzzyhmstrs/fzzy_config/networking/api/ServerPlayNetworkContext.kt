@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.cast
 import net.minecraft.network.NetworkPhase
 import net.minecraft.network.NetworkSide
 import net.minecraft.network.packet.CustomPayload
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -35,7 +36,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        player().server.execute(runnable)
+        player().world.server.execute(runnable)
     }
 
     /**
@@ -78,7 +79,8 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      */
     @JvmOverloads
     fun sendToAllPlayers(payload: CustomPayload, skipCurrentPlayer: Boolean = true) {
-        for (player in player().server.playerManager.playerList) {
+        if (player().server == null) return
+        for (player in player().server!!.playerManager.playerList) {
             if (skipCurrentPlayer && player == player()) continue
             ConfigApi.network().send(payload, player)
         }
@@ -92,6 +94,16 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      */
     override fun player(): ServerPlayerEntity {
         return context.player().cast()
+    }
+
+    /**
+     * The server associated with this context.
+     * @return [MinecraftServer]
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    fun server(): MinecraftServer {
+        return context.player().cast<ServerPlayerEntity>().world.server
     }
 
     /**

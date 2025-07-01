@@ -378,7 +378,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
                     searchField.setEditableColor(0xFF5555)
             }
             searchField.setChangedListener { s -> setColor(entryList.search(s)) }
-            searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+            searchField.setTooltip(Tooltip.of("fc.config.search.desc".translate()))
             builder.add("choice_search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
         }
         builder.positionX(xPosition)
@@ -445,7 +445,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     private class ChoiceWidget<T>(private val thisVal: T, width: Int, private val selectedPredicate: Predicate<T>, private val entry: ValidatedChoiceList<T>, private val valueApplier: Consumer<T>): CustomPressableWidget(0, 0, width, 20, entry.translationProvider.apply(thisVal, entry.translationKey())) {
 
         init {
-            entry.descriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
+            entry.descriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
         }
 
         override val textures: TextureProvider = TextureSet.Quad(tex, disabled, highlighted, "widget/button_disabled_highlighted".fcId())

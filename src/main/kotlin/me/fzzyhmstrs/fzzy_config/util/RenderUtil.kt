@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gl.RenderPipelines
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.render.RenderLayer
 import net.minecraft.util.Identifier
@@ -33,7 +34,7 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
-        this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height)
+        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED, id, x, y, width, height)
     }
 
     /**
@@ -47,7 +48,7 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int) {
-        this.drawGuiTexture(RenderLayer::getGuiTexturedOverlay, id, x, y, width, height)
+        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, id, x, y, width, height)
     }
 
     /**
@@ -62,7 +63,7 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
-        this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, color)
+        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED, id, x, y, width, height, color)
     }
 
     /**
@@ -77,7 +78,7 @@ object RenderUtil {
      * @since 0.6.8
      */
     fun DrawContext.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int, color: Int) {
-        this.drawGuiTexture(RenderLayer::getGuiTexturedOverlay, id, x, y, width, height, color)
+        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, id, x, y, width, height, color)
     }
 
     /**
@@ -92,7 +93,7 @@ object RenderUtil {
      * @since 0.2.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
-        this.drawGuiTexture(RenderLayer::getGuiTextured, id, x, y, width, height, PortingUtils.getWhite(alpha))
+        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED, id, x, y, width, height, PortingUtils.getWhite(alpha))
     }
 
     /**
@@ -107,7 +108,7 @@ object RenderUtil {
      * @since 0.6.8
      */
     fun DrawContext.drawTexOverlay(id: Identifier, x: Int, y: Int, width: Int, height: Int, alpha: Float) {
-        this.drawGuiTexture(RenderLayer::getGuiTexturedOverlay, id, x, y, width, height, PortingUtils.getWhite(alpha))
+        this.drawGuiTexture(RenderPipelines.GUI_TEXTURED_PREMULTIPLIED_ALPHA, id, x, y, width, height, PortingUtils.getWhite(alpha))
     }
 
     /**
@@ -191,7 +192,7 @@ object RenderUtil {
      * @since 0.6.0
      */
     fun DrawContext.drawTex(id: Identifier, x: Int, y: Int, u: Float, v: Float, width: Int, height: Int, texWidth: Int, texHeight: Int) {
-        this.drawTexture(RenderLayer::getGuiTextured, id, x, y, u, v, width, height, texWidth, texHeight)
+        this.drawTexture(RenderPipelines.GUI_TEXTURED, id, x, y, u, v, width, height, texWidth, texHeight)
     }
 
     /**
@@ -206,10 +207,10 @@ object RenderUtil {
      * @since 0.6.1
      */
     fun renderBlur(context: DrawContext, x: Float, y: Float, delta: Float) {
-        context.matrices.push()
-        context.matrices.translate(x, y, 0f)
-        context.draw()
+        context.matrices.pushMatrix()
+        context.matrices.translate(x, y) //, 0f)
+//        context.draw()
         MinecraftClient.getInstance().gameRenderer.renderBlur()
-        context.matrices.pop()
+        context.matrices.popMatrix()
     }
 }

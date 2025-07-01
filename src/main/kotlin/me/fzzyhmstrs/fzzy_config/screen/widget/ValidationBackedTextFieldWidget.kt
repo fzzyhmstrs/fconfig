@@ -83,14 +83,14 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
     protected open fun isValidTest(s: String): Boolean {
         val result = validator.validateEntry(s, EntryValidator.ValidationType.STRONG)
         return if(result.isError()) {
-            this.tooltip = Tooltip.of(FcText.toLinebreakText(mutableListOf<String>().apply { result.logPlain{ s, _ -> this.add(s) } }.map { it.lit() }))
+            this.setTooltip(Tooltip.of(FcText.toLinebreakText(mutableListOf<String>().apply { result.logPlain{ s, _ -> this.add(s) } }.map { it.lit() })))
             setEditableColor(0xFF5555)
             false
         } else {
-            this.tooltip = null
+            this.setTooltip(null)
             val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
             if (result2.isError()) {
-                this.tooltip = Tooltip.of(FcText.toLinebreakText(mutableListOf<String>().apply { result2.logPlain{ s, _ -> this.add(s) } }.map { it.lit() }))
+                this.setTooltip(Tooltip.of(FcText.toLinebreakText(mutableListOf<String>().apply { result2.logPlain{ s, _ -> this.add(s) } }.map { it.lit() })))
                 setEditableColor(0xFF5555)
                 false
             } else {

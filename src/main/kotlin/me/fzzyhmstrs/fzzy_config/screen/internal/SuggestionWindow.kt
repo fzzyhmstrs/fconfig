@@ -42,8 +42,8 @@ internal class SuggestionWindow(
 
     @Suppress("UNUSED_PARAMETER")
     fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        context.matrices.push()
-        context.matrices.translate(0f, 0f, 5f)
+        context.matrices.pushMatrix()
+        context.matrices.translate(0f, 0f)//, 5f)
         context.fill(x, y-1, x+w, y+h+1, -805306368)
         if (index > 0) {
             if (!up) {
@@ -74,7 +74,7 @@ internal class SuggestionWindow(
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, suggestions[l].text, x + 1, textY, if(selection == l) Colors.YELLOW else -5592406)
             textY += if(up) -12 else 12
         }
-        context.matrices.pop()
+        context.matrices.popMatrix()
     }
 
     fun mouseClicked(mouseX: Int, mouseY: Int, button: Int): Boolean {

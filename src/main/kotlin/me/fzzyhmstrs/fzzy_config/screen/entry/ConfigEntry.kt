@@ -169,10 +169,11 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
             if (tooltipList.last() == OrderedText.EMPTY) {
                 tooltipList.removeLast()
             }
+            val client = MinecraftClient.getInstance()
             if (keyboardFocused) {
-                MinecraftClient.getInstance().currentScreen?.setTooltip(tooltipList, FocusedTooltipPositioner(ScreenRect(x + 2, y + 4, width, height)), true)
+                context.drawTooltip(client.textRenderer, tooltipList, FocusedTooltipPositioner(ScreenRect(x + 2, y + 4, width, height)), x, y, true)
             } else {
-                MinecraftClient.getInstance().currentScreen?.setTooltip(tooltipList, HoveredTooltipPositioner.INSTANCE, true)
+                context.drawTooltip(client.textRenderer, tooltipList, HoveredTooltipPositioner.INSTANCE, mouseX, mouseY, true)
             }
         }
 

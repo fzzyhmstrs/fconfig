@@ -927,11 +927,11 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         fun isValidTest(s: String): Boolean {
             val result = input.validateEntry(s, EntryValidator.ValidationType.STRONG)
             return if(result.isError()) {
-                this.tooltip = Tooltip.of(result.getError().lit())
+                this.setTooltip(Tooltip.of(result.getError().lit()))
                 setEditableColor(0xFF5555)
                 false
             } else {
-                this.tooltip = null
+                this.setTooltip(null)
                 this.storedValue = result.get()
                 setEditableColor(0xFFFFFF)
                 true

@@ -168,9 +168,9 @@ class ConfigGroup constructor(
             }
         }
 
-        override fun getTooltip(): Tooltip? {
-            return null
-        }
+//        override fun getTooltip(): Tooltip? {
+//            return null
+//        }
 
         private fun getTex(bl: Boolean, bl2: Boolean): Identifier {
             return if (bl)

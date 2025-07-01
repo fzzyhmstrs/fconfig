@@ -616,10 +616,10 @@ class PopupWidget
             CustomButtonWidget.builder(ScreenTexts.DONE) { cbw ->
                 bw.setDimensions(cbw.width, cbw.height)
                 bw.setPosition(cbw.x, cbw.y)
-                bw.tooltip = cbw.tooltip
+//                bw.tooltip = cbw.tooltip
                 bw.message = cbw.message
                 pressAction.onPress(bw)
-                cbw.tooltip = bw.tooltip
+//                cbw.tooltip = bw.tooltip
                 cbw.message = bw.message
                 cbw.setDimensions(bw.width, bw.height)
                 cbw.setPosition(bw.x, bw.y) }
