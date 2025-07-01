@@ -23,13 +23,13 @@ side = "BOTH"
 [[dependencies.fzzy_config]]
 modId = "minecraft"
 type = "REQUIRED"
-versionRange = "[1.21.5,)"
+versionRange = "[1.21.6,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.fzzy_config]]
 modId = "kotlinforforge"
 type = "REQUIRED"
-versionRange = "[5.3.0,)"
+versionRange = "[5.9.0,)"
 ordering = "NONE"
 side = "BOTH"
