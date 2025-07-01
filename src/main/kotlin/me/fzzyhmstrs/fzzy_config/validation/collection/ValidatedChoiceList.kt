@@ -43,6 +43,7 @@ import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.util.math.ColorHelper
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
@@ -377,7 +378,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
                 if(entries > 0)
                     searchField.setEditableColor(-1)
                 else
-                    searchField.setEditableColor(0xFF5555)
+                    searchField.setEditableColor(-43691)
             }
             searchField.setChangedListener { s -> setColor(entryList.search(s)) }
             searchField.setTooltip(Tooltip.of("fc.config.search.desc".translate()))

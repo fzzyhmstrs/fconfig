@@ -23,6 +23,7 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.MutableText
+import net.minecraft.util.math.ColorHelper
 import java.util.function.Consumer
 import java.util.function.Supplier
 
@@ -84,19 +85,19 @@ open class ValidationBackedTextFieldWidget(width: Int, height: Int, protected va
         val result = validator.validateEntry(s, EntryValidator.ValidationType.STRONG)
         return if(result.isError()) {
             this.setTooltip(Tooltip.of(FcText.toLinebreakText(mutableListOf<String>().apply { result.logPlain{ s, _ -> this.add(s) } }.map { it.lit() })))
-            setEditableColor(0xFF5555)
+            setEditableColor(-43691)
             false
         } else {
             this.setTooltip(null)
             val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
             if (result2.isError()) {
                 this.setTooltip(Tooltip.of(FcText.toLinebreakText(mutableListOf<String>().apply { result2.logPlain{ s, _ -> this.add(s) } }.map { it.lit() })))
-                setEditableColor(0xFF5555)
+                setEditableColor(-43691)
                 false
             } else {
                 this.storedValue = result.get()
                 lastChangedTime = System.currentTimeMillis()
-                setEditableColor(0xFFFFFF)
+                setEditableColor(-1)
                 true
             }
         }

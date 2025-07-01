@@ -12,12 +12,15 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import com.mojang.brigadier.suggestion.Suggestions
 import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.PopupController
 import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget.SuggestionProvider
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
@@ -108,7 +111,8 @@ class SuggestionBackedTextFieldWidget(
                 addSuggestionWindow(suggestions)
             }
         }
-        window?.render(context, mouseX, mouseY, delta)
+        if (window != null)
+            MinecraftClient.getInstance().currentScreen?.nullCast<PopupController>()?.suggestionWindow = window
     }
 
     private fun addSuggestionWindow(suggestions: Suggestions) {
@@ -130,6 +134,7 @@ class SuggestionBackedTextFieldWidget(
         if (closeWindow) {
             pendingSuggestions = null
             window = null
+            MinecraftClient.getInstance().currentScreen?.nullCast<PopupController>()?.suggestionWindow = null
             suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }
@@ -149,6 +154,7 @@ class SuggestionBackedTextFieldWidget(
         if (closeWindow) {
             pendingSuggestions = null
             window = null
+
             suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }

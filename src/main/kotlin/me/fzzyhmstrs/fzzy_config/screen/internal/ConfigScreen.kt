@@ -45,6 +45,7 @@ import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Util
+import net.minecraft.util.math.ColorHelper
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
@@ -222,7 +223,7 @@ internal class ConfigScreen(
             if(entries > 0)
                 searchField.setEditableColor(-1)
             else if (entries == 0)
-                searchField.setEditableColor(0xFF5555)
+                searchField.setEditableColor(-43691)
             else
                 searchField.setEditableColor(-256)
         }

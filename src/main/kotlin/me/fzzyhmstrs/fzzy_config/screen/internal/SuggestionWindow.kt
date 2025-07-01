@@ -25,7 +25,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 //client
-internal class SuggestionWindow(
+class SuggestionWindow(
     private val suggestions: List<Suggestion>,
     private val x: Int,
     private val y: Int,

@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen
 
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -44,6 +45,8 @@ interface PopupController: LastSelectable {
     var justClosedWidget: Boolean
 
     val child: LastSelectable?
+
+    var suggestionWindow: SuggestionWindow?
 
     fun activeWidget(): PopupWidget? {
         return popupWidgets.peek()
@@ -131,8 +134,6 @@ interface PopupController: LastSelectable {
      */
     fun preRender(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.matrices.pushMatrix()
-        if (popupWidgets.isNotEmpty())
-            context.matrices.translate(0f, 0f)//, -500f * popupWidgets.size)
     }
 
     /**
@@ -149,14 +150,14 @@ interface PopupController: LastSelectable {
      */
     fun postRender(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if (popupWidgets.isNotEmpty())
-            context.matrices.translate(0f, 0f)//, 500f)
-        for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
-            if(index == popupWidgets.lastIndex)
-                popup.render(context, mouseX, mouseY, delta)
-            else
-                popup.render(context, 0, 0, delta)
-            context.matrices.translate(0f, 0f)//, 500f)
-        }
+            for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
+                if(index == popupWidgets.lastIndex)
+                    popup.render(context, mouseX, mouseY, delta)
+                else
+                    popup.render(context, 0, 0, delta)
+            }
+        suggestionWindow?.render(context, mouseX, mouseY, delta)
+        suggestionWindow = null
         context.matrices.popMatrix()
     }
 
