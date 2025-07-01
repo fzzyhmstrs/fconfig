@@ -297,7 +297,7 @@ class ConfigAction @JvmOverloads constructor(
                 } else if (clickEvent is ClickEvent.RunCommand) {
                     val string =clickEvent.command().let { if (it.startsWith("/")) it.substring(1) else it }
                     // (ender) It should be fine just running this
-                    client.player?.networkHandler?.sendPacket(CommandExecutionC2SPacket(string))
+                    client.player?.networkHandler?.send(CommandExecutionC2SPacket(string))
                 } else if (clickEvent is ClickEvent.CopyToClipboard) {
                     client.keyboard.clipboard = clickEvent.value()
                 } else {
