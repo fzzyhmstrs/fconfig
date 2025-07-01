@@ -19,6 +19,8 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.DynamicIdsS2CCustomPayload
 import me.fzzyhmstrs.fzzy_config.nsId
+import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.PopupController
 import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowListener
 import me.fzzyhmstrs.fzzy_config.screen.SuggestionWindowProvider
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
@@ -55,6 +57,7 @@ import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Formatting
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.ColorHelper
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.TomlLiteral
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -1052,7 +1055,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             }
             val id = Identifier.tryParse(s)
             if (id == null || !s.contains(":")) {
-                setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+                setEditableColor(ColorHelper.fullAlpha(Formatting.RED.colorValue ?: 0xFFFFFF))
                 return false
             }
             return if (validatedIdentifier.validateEntry(id, EntryValidator.ValidationType.STRONG).isValid()) {
@@ -1060,14 +1063,14 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 if (result.isValid()) {
                     storedValue = result.get()
                     lastChangedTime = System.currentTimeMillis()
-                    setEditableColor(0xFFFFFF)
+                    setEditableColor(-1)
                     true
                 } else {
-                    setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+                    setEditableColor(ColorHelper.fullAlpha(Formatting.RED.colorValue ?: 0xFFFFFF))
                     false
                 }
             } else {
-                setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+                setEditableColor(ColorHelper.fullAlpha(Formatting.RED.colorValue ?: 0xFFFFFF))
                 false
             }
         }
@@ -1118,7 +1121,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                     addSuggestionWindow(suggestions)
                 }
             }
-            window?.render(context, mouseX, mouseY, delta)
+            if (window != null)
+                MinecraftClient.getInstance().currentScreen?.nullCast<PopupController>()?.suggestionWindow = window
         }
 
         override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -1145,6 +1149,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             if (closeWindow) {
                 pendingSuggestions = null
                 window = null
+                MinecraftClient.getInstance().currentScreen?.nullCast<PopupController>()?.suggestionWindow = null
                 suggestionWindowListener?.setSuggestionWindowElement(null)
                 closeWindow = false
             }

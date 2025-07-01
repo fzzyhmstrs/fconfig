@@ -43,7 +43,7 @@ object PortingUtils {
     }
 
     fun getDynamicManager(player: ServerPlayerEntity): RegistryWrapper.WrapperLookup {
-        return player.world.getRegistryManager().cast()
+        return player.world.server.reloadableRegistries.createRegistryLookup().cast()
     }
 
     fun <T> Registry<T>.optional(id: Identifier): Optional<T> {

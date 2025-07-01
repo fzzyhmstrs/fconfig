@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen
 
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -44,6 +45,8 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
     override var justClosedWidget: Boolean = false
     override var lastSelected: Element? = null
     protected var hoveredElement: Element? = null
+
+    override var suggestionWindow: SuggestionWindow? = null
 
     @Internal
     override fun blurElements() {

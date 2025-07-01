@@ -25,6 +25,7 @@ import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
+import net.minecraft.util.math.ColorHelper
 import org.lwjgl.glfw.GLFW
 import java.util.Locale
 import java.util.function.Consumer
@@ -123,26 +124,26 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
         val test = s.toDoubleOrNull()
         if (test == null) {
             this.error = listOf("fc.validated_field.number.textbox.invalid".translate())
-            setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+            setEditableColor(-43691)
             return false
         }
         val result = validationProvider.apply(test)
         return if(result.isError()) {
             this.error = mutableListOf<String>().apply { result.logPlain{ s, _ -> this.add(s) } }.map { it.lit() }
-            setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+            setEditableColor(-43691)
             false
         } else {
             this.error = emptyList()
             val result2 = choiceValidator.validateEntry(result.get(), EntryValidator.ValidationType.STRONG)
             if (result2.isError()) {
                 this.error = mutableListOf<String>().apply { result2.logPlain{ s, _ -> this.add(s) } }.map { it.lit() }
-                setEditableColor(Formatting.RED.colorValue ?: 0xFFFFFF)
+                setEditableColor(-43691)
                 false
             } else {
                 this.storedValue = result.get()
                 lastChangedTime = System.currentTimeMillis()
                 confirmActive = isChanged()
-                setEditableColor(0xFFFFFF)
+                setEditableColor(-1)
                 true
             }
         }

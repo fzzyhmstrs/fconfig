@@ -79,8 +79,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      */
     @JvmOverloads
     fun sendToAllPlayers(payload: CustomPayload, skipCurrentPlayer: Boolean = true) {
-        if (player().server == null) return
-        for (player in player().server!!.playerManager.playerList) {
+        for (player in server().playerManager.playerList) {
             if (skipCurrentPlayer && player == player()) continue
             ConfigApi.network().send(payload, player)
         }

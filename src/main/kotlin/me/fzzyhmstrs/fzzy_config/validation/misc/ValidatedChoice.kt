@@ -40,6 +40,7 @@ import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
+import net.minecraft.util.math.ColorHelper
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.BiFunction
@@ -357,7 +358,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                 if(entries > 0)
                     searchField.setEditableColor(-1)
                 else
-                    searchField.setEditableColor(0xFF5555)
+                    searchField.setEditableColor(-43691)
             }
             searchField.setChangedListener { s -> setColor(entryList.search(s)) }
             searchField.setTooltip(Tooltip.of("fc.config.search.desc".translate()))

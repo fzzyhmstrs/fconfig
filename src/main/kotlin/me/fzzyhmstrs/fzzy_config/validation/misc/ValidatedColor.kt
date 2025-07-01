@@ -45,6 +45,7 @@ import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.MutableText
+import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -928,12 +929,12 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             val result = input.validateEntry(s, EntryValidator.ValidationType.STRONG)
             return if(result.isError()) {
                 this.setTooltip(Tooltip.of(result.getError().lit()))
-                setEditableColor(0xFF5555)
+                setEditableColor(-43691)
                 false
             } else {
                 this.setTooltip(null)
                 this.storedValue = result.get()
-                setEditableColor(0xFFFFFF)
+                setEditableColor(-1)
                 true
             }
         }

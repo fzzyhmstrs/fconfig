@@ -98,7 +98,7 @@ internal object SyncedConfigRegistry {
 
     internal fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
         for (player in players) {
-            if (player.server == null) {
+            if (player.server?.isSingleplayer == true) {
                 ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player))
                 continue
             }
@@ -198,7 +198,7 @@ internal object SyncedConfigRegistry {
             }
         }
         if (!server.isSingleplayer) {
-            for (player in serverPlayer.server!!.playerManager.playerList) {
+            for (player in serverPlayer.world.server.playerManager.playerList) {
                 if (player == serverPlayer) continue // don't push back to the player that just sent the update
                 if (!canSender.test(player, ConfigUpdateS2CCustomPayload.type)) continue
                 val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
