@@ -93,9 +93,9 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         return child.isMouseOver(mouseX, mouseY)
     }
 
-    override fun getTooltip(): Tooltip? {
+   /* override fun getTooltip(): Tooltip? {
         return child.tooltip
-    }
+    }*/
 
     override fun setX(x: Int) {
         super.setX(x)

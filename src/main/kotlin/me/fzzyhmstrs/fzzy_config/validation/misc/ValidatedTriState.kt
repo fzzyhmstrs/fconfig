@@ -227,7 +227,7 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
     private inner class SideBySideWidget(private val state: TriState, private val enabledRender: (context: DrawContext, x: Int, y: Int, w: Int, h: Int) -> Unit = {_, _, _, _, _ -> }, private val disabledRender: (context: DrawContext, x: Int, y: Int, w: Int, h: Int) -> Unit = { _, _, _, _, _ -> }): CustomPressableWidget(0, 0, 110, 20, FcText.EMPTY) {
 
         init {
-            tooltip = Tooltip.of(state.descLit(state.asString()))
+            setTooltip(Tooltip.of(state.descLit(state.asString())))
         }
 
         override val textures: TextureProvider = TextureSet.Quad(tex, disabled, highlighted, "widget/button_disabled_highlighted".fcId())
@@ -264,7 +264,7 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
     private inner class CyclingOptionsWidget: CustomPressableWidget(0, 0, 110, 20, this@ValidatedTriState.get().let { it.transLit(it.asString()) }) {
 
         init {
-            this@ValidatedTriState.descLit("").takeIf { it.string != "" }?.let { tooltip = Tooltip.of(it) }
+            this@ValidatedTriState.descLit("").takeIf { it.string != "" }?.let { setTooltip(Tooltip.of(it)) }
         }
 
         override fun getNarrationMessage(): MutableText {
@@ -275,7 +275,7 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
             val newIndex = (TriState.entries.indexOf(this@ValidatedTriState.get()) + 1).takeIf { it < TriState.entries.size } ?: 0
             val newConst = TriState.entries[newIndex]
             message = newConst.let { it.transLit(it.asString()) }
-            newConst.descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
+            newConst.descLit("").takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
             this@ValidatedTriState.accept(newConst)
         }
 

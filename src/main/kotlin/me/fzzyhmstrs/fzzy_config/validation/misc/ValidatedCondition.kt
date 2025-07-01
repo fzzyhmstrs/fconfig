@@ -358,7 +358,6 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             this.active = activeSupplier.get()
             if (active) {
-                super.setTooltip(delegateWidget.tooltip)
                 delegateWidget.render(context, mouseX, mouseY, delta)
             } else {
                 super.setTooltip(makeTooltip())
@@ -441,16 +440,16 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
                 super.getType()
         }
 
-        override fun getTooltip(): Tooltip? {
+     /*   override fun getTooltip(): Tooltip? {
             return if (active)
                 delegateWidget.tooltip
             else
                 super.getTooltip()
-        }
+        }*/
 
         override fun setTooltip(tooltip: Tooltip?) {
             if (active) {
-                delegateWidget.tooltip = tooltip
+                delegateWidget.setTooltip(tooltip)
             } else {
                 super.setTooltip(tooltip)
             }

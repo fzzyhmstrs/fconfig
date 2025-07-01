@@ -362,7 +362,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                     searchField.setEditableColor(0xFF5555)
             }
             searchField.setChangedListener { s -> setColor(entryList.search(s)) }
-            searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+            searchField.setTooltip(Tooltip.of("fc.config.search.desc".translate()))
             builder.add("choice_search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY_WEAK)
         }
         builder.positionX(xPosition)
@@ -399,7 +399,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                 text2 ?: FcText.empty()
             }
             if(totalText.string != "")
-                tooltip = Tooltip.of(totalText)
+                setTooltip(Tooltip.of(totalText))
         }
 
         override fun onPress() {
@@ -457,7 +457,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                 text2 ?: FcText.empty()
             }
             if(totalText.string != "")
-                tooltip = Tooltip.of(totalText)
+                setTooltip( Tooltip.of(totalText))
         }
 
         override fun onPress() {
@@ -474,7 +474,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val entry: ValidatedChoice<T>, private val valueApplier: Consumer<T>): CustomPressableWidget(0, 0, width, 20, entry.translationProvider.apply(thisVal, entry.translationKey())) {
 
         init {
-            entry.descriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
+            entry.descriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
         }
 
         override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
@@ -515,7 +515,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                 text2 ?: FcText.empty()
             }
             if(totalText.string != "")
-                tooltip = Tooltip.of(totalText)
+                setTooltip( Tooltip.of(totalText))
         }
 
         override fun getNarrationMessage(): MutableText {

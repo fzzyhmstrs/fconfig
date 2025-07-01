@@ -75,7 +75,7 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
         if (overflowTooltip != null) {
             if (j > i) {
-                tooltip = Tooltip.of(overflowTooltip?.get())
+                setTooltip(Tooltip.of(overflowTooltip?.get()))
             }
         }
     }

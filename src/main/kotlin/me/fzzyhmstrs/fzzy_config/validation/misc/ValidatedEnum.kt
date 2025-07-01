@@ -203,7 +203,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     private class EnumOptionWidget<T: Enum<*>>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val valueApplier: Consumer<T>): CustomPressableWidget(0, 0, width, 20, thisVal.transLit(thisVal.name)) {
 
         init {
-            thisVal.descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
+            thisVal.descLit("").takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
         }
 
         override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
@@ -230,7 +230,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
         }
 
         init {
-            entry.descLit("").takeIf { it.string != "" }?.let { tooltip = Tooltip.of(it) }
+            entry.descLit("").takeIf { it.string != "" }?.let { setTooltip(Tooltip.of(it)) }
         }
 
         override fun getNarrationMessage(): MutableText {
@@ -241,7 +241,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
             val newIndex = (constants.indexOf(entry.get()) + 1).takeIf { it < constants.size } ?: 0
             val newConst = constants[newIndex]
             message = newConst.let { it.transLit(it.name) }
-            newConst.descLit("").takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
+            newConst.descLit("").takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
             entry.accept(newConst)
         }
 

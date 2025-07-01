@@ -49,11 +49,11 @@ class ConfigScreenWidget private constructor(
     override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = ClientConfigRegistry.hasScreen(scope)
         context.drawTex(getTex(), x, y, getWidth(), getHeight())
-        tooltip = if (this.active) {
+        setTooltip(if (this.active) {
             Tooltip.of(TextureIds.CONFIG_LANG)
         } else {
             Tooltip.of(TextureIds.CONFIG_INACTIVE_LANG)
-        }
+        })
     }
 
     override fun getNarrationMessage(): MutableText {

@@ -44,7 +44,7 @@ interface EntryWidget<T> {
     fun widgetAndTooltipEntry(choicePredicate: ChoiceValidator<T> = ChoiceValidator.any()): ClickableWidget {
         val widget = widgetEntry(choicePredicate)
         if (this is Translatable && this.hasDescription()) {
-            widget.tooltip = Tooltip.of(this.description(""))
+            widget.setTooltip(Tooltip.of(this.description("")))
         }
         return widget
     }

@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.network.NetworkPhase
 import net.minecraft.network.NetworkSide
 import net.minecraft.network.packet.CustomPayload
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -24,7 +25,7 @@ import net.minecraft.util.Identifier
  * @author fzzyhmstrs
  * @since 0.4.1
  */
-class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context): NetworkContext<ServerPlayerEntity> {
+class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context) : NetworkContext<ServerPlayerEntity> {
 
     /**
      * Executes a task on the main thread. This should be used for anything interacting with game state outside the network loop
@@ -33,7 +34,7 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        context.player().server.execute(runnable)
+        server().execute(runnable)
     }
 
     /**
@@ -76,7 +77,8 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      */
     @JvmOverloads
     fun sendToAllPlayers(payload: CustomPayload, skipCurrentPlayer: Boolean = true) {
-        for (player in player().server.playerManager.playerList) {
+        if (player().server == null) return
+        for (player in player().server!!.playerManager.playerList) {
             if (skipCurrentPlayer && player == player()) continue
             ConfigApi.network().send(payload, player)
         }
@@ -90,6 +92,16 @@ class ServerPlayNetworkContext(private val context: ServerPlayNetworking.Context
      */
     override fun player(): ServerPlayerEntity {
         return context.player()
+    }
+
+    /**
+     * The server associated with this context.
+     * @return [MinecraftServer]
+     * @author fzzyhmstrs
+     * @since 0.7.0
+     */
+    fun server(): MinecraftServer {
+        return context.server()
     }
 
     /**
