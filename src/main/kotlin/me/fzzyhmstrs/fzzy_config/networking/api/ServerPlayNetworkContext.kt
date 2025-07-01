@@ -79,7 +79,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      */
     @JvmOverloads
     fun sendToAllPlayers(payload: CustomPayload, skipCurrentPlayer: Boolean = true) {
-        for (player in server().playerManager.playerList) {
+        for (player in  player().world.server.playerManager.playerList) {
             if (skipCurrentPlayer && player == player()) continue
             ConfigApi.network().send(payload, player)
         }
@@ -93,16 +93,6 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      */
     override fun player(): ServerPlayerEntity {
         return context.player().cast()
-    }
-
-    /**
-     * The server associated with this context.
-     * @return [MinecraftServer]
-     * @author fzzyhmstrs
-     * @since 0.7.0
-     */
-    fun server(): MinecraftServer {
-        return context.player().cast<ServerPlayerEntity>().world.server
     }
 
     /**
