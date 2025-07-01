@@ -47,7 +47,7 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
         val orderedText = if (j > i) FcText.trim(text, i, textRenderer) else text.asOrderedText()
         context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
         if (j > i) {
-            tooltip = Tooltip.of(text)
+            setTooltip(Tooltip.of(text))
         }
     }
 

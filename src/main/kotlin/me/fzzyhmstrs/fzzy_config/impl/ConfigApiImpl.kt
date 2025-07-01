@@ -1300,7 +1300,7 @@ internal object ConfigApiImpl {
     }
 
     private fun hasNeededPermLevel(player: ServerPlayerEntity, playerPermLevel: Int, config: Config, annotations: List<Annotation>): Boolean {
-        if (player.server.isSingleplayer) return true
+        if (player.server == null) return true
         // 1. NonSync wins over everything, even whole config annotations
         if (isNonSync(annotations)) return true
         val configAnnotations = config::class.annotations

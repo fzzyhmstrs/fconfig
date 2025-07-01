@@ -79,7 +79,7 @@ internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, tex
 
         init {
             if (texts.desc != null) {
-                this.tooltip = Tooltip.of(texts.desc)
+                setTooltip(Tooltip.of(texts.desc))
             }
         }
 

@@ -230,7 +230,7 @@ internal class ConfigScreen(
         searchField.setChangedListener { s -> setColor(configList.search(s)) }
         if (searchText != searchFieldText || searchText.isNotEmpty())
             searchField.text = searchText
-        searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+        searchField.setTooltip(Tooltip.of("fc.config.search.desc".translate()))
 
         val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
         layout.add(
@@ -358,7 +358,7 @@ internal class ConfigScreen(
         this.narrator.buildNarrations { messageBuilder: NarrationMessageBuilder -> this.addScreenNarrations(messageBuilder) }
         val string = this.narrator.buildNarratorText(!onlyChangedNarrations)
         if (string.isNotEmpty()) {
-            client?.narratorManager?.narrate(string)
+            client?.narratorManager?.narrate(Text.literal(string))
         }
     }
 

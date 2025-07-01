@@ -251,10 +251,11 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
         }
 
         override fun renderEntry(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
+            val client = MinecraftClient.getInstance()
             if (hovered) {
-                MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, HoveredTooltipPositioner.INSTANCE, true)
+                context.drawTooltip(client.textRenderer, tooltip.getLines(client), HoveredTooltipPositioner.INSTANCE, mouseX, mouseY, true)
             } else if (focused) {
-                MinecraftClient.getInstance().currentScreen?.setTooltip(tooltip, FocusedTooltipPositioner(ScreenRect(x + 2, y + 4, width, height)), true)
+                context.drawTooltip(client.textRenderer, tooltip.getLines(client), FocusedTooltipPositioner(ScreenRect(x + 2, y + 4, width, height)), x, y, true)
             }
             context.drawTextWithShadow(MinecraftClient.getInstance().textRenderer, texts.name, x, y + 5, -1)
             acceptForwardWidget.setPosition(x + 126, y)

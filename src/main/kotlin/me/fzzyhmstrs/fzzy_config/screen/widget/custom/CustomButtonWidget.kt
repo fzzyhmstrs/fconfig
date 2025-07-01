@@ -76,7 +76,7 @@ open class CustomButtonWidget protected constructor(
 
     override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         this.active = activeSupplier.get()
-        tooltipSupplier?.apply(active)?.let { if(it.isNotEmpty()) this.tooltip = Tooltip.of(it) else this.tooltip = null }
+        tooltipSupplier?.apply(active)?.let { if(it.isNotEmpty()) this.setTooltip(Tooltip.of(it)) else this.setTooltip(null) }
         super.renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
     }
 
@@ -386,7 +386,7 @@ open class CustomButtonWidget protected constructor(
          */
         fun build(): CustomButtonWidget {
             val widget = CustomButtonWidget(x, y, w, h, message, onPress, narrationSupplier, narrationAppender, child, textures, renderMessage)
-            widget.tooltip = tooltip
+            widget.setTooltip(tooltip)
             widget.activeSupplier = activeSupplier
             widget.messageSupplier = messageSupplier
             widget.tooltipSupplier = tooltipSupplier

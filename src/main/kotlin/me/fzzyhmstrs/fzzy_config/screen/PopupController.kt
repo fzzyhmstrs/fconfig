@@ -130,9 +130,9 @@ interface PopupController: LastSelectable {
      * @since 0.6.7
      */
     fun preRender(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        context.matrices.push()
+        context.matrices.pushMatrix()
         if (popupWidgets.isNotEmpty())
-            context.matrices.translate(0f, 0f, -500f * popupWidgets.size)
+            context.matrices.translate(0f, 0f)//, -500f * popupWidgets.size)
     }
 
     /**
@@ -149,15 +149,15 @@ interface PopupController: LastSelectable {
      */
     fun postRender(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if (popupWidgets.isNotEmpty())
-            context.matrices.translate(0f, 0f, 500f)
+            context.matrices.translate(0f, 0f)//, 500f)
         for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
             if(index == popupWidgets.lastIndex)
                 popup.render(context, mouseX, mouseY, delta)
             else
                 popup.render(context, 0, 0, delta)
-            context.matrices.translate(0f, 0f, 500f)
+            context.matrices.translate(0f, 0f)//, 500f)
         }
-        context.matrices.pop()
+        context.matrices.popMatrix()
     }
 
     data class PopupEntry(val parent: PopupController, val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null, val popAction: Runnable = Runnable { })

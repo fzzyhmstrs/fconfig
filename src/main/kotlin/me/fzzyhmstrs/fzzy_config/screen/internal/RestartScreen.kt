@@ -20,6 +20,7 @@ import net.minecraft.client.gui.screen.TitleScreen
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
 import net.minecraft.client.gui.widget.*
 import net.minecraft.client.realms.gui.screen.RealmsMainScreen
+import net.minecraft.client.world.ClientWorld
 
 //client
 internal class RestartScreen: PopupWidgetScreen(FcText.EMPTY) {
@@ -52,15 +53,14 @@ internal class RestartScreen: PopupWidgetScreen(FcText.EMPTY) {
         val c = client ?: return
         val sp = c.isInSingleplayer
         val serverInfo = c.currentServerEntry
-        c.world?.disconnect()
-        c.disconnect()
+        c.world?.disconnect(ClientWorld.QUITTING_MULTIPLAYER_TEXT)
         val titleScreen = TitleScreen()
         if (sp) {
-            c.setScreen(titleScreen)
+            c.disconnect(titleScreen, false)
         } else if (serverInfo != null && serverInfo.isRealm) {
-            c.setScreen(RealmsMainScreen(titleScreen))
+            c.disconnect(RealmsMainScreen(titleScreen), false)
         } else {
-            c.setScreen(MultiplayerScreen(titleScreen))
+            c.disconnect(MultiplayerScreen(titleScreen), false)
         }
     }
 

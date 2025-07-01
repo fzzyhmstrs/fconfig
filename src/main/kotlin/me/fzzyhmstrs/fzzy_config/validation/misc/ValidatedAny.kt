@@ -301,7 +301,7 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
         }
         searchField.setChangedListener { s -> setColor(entryList.search(s)) }
         searchField.text = searchText
-        searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
+        searchField.setTooltip(Tooltip.of("fc.config.search.desc".translate()))
         val popup = PopupWidget.Builder(translation())
             .add("list", entryList, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             .add("search", searchField, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)

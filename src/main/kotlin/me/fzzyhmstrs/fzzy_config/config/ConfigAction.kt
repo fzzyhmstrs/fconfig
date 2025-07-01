@@ -15,33 +15,29 @@ import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryTransient
 import me.fzzyhmstrs.fzzy_config.entry.EntryWidget
-import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.decoration.SpriteDecoration
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
-import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ConfirmLinkScreen
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.util.StringHelper
 import net.minecraft.util.Util
 import org.jetbrains.annotations.ApiStatus.Internal
-import java.io.File
 import java.net.URISyntaxException
 import java.util.function.Supplier
 import kotlin.experimental.and
@@ -301,10 +297,9 @@ class ConfigAction @JvmOverloads constructor(
                 } else if (clickEvent.action == ClickEvent.Action.SUGGEST_COMMAND) {
                     FC.LOGGER.error("Can't suggest a command from a config action")
                 } else if (clickEvent is ClickEvent.RunCommand) {
-                    val string = clickEvent.command().let { if (it.startsWith("/")) it.substring(1) else it }
-                    if (client.player?.networkHandler?.sendCommand(string) != true) {
-                        FC.LOGGER.error("Not allowed to run command with signed argument from click event: '{}'", string)
-                    }
+                    val string =clickEvent.command().let { if (it.startsWith("/")) it.substring(1) else it }
+                    // (ender) It should be fine just running this
+                    client.player?.networkHandler?.sendPacket(CommandExecutionC2SPacket(string))
                 } else if (clickEvent is ClickEvent.CopyToClipboard) {
                     client.keyboard.clipboard = clickEvent.value()
                 } else {
