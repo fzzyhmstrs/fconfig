@@ -13,10 +13,13 @@ package me.fzzyhmstrs.fzzy_config.entry
 /**
  * Handles flags stored by the inheritor
  * @author fzzyhmstrs
- * @since 0.5.6
+ * @since 0.5.6, added setFlag 0.7.1
  */
+@JvmDefaultWithCompatibility
 interface EntryFlag {
 
+    fun setFlag(flag: Flag) {
+    }
     fun hasFlag(flag: Flag): Boolean {
         return false
     }
@@ -48,7 +51,13 @@ interface EntryFlag {
          * @author fzzyhmstrs
          * @since 0.5.9
          */
-        UPDATE(8);
+        UPDATE(8),
+        /**
+         * Marks that the field is a parent of other fields and is inside a config with SEPARATE save behavior.
+         * @author fzzyhmstrs
+         * @since 0.7.1
+         */
+        SEPARATE(16);
 
         companion object {
             val NONE = listOf<Flag>()
