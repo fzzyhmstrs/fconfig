@@ -27,7 +27,6 @@ class TestConfigImplAny: Config(Identifier.of("fzzy_config_test","test_config_an
     }
 
     @Translatable.Name("My Test Object")
-    @ClientModifiable
     var any1 = MyTestAny()
 
     //var bl1 = true
