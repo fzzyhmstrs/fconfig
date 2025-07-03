@@ -108,6 +108,11 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
     }
 
     @Internal
+    override fun setFlag(flag: EntryFlag.Flag) {
+        setFlag(flag.flag)
+    }
+
+    @Internal
     override fun setFlag(flag: Byte) {
         delegate.setFlag(flag)
     }

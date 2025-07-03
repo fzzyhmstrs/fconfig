@@ -329,6 +329,7 @@ internal object ClientConfigRegistry {
     }
 
     //client
+    @Synchronized
     internal fun registerConfig(config: Config, baseConfig: Config, noGui: Boolean) {
         if (!noGui) {
             val namespace = config.getId().namespace

@@ -200,7 +200,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
         }
 
         val syncNeeded = !configSet.clientOnly && updatedConfig
-        if (syncNeeded && !MinecraftClient.getInstance().isInSingleplayer) {
+        if (syncNeeded && !MinecraftClient.getInstance().isInSingleplayer && !outOfGame()) {
             //send updates to the server for distribution and saving there
             val updates = mapOf(this.configSet.active.getId().toTranslationKey() to ConfigApiImpl.serializeUpdate(configSet.active, this, "Error(s) while serializing update to send to the server").log().get())
             NetworkEventsClient.updateServer(updates, flush(), perms)
@@ -214,7 +214,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
 
     private fun outOfGame(): Boolean {
         val client = MinecraftClient.getInstance()
-        return (client.world == null || client.networkHandler == null)
+        return (client.world == null || client.networkHandler == null || client.networkHandler?.isConnectionOpen == false)
     }
 
     private class ForwardEntry(parentElement: DynamicListWidget, private val forwardedUpdate: ConfigScreenManager.ForwardedUpdate, private val manager: ConfigSingleUpdateManager)

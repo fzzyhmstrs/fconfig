@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.impl
 
 import me.fzzyhmstrs.fzzy_config.annotations.*
+import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryParent
@@ -144,10 +145,14 @@ internal object ConfigApiImplClient {
         val client = MinecraftClient.getInstance()
         val needsWorld = flags.contains(EntryFlag.Flag.REQUIRES_WORLD)
         if (client.isInSingleplayer) return PermResult.SUCCESS //single player or client config, they can do what they want!!
-        if((clientOnly && !needsWorld))
+        if((clientOnly && !needsWorld)) {
             return PermResult.SUCCESS //single player or client config, they can do what they want!!
-        else if ((client.world == null || client.networkHandler == null) && needsWorld) {
-            return PermResult.OUT_OF_GAME //but this one needs the world to be loaded
+        } else if (outOfGame(client)) {
+            if (needsWorld) {
+                return PermResult.OUT_OF_GAME //but this one needs the world to be loaded
+            } else if (isSeparate(config, flags)) {
+                return PermResult.SUCCESS //SEPARATE configs can edit their own config files out-of-game
+            }
         }
         // 1. NonSync wins over everything, even whole config annotations
         if (ConfigApiImpl.isNonSync(annotations)) return PermResult.SUCCESS
@@ -165,7 +170,7 @@ internal object ConfigApiImplClient {
         }
 
         //not in a game, can't send packets so can't know your permissions for real
-        if (client.world == null || client.networkHandler == null) return PermResult.OUT_OF_GAME
+        if (outOfGame(client)) return PermResult.OUT_OF_GAME
 
         for (annotation in annotations) {
             //4. per-setting WithCustomPerms
@@ -222,6 +227,18 @@ internal object ConfigApiImplClient {
             PermResult.FAILURE
         } else {
             PermResult.SUCCESS
+        }
+    }
+
+    private fun outOfGame(client: MinecraftClient): Boolean {
+        return (client.world == null || client.networkHandler == null || client.networkHandler?.isConnectionOpen == false)
+    }
+
+    private fun isSeparate(config: Any, flags: List<EntryFlag.Flag>): Boolean {
+        return if (config is Config) {
+            config.saveType() == SaveType.SEPARATE
+        } else {
+            flags.contains(EntryFlag.Flag.SEPARATE)
         }
     }
 
