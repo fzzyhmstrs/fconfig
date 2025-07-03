@@ -633,16 +633,9 @@ class DynamicListWidget(
                 }
                 groupPair.visible = true
             }
-            val last = lastSelectable()
-            if (last == null) {
-                scrollToTop()
-            } else {
-                if (this@DynamicListWidget.noScroll()) {
-                    scrollToTop()
-                } else {
-                    ensureVisible(last)
-                }
-            }
+            val delta = this@DynamicListWidget.top - groupPair.groupEntry.top.get()
+            this@DynamicListWidget.handleScrollByBar(delta)
+            this@DynamicListWidget.focused = groupPair.groupEntry
             delegate.forEach { it.onScroll(0) }
         }
 
