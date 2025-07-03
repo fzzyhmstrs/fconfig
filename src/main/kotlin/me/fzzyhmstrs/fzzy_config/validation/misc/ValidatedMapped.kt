@@ -142,6 +142,11 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
     }
 
     @Internal
+    override fun setFlag(flag: EntryFlag.Flag) {
+        setFlag(flag.flag)
+    }
+
+    @Internal
     override fun hasFlag(flag: EntryFlag.Flag): Boolean {
         return delegate.hasFlag(flag)
     }
