@@ -292,6 +292,7 @@ internal object SyncedConfigRegistry {
         return syncedConfigs[scope]?.config
     }
 
+    @Synchronized
     internal fun registerConfig(config: Config, registerType: RegisterType) {
         syncedConfigs[config.getId().toTranslationKey()] = SyncedConfigEntry(config, registerType == RegisterType.SERVER)
         EventApiImpl.fireOnRegisteredServer(config.getId(), config)

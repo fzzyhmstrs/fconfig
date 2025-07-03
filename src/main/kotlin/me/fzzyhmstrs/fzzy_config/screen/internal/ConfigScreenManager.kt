@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.internal
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.*
@@ -34,6 +35,7 @@ import me.fzzyhmstrs.fzzy_config.util.Ref
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -425,6 +427,12 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
             }
         }
 
+        fun setSeparate(config: Config, thing: Any?) {
+            if (config.saveType() == SaveType.SEPARATE && thing is EntryParent && thing is EntryFlag) {
+                thing.setFlag(EntryFlag.Flag.SEPARATE)
+            }
+        }
+
         anchorPredicate.test(AnchorResult(prefix, config, configTexts))
 
         val contentBuffer: Ref<Any> = Ref(config)
@@ -443,17 +451,20 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
         //walking the config, base scope passed to walk is ex: "my_mod.my_config"
         ConfigApiImpl.walk(config, prefix, 1) { _, old, new, thing, _, annotations, globalAnnotations, callback ->
             thing?.let { contentBuffer.set(it) }
-            val flags = if(thing is EntryFlag) {
+            val flags = (if(thing is EntryFlag) {
                 EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
             } else {
                 EntryFlag.Flag.NONE
-            }
+            }).toMutableList()
+
+
 
             val entryCreator: EntryCreator?
 
             val prepareResult = if (thing is EntryCreator) {
                 entryCreator = thing
                 thing.prepare(new, groups, annotations, globalAnnotations)
+                setSeparate(config, thing)
                 ConfigApiImplClient.prepare(thing, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
             } else if (thing != null) {
                 var basicValidation: ValidatedField<*>? = null
@@ -466,6 +477,7 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
                     basicValidation2.trySet(thing)
                     basicValidation2.setEntryKey(new)
                     entryCreator = basicValidation2
+                    setSeparate(config, basicValidation2)
                     basicValidation2.prepare(new, groups, annotations, globalAnnotations)
                     ConfigApiImplClient.prepare(basicValidation2, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
                 } else {
