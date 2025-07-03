@@ -112,6 +112,11 @@ class ConfigAction @JvmOverloads constructor(
     }
 
     @Internal
+    override fun setFlag(flag: EntryFlag.Flag) {
+        setFlag(flag.flag)
+    }
+
+    @Internal
     override fun hasFlag(flag: EntryFlag.Flag): Boolean {
         return this.hasFlag(flag.flag)
     }
