@@ -19,6 +19,7 @@ import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
+import net.neoforged.neoforge.client.network.ClientPacketDistributor
 import net.neoforged.neoforge.network.PacketDistributor
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
 import net.neoforged.neoforge.network.registration.NetworkRegistry
@@ -38,7 +39,7 @@ internal object NetworkApiImpl: NetworkApi {
         if (playerEntity is ServerPlayerEntity) {
             PacketDistributor.sendToPlayer(playerEntity, payload)
         } else {
-            PacketDistributor.sendToServer(payload)
+            ClientPacketDistributor.sendToServer(payload)
         }
     }
 
