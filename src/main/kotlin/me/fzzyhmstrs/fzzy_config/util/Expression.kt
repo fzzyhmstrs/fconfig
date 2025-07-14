@@ -19,6 +19,9 @@ import me.fzzyhmstrs.fzzy_config.util.Expression.Impl.validated
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedExpression
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.random.Random
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
+import java.util.*
 import kotlin.math.pow
 import kotlin.reflect.typeOf
 
@@ -436,6 +439,13 @@ fun interface Expression {
         private fun constant(constant: Double): Expression {
             return Constant(constant)
         }
+
+        private val CONST_FORMAT = run {
+            val f = DecimalFormat("0")
+            f.maximumFractionDigits = 340
+            f
+        }
+
         private class Constant(val c1: Double): Expression, Const {
             override fun eval(vars: Map<Char, Double>): Double {
                 return c1
@@ -444,7 +454,7 @@ fun interface Expression {
                 return c1
             }
             override fun toString(): String {
-                return c1.toString()
+                return CONST_FORMAT.format(c1)
             }
             override fun equals(other: Any?): Boolean {
                 if (this === other) return true
