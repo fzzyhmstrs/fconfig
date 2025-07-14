@@ -236,6 +236,10 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         this.flags = this.flags or other.flags()
     }
 
+    override fun setFlag(flag: EntryFlag.Flag) {
+        setFlag(flag.flag)
+    }
+
     override fun hasFlag(flag: EntryFlag.Flag): Boolean {
         return this.hasFlag(flag.flag)
     }

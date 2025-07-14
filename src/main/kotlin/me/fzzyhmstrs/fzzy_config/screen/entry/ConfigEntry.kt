@@ -165,7 +165,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         if (over) {
             tooltipList.addAll(tooltip)
         }
-        if (tooltipList.isNotEmpty()) {
+        if (parentElement.isMouseOver(mouseX.toDouble(), mouseY.toDouble()) && tooltipList.isNotEmpty()) {
             if (tooltipList.last() == OrderedText.EMPTY) {
                 tooltipList.removeLast()
             }

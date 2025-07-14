@@ -223,10 +223,14 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
 
         ConfigApiImpl.walk(newThing, prefix, 1) { _, _, new, thing, _, annotations, globalAnnotations, callback ->
 
-            val flags = if(thing is EntryFlag) {
+            val flags = (if(thing is EntryFlag) {
                 EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
             } else {
                 EntryFlag.Flag.NONE
+            }).toMutableList()
+
+            if (hasFlag(EntryFlag.Flag.SEPARATE)) {
+                flags += EntryFlag.Flag.SEPARATE
             }
 
             val entryCreator: EntryCreator?

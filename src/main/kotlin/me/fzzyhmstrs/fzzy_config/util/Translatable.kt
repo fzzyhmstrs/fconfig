@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
+import me.fzzyhmstrs.fzzy_config.annotations.IgnoreCommentsForDesc
 import me.fzzyhmstrs.fzzy_config.annotations.Translation
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.ConfigApiJava
@@ -20,7 +21,6 @@ import net.minecraft.client.resource.language.I18n
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
-import net.minecraft.util.Language
 import net.peanuuutz.tomlkt.TomlComment
 import java.lang.ref.SoftReference
 import java.util.concurrent.ConcurrentHashMap
@@ -161,40 +161,40 @@ interface Translatable {
                     for (ga in globalAnnotations) {
                         if (ga is Translation) {
                             return if (ga.negate) {
-                                createScopedResult(thing, annotations, fallback, scope)
+                                createScopedResult(thing, annotations, globalAnnotations, fallback, scope)
                             } else {
-                                createKeyedScopedResult(thing, scope, fieldName, ga, annotations, fallback)
+                                createKeyedScopedResult(thing, scope, fieldName, ga, annotations, globalAnnotations, fallback)
                             }
                         }
                     }
                     if (annotation.negate) {
-                        return createScopedResult(thing, annotations, fallback, scope)
+                        return createScopedResult(thing, annotations, globalAnnotations, fallback, scope)
                     }
-                    return createKeyedScopedResult(thing, scope, fieldName, annotation, annotations, fallback)
+                    return createKeyedScopedResult(thing, scope, fieldName, annotation, annotations, globalAnnotations, fallback)
                 }
             }
             for (annotation in globalAnnotations) {
                 if (annotation is Translation && !annotation.negate) {
-                    return createKeyedScopedResult(thing, scope, fieldName, annotation, annotations, fallback)
+                    return createKeyedScopedResult(thing, scope, fieldName, annotation, annotations, globalAnnotations, fallback)
                 }
             }
-            return createScopedResult(thing, annotations, fallback, scope)
+            return createScopedResult(thing, annotations, globalAnnotations, fallback, scope)
         }
 
-        private fun createScopedResult(thing: Any, annotations: List<Annotation>, fallback: String, scope: String): Result {
+        private fun createScopedResult(thing: Any, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String, scope: String): Result {
             val n = thing.transSupplied { getNameFallback(annotations, fallback) }
-            val d = thing.descGet { getDescFallback(annotations) }
+            val d = thing.descGet { getDescFallback(annotations, globalAnnotations) }
             val p = thing.prefixGet { getPrefixFallback(annotations) }
             return Utils.createScopedResult(scope, n, d, p)
         }
 
-        private fun createKeyedScopedResult(thing: Any, scope: String, fieldName: String, annotation: Translation, annotations: List<Annotation>, fallback: String): Result {
+        private fun createKeyedScopedResult(thing: Any, scope: String, fieldName: String, annotation: Translation, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String): Result {
             val bl = fieldName.isNotEmpty()
             val keyN = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName) else annotation.prefix
             val keyD = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName, DESC) else FcText.concat(annotation.prefix, DESC)
             val keyP = if(bl) FcText.concat(annotation.prefix, PERIOD, fieldName, PREFIX) else FcText.concat(annotation.prefix, PREFIX)
             val n = if (I18n.hasTranslation(keyN)) keyN.translate() else thing.transSupplied { getNameFallback(annotations, fallback) }
-            val d = if (I18n.hasTranslation(keyD)) keyD.translate() else thing.descGet { getDescFallback(annotations) }
+            val d = if (I18n.hasTranslation(keyD)) keyD.translate() else thing.descGet { getDescFallback(annotations, globalAnnotations) }
             val p = if (I18n.hasTranslation(keyP)) keyP.translate() else thing.prefixGet { getPrefixFallback(annotations) }
             return Utils.createScopedResult(scope, n, d, p)
         }
@@ -236,17 +236,18 @@ interface Translatable {
             } ?: fallback.replace('_', ' ').split(FcText.regex).joinToString(" ") { it.lowercase(); it.replaceFirstChar { c -> c.uppercase() } }
         }
 
-        private fun getDescFallback(annotations: List<Annotation>): String {
+        private fun getDescFallback(annotations: List<Annotation>, globalAnnotations: List<Annotation>): String {
             val comment = mutableListOf<String>()
-            for (annotation in annotations) {
-                if (annotation is TomlComment) {
-                    comment.add(annotation.text)
-                } else if(annotation is Comment) {
-                    comment.add(annotation.value)
-                } else if(annotation is Desc && annotation.lang == "en_us") {
-                    comment.add(annotation.value)
+            if (globalAnnotations.none { it is IgnoreCommentsForDesc }) {
+                for (annotation in annotations) {
+                    if (annotation is TomlComment) {
+                        comment.add(annotation.text)
+                    } else if (annotation is Comment) {
+                        comment.add(annotation.value)
+                    } else if (annotation is Desc && annotation.lang == "en_us") {
+                        comment.add(annotation.value)
+                    }
                 }
-                Language.getInstance()
             }
             return if (comment.isEmpty()) "" else comment.joinToString(separator = SPACER, postfix = PERIOD)
         }

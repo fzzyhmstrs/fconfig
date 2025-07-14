@@ -18,10 +18,14 @@
 -------------------------------------
 
 ### Additions
-* None
+* New `@IgnoreCommentsForDesc` annotation. Use on your config class to have the translation parser ignore `@Comment` and `@TomlComment` for in-game descriptions.
 
 ### Changes
-* None
+* Configs marked with `SaveType.SEPARATE` can now be opened out of the world (if it's entries can be) without caring about permissions checking, because the clients version will be considered separately anyway
 
 ### Fixes
-* Updated fabric-permissions-api to the correct version for 1.21.6
+* Fixed issue with config parser incorrectly ignoring transients in certain cases
+* Config GUI entries no longer show their tooltips from behind the header/footer
+* Config groups now scroll correctly when collapsed/opened
+* Fixed potential concurrency issue with config registration on Neoforge. All versions have the fix just in case.
+* Expressions now print their constants properly in "plain" format (0.0000003) vs (3E-7) so they properly back-parse their printed version.
