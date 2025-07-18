@@ -346,11 +346,12 @@ class PopupWidget
     //client
     class Builder @JvmOverloads constructor(private val title: Text, spacingW: Int = 4, spacingH: Int = spacingW) {
 
-        private val layoutWidget = LayoutWidget(spacingW = spacingW, spacingH = spacingH)
+        private val baseLayoutWidget = LayoutWidget(spacingW = spacingW, spacingH = spacingH)
         private var positionX: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var positionY: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var widthFunction: BiFunction<Int, Int, Int> = BiFunction { _, w -> w }
         private var heightFunction: BiFunction<Int, Int, Int> = BiFunction { _, h -> h }
+        private val layouts: Deque<LayoutWidget> = ArrayDeque<LayoutWidget>(1).also { it.add(baseLayoutWidget) }
 
         private var onClose = Runnable { }
         private var afterClose = Runnable { }
@@ -361,7 +362,7 @@ class PopupWidget
         private var background = "widget/popup/background".fcId()
         private var additionalTitleNarration: MutableList<Text> = mutableListOf()
 
-        private val titleElement: TextWidget
+        private val titleElement: TextWidget        
 
         init {
             val hh = if(spacingH < 4)
@@ -373,6 +374,11 @@ class PopupWidget
 
             layoutWidget.add("title", tw, LayoutWidget.Position.ALIGN_CENTER)
         }
+
+        private val layoutWidget
+            get() {
+                layouts.peek()
+            }
 
         /**
          * Adds an element with custom vertical and horizontal padding, keyed off a manually defined parent element.
@@ -387,7 +393,7 @@ class PopupWidget
          * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedBoth(id: String, element: E, parent: String, spacingW: Int, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
@@ -408,7 +414,7 @@ class PopupWidget
          * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedW(id: String, element: E, parent: String, spacingW: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
@@ -429,7 +435,7 @@ class PopupWidget
          * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedH(id: String, element: E, parent: String, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
@@ -450,7 +456,7 @@ class PopupWidget
          * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedBoth(id: String, element: E, spacingW: Int, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
@@ -470,7 +476,7 @@ class PopupWidget
          * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedW(id: String, element: E, spacingW: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
@@ -490,7 +496,7 @@ class PopupWidget
          * @param positions vararg [LayoutWidget.Position] - defines the layout arrangement of this element compared to its parent. See the doc for Position for details.
          * @return Builder - this builder for further use
          * @author fzzyhmstrs
-         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.7.0
+         * @since 0.2.0, deprecated 0.6.0 & scheduled for removal 0.8.0 (missed removal 0.7.0)
          */
         @Deprecated("Use 'add' and 'push/popSpacing' instead")
         fun <E> addElementSpacedH(id: String, element: E, spacingH: Int, vararg positions: LayoutWidget.Position): Builder where E: Widget {
@@ -590,6 +596,10 @@ class PopupWidget
         fun popSpacing(): Builder {
             layoutWidget.popSpacing()
             return this
+        }
+
+        fun pushChildLayout(positioned: LayoutWidget.Position, vararg otherPositions: LayoutWidget.Position) {
+            
         }
 
         /**
@@ -882,25 +892,50 @@ class PopupWidget
                 narratedTitle.append(", ".lit()).append(additional)
             }
 
-            val positioner: Positioner = Positioner { x, y, w, h ->
-                layoutWidget.setPosition(x, y)
-                layoutWidget.setDimensions(w, h)
-            }
-
-            layoutWidget.compute(true)
+            layouts.forEach{ it.compute(true) }
             val children: MutableList<Element> = mutableListOf()
             val selectables: MutableList<Selectable> = mutableListOf()
             val drawables: MutableList<Drawable> = mutableListOf()
-            layoutWidget.categorize(children, drawables, selectables) { el ->
-                if (el is AbstractTextWidget) {
-                    val msg = el.message
-                    if (msg != title) {
-                        narratedTitle.append(", ".lit()).append(msg)
+            layouts.forEach{ it.categorize(children, drawables, selectables) { el ->
+                    if (el is AbstractTextWidget) {
+                        val msg = el.message
+                        if (msg != title) {
+                            narratedTitle.append(", ".lit()).append(msg)
+                        }
                     }
                 }
             }
 
-            return PopupWidget(narratedTitle, layoutWidget.width, layoutWidget.height, Context(blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, afterClose, onClick, onSwitchFocus, children, selectables, drawables))
+            val baseX = baseLayoutWidget.getX()
+            val baseY = baseLayoutWidget.getY()
+
+            var minX = baseX
+            var minY = baseY
+            var maxX = baseX + baseLayoutWidget.getWidth()
+            var maxY = baseY + baseLayoutWidget.getHeight()
+
+            for (layout in layouts) {
+                val testX = layout.getX()
+                if (testX < minX) minX = testX
+                val testMaxX = testX + layout.getWidth()
+                if (testMaxX > maxX) maxX = testMaxX
+                val testY = layout.getY()
+                if (testY < minY) minY = testY
+                val testMaxY = testY + layout.getHeight()
+                if (testMaxY > maxY) maxY = testMaxY
+            }
+
+            val xOffset = baseX - minX
+            val xOffset = baseY - minY
+            val wOffset = baseLayoutWidget.getWidth() - (maxX - minX)
+            val hOffset = baseLayoutWidget.getHeight() - (maxY - minY)
+            
+            val positioner: Positioner = Positioner { x, y, w, h ->
+                baseLayoutWidget.setPosition(x + xOffset, y + yOffset)
+                baseLayoutWidget.setDimensions(w + wOffset, h + hOffset)
+            }
+            
+            return PopupWidget(narratedTitle, max(layoutWidget.width, maxX - minX), max(layoutWidget.height, maxY - minY), Context(blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, afterClose, onClick, onSwitchFocus, children, selectables, drawables))
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
