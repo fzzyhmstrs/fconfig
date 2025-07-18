@@ -26,6 +26,8 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import org.lwjgl.glfw.GLFW
+import java.text.DecimalFormat
+import java.text.DecimalFormatSymbols
 import java.util.Locale
 import java.util.function.Consumer
 import java.util.function.Function
@@ -64,6 +66,16 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
     private var confirmActive = false
     private var error: List<Text> = emptyList()
 
+    private var format = run {
+        val f = DecimalFormat("0")
+        f.maximumFractionDigits = 340
+        f
+    }
+
+    fun setFormat(format: DecimalFormat) {
+        this.format = format
+    }
+
     fun isIntType(): Boolean {
         return storedValue is Int || storedValue is Long || storedValue is Short || storedValue is Byte
     }
@@ -90,7 +102,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
         if (cachedWrappedValue != testValue) {
             this.storedValue = testValue
             this.cachedWrappedValue = testValue
-            this.text = this.storedValue.toString()
+            this.text = if (isIntType()) format.format(this.storedValue.toLong()) else format.format(this.storedValue.toDouble())
         }
         if(isChanged()) {
             if (lastChangedTime != 0L && !ongoingChanges()) {
