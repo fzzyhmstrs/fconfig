@@ -37,8 +37,10 @@ import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import org.lwjgl.glfw.GLFW
+import java.util.*
 import java.util.function.*
 import java.util.function.Function
+import kotlin.collections.ArrayDeque
 import kotlin.math.max
 import kotlin.math.min
 
@@ -346,12 +348,13 @@ class PopupWidget
     //client
     class Builder @JvmOverloads constructor(private val title: Text, spacingW: Int = 4, spacingH: Int = spacingW) {
 
-        private val baseLayoutWidget = LayoutWidget(spacingW = spacingW, spacingH = spacingH)
+        private val baseLayoutWidget = LayoutWidget.builder().spacingW(spacingW).paddingH(spacingH).build()
         private var positionX: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var positionY: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var widthFunction: BiFunction<Int, Int, Int> = BiFunction { _, w -> w }
         private var heightFunction: BiFunction<Int, Int, Int> = BiFunction { _, h -> h }
-        private val layouts: Deque<LayoutWidget> = ArrayDeque<LayoutWidget>(1).also { it.add(baseLayoutWidget) }
+        private val layouts: Deque<LayoutWidget> = java.util.ArrayDeque<LayoutWidget>(1).also { it.add(baseLayoutWidget) }
+        private val poppedLayouts: MutableList<LayoutWidget> = mutableListOf()
 
         private var onClose = Runnable { }
         private var afterClose = Runnable { }
@@ -362,7 +365,7 @@ class PopupWidget
         private var background = "widget/popup/background".fcId()
         private var additionalTitleNarration: MutableList<Text> = mutableListOf()
 
-        private val titleElement: TextWidget        
+        private val titleElement: TextWidget
 
         init {
             val hh = if(spacingH < 4)
@@ -375,9 +378,9 @@ class PopupWidget
             layoutWidget.add("title", tw, LayoutWidget.Position.ALIGN_CENTER)
         }
 
-        private val layoutWidget
+        private val layoutWidget: LayoutWidget
             get() {
-                layouts.peek()
+                return layouts.peek()
             }
 
         /**
@@ -598,8 +601,26 @@ class PopupWidget
             return this
         }
 
-        fun pushChildLayout(positioned: LayoutWidget.Position, vararg otherPositions: LayoutWidget.Position) {
-            
+        /**
+         *
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
+        fun pushChildLayout(position: ChildPosition) {
+            val newX = position.position.getChildXPos(baseLayoutWidget)
+            val newY = position.position.getChildYPos(baseLayoutWidget)
+            layouts.push(LayoutWidget.builder().copyMarginsFrom(baseLayoutWidget).x(newX).y(newY).build())
+        }
+
+        /**
+         *
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
+        fun popChildLayout() {
+            if (layouts.size > 1) {
+                poppedLayouts.add(layouts.pop())
+            }
         }
 
         /**
@@ -892,6 +913,8 @@ class PopupWidget
                 narratedTitle.append(", ".lit()).append(additional)
             }
 
+            layouts.addAll(poppedLayouts)
+
             layouts.forEach{ it.compute(true) }
             val children: MutableList<Element> = mutableListOf()
             val selectables: MutableList<Selectable> = mutableListOf()
@@ -906,35 +929,35 @@ class PopupWidget
                 }
             }
 
-            val baseX = baseLayoutWidget.getX()
-            val baseY = baseLayoutWidget.getY()
+            val baseX = baseLayoutWidget.x
+            val baseY = baseLayoutWidget.y
 
             var minX = baseX
             var minY = baseY
-            var maxX = baseX + baseLayoutWidget.getWidth()
-            var maxY = baseY + baseLayoutWidget.getHeight()
+            var maxX = baseX + baseLayoutWidget.width
+            var maxY = baseY + baseLayoutWidget.height
 
             for (layout in layouts) {
-                val testX = layout.getX()
+                val testX = layout.x
                 if (testX < minX) minX = testX
-                val testMaxX = testX + layout.getWidth()
+                val testMaxX = testX + layout.width
                 if (testMaxX > maxX) maxX = testMaxX
-                val testY = layout.getY()
+                val testY = layout.y
                 if (testY < minY) minY = testY
-                val testMaxY = testY + layout.getHeight()
+                val testMaxY = testY + layout.height
                 if (testMaxY > maxY) maxY = testMaxY
             }
 
             val xOffset = baseX - minX
-            val xOffset = baseY - minY
-            val wOffset = baseLayoutWidget.getWidth() - (maxX - minX)
-            val hOffset = baseLayoutWidget.getHeight() - (maxY - minY)
-            
-            val positioner: Positioner = Positioner { x, y, w, h ->
+            val yOffset = baseY - minY
+            val wOffset = baseLayoutWidget.width - (maxX - minX)
+            val hOffset = baseLayoutWidget.height - (maxY - minY)
+
+            val positioner = Positioner { x, y, w, h ->
                 baseLayoutWidget.setPosition(x + xOffset, y + yOffset)
                 baseLayoutWidget.setDimensions(w + wOffset, h + hOffset)
             }
-            
+
             return PopupWidget(narratedTitle, max(layoutWidget.width, maxX - minX), max(layoutWidget.height, maxY - minY), Context(blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, afterClose, onClick, onSwitchFocus, children, selectables, drawables))
         }
 
@@ -1099,4 +1122,15 @@ class PopupWidget
         val selectables: List<Selectable>,
         val drawables: List<Drawable>
     )
+
+    /**
+     * Defines what side of the parent popup the child will appear from
+     * @author fzzyhmstrs
+     * @since 0.7.2
+     */
+    @Suppress("DEPRECATION")
+    enum class ChildPosition(internal val position: LayoutWidget.PositionRelativePos) {
+        BELOW(LayoutWidget.PositionRelativePos.BELOW),
+        RIGHT(LayoutWidget.PositionRelativePos.RIGHT)
+    }
 }
