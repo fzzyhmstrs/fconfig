@@ -152,6 +152,14 @@ class LayoutWidget @JvmOverloads constructor(
         return this
     }
 
+    fun buildRelativeXPos(xOffsetFunction: Function<LayoutWidget, Int>): Pos {
+        return ImmutableSuppliedPos(xPos, SuppliedFunctionSupplier(ConstSupplier(this), xOffsetFunction)
+    }
+
+    fun buildRelativeYPos(yOffsetFunction: Function<LayoutWidget, Int>): Pos {
+        return ImmutableSuppliedPos(yPos, SuppliedFunctionSupplier(ConstSupplier(this), yOffsetFunction)
+    }
+
     /**
      * Sets the X coordinate of this layout. This updates the [x] [Pos], so will overwrite and reference made with [setPos] in the X dimension.
      *
