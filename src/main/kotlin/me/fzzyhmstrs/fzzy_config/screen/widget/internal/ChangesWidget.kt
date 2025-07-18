@@ -52,7 +52,7 @@ internal class ChangesWidget(private val scope: String, private val widthSupplie
                 context.drawTex(changesHighlightedTex, x + 68, y - 4, 16, 16)
             else
                 context.drawTex(changesTex, x + 67, y - 4, 16, 16)
-            context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, manager.changeCount().toString(), x + 76, y, 0xFFFFFF)
+            context.drawCenteredTextWithShadow(MinecraftClient.getInstance().textRenderer, manager.changeCount().toString(), x + 76, y, -1)
         }
     }
 
