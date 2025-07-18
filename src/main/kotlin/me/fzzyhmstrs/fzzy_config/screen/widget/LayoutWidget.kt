@@ -11,6 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.nullCast
+import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
+import me.fzzyhmstrs.fzzy_config.util.function.SuppliedFunctionSupplier
 import me.fzzyhmstrs.fzzy_config.util.pos.*
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.Element
@@ -20,6 +22,7 @@ import net.minecraft.client.gui.widget.Widget
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
 import java.util.function.Consumer
+import java.util.function.Function
 import java.util.function.UnaryOperator
 import kotlin.math.max
 import kotlin.math.min
@@ -33,9 +36,9 @@ import kotlin.math.min
  * @param spacingW Int, optional. Default 4. The horizontal space between elements. This can be modified per element as needed with [pushSpacing] and [popSpacing]
  * @param spacingH Int, optional. Default whatever `spacingW` is. The vertical space between elements. This can be modified per element as needed with [pushSpacing] and [popSpacing]
  * @author fzzyhmstrs
- * @since 0.6.0
+ * @since 0.6.0, constructor deprecated 0.7.2, for removal 0.8.0
  */
-class LayoutWidget @JvmOverloads constructor(
+class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Constructor removed by 0.8.0") constructor(
     private var x: Pos = AbsPos(0), private var y: Pos = AbsPos(0),
     private val paddingW: Int = 8, private val paddingH: Int = paddingW,
     spacingW: Int = 4, spacingH: Int = spacingW): Widget, Scalable {
@@ -52,6 +55,85 @@ class LayoutWidget @JvmOverloads constructor(
     private val sets: Deque<PosSet> = ArrayDeque<PosSet>(1).also { it.add(PosSet(xPos, yPos, wPos, hPos, spacingW, spacingH)) }
 
     private val elements: MutableMap<String, PositionedElement<*>> = mutableMapOf()
+
+    companion object {
+
+        @JvmStatic
+        fun builder(): Builder {
+            return Builder()
+        }
+    }
+
+    class Builder internal constructor() {
+        private var x: Pos = AbsPos(0)
+        private var y: Pos = AbsPos(0)
+        private var paddingW: Int = 8
+        private var paddingH: Int = 8
+        private var spacingW: Int = 4
+        private var spacingH: Int = 4
+        private var maxWidth: Int = -1
+        private var maxHeight: Int = -1
+
+        fun x(x: Pos): Builder {
+            this.x = x
+            return this
+        }
+
+        fun y(y: Pos): Builder {
+            this.y = y
+            return this
+        }
+
+        fun copyMarginsFrom(other: LayoutWidget): Builder {
+            this.paddingW = other.paddingW
+            this.paddingH = other.paddingH
+            this.spacingW = other.getGeneralHorizontalSpacing()
+            this.spacingH = other.getGeneralVerticalSpacing()
+            return this
+        }
+
+        fun paddingW(paddingW: Int): Builder {
+            this.paddingW = paddingW
+            return this
+        }
+
+        fun paddingH(paddingH: Int): Builder {
+            this.paddingH = paddingH
+            return this
+        }
+
+        fun spacingW(spacingW: Int): Builder {
+            this.spacingW = spacingW
+            return this
+        }
+
+        fun spacingH(spacingH: Int): Builder {
+            this.spacingH = spacingH
+            return this
+        }
+
+        fun clampWidth(maxWidth: Int): Builder {
+            this.maxWidth = maxWidth
+            return this
+        }
+
+        fun clampHeight(maxHeight: Int): Builder {
+            this.maxHeight = maxHeight
+            return this
+        }
+
+        @Suppress("DEPRECATION")
+        fun build(): LayoutWidget {
+            return LayoutWidget(x, y, paddingW, paddingH, spacingW, spacingH).apply {
+                if (maxWidth != -1) {
+                    clampWidth(maxWidth)
+                }
+                if (maxHeight != -1) {
+                    clampHeight(maxHeight)
+                }
+            }
+        }
+    }
 
     /**
      * Recursively retrieves the named element. Starts with this layout's elements, then burrows into nested layouts' elements as applicable.
@@ -153,11 +235,11 @@ class LayoutWidget @JvmOverloads constructor(
     }
 
     fun buildRelativeXPos(xOffsetFunction: Function<LayoutWidget, Int>): Pos {
-        return ImmutableSuppliedPos(xPos, SuppliedFunctionSupplier(ConstSupplier(this), xOffsetFunction)
+        return ImmutableSuppliedPos(xPos, SuppliedFunctionSupplier(ConstSupplier(this), xOffsetFunction))
     }
 
     fun buildRelativeYPos(yOffsetFunction: Function<LayoutWidget, Int>): Pos {
-        return ImmutableSuppliedPos(yPos, SuppliedFunctionSupplier(ConstSupplier(this), yOffsetFunction)
+        return ImmutableSuppliedPos(yPos, SuppliedFunctionSupplier(ConstSupplier(this), yOffsetFunction))
     }
 
     /**
@@ -317,8 +399,9 @@ class LayoutWidget @JvmOverloads constructor(
      * @param width Int width in pixels
      * @return this layout
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.6.0, deprecated 0.7.2 for removal 0.8.0
      */
+    @Deprecated("Use the builder pattern. Scheduled for removal 0.8.0")
     fun clampWidth(width: Int): LayoutWidget {
         val bl = manualWidth != width
         val oldWidth = if (bl && this.width != 0) getWidth() else width
@@ -336,8 +419,9 @@ class LayoutWidget @JvmOverloads constructor(
      * @param height Int height in pixels
      * @return this layout
      * @author fzzyhmstrs
-     * @since 0.6.0
+     * @since 0.6.0, deprecated 0.7.2 for removal 0.8.0
      */
+    @Deprecated("Use the builder pattern. Scheduled for removal 0.8.0")
     @Suppress("unused")
     fun clampHeight(height: Int): LayoutWidget {
         val bl = manualHeight != height
@@ -545,7 +629,6 @@ class LayoutWidget @JvmOverloads constructor(
 
     fun compute(debug: Boolean = false): LayoutWidget {
         for (posEl in elements.values) {
-            //if (debug) FC.DEVLOG.info("E $posEl")
             if (posEl.element is LayoutWidget) {
                 posEl.element.compute(debug)
             }
@@ -865,11 +948,35 @@ class LayoutWidget @JvmOverloads constructor(
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(prevX, ImmutableSuppliedPos(parent.getY()) { globalSet.spacingH + parent.elHeight() })
             }
+
+            override fun getChildXPos(parent: LayoutWidget): Pos {
+                return parent.buildRelativeXPos { 0 }
+            }
+
+            override fun getChildYPos(parent: LayoutWidget): Pos {
+                return parent.buildRelativeYPos { p -> p.height + p.getGeneralVerticalSpacing() }
+            }
+
+            override fun invert(): Boolean {
+                return false
+            }
         },
         @Deprecated("Use Positions Impl values")
         LEFT {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(ImmutableSuppliedPos(parent.getX()) { -el.width - globalSet.spacingW }, prevY)
+            }
+
+            override fun getChildXPos(parent: LayoutWidget): Pos {
+                throw UnsupportedOperationException("Left-side child layouts not supported yet")
+            }
+
+            override fun getChildYPos(parent: LayoutWidget): Pos {
+                throw UnsupportedOperationException("Left-side child layouts not supported yet")
+            }
+
+            override fun invert(): Boolean {
+                throw UnsupportedOperationException("Left-side child layouts not supported yet")
             }
         },
         @Deprecated("Use Positions Impl values")
@@ -877,7 +984,23 @@ class LayoutWidget @JvmOverloads constructor(
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
                 return Pair(ImmutableSuppliedPos(parent.getX()) { parent.elWidth() + globalSet.spacingW }, prevY)
             }
-        }
+
+            override fun getChildXPos(parent: LayoutWidget): Pos {
+                return parent.buildRelativeXPos { p -> p.width + p.getGeneralHorizontalSpacing() }
+            }
+
+            override fun getChildYPos(parent: LayoutWidget): Pos {
+                return parent.buildRelativeYPos { 0 }
+            }
+
+            override fun invert(): Boolean {
+                return false
+            }
+        };
+
+        abstract fun getChildXPos(parent: LayoutWidget): Pos
+        abstract fun getChildYPos(parent: LayoutWidget): Pos
+        abstract fun invert(): Boolean
     }
 
     //client
