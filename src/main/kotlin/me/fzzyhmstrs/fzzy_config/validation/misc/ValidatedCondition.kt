@@ -469,6 +469,22 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             delegateWidget.y = y
         }
 
+        override fun getWidth(): Int {
+            return delegateWidget.width
+        }
+
+        override fun getHeight(): Int {
+            return delegateWidget.height
+        }
+    
+        override fun setWidth(width: Int) {
+            delegateWidget.width = width
+        }
+    
+        override fun setHeight(height: Int) {
+            delegateWidget.height = height
+        }
+
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
             if (active) {
                 delegateWidget.appendNarrations(builder)
