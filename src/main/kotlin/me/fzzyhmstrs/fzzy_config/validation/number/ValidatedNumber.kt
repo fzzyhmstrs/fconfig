@@ -138,7 +138,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     companion object {
         /**
-         * Defines a custom increment amount for this validations widget. This will change how a SLIDER increments with keyboard input, and will change the increment applied with the up and down buttons of TEXTBOX_WITH_BUTTONS
+         * Defines a custom increment amount for this validation's widget. This will change how a SLIDER increments with keyboard input, and will change the increment applied with the up and down buttons of TEXTBOX_WITH_BUTTONS
          * @return this validation, passed through
          * @author fzzyhmstrs
          * @since 0.7.2
@@ -157,7 +157,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
          * @author fzzyhmstrs
          * @since 0.7.2
          */
-        fun <T, F: ValidatedNumber<T>>F.setFormat(formmat: DecimalFormat): f {
+        fun <T, F: ValidatedNumber<T>>F.setFormat(format: DecimalFormat): F {
             this.format = format
             return this
         }
@@ -280,18 +280,24 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     //client
     protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, incr: T?, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
-        ClickableWidget(0, 0, 110, 20, DECIMAL_FORMAT.format(wrappedValue.get()).lit()) {
+        ClickableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
+
         companion object {
-            private val TEXTURE = "textures/gui/slider.png".simpleId()
-            private var DECIMAL_FORMAT: DecimalFormat = Util.make(
-                DecimalFormat("#.##")
-            ) { format: DecimalFormat ->
-                format.decimalFormatSymbols = DecimalFormatSymbols.getInstance(Locale.ROOT)
-            }
+            private val TEXTURE = "widget/slider".simpleId()
+        }
+
+        private var DECIMAL_FORMAT: DecimalFormat = Util.make(
+            DecimalFormat("#.##")
+        ) { format: DecimalFormat ->
+            format.decimalFormatSymbols = DecimalFormatSymbols.getInstance(Locale.ROOT)
         }
 
         fun setFormat(format: DecimalFormat) {
             this.DECIMAL_FORMAT = format
+        }
+
+        init {
+            this.message = DECIMAL_FORMAT.format(wrappedValue.get()).lit()
         }
 
         private fun split(range: Double): Double {
