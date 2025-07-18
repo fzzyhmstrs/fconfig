@@ -14,7 +14,7 @@ Number validation is defined using one of the six subclasses of `ValidatedNumber
 
 ```java !!tabs Java
 public float myValidatedFloat = 0.5f; // this value is backed by automatic validation, with no max or min bound
-public ValidatedFloat myValidatedFloat = new ValidatedFloat(0.5f,1f,0f); // default value, max value, min value
+public ValidatedFloat myValidatedFloat = new ValidatedFloat(0.5f, 1f, 0f); // default value, max value, min value
 ```
 
 ```kotlin !!tabs Kotlin
@@ -43,6 +43,34 @@ var myValidatedFloat = 0.5f
 
 @ValidatedInt.Restrict(min = 0, type = ValidatedNumber.WidgetType.TEXTBOX_WITH_BUTTONS) //Restrict can also set the widget type used in the config GUI
 var myWidgetTypeInt: Int = 1
+```
+
+</CodeTabs>
+
+### Format Features
+
+<Callout>
+Added in Fzzy Config 0.7.2
+</Callout>
+
+There are pass through static extension functions you can use to customize how your number's widget is visually formatted.
+
+<CodeTabs>
+
+```java !!tabs Java
+//Provide a custom number text formatter to suit your needs
+public ValidatedFloat myValidatedFloat = ValidatedNumber.setFormat(new ValidatedFloat(0.5f, 1f, 0f), new DecimalFormat("#.###"));
+
+//Customize the increment your validation's sliders or increment/decrement buttons use
+public ValidatedFloat myValidatedFloat = ValidatedNumber.withIncrement(new ValidatedFloat(0.5f, 1f, 0f), 0.05f);
+```
+
+```kotlin !!tabs Kotlin
+//Provide a custom number text formatter to suit your needs
+var myValidatedFloat = ValidatedFloat(0.5f, 1f, 0f).setFormat(DecimalFormat("#.###"))
+
+//Customize the increment your validation's sliders or increment/decrement buttons use
+var myValidatedFloat = ValidatedFloat(0.5f, 1f, 0f).withIncrement(0.05f)
 ```
 
 </CodeTabs>
