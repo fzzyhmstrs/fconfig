@@ -59,6 +59,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     }
 
     protected abstract var increment: T?
+    protected var format: DecimalFormat? = null
 
     @Internal
     override fun correctEntry(input: T, type: EntryValidator.ValidationType): ValidationResult<T> {
@@ -85,10 +86,20 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
         return when(widgetType) {
             SLIDER -> {
-                ConfirmButtonSliderWidget(this, this.increment, this.minValue, this.maxValue, choicePredicate, {d -> convert(d).get() }, { setAndUpdate(it) })
+                ConfirmButtonSliderWidget(this, this.increment, this.minValue, this.maxValue, choicePredicate, {d -> convert(d).get() }, { setAndUpdate(it) }).also {
+                    val f = format
+                    if (f != null) {
+                        it.setFormat(f)
+                    }
+                }
             }
             TEXTBOX -> {
-                ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) })
+                ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) }).also {
+                    val f = format
+                    if (f != null) {
+                        it.setFormat(f)
+                    }
+                }
             }
             TEXTBOX_WITH_BUTTONS -> {
                 prepareTextboxWithButtons(choicePredicate, this.increment)
@@ -126,8 +137,28 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
     protected abstract fun maxBound(): T
 
     companion object {
+        /**
+         * Defines a custom increment amount for this validations widget. This will change how a SLIDER increments with keyboard input, and will change the increment applied with the up and down buttons of TEXTBOX_WITH_BUTTONS
+         * @return this validation, passed through
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
+        @JvmStatic
         fun <T, F: ValidatedNumber<T>>F.withIncrement(increment: T): F {
             this.increment = increment
+            return this
+        }
+
+        /**
+         * Sets a custom [DecimalFormat] for the numbers displayed on the selected widget. 
+         * - The default for sliders is "#.##" (decimal number with two decimal places)
+         * - The default for textboxes is "0" + up to 340 decimal places (a decimal number with a sliding scale of shown decimal places, up to 340. This prevents Scientific notation from appearing)
+         * @return this validation, passed through
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
+        fun <T, F: ValidatedNumber<T>>F.setFormat(formmat: DecimalFormat): f {
+            this.format = format
             return this
         }
     }
@@ -203,7 +234,12 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         )
 
         val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
-        val numberWidget = ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) }, 99, false, increment)
+        val numberWidget = ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) }, 99, false, increment).also {
+            val f = format
+            if (f != null) {
+                it.setFormat(f)
+            }
+        }
 
         layout.add(
             "textbox",
@@ -248,13 +284,17 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             private val HIGHLIGHTED_TEXTURE = "widget/slider_highlighted".simpleId()
             private val HANDLE_TEXTURE = "widget/slider_handle".simpleId()
             private val HANDLE_HIGHLIGHTED_TEXTURE = "widget/slider_handle_highlighted".simpleId()
-            private val DECIMAL_FORMAT: DecimalFormat = Util.make(
+            private var DECIMAL_FORMAT: DecimalFormat = Util.make(
                 DecimalFormat("#.##")
             ) { format: DecimalFormat ->
                 format.decimalFormatSymbols = DecimalFormatSymbols.getInstance(Locale.ROOT)
             }
         }
 
+        fun setFormat(format: DecimalFormat) {
+            this.DECIMAL_FORMAT = format
+        }
+        
         private fun split(range: Double): Double {
             var d = range
             while (d < 16.0) {
