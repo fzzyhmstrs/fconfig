@@ -38,6 +38,10 @@ object PortingUtils {
         return ColorHelper.Argb.fromFloats(alpha, 1f, 1f, 1f)
     }
 
+    fun fullAlpha(color: Int): Int {
+        return ColorHelper.fullAlpha(color)
+    }
+
     fun PlayerEntity.sendChat(message: Text) {
         this.sendMessage(message, false)
     }
