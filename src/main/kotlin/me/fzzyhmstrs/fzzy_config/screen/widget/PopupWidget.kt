@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.*
@@ -119,11 +120,16 @@ class PopupWidget
         if (this.context.blurBackground) {
             renderBlur(context, x.toFloat(), y.toFloat(), delta)
         }
-        context.drawNineSlice(this.context.background, x, y, width, height)
+        if (this.context.drawAreas.isEmpty()) {
+            context.drawNineSlice(this.context.background, x, y, width, height)
+        } else {
+            for (area in this.context.drawAreas) {
+                context.drawNineSlice(this.context.background, area.x, area.y, area.width, area.height)
+            }
+        }
         for (drawable in this.context.drawables) {
             drawable.render(context, mouseX, mouseY, delta)
         }
-
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
@@ -595,10 +601,11 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.7.2
          */
-        fun pushChildLayout(position: ChildPosition) {
+        fun pushChildLayout(position: ChildPosition): Builder {
             val newX = position.position.getChildXPos(baseLayoutWidget)
             val newY = position.position.getChildYPos(baseLayoutWidget)
             layouts.push(LayoutWidget.builder().copyMarginsFrom(baseLayoutWidget).x(newX).y(newY).build())
+            return this
         }
 
         /**
@@ -606,10 +613,11 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.7.2
          */
-        fun popChildLayout() {
+        fun popChildLayout(): Builder {
             if (layouts.size > 1) {
                 poppedLayouts.add(layouts.pop())
             }
+            return this
         }
 
         /**
@@ -902,13 +910,17 @@ class PopupWidget
                 narratedTitle.append(", ".lit()).append(additional)
             }
 
-            layouts.addAll(poppedLayouts)
+            if (layouts.size != 1) {
+                FC.DEVLOG.warn("Un-popped child layouts detected in PopupWidget builder")
+            }
 
-            layouts.forEach{ it.compute(true) }
+            val totalLayouts = layouts + poppedLayouts
+
+            totalLayouts.forEach{ it.compute(true) }
             val children: MutableList<Element> = mutableListOf()
             val selectables: MutableList<Selectable> = mutableListOf()
             val drawables: MutableList<Drawable> = mutableListOf()
-            layouts.forEach{ it.categorize(children, drawables, selectables) { el ->
+            totalLayouts.forEach{ it.categorize(children, drawables, selectables) { el ->
                     if (el is AbstractTextWidget) {
                         val msg = el.message
                         if (msg != title) {
@@ -926,7 +938,7 @@ class PopupWidget
             var maxX = baseX + baseLayoutWidget.width
             var maxY = baseY + baseLayoutWidget.height
 
-            for (layout in layouts) {
+            for (layout in totalLayouts) {
                 val testX = layout.x
                 if (testX < minX) minX = testX
                 val testMaxX = testX + layout.width
@@ -947,7 +959,9 @@ class PopupWidget
                 baseLayoutWidget.setDimensions(w + wOffset, h + hOffset)
             }
 
-            return PopupWidget(narratedTitle, max(layoutWidget.width, maxX - minX), max(layoutWidget.height, maxY - minY), Context(blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, afterClose, onClick, onSwitchFocus, children, selectables, drawables))
+            val drawAreas = if (totalLayouts.size == 1) listOf() else totalLayouts
+
+            return PopupWidget(narratedTitle, max(layoutWidget.width, maxX - minX), max(layoutWidget.height, maxY - minY), Context(blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, afterClose, onClick, onSwitchFocus, children, selectables, drawables, drawAreas))
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1109,7 +1123,8 @@ class PopupWidget
         val onSwitchFocus: Consumer<Element?>,
         val children: List<Element>,
         val selectables: List<Selectable>,
-        val drawables: List<Drawable>
+        val drawables: List<Drawable>,
+        val drawAreas: List<Widget>
     )
 
     /**
