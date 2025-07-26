@@ -23,6 +23,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.bimap
@@ -32,6 +33,7 @@ import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.ColorHolder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
+import net.minecraft.block.MapColor
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
@@ -45,6 +47,9 @@ import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.MutableText
+import net.minecraft.util.DyeColor
+import net.minecraft.util.Formatting
+import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -111,6 +116,34 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
     constructor(color: Color, transparent: Boolean = true): this(color.red, color.green, color.blue, color.alpha, transparent)
 
     private constructor(r: Int, g: Int, b: Int, a: Int, alphaMode: Boolean): super(ColorHolder(r, g, b, a, alphaMode))
+
+    private var presets: List<Int> = emptyList()
+
+    fun withColorPresets(presets: List<Int>): ValidatedColor {
+        this.presets = presets
+        return this
+    }
+
+    fun withDyeColorPresets(): ValidatedColor {
+        return withColorPresets(if (get().opaque()) DyeColor.entries.map { it.entityColor } else DyeColor.entries.map { PortingUtils.fullAlpha(it.entityColor) })
+    }
+
+    fun withSignColorPresets(): ValidatedColor {
+        return withColorPresets(if (get().opaque()) DyeColor.entries.map { it.signColor } else DyeColor.entries.map { PortingUtils.fullAlpha(it.entityColor) })
+    }
+
+    fun withFireworkColorPresets(): ValidatedColor {
+        return withColorPresets(if (get().opaque()) DyeColor.entries.map { it.fireworkColor } else DyeColor.entries.map { PortingUtils.fullAlpha(it.entityColor) })
+    }
+
+    fun withMapColorPresets(): ValidatedColor {
+        return withColorPresets((0..63).map { MapColor.get(it) }.filter { it != MapColor.CLEAR }.map { it.getRenderColor(MapColor.Brightness.HIGH) })
+    }
+
+    fun withFormattingColorPresets(): ValidatedColor {
+        val colors = Formatting.entries.mapNotNull { it.colorValue }
+        return withColorPresets(if (get().opaque()) colors else colors.map { PortingUtils.fullAlpha(it) })
+    }
 
     /**
      * Convert this [ValidatedColor] to an ARGB hex string if this color supports transparency (0xFFFFFFFF), or to a RGB hex string otherwise (0xFFFFFF)
@@ -328,6 +361,10 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             popup.addDoneWidget ({ this.setAndUpdate(mutableColor.createHolder()); PopupWidget.pop()})
             .onClose { this.setAndUpdate(mutableColor.createHolder()) }
             .noCloseOnClick()
+        if (presets.isNotEmpty()) {
+            popup.pushChildLayout(PopupWidget.ChildPosition.RIGHT)
+
+        }
         PopupWidget.push(popup.build())
     }
 
