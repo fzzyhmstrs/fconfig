@@ -158,6 +158,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
          * @author fzzyhmstrs
          * @since 0.7.2
          */
+        @JvmStatic
         fun <T, F: ValidatedNumber<T>>F.setFormat(format: DecimalFormat): F {
             this.format = format
             return this
