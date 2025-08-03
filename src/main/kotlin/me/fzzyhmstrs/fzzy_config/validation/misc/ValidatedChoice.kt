@@ -204,7 +204,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                 CyclingOptionsWidget(choicePredicate, this)
             }
             WidgetType.INLINE -> {
-                val layout = LayoutWidget(paddingW = 0, spacingW = 0).clampWidth(110)
+                val layout = LayoutWidget.Builder().paddingBoth(0).spacingBoth(0).clampWidth(110).build()
                 for ((index, const) in choices.withIndex()) {
                     val button = ChoiceOptionWidget(
                         const,
