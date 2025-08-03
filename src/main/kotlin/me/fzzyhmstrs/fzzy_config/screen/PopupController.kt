@@ -134,6 +134,9 @@ interface PopupController: LastSelectable {
      */
     fun preRender(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.matrices.pushMatrix()
+        if (popupWidgets.none { it.blurs() }) {
+            blurBackground(context)
+        }
     }
 
     /**
@@ -149,16 +152,29 @@ interface PopupController: LastSelectable {
      * @since 0.6.7
      */
     fun postRender(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        if (popupWidgets.isNotEmpty())
+        if (popupWidgets.isNotEmpty()) {
+            val highestBlurred = popupWidgets.lastOrNull { it.blurs() }
             for ((index, popup) in popupWidgets.descendingIterator().withIndex()) {
-                if(index == popupWidgets.lastIndex)
+                context.createNewRootLayer()
+                if (popup == highestBlurred) {
+                    blurBackground(context)
+                }
+                if (index == popupWidgets.lastIndex)
                     popup.render(context, mouseX, mouseY, delta)
                 else
                     popup.render(context, 0, 0, delta)
             }
+        }
         suggestionWindow?.render(context, mouseX, mouseY, delta)
         suggestionWindow = null
         context.matrices.popMatrix()
+    }
+
+    /**
+     * Shouldn't be overridden, added to account for blurring changes in 1.21.6+, will not be present pre-1.21.6, override with caution (don't at all)
+     */
+    fun blurBackground(context: DrawContext) {
+        context.applyBlur()
     }
 
     data class PopupEntry(val parent: PopupController, val widget: PopupWidget?, val mouseX: Double? = null, val mouseY: Double? = null, val popAction: Runnable = Runnable { })
