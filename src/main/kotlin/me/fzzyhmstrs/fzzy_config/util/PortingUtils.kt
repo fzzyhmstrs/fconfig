@@ -24,6 +24,7 @@ import net.minecraft.registry.tag.TagKey
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import net.minecraft.util.math.ColorHelper
 import java.awt.Color
 import java.util.Optional
 import java.util.function.Predicate
@@ -35,7 +36,7 @@ object PortingUtils {
     }
 
     fun fullAlpha(color: Int): Int {
-        return ColorHelper.Argb.fullAlpha(color)
+        return color or (0xFF shl 24)
     }
 
     fun PlayerEntity.sendChat(message: Text) {

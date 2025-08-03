@@ -53,6 +53,7 @@ import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.DyeColor
 import net.minecraft.util.Formatting
+import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -151,7 +152,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
      */
     fun withDyeColorPresets(): ValidatedColor {
         return withColorPresets(if (get().opaque()) DyeColor.entries.sortedBy {
-            hue(it.entityColor, DyeColor.WHITE.entityColor, DyeColor.LIGHT_GRAY.entityColor, DyeColor.GRAY.entityColor, DyeColor.BLACK.entityColor)
+            hue(it.id, DyeColor.WHITE.entityColor, DyeColor.LIGHT_GRAY.entityColor, DyeColor.GRAY.entityColor, DyeColor.BLACK.entityColor)
         }.map {
             ColorPreset(it.entityColor, get().alphaMode, it.name.capital())
         } else DyeColor.entries.sortedBy {
@@ -160,6 +161,11 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             ColorPreset(PortingUtils.fullAlpha(it.entityColor), get().alphaMode, it.name.capital())
         })
     }
+
+    private val DyeColor.entityColor: Int
+        get() {
+            return ColorHelper.Argb.getArgb(255, (colorComponents[0] * 255).toInt(), (colorComponents[1] * 255).toInt(), (colorComponents[2] * 255).toInt())
+        }
 
     /**
      * Add a set of presets based on the "sign" colors from the [DyeColor] enum
@@ -997,7 +1003,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             context.drawTex(textures.get(true, this.isSelected), x, y, 16, 16, this.alpha)
         }
 
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+        override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
             renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
         }
     }
