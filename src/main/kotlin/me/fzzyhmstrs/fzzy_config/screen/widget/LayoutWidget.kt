@@ -69,6 +69,11 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         }
     }
 
+    /**
+     * Builds a new empty [LayoutWidget]
+     * @author fzzyhmstrs
+     * @since 0.7.2
+     */
     class Builder internal constructor() {
         private var x: Pos = AbsPos(0)
         private var y: Pos = AbsPos(0)
@@ -79,16 +84,37 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         private var maxWidth: Int = -1
         private var maxHeight: Int = -1
 
+        /**
+         * Defines the x [Pos] for this layout. The default Pos is `AbsPos(0)`
+         * @param x [Pos] for the horizontal (X) position of this layout. This is from the top left corner of the layout
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun x(x: Pos): Builder {
             this.x = x
             return this
         }
 
+        /**
+         * Defines the y [Pos] for this layout. The default Pos is `AbsPos(0)`
+         * @param y [Pos] for the vertical (Y) position of this layout. This is from the top left corner of the layout
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun y(y: Pos): Builder {
             this.y = y
             return this
         }
 
+        /**
+         * Copies the padding and spacing from another layout
+         * @param other [LayoutWidget] to copy from
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun copyMarginsFrom(other: LayoutWidget): Builder {
             this.paddingW = other.paddingW
             this.paddingH = other.paddingH
@@ -97,48 +123,111 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
             return this
         }
 
+        /**
+         * Defines the default horizontal padding to the left and right of this layout (paddingW = Padding Width)
+         * @param paddingW Padding to the left and right of the layout, in pixels. This is applied in each direction, so paddingH 3 will add 3 pixels leftwards and 3 pixels rightwards.
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun paddingW(paddingW: Int): Builder {
             this.paddingW = paddingW
             return this
         }
 
+        /**
+         * Defines the default vertical padding above and below this layout (paddingH = Padding Height)
+         * @param paddingH Padding above and below the layout, in pixels. This is applied in each direction, so paddingH 3 will add 3 pixels above and 3 pixels below.
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun paddingH(paddingH: Int): Builder {
             this.paddingH = paddingH
             return this
         }
 
+        /**
+         * Defines the default padding around elements both vertically and horizontally
+         * @param padding Padding around all edges of the layout, in pixels
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun paddingBoth(padding: Int): Builder {
             this.paddingW = padding
             this.paddingH = padding
             return this
         }
 
+        /**
+         * Defines default horizontal spacing between elements in this layout. (spacingW = Spacing Width)
+         * @param spacingW Space between elements horizontally, in pixels
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun spacingW(spacingW: Int): Builder {
             this.spacingW = spacingW
             return this
         }
 
+        /**
+         * Defines default vertical spacing between elements in this layout. (spacingH = Spacing Height)
+         * @param spacingH Space between elements vertically, in pixels
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun spacingH(spacingH: Int): Builder {
             this.spacingH = spacingH
             return this
         }
 
+        /**
+         * Defines default spacings for both horizontally and vertically aligned elements in this layout
+         * @param spacing Space between elements vertically and horizontally, in pixels
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun spacingBoth(spacing: Int): Builder {
             this.spacingW = spacing
             this.spacingH = spacing
             return this
         }
 
+        /**
+         * Clamps the maximum width of this layout. will override any automatically computed widths. May result in undefined widget behavior depending on how the layout is built.
+         * @param maxWidth Manual maximum width, in pixels
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun clampWidth(maxWidth: Int): Builder {
             this.maxWidth = maxWidth
             return this
         }
 
+        /**
+         * Clamps the maximum height of this layout. will override any automatically computed heights. May result in undefined widget behavior depending on how the layout is built.
+         * @param maxHeight Manual maximum height, in pixels
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         fun clampHeight(maxHeight: Int): Builder {
             this.maxHeight = maxHeight
             return this
         }
 
+        /**
+         * Builds the defined [LayoutWidget]
+         * @return [LayoutWidget] with built details
+         * @return this builder
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         @Suppress("DEPRECATION")
         fun build(): LayoutWidget {
             return LayoutWidget(x, y, paddingW, paddingH, spacingW, spacingH).apply {
