@@ -1158,7 +1158,17 @@ class PopupWidget
      */
     @Suppress("DEPRECATION")
     enum class ChildPosition(internal val position: LayoutWidget.PositionRelativePos) {
+        /**
+         * Child layout will appear below the main popup, spaced by the base `spacingH` of the parent popup away from the parent
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         BELOW(LayoutWidget.PositionRelativePos.BELOW),
+        /**
+         * Child layout will appear to the right of the main popup, spaced by the base `spacingW` of the parent popup away from the parent
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         RIGHT(LayoutWidget.PositionRelativePos.RIGHT)
     }
 }
