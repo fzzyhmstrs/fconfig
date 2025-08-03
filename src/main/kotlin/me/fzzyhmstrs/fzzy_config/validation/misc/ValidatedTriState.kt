@@ -94,7 +94,7 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
                     }
                 )
                 f.width = 37
-                val layout = LayoutWidget(paddingW = 0, spacingW = 0).clampWidth(110)
+                val layout = LayoutWidget.Builder().paddingBoth(0).spacingBoth(0).clampWidth(110).build()
                 layout.add("true", t, LayoutWidget.Position.ALIGN_LEFT)
                 layout.add("default", d, LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
                 layout.add("false", f, LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)

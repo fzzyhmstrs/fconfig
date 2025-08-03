@@ -89,7 +89,7 @@ object EntryCreators {
                             context.misc.get(OPEN_SCREEN)?.accept(context.scope)
                         }
                     }
-                        .narrationSupplier { _ -> context.texts.name.copyContentOnly() }
+                        .narrationSupplier { _, _ -> context.texts.name.copyContentOnly() }
                         .width(110)
                         .build(),
                     LayoutWidget.Position.ALIGN_JUSTIFY,
@@ -123,7 +123,7 @@ object EntryCreators {
                             context.misc.get(OPEN_SCREEN)?.accept(context.scope)
                         }
                     }
-                        .narrationSupplier { _ -> context.texts.name.copyContentOnly() }
+                        .narrationSupplier { _, _ -> context.texts.name.copyContentOnly() }
                         .width(110)
                         .build(),
                     LayoutWidget.Position.ALIGN_JUSTIFY,
@@ -153,7 +153,7 @@ object EntryCreators {
                 contentLayout.add(
                     "lock_button",
                     CustomButtonWidget.builder("fc.button.$type".translate()) { }
-                        .narrationSupplier { _ -> FcText.empty() }
+                        .narrationSupplier { _, _ -> FcText.empty() }
                         .width(110)
                         .active(false)
                         .child(child)
@@ -172,7 +172,7 @@ object EntryCreators {
             val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
             @Suppress("DEPRECATION")
             contentBuilder.layoutMain { _ ->
-                LayoutWidget(paddingW = 0, spacingW = 0)
+                LayoutWidget.builder().paddingBoth(0).spacingBoth(0).build()
             }
             .visibility(DynamicListWidget.Visibility.HEADER_VISIBLE)
 
@@ -186,7 +186,7 @@ object EntryCreators {
             val contentBuilder = ConfigEntry.ContentBuilder(context, setOf())
             @Suppress("DEPRECATION")
             contentBuilder.layoutMain { _ ->
-                LayoutWidget(paddingW = 0, spacingW = 0).add(
+                LayoutWidget.builder().paddingBoth(0).spacingBoth(0).build().add(
                     "group",
                     ConfigGroup.GroupButtonWidget(listWidget, group, context.texts.name),
                     LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY,
