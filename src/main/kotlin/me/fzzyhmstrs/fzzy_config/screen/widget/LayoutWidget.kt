@@ -57,7 +57,12 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
     private val elements: MutableMap<String, PositionedElement<*>> = mutableMapOf()
 
     companion object {
-
+        /**
+         * Builds a new empty [LayoutWidget]
+         * @return [Builder]
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
         @JvmStatic
         fun builder(): Builder {
             return Builder()
@@ -102,6 +107,12 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
             return this
         }
 
+        fun paddingBoth(padding: Int): Builder {
+            this.paddingW = padding
+            this.paddingH = padding
+            return this
+        }
+
         fun spacingW(spacingW: Int): Builder {
             this.spacingW = spacingW
             return this
@@ -109,6 +120,12 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
 
         fun spacingH(spacingH: Int): Builder {
             this.spacingH = spacingH
+            return this
+        }
+
+        fun spacingBoth(spacing: Int): Builder {
+            this.spacingW = spacing
+            this.spacingH = spacing
             return this
         }
 

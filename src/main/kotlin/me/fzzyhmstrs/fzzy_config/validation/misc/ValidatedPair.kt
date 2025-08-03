@@ -169,7 +169,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
             left.width = 53
             right.width = 53
         }
-        val layout = LayoutWidget(paddingW = 0, spacingW = 0)
+        val layout = LayoutWidget.Builder().paddingBoth(0).spacingBoth(0).build()
         layout.add(
             "left",
             left,
