@@ -16,7 +16,7 @@ package me.fzzyhmstrs.fzzy_config.util.pos
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ImmutablePos(private val p: Int = 0): Pos {
+class ImmutablePos(private val p: Int = 0): Pos.RootPos {
     override fun get(): Int {
         return p
     }

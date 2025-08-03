@@ -20,7 +20,9 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.capital
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils
@@ -47,9 +49,9 @@ import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
 import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 import net.minecraft.util.DyeColor
 import net.minecraft.util.Formatting
-import net.minecraft.util.math.ColorHelper
 import net.minecraft.util.math.MathHelper
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -117,32 +119,116 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
     private constructor(r: Int, g: Int, b: Int, a: Int, alphaMode: Boolean): super(ColorHolder(r, g, b, a, alphaMode))
 
-    private var presets: List<Int> = emptyList()
+    private var presets: List<ColorPreset> = emptyList()
 
-    fun withColorPresets(presets: List<Int>): ValidatedColor {
+    /**
+     * Define a set of "preset" color options for the user. These will appear as "swatches" to the right of the color popup.
+     * @param presets Collection&lt;Int&gt; collection of preset colors
+     * @return this [ValidatedColor]
+     * @author fzzyhmstrs
+     * @since 0.7.2
+     */
+    fun withColorPresets(presets: Collection<Int>): ValidatedColor {
+        return withColorPresets(presets.map { ColorPreset(if(get().alphaMode) it else PortingUtils.fullAlpha(it), get().alphaMode) })
+    }
+
+    /**
+     * Define a set of "preset" color options for the user. These will appear as "swatches" to the right of the color popup.
+     * @param presets Collection&lt;[ColorPreset]&gt; collection of preset colors
+     * @return this [ValidatedColor]
+     * @author fzzyhmstrs
+     * @since 0.7.2
+     */
+    fun withColorPresets(presets: List<ColorPreset>): ValidatedColor {
         this.presets = presets
         return this
     }
 
+    /**
+     * Add a set of presets based on the "entity" colors from the [DyeColor] enum
+     * @return this [ValidatedColor]
+     * @author fzzyhmstrs
+     * @since 0.7.2
+     */
     fun withDyeColorPresets(): ValidatedColor {
-        return withColorPresets(if (get().opaque()) DyeColor.entries.map { it.entityColor } else DyeColor.entries.map { PortingUtils.fullAlpha(it.entityColor) })
+        return withColorPresets(if (get().opaque()) DyeColor.entries.sortedBy {
+            hue(it.entityColor, DyeColor.WHITE.entityColor, DyeColor.LIGHT_GRAY.entityColor, DyeColor.GRAY.entityColor, DyeColor.BLACK.entityColor)
+        }.map {
+            ColorPreset(it.entityColor, get().alphaMode, it.name.capital())
+        } else DyeColor.entries.sortedBy {
+            hue(it.entityColor, DyeColor.WHITE.entityColor, DyeColor.LIGHT_GRAY.entityColor, DyeColor.GRAY.entityColor, DyeColor.BLACK.entityColor)
+        }.map {
+            ColorPreset(PortingUtils.fullAlpha(it.entityColor), get().alphaMode, it.name.capital())
+        })
     }
 
+    /**
+     * Add a set of presets based on the "sign" colors from the [DyeColor] enum
+     * @return this [ValidatedColor]
+     * @author fzzyhmstrs
+     * @since 0.7.2
+     */
     fun withSignColorPresets(): ValidatedColor {
-        return withColorPresets(if (get().opaque()) DyeColor.entries.map { it.signColor } else DyeColor.entries.map { PortingUtils.fullAlpha(it.entityColor) })
+        return withColorPresets(if (get().opaque()) DyeColor.entries.sortedBy {
+            hue(it.signColor, DyeColor.WHITE.signColor, DyeColor.LIGHT_GRAY.signColor, DyeColor.GRAY.signColor, DyeColor.BLACK.signColor)
+        }.map {
+            ColorPreset(it.signColor, get().alphaMode, it.name.capital())
+        } else DyeColor.entries.sortedBy {
+            hue(it.signColor, DyeColor.WHITE.signColor, DyeColor.LIGHT_GRAY.signColor, DyeColor.GRAY.signColor, DyeColor.BLACK.signColor)
+        }.map {
+            ColorPreset(PortingUtils.fullAlpha(it.signColor), get().alphaMode, it.name.capital())
+        })
     }
 
+    /**
+     * Add a set of presets based on the "firework" colors from the [DyeColor] enum
+     * @return this [ValidatedColor]
+     * @author fzzyhmstrs
+     * @since 0.7.2
+     */
     fun withFireworkColorPresets(): ValidatedColor {
-        return withColorPresets(if (get().opaque()) DyeColor.entries.map { it.fireworkColor } else DyeColor.entries.map { PortingUtils.fullAlpha(it.entityColor) })
+        return withColorPresets(if (get().opaque()) DyeColor.entries.sortedBy {
+            hue(it.fireworkColor, DyeColor.WHITE.fireworkColor, DyeColor.LIGHT_GRAY.fireworkColor, DyeColor.GRAY.fireworkColor, DyeColor.BLACK.fireworkColor)
+        }.map {
+            ColorPreset(it.fireworkColor, get().alphaMode, it.name.capital())
+        } else DyeColor.entries.sortedBy {
+            hue(it.fireworkColor, DyeColor.WHITE.fireworkColor, DyeColor.LIGHT_GRAY.fireworkColor, DyeColor.GRAY.fireworkColor, DyeColor.BLACK.fireworkColor)
+        }.map {
+            ColorPreset(PortingUtils.fullAlpha(it.fireworkColor), get().alphaMode, it.name.capital())
+        })
     }
 
+    /**
+     * Add a set of presets based on the map colors from the [MapColor] class
+     * @return this [ValidatedColor]
+     * @author fzzyhmstrs
+     * @since 0.7.2
+     */
     fun withMapColorPresets(): ValidatedColor {
-        return withColorPresets((0..63).map { MapColor.get(it) }.filter { it != MapColor.CLEAR }.map { it.getRenderColor(MapColor.Brightness.HIGH) })
+        return withColorPresets((0..63).map {
+            MapColor.get(it)
+        }.filter {
+            it != MapColor.CLEAR
+        }.sortedBy {
+            hue(it.color)
+        }.map {
+            ColorPreset(it.getRenderColor(MapColor.Brightness.HIGH), get().alphaMode)
+        })
     }
 
+    /**
+     * Add a set of presets based on the color formats from the [Formatting] enum
+     * @return this [ValidatedColor]
+     * @author fzzyhmstrs
+     * @since 0.7.2
+     */
     fun withFormattingColorPresets(): ValidatedColor {
-        val colors = Formatting.entries.mapNotNull { it.colorValue }
-        return withColorPresets(if (get().opaque()) colors else colors.map { PortingUtils.fullAlpha(it) })
+        val colors = Formatting.entries.mapNotNull { it.takeIf { it.colorValue != null } }
+        return withColorPresets(if (get().opaque()) colors.map {
+            ColorPreset(it.colorValue!!, get().alphaMode, it.name.capital())
+        } else colors.map {
+            ColorPreset(PortingUtils.fullAlpha(it.colorValue!!), get().alphaMode, it.name.capital())
+        })
     }
 
     /**
@@ -318,9 +404,9 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             .add("b_name", TextWidget(12, 20, "fc.validated_field.color.b".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
             if (this.storedValue.alphaMode)
                 popup.add("a_name", TextWidget(12, 20, "fc.validated_field.color.a".translate(), textRenderer), LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT)
-            popup.add("r_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.r }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { r -> mutableColor.updateRGB(r, mutableColor.g, mutableColor.b) }), "r_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("g_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.g }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { g -> mutableColor.updateRGB(mutableColor.r, g, mutableColor.b) }), "g_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
-            .add("b_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.b }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { b -> mutableColor.updateRGB(mutableColor.r, mutableColor.g, b) }), "b_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            popup.add("r_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.r }, ChoiceValidator.any(), { d -> mutableColor.validate(d.toInt()) }, { r -> mutableColor.updateRGB(r, mutableColor.g, mutableColor.b) }), "r_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("g_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.g }, ChoiceValidator.any(), { d -> mutableColor.validate(d.toInt()) }, { g -> mutableColor.updateRGB(mutableColor.r, g, mutableColor.b) }), "g_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
+            .add("b_box", ValidationBackedNumberFieldWidget(45, 20, { mutableColor.b }, ChoiceValidator.any(), { d -> mutableColor.validate(d.toInt()) }, { b -> mutableColor.updateRGB(mutableColor.r, mutableColor.g, b) }), "b_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             if (this.storedValue.alphaMode)
                 popup.add("a_box", if(get().transparent()) ValidationBackedNumberFieldWidget(45, 20, { mutableColor.a }, ChoiceValidator.any(), {d -> mutableColor.validate(d.toInt())}, { a -> mutableColor.updateA(a)}) else TextFieldWidget(textRenderer, 45, 20, "255".lit()).also { it.setEditable(false) }, "a_name", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
             popup.add("hl_map", HLMapWidget(mutableColor), "r_box", LayoutWidget.Position.RIGHT, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
@@ -362,8 +448,24 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             .onClose { this.setAndUpdate(mutableColor.createHolder()) }
             .noCloseOnClick()
         if (presets.isNotEmpty()) {
-            popup.pushChildLayout(PopupWidget.ChildPosition.RIGHT)
-
+            popup.pushChildLayout(PopupWidget.ChildPosition.RIGHT) { b -> b.spacingH(5).paddingH(7) }
+            val firstButtonPositions = arrayOf(LayoutWidget.Position.BELOW, LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT)
+            val twoThruEightButtonPositions = arrayOf(LayoutWidget.Position.BELOW, LayoutWidget.Position.VERTICAL_TO_LEFT_EDGE)
+            val newRowButtonPositions = arrayOf(LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE, LayoutWidget.Position.RIGHT)
+            for ((index, color) in presets.withIndex()) {
+                val name = "preset$index"
+                val button = PresetWidget(color) { mutableColor.updateARGB(color.color) }
+                if (index == 0) {
+                    popup.add(name, button, *firstButtonPositions)
+                } else if (index % 8 == 0) {
+                    val parent = "preset${index - 8}"
+                    popup.add(name, button, parent, *newRowButtonPositions)
+                } else {
+                    val parent = "preset${index - 1}"
+                    popup.add(name, button, parent, *twoThruEightButtonPositions)
+                }
+            }
+            popup.popChildLayout()
         }
         PopupWidget.push(popup.build())
     }
@@ -437,6 +539,23 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
                     ValidationResult.success(s)
                 }
                 .build()
+        }
+
+        fun hue(rgb: Int, vararg grays: Int): Int {
+            val r = (rgb shr 16) and 0xFF
+            val g = (rgb shr 8) and 0xFF
+            val b = rgb and 0xFF
+            return if ((r == g && g == b) || grays.contains(rgb)) {
+                r - 256
+            } else {
+                val hsl = Color.RGBtoHSB(r, g, b, null)
+                (hsl[0] * 360f).toInt()
+            }
+        }
+
+
+        fun toHexString(color: Int, alphaMode: Boolean): String {
+            return if(!alphaMode) String.format("%06X", color and 0xFFFFFF) else String.format("%08X", color)
         }
     }
 
@@ -709,7 +828,25 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         }
 
         /**
-         * updates this Mutable Color with new RGB values. HSL values automatically updated to match
+         * updates this Mutable Color with new ARGB values. HSL and hex values automatically updated to match. If alphamode is false, alpha will be clamped to 255
+         * @param argb Packed integer color in ARGB format
+         * @author fzzyhmstrs
+         * @since 0.7.2
+         */
+        fun updateARGB(argb: Int) {
+            this.a = if(!alphaMode) 255 else (argb shr 24) and 0xFF
+            this.r = (argb shr 16) and 0xFF
+            this.g = (argb shr 8) and 0xFF
+            this.b = argb and 0xFF
+            val hsl = Color.RGBtoHSB(this.r, this.g, this.b, null)
+            this.h = hsl[0]
+            this.s = hsl[1]
+            this.l = hsl[2]
+            hex.validateAndSet(if(alphaMode) String.format("%08X", argb()) else String.format("%06X", argb() and 0xFFFFFF))
+        }
+
+        /**
+         * updates this Mutable Color with new RGB values. HSL and hex values automatically updated to match
          * @param r Int - red component, 0..255
          * @param g Int - green component, 0..255
          * @param b Int - blue component, 0..255
@@ -734,7 +871,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
          * @since 0.2.0
          */
         fun updateA(a: Int) {
-            this.a = a
+            this.a = if (alphaMode) a else 255
             hex.validateAndSet(if(alphaMode) String.format("%08X", argb()) else String.format("%06X", argb() and 0xFFFFFF))
         }
 
@@ -818,11 +955,50 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
 
     //////////////////////////////////////////
 
+    //client
     private class ColorDecoration(private val colorSupplier: Supplier<Int>): Decorated {
 
         override fun renderDecoration(context: DrawContext, x: Int, y: Int, delta: Float, enabled: Boolean, selected: Boolean) {
             TextureDeco.DECO_FRAME.renderDecoration(context, x, y, delta, enabled, selected)
             context.fill(x+2, y+2, x+14, y+14, colorSupplier.get())
+        }
+    }
+
+    /**
+     * A pre-defined color instance.
+     * @param color ARGB integer representation of the preset. If alphamode is on, the A portion needs to be included or the color will be completely transparent
+     * @param alphaMode whether this presets parent color cares about alpha or not
+     * @param tooltip, optional. The text to display when hovering over this color option. Default impl is a hex code representation of the color value.
+     * @author fzzyhmstrs
+     * @since 0.7.2
+     */
+    //client
+    class ColorPreset(val color: Int, alphaMode: Boolean, val tooltip: Text = toHexString(color, alphaMode).lit())
+
+
+    //client
+    private class PresetWidget(private val preset: ColorPreset, private val onPress: Runnable) : CustomPressableWidget(0, 0, 12, 12, FcText.EMPTY) {
+
+        init {
+            this.setTooltip(Tooltip.of(preset.tooltip))
+        }
+
+        override val textures: TextureProvider = TextureSet.Dual("widget/preset_frame".fcId(), "widget/preset_frame_hovered".fcId())
+
+        override fun onPress() {
+            onPress.run()
+        }
+
+        override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+        }
+
+        override fun renderBackground(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
+            context.fill(x + 1, y + 1, x + 11, y + 11, preset.color)
+            context.drawTex(textures.get(true, this.isSelected), x, y, 16, 16, this.alpha)
+        }
+
+        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+            renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
         }
     }
 
