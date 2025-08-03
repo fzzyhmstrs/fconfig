@@ -235,7 +235,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             }
         )
 
-        val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
+        val layout = LayoutWidget.builder().paddingW(0).paddingH(0).spacingW(0).spacingH(0).build()
         val numberWidget = ConfirmButtonTextFieldWidget(this, choicePredicate, validator(), { setAndUpdate(it) }, 99, false, increment).also {
             val f = format
             if (f != null) {

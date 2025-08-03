@@ -10,15 +10,18 @@
 
 package me.fzzyhmstrs.fzzy_config.util.pos
 
+import java.util.function.Supplier
+
 /**
- * An absolute [Pos]. Mutation of this pos will directly change it's position with no other offsets or other side effects.
- * @param p Int - this Pos's position
+ * A [Pos] wth an offset supplier. Mutation of this pos will alter the offset.
+ * @param p Int - the offset compared to the parent
+ * @param offset Supplier<Int> - the supplied offset compared to the absolute position
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.7.2
  */
-class AbsPos(private var p: Int = 0): Pos.RootPos {
+open class OffsetSuppliedPos(private var p: Int, private val offset: Supplier<Int>): Pos {
     override fun get(): Int {
-        return p
+        return p + offset.get()
     }
     override fun set(new: Int) {
         p = new
@@ -30,6 +33,6 @@ class AbsPos(private var p: Int = 0): Pos.RootPos {
         p -= amount
     }
     override fun toString(): String {
-        return "Abs[$p]"
+        return "Offset(${get()})[$p + ${offset.get()}]"
     }
 }

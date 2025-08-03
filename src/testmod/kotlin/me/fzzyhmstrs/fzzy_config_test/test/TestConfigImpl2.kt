@@ -153,7 +153,7 @@ class TestConfigImpl2: Config(Identifier.of("fzzy_config_test","test_config2")) 
     var list2Process = ConfigAction.Builder().title("List2 Process".lit()).build { TestConfig.listProvider.processArgResults("fzzy_config_test.test_config2.list2?contains=9?random?index=1", ContainsArg.to { println(it) }, IndexArg(-666).to { println(it) }, RandomArg(-777).to { println(it) }) }
 
     @Comment("Testing out a comment")
-    var color1 = Color(255, 128, 0).validated(true)
+    var color1 = Color(255, 128, 0).validated(true).withMapColorPresets()
 
     @WithPerms(5)
     var set1 = setOf(0.2, 0.4, 0.6)
