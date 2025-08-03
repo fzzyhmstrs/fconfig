@@ -39,6 +39,13 @@ data class TextureSet(private val tex: Identifier, private val disabled: Identif
         }
     }
 
+    data class Dual(private val tex: Identifier, private val highlighted: Identifier): TextureProvider {
+
+        override fun get(enabled: Boolean, focused: Boolean): Identifier {
+            return if (focused) highlighted else tex
+        }
+    }
+
     data class Single(private val tex: Identifier): TextureProvider {
 
         override fun get(enabled: Boolean, focused: Boolean): Identifier {
