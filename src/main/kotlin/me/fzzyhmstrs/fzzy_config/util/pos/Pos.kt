@@ -63,6 +63,17 @@ interface Pos: Supplier<Int> {
         return this.get() % other.get()
     }
 
+    interface ParentPos: Pos {
+        fun parent(): Pos
+        fun offset(): Int
+    }
+
+    interface RootPos: Pos
+
+    interface SuppliedPos: ParentPos {
+        fun supplier(): Supplier<Int>
+    }
+
     companion object {
         /**
          * Reference zero position, good for a default value
