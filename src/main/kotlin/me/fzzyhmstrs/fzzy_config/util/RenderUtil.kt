@@ -207,10 +207,7 @@ object RenderUtil {
      * @since 0.6.1
      */
     fun renderBlur(context: DrawContext, x: Float, y: Float, delta: Float) {
-        context.matrices.pushMatrix()
-        context.matrices.translate(x, y) //, 0f)
-//        context.draw()
-        MinecraftClient.getInstance().gameRenderer.renderBlur()
-        context.matrices.popMatrix()
+        //in 1.21.6+, this does nothing, as they changed how blurring works, therefor the impl in PopupController is different
+        //method maintained for ABI
     }
 }

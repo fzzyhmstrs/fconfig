@@ -10,26 +10,26 @@
 
 package me.fzzyhmstrs.fzzy_config.util.pos
 
+import java.util.function.Supplier
+
 /**
- * An absolute [Pos]. Mutation of this pos will directly change it's position with no other offsets or other side effects.
- * @param p Int - this Pos's position
+ * A relative [Pos] wth an offset supplier. Offsets a parent Supplier. This position is immutable in the direct sense. Mutation of this pos via [set], [inc], and [dec] does *not* affect position.
+ * @param parent Supplier<Int> - the supplied base position this is relative to
+ * @param offset Supplier<Int> - the supplied offset compared to the parent
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.7.2
  */
-class AbsPos(private var p: Int = 0): Pos.RootPos {
+open class DualSuppliedPos(protected val parent: Supplier<Int>, protected val offset: Supplier<Int>): Pos {
     override fun get(): Int {
-        return p
+        return parent.get() + offset.get()
     }
     override fun set(new: Int) {
-        p = new
     }
     override fun inc(amount: Int) {
-        p += amount
     }
     override fun dec(amount: Int) {
-        p -= amount
     }
     override fun toString(): String {
-        return "Abs[$p]"
+        return "DualSupplied(${get()})[${parent.get()} + ${offset.get()}]"
     }
 }
