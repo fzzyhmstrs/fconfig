@@ -65,7 +65,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     private val layout: LayoutWidget = if (content.groupTypes.isEmpty()) {
         content.layoutWidget.setPos(this.x, this.top).compute()
     } else {
-        val lo = LayoutWidget(paddingW = 0, spacingW = 0)
+        val lo = LayoutWidget.builder().paddingBoth(0).spacingBoth(0).build()
         for ((index, bl) in content.groupTypes.withIndex()) {
             lo.add("$index", GroupLineWidget(bl), LayoutWidget.Position.RIGHT, LayoutWidget.Position.ALIGN_LEFT_OF_AND_STRETCH, LayoutWidget.Position.HORIZONTAL_TO_TOP_EDGE)
         }
@@ -324,8 +324,8 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
          */
         constructor(context: EntryCreator.CreatorContext): this(context, context.actions.map { ActionDecorationWidget.setting(it) })
 
-        private var mainLayout: LayoutWidget = LayoutWidget(paddingW = 0, spacingW = 0)
-        private var contentLayout: LayoutWidget = LayoutWidget(paddingW = 0).clampWidth(110)
+        private var mainLayout: LayoutWidget = LayoutWidget.builder().paddingBoth(0).spacingBoth(0).build()
+        private var contentLayout: LayoutWidget =  LayoutWidget.builder().paddingBoth(0).clampWidth(110).build()
         private val decorationWidget = DecorationWidget()
         private var group: String = ""
         private var visibility: DynamicListWidget.Visibility = DynamicListWidget.Visibility.VISIBLE
@@ -418,7 +418,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
 
         /**
          * Search results to "pass up" to the parent list when requested. This is used to determine what children should stay visible by indirect search matching.
-         * @param searchResults [Function]&lt;String, List&lt;[Translatable.Result]&gt;&gt; the search result provider for this entry. Using a [Searcher] is prucent, as the provided string is raw, with special characters still included.
+         * @param searchResults [Function]&lt;String, List&lt;[Translatable.Result]&gt;&gt; the search result provider for this entry. Using a [Searcher][me.fzzyhmstrs.fzzy_config.util.Searcher] is prudent, as the provided string is raw, with special characters still included.
          * @return this builder
          * @author fzzyhmstrs
          * @since 0.6.8
@@ -437,7 +437,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
         fun build(): BuildResult {
             val prefixWidget = context.texts.prefix?.let { CustomMultilineTextWidget(it, 10, 10, 4) }
             val finalLayout = if (prefixWidget != null) {
-                val fl = LayoutWidget(paddingW = 0, spacingW = 0)
+                val fl = LayoutWidget.builder().paddingBoth(0).spacingBoth(0).build()
                 fl.add("prefix", prefixWidget, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_JUSTIFY)
                 if (!mainLayout.isEmpty()) {
                     fl.add("main", mainLayout, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_LEFT_AND_JUSTIFY)
