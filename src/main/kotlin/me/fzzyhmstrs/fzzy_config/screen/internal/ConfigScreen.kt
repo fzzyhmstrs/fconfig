@@ -235,8 +235,8 @@ internal class ConfigScreen(
             searchField.text = searchText
         searchField.tooltip = Tooltip.of("fc.config.search.desc".translate())
 
-        val layout = LayoutWidget(paddingW = 0, paddingH = 0, spacingW = 0, spacingH = 0)
-        layout.pushSpacing({ _-> 1 }, UnaryOperator.identity())
+        val layout = LayoutWidget.Builder().paddingBoth(0).spacingBoth(0).build()
+        layout.pushSpacing({ _ -> 1 }, UnaryOperator.identity())
         layout.add(
             "search",
             searchField,
