@@ -13,29 +13,25 @@ package me.fzzyhmstrs.fzzy_config.util.pos
 import java.util.function.Supplier
 
 /**
- * A relative [Pos] wth a secondary offset supplier. Offsets a parent Pos. Mutation of this pos will alter the offset.
+ * A relative [Pos] wth an offset supplier and a constant offset. Offsets a parent Pos. This position is immutable in the direct sense. Mutation of this pos via [set], [inc], and [dec] does *not* affect position.
  * @param parent Pos - the Pos this is relative to
- * @param p Int - the offset compared to the parent
- * @param offset Supplier<Int> - the secondary supplied offset compared to the parent
+ * @param p Int - constant numeric offset
+ * @param offset Supplier<Int> - the supplied offset compared to the parent
  * @author fzzyhmstrs
- * @since 0.2.0
+ * @since 0.7.2
  */
-open class SuppliedPos(private val parent: Pos, private var p: Int, private val offset: Supplier<Int>): Pos.SuppliedPos {
-
+open class ImmutableOffsetSuppliedPos(protected val parent: Pos, protected val p: Int, protected val offset: Supplier<Int>): Pos.SuppliedPos {
     override fun get(): Int {
         return parent.get() + p + offset.get()
     }
     override fun set(new: Int) {
-        p = new
     }
     override fun inc(amount: Int) {
-        p += amount
     }
     override fun dec(amount: Int) {
-        p -= amount
     }
     override fun toString(): String {
-        return "Supplied(${get()})[$parent + $p + ${offset.get()}]"
+        return "ImmutableOffset(${get()})[$parent + $p + ${offset.get()}]"
     }
 
     override fun supplier(): Supplier<Int> {
@@ -53,10 +49,10 @@ open class SuppliedPos(private val parent: Pos, private var p: Int, private val 
     companion object {
         fun optimized(parent: Pos, p: Int, offset: Supplier<Int>): Pos {
             return when (parent) {
-                is Pos.SuppliedPos -> SuppliedPos(parent.parent(), parent.offset() + p) { parent.supplier().get() + offset.get() }
-                is Pos.ParentPos -> SuppliedPos(parent.parent(), parent.offset() + p, offset)
+                is Pos.SuppliedPos -> ImmutableOffsetSuppliedPos(parent.parent(), parent.offset() + p) { parent.supplier().get() + offset.get() }
+                is Pos.ParentPos -> ImmutableOffsetSuppliedPos(parent.parent(), parent.offset() + p, offset)
                 is Pos.RootPos -> OffsetSuppliedPos(parent.get() + p, offset)
-                else -> SuppliedPos(parent, p, offset)
+                else -> ImmutableOffsetSuppliedPos(parent, p, offset)
             }
         }
     }

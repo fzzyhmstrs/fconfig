@@ -116,6 +116,10 @@ class PopupWidget
         return context.children
     }
 
+    fun blurs(): Boolean {
+        return context.blurBackground
+    }
+
     override fun render(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         if (this.context.blurBackground) {
             renderBlur(context, x.toFloat(), y.toFloat(), delta)
@@ -344,7 +348,7 @@ class PopupWidget
     //client
     class Builder @JvmOverloads constructor(private val title: Text, spacingW: Int = 4, spacingH: Int = spacingW) {
 
-        private val baseLayoutWidget = LayoutWidget.builder().spacingW(spacingW).paddingH(spacingH).build()
+        private val baseLayoutWidget = LayoutWidget.builder().spacingW(spacingW).spacingH(spacingH).build()
         private var positionX: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var positionY: BiFunction<Int, Int, Int> = BiFunction { sw, w -> sw/2 - w/2 }
         private var widthFunction: BiFunction<Int, Int, Int> = BiFunction { _, w -> w }
@@ -601,10 +605,10 @@ class PopupWidget
          * @author fzzyhmstrs
          * @since 0.7.2
          */
-        fun pushChildLayout(position: ChildPosition): Builder {
+        fun pushChildLayout(position: ChildPosition, operation: UnaryOperator<LayoutWidget.Builder> = UnaryOperator.identity()): Builder {
             val newX = position.position.getChildXPos(baseLayoutWidget)
             val newY = position.position.getChildYPos(baseLayoutWidget)
-            layouts.push(LayoutWidget.builder().copyMarginsFrom(baseLayoutWidget).x(newX).y(newY).build())
+            layouts.push(LayoutWidget.builder().copyMarginsFrom(baseLayoutWidget).x(newX).y(newY).let { operation.apply(it) }.build())
             return this
         }
 
@@ -957,6 +961,9 @@ class PopupWidget
             val positioner = Positioner { x, y, w, h ->
                 baseLayoutWidget.setPosition(x + xOffset, y + yOffset)
                 baseLayoutWidget.setDimensions(w + wOffset, h + hOffset)
+                for (layout in poppedLayouts) {
+                    layout.updateElements()
+                }
             }
 
             val drawAreas = if (totalLayouts.size == 1) listOf() else totalLayouts
