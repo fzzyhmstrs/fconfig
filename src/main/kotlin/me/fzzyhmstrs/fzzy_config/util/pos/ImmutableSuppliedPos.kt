@@ -19,7 +19,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.6.0
  */
-open class ImmutableSuppliedPos(protected val parent: Pos, protected val offset: Supplier<Int>): Pos {
+open class ImmutableSuppliedPos(protected val parent: Pos, protected val offset: Supplier<Int>): Pos.SuppliedPos {
     override fun get(): Int {
         return parent.get() + offset.get()
     }
@@ -31,5 +31,17 @@ open class ImmutableSuppliedPos(protected val parent: Pos, protected val offset:
     }
     override fun toString(): String {
         return "ImmutableSupplied(${get()})[$parent + ${offset.get()}]"
+    }
+
+    override fun supplier(): Supplier<Int> {
+        return offset
+    }
+
+    override fun parent(): Pos {
+        return parent
+    }
+
+    override fun offset(): Int {
+        return 0
     }
 }
