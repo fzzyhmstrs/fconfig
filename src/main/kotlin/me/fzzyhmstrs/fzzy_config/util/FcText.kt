@@ -428,4 +428,8 @@ object FcText {
         builder.append(str4)
         return builder.toString()
     }
+
+    fun String.capital(): Text {
+        return this.lowercase().replace('_', ' ').split(' ').joinToString(" ") { it.lowercase(); it.replaceFirstChar { c -> c.uppercase() } }.lit()
+    }
 }

@@ -50,8 +50,8 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
 
     private val xPos = MutableReferencePos(x, paddingW)
     private val yPos = MutableReferencePos(y, paddingH)
-    private val wPos = RelPos(xPos, width - (2 * paddingW))
-    private val hPos = RelPos(yPos, height - (2 * paddingH))
+    private val wPos = ImmutableOffsetSuppliedPos(xPos, -(2 * paddingW)) { width }
+    private val hPos = ImmutableOffsetSuppliedPos(yPos,  -(2 * paddingH)) { height }
     private val sets: Deque<PosSet> = ArrayDeque<PosSet>(1).also { it.add(PosSet(xPos, yPos, wPos, hPos, spacingW, spacingH)) }
 
     private val elements: MutableMap<String, PositionedElement<*>> = mutableMapOf()
@@ -202,7 +202,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         }
     }
 
-    private fun updateElements() {
+    internal fun updateElements() {
         for ((_, e) in elements) {
             e.update()
         }
@@ -210,11 +210,11 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
 
     private fun updateWidth(newWidth: Int) {
         width = newWidth
-        wPos.set(newWidth - (2 * paddingW))
+        //wPos.set(newWidth - (2 * paddingW))
     }
     private fun updateHeight(newHeight: Int) {
         height = newHeight
-        hPos.set(newHeight - (2 * paddingH))
+        //hPos.set(newHeight - (2 * paddingH))
     }
 
     /**
@@ -235,11 +235,11 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
     }
 
     fun buildRelativeXPos(xOffsetFunction: Function<LayoutWidget, Int>): Pos {
-        return ImmutableSuppliedPos(xPos, SuppliedFunctionSupplier(ConstSupplier(this), xOffsetFunction))
+        return DualSuppliedPos({ x.get() }, SuppliedFunctionSupplier(ConstSupplier(this), xOffsetFunction))
     }
 
     fun buildRelativeYPos(yOffsetFunction: Function<LayoutWidget, Int>): Pos {
-        return ImmutableSuppliedPos(yPos, SuppliedFunctionSupplier(ConstSupplier(this), yOffsetFunction))
+        return DualSuppliedPos({ y.get() }, SuppliedFunctionSupplier(ConstSupplier(this), yOffsetFunction))
     }
 
     /**
@@ -942,7 +942,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         @Deprecated("Use Positions Impl values")
         BELOW {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(prevX, ImmutableSuppliedPos(parent.getY()) { globalSet.spacingH + parent.elHeight() })
+                return Pair(prevX, ImmutableOffsetSuppliedPos.optimized(parent.getY(), globalSet.spacingH) { parent.elHeight() })
             }
 
             override fun getChildXPos(parent: LayoutWidget): Pos {
@@ -960,7 +960,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         @Deprecated("Use Positions Impl values")
         LEFT {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(ImmutableSuppliedPos(parent.getX()) { -el.width - globalSet.spacingW }, prevY)
+                return Pair(ImmutableOffsetSuppliedPos.optimized(parent.getX(), -globalSet.spacingW) { -el.width }, prevY)
             }
 
             override fun getChildXPos(parent: LayoutWidget): Pos {
@@ -978,7 +978,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         @Deprecated("Use Positions Impl values")
         RIGHT {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(ImmutableSuppliedPos(parent.getX()) { parent.elWidth() + globalSet.spacingW }, prevY)
+                return Pair(ImmutableOffsetSuppliedPos.optimized(parent.getX(), globalSet.spacingW) { parent.elWidth() }, prevY)
             }
 
             override fun getChildXPos(parent: LayoutWidget): Pos {
@@ -1004,19 +1004,19 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         @Deprecated("Use Positions Impl values")
         HORIZONTAL_TO_TOP_EDGE {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(prevX, RelPos(parent.getY()))
+                return Pair(prevX, RelPos.optimized(parent.getY()))
             }
         },
         @Deprecated("Use Positions Impl values")
         HORIZONTAL_TO_BOTTOM_EDGE {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(prevX, RelPos(parent.getX(), parent.elHeight() - el.height))
+                return Pair(prevX, RelPos.optimized(parent.getX(), parent.elHeight() - el.height))
             }
         },
         @Deprecated("Use Positions Impl values")
         VERTICAL_TO_LEFT_EDGE {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(parent.getX()), prevY)
+                return Pair(RelPos.optimized(parent.getX()), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
@@ -1034,7 +1034,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         @Deprecated("Use Positions Impl values")
         CENTERED_VERTICALLY {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(prevX, RelPos(parent.getY(), parent.elHeight()/2 - el.height/2))
+                return Pair(prevX, RelPos.optimized(parent.getY(), parent.elHeight()/2 - el.height/2))
             }
         }
     }
@@ -1049,11 +1049,11 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.xPos), prevY)
+                return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.xPos), prevY)
+                return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
@@ -1109,11 +1109,11 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT_AND_JUSTIFY {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.xPos), prevY)
+                return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.xPos), prevY)
+                return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
@@ -1123,7 +1123,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.xPos), prevY)
+                return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")
@@ -1139,7 +1139,7 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         @Deprecated("Use Positions Impl values")
         POSITION_LEFT_OF_AND_JUSTIFY {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(ImmutableSuppliedPos(parent.getX()) { -el.width -globalSet.spacingW }, prevY)
+                return Pair(ImmutableOffsetSuppliedPos.optimized(parent.getX(), -globalSet.spacingW) { -el.width }, prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
@@ -1149,11 +1149,11 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         @Deprecated("Use Positions Impl values")
         ALIGN_LEFT_AND_STRETCH {
             override fun position(parent: LayoutElement, el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.xPos), prevY)
+                return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
 
             override fun positionInitial(el: Widget, globalSet: PosSet, prevX: Pos, prevY: Pos): Pair<Pos, Pos> {
-                return Pair(RelPos(globalSet.xPos), prevY)
+                return Pair(RelPos.optimized(globalSet.xPos), prevY)
             }
         },
         @Deprecated("Use Positions Impl values")

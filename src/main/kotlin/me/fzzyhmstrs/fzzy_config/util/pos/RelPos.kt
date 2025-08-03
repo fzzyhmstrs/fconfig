@@ -16,7 +16,7 @@ package me.fzzyhmstrs.fzzy_config.util.pos
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class RelPos @JvmOverloads constructor(private val parent: Pos, private var p: Int = 0): Pos {
+open class RelPos @JvmOverloads constructor(private val parent: Pos, private var p: Int = 0): Pos.ParentPos {
     override fun get(): Int {
         return parent.get() + p
     }
@@ -31,5 +31,25 @@ open class RelPos @JvmOverloads constructor(private val parent: Pos, private var
     }
     override fun toString(): String {
         return "Rel(${get()})[$parent + $p]"
+    }
+
+
+    override fun parent(): Pos {
+        return parent
+    }
+    override fun offset(): Int {
+        return p
+    }
+
+
+    companion object {
+        fun optimized(parent: Pos, p: Int = 0): Pos {
+            return when (parent) {
+                is Pos.SuppliedPos -> RelPos(parent, p)
+                is Pos.ParentPos -> RelPos(parent.parent(), p + parent.offset())
+                is Pos.RootPos -> AbsPos(parent.get() + p)
+                else -> RelPos(parent, p)
+            }
+        }
     }
 }
