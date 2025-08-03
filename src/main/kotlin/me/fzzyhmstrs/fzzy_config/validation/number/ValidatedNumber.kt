@@ -284,7 +284,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         ClickableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
 
         companion object {
-            private val TEXTURE = "widget/slider".simpleId()
+            private val TEXTURE = "textures/gui/slider.png".simpleId()
         }
 
         private var DECIMAL_FORMAT: DecimalFormat = Util.make(
