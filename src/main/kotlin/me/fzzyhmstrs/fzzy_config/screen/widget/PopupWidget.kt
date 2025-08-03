@@ -601,7 +601,12 @@ class PopupWidget
         }
 
         /**
+         * Pushes a new LayoutWidget builder to this builders layout stack. This child layout will appear as a "sub-pane" next to the main popup in the direction specified.
          *
+         * This child will add to the overall dimensions of the popup and will affect the positioning of the "group"
+         *
+         * **Remember to call [popChildLayout] for every push!**
+         * @see popChildLayout
          * @author fzzyhmstrs
          * @since 0.7.2
          */
@@ -613,7 +618,8 @@ class PopupWidget
         }
 
         /**
-         *
+         * Pops a child Layout builder off this builders layout stack. Call this for every [pushChildLayout] called.
+         * @see pushChildLayout
          * @author fzzyhmstrs
          * @since 0.7.2
          */
