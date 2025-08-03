@@ -99,11 +99,6 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
             super.render(context, 0, 0, delta)
     }
 
-    @Deprecated("Only for 1.21.6+")
-    override fun applyBlur(context: DrawContext) {
-        //do not apply blur directly here
-    }
-
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
         val popupWidget = activeWidget() ?: return super<Screen>.keyPressed(keyCode, scanCode, modifiers)
         if (popupWidget.keyPressed(keyCode, scanCode, modifiers))
