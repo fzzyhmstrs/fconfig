@@ -154,11 +154,6 @@ internal class MapListWidget<K, V>(
 
         override fun render(
             context: DrawContext,
-            index: Int,
-            y: Int,
-            x: Int,
-            entryWidth: Int,
-            entryHeight: Int,
             mouseX: Int,
             mouseY: Int,
             hovered: Boolean,
@@ -199,11 +194,6 @@ internal class MapListWidget<K, V>(
 
         override fun render(
             context: DrawContext,
-            index: Int,
-            y: Int,
-            x: Int,
-            entryWidth: Int,
-            entryHeight: Int,
             mouseX: Int,
             mouseY: Int,
             hovered: Boolean,
