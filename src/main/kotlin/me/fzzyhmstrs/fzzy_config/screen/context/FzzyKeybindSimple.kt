@@ -43,7 +43,7 @@ data class FzzyKeybindSimple(val inputCode: Int, val type: ContextInput, val ctr
     }
 
     override fun isPressed(): Boolean {
-        return InputUtil.isKeyPressed(MinecraftClient.getInstance().window.handle, inputCode)
+        return InputUtil.isKeyPressed(MinecraftClient.getInstance().window, inputCode)
                 && this.ctrl.validate(isControlDown())
                 && this.shift.validate(isShiftDown())
                 && this.alt.validate(isAltDown())
