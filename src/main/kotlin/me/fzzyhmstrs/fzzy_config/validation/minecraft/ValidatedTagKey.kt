@@ -24,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.wrap
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.input.KeyInput
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
@@ -142,6 +143,6 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
         PopupWidget.push(popup)
         PopupWidget.focusElement(popup, textField)
         if (isKeyboard)
-            textField.keyPressed(keyCode, scanCode, modifiers)
+            textField.keyPressed(KeyInput(keyCode, scanCode, modifiers))
     }
 }
