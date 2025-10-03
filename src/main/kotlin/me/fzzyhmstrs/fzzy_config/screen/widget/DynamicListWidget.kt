@@ -31,6 +31,7 @@ import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
 import me.fzzyhmstrs.fzzy_config.util.pos.SuppliedPos
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
+import net.minecraft.client.gui.ParentElement
 import net.minecraft.client.gui.navigation.GuiNavigation
 import net.minecraft.client.gui.navigation.GuiNavigation.Arrow
 import net.minecraft.client.gui.navigation.GuiNavigation.Tab
@@ -351,8 +352,8 @@ class DynamicListWidget(
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) ?: super<CustomListWidget>.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        return suggestionWindowElement?.mouseClicked(click, doubled) ?: super<CustomListWidget>.mouseClicked(click, doubled)
     }
 
     override fun scrollToTop(): Boolean {
@@ -956,8 +957,8 @@ class DynamicListWidget(
             return parentElement.isMouseOver(mouseX, mouseY) && mouseX >= x.get() && mouseY >= top.get() && mouseX < (x + w) && mouseY < bottom.get()
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
+        override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+            return super<ParentElement>.mouseClicked(click, doubled)
         }
 
         /**

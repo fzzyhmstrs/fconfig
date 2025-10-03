@@ -33,6 +33,7 @@ import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.Selectable
@@ -404,11 +405,11 @@ internal class ConfigScreen(
         return configList.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val global = globalInputHandler?.invoke(button, false, ContextInput.MOUSE, isControlDown(), isShiftDown(), isAltDown())
+    override fun onClick(click: Click, doubled: Boolean): Boolean {
+        val global = globalInputHandler?.invoke(click.button(), false, ContextInput.MOUSE, click.hasCtrl(), click.hasShift(), click.hasAlt())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
-        val contextTypes = ContextType.getRelevantContext(button, ContextInput.MOUSE, isControlDown(), isShiftDown(), isAltDown())
-        if (contextTypes.isEmpty()) return super.onClick(mouseX, mouseY, button)
+        val contextTypes = ContextType.getRelevantContext(click.button(), ContextInput.MOUSE, click.hasCtrl(), click.hasShift(), click.hasAlt())
+        if (contextTypes.isEmpty()) return super.onClick(click, doubled)
         val activeWidget = activeWidget()
         if (activeWidget != null || justClosedWidget) {
             for (contextType in contextTypes) {
@@ -426,24 +427,24 @@ internal class ConfigScreen(
                     }
                 }
             }
-            return super.onClick(mouseX, mouseY, button)
+            return super.onClick(click, doubled)
         }
 
         var bl = false
         for (contextType in contextTypes) {
-            bl = bl || handleContext(contextType, Position(ContextInput.MOUSE, mouseX.toInt(), mouseY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
+            bl = bl || handleContext(contextType, Position(ContextInput.MOUSE, click.x.toInt(), click.y.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }
         return if(bl)
             true
         else
-            super.onClick(mouseX, mouseY, button)
+            super.onClick(click, doubled)
 
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val global = globalInputHandler?.invoke(button, true, ContextInput.MOUSE, isControlDown(), isShiftDown(), isAltDown())
+    override fun mouseReleased(click: Click): Boolean {
+        val global = globalInputHandler?.invoke(click.button(), true, ContextInput.MOUSE, click.hasCtrl(), click.hasShift(), click.hasAlt())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
-        return super.mouseReleased(mouseX, mouseY, button)
+        return super.mouseReleased(click)
     }
 
     override fun keyPressed(input: KeyInput): Boolean {

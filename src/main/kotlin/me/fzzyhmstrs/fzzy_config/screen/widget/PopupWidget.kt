@@ -138,24 +138,24 @@ class PopupWidget
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button)?.takeIf { it } ?: super.mouseClicked(mouseX, mouseY, button).takeIf { it } ?: isMouseOver(mouseX, mouseY)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        return suggestionWindowElement?.mouseClicked(click, doubled)?.takeIf { it } ?: super.mouseClicked(click, doubled).takeIf { it } ?: isMouseOver(click.x, click.y)
     }
 
     fun preClick(mouseX: Double, mouseY: Double, button: Int): ClickResult {
         return context.onClick.onClick(mouseX, mouseY, isMouseOver(mouseX, mouseY), button)
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return suggestionWindowElement?.mouseReleased(mouseX, mouseY, button) ?: super.mouseReleased(mouseX, mouseY, button)
+    override fun mouseReleased(click: Click): Boolean {
+        return suggestionWindowElement?.mouseReleased(click) ?: super.mouseReleased(click)
     }
 
     override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
         return mouseX >= x.toDouble() && mouseY >= y.toDouble() && mouseX < (x + width).toDouble() && mouseY < (y + height).toDouble()
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        return suggestionWindowElement?.mouseDragged(mouseX, mouseY, button, deltaX, deltaY) ?: super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+        return suggestionWindowElement?.mouseDragged(click, offsetX, offsetY) ?: super.mouseDragged(click, offsetX, offsetY)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {

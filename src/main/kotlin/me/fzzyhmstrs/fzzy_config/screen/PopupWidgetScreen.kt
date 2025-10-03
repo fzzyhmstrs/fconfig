@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.internal.SuggestionWindow
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.Screen
@@ -119,17 +120,17 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         return false
     }
 
-    final override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val popupWidget = activeWidget() ?: return onClick(mouseX, mouseY, button)
-        val result = popupWidget.preClick(mouseX, mouseY, button)
+    final override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        val popupWidget = activeWidget() ?: return onClick(click, doubled)
+        val result = popupWidget.preClick(click.x, click.y, click.button())
         if (result == PopupWidget.ClickResult.PASS) {
-            return onClick(mouseX, mouseY, button)
+            return onClick(click, doubled)
         }
-        return super<PopupParentElement>.mouseClicked(mouseX, mouseY, button)
+        return super<PopupParentElement>.mouseClicked(click, doubled)
     }
 
-    open fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return super<PopupParentElement>.mouseClicked(mouseX, mouseY, button)
+    open fun onClick(click: Click, doubled: Boolean): Boolean {
+        return super<PopupParentElement>.mouseClicked(click, doubled)
     }
 
     override fun addScreenNarrations(messageBuilder: NarrationMessageBuilder) {

@@ -37,6 +37,7 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.ColorHolder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedColor.Companion.validatedColor
 import net.minecraft.block.MapColor
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -1037,13 +1038,13 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             context.drawTex(CROSSHAIR, cX, cY, 5, 5)
         }
 
-        override fun onClick(mouseX: Double, mouseY: Double) {
+        override fun onClick(click: Click, doubled: Boolean) {
             mouseHasBeenClicked = true
-            updateHL(mouseX, mouseY)
+            updateHL(click.x, click.y)
         }
 
-        override fun onDrag(mouseX: Double, mouseY: Double, deltaX: Double, deltaY: Double) {
-            updateHL(mouseX, mouseY)
+        override fun onDrag(click: Click, offsetX: Double, offsetY: Double) {
+            updateHL(click.x, click.y)
         }
 
         private fun updateHL(mouseX: Double, mouseY: Double) {
@@ -1084,7 +1085,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             mutableColor.updateHSL(mutableColor.h, mutableColor.s, light)
         }
 
-        override fun onRelease(mouseX: Double, mouseY: Double) {
+        override fun onRelease(click: Click) {
             if (mouseHasBeenClicked)
                 MinecraftClient.getInstance().soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
         }

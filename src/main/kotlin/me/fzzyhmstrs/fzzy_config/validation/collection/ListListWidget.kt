@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
@@ -80,9 +81,9 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         this.scrollTo(entry)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) == true) return true
-        return super.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        if (suggestionWindowElement?.mouseClicked(click, doubled) == true) return true
+        return super.mouseClicked(click, doubled)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -133,16 +134,16 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             return mutableListOf(entryWidget, deleteWidget)
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            hoveredElement(mouseX, mouseY).ifPresentOrElse({clickedWidget = it}, {clickedWidget = null})
-            return super.mouseClicked(mouseX, mouseY, button)
+        override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+            hoveredElement(click.x, click.y).ifPresentOrElse({clickedWidget = it}, {clickedWidget = null})
+            return super.mouseClicked(click, doubled)
         }
 
-        override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        override fun mouseReleased(click: Click): Boolean {
             if (clickedWidget != null) {
-                return (clickedWidget?.mouseReleased(mouseX, mouseY, button) ?: super.mouseReleased(mouseX, mouseY, button)).also { clickedWidget = null }
+                return (clickedWidget?.mouseReleased(click) ?: super.mouseReleased(click)).also { clickedWidget = null }
             }
-            return super.mouseReleased(mouseX, mouseY, button)
+            return super.mouseReleased(click)
         }
 
         override fun render(

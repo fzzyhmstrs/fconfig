@@ -49,6 +49,7 @@ import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Compan
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier.Companion.ofTag
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
@@ -1186,15 +1187,15 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 MinecraftClient.getInstance().currentScreen?.nullCast<PopupController>()?.suggestionWindow = window
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            val bl = window?.mouseClicked(mouseX.toInt(), mouseY.toInt(), button) ?: super.mouseClicked(mouseX, mouseY, button)
+        override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+            val bl = window?.mouseClicked(click.x.toInt(), click.y.toInt(), click.button()) ?: super.mouseClicked(click, doubled)
             if (closeWindow) {
                 pendingSuggestions = null
                 window = null
                 suggestionWindowListener?.setSuggestionWindowElement(null)
                 closeWindow = false
             }
-            return if(bl) true else super.mouseClicked(mouseX, mouseY, button)
+            return if(bl) true else super.mouseClicked(click, doubled)
         }
 
         override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {

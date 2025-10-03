@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.AbstractTextWidget
@@ -51,7 +52,7 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
         }
     }
 
-    override fun onClick(mouseX: Double, mouseY: Double) {
+    override fun onClick(click: Click, doubled: Boolean) {
         onClick.interact(this, false, 0, 0, 0)
     }
 

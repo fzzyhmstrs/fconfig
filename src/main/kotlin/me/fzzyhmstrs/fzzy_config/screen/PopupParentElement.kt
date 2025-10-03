@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen
 
 import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.TriState
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
 import net.minecraft.client.input.CharInput
@@ -49,23 +50,23 @@ interface PopupParentElement: ParentElement, PopupController {
             Optional.empty()
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val popupWidget = activeWidget() ?: return mouseClick(mouseX, mouseY, button)
-        if (popupWidget.mouseClicked(mouseX, mouseY, button) || popupWidget.isMouseOver(mouseX, mouseY)) {
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        val popupWidget = activeWidget() ?: return mouseClick(click, doubled)
+        if (popupWidget.mouseClicked(click, doubled) || popupWidget.isMouseOver(click.x, click.y)) {
             return true
         } else if(popupWidget.closesOnMissedClick() != TriState.FALSE) {
-            setPopupInternal(null, mouseX, mouseY, false)
+            setPopupInternal(null, click.x, click.y, false)
             if (popupWidget.closesOnMissedClick().asBoolean)
-                return mouseClick(mouseX, mouseY, button)
+                return mouseClick(click, doubled)
         }
         return false
     }
 
-    private fun mouseClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    private fun mouseClick(click: Click, doubled: Boolean): Boolean {
         for (element in this.children()) {
-            if (element.mouseClicked(mouseX, mouseY, button)) {
+            if (element.mouseClicked(click, doubled)) {
                 this.focused = element
-                if (button == 0) {
+                if (click.button() == 0) {
                     this.isDragging = true
                 }
 
@@ -75,14 +76,14 @@ interface PopupParentElement: ParentElement, PopupController {
         return false
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseReleased(click: Click): Boolean {
         if (justClosedWidget) {
             justClosedWidget = false
             return false
         }
-        val popupWidget = activeWidget() ?: return super.mouseReleased(mouseX, mouseY, button)
-        if (popupWidget.isMouseOver(mouseX, mouseY) || popupWidget.isDragging) {
-            return popupWidget.mouseReleased(mouseX, mouseY, button)
+        val popupWidget = activeWidget() ?: return super.mouseReleased(click)
+        if (popupWidget.isMouseOver(click.x, click.y) || popupWidget.isDragging) {
+            return popupWidget.mouseReleased(click)
         }
         return false
     }
@@ -92,9 +93,9 @@ interface PopupParentElement: ParentElement, PopupController {
         return popupWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        val popupWidget = activeWidget() ?: return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
-        return popupWidget.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+        val popupWidget = activeWidget() ?: return super.mouseDragged(click, offsetX, offsetY)
+        return popupWidget.mouseDragged(click, offsetX, offsetY)
     }
 
     override fun keyReleased(input: KeyInput): Boolean {

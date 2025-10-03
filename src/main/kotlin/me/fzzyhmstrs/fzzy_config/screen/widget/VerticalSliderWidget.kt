@@ -15,12 +15,12 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.navigation.GuiNavigationType
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.KeyCodes
 import net.minecraft.client.input.KeyInput
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.text.MutableText
@@ -109,20 +109,20 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
         return false
     }
 
-    override fun onClick(mouseX: Double, mouseY: Double) {
+    override fun onClick(click: Click, doubled: Boolean) {
         mouseHasBeenClicked = true
-        setValueFromMouse(mouseY)
+        setValueFromMouse(click.y)
     }
 
-    override fun onDrag(mouseX: Double, mouseY: Double, deltaX: Double, deltaY: Double) {
-        setValueFromMouse(mouseY)
-        super.onDrag(mouseX, mouseY, deltaX, deltaY)
+    override fun onDrag(click: Click, offsetX: Double, offsetY: Double) {
+        setValueFromMouse(click.y)
+        super.onDrag(click, offsetX, offsetY)
     }
 
     override fun playDownSound(soundManager: SoundManager?) {
     }
 
-    override fun onRelease(mouseX: Double, mouseY: Double) {
+    override fun onRelease(click: Click) {
         if (mouseHasBeenClicked)
             super.playDownSound(MinecraftClient.getInstance().soundManager)
     }
