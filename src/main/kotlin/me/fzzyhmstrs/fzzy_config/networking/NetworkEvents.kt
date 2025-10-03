@@ -39,7 +39,7 @@ internal object NetworkEvents {
     private fun handleUpdate(payload: ConfigUpdateC2SCustomPayload, context: IPayloadContext) {
         SyncedConfigRegistry.receiveConfigUpdate(
             payload.updates,
-            context.player().cast<ServerPlayerEntity>().world.server,
+            context.player().cast<ServerPlayerEntity>().entityWorld.server,
             context.player().cast(),
             payload.playerPerm,
             payload.changeHistory,
