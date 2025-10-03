@@ -39,6 +39,7 @@ import net.minecraft.client.gui.navigation.NavigationDirection
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.MathHelper
@@ -366,8 +367,8 @@ class DynamicListWidget(
         return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: super<CustomListWidget>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) ?: super<CustomListWidget>.keyPressed(keyCode, scanCode, modifiers)
+    override fun keyPressed(input: KeyInput): Boolean {
+        return suggestionWindowElement?.keyPressed(input) ?: super<CustomListWidget>.keyPressed(input)
     }
 
     private var suggestionWindowElement: Element? = null

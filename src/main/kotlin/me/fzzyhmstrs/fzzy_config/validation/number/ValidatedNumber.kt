@@ -33,6 +33,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.input.KeyInput
 import net.minecraft.client.resource.language.I18n
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.text.MutableText
@@ -391,9 +392,9 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             }
         }
 
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            val bl = keyCode == GLFW.GLFW_KEY_LEFT
-            if (bl || keyCode == GLFW.GLFW_KEY_RIGHT) {
+        override fun keyPressed(input: KeyInput): Boolean {
+            val bl = input.isLeft
+            if (bl || input.isRight) {
                 val f = if (bl) -increment else increment
                 val ff = MathHelper.clamp(value.toDouble() + f, minValue.toDouble(), maxValue.toDouble())
                 this.setValue(ff)

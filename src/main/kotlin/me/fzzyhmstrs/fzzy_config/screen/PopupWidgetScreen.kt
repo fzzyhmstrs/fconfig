@@ -18,6 +18,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import org.jetbrains.annotations.ApiStatus.Internal
 import org.lwjgl.glfw.GLFW
@@ -107,11 +108,11 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         //do not apply blur directly here
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val popupWidget = activeWidget() ?: return super<Screen>.keyPressed(keyCode, scanCode, modifiers)
-        if (popupWidget.keyPressed(keyCode, scanCode, modifiers))
+    override fun keyPressed(input: KeyInput): Boolean {
+        val popupWidget = activeWidget() ?: return super<Screen>.keyPressed(input)
+        if (popupWidget.keyPressed(input))
             return true
-        if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
+        if (input.isEscape) {
             setPopup(null)
             return true
         }

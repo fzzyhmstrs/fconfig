@@ -20,6 +20,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.CharInput
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import java.util.function.Consumer
 
@@ -189,12 +190,12 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         return focusedElement != null
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return super<ParentElement>.keyPressed(keyCode, scanCode, modifiers)
+    override fun keyPressed(input: KeyInput): Boolean {
+        return super<ParentElement>.keyPressed(input)
     }
 
-    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-      return super<ParentElement>.keyReleased(keyCode, scanCode, modifiers)
+    override fun keyReleased(input: KeyInput): Boolean {
+        return super<ParentElement>.keyReleased(input)
     }
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {

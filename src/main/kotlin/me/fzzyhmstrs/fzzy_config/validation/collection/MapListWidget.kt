@@ -22,6 +22,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.widget.ElementListWidget
+import net.minecraft.client.input.KeyInput
 import net.minecraft.util.Colors
 import java.util.function.BiFunction
 import java.util.function.Function
@@ -96,9 +97,9 @@ internal class MapListWidget<K, V>(
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) == true) return true
-        return super.keyPressed(keyCode, scanCode, modifiers)
+    override fun keyPressed(input: KeyInput): Boolean {
+        if (suggestionWindowElement?.keyPressed(input) == true) return true
+        return super.keyPressed(input)
     }
 
     init {
