@@ -45,7 +45,7 @@ import org.lwjgl.glfw.GLFW
 class TestConfigImpl4: Config(Identifier.of("fzzy_config_test","test_config4")) {
 
     override fun onUpdateClient() {
-        MinecraftClient.getInstance().debugHud.toggleDebugHud()
+        MinecraftClient.getInstance().debugHudEntryList.toggleF3Enabled()
     }
 
     override fun onSyncClient() {
