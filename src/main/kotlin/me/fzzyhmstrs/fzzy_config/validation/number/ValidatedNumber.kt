@@ -29,6 +29,7 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.number.ValidatedNumber.WidgetType.*
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
@@ -419,18 +420,18 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             this.message = DECIMAL_FORMAT.format(this.value).lit()
         }
 
-        override fun onClick(mouseX: Double, mouseY: Double) {
-            setValueFromMouse(mouseX)
+        override fun onClick(click: Click, doubled: Boolean) {
+            setValueFromMouse(click.x)
         }
 
-        override fun onDrag(mouseX: Double, mouseY: Double, deltaX: Double, deltaY: Double) {
-            setValueFromMouse(mouseX)
-            super.onDrag(mouseX, mouseY, deltaX, deltaY)
+        override fun onDrag(click: Click, offsetX: Double, offsetY: Double) {
+            setValueFromMouse(click.x)
+            super.onDrag(click, offsetX, offsetY)
         }
 
         override fun playDownSound(soundManager: SoundManager?) {}
 
-        override fun onRelease(mouseX: Double, mouseY: Double) {
+        override fun onRelease(click: Click) {
             this.isValid = validator.validateEntry(this.value, EntryValidator.ValidationType.STRONG).isValid()
             if(isChanged() && isValid) {
                 cachedWrappedValue = value

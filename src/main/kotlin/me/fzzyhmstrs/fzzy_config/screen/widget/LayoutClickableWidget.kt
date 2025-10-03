@@ -136,23 +136,23 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         //renderCustom(context, mouseX, mouseY, delta)
     }
 
-    override fun onClick(mouseX: Double, mouseY: Double) {
+    override fun onClick(click: Click, doubled: Boolean) {
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        return super<ParentElement>.mouseClicked(click, doubled)
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return super<ParentElement>.mouseReleased(mouseX, mouseY, button)
+    override fun mouseReleased(click: Click): Boolean {
+        return super<ParentElement>.mouseReleased(click)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         return super<ParentElement>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        return super<ParentElement>.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+        return super<ParentElement>.mouseDragged(click, offsetX, offsetY)
     }
 
     override fun charTyped(input: CharInput): Boolean {

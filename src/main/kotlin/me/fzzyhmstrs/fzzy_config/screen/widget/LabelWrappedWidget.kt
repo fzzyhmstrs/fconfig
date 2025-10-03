@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.nullCast
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
@@ -47,14 +48,14 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return child.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        return child.mouseClicked(click, doubled)
     }
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        return child.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+        return child.mouseDragged(click, offsetX, offsetY)
     }
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return child.mouseReleased(mouseX, mouseY, button)
+    override fun mouseReleased(click: Click): Boolean {
+        return child.mouseReleased(click)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {

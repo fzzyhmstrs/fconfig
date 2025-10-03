@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
@@ -415,38 +416,38 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (!this.isSelectButton(button)) {
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        if (!this.isSelectButton(click.button())) {
             return false
         }
-        if (!isMouseOver(mouseX, mouseY)) {
+        if (!isMouseOver(click.x, click.y)) {
             return false
         }
-        if (mouseX >= (right - scrollWidth) && (mouseX < right)) {
+        if (click.x >= (right - scrollWidth) && (click.x < right)) {
             dragging = true
-            if (scrollButtonType.get().mouseOverUp(mouseY, y, bottom)) {
+            if (scrollButtonType.get().mouseOverUp(click.y, y, bottom)) {
                 client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(50)
-            } else if (scrollButtonType.get().mouseOverDown(mouseY, y, bottom)) {
+            } else if (scrollButtonType.get().mouseOverDown(click.y, y, bottom)) {
                 client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(-50)
             } else {
-                val jump = jumpScrollBarToMouse(mouseY, button)
+                val jump = jumpScrollBarToMouse(click.y, click.button())
                 if (jump != 0) {
                     handleScrollByBar(jump)
                 }
-                updateScrollingState(mouseY, button)
+                updateScrollingState(click.y, click.button())
                 return true
             }
         } else {
             scrollingY = -1.0
         }
 
-        val e = entryAtY(mouseY.toInt())
+        val e = entryAtY(click.y.toInt())
         val e2 = focused
         if (e != null) {
             focused = e
-            if (e.mouseClicked(mouseX, mouseY, button)) {
+            if (e.mouseClicked(click, doubled)) {
                 if (e2 != e && e2 is ParentElement) {
                     e2.focused = null
                 }
@@ -460,36 +461,36 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return this.scrollingY >= 0.0
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseReleased(click: Click): Boolean {
         dragging = false
-        return focused?.mouseReleased(mouseX, mouseY, button) == true
+        return focused?.mouseReleased(click) == true
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        if (super<ParentElement>.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+        if (super<ParentElement>.mouseDragged(click, offsetX, offsetY)) {
             return true
-        } else if (button == 0 && this.scrollingY >= 0.0) {
-            val mouseDelta = mouseY - scrollingY
-            return if (mouseY < y.toDouble()) {
+        } else if (click.button() == 0 && this.scrollingY >= 0.0) {
+            val mouseDelta = click.y - scrollingY
+            return if (click.y < y.toDouble()) {
                 this.scrollToTop()
-            } else if (mouseY > this.bottom.toDouble()) {
+            } else if (click.y > this.bottom.toDouble()) {
                 this.scrollToBottom()
             } else if(topDelta() >= 0 && mouseDelta < 0.0) {
-                scrollingY = mouseY
+                scrollingY = click.y
                 return true
             } else if(bottomDelta() <= 0 && mouseDelta > 0.0) {
-                scrollingY = mouseY
+                scrollingY = click.y
                 return true
             } else {
-                val travelProgress = MathHelper.getLerpProgress(mouseY, scrollingTop, scrollingBottom)
+                val travelProgress = MathHelper.getLerpProgress(click.y, scrollingTop, scrollingBottom)
                 if (travelProgress < 0.0) {
                     scrollToTop()
-                    scrollingBottom = scrollingBottom - scrollingTop + mouseY
-                    scrollingTop = mouseY
+                    scrollingBottom = scrollingBottom - scrollingTop + click.y
+                    scrollingTop = click.y
                 } else if (travelProgress > 1.0) {
                     scrollToBottom()
-                    scrollingTop = mouseY - (scrollingBottom - scrollingTop)
-                    scrollingBottom = mouseY
+                    scrollingTop = click.y - (scrollingBottom - scrollingTop)
+                    scrollingBottom = click.y
                 } else {
                     val totalDelta = contentHeight() - height
                     val newTopDeltaAmount = (-1 * (totalDelta * travelProgress)).toInt()

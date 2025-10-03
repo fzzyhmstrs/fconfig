@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.TextFieldWidget
@@ -48,9 +49,9 @@ internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, 
 
     private var clicked = false
 
-    override fun onClick(mouseX: Double, mouseY: Double) {
+    override fun onClick(click: Click, doubled: Boolean) {
         clicked = true
-        super.onClick(mouseX, mouseY)
+        super.onClick(click, doubled)
         clicked = false
     }
 
