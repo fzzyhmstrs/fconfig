@@ -76,7 +76,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     }
 
     private fun makeVisible(entry: ListEntry<T>) {
-        this.ensureVisible(entry)
+        this.scrollTo(entry)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {

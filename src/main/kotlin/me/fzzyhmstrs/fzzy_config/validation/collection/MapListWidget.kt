@@ -83,7 +83,7 @@ internal class MapListWidget<K, V>(
     }
 
     private fun makeVisible(entry: MapEntry<K, V>) {
-        this.ensureVisible(entry)
+        this.scrollTo(entry)
     }
 
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
