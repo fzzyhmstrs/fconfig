@@ -47,7 +47,7 @@ object PopupWidgetExamples {
             .addDivider()
             //adds a basic element. give it a unique name, and position it
             //this element is positioned below the last added element (the divider in this case), and aligned centered in the popup
-            .add("text_element", TextWidget(Text.translatable("my.cool.popup.text"), MinecraftClient.getInstance().textRenderer).alignCenter(),
+            .add("text_element", TextWidget(Text.translatable("my.cool.popup.text"), MinecraftClient.getInstance().textRenderer),
                 LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
             //adds a button, this element is below the "text_element" one, and aligned left in the popup bounds
             .add("button_1", CustomButtonWidget.builder(Text.translatable("my.cool.popup.button1")) { b-> }.size(50, 44).build(),
