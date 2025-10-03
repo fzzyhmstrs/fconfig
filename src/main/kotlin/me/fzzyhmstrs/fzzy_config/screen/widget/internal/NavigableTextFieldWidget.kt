@@ -25,7 +25,7 @@ internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, 
     private val searchText = "fc.config.search".translate().formatted(Formatting.DARK_GRAY, Formatting.ITALIC)
 
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-         if (!this.isNarratable || !this.isFocused) {
+         if (!this.isInteractable || !this.isFocused) {
             return false
         }
         if (keyCode == GLFW.GLFW_KEY_LEFT && this.text.isEmpty()) {
