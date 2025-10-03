@@ -51,7 +51,7 @@ data class FzzyKeybindSimple(val inputCode: Int, val type: ContextInput, val ctr
 
     override fun keybind(): MutableText {
         val key: Text = if (type == ContextInput.KEYBOARD)
-            InputUtil.fromKeyCode(inputCode, -1).localizedText
+            InputUtil.Type.MOUSE.createFromCode(inputCode).localizedText
         else
             InputUtil.Type.MOUSE.createFromCode(inputCode).localizedText
         val c = ctrl == TriState.TRUE
