@@ -229,7 +229,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
         PopupWidget.push(popup)
         PopupWidget.focusElement(popup, textField)
         if (isKb)
-            textField.keyPressed(key, code, mods)
+            textField.keyPressed(KeyInput(key, code, mods))
     }
 
     //////////// IDENTIFIER ///////////////////
