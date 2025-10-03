@@ -46,6 +46,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.input.CharInput
+import net.minecraft.client.input.KeyInput
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
@@ -1051,8 +1052,8 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             mutableColor.updateHSL(hue, mutableColor.s, light)
         }
 
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            return when(keyCode) {
+        override fun keyPressed(input: KeyInput): Boolean {
+            return when(input.keycode) {
                 GLFW.GLFW_KEY_LEFT -> {
                     incrementL(-HORIZONTAL_INC)
                     true
@@ -1069,7 +1070,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
                     incrementH(VERTICAL_INC)
                     true
                 }
-                else -> super.keyPressed(keyCode, scanCode, modifiers)
+                else -> super.keyPressed(input)
             }
         }
 

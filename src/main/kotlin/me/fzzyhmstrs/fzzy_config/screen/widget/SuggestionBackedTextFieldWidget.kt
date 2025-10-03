@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.input.KeyInput
 import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
@@ -149,8 +150,8 @@ class SuggestionBackedTextFieldWidget(
         return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(), mouseY.toInt()) == true
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val bl = window?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)
+    override fun keyPressed(input: KeyInput): Boolean {
+        val bl = window?.keyPressed(input.keycode, input.scancode, input.modifiers) ?: super.keyPressed(input)
         if (closeWindow) {
             pendingSuggestions = null
             window = null
@@ -158,12 +159,12 @@ class SuggestionBackedTextFieldWidget(
             suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }
-        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || (keyCode == GLFW.GLFW_KEY_TAB && bl)) {
+        if (input.isEnter || (input.isTab && bl)) {
             pushChanges()
             if (closePopup)
                 PopupWidget.pop()
         }
-        return if(bl) true else super.keyPressed(keyCode, scanCode, modifiers)
+        return if(bl) true else super.keyPressed(input)
     }
 
     /**

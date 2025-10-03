@@ -22,6 +22,7 @@ import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.CharInput
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 
 /**
@@ -60,11 +61,11 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         return child.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return child.keyPressed(keyCode, scanCode, modifiers)
+    override fun keyPressed(input: KeyInput): Boolean {
+        return child.keyPressed(input)
     }
-    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return child.keyReleased(keyCode, scanCode, modifiers)
+    override fun keyReleased(input: KeyInput): Boolean {
+        return child.keyReleased(input)
     }
 
     override fun charTyped(input: CharInput): Boolean {

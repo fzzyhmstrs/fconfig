@@ -21,6 +21,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.input.KeyCodes
+import net.minecraft.client.input.KeyInput
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -92,14 +93,14 @@ class VerticalSliderWidget(private val wrappedValue: Supplier<Double>, x: Int, y
         }
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (KeyCodes.isToggle(keyCode)) {
+    override fun keyPressed(input: KeyInput): Boolean {
+        if (input.isEnterOrSpace) {
             sliderFocused = !sliderFocused
             return true
         }
         if (sliderFocused) {
-            val bl = keyCode == GLFW.GLFW_KEY_UP
-            if (bl || keyCode == GLFW.GLFW_KEY_DOWN) {
+            val bl = input.isUp
+            if (bl || input.isDown) {
                 val f = if (bl) -1.0f else 1.0f
                 this.setValue(value + (f / (height - 8).toFloat()).toDouble())
                 return true

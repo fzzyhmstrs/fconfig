@@ -37,6 +37,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
@@ -398,18 +399,18 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
                 super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
         }
 
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        override fun keyPressed(input: KeyInput): Boolean {
             return if (active)
-                delegateWidget.keyPressed(keyCode, scanCode, modifiers)
+                delegateWidget.keyPressed(input)
             else
-                super.keyPressed(keyCode, scanCode, modifiers)
+                super.keyPressed(input)
         }
 
-        override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        override fun keyReleased(input: KeyInput): Boolean {
             return if (active)
-                delegateWidget.keyReleased(keyCode, scanCode, modifiers)
+                delegateWidget.keyReleased(input)
             else
-                super.keyReleased(keyCode, scanCode, modifiers)
+                super.keyReleased(input)
         }
 
         override fun setFocused(focused: Boolean) {

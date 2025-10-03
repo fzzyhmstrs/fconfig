@@ -43,6 +43,7 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.DirectionalLayoutWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
+import net.minecraft.client.input.KeyInput
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -445,12 +446,12 @@ internal class ConfigScreen(
         return super.mouseReleased(mouseX, mouseY, button)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val global = globalInputHandler?.invoke(keyCode, false, ContextInput.KEYBOARD, isControlDown(), isShiftDown(), isAltDown())
+    override fun keyPressed(input: KeyInput): Boolean {
+        val global = globalInputHandler?.invoke(input.key(), false, ContextInput.KEYBOARD, input.hasCtrl(), input.hasShift(), input.hasAlt())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
 
-        val contextTypes = ContextType.getRelevantContext(keyCode, ContextInput.KEYBOARD, isControlDown(), isShiftDown(), isAltDown())
-        if (contextTypes.isEmpty()) return super.keyPressed(keyCode, scanCode, modifiers)
+        val contextTypes = ContextType.getRelevantContext(input.key(), ContextInput.KEYBOARD, input.hasCtrl(), input.hasShift(), input.hasAlt())
+        if (contextTypes.isEmpty()) return super.keyPressed(input)
 
         val activeWidget = activeWidget()
         if (activeWidget != null) {
@@ -468,18 +469,18 @@ internal class ConfigScreen(
                     }
                 }
             }
-            return super.keyPressed(keyCode, scanCode, modifiers)
+            return super.keyPressed(input)
         }
 
         var bl = false
-        val input = if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
+        val inputCtx = if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
         for (contextType in contextTypes) {
-            bl = bl || handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
+            bl = bl || handleContext(contextType, Position(inputCtx, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }
         return if (bl) {
             true
         } else {
-            val bl2 = super.keyPressed(keyCode, scanCode, modifiers)
+            val bl2 = super.keyPressed(input)
             if (!bl2 && contextTypes.contains(ContextType.BACK) && parent is ConfigScreen) {
                 this.close()
                 true
@@ -489,10 +490,10 @@ internal class ConfigScreen(
         }
     }
 
-    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val global = globalInputHandler?.invoke(keyCode, true, ContextInput.KEYBOARD, isControlDown(), isShiftDown(), isAltDown())
+    override fun keyReleased(input: KeyInput): Boolean {
+        val global = globalInputHandler?.invoke(input.key(), true, ContextInput.KEYBOARD, input.hasCtrl(), input.hasShift(), input.hasAlt())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
-        return super.keyReleased(keyCode, scanCode, modifiers)
+        return super.keyReleased(input)
     }
 
     override fun handleContext(contextType: ContextType, position: Position): Boolean {

@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
 import net.minecraft.client.input.CharInput
+import net.minecraft.client.input.KeyInput
 import java.util.*
 
 /**
@@ -96,8 +97,8 @@ interface PopupParentElement: ParentElement, PopupController {
         return popupWidget.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
     }
 
-    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return activeWidget()?.keyReleased(keyCode, scanCode, modifiers) ?: super.keyReleased(keyCode, scanCode, modifiers)
+    override fun keyReleased(input: KeyInput): Boolean {
+        return activeWidget()?.keyReleased(input) ?: super.keyReleased(input)
     }
 
     override fun charTyped(input: CharInput): Boolean {

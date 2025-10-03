@@ -52,6 +52,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraft.client.input.KeyInput
 import net.minecraft.registry.*
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.tag.TagKey
@@ -1204,8 +1205,8 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
             return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(), mouseY.toInt()) == true
         }
 
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            val bl = window?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)
+        override fun keyPressed(input: KeyInput): Boolean {
+            val bl = window?.keyPressed(input.keycode, input.scancode, input.modifiers) ?: super.keyPressed(input)
             if (closeWindow) {
                 pendingSuggestions = null
                 window = null
@@ -1213,11 +1214,11 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
                 suggestionWindowListener?.setSuggestionWindowElement(null)
                 closeWindow = false
             }
-            if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+            if (input.isEnter) {
                 pushChanges()
                 PopupWidget.pop()
             }
-            return if(bl) true else super.keyPressed(keyCode, scanCode, modifiers)
+            return if(bl) true else super.keyPressed(input)
         }
 
         init {

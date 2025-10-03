@@ -17,7 +17,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.AbstractTextWidget
-import net.minecraft.client.input.KeyCodes
+import net.minecraft.client.input.KeyInput
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -55,14 +55,14 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
         onClick.interact(this, false, 0, 0, 0)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return if (!this.isFocused || isNavigation(keyCode)) {
+    override fun keyPressed(input: KeyInput): Boolean {
+        return if (!this.isFocused || isNavigation(input.keycode)) {
             false
         } else {
-            if(KeyCodes.isToggle(keyCode))
-                onClick.interact(this, false, keyCode, scanCode, modifiers)
+            if(input.isEnterOrSpace)
+                onClick.interact(this, false, input.keycode, input.scancode, input.modifiers)
             else
-                onClick.interact(this, true, keyCode, scanCode, modifiers)
+                onClick.interact(this, true, input.keycode, input.scancode, input.modifiers)
             return true
         }
     }

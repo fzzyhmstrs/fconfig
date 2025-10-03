@@ -32,6 +32,7 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.*
+import net.minecraft.client.input.KeyInput
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -161,11 +162,11 @@ class PopupWidget
         return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)) {
+    override fun keyPressed(input: KeyInput): Boolean {
+        if (suggestionWindowElement?.keyPressed(input) ?: super.keyPressed(input)) {
             return true
         }
-        val guiNavigation: GuiNavigation? = when(keyCode) {
+        val guiNavigation: GuiNavigation? = when(input.keycode) {
             GLFW.GLFW_KEY_LEFT -> getArrowNavigation(NavigationDirection.LEFT)
             GLFW.GLFW_KEY_RIGHT -> getArrowNavigation(NavigationDirection.RIGHT)
             GLFW.GLFW_KEY_UP -> getArrowNavigation(NavigationDirection.UP)
