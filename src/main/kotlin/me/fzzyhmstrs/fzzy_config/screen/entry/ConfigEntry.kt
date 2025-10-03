@@ -220,7 +220,7 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     @Internal
     override fun appendNarrations(builder: NarrationMessageBuilder) {
         super.appendNarrations(builder)
-        val narratablesNarrations = narratables.filter { it.isNarratable }.map { it.message.asOrderedText() }
+        val narratablesNarrations = narratables.filter { it.isInteractable }.map { it.message.asOrderedText() }
         val childNarrations = tooltipProviders.flatMap { it.provideNarrationLines() }.map { it.asOrderedText() }
         val str = createTooltipString( narratablesNarrations + childNarrations + tooltip)
         if (str.isNotEmpty()) {

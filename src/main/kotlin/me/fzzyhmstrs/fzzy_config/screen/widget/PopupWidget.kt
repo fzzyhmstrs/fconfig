@@ -231,7 +231,7 @@ class PopupWidget
 
     override fun appendNarrations(builder: NarrationMessageBuilder) {
         builder.put(NarrationPart.TITLE, message)
-        val list: List<Selectable> = this.context.selectables.filter { it.isNarratable }
+        val list: List<Selectable> = this.context.selectables.filter { it.isInteractable }
         val selectedElementNarrationData = Screen.findSelectedElementData(list, focusedSelectable)
         if (selectedElementNarrationData != null) {
             if (selectedElementNarrationData.selectType.isFocused) {

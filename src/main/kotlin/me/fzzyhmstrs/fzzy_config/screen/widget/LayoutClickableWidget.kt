@@ -198,7 +198,7 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
         narrationAppender.accept(builder)
-        val list: List<Selectable> = this.selectables.filter { it.isNarratable }
+        val list: List<Selectable> = this.selectables.filter { it.isInteractable }
         val selectedElementNarrationData = Screen.findSelectedElementData(list, focusedSelectable)
         if (selectedElementNarrationData != null) {
             if (selectedElementNarrationData.selectType.isFocused) {
