@@ -21,6 +21,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.input.CharInput
 import net.minecraft.text.Text
 
 /**
@@ -66,8 +67,8 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         return child.keyReleased(keyCode, scanCode, modifiers)
     }
 
-    override fun charTyped(chr: Char, modifiers: Int): Boolean {
-        return child.charTyped(chr, modifiers)
+    override fun charTyped(input: CharInput): Boolean {
+        return child.charTyped(input)
     }
 
     override fun setFocused(focused: Boolean) {

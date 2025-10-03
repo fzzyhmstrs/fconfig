@@ -45,6 +45,7 @@ import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.TextFieldWidget
 import net.minecraft.client.gui.widget.TextWidget
+import net.minecraft.client.input.CharInput
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.client.sound.SoundManager
 import net.minecraft.sound.SoundEvents
@@ -1153,9 +1154,9 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             }
         }
 
-        override fun charTyped(chr: Char, modifiers: Int): Boolean {
+        override fun charTyped(input: CharInput): Boolean {
             dirty = true
-            return super.charTyped(chr, modifiers)
+            return super.charTyped(input)
         }
 
         /**
