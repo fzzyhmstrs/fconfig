@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.ParentElement
+import net.minecraft.client.input.CharInput
 import java.util.*
 
 /**
@@ -99,7 +100,7 @@ interface PopupParentElement: ParentElement, PopupController {
         return activeWidget()?.keyReleased(keyCode, scanCode, modifiers) ?: super.keyReleased(keyCode, scanCode, modifiers)
     }
 
-    override fun charTyped(chr: Char, modifiers: Int): Boolean {
-        return activeWidget()?.charTyped(chr, modifiers) ?: super.charTyped(chr, modifiers)
+    override fun charTyped(input: CharInput): Boolean {
+        return activeWidget()?.charTyped(input) ?: super.charTyped(input)
     }
 }

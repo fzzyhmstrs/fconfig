@@ -19,6 +19,7 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.input.CharInput
 import net.minecraft.text.Text
 import java.util.function.Consumer
 
@@ -153,8 +154,8 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         return super<ParentElement>.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
     }
 
-    override fun charTyped(chr: Char, modifiers: Int): Boolean {
-        return super<ParentElement>.charTyped(chr, modifiers)
+    override fun charTyped(input: CharInput): Boolean {
+        return super<ParentElement>.charTyped(input)
     }
 
     override fun getFocusedPath(): GuiNavigationPath? {
