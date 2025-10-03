@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.renderBlur
 import me.fzzyhmstrs.fzzy_config.util.TriState
@@ -186,7 +187,7 @@ class PopupWidget
     }
 
     private fun getTabNavigation(): GuiNavigation.Tab {
-        val bl = !Screen.hasShiftDown()
+        val bl = !isShiftDown()
         return GuiNavigation.Tab(bl)
     }
     private fun getArrowNavigation(direction: NavigationDirection): Arrow {

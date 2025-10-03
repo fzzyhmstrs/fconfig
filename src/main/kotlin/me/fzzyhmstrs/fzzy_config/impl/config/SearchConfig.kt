@@ -19,10 +19,12 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isAltDown
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isControlDown
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.function.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -51,9 +53,9 @@ internal class SearchConfig: Config("search".fcId()) {
     }
 
     enum class Modifier(private val tester: BooleanSupplier): EnumTranslatable {
-        ALT({ Screen.hasAltDown() }),
-        SHIFT({ Screen.hasShiftDown() }),
-        CTRL({ Screen.hasControlDown() });
+        ALT({ isAltDown() }),
+        SHIFT({ isShiftDown() }),
+        CTRL({ isControlDown() });
 
         fun test(): Boolean {
             return tester.asBoolean
