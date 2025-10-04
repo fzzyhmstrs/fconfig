@@ -109,11 +109,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
 
         private val entryWidget = entry.widgetAndTooltipEntry(validator.apply(parent, this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
 
-        private val deleteWidget = CustomButtonWidget.builder { parent.children().let { list ->
-                list.indexOf(this).takeIf { i -> i >=0 && i<list.size }?.let {
-                        i -> list.removeAt(i)
-                }
-            } }
+        private val deleteWidget = CustomButtonWidget.builder { parent.removeEntry(this) }
             .textures(TextureIds.DELETE,
                 TextureIds.DELETE_INACTIVE,
                 TextureIds.DELETE_HIGHLIGHTED)
@@ -164,7 +160,9 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     private class NewEntry<T>(private val entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, private val parent: ListListWidget<T>, private val validator: BiFunction<ListListWidget<T>, ListEntry<T>?, ChoiceValidator<T>>): ListEntry<T>() {
 
         private val addWidget = CustomButtonWidget.builder {
-                parent.children().let { it.add(it.lastIndex, ExistingEntry(entrySupplier.instanceEntry() as me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, parent, validator)) }
+                parent.removeEntry(this)
+                parent.addEntry(ExistingEntry(entrySupplier.instanceEntry() as me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, parent, validator))
+                parent.addEntry(this)
                 parent.makeVisible(this)
             }
             .textures(TextureIds.ADD,
