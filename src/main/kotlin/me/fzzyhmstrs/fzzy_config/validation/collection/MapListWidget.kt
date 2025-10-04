@@ -117,11 +117,7 @@ internal class MapListWidget<K, V>(
         private val keyWidget = key.widgetAndTooltipEntry(keyValidator.apply(parent, this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
         private val valueWidget = value.widgetAndTooltipEntry(ChoiceValidator.any()).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
 
-        private val deleteWidget = CustomButtonWidget.builder { parent.children().let { list ->
-                list.indexOf(this).takeIf { i -> i >=0 && i<list.size }?.let {
-                        i -> list.removeAt(i)
-                }
-            } }
+        private val deleteWidget = CustomButtonWidget.builder { parent.removeEntry(this) }
             .textures(TextureIds.DELETE,
                 TextureIds.DELETE_INACTIVE,
                 TextureIds.DELETE_HIGHLIGHTED)
@@ -175,7 +171,9 @@ internal class MapListWidget<K, V>(
     private class NewEntry<K, V>(private val keySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<K, *>, private val valueSupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<V, *>, private val parent: MapListWidget<K, V>, private val validator: BiFunction<MapListWidget<K, V>, MapEntry<K, V>?, ChoiceValidator<K>>): MapEntry<K, V>() {
 
         private val addWidget = CustomButtonWidget.builder {
-                parent.children().let { it.add(it.lastIndex, ExistingEntry(keySupplier.instanceEntry() as Entry1<K, *>, valueSupplier.instanceEntry() as Entry1<V, *>, parent, validator)) }
+                parent.removeEntry(this)
+                parent.addEntry(ExistingEntry(keySupplier.instanceEntry() as Entry1<K, *>, valueSupplier.instanceEntry() as Entry1<V, *>, parent, validator))
+                parent.addEntry(this)
                 parent.makeVisible(this)
             }
             .textures(TextureIds.ADD,
