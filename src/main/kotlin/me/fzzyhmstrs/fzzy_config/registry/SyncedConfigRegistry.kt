@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.registry
 
 import io.netty.buffer.Unpooled
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -31,6 +32,7 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
+import java.lang.IllegalStateException
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -60,6 +62,32 @@ internal object SyncedConfigRegistry {
 
     internal fun syncedConfigs(): Map<String, SyncedConfigEntry> {
         return syncedConfigs
+    }
+
+    internal fun manualSync(config: Config, server: MinecraftServer) {
+        val id = config.getId().toTranslationKey()
+        val configEntry = syncedConfigs[id] ?: return
+        if (configEntry.skipSync()) {
+            FC.LOGGER.error("syncConfig called on a non-syncing config [${id}]")
+        }
+        for (player in server.playerManager.playerList) {
+            if (!ConfigApi.network().canSend(ConfigSyncS2CCustomPayload.id, player)) continue
+            if (configEntry.skipSync()) continue
+            val payloadResult = ConfigApiImpl.serializeConfigSafe(configEntry.config, "Error(s) encountered serializing config for S2C configuration sync.", 0).map {
+                ConfigSyncS2CCustomPayload(id, it)
+            }.log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+            ConfigApi.network().send(payloadResult.get(), player)
+            try {
+                configEntry.config.onSyncServer()
+            } catch (e: Throwable) {
+                FC.LOGGER.error("Error encountered with login onSyncServer method of config $id!", e)
+            }
+            try {
+                EventApiImpl.fireOnSyncServer(configEntry.getId(), configEntry.config)
+            } catch (e: Throwable) {
+                FC.LOGGER.error("Error encountered while running login onSyncServer event for config $id!", e)
+            }
+        }
     }
 
     internal fun onConfigure(canSender: Predicate<Identifier>, sender: Consumer<FzzyPayload>) {

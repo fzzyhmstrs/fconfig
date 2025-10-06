@@ -12,10 +12,13 @@ package me.fzzyhmstrs.fzzy_config.networking.impl
 
 import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
+import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.networking.api.*
+import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import net.minecraftforge.network.NetworkRegistry
@@ -126,6 +129,10 @@ internal object NetworkApiImpl: NetworkApi {
                 handler.handle(payload, newContext)
                 contextSuppler.get().packetHandled = true
             })
+    }
+
+    override fun syncConfig(config: Config, server: MinecraftServer) {
+        SyncedConfigRegistry.manualSync(config, server)
     }
 
 }

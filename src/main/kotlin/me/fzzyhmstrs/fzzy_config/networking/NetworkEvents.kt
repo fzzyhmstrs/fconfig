@@ -153,25 +153,16 @@ internal object NetworkEvents {
 
         ConfigApi.network().registerLenientS2C(ConfigPermissionsS2CCustomPayload.id, ConfigPermissionsS2CCustomPayload::class.java,
             ::ConfigPermissionsS2CCustomPayload, NetworkEventsClient::receivePerms)
-        //PayloadTypeRegistry.playC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         ConfigApi.network().registerLenientS2C(ConfigSyncS2CCustomPayload.id, ConfigSyncS2CCustomPayload::class.java,
             ::ConfigSyncS2CCustomPayload, NetworkEventsClient::receiveSync)
-        //PayloadTypeRegistry.playC2S().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playS2C().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
         ConfigApi.network().registerLenientS2C(ConfigUpdateS2CCustomPayload.id, ConfigUpdateS2CCustomPayload::class.java,
             ::ConfigUpdateS2CCustomPayload, NetworkEventsClient::receiveUpdate)
-        //PayloadTypeRegistry.playC2S().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
         ConfigApi.network().registerLenientC2S(ConfigUpdateC2SCustomPayload.id, ConfigUpdateC2SCustomPayload::class.java,
             ::ConfigUpdateC2SCustomPayload, this::receiveUpdate)
-        //PayloadTypeRegistry.playS2C().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
-        //PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
         ConfigApi.network().registerLenientC2S(SettingForwardCustomPayload.id, SettingForwardCustomPayload::class.java,
             ::SettingForwardCustomPayload, this::receiveForward)
-        //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
         ConfigApi.network().registerLenientS2C(SettingForwardCustomPayload.id, SettingForwardCustomPayload::class.java,
             ::SettingForwardCustomPayload, NetworkEventsClient::receiveForward)
-
         ConfigApi.network().registerLenientS2C(DynamicIdsS2CCustomPayload.type, DynamicIdsS2CCustomPayload::class.java,
             ::DynamicIdsS2CCustomPayload, NetworkEventsClient::receiveDynamicIds)
     }

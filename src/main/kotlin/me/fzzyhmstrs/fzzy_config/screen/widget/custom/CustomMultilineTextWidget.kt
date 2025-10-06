@@ -40,9 +40,11 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
         MultilineText.create(textRenderer, getMessage(), width)
     }
 
+    private var alignRight = false
+
     override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = cache.map(getKey(width - leftPadding - rightPadding))
-        text.drawWithShadow(context, x + leftPadding, y + topPadding, lineHeight, textColor)
+        text.drawWithShadow(context, alignRight, width - leftPadding - rightPadding, x + leftPadding,  y + topPadding, lineHeight, textColor)
         if (!isMouseOver(mouseX.toDouble(), mouseY.toDouble())) return
         val d = mouseX - this.x - leftPadding
         val dd = mouseY - this.y - topPadding
@@ -55,6 +57,19 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
         val text = cache.map(getKey(width - leftPadding - rightPadding))
         val lines = text.count()
         return (lines * lineHeight) + topPadding + bottomPadding
+    }
+
+    override fun setHeight(height: Int) {
+    }
+
+    fun alignRight(): CustomMultilineTextWidget {
+        this.alignRight = true
+        return this
+    }
+
+    fun maxWidthNeeded(): Int {
+        val text = cache.map(getKey(width - leftPadding - rightPadding))
+        return text.maxWidth
     }
 
     private fun getKey(width: Int): Key {
@@ -70,16 +85,18 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
         val dd = mouseY - this.y - topPadding
         val line = (dd / lineHeight).toInt()
         val style = text.getStyleAt(client, line, d) ?: return false
-        return screen.handleTextClick(style)
+        val bl = screen.handleTextClick(style)
+        if (bl) playDownSound(client.soundManager)
+        return bl
     }
 
     private data class Key(val message: Text, val width: Int)
 
     interface MultilineText {
 
-        fun drawWithShadow(context: DrawContext, x: Int, y: Int, lineHeight: Int, color: Int)
+        fun drawWithShadow(context: DrawContext, alignRight: Boolean, width: Int, x: Int, y: Int, lineHeight: Int, color: Int)
 
-        fun draw(context: DrawContext, x: Int, y: Int, lineHeight: Int, color: Int): Int
+        fun draw(context: DrawContext, alignRight: Boolean, width: Int, x: Int, y: Int, lineHeight: Int, color: Int): Int
 
         fun count(): Int
 
@@ -139,24 +156,34 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
                     }
 
 
-                    override fun drawWithShadow(context: DrawContext, x: Int, y: Int, lineHeight: Int, color: Int) {
+                    override fun drawWithShadow(context: DrawContext, alignRight: Boolean, width: Int, x: Int, y: Int, lineHeight: Int, color: Int) {
                         var i: Int = y
 
                         val var7: Iterator<Line> = getLines().iterator()
                         while (var7.hasNext()) {
                             val line: Line = var7.next()
-                            context.drawTextWithShadow(renderer, line.text, x, i, color)
+                            if (alignRight) {
+                                val xx = x + width - renderer.getWidth(line.text)
+                                context.drawTextWithShadow(renderer, line.text, xx, i, color)
+                            } else {
+                                context.drawTextWithShadow(renderer, line.text, x, i, color)
+                            }
                             i += lineHeight
                         }
                     }
 
-                    override fun draw(context: DrawContext, x: Int, y: Int, lineHeight: Int, color: Int): Int {
+                    override fun draw(context: DrawContext, alignRight: Boolean, width: Int, x: Int, y: Int, lineHeight: Int, color: Int): Int {
                         var i: Int = y
 
                         val var7: Iterator<Line> = getLines().iterator()
                         while (var7.hasNext()) {
                             val line: Line = var7.next()
-                            context.drawText(renderer, line.text, x, i, color, false)
+                            if (alignRight) {
+                                val xx = x + width - renderer.getWidth(line.text)
+                                context.drawText(renderer, line.text, xx, i, color, false)
+                            } else {
+                                context.drawText(renderer, line.text, x, i, color, false)
+                            }
                             i += lineHeight
                         }
 
@@ -180,10 +207,10 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
 
             val EMPTY: MultilineText = object : MultilineText {
 
-                override fun drawWithShadow(context: DrawContext, x: Int, y: Int, lineHeight: Int, color: Int) {
+                override fun drawWithShadow(context: DrawContext, alignRight: Boolean, width: Int, x: Int, y: Int, lineHeight: Int, color: Int) {
                 }
 
-                override fun draw(context: DrawContext, x: Int, y: Int, lineHeight: Int, color: Int): Int {
+                override fun draw(context: DrawContext, alignRight: Boolean, width: Int, x: Int, y: Int, lineHeight: Int, color: Int): Int {
                     return y
                 }
 
