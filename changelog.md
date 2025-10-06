@@ -1,3 +1,5 @@
+## Note: Neoforge version will be out once Kotlin For Forge updates to 1.21.9
+
 ## Breaking changes in 0.7.x
 * `ValidatedEnumMap` is removed
 * Removed all methods and properties marked as Deprecated and for removal 0.7.0
