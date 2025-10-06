@@ -342,6 +342,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         }
         if (hasFlag(EntryFlag.Flag.UPDATE) || flag.contains(EntryFlag.Flag.UPDATE)) {
             val message = if (tVal1.isError() || tVal1.isCritical()) {
+                @Suppress("DEPRECATION")
                 FcText.translatable("fc.validated_field.update.error", translation(), get().toString(), tVal1.get().toString(), tVal1.getError())
             } else {
                 updateMessage(get(), tVal1.get())
@@ -366,6 +367,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         val tVal1 = correctEntry(input, EntryValidator.ValidationType.STRONG)
         set(tVal1.get())
         val message = if (tVal1.isError() || tVal1.isCritical()) {
+            @Suppress("DEPRECATION")
             FcText.translatable("fc.validated_field.update.error", translation(), oldVal.toString(), get().toString(), tVal1.getError())
         } else {
             updateMessage(oldVal, get())
@@ -588,6 +590,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @since 0.2.0
      */
     fun toList(vararg elements: T): ValidatedList<T> {
+        @Suppress("DEPRECATION")
         return ValidatedList(listOf(*elements), this)
     }
 
@@ -600,6 +603,7 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      * @since 0.2.0
      */
     fun toList(collection: Collection<T>): ValidatedList<T> {
+        @Suppress("DEPRECATION")
         return ValidatedList(collection.toList(), this)
     }
 

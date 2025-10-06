@@ -49,6 +49,18 @@ data class FzzyKeybindSimple(val inputCode: Int, val type: ContextInput, val ctr
                 && this.alt.validate(isAltDown())
     }
 
+    override fun needsCtrl(): Boolean {
+        return ctrl.asBoolean
+    }
+
+    override fun needsShift(): Boolean {
+        return shift.asBoolean
+    }
+
+    override fun needsAlt(): Boolean {
+        return alt.asBoolean
+    }
+
     override fun keybind(): MutableText {
         val key: Text = if (type == ContextInput.KEYBOARD)
             InputUtil.Type.MOUSE.createFromCode(inputCode).localizedText
