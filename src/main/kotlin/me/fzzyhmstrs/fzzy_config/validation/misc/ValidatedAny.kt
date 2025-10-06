@@ -50,6 +50,7 @@ import java.util.*
 import java.util.function.BiFunction
 import java.util.function.Function
 import java.util.function.Supplier
+import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
 import kotlin.reflect.jvm.javaConstructor
 
@@ -67,7 +68,7 @@ import kotlin.reflect.jvm.javaConstructor
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent, EntryOpener, EntrySearcher {
+open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue), EntryParent, EntryOpener, EntrySearcher, EntryDelegate {
 
     private var default: Boolean? = null
     private var changed: Boolean? = null
@@ -403,6 +404,10 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     @Internal
     override fun continueWalk(): Boolean {
         return true
+    }
+
+    override fun delegateClass(): KClass<*> {
+        return storedValue::class
     }
 
     /**

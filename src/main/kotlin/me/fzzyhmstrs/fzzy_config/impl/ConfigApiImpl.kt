@@ -109,9 +109,12 @@ internal object ConfigApiImpl {
     internal const val IGNORE_NON_SYNC_AND_CRITICAL_ERRORS_ONLY: Byte = 33
     internal const val NO_WALK_ANNOTATIONS: Byte = 64
 
+    internal const val MAX_CONFIG_SERIALIZATION_LENGTH = Int.MAX_VALUE
+
     private val configClass = Config::class
     private val configSectionClass = ConfigSection::class
     private val walkableClass = Walkable::class
+    private val entryDelegateClass = EntryDelegate::class
 
     internal fun openScreen(scope: String) {
         if (isClient)
@@ -1031,6 +1034,20 @@ internal object ConfigApiImpl {
                     if (propClass != null && (configSectionClass.java.isAssignableFrom(propClass) || walkableClass.java.isAssignableFrom(propClass))) {
                         //burrow into sections and walkables
                         buildTranslations(propClass.kotlin, key, lang, builder, logWarnings)
+                    } else if (propClass != null && entryDelegateClass.java.isAssignableFrom(propClass)) {
+                        try {
+                            val instance = clazz.constructors.singleOrNull { it.parameters.all(KParameter::isOptional) }?.callBy(emptyMap())
+                            if (instance == null) {
+                                FC.LOGGER.error("Delegate validation [$key] found in config without empty constructor. Fzzy Config won't be able to apply translations")
+                                continue
+                            }
+                            val thing = prop.cast<KMutableProperty1<Any, *>>().get(instance) as? EntryDelegate
+                            thing?.delegateClass()?.let {
+                                buildTranslations(it, key, lang, builder, logWarnings)
+                            }
+                        } catch (e: Exception) {
+                            FC.LOGGER.error("Exception while building translations for delegate validation [$key]", e)
+                        }
                     }
                 } catch (e: Exception) {
                     FC.LOGGER.error("Critical error building translation for ${prop.name} in ${clazz.simpleName}", e)
