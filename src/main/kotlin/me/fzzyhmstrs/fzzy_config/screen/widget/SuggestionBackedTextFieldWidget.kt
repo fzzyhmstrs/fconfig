@@ -21,7 +21,9 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.SuggestionBackedTextFieldWidget.S
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.input.KeyInput
 import org.lwjgl.glfw.GLFW
 import java.util.concurrent.CompletableFuture
 import java.util.function.Consumer
@@ -129,8 +131,8 @@ class SuggestionBackedTextFieldWidget(
         suggestionWindowListener?.setSuggestionWindowElement(this)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val bl = window?.mouseClicked(mouseX.toInt(), mouseY.toInt(), button) ?: super.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        val bl = window?.mouseClicked(click.x.toInt(), click.y.toInt(), click.button()) ?: super.mouseClicked(click, doubled)
         if (closeWindow) {
             pendingSuggestions = null
             window = null
@@ -138,7 +140,7 @@ class SuggestionBackedTextFieldWidget(
             suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }
-        return if(bl) true else super.mouseClicked(mouseX, mouseY, button)
+        return if(bl) true else super.mouseClicked(click, doubled)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -149,8 +151,8 @@ class SuggestionBackedTextFieldWidget(
         return super.isMouseOver(mouseX, mouseY) || window?.isMouseOver(mouseX.toInt(), mouseY.toInt()) == true
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val bl = window?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)
+    override fun keyPressed(input: KeyInput): Boolean {
+        val bl = window?.keyPressed(input.keycode, input.scancode, input.modifiers) ?: super.keyPressed(input)
         if (closeWindow) {
             pendingSuggestions = null
             window = null
@@ -158,12 +160,12 @@ class SuggestionBackedTextFieldWidget(
             suggestionWindowListener?.setSuggestionWindowElement(null)
             closeWindow = false
         }
-        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER || (keyCode == GLFW.GLFW_KEY_TAB && bl)) {
+        if (input.isEnter || (input.isTab && bl)) {
             pushChanges()
             if (closePopup)
                 PopupWidget.pop()
         }
-        return if(bl) true else super.keyPressed(keyCode, scanCode, modifiers)
+        return if(bl) true else super.keyPressed(input)
     }
 
     /**

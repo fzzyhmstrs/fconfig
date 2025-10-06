@@ -29,6 +29,7 @@ import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.navigation.GuiNavigation
@@ -37,6 +38,7 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
@@ -370,25 +372,25 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             }
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
             return if (active)
-                delegateWidget.mouseClicked(mouseX, mouseY, button)
+                delegateWidget.mouseClicked(click, doubled)
             else
-                super.mouseClicked(mouseX, mouseY, button)
+                super.mouseClicked(click, doubled)
         }
 
-        override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
+        override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
             return if (active)
-                delegateWidget.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+                delegateWidget.mouseDragged(click, offsetX, offsetY)
             else
-                super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+                super.mouseDragged(click, offsetX, offsetY)
         }
 
-        override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        override fun mouseReleased(click: Click): Boolean {
             return if(active)
-                delegateWidget.mouseReleased(mouseX, mouseY, button)
+                delegateWidget.mouseReleased(click)
             else
-                super.mouseReleased(mouseX, mouseY, button)
+                super.mouseReleased(click)
         }
 
         override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -398,18 +400,18 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
                 super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
         }
 
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        override fun keyPressed(input: KeyInput): Boolean {
             return if (active)
-                delegateWidget.keyPressed(keyCode, scanCode, modifiers)
+                delegateWidget.keyPressed(input)
             else
-                super.keyPressed(keyCode, scanCode, modifiers)
+                super.keyPressed(input)
         }
 
-        override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        override fun keyReleased(input: KeyInput): Boolean {
             return if (active)
-                delegateWidget.keyReleased(keyCode, scanCode, modifiers)
+                delegateWidget.keyReleased(input)
             else
-                super.keyReleased(keyCode, scanCode, modifiers)
+                super.keyReleased(input)
         }
 
         override fun setFocused(focused: Boolean) {

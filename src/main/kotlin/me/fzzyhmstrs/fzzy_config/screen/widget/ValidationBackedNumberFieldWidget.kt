@@ -22,6 +22,8 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraft.client.input.CharInput
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -89,9 +91,9 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
         }
     }
 
-    override fun charTyped(chr: Char, modifiers: Int): Boolean {
-        if (!isValidChar(chr)) return false
-        return super.charTyped(chr, modifiers)
+    override fun charTyped(input: CharInput): Boolean {
+        if (!isValidChar(Char(input.codepoint()))) return false
+        return super.charTyped(input)
     }
 
     private fun ongoingChanges(): Boolean {
@@ -161,8 +163,8 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
         }
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val inc = when (keyCode) {
+    override fun keyPressed(input: KeyInput): Boolean {
+        val inc = when (input.keycode) {
             GLFW.GLFW_KEY_RIGHT -> increment
             GLFW.GLFW_KEY_LEFT -> -increment
             else -> 0.0
@@ -182,7 +184,7 @@ open class ValidationBackedNumberFieldWidget<T: Number>(
             }
             true
         } else {
-            return super.keyPressed(keyCode, scanCode, modifiers)
+            return super.keyPressed(input)
         }
     }
 

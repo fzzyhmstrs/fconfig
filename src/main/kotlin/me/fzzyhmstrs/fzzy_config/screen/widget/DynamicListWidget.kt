@@ -31,6 +31,7 @@ import me.fzzyhmstrs.fzzy_config.util.pos.ReferencePos
 import me.fzzyhmstrs.fzzy_config.util.pos.SuppliedPos
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.*
+import net.minecraft.client.gui.ParentElement
 import net.minecraft.client.gui.navigation.GuiNavigation
 import net.minecraft.client.gui.navigation.GuiNavigation.Arrow
 import net.minecraft.client.gui.navigation.GuiNavigation.Tab
@@ -39,6 +40,7 @@ import net.minecraft.client.gui.navigation.NavigationDirection
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.MathHelper
@@ -350,8 +352,8 @@ class DynamicListWidget(
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) ?: super<CustomListWidget>.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        return suggestionWindowElement?.mouseClicked(click, doubled) ?: super<CustomListWidget>.mouseClicked(click, doubled)
     }
 
     override fun scrollToTop(): Boolean {
@@ -366,8 +368,8 @@ class DynamicListWidget(
         return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: super<CustomListWidget>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) ?: super<CustomListWidget>.keyPressed(keyCode, scanCode, modifiers)
+    override fun keyPressed(input: KeyInput): Boolean {
+        return suggestionWindowElement?.keyPressed(input) ?: super<CustomListWidget>.keyPressed(input)
     }
 
     private var suggestionWindowElement: Element? = null
@@ -955,8 +957,8 @@ class DynamicListWidget(
             return parentElement.isMouseOver(mouseX, mouseY) && mouseX >= x.get() && mouseY >= top.get() && mouseX < (x + w) && mouseY < bottom.get()
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
+        override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+            return super<ParentElement>.mouseClicked(click, doubled)
         }
 
         /**

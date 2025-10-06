@@ -19,6 +19,8 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.input.CharInput
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import java.util.function.Consumer
 
@@ -134,27 +136,27 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         //renderCustom(context, mouseX, mouseY, delta)
     }
 
-    override fun onClick(mouseX: Double, mouseY: Double) {
+    override fun onClick(click: Click, doubled: Boolean) {
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        return super<ParentElement>.mouseClicked(click, doubled)
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return super<ParentElement>.mouseReleased(mouseX, mouseY, button)
+    override fun mouseReleased(click: Click): Boolean {
+        return super<ParentElement>.mouseReleased(click)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         return super<ParentElement>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        return super<ParentElement>.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+        return super<ParentElement>.mouseDragged(click, offsetX, offsetY)
     }
 
-    override fun charTyped(chr: Char, modifiers: Int): Boolean {
-        return super<ParentElement>.charTyped(chr, modifiers)
+    override fun charTyped(input: CharInput): Boolean {
+        return super<ParentElement>.charTyped(input)
     }
 
     override fun getFocusedPath(): GuiNavigationPath? {
@@ -188,17 +190,17 @@ class LayoutClickableWidget(x: Int, y: Int, width: Int, height: Int, private val
         return focusedElement != null
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return super<ParentElement>.keyPressed(keyCode, scanCode, modifiers)
+    override fun keyPressed(input: KeyInput): Boolean {
+        return super<ParentElement>.keyPressed(input)
     }
 
-    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-      return super<ParentElement>.keyReleased(keyCode, scanCode, modifiers)
+    override fun keyReleased(input: KeyInput): Boolean {
+        return super<ParentElement>.keyReleased(input)
     }
 
     override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
         narrationAppender.accept(builder)
-        val list: List<Selectable> = this.selectables.filter { it.isNarratable }
+        val list: List<Selectable> = this.selectables.filter { it.isInteractable }
         val selectedElementNarrationData = Screen.findSelectedElementData(list, focusedSelectable)
         if (selectedElementNarrationData != null) {
             if (selectedElementNarrationData.selectType.isFocused) {

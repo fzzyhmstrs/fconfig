@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.AbstractTextWidget
@@ -45,9 +46,9 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
         context.drawHoverEvent(textRenderer, style, mouseX, mouseY)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (!isMouseOver(mouseX, mouseY)) return false
-        val d = mouseX - this.x
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        if (!isMouseOver(click.x, click.y)) return false
+        val d = click.x - this.x
         val style = textRenderer.textHandler.getStyleAt(message.asOrderedText(), MathHelper.floor(d)) ?: return false
         return parent.handleTextClick(style)
     }

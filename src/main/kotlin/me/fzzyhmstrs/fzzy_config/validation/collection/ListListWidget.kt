@@ -18,10 +18,12 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.widget.ElementListWidget
+import net.minecraft.client.input.KeyInput
 import java.util.function.BiFunction
 import java.util.function.Function
 
@@ -76,12 +78,12 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     }
 
     private fun makeVisible(entry: ListEntry<T>) {
-        this.ensureVisible(entry)
+        this.scrollTo(entry)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) == true) return true
-        return super.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        if (suggestionWindowElement?.mouseClicked(click, doubled) == true) return true
+        return super.mouseClicked(click, doubled)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
@@ -89,9 +91,9 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
         return super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) == true) return true
-        return super.keyPressed(keyCode, scanCode, modifiers)
+    override fun keyPressed(input: KeyInput): Boolean {
+        if (suggestionWindowElement?.keyPressed(input) == true) return true
+        return super.keyPressed(input)
     }
 
     init {
@@ -107,11 +109,7 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
 
         private val entryWidget = entry.widgetAndTooltipEntry(validator.apply(parent, this)).also { if (it is SuggestionWindowProvider) it.addListener(parent) }
 
-        private val deleteWidget = CustomButtonWidget.builder { parent.children().let { list ->
-                list.indexOf(this).takeIf { i -> i >=0 && i<list.size }?.let {
-                        i -> list.removeAt(i)
-                }
-            } }
+        private val deleteWidget = CustomButtonWidget.builder { parent.removeEntry(this) }
             .textures(TextureIds.DELETE,
                 TextureIds.DELETE_INACTIVE,
                 TextureIds.DELETE_HIGHLIGHTED)
@@ -132,25 +130,20 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
             return mutableListOf(entryWidget, deleteWidget)
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            hoveredElement(mouseX, mouseY).ifPresentOrElse({clickedWidget = it}, {clickedWidget = null})
-            return super.mouseClicked(mouseX, mouseY, button)
+        override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+            hoveredElement(click.x, click.y).ifPresentOrElse({clickedWidget = it}, {clickedWidget = null})
+            return super.mouseClicked(click, doubled)
         }
 
-        override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        override fun mouseReleased(click: Click): Boolean {
             if (clickedWidget != null) {
-                return (clickedWidget?.mouseReleased(mouseX, mouseY, button) ?: super.mouseReleased(mouseX, mouseY, button)).also { clickedWidget = null }
+                return (clickedWidget?.mouseReleased(click) ?: super.mouseReleased(click)).also { clickedWidget = null }
             }
-            return super.mouseReleased(mouseX, mouseY, button)
+            return super.mouseReleased(click)
         }
 
         override fun render(
             context: DrawContext,
-            index: Int,
-            y: Int,
-            x: Int,
-            entryWidth: Int,
-            entryHeight: Int,
             mouseX: Int,
             mouseY: Int,
             hovered: Boolean,
@@ -167,7 +160,9 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
     private class NewEntry<T>(private val entrySupplier: me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, private val parent: ListListWidget<T>, private val validator: BiFunction<ListListWidget<T>, ListEntry<T>?, ChoiceValidator<T>>): ListEntry<T>() {
 
         private val addWidget = CustomButtonWidget.builder {
-                parent.children().let { it.add(it.lastIndex, ExistingEntry(entrySupplier.instanceEntry() as me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, parent, validator)) }
+                parent.removeEntry(this)
+                parent.addEntry(ExistingEntry(entrySupplier.instanceEntry() as me.fzzyhmstrs.fzzy_config.entry.Entry<T, *>, parent, validator))
+                parent.addEntry(this)
                 parent.makeVisible(this)
             }
             .textures(TextureIds.ADD,
@@ -188,11 +183,6 @@ internal class ListListWidget<T>(entryList: List<me.fzzyhmstrs.fzzy_config.entry
 
         override fun render(
             context: DrawContext,
-            index: Int,
-            y: Int,
-            x: Int,
-            entryWidth: Int,
-            entryHeight: Int,
             mouseX: Int,
             mouseY: Int,
             hovered: Boolean,

@@ -12,13 +12,15 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType.Relevant
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isAltDown
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isControlDown
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.InputUtil
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
-import org.lwjgl.glfw.GLFW
 
 /**
  * Basic implementation of [Relevant] that uses [TriState] for processing modifier inputs. [TriState.DEFAULT] auto-passes the modifier key (either pressed or not-pressed will be considered relevant)
@@ -41,15 +43,15 @@ data class FzzyKeybindSimple(val inputCode: Int, val type: ContextInput, val ctr
     }
 
     override fun isPressed(): Boolean {
-        return InputUtil.isKeyPressed(MinecraftClient.getInstance().window.handle, inputCode)
-                && this.ctrl.validate(Screen.hasControlDown())
-                && this.shift.validate(Screen.hasShiftDown())
-                && this.alt.validate(Screen.hasAltDown())
+        return InputUtil.isKeyPressed(MinecraftClient.getInstance().window, inputCode)
+                && this.ctrl.validate(isControlDown())
+                && this.shift.validate(isShiftDown())
+                && this.alt.validate(isAltDown())
     }
 
     override fun keybind(): MutableText {
         val key: Text = if (type == ContextInput.KEYBOARD)
-            InputUtil.fromKeyCode(inputCode, -1).localizedText
+            InputUtil.Type.MOUSE.createFromCode(inputCode).localizedText
         else
             InputUtil.Type.MOUSE.createFromCode(inputCode).localizedText
         val c = ctrl == TriState.TRUE

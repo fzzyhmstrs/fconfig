@@ -30,6 +30,7 @@ import me.fzzyhmstrs.fzzy_config_test.test.TestBasicConfigManager
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ButtonWidget
 import net.minecraft.client.gui.widget.TextWidget
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.ClickEvent
 import org.lwjgl.glfw.GLFW
 import java.util.function.BiFunction
@@ -92,15 +93,15 @@ class TestPopupScreen(size: Int = 5): PopupWidgetScreen(FcText.empty()) {
         addDrawableChild(ConfigScreenWidget.of("fzzy_config_test", ConfigScreenWidget.Position.Corner.TOP_LEFT))
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (keyCode == GLFW.GLFW_KEY_PAGE_UP) {
+    override fun keyPressed(input: KeyInput): Boolean {
+        if (input.key == GLFW.GLFW_KEY_PAGE_UP) {
             listTestWidget.page(true)
             return true
-        } else if (keyCode == GLFW.GLFW_KEY_PAGE_DOWN) {
+        } else if (input.key == GLFW.GLFW_KEY_PAGE_DOWN) {
             listTestWidget.page(false)
             return true
         }
-        return super.keyPressed(keyCode, scanCode, modifiers)
+        return super.keyPressed(input )
     }
 
     private fun openTestPopupWidget() {

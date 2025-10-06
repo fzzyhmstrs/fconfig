@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.DividerWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.renderBlur
 import me.fzzyhmstrs.fzzy_config.util.TriState
@@ -31,6 +32,7 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.*
+import net.minecraft.client.input.KeyInput
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -136,35 +138,35 @@ class PopupWidget
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button)?.takeIf { it } ?: super.mouseClicked(mouseX, mouseY, button).takeIf { it } ?: isMouseOver(mouseX, mouseY)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        return suggestionWindowElement?.mouseClicked(click, doubled)?.takeIf { it } ?: super.mouseClicked(click, doubled).takeIf { it } ?: isMouseOver(click.x, click.y)
     }
 
     fun preClick(mouseX: Double, mouseY: Double, button: Int): ClickResult {
         return context.onClick.onClick(mouseX, mouseY, isMouseOver(mouseX, mouseY), button)
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return suggestionWindowElement?.mouseReleased(mouseX, mouseY, button) ?: super.mouseReleased(mouseX, mouseY, button)
+    override fun mouseReleased(click: Click): Boolean {
+        return suggestionWindowElement?.mouseReleased(click) ?: super.mouseReleased(click)
     }
 
     override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
         return mouseX >= x.toDouble() && mouseY >= y.toDouble() && mouseX < (x + width).toDouble() && mouseY < (y + height).toDouble()
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        return suggestionWindowElement?.mouseDragged(mouseX, mouseY, button, deltaX, deltaY) ?: super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+        return suggestionWindowElement?.mouseDragged(click, offsetX, offsetY) ?: super.mouseDragged(click, offsetX, offsetY)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        if (suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) ?: super.keyPressed(keyCode, scanCode, modifiers)) {
+    override fun keyPressed(input: KeyInput): Boolean {
+        if (suggestionWindowElement?.keyPressed(input) ?: super.keyPressed(input)) {
             return true
         }
-        val guiNavigation: GuiNavigation? = when(keyCode) {
+        val guiNavigation: GuiNavigation? = when(input.keycode) {
             GLFW.GLFW_KEY_LEFT -> getArrowNavigation(NavigationDirection.LEFT)
             GLFW.GLFW_KEY_RIGHT -> getArrowNavigation(NavigationDirection.RIGHT)
             GLFW.GLFW_KEY_UP -> getArrowNavigation(NavigationDirection.UP)
@@ -186,7 +188,7 @@ class PopupWidget
     }
 
     private fun getTabNavigation(): GuiNavigation.Tab {
-        val bl = !Screen.hasShiftDown()
+        val bl = !isShiftDown()
         return GuiNavigation.Tab(bl)
     }
     private fun getArrowNavigation(direction: NavigationDirection): Arrow {
@@ -231,7 +233,7 @@ class PopupWidget
 
     override fun appendNarrations(builder: NarrationMessageBuilder) {
         builder.put(NarrationPart.TITLE, message)
-        val list: List<Selectable> = this.context.selectables.filter { it.isNarratable }
+        val list: List<Selectable> = this.context.selectables.filter { it.isInteractable }
         val selectedElementNarrationData = Screen.findSelectedElementData(list, focusedSelectable)
         if (selectedElementNarrationData != null) {
             if (selectedElementNarrationData.selectType.isFocused) {

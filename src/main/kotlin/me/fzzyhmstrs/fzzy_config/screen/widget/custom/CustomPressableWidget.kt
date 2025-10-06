@@ -18,10 +18,11 @@ import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.KeyCodes
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -124,15 +125,15 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     }
 
     @Internal
-    override fun onClick(mouseX: Double, mouseY: Double) {
+    override fun onClick(click: Click, doubled: Boolean) {
         this.onPress()
     }
 
     @Internal
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+    override fun keyPressed(input: KeyInput): Boolean {
         if (!this.active || !this.visible) {
             return false
-        } else if (KeyCodes.isToggle(keyCode)) {
+        } else if (input.isEnterOrSpace) {
             this.playDownSound(MinecraftClient.getInstance().soundManager)
             this.onPress()
             return true

@@ -27,12 +27,15 @@ import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isAltDown
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isControlDown
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
-import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -41,11 +44,11 @@ import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.client.gui.widget.DirectionalLayoutWidget
 import net.minecraft.client.gui.widget.TextWidget
 import net.minecraft.client.gui.widget.ThreePartsLayoutWidget
+import net.minecraft.client.input.KeyInput
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.Util
-import net.minecraft.util.math.ColorHelper
 import java.util.concurrent.TimeUnit
 import java.util.function.Supplier
 
@@ -273,13 +276,13 @@ internal class ConfigScreen(
         //changes button
         directionalLayoutWidget.add(ChangesWidget(scope, { this.width }, manager))
         //done button
-        doneButton = CustomButtonWidget.builder { _ -> if (hasShiftDown()) shiftClose() else close() }
+        doneButton = CustomButtonWidget.builder { _ -> if (isShiftDown()) shiftClose() else close() }
             .size(78, 20)
             .messageSupplier {
-                if (hasShiftDown() || parent !is ConfigScreen) { ScreenTexts.DONE } else { "fc.config.back".translate() }
+                if (isShiftDown() || parent !is ConfigScreen) { ScreenTexts.DONE } else { "fc.config.back".translate() }
             }
             .tooltipSupplier {
-                if (parent !is ConfigScreen || hasShiftDown()) "fc.config.done.desc".translate() else "fc.config.back.desc".translate(parent?.title ?: "")
+                if (parent !is ConfigScreen || isShiftDown()) "fc.config.done.desc".translate() else "fc.config.back.desc".translate(parent?.title ?: "")
             }.build()
         directionalLayoutWidget.add(doneButton)
     }
@@ -402,11 +405,11 @@ internal class ConfigScreen(
         return configList.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun onClick(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val global = globalInputHandler?.invoke(button, false, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
+    override fun onClick(click: Click, doubled: Boolean): Boolean {
+        val global = globalInputHandler?.invoke(click.button(), false, ContextInput.MOUSE, click.hasCtrl(), click.hasShift(), click.hasAlt())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
-        val contextTypes = ContextType.getRelevantContext(button, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
-        if (contextTypes.isEmpty()) return super.onClick(mouseX, mouseY, button)
+        val contextTypes = ContextType.getRelevantContext(click.button(), ContextInput.MOUSE, click.hasCtrl(), click.hasShift(), click.hasAlt())
+        if (contextTypes.isEmpty()) return super.onClick(click, doubled)
         val activeWidget = activeWidget()
         if (activeWidget != null || justClosedWidget) {
             for (contextType in contextTypes) {
@@ -424,32 +427,32 @@ internal class ConfigScreen(
                     }
                 }
             }
-            return super.onClick(mouseX, mouseY, button)
+            return super.onClick(click, doubled)
         }
 
         var bl = false
         for (contextType in contextTypes) {
-            bl = bl || handleContext(contextType, Position(ContextInput.MOUSE, mouseX.toInt(), mouseY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
+            bl = bl || handleContext(contextType, Position(ContextInput.MOUSE, click.x.toInt(), click.y.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }
         return if(bl)
             true
         else
-            super.onClick(mouseX, mouseY, button)
+            super.onClick(click, doubled)
 
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        val global = globalInputHandler?.invoke(button, true, ContextInput.MOUSE, hasControlDown(), hasShiftDown(), hasAltDown())
+    override fun mouseReleased(click: Click): Boolean {
+        val global = globalInputHandler?.invoke(click.button(), true, ContextInput.MOUSE, click.hasCtrl(), click.hasShift(), click.hasAlt())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
-        return super.mouseReleased(mouseX, mouseY, button)
+        return super.mouseReleased(click)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val global = globalInputHandler?.invoke(keyCode, false, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
+    override fun keyPressed(input: KeyInput): Boolean {
+        val global = globalInputHandler?.invoke(input.key(), false, ContextInput.KEYBOARD, input.hasCtrl(), input.hasShift(), input.hasAlt())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
 
-        val contextTypes = ContextType.getRelevantContext(keyCode, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
-        if (contextTypes.isEmpty()) return super.keyPressed(keyCode, scanCode, modifiers)
+        val contextTypes = ContextType.getRelevantContext(input.key(), ContextInput.KEYBOARD, input.hasCtrl(), input.hasShift(), input.hasAlt())
+        if (contextTypes.isEmpty()) return super.keyPressed(input)
 
         val activeWidget = activeWidget()
         if (activeWidget != null) {
@@ -467,18 +470,18 @@ internal class ConfigScreen(
                     }
                 }
             }
-            return super.keyPressed(keyCode, scanCode, modifiers)
+            return super.keyPressed(input)
         }
 
         var bl = false
-        val input = if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
+        val inputCtx = if (MinecraftClient.getInstance().navigationType.isKeyboard) ContextInput.KEYBOARD else ContextInput.MOUSE
         for (contextType in contextTypes) {
-            bl = bl || handleContext(contextType, Position(input, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
+            bl = bl || handleContext(contextType, Position(inputCtx, mX.toInt(), mY.toInt(), 0, 0, this.width, this.height, this.width, this.height))
         }
         return if (bl) {
             true
         } else {
-            val bl2 = super.keyPressed(keyCode, scanCode, modifiers)
+            val bl2 = super.keyPressed(input)
             if (!bl2 && contextTypes.contains(ContextType.BACK) && parent is ConfigScreen) {
                 this.close()
                 true
@@ -488,10 +491,10 @@ internal class ConfigScreen(
         }
     }
 
-    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        val global = globalInputHandler?.invoke(keyCode, true, ContextInput.KEYBOARD, hasControlDown(), hasShiftDown(), hasAltDown())
+    override fun keyReleased(input: KeyInput): Boolean {
+        val global = globalInputHandler?.invoke(input.key(), true, ContextInput.KEYBOARD, input.hasCtrl(), input.hasShift(), input.hasAlt())
         if (global != null && global != TriState.DEFAULT) return global.asBoolean
-        return super.keyReleased(keyCode, scanCode, modifiers)
+        return super.keyReleased(input)
     }
 
     override fun handleContext(contextType: ContextType, position: Position): Boolean {

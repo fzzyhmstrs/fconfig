@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.text.OrderedText
@@ -64,13 +65,13 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
         return Key(message, width)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (!isMouseOver(mouseX, mouseY)) return false
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        if (!isMouseOver(click.x, click.y)) return false
         val client = MinecraftClient.getInstance()
         val screen = client.currentScreen ?: return false
         val text = cache.map(getKey(width - leftPadding - rightPadding))
-        val d = mouseX - this.x - leftPadding
-        val dd = mouseY - this.y - topPadding
+        val d = click.x - this.x - leftPadding
+        val dd = click.y - this.y - topPadding
         val line = (dd / lineHeight).toInt()
         val style = text.getStyleAt(client, line, d) ?: return false
         return screen.handleTextClick(style)

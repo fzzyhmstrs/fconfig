@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
@@ -80,7 +81,7 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
         return false
     }
 

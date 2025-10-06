@@ -12,9 +12,11 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.internal
 
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import net.minecraft.client.font.TextRenderer
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.TextFieldWidget
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.MathHelper
@@ -24,16 +26,16 @@ internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, 
 
     private val searchText = "fc.config.search".translate().formatted(Formatting.DARK_GRAY, Formatting.ITALIC)
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-         if (!this.isNarratable || !this.isFocused) {
+    override fun keyPressed(input: KeyInput): Boolean {
+        if (!this.isInteractable || !this.isFocused) {
             return false
         }
-        if (keyCode == GLFW.GLFW_KEY_LEFT && this.text.isEmpty()) {
+        if (input.isLeft && this.text.isEmpty()) {
             return false
-        } else if (keyCode == GLFW.GLFW_KEY_RIGHT && this.text.isEmpty()) {
+        } else if (input.isRight && this.text.isEmpty()) {
             return false
         }
-        return super.keyPressed(keyCode, scanCode, modifiers)
+        return super.keyPressed(input)
     }
 
     override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
@@ -47,9 +49,9 @@ internal class NavigableTextFieldWidget(private val textRenderer: TextRenderer, 
 
     private var clicked = false
 
-    override fun onClick(mouseX: Double, mouseY: Double) {
+    override fun onClick(click: Click, doubled: Boolean) {
         clicked = true
-        super.onClick(mouseX, mouseY)
+        super.onClick(click, doubled)
         clicked = false
     }
 

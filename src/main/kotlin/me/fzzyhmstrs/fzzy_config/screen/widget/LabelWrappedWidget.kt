@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.nullCast
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
@@ -21,6 +22,8 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.input.CharInput
+import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 
 /**
@@ -45,29 +48,29 @@ class LabelWrappedWidget(private val child: ClickableWidget, private val label: 
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return child.mouseClicked(mouseX, mouseY, button)
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        return child.mouseClicked(click, doubled)
     }
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        return child.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+        return child.mouseDragged(click, offsetX, offsetY)
     }
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return child.mouseReleased(mouseX, mouseY, button)
+    override fun mouseReleased(click: Click): Boolean {
+        return child.mouseReleased(click)
     }
 
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
         return child.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return child.keyPressed(keyCode, scanCode, modifiers)
+    override fun keyPressed(input: KeyInput): Boolean {
+        return child.keyPressed(input)
     }
-    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return child.keyReleased(keyCode, scanCode, modifiers)
+    override fun keyReleased(input: KeyInput): Boolean {
+        return child.keyReleased(input)
     }
 
-    override fun charTyped(chr: Char, modifiers: Int): Boolean {
-        return child.charTyped(chr, modifiers)
+    override fun charTyped(input: CharInput): Boolean {
+        return child.charTyped(input)
     }
 
     override fun setFocused(focused: Boolean) {

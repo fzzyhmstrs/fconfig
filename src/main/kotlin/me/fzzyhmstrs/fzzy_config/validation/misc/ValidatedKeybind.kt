@@ -20,6 +20,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -29,7 +30,7 @@ import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.KeyCodes
+import net.minecraft.client.util.InputUtil
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
@@ -301,7 +302,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
         override fun onPress() {
             resetting = true
             justCLickedToggle = true
-            if (Screen.hasShiftDown() && this@ValidatedKeybind.storedValue != FzzyKeybindUnbound) {
+            if (isShiftDown() && this@ValidatedKeybind.storedValue != FzzyKeybindUnbound) {
                 justClickedShift = true
                 compounding = true
             }
@@ -314,7 +315,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
                     if (released && (key == GLFW.GLFW_KEY_LEFT_SHIFT || key == GLFW.GLFW_KEY_RIGHT_SHIFT)) {
                         justClickedShift = false
                     }
-                    if (released && (key == GLFW.GLFW_MOUSE_BUTTON_1 || KeyCodes.isToggle(key))) {
+                    if (released && (key == GLFW.GLFW_MOUSE_BUTTON_1 || (key == InputUtil.GLFW_KEY_ENTER || key == InputUtil.GLFW_KEY_SPACE || key == InputUtil.GLFW_KEY_KP_ENTER ))) {
                         justCLickedToggle = false
                     }
                     return@setGlobalInputHandler TriState.FALSE

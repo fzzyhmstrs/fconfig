@@ -36,7 +36,7 @@ internal class RestartScreen: PopupWidgetScreen(FcText.EMPTY) {
     private fun initBody() {
         val directionalLayoutWidget = layout.addBody(DirectionalLayoutWidget.vertical().spacing(8))
         val textHeadingLayoutWidget = DirectionalLayoutWidget.horizontal().spacing(4)
-        val textWidget = TextWidget("fc.config.restart".translate(), MinecraftClient.getInstance().textRenderer).alignCenter().also { it.height = 20 }
+        val textWidget = TextWidget("fc.config.restart".translate(), MinecraftClient.getInstance().textRenderer).also { it.height = 20 }
         textHeadingLayoutWidget.add(IconWidget.create(20, 20, "widget/entry_error".fcId()))
         textHeadingLayoutWidget.add(textWidget)
         textHeadingLayoutWidget.add(IconWidget.create(20, 20, "widget/entry_error".fcId()))

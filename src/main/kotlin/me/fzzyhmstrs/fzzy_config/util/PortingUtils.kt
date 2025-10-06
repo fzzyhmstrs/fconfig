@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import io.netty.buffer.ByteBuf
 import me.fzzyhmstrs.fzzy_config.cast
+import net.minecraft.client.MinecraftClient
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemConvertible
@@ -47,7 +48,7 @@ object PortingUtils {
     }
 
     fun getDynamicManager(player: ServerPlayerEntity): RegistryWrapper.WrapperLookup {
-        return player.world.server.reloadableRegistries.createRegistryLookup().cast()
+        return player.entityWorld.server.reloadableRegistries.createRegistryLookup().cast()
     }
 
     fun <T> Registry<T>.optional(id: Identifier): Optional<T> {
@@ -106,6 +107,18 @@ object PortingUtils {
 
     fun tagIngredient(tag: TagKey<Item>): Ingredient {
         return Ingredient.ofTag(Registries.ITEM.namedEntryList(tag).orElseThrow { UnsupportedOperationException("Ingredients can't be empty; tag [$tag] wasn't found in the Items registry") })
+    }
+
+    fun isAltDown(): Boolean {
+        return MinecraftClient.getInstance().isAltPressed()
+    }
+
+    fun isShiftDown(): Boolean {
+        return MinecraftClient.getInstance().isShiftPressed()
+    }
+
+    fun isControlDown(): Boolean {
+        return MinecraftClient.getInstance().isCtrlPressed()
     }
 
     object Codecs {
