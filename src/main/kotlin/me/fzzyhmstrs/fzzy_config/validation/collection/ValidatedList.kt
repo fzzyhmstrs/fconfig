@@ -29,9 +29,11 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedLazyField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.WidgetType
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -55,9 +57,11 @@ import java.util.function.Supplier
  * @see me.fzzyhmstrs.fzzy_config.validation.ValidatedField.toList
  * @see me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
  * @author fzzyhmstrs
- * @since 0.1.0
+ * @since 0.1.0, primary constructor deprecated 0.7.3
  */
-open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Entry<T, *>): ValidatedField<List<T>>(defaultValue), List<T>, EntryOpener {
+open class ValidatedList<T> @Deprecated("Use ValidatedField.toList pattern instead") constructor(defaultValue: List<T>, private val entryHandler: Entry<T, *>)
+    :
+    ValidatedLazyField<List<T>>(defaultValue, { listOf() }), List<T>, EntryOpener {
 
     init {
         for(thing in defaultValue) {
@@ -66,6 +70,8 @@ open class ValidatedList<T>(defaultValue: List<T>, private val entryHandler: Ent
         }
         compositeFlags(entryHandler)
     }
+
+    override val handler: BiFunction<TomlElement, String, ValidationResult<List<T>>>? = if (entryHandler is ValidatedMapped<*, *>) BiFunction { te, fn -> deserialize(te, fn) } else null
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {

@@ -21,8 +21,10 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedLazyField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedStringMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlElement
@@ -44,7 +46,9 @@ import java.util.function.BiFunction
  * @author fzzyhmstrs
  * @since 0.1.0
  */
-open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHandler: Entry<String, *>, private val valueHandler: Entry<V, *>): ValidatedField<Map<String, V>>(defaultValue), Map<String, V>, EntryOpener {
+open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHandler: Entry<String, *>, private val valueHandler: Entry<V, *>)
+    :
+    ValidatedLazyField<Map<String, V>>(defaultValue, { mapOf() }), Map<String, V>, EntryOpener {
 
     init {
         for((key, value) in defaultValue) {
@@ -56,6 +60,8 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
         compositeFlags(keyHandler)
         compositeFlags(valueHandler)
     }
+
+    override val handler: BiFunction<TomlElement, String, ValidationResult<Map<String, V>>>? = if (valueHandler is ValidatedMapped<*, *>) BiFunction { te, fn -> deserialize(te, fn) } else null
 
     //((?![a-z0-9_-]).) in case I need it...
     @Internal
