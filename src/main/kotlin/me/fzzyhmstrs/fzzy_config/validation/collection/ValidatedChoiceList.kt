@@ -36,8 +36,10 @@ import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedLazyField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedChoiceList.WidgetType
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.Tooltip
@@ -78,10 +80,12 @@ import kotlin.math.max
 open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet from ValidatedChoice/List/Set when possible") constructor(
     defaultValues: List<T>,
     private val choices: List<T>,
-    private val handler: EntryHandler<T>,
+    private val entryHandler: EntryHandler<T>,
     private val translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) },
     private val descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") },
-    private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<List<T>>(defaultValues), List<T>, EntryOpener
+    private val widgetType: WidgetType = WidgetType.POPUP)
+    :
+    ValidatedLazyField<List<T>>(defaultValues, { listOf() }), List<T>, EntryOpener
 {
     init {
         if (!choices.containsAll(defaultValues))
@@ -90,6 +94,8 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
             throw IllegalStateException("ValidatedChoiceSet can't have empty choice list")
     }
 
+    override val handler: BiFunction<TomlElement, String, ValidationResult<List<T>>>? = if (entryHandler is ValidatedMapped<*, *>) BiFunction { te, fn -> deserialize(te, fn) } else null
+
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<List<T>> {
         return try {
@@ -97,7 +103,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
             val list: MutableList<T> = mutableListOf()
             val errors = ValidationResult.createMutable("Error(s) found deserializing choice list $fieldName")
             for ((index, el) in array.content.withIndex()) {
-                val result = handler.deserializeEntry(el, "$fieldName[$index]", 1).attachTo(errors)
+                val result = entryHandler.deserializeEntry(el, "$fieldName[$index]", 1).attachTo(errors)
                 if (result.isValid()) {
                     val candidate = result.get()
                     if (!choices.contains(candidate)) {
@@ -120,7 +126,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         try {
             val errors = ValidationResult.createMutable("Error(s) found serializing choice list")
             for (entry in input) {
-                val tomlEntry = handler.serializeEntry(entry, 1).attachTo(errors)
+                val tomlEntry = entryHandler.serializeEntry(entry, 1).attachTo(errors)
                 val annotations = if (entry != null)
                     try {
                         ConfigApiImpl.tomlAnnotations(entry!!::class)
@@ -145,7 +151,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         if (old.size != new.size) return true
         for ((index, e) in old.withIndex()) {
             val e2 = new[index]
-            if (handler.deserializedChanged(e, e2)) return true
+            if (entryHandler.deserializedChanged(e, e2)) return true
         }
         return false
     }
@@ -155,7 +161,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         val list: MutableList<T> = mutableListOf()
         val errors = ValidationResult.createMutable("Choice List correction found errors")
         for ((index, entry) in input.withIndex()) {
-            val result = handler.correctEntry(entry, type).attachTo(errors)
+            val result = entryHandler.correctEntry(entry, type).attachTo(errors)
             val candidate = result.get()
             if (!choices.contains(candidate)) {
                 errors.addError(ValidationResult.Errors.OUT_OF_BOUNDS, "Entry $entry at index [$index] is not a valid option. Options: $choices")
@@ -169,7 +175,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     override fun validateEntry(input: List<T>, type: EntryValidator.ValidationType): ValidationResult<List<T>> {
         val errors = ValidationResult.createMutable("Choice List validation found errors")
         for ((index, entry) in input.withIndex()) {
-            handler.validateEntry(entry, type).attachTo(errors)
+            entryHandler.validateEntry(entry, type).attachTo(errors)
             if (!choices.contains(entry)) {
                 errors.addError(ValidationResult.Errors.OUT_OF_BOUNDS, "Entry $entry at index [$index] is not a valid option. Options: $choices")
             }
@@ -185,7 +191,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
      */
     override fun instanceEntry(): ValidatedChoiceList<T> {
         @Suppress("DEPRECATION")
-        return ValidatedChoiceList(copyStoredValue(), this.choices, this.handler, this.translationProvider, this.descriptionProvider, this.widgetType)
+        return ValidatedChoiceList(copyStoredValue(), this.choices, this.entryHandler, this.translationProvider, this.descriptionProvider, this.widgetType)
     }
 
     @Internal
@@ -207,7 +213,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
      * @since 0.6.0
      */
     override fun copyValue(input: List<T>): List<T> {
-        return input.map { handler.copyValue(it) }
+        return input.map { entryHandler.copyValue(it) }
     }
 
     @Internal

@@ -10,10 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.validation.misc
 
-import me.fzzyhmstrs.fzzy_config.entry.Entry
-import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
-import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
-import me.fzzyhmstrs.fzzy_config.entry.EntryValidator
+import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.updates.Updatable
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
@@ -26,6 +24,8 @@ import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.function.Consumer
 import java.util.function.Function
+import kotlin.reflect.KClass
+import kotlin.reflect.cast
 
 /**
  * Represents a [ValidatedField] mapped to another value representable by the wrapped delegate
@@ -34,13 +34,17 @@ import java.util.function.Function
  * @author fzzyhmstrs
  * @since 0.5.0
  */
-open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegate: ValidatedField<T>, private val to: Function<T, out N>, private val from: Function<in N, T>, defaultValue: N = to.apply(delegate.get())): ValidatedField<N>(defaultValue), EntryOpener {
+open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegate: ValidatedField<T>, private val to: Function<T, out N>, private val from: Function<in N, T>, defaultValue: N = to.apply(delegate.get())): ValidatedField<N>(defaultValue), EntryOpener, EntryDelegate {
 
     override var storedValue: N
         get() = to.apply(delegate.get())
         set(value) {
             delegate.accept(from.apply(value))
         }
+
+    fun getMapper(): Function<T, out N> {
+        return to
+    }
 
      @Deprecated("Use listenToEntry instead")
      @Suppress("DEPRECATION")
@@ -194,6 +198,15 @@ open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegat
     @Deprecated("Internal Method, don't Override unless you know what you are doing!")
     override fun setEntryKey(key: String) {
         delegate.setEntryKey(key)
+    }
+
+    override fun delegateClass(): KClass<*> {
+        return if (delegate is EntryDelegate) {
+            delegate.delegateClass()
+        } else {
+            val kClass: KClass<*> = delegate::class
+            kClass
+        }
     }
 
     private inner class ForwardingUpdateManager(private val forwardTo: UpdateManager): UpdateManager {

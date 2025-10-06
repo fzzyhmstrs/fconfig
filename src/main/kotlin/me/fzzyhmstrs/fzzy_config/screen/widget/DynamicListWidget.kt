@@ -1249,7 +1249,7 @@ class DynamicListWidget(
          * @since 0.6.5
          */
         //false, false, false, false, false, false, true
-        HIDDEN_CLOSED(0b01000000, { v -> !v.group }),
+        HIDDEN_CLOSED(0b01010000, { v -> !v.group }),
         /**
          * Entry filtered by searching. Not visible nor selectable
          * @author fzzyhmstrs
