@@ -12,7 +12,7 @@ import com.matthewprenger.cursegradle.CurseArtifact
 import com.matthewprenger.cursegradle.CurseProject
 import com.matthewprenger.cursegradle.CurseRelation
 import com.matthewprenger.cursegradle.Options
-import org.jetbrains.kotlin.cli.common.toBooleanLenient
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.net.URI
 
 plugins {
@@ -53,6 +53,9 @@ repositories {
     maven {
         url = URI("https://thedarkcolour.github.io/KotlinForForge/")
     }
+    maven {
+        url = URI("https://repo.nyon.dev/releases")
+    }
 }
 
 dependencies {
@@ -68,8 +71,11 @@ dependencies {
     neoForge("net.neoforged:neoforge:$loaderVersion")
 
 
-    val kotlinForForgeVersion: String by project
-    modImplementation("thedarkcolour:kotlinforforge-neoforge:$kotlinForForgeVersion")
+    /*val kotlinForForgeVersion: String by project
+    modLocalRuntime("thedarkcolour:kotlinforforge-neoforge:$kotlinForForgeVersion")*/
+
+    val klfVersion: String by project
+    modLocalRuntime("dev.nyon:KotlinLangForge:$klfVersion")
 
     val tomlktVersion: String by project
     implementation("net.peanuuutz.tomlkt:tomlkt-jvm:$tomlktVersion")
@@ -80,7 +86,11 @@ dependencies {
     include("blue.endless:jankson:$janksonVersion")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    implementation(kotlin("reflect"))
 }
+
+val kotlinVersion: String by System.getProperties()
 
 tasks {
     val javaVersion = JavaVersion.VERSION_21
@@ -90,10 +100,11 @@ tasks {
         targetCompatibility = javaVersion.toString()
         options.release.set(javaVersion.toString().toInt())
     }
+
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions {
-            jvmTarget = javaVersion.toString()
+        compilerOptions {
             freeCompilerArgs = listOf("-Xjvm-default=all")
+            jvmTarget.set(JvmTarget.JVM_21)
         }
         //java.sourceCompatibility = javaVersion
         //targetCompatibility = javaVersion.toString()
@@ -149,9 +160,9 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
         detectLoaders.set(false)
         changelog.set(log.readText())
         dependencies {
-            required.project("kotlin-for-forge")
+            required.project("kotlin-lang-forge")
         }
-        debugMode.set(uploadDebugMode.toBooleanLenient() ?: true)
+        debugMode.set(uploadDebugMode.toBooleanStrictOrNull() ?: true)
     }
 }
 
@@ -174,7 +185,7 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             mainArtifact(tasks.remapJar.get().archiveFile.get(), closureOf<CurseArtifact> {
                 displayName = "${base.archivesName.get()}-${project.version}"
                 relations(closureOf<CurseRelation> {
-                    this.requiredDependency("kotlin-for-forge")
+                    this.requiredDependency("kotlinlangforge")
                 })
             })
             addArtifact(tasks.remapSourcesJar.get().archiveFile, closureOf<CurseArtifact> {
@@ -182,14 +193,14 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
                 changelog = "Source files for ${base.archivesName.get()}-${project.version}"
             })
             relations(closureOf<CurseRelation> {
-                this.requiredDependency("kotlin-for-forge")
+                this.requiredDependency("kotlinlangforge")
             })
         })
         options(closureOf<Options> {
             javaIntegration = false
             forgeGradleIntegration = false
             javaVersionAutoDetect = false
-            debug = uploadDebugMode.toBooleanLenient() ?: true
+            debug = uploadDebugMode.toBooleanStrictOrNull() ?: true
         })
     }
 }

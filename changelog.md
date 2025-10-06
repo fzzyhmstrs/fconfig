@@ -1,3 +1,5 @@
+## Dependency has been changed to KotlinLangForge temporarily. I intend to revert back if KFF is updated. Or maybe I'll just package the kotlin libs myself, I'm getting tired of Forge kotlin libs.
+
 ## Breaking changes in 0.7.x
 * `ValidatedEnumMap` is removed
 * Removed all methods and properties marked as Deprecated and for removal 0.7.0
