@@ -18,6 +18,7 @@ import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.gui.widget.EntryListWidget
 import net.minecraft.client.gui.widget.Widget
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
@@ -1335,8 +1336,12 @@ class LayoutWidget @JvmOverloads @Deprecated("Use the builder pattern. Construct
         }
 
         fun update() {
-            element.x = x.get()
-            element.y = y.get()
+            if (element is EntryListWidget<*>) {
+                element.position(element.width, element.height, x.get(), y.get())
+            } else {
+                element.x = x.get()
+                element.y = y.get()
+            }
         }
         fun updateWidth(delta: Int) {
             if (alignment == Position.ALIGN_JUSTIFY
