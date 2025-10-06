@@ -256,6 +256,18 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
         return storedValue.isPressed()
     }
 
+    override fun needsCtrl(): Boolean {
+        return storedValue.needsCtrl()
+    }
+
+    override fun needsShift(): Boolean {
+        return storedValue.needsShift()
+    }
+
+    override fun needsAlt(): Boolean {
+        return storedValue.needsAlt()
+    }
+
     /**
      * @suppress
      */

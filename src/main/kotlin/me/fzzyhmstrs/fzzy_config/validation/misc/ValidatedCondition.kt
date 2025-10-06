@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.validation.misc
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.entry.EntryCreator
+import me.fzzyhmstrs.fzzy_config.entry.EntryDelegate
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.entry.EntryOpener
 import me.fzzyhmstrs.fzzy_config.nullCast
@@ -45,6 +46,7 @@ import java.util.*
 import java.util.function.BooleanSupplier
 import java.util.function.Function
 import java.util.function.Supplier
+import kotlin.reflect.KClass
 
 /**
  * A validated value with a fallback that is supplied if provided conditions aren't passed
@@ -58,7 +60,7 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * since 0.5.4
  */
-open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T>, private val fallback: Supplier<T>): ValidatedMapped<T, T>(delegate, Function.identity(), Function.identity()) {
+open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T>, private val fallback: Supplier<T>): ValidatedMapped<T, T>(delegate, Function.identity(), Function.identity()), EntryDelegate {
 
     init {
         if (delegate === fallback) throw IllegalStateException("Can't use the conditional delegate as it's own fallback")
@@ -313,6 +315,15 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         return list
     }
 
+    override fun delegateClass(): KClass<*> {
+        return if (delegate is EntryDelegate) {
+            delegate.delegateClass()
+        } else {
+            val kClass = delegate::class
+            kClass
+        }
+    }
+
     /**
      * @suppress
      */
@@ -479,11 +490,11 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
         override fun getHeight(): Int {
             return delegateWidget.height
         }
-    
+
         override fun setWidth(width: Int) {
             delegateWidget.width = width
         }
-    
+
         override fun setHeight(height: Int) {
             delegateWidget.height = height
         }

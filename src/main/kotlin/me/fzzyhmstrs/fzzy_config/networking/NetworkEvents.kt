@@ -56,22 +56,12 @@ internal object NetworkEvents {
 
     fun registerServer() {
 
-        //PayloadTypeRegistry.configurationC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         PayloadTypeRegistry.configurationS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playS2C().register(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec)
         ConfigApi.network().registerLenientS2C(ConfigPermissionsS2CCustomPayload.type, ConfigPermissionsS2CCustomPayload.codec, NetworkEventsClient::receivePerms)
-        //PayloadTypeRegistry.playC2S().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playS2C().register(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec)
         ConfigApi.network().registerLenientS2C(ConfigSyncS2CCustomPayload.type, ConfigSyncS2CCustomPayload.codec, NetworkEventsClient::receiveSync)
-        //PayloadTypeRegistry.playC2S().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
-        //PayloadTypeRegistry.playS2C().register(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec)
         ConfigApi.network().registerLenientS2C(ConfigUpdateS2CCustomPayload.type, ConfigUpdateS2CCustomPayload.codec, NetworkEventsClient::receiveUpdate)
-        //PayloadTypeRegistry.playC2S().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
         ConfigApi.network().registerLenientC2S(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec, this::receiveUpdate)
-        //PayloadTypeRegistry.playS2C().register(ConfigUpdateC2SCustomPayload.type, ConfigUpdateC2SCustomPayload.codec)
-        //PayloadTypeRegistry.playC2S().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
         ConfigApi.network().registerLenientC2S(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec, this::receiveForward)
-        //PayloadTypeRegistry.playS2C().register(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec)
         ConfigApi.network().registerLenientS2C(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec, NetworkEventsClient::receiveForward)
 
         ConfigApi.network().registerLenientS2C(DynamicIdsS2CCustomPayload.type, DynamicIdsS2CCustomPayload.codec, NetworkEventsClient::receiveDynamicIds)
@@ -103,19 +93,5 @@ internal object NetworkEvents {
             ConfigApiImpl.invalidateLookup()
         }
 
-        /*ServerPlayNetworking.registerGlobalReceiver(ConfigUpdateC2SCustomPayload.type){ payload, context ->
-            SyncedConfigRegistry.receiveConfigUpdate(
-                payload.updates,
-                context.server(),
-                context.player(),
-                payload.changeHistory,
-                { player, id -> ServerPlayNetworking.canSend(player, id) },
-                { player, pl -> ServerPlayNetworking.send(player, pl) }
-            )
-        }*/
-
-        /*ServerPlayNetworking.registerGlobalReceiver(SettingForwardCustomPayload.type){ payload, context ->
-
-        }*/
     }
 }
