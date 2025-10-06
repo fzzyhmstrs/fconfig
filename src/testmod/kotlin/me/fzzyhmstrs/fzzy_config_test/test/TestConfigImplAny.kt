@@ -13,9 +13,16 @@ package me.fzzyhmstrs.fzzy_config_test.test
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.Walkable
+import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
+import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition
+import net.minecraft.item.Items
+import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
 import net.peanuuutz.tomlkt.TomlComment
 
@@ -28,6 +35,9 @@ class TestConfigImplAny: Config(Identifier.of("fzzy_config_test","test_config_an
 
     @Translatable.Name("My Test Object")
     var any1 = MyTestAny()
+
+    @Translatable.Name("My Test Object 2")
+    var any2 = ValidatedAny(MyTestAny2()).toCondition({ true }, FcText.literal("Test"), ::MyTestAny2)
 
     //var bl1 = true
 
@@ -53,5 +63,15 @@ class TestConfigImplAny: Config(Identifier.of("fzzy_config_test","test_config_an
         @Translatable.Prefix("Test prefix that is very cool")
         @Translatable.Prefix("Prefijo de prueba que es muy genial", "es_es")
         var test5: TriState = TriState.DEFAULT
+    }
+
+    class MyTestAny2 {
+        @Translatable.Name("Delegate Test")
+        @Translatable.Desc("Delegate Test Description; very cool and powerful")
+        @RequiresAction(Action.RESTART)
+        var test: Int = 5
+
+        @Translatable.Name("Mapped List Test")
+        var test2 = ValidatedList(listOf(Items.ACACIA_BOAT, Items.DIAMOND), ValidatedRegistryType.of(Registries.ITEM))
     }
 }
