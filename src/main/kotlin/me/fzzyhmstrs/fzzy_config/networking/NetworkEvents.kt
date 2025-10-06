@@ -81,7 +81,7 @@ internal object NetworkEvents {
         } else {
             SyncedConfigRegistry.onJoin(
                 serverPlayer,
-                serverPlayer.world.server,
+                serverPlayer.entityWorld.server,
                 { player, id -> this.canSend(player, id) },
                 { player, payload -> this.send(player, payload) }
             )

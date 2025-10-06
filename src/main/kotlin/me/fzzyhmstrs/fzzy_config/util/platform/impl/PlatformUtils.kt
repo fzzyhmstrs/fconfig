@@ -31,7 +31,7 @@ import java.io.File
 internal object PlatformUtils {
 
     fun isClient(): Boolean {
-        return FMLEnvironment.dist == Dist.CLIENT
+        return FMLEnvironment.getDist() == Dist.CLIENT
     }
 
     fun configDir(): File {
@@ -47,7 +47,7 @@ internal object PlatformUtils {
     }
 
     fun isDev(): Boolean {
-        return !FMLEnvironment.production
+        return !FMLEnvironment.isProduction()
     }
 
     fun configName(scope: String, fallback: String): String {
