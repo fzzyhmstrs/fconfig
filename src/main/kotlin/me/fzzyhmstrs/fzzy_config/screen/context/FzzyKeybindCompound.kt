@@ -29,6 +29,18 @@ data class FzzyKeybindCompound(val keybinds: List<FzzyKeybind>): FzzyKeybind {
         return keybinds.any { it.isPressed() }
     }
 
+    override fun needsCtrl(): Boolean {
+        return keybinds.any { it.needsAlt() }
+    }
+
+    override fun needsShift(): Boolean {
+        return keybinds.any { it.needsShift() }
+    }
+
+    override fun needsAlt(): Boolean {
+        return keybinds.any { it.needsAlt() }
+    }
+
     override fun keybind(): MutableText {
         return when (keybinds.size) {
             0 -> {

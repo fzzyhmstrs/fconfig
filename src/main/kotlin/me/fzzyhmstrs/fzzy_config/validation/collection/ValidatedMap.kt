@@ -26,8 +26,10 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedLazyField
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedMap.Builder
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.peanuuutz.tomlkt.*
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -51,7 +53,9 @@ import kotlin.collections.set
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: Entry<K, *>, private val valueHandler: Entry<V, *>): ValidatedField<Map<K, V>>(defaultValue), Map<K, V>, EntryOpener {
+open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: Entry<K, *>, private val valueHandler: Entry<V, *>)
+    :
+    ValidatedLazyField<Map<K, V>>(defaultValue, { mapOf() }), Map<K, V>, EntryOpener {
 
     init {
         for((key, value) in defaultValue) {
@@ -64,6 +68,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
         compositeFlags(valueHandler)
     }
 
+    override val handler: BiFunction<TomlElement, String, ValidationResult<Map<K, V>>>? = if (keyHandler is ValidatedMapped<*, *> || valueHandler is ValidatedMapped<*, *>) BiFunction { te, fn -> deserialize(te, fn) } else null
 
     //((?![a-z0-9_-]).) in case I need it...
     @Internal

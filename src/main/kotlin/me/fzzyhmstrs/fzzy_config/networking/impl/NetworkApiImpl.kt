@@ -11,12 +11,15 @@
 package me.fzzyhmstrs.fzzy_config.networking.impl
 
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
+import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.networking.api.*
+import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.RegistryByteBuf
 import net.minecraft.network.codec.PacketCodec
 import net.minecraft.network.packet.CustomPayload
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import net.neoforged.neoforge.network.PacketDistributor
@@ -93,6 +96,10 @@ internal object NetworkApiImpl: NetworkApi {
 
     override fun <T : CustomPayload> registerLenientC2S(id: CustomPayload.Id<T>, codec: PacketCodec<in RegistryByteBuf, T>, handler: C2SPayloadHandler<T>) {
         registerC2S(id, codec, handler)
+    }
+
+    override fun syncConfig(config: Config, server: MinecraftServer) {
+        SyncedConfigRegistry.manualSync(config, server)
     }
 
 }
