@@ -29,9 +29,11 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedLazyField
 import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedChoice.WidgetType
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedMapped
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedString
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.client.gui.widget.ClickableWidget
@@ -57,7 +59,9 @@ import java.util.function.Supplier
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T, *>): ValidatedField<Set<T>>(defaultValue), Set<T>, EntryOpener {
+open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry<T, *>)
+    :
+    ValidatedLazyField<Set<T>>(defaultValue, { setOf() }), Set<T>, EntryOpener {
 
     init {
         for(thing in defaultValue) {
@@ -66,6 +70,8 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
         }
         compositeFlags(entryHandler)
     }
+
+    override val handler: BiFunction<TomlElement, String, ValidationResult<Set<T>>>? = if (entryHandler is ValidatedMapped<*, *>) BiFunction { te, fn -> deserialize(te, fn) } else null
 
     @Internal
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<Set<T>> {
