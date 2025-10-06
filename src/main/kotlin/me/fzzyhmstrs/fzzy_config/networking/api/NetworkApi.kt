@@ -12,8 +12,10 @@ package me.fzzyhmstrs.fzzy_config.networking.api
 
 import io.netty.buffer.Unpooled
 import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
+import me.fzzyhmstrs.fzzy_config.config.Config
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.server.MinecraftServer
 import net.minecraft.util.Identifier
 import java.util.function.Function
 
@@ -98,4 +100,15 @@ interface NetworkApi {
      * @since 0.6.6, 0.6.5-fix1 for Forge 1.20.1
      */
     fun <T: FzzyPayload> registerLenientC2S(id: Identifier, clazz: Class<T>, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>)
+
+    /**
+     * Manually sync a non-client config (which doesn't need syncing).
+     *
+     * Configs synced this way should probably also use [Config.save]
+     * @param config [Config] the config that is going to be synced
+     * @param server [MinecraftServer] the server instance for sending the update to all connected players.
+     * @author fzzyhmstrs
+     * @since 0.7.3
+     */
+    fun syncConfig(config: Config, server: MinecraftServer)
 }

@@ -11,13 +11,16 @@
 package me.fzzyhmstrs.fzzy_config.networking.impl
 
 import me.fzzyhmstrs.fzzy_config.networking.FzzyPayload
+import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.networking.api.*
+import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
 import net.fabricmc.fabric.api.networking.v1.PacketByteBufs
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.network.PacketByteBuf
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
 import java.util.function.Function
@@ -70,6 +73,10 @@ internal object NetworkApiImpl: NetworkApi {
 
     override fun <T : FzzyPayload> registerLenientC2S(id: Identifier, clazz: Class<T>, function: Function<PacketByteBuf, T>, handler: C2SPayloadHandler<T>) {
         registerC2S(id, clazz, function, handler)
+    }
+
+    override fun syncConfig(config: Config, server: MinecraftServer) {
+        SyncedConfigRegistry.manualSync(config, server)
     }
 
 }

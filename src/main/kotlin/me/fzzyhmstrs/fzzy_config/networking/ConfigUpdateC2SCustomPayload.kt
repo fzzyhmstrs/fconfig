@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
@@ -32,13 +33,13 @@ internal class ConfigUpdateC2SCustomPayload(val updates: Map<String, String>, va
         buf.writeVarInt(updates.size)
         for ((id, serializedConfig) in updates) {
             buf.writeString(id)
-            buf.writeString(serializedConfig)
+            buf.writeString(serializedConfig, ConfigApiImpl.MAX_CONFIG_SERIALIZATION_LENGTH)
         }
     }
     private fun writeList(buf: PacketByteBuf) {
         buf.writeVarInt(changeHistory.size)
         for (str in changeHistory) {
-            buf.writeString(str)
+            buf.writeString(str, ConfigApiImpl.MAX_CONFIG_SERIALIZATION_LENGTH)
         }
     }
 

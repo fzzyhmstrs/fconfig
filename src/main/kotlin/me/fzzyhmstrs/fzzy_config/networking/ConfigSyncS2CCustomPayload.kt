@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.networking
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import net.minecraft.network.PacketByteBuf
 import net.minecraft.util.Identifier
 
@@ -20,7 +21,7 @@ internal class ConfigSyncS2CCustomPayload(val id: String, val serializedConfig: 
 
     override fun write(buf: PacketByteBuf) {
         buf.writeString(id)
-        buf.writeString(serializedConfig)
+        buf.writeString(serializedConfig, ConfigApiImpl.MAX_CONFIG_SERIALIZATION_LENGTH)
     }
 
     override fun getId(): Identifier {

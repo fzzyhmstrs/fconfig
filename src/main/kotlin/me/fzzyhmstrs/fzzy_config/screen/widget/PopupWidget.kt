@@ -40,7 +40,6 @@ import org.lwjgl.glfw.GLFW
 import java.util.*
 import java.util.function.*
 import java.util.function.Function
-import kotlin.collections.ArrayDeque
 import kotlin.math.max
 import kotlin.math.min
 
@@ -102,10 +101,14 @@ class PopupWidget
     }
 
     fun position(screenWidth: Int, screenHeight: Int) {
-        this.width = context.widthFunction.apply(screenWidth, width)
-        this.height = context.heightFunction.apply(screenHeight, height)
-        this.x = context.positionX.apply(screenWidth, width) //screenWidth/2 - width/2
-        this.y = context.positionY.apply(screenHeight, height) //screenHeight/2 - height/2
+        val dims = context.layoutDimensions.get()
+        val w = min(screenWidth, dims.first)
+        val h = min(screenHeight, dims.second)
+
+        this.width = context.widthFunction.apply(screenWidth, w)
+        this.height = context.heightFunction.apply(screenHeight, h)
+        this.x = context.positionX.apply(screenWidth, this.width) //screenWidth/2 - width/2
+        this.y = context.positionY.apply(screenHeight, this.height) //screenHeight/2 - height/2
         context.positioner.position(this.x, this.y, this.width, this.height)
         for (el in context.children) {
             if (el is RepositioningWidget) {
@@ -984,7 +987,30 @@ class PopupWidget
 
             val drawAreas = if (totalLayouts.size == 1) listOf() else totalLayouts
 
-            return PopupWidget(narratedTitle, max(layoutWidget.width, maxX - minX), max(layoutWidget.height, maxY - minY), Context(blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, widthFunction, heightFunction, onClose, afterClose, onClick, onSwitchFocus, children, selectables, drawables, drawAreas))
+            val layoutDimensions: Supplier<Pair<Int, Int>> = Supplier {
+                val bX = baseLayoutWidget.x
+                val bY = baseLayoutWidget.y
+
+                var mnX = bX
+                var mnY = bY
+                var mxX = bX + baseLayoutWidget.width
+                var mxY = bY + baseLayoutWidget.height
+
+                for (layout in totalLayouts) {
+                    val testX = layout.x
+                    if (testX < mnX) mnX = testX
+                    val testMaxX = testX + layout.width
+                    if (testMaxX > mxX) mxX = testMaxX
+                    val testY = layout.y
+                    if (testY < mnY) mnY = testY
+                    val testMaxY = testY + layout.height
+                    if (testMaxY > mxY) mxY = testMaxY
+                }
+                Pair(max(layoutWidget.width, mxX - mnX), max(layoutWidget.height, mxY - mnY))
+            }
+
+
+            return PopupWidget(narratedTitle, max(layoutWidget.width, maxX - minX), max(layoutWidget.height, maxY - minY), Context(blurBackground, closeOnOutOfBounds, background, positionX, positionY, positioner, layoutDimensions, widthFunction, heightFunction, onClose, afterClose, onClick, onSwitchFocus, children, selectables, drawables, drawAreas))
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1138,6 +1164,7 @@ class PopupWidget
         val positionX: BiFunction<Int, Int, Int>,
         val positionY: BiFunction<Int, Int, Int>,
         val positioner: Positioner,
+        val layoutDimensions: Supplier<Pair<Int, Int>>,
         val widthFunction: BiFunction<Int, Int, Int>,
         val heightFunction: BiFunction<Int, Int, Int>,
         val onClose: Runnable,

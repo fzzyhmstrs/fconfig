@@ -74,9 +74,14 @@ class TestRootConfigImpl: Config(Identifier("fzzy_config_test","root_config"), s
 
     var section2 = TestSectionImpl()
 
-    var group2 = ConfigGroup("test_group_2")
+    var group2 = ConfigGroup("test_group_2", collapsedByDefault = true)
+
+    var set0 = setOf(0.2, 0.4, 0.6)
+
+    var group3 = ConfigGroup("test_group_3", collapsedByDefault = true)
 
     var set1 = setOf(0.2, 0.4, 0.6)
+    @ConfigGroup.Pop
     @ConfigGroup.Pop
     @ConfigGroup.Pop
     var set2 = setOf(0.2, 0.4, 0.6).validated()
