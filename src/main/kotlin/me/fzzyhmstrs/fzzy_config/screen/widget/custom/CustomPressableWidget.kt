@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
-import com.mojang.blaze3d.systems.RenderSystem
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
@@ -22,6 +22,7 @@ import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.input.CharInput
 import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
@@ -37,7 +38,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.5.?
  */
-open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message), TooltipChild {
+open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message), CustomWidget, TooltipChild {
 
     protected open val textures: TextureProvider = DEFAULT_TEXTURES
 
@@ -125,15 +126,69 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     }
 
     @Internal
-    override fun onClick(click: Click, doubled: Boolean) {
-        this.onPress()
+    @Deprecated("Will be marked final in 0.8.0. Use onMouse instead")
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        return onMouse(CustomWidget.OnClick(click, doubled))
     }
 
     @Internal
+    @Deprecated("Won't work as intended, CustomPressableWidget calls onPress directly. Will be marked final in 0.8.0. Use onMouse instead.")
+    override fun onClick(click: Click, doubled: Boolean) {
+        FC.LOGGER.error("CustomPressableWidget onClick method called. This is a bug in 0.7.3! See the source for information.")
+        this.onPress()
+    }
+
+
+    override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+        if (!this.isInteractable) {
+            return false
+        } else {
+            if (this.isMouse(event)) {
+                val bl = this.isMouseOver(event.x(), event.y())
+                if (bl) {
+                    this.playDownSound(MinecraftClient.getInstance().soundManager)
+                    this.onPress()
+                    return true
+                }
+            }
+            return false
+        }
+    }
+
+    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+        return if (this.isValidClickButton(click.buttonInfo())) {
+            onMouseDrag(CustomWidget.OnDrag(click, offsetX, offsetY))
+        } else {
+            false
+        }
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onMouseRelease instead")
+    override fun mouseReleased(click: Click): Boolean {
+        return if (this.isValidClickButton(click.buttonInfo())) {
+            onMouseRelease(CustomWidget.OnRelease(click))
+        } else {
+            false
+        }
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onMouseScroll instead")
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        return onMouseScroll(CustomWidget.OnScroll(mouseX, mouseY, horizontalAmount, verticalAmount))
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onKey instead")
     override fun keyPressed(input: KeyInput): Boolean {
+        return onKey(CustomWidget.KeyEvent(input))
+    }
+
+    override fun onKey(event: CustomWidget.KeyEvent): Boolean {
         if (!this.active || !this.visible) {
             return false
-        } else if (input.isEnterOrSpace) {
+        } else if (event.isEnterOrSpace()) {
             this.playDownSound(MinecraftClient.getInstance().soundManager)
             this.onPress()
             return true
@@ -143,9 +198,23 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     }
 
     @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onKeyRelease instead")
+    override fun keyReleased(input: KeyInput): Boolean {
+        return onKeyRelease(CustomWidget.KeyEvent(input))
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onChar instead")
+    override fun charTyped(input: CharInput): Boolean {
+        return onChar(CustomWidget.CharEvent(input))
+    }
+
+    @Internal
     override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
         appendDefaultNarrations(builder)
     }
+
+
 
     companion object {
         @JvmStatic
