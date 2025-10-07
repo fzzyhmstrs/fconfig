@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import com.mojang.blaze3d.systems.RenderSystem
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
@@ -37,7 +38,7 @@ import org.jetbrains.annotations.ApiStatus.Internal
  * @author fzzyhmstrs
  * @since 0.5.?
  */
-open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message), TooltipChild {
+open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, message: Text) : ClickableWidget(x, y, width, height, message), CustomWidget, TooltipChild {
 
     protected open val textures: TextureProvider = DEFAULT_TEXTURES
 
@@ -131,21 +132,87 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     }
 
     @Internal
-    override fun onClick(mouseX: Double, mouseY: Double) {
-        this.onPress()
+    @Deprecated("Will be marked final in 0.8.0. Use onMouse instead")
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return onMouse(CustomWidget.OnClick(mouseX, mouseX, button))
     }
 
     @Internal
+    @Deprecated("Won't work as intended, CustomPressableWidget calls onPress directly. Will be marked final in 0.8.0. Use onMouse instead.")
+    override fun onClick(mouseX: Double, mouseY: Double) {
+        FC.LOGGER.error("CustomPressableWidget onClick method called. This is a bug in 0.7.3! See the source for information.")
+        this.onPress()
+    }
+
+
+    override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+        if (!this.isInteractable) {
+            return false
+        } else {
+            if (this.isMouse(event)) {
+                val bl = this.isMouseOver(event.x(), event.y())
+                if (bl) {
+                    this.playDownSound(MinecraftClient.getInstance().soundManager)
+                    this.onPress()
+                    return true
+                }
+            }
+            return false
+        }
+    }
+
+    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
+        return if (this.isValidClickButton(button)) {
+            onMouseDrag(CustomWidget.OnDrag(mouseX, mouseY, button, deltaX, deltaY))
+        } else {
+            false
+        }
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onMouseRelease instead")
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return if (this.isValidClickButton(button)) {
+            onMouseRelease(CustomWidget.OnRelease(mouseX, mouseY, button))
+        } else {
+            false
+        }
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onMouseScroll instead")
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        return onMouseScroll(CustomWidget.OnScroll(mouseX, mouseY, horizontalAmount, verticalAmount))
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onKey instead")
     override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        return onKey(CustomWidget.KeyEvent(keyCode, scanCode, modifiers))
+    }
+
+    override fun onKey(event: CustomWidget.KeyEvent): Boolean {
         if (!this.active || !this.visible) {
             return false
-        } else if (KeyCodes.isToggle(keyCode)) {
+        } else if (event.isEnterOrSpace()) {
             this.playDownSound(MinecraftClient.getInstance().soundManager)
             this.onPress()
             return true
         } else {
             return false
         }
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onKeyRelease instead")
+    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        return onKeyRelease(CustomWidget.KeyEvent(input))
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onChar instead")
+    override fun charTyped(chr: Char, modifiers: Int): Boolean {
+        return onChar(CustomWidget.CharEvent(chr, modifiers))
     }
 
     @Internal
