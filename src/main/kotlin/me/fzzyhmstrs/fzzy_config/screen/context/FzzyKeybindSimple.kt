@@ -18,7 +18,6 @@ import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.InputUtil
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
-import org.lwjgl.glfw.GLFW
 
 /**
  * Basic implementation of [Relevant] that uses [TriState] for processing modifier inputs. [TriState.DEFAULT] auto-passes the modifier key (either pressed or not-pressed will be considered relevant)

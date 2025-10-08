@@ -10,21 +10,21 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
-import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.text.Text
 import java.util.function.Supplier
 import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
- * An [AbstractTextWidget] that renders text from a supplier of text, not a static text instance
+ * A [CustomTextWidget] that renders text from a supplier of text, not a static text instance
  * @param messageSupplier [Supplier]&lt;[Text]&gt; - supplies text to this widget
  * @param textRenderer [TextRenderer] - textRenderer instance
  * @param width Int - width of the widget in pixels
@@ -32,7 +32,7 @@ import kotlin.math.roundToInt
  * @author fzzyhmstrs
  * @since 0.3.1, removed align:direction: methods and now implements TooltipChild in 0.6.0, uses java.util.Supplier instead of googles in 0.6.8 and deprecates constructors with google Supplier. Google supplier constructors removed 0.7.0.
  */
-class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): AbstractTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer), TooltipChild {
+class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRenderer: TextRenderer, width: Int, height: Int): CustomTextWidget(0, 0, width, height, messageSupplier.get(), textRenderer), TooltipChild {
 
     constructor(messageSupplier: Supplier<Text>, textRenderer: TextRenderer): this(messageSupplier, textRenderer, textRenderer.getWidth(messageSupplier.get().asOrderedText()), textRenderer.fontHeight)
 
@@ -65,7 +65,7 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         return this
     }
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderText(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = messageSupplier.get()
         val i = getWidth()
         val j = textRenderer.getWidth(text)
@@ -80,7 +80,7 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+    override fun onPress(event: CustomWidget.MouseEvent): Boolean {
         return false
     }
 
