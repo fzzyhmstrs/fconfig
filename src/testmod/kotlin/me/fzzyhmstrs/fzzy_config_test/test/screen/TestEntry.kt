@@ -4,6 +4,7 @@ import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawOutline
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config_test.FC
 import net.minecraft.client.MinecraftClient
@@ -58,7 +59,7 @@ class TestEntry(parentElement: DynamicListWidget, scope: String, group: Int, ind
             delta: Float
         ) {
             if (hovered || focused)
-                context.drawBorder(x, y, width, height, Colors.WHITE)
+                context.drawOutline(x, y, width, height, Colors.WHITE)
         }
 
         override fun children(): MutableList<out Element> {
