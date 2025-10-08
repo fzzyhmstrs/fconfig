@@ -126,7 +126,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     @Internal
     @Deprecated("Will be marked final in 0.8.0. Use onMouse instead")
     override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return onMouse(CustomWidget.OnClick(mouseX, mouseX, button))
+        return onMouse(CustomWidget.OnClick(mouseX, mouseY, button))
     }
 
     @Internal
