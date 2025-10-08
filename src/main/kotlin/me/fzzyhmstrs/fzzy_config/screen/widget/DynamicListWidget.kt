@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.ListSpec
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
@@ -350,8 +351,8 @@ class DynamicListWidget(
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        return suggestionWindowElement?.mouseClicked(mouseX, mouseY, button) ?: super<CustomListWidget>.mouseClicked(mouseX, mouseY, button)
+    override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+        return event.clickWidgetOrNull(suggestionWindowElement) ?: super.onMouse(event)
     }
 
     override fun scrollToTop(): Boolean {
@@ -362,12 +363,12 @@ class DynamicListWidget(
         return entries.scrollToBottom()
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
-        return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, verticalAmount) ?: super<CustomListWidget>.mouseScrolled(mouseX, mouseY, verticalAmount)
+    override fun onMouseScroll(event: CustomWidget.MouseEvent): Boolean {
+        return event.scrollWidgetOrNull(suggestionWindowElement) ?: super.onMouseScroll(event)
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return suggestionWindowElement?.keyPressed(keyCode, scanCode, modifiers) ?: super<CustomListWidget>.keyPressed(keyCode, scanCode, modifiers)
+    override fun onKey(event: CustomWidget.KeyEvent): Boolean {
+        return event.keyWidgetOrNull(suggestionWindowElement) ?: false
     }
 
     private var suggestionWindowElement: Element? = null
@@ -953,10 +954,6 @@ class DynamicListWidget(
 
         override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
             return parentElement.isMouseOver(mouseX, mouseY) && mouseX >= x.get() && mouseY >= top.get() && mouseX < (x + w) && mouseY < bottom.get()
-        }
-
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            return super<ParentElement>.mouseClicked(mouseX, mouseY, button)
         }
 
         override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {

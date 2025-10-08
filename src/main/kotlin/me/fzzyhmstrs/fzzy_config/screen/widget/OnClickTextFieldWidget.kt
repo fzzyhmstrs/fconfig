@@ -11,6 +11,9 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
 import me.fzzyhmstrs.fzzy_config.fcId
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
+import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
@@ -33,7 +36,7 @@ import java.util.function.Supplier
 //client
 class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: OnInteractAction)
     :
-    AbstractTextWidget( 0, 0, 110, 20, FcText.EMPTY, MinecraftClient.getInstance().textRenderer)
+    CustomTextWidget( 0, 0, 110, 20, FcText.EMPTY, MinecraftClient.getInstance().textRenderer)
 {
 
     private val textures: TextureProvider = TextureSet("widget/text_field".fcId(), "widget/text_field".fcId(), "widget/text_field_highlighted".fcId())
@@ -52,21 +55,23 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
         }
     }
 
-    override fun onClick(mouseX: Double, mouseY: Double) {
+    override fun onPress(event: CustomWidget.MouseEvent): Boolean {
         onClick.interact(this, false, 0, 0, 0)
+        return true
     }
 
-    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return if (!this.isFocused || isNavigation(keyCode)) {
+    override fun onKey(event: CustomWidget.KeyEvent): Boolean {
+        return if (!this.isFocused || isNavigation(event.key())) {
             false
         } else {
-            if(KeyCodes.isToggle(keyCode))
-                onClick.interact(this, false, keyCode, scanCode, modifiers)
+            if(event.isEnterOrSpace())
+                onClick.interact(this, false, event.key(), event.scancode(), event.modifiers())
             else
-                onClick.interact(this, true, keyCode, scanCode, modifiers)
+                onClick.interact(this, true, event.key(), event.scancode(), event.modifiers())
             return true
         }
     }
+
     private fun isNavigation(keyCode: Int): Boolean {
         return keyCode == GLFW.GLFW_KEY_TAB
                 || keyCode == GLFW.GLFW_KEY_RIGHT

@@ -26,6 +26,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -380,46 +381,60 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             }
         }
 
-        override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            return if (active)
-                delegateWidget.mouseClicked(mouseX, mouseY, button)
-            else
-                super.mouseClicked(mouseX, mouseY, button)
+        override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+            return if (active) {
+                event.clickWidget(delegateWidget)
+            } else {
+                super.onMouse(event)
+            }
         }
 
-        override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-            return if (active)
-                delegateWidget.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
-            else
-                super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)
+        override fun onMouseDrag(event: CustomWidget.MouseEvent): Boolean {
+            return if (active) {
+                event.dragWidget(delegateWidget)
+            } else {
+                super.onMouseDrag(event)
+            }
         }
 
-        override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-            return if(active)
-                delegateWidget.mouseReleased(mouseX, mouseY, button)
-            else
-                super.mouseReleased(mouseX, mouseY, button)
+        override fun onMouseRelease(event: CustomWidget.MouseEvent): Boolean {
+            return if (active) {
+                event.releaseWidget(delegateWidget)
+            } else {
+                super.onMouseRelease(event)
+            }
         }
 
-        override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
-            return if (active)
-                delegateWidget.mouseScrolled(mouseX, mouseY, verticalAmount)
-            else
-                super.mouseScrolled(mouseX, mouseY, verticalAmount)
+        override fun onMouseScroll(event: CustomWidget.MouseEvent): Boolean {
+            return if (active) {
+                event.scrollWidget(delegateWidget)
+            } else {
+                super.onMouseScroll(event)
+            }
         }
 
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            return if (active)
-                delegateWidget.keyPressed(keyCode, scanCode, modifiers)
-            else
-                super.keyPressed(keyCode, scanCode, modifiers)
+        override fun onKey(event: CustomWidget.KeyEvent): Boolean {
+            return if (active) {
+                event.keyWidget(delegateWidget)
+            } else {
+                super.onKey(event)
+            }
         }
 
-        override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            return if (active)
-                delegateWidget.keyReleased(keyCode, scanCode, modifiers)
-            else
-                super.keyReleased(keyCode, scanCode, modifiers)
+        override fun onKeyRelease(event: CustomWidget.KeyEvent): Boolean {
+            return if (active) {
+                event.releaseWidget(delegateWidget)
+            } else {
+                super.onKeyRelease(event)
+            }
+        }
+
+        override fun onChar(event: CustomWidget.CharEvent): Boolean {
+            return if (active) {
+                event.charWidget(delegateWidget)
+            } else {
+                super.onChar(event)
+            }
         }
 
         override fun setFocused(focused: Boolean) {
