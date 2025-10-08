@@ -27,6 +27,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawOutline
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawTex
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.function.ConstSupplier
@@ -194,9 +195,9 @@ class ConfigEntry(parentElement: DynamicListWidget, content: ContentBuilder.Buil
     override fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         val over = (hovered && !MinecraftClient.getInstance().navigationType.isKeyboard) || (focused && MinecraftClient.getInstance().navigationType.isKeyboard)
         if (over)
-            context.drawBorder(x - 2 + groupOffset, y - 2, width + 4 - groupOffset, height + 4, -1)
+            context.drawOutline(x - 2 + groupOffset, y - 2, width + 4 - groupOffset, height + 4, -1)
         else if (focused || hovered)
-            context.drawBorder(x - 2 + groupOffset, y - 2, width + 4 - groupOffset, height + 4, -6250336)
+            context.drawOutline(x - 2 + groupOffset, y - 2, width + 4 - groupOffset, height + 4, -6250336)
         if (getVisibility() == DynamicListWidget.Visibility.VISIBLE_SEARCHED || getVisibility() == DynamicListWidget.Visibility.GROUP_VISIBLE_SEARCHED) {
             val color = if (over) {
                 if (SearchConfig.INSTANCE.willPassSearch()) {
