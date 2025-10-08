@@ -13,7 +13,6 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
-import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.text.OrderedText
 import net.minecraft.text.Style
 import net.minecraft.text.Text
@@ -34,7 +33,7 @@ import kotlin.math.min
  * @since 0.6.0, left and right padding 0.6.5, handles click and hover events 0.7.0
  */
 class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private val lineHeight: Int = 9, private val topPadding: Int = 0, private val bottomPadding: Int = topPadding, private val leftPadding: Int = 0, private val rightPadding: Int = 0) :
-    AbstractTextWidget(0, 0, 50, 0, message, MinecraftClient.getInstance().textRenderer) {
+    CustomTextWidget(0, 0, 50, 0, message, MinecraftClient.getInstance().textRenderer) {
 
     private val cache = Util.cachedMapper<Key, MultilineText> { _ ->
         MultilineText.create(textRenderer, getMessage(), width)
@@ -42,7 +41,7 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
 
     private var alignRight = false
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderText(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = cache.map(getKey(width - leftPadding - rightPadding))
         text.drawWithShadow(context, alignRight, width - leftPadding - rightPadding, x + leftPadding,  y + topPadding, lineHeight, textColor)
         if (!isMouseOver(mouseX.toDouble(), mouseY.toDouble())) return
@@ -76,13 +75,12 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
         return Key(message, width)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (!isMouseOver(mouseX, mouseY)) return false
+    override fun onPress(event: CustomWidget.MouseEvent): Boolean {
         val client = MinecraftClient.getInstance()
         val screen = client.currentScreen ?: return false
         val text = cache.map(getKey(width - leftPadding - rightPadding))
-        val d = mouseX - this.x - leftPadding
-        val dd = mouseY - this.y - topPadding
+        val d = event.x() - this.x - leftPadding
+        val dd = event.y() - this.y - topPadding
         val line = (dd / lineHeight).toInt()
         val style = text.getStyleAt(client, line, d) ?: return false
         val bl = screen.handleTextClick(style)
