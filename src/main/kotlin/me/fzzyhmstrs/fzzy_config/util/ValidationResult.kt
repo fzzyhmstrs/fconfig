@@ -14,6 +14,7 @@ import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.cast
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.ErrorEntry.Entry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.ErrorEntry.Type
 import org.slf4j.Logger
@@ -613,6 +614,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @since 0.7.0
          */
         fun <T> ValidationResult<T>.reportTo(errorReporter: BiConsumer<String, Throwable?>): ValidationResult<T> {
+            if (!errorContext.isError()) return this
             errorContext.log(errorReporter)
             return this
         }

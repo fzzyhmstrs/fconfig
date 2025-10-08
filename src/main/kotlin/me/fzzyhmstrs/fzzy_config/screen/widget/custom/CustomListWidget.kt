@@ -51,7 +51,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     y,
     width,
     height,
-    ScreenTexts.EMPTY), ParentElement, Scalable, RepositioningWidget {
+    ScreenTexts.EMPTY), CustomWidget, ParentElement, Scalable, RepositioningWidget {
 
     //// Widget ////
 
@@ -432,38 +432,38 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (!this.isSelectButton(button)) {
+    override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+        if (!this.isSelectButton(event.button())) {
             return false
         }
-        if (!isMouseOver(mouseX, mouseY)) {
+        if (!isMouseOver(event.x(), event.y())) {
             return false
         }
-        if (mouseX >= (right - scrollWidth) && (mouseX < right)) {
+        if (event.x() >= (right - scrollWidth) && (event.x() < right)) {
             dragging = true
-            if (scrollButtonType.get().mouseOverUp(mouseY, y, bottom)) {
+            if (scrollButtonType.get().mouseOverUp(event.y(), y, bottom)) {
                 client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(50)
-            } else if (scrollButtonType.get().mouseOverDown(mouseY, y, bottom)) {
+            } else if (scrollButtonType.get().mouseOverDown(event.y(), y, bottom)) {
                 client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(-50)
             } else {
-                val jump = jumpScrollBarToMouse(mouseY, button)
+                val jump = jumpScrollBarToMouse(event.y(), event.button())
                 if (jump != 0) {
                     handleScrollByBar(jump)
                 }
-                updateScrollingState(mouseY, button)
+                updateScrollingState(event.y(), event.button())
                 return true
             }
         } else {
             scrollingY = -1.0
         }
 
-        val e = entryAtY(mouseY.toInt())
+        val e = entryAtY(event.y().toInt())
         val e2 = focused
         if (e != null) {
             focused = e
-            if (e.mouseClicked(mouseX, mouseY, button)) {
+            if (event.clickWidget(e)) {
                 if (e2 != e && e2 is ParentElement) {
                     e2.focused = null
                 }
@@ -477,36 +477,44 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return this.scrollingY >= 0.0
     }
 
-    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        dragging = false
-        return focused?.mouseReleased(mouseX, mouseY, button) == true
+    @Deprecated("Will be marked final 0.8.0. Use onMouse instead")
+    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return onMouse(CustomWidget.OnClick(mouseX, mouseY, button))
     }
 
-    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
-        if (super<ParentElement>.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
-            return true
-        } else if (button == 0 && this.scrollingY >= 0.0) {
-            val mouseDelta = mouseY - scrollingY
-            return if (mouseY < y.toDouble()) {
+    override fun onMouseRelease(event: CustomWidget.MouseEvent): Boolean {
+        dragging = false
+        return event.releaseWidgetOrNull(focused) == true
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onMouseRelease instead")
+    override fun mouseReleased(mouseX: Double, mouseY: Double, button: Int): Boolean {
+        return onMouseRelease(CustomWidget.OnRelease(mouseX, mouseY, button))
+    }
+
+    override fun onMouseDrag(event: CustomWidget.MouseEvent): Boolean {
+         if (event.button() == 0 && this.scrollingY >= 0.0) {
+            val mouseDelta = event.y() - scrollingY
+            return if (event.y() < y.toDouble()) {
                 this.scrollToTop()
-            } else if (mouseY > this.bottom.toDouble()) {
+            } else if (event.y() > this.bottom.toDouble()) {
                 this.scrollToBottom()
             } else if(topDelta() >= 0 && mouseDelta < 0.0) {
-                scrollingY = mouseY
+                scrollingY = event.y()
                 return true
             } else if(bottomDelta() <= 0 && mouseDelta > 0.0) {
-                scrollingY = mouseY
+                scrollingY = event.y()
                 return true
             } else {
-                val travelProgress = MathHelper.getLerpProgress(mouseY, scrollingTop, scrollingBottom)
+                val travelProgress = MathHelper.getLerpProgress(event.y(), scrollingTop, scrollingBottom)
                 if (travelProgress < 0.0) {
                     scrollToTop()
-                    scrollingBottom = scrollingBottom - scrollingTop + mouseY
-                    scrollingTop = mouseY
+                    scrollingBottom = scrollingBottom - scrollingTop + event.y()
+                    scrollingTop = event.y()
                 } else if (travelProgress > 1.0) {
                     scrollToBottom()
-                    scrollingTop = mouseY - (scrollingBottom - scrollingTop)
-                    scrollingBottom = mouseY
+                    scrollingTop = event.y() - (scrollingBottom - scrollingTop)
+                    scrollingBottom = event.y()
                 } else {
                     val totalDelta = contentHeight() - height
                     val newTopDeltaAmount = (-1 * (totalDelta * travelProgress)).toInt()
@@ -517,6 +525,14 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
             }
         }
         return false
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onMouseDrag instead")
+    override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
+        if (super<ParentElement>.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+            return true
+        }
+        return onMouseDrag(CustomWidget.OnDrag(mouseX, mouseY, button, deltaX, deltaY))
     }
 
     /**
@@ -562,8 +578,37 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
      */
     abstract fun handleScrollByBar(scrollAmount: Int): Boolean
 
+    override fun onMouseScroll(event: CustomWidget.MouseEvent): Boolean {
+        return false
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onMouseScroll instead.")
     override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
+        val event = CustomWidget.OnScroll(mouseX, mouseY, verticalAmount)
+        if (onMouseScroll(event)) return true
         return handleScroll(verticalAmount)
+    }
+
+    override fun onKey(event: CustomWidget.KeyEvent): Boolean {
+        return false
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onKey instead.")
+    override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (onKey(CustomWidget.KeyEvent(keyCode, scanCode, modifiers))) return true
+        return super<ParentElement>.keyPressed(keyCode, scanCode, modifiers)
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onKeyRelease instead.")
+    override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
+        if (onKeyRelease(CustomWidget.KeyEvent(keyCode, scanCode, modifiers))) return true
+        return super<ClickableWidget>.keyReleased(keyCode, scanCode, modifiers)
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onChar instead.")
+    override fun charTyped(chr: Char, modifiers: Int): Boolean {
+        if (onChar(CustomWidget.CharEvent(chr, modifiers))) return true
+        return super<ParentElement>.charTyped(chr, modifiers)
     }
 
     override fun isFocused(): Boolean {

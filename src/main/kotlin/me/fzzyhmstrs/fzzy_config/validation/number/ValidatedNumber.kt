@@ -17,6 +17,8 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.screen.widget.ValidationBackedNumberFieldWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -40,7 +42,6 @@ import net.minecraft.text.Text
 import net.minecraft.util.Util
 import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus.Internal
-import org.lwjgl.glfw.GLFW
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.util.*
@@ -281,7 +282,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
     //client
     protected class ConfirmButtonSliderWidget<T:Number>(private val wrappedValue: Supplier<T>, incr: T?, private val minValue: T, private val maxValue: T, private val validator: ChoiceValidator<T>, private val converter: Function<Double, T>, private val valueApplier: Consumer<T>):
-        ClickableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
+        CustomPressableWidget(0, 0, 110, 20, wrappedValue.get().toString().lit()) {
 
         companion object {
             private val TEXTURE = "textures/gui/slider.png".simpleId()
@@ -378,22 +379,22 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             return FcText.translatable("gui.narrate.slider", message)
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.TITLE, this.narrationMessage as Text?)
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+            builder?.put(NarrationPart.TITLE, this.narrationMessage as Text?)
             if (active) {
                 if (this.isFocused) {
-                    builder.put(NarrationPart.USAGE,
+                    builder?.put(NarrationPart.USAGE,
                         "fc.validated_field.number.slider.usage".translate(),
                         "fc.validated_field.number.slider.usage2".translate())
                 } else {
-                    builder.put(NarrationPart.USAGE, "fc.validated_field.number.slider.usage.unfocused".translate())
+                    builder?.put(NarrationPart.USAGE, "fc.validated_field.number.slider.usage.unfocused".translate())
                 }
             }
         }
 
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            val bl = keyCode == GLFW.GLFW_KEY_LEFT
-            if (bl || keyCode == GLFW.GLFW_KEY_RIGHT) {
+        override fun onKey(event: CustomWidget.KeyEvent): Boolean {
+            val bl = event.isLeft()
+            if (bl || event.isRight()) {
                 val f = if (bl) -increment else increment
                 val ff = MathHelper.clamp(value.toDouble() + f, minValue.toDouble(), maxValue.toDouble())
                 this.setValue(ff)
@@ -418,18 +419,19 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             this.message = DECIMAL_FORMAT.format(this.value).lit()
         }
 
-        override fun onClick(mouseX: Double, mouseY: Double) {
-            setValueFromMouse(mouseX)
+        override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+            setValueFromMouse(event.x())
+            return true
         }
 
-        override fun onDrag(mouseX: Double, mouseY: Double, deltaX: Double, deltaY: Double) {
-            setValueFromMouse(mouseX)
-            super.onDrag(mouseX, mouseY, deltaX, deltaY)
+        override fun onMouseDrag(event: CustomWidget.MouseEvent): Boolean {
+            setValueFromMouse(event.x())
+            return true
         }
 
         override fun playDownSound(soundManager: SoundManager?) {}
 
-        override fun onRelease(mouseX: Double, mouseY: Double) {
+        override fun onMouseRelease(event: CustomWidget.MouseEvent): Boolean {
             this.isValid = validator.validateEntry(this.value, EntryValidator.ValidationType.STRONG).isValid()
             if(isChanged() && isValid) {
                 cachedWrappedValue = value
@@ -437,6 +439,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
                 this.confirmActive = isChanged() && isValid
             }
             super.playDownSound(MinecraftClient.getInstance().soundManager)
+            return true
         }
     }
 

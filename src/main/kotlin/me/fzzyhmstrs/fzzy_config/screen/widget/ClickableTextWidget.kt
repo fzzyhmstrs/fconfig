@@ -10,28 +10,29 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.Screen
-import net.minecraft.client.gui.widget.AbstractTextWidget
 import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 import kotlin.math.roundToInt
 
 /**
- * An [AbstractTextWidget] that can process click and hover actions on rendered text
+ * A [CustomTextWidget] that can process click and hover actions on rendered text
  * @param parent Screen - this widgets parent screen
  * @param message Text - the text to render with this widget
  * @param textRenderer [TextRenderer] - text renderer instance
  * @author fzzyhmstrs
  * @since 0.2.0
  */
-class ClickableTextWidget(private val parent: Screen, message: Text, textRenderer: TextRenderer): AbstractTextWidget(0, 0, textRenderer.getWidth(message.asOrderedText()), textRenderer.fontHeight, message, textRenderer) {
+class ClickableTextWidget(private val parent: Screen, message: Text, textRenderer: TextRenderer): CustomTextWidget(0, 0, textRenderer.getWidth(message.asOrderedText()), textRenderer.fontHeight, message, textRenderer) {
 
     private val horizontalAlignment = 0.5f
 
-    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderText(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = message
         val i = getWidth()
         val j = textRenderer.getWidth(text)
@@ -45,11 +46,9 @@ class ClickableTextWidget(private val parent: Screen, message: Text, textRendere
         context.drawHoverEvent(textRenderer, style, mouseX, mouseY)
     }
 
-    override fun mouseClicked(mouseX: Double, mouseY: Double, button: Int): Boolean {
-        if (!isMouseOver(mouseX, mouseY)) return false
-        val d = mouseX - this.x
+    override fun onPress(event: CustomWidget.MouseEvent): Boolean {
+        val d = event.x() - this.x
         val style = textRenderer.textHandler.getStyleAt(message.asOrderedText(), MathHelper.floor(d)) ?: return false
         return parent.handleTextClick(style)
     }
-
 }
