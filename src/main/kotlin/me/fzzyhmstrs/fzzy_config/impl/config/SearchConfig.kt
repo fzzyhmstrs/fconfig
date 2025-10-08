@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.fcId
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import me.fzzyhmstrs.fzzy_config.util.function.*
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
@@ -51,9 +52,9 @@ internal class SearchConfig: Config("search".fcId()) {
     }
 
     enum class Modifier(private val tester: BooleanSupplier): EnumTranslatable {
-        ALT({ Screen.hasAltDown() }),
-        SHIFT({ Screen.hasShiftDown() }),
-        CTRL({ Screen.hasControlDown() });
+        ALT({ PortingUtils.isAltDown() }),
+        SHIFT({ PortingUtils.isShiftDown() }),
+        CTRL({ PortingUtils.isControlDown() });
 
         fun test(): Boolean {
             return tester.asBoolean

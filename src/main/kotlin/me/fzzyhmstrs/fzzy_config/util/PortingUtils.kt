@@ -11,6 +11,8 @@
 package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.cast
+import net.minecraft.client.MinecraftClient
+import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.Item
 import net.minecraft.item.ItemConvertible
@@ -103,5 +105,17 @@ object PortingUtils {
 
     fun tagIngredient(tag: TagKey<Item>): Ingredient {
         return Ingredient.fromTag(tag)
+    }
+
+    fun isAltDown(): Boolean {
+        return Screen.hasAltDown()
+    }
+
+    fun isShiftDown(): Boolean {
+        return Screen.hasShiftDown()
+    }
+
+    fun isControlDown(): Boolean {
+        return Screen.hasControlDown()
     }
 }
