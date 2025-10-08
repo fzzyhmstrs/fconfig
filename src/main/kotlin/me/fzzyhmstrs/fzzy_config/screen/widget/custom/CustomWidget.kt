@@ -10,12 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
-import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.Element
-import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.CharInput
-import net.minecraft.client.input.KeyInput
-import net.minecraft.client.input.MouseInput
 import net.minecraft.client.util.InputUtil
 import org.jetbrains.annotations.ApiStatus
 
@@ -119,7 +114,7 @@ interface CustomWidget {
             return if (widget is CustomWidget) {
                 widget.onMouse(this)
             } else {
-                widget?.mouseClicked(Click(x(), y(), MouseInput(button(), modifiers())), double())
+                widget?.mouseClicked(x(), y(), button())
             }
         }
 
@@ -131,7 +126,7 @@ interface CustomWidget {
             return if (widget is CustomWidget) {
                 widget.onMouseDrag(this)
             } else {
-                widget?.mouseDragged(Click(x(), y(), MouseInput(button(), modifiers())), deltaX(), deltaY())
+                widget?.mouseDragged(x(), y(), button(), deltaX(), deltaY())
             }
         }
 
@@ -143,7 +138,7 @@ interface CustomWidget {
             return if (widget is CustomWidget) {
                 widget.onMouseRelease(this)
             } else {
-                widget?.mouseReleased(Click(x(), y(), MouseInput(button(), modifiers())))
+                widget?.mouseReleased(x(), y(), button())
             }
         }
 
@@ -160,48 +155,18 @@ interface CustomWidget {
         }
     }
 
-    class OnClick(private val click: Click, private val doubled: Boolean): MouseEvent {
+    class OnClick(private val mouseX: Double, private val mouseY: Double, private val button: Int): MouseEvent {
         override fun x(): Double {
-            return click.x
+            return mouseX
         }
         override fun y(): Double {
-            return click.y
+            return mouseY
         }
         override fun button(): Int {
-            return click.button()
+            return button
         }
         override fun modifiers(): Int {
-            return click.modifiers()
-        }
-        override fun double(): Boolean {
-            return doubled
-        }
-        override fun deltaX(): Double {
-            return 0.0
-        }
-        override fun deltaY(): Double {
-            return 0.0
-        }
-        override fun horizontalAmount(): Double {
-            return 0.0
-        }
-        override fun verticalAmount(): Double {
-            return 0.0
-        }
-    }
-
-    class OnRelease(private val click: Click): MouseEvent {
-        override fun x(): Double {
-            return click.x
-        }
-        override fun y(): Double {
-            return click.y
-        }
-        override fun button(): Int {
-            return click.button()
-        }
-        override fun modifiers(): Int {
-            return click.modifiers()
+            return 0
         }
         override fun double(): Boolean {
             return false
@@ -220,27 +185,57 @@ interface CustomWidget {
         }
     }
 
-    class OnDrag(private val click: Click, private val offsetX: Double, private val offsetY: Double): MouseEvent {
+    class OnRelease(private val mouseX: Double, private val mouseY: Double, private val button: Int): MouseEvent {
         override fun x(): Double {
-            return click.x
+            return mouseX
         }
         override fun y(): Double {
-            return click.y
+            return mouseY
         }
         override fun button(): Int {
-            return click.button()
+            return button
         }
         override fun modifiers(): Int {
-            return click.modifiers()
+            return 0
         }
         override fun double(): Boolean {
             return false
         }
         override fun deltaX(): Double {
-            return offsetX
+            return 0.0
         }
         override fun deltaY(): Double {
-            return offsetY
+            return 0.0
+        }
+        override fun horizontalAmount(): Double {
+            return 0.0
+        }
+        override fun verticalAmount(): Double {
+            return 0.0
+        }
+    }
+
+    class OnDrag(private val mouseX: Double, private val mouseY: Double, private val button: Int, private val deltaX: Double, private val deltaY: Double): MouseEvent {
+        override fun x(): Double {
+            return mouseX
+        }
+        override fun y(): Double {
+            return mouseY
+        }
+        override fun button(): Int {
+            return button
+        }
+        override fun modifiers(): Int {
+            return 0
+        }
+        override fun double(): Boolean {
+            return false
+        }
+        override fun deltaX(): Double {
+            return deltaX
+        }
+        override fun deltaY(): Double {
+            return deltaY
         }
         override fun horizontalAmount(): Double {
             return 0.0
@@ -285,20 +280,20 @@ interface CustomWidget {
         }
 
         override fun verticalAmount(): Double {
-            return horizontalAmount
+            return verticalAmount
         }
     }
 
-    class KeyEvent(private val input: KeyInput) {
+    class KeyEvent(private val keyCode: Int, private val scanCode: Int, private val modifiers: Int) {
 
         fun key(): Int {
-            return input.key
+            return keyCode
         }
         fun scancode(): Int {
-            return input.scancode
+            return scanCode
         }
         fun modifiers(): Int {
-            return input.modifiers
+            return modifiers
         }
 
         fun isEnterOrSpace(): Boolean {
@@ -321,7 +316,7 @@ interface CustomWidget {
             return if (widget is CustomWidget) {
                 widget.onKey(this)
             } else {
-                widget?.keyPressed(KeyInput(key(), scancode(), modifiers()))
+                widget?.keyPressed(key(), scancode(), modifiers())
             }
         }
 
@@ -333,18 +328,18 @@ interface CustomWidget {
             return if (widget is CustomWidget) {
                 widget.onKeyRelease(this)
             } else {
-                widget?.keyReleased(KeyInput(key(), scancode(), modifiers()))
+                widget?.keyReleased(key(), scancode(), modifiers())
             }
         }
     }
 
-    class CharEvent(private val input: CharInput) {
+    class CharEvent(private val chr: Char, private val modifiers: Int) {
 
         fun codepoint(): Int {
-            return input.codepoint
+            return chr.code
         }
         fun modifiers(): Int {
-            return input.modifiers
+            return modifiers
         }
 
         fun charWidget(widget: Element): Boolean {
@@ -355,7 +350,7 @@ interface CustomWidget {
             return if (widget is CustomWidget) {
                 widget.onChar(this)
             } else {
-                widget?.charTyped(CharInput(codepoint(), modifiers()))
+                widget?.charTyped(chr, modifiers())
             }
         }
     }
