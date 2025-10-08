@@ -153,4 +153,23 @@ object RenderUtil {
         MinecraftClient.getInstance().framebuffer.beginWrite(false)
         context.matrices.pop()
     }
+
+    /**
+     * Extension function to draw a hollow rectangle.
+     *
+     * You'll still have to write to the buffers after using this.
+     * @param x horizontal position of element
+     * @param y vertical position of element
+     * @param width - the width of the rectangle region in pixels
+     * @param height - the height of the rectangle region in pixels
+     * @param color - the height of the rectangle region in pixels
+     * @author theendercore
+     * @since 0.7.3?
+     */
+    fun DrawContext.drawOutline(x: Int, y: Int, width: Int, height: Int, color: Int) {
+        this.fill(x, y, x + width, y + 1, color)
+        this.fill(x, y + height - 1, x + width, y + height, color)
+        this.fill(x, y + 1, x + 1, y + height - 1, color)
+        this.fill(x + width - 1, y + 1, x + width, y + height - 1, color)
+    }
 }

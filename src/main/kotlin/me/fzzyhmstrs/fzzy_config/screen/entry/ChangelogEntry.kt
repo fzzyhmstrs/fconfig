@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomMultilineTextWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawOutline
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -56,7 +57,7 @@ internal class ChangelogEntry(parentElement: DynamicListWidget, changes: String,
 
     override fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         if (focused && MinecraftClient.getInstance().navigationType.isKeyboard) {
-            context.drawBorder(x, y, width, height, -1)
+            context.drawOutline(x, y, width, height, -1)
         }
     }
 
