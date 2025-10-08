@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.screen.context.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.Entry
 import me.fzzyhmstrs.fzzy_config.screen.widget.DynamicListWidget.ListSpec
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomListWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.internal.Neighbor
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.Searcher
@@ -40,7 +41,6 @@ import net.minecraft.client.gui.navigation.NavigationDirection
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
-import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import net.minecraft.util.Formatting
 import net.minecraft.util.math.MathHelper
@@ -352,8 +352,8 @@ class DynamicListWidget(
         }
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
-        return suggestionWindowElement?.mouseClicked(click, doubled) ?: super<CustomListWidget>.mouseClicked(click, doubled)
+    override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+        return event.clickWidgetOrNull(suggestionWindowElement) ?: super.onMouse(event)
     }
 
     override fun scrollToTop(): Boolean {
@@ -364,12 +364,12 @@ class DynamicListWidget(
         return entries.scrollToBottom()
     }
 
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        return suggestionWindowElement?.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount) ?: super<CustomListWidget>.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+    override fun onMouseScroll(event: CustomWidget.MouseEvent): Boolean {
+        return event.scrollWidgetOrNull(suggestionWindowElement) ?: super.onMouseScroll(event)
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
-        return suggestionWindowElement?.keyPressed(input) ?: super<CustomListWidget>.keyPressed(input)
+    override fun onKey(event: CustomWidget.KeyEvent): Boolean {
+        return event.keyWidgetOrNull(suggestionWindowElement) ?: false
     }
 
     private var suggestionWindowElement: Element? = null
@@ -955,10 +955,6 @@ class DynamicListWidget(
 
         override fun isMouseOver(mouseX: Double, mouseY: Double): Boolean {
             return parentElement.isMouseOver(mouseX, mouseY) && mouseX >= x.get() && mouseY >= top.get() && mouseX < (x + w) && mouseY < bottom.get()
-        }
-
-        override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
-            return super<ParentElement>.mouseClicked(click, doubled)
         }
 
         /**

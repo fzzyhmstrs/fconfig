@@ -26,11 +26,11 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.isEmpty
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
-import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Selectable
 import net.minecraft.client.gui.navigation.GuiNavigation
@@ -39,7 +39,6 @@ import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.KeyInput
 import net.minecraft.text.Text
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
@@ -383,46 +382,60 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             }
         }
 
-        override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
-            return if (active)
-                delegateWidget.mouseClicked(click, doubled)
-            else
-                super.mouseClicked(click, doubled)
+        override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+            return if (active) {
+                event.clickWidget(delegateWidget)
+            } else {
+                super.onMouse(event)
+            }
         }
 
-        override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
-            return if (active)
-                delegateWidget.mouseDragged(click, offsetX, offsetY)
-            else
-                super.mouseDragged(click, offsetX, offsetY)
+        override fun onMouseDrag(event: CustomWidget.MouseEvent): Boolean {
+            return if (active) {
+                event.dragWidget(delegateWidget)
+            } else {
+                super.onMouseDrag(event)
+            }
         }
 
-        override fun mouseReleased(click: Click): Boolean {
-            return if(active)
-                delegateWidget.mouseReleased(click)
-            else
-                super.mouseReleased(click)
+        override fun onMouseRelease(event: CustomWidget.MouseEvent): Boolean {
+            return if (active) {
+                event.releaseWidget(delegateWidget)
+            } else {
+                super.onMouseRelease(event)
+            }
         }
 
-        override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-            return if (active)
-                delegateWidget.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
-            else
-                super.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)
+        override fun onMouseScroll(event: CustomWidget.MouseEvent): Boolean {
+            return if (active) {
+                event.scrollWidget(delegateWidget)
+            } else {
+                super.onMouseScroll(event)
+            }
         }
 
-        override fun keyPressed(input: KeyInput): Boolean {
-            return if (active)
-                delegateWidget.keyPressed(input)
-            else
-                super.keyPressed(input)
+        override fun onKey(event: CustomWidget.KeyEvent): Boolean {
+            return if (active) {
+                event.keyWidget(delegateWidget)
+            } else {
+                super.onKey(event)
+            }
         }
 
-        override fun keyReleased(input: KeyInput): Boolean {
-            return if (active)
-                delegateWidget.keyReleased(input)
-            else
-                super.keyReleased(input)
+        override fun onKeyRelease(event: CustomWidget.KeyEvent): Boolean {
+            return if (active) {
+                event.releaseWidget(delegateWidget)
+            } else {
+                super.onKeyRelease(event)
+            }
+        }
+
+        override fun onChar(event: CustomWidget.CharEvent): Boolean {
+            return if (active) {
+                event.charWidget(delegateWidget)
+            } else {
+                super.onChar(event)
+            }
         }
 
         override fun setFocused(focused: Boolean) {

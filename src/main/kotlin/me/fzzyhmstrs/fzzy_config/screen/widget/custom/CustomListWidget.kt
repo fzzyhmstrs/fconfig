@@ -26,6 +26,9 @@ import net.minecraft.client.gui.navigation.GuiNavigationPath
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.narration.NarrationPart
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.input.CharInput
+import net.minecraft.client.input.KeyInput
+import net.minecraft.client.input.MouseInput
 import net.minecraft.client.sound.PositionedSoundInstance
 import net.minecraft.screen.ScreenTexts
 import net.minecraft.sound.SoundEvents
@@ -51,7 +54,7 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
     y,
     width,
     height,
-    ScreenTexts.EMPTY), ParentElement, RepositioningWidget {
+    ScreenTexts.EMPTY), CustomWidget, ParentElement, RepositioningWidget {
 
     //// Widget ////
 
@@ -416,38 +419,38 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         }
     }
 
-    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
-        if (!this.isSelectButton(click.button())) {
+    override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+        if (!this.isSelectButton(event.button())) {
             return false
         }
-        if (!isMouseOver(click.x, click.y)) {
+        if (!isMouseOver(event.x(), event.y())) {
             return false
         }
-        if (click.x >= (right - scrollWidth) && (click.x < right)) {
+        if (event.x() >= (right - scrollWidth) && (event.x() < right)) {
             dragging = true
-            if (scrollButtonType.get().mouseOverUp(click.y, y, bottom)) {
+            if (scrollButtonType.get().mouseOverUp(event.y(), y, bottom)) {
                 client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(50)
-            } else if (scrollButtonType.get().mouseOverDown(click.y, y, bottom)) {
+            } else if (scrollButtonType.get().mouseOverDown(event.y(), y, bottom)) {
                 client.soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
                 return handleScrollByBar(-50)
             } else {
-                val jump = jumpScrollBarToMouse(click.y, click.button())
+                val jump = jumpScrollBarToMouse(event.y(), event.button())
                 if (jump != 0) {
                     handleScrollByBar(jump)
                 }
-                updateScrollingState(click.y, click.button())
+                updateScrollingState(event.y(), event.button())
                 return true
             }
         } else {
             scrollingY = -1.0
         }
 
-        val e = entryAtY(click.y.toInt())
+        val e = entryAtY(event.y().toInt())
         val e2 = focused
         if (e != null) {
             focused = e
-            if (e.mouseClicked(click, doubled)) {
+            if (event.clickWidget(e)) {
                 if (e2 != e && e2 is ParentElement) {
                     e2.focused = null
                 }
@@ -461,36 +464,44 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
         return this.scrollingY >= 0.0
     }
 
-    override fun mouseReleased(click: Click): Boolean {
-        dragging = false
-        return focused?.mouseReleased(click) == true
+    @Deprecated("Will be marked final 0.8.0. Use onMouse instead")
+    override fun mouseClicked(click: Click, doubled: Boolean): Boolean {
+        return onMouse(CustomWidget.OnClick(click, doubled))
     }
 
-    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
-        if (super<ParentElement>.mouseDragged(click, offsetX, offsetY)) {
-            return true
-        } else if (click.button() == 0 && this.scrollingY >= 0.0) {
-            val mouseDelta = click.y - scrollingY
-            return if (click.y < y.toDouble()) {
+    override fun onMouseRelease(event: CustomWidget.MouseEvent): Boolean {
+        dragging = false
+        return event.releaseWidgetOrNull(focused) == true
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onMouseRelease instead")
+    override fun mouseReleased(click: Click): Boolean {
+        return onMouseRelease(CustomWidget.OnRelease(click))
+    }
+
+    override fun onMouseDrag(event: CustomWidget.MouseEvent): Boolean {
+         if (event.button() == 0 && this.scrollingY >= 0.0) {
+            val mouseDelta = event.y() - scrollingY
+            return if (event.y() < y.toDouble()) {
                 this.scrollToTop()
-            } else if (click.y > this.bottom.toDouble()) {
+            } else if (event.y() > this.bottom.toDouble()) {
                 this.scrollToBottom()
             } else if(topDelta() >= 0 && mouseDelta < 0.0) {
-                scrollingY = click.y
+                scrollingY = event.y()
                 return true
             } else if(bottomDelta() <= 0 && mouseDelta > 0.0) {
-                scrollingY = click.y
+                scrollingY = event.y()
                 return true
             } else {
-                val travelProgress = MathHelper.getLerpProgress(click.y, scrollingTop, scrollingBottom)
+                val travelProgress = MathHelper.getLerpProgress(event.y(), scrollingTop, scrollingBottom)
                 if (travelProgress < 0.0) {
                     scrollToTop()
-                    scrollingBottom = scrollingBottom - scrollingTop + click.y
-                    scrollingTop = click.y
+                    scrollingBottom = scrollingBottom - scrollingTop + event.y()
+                    scrollingTop = event.y()
                 } else if (travelProgress > 1.0) {
                     scrollToBottom()
-                    scrollingTop = click.y - (scrollingBottom - scrollingTop)
-                    scrollingBottom = click.y
+                    scrollingTop = event.y() - (scrollingBottom - scrollingTop)
+                    scrollingBottom = event.y()
                 } else {
                     val totalDelta = contentHeight() - height
                     val newTopDeltaAmount = (-1 * (totalDelta * travelProgress)).toInt()
@@ -501,6 +512,14 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
             }
         }
         return false
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onMouseDrag instead")
+    override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
+        if (super<ParentElement>.mouseDragged(click, offsetX, offsetY)) {
+            return true
+        }
+        return onMouseDrag(CustomWidget.OnDrag(click, offsetX, offsetY))
     }
 
     /**
@@ -546,8 +565,37 @@ abstract class CustomListWidget<E: CustomListWidget.Entry<*>>(protected val clie
      */
     abstract fun handleScrollByBar(scrollAmount: Int): Boolean
 
+    override fun onMouseScroll(event: CustomWidget.MouseEvent): Boolean {
+        return false
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onMouseScroll instead.")
     override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
+        val event = CustomWidget.OnScroll(mouseX, mouseY, horizontalAmount, verticalAmount)
+        if (onMouseScroll(event)) return true
         return handleScroll(verticalAmount)
+    }
+
+    override fun onKey(event: CustomWidget.KeyEvent): Boolean {
+        return false
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onKey instead.")
+    override fun keyPressed(input: KeyInput): Boolean {
+        if (onKey(CustomWidget.KeyEvent(input))) return true
+        return super<ParentElement>.keyPressed(input)
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onKeyRelease instead.")
+    override fun keyReleased(input: KeyInput): Boolean {
+        if (onKeyRelease(CustomWidget.KeyEvent(input))) return true
+        return super<ClickableWidget>.keyReleased(input)
+    }
+
+    @Deprecated("Will be marked final 0.8.0. Use onChar instead.")
+    override fun charTyped(input: CharInput): Boolean {
+        if (onChar(CustomWidget.CharEvent(input))) return true
+        return super<ParentElement>.charTyped(input)
     }
 
     override fun isFocused(): Boolean {

@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
@@ -134,6 +135,9 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     @Internal
     @Deprecated("Won't work as intended, CustomPressableWidget calls onPress directly. Will be marked final in 0.8.0. Use onMouse instead.")
     override fun onClick(click: Click, doubled: Boolean) {
+        if (ConfigApi.platform().isDev()) {
+            throw IllegalStateException("CustomPressableWidget onClick method called. This is a bug in 0.7.3! See the source for information.")
+        }
         FC.LOGGER.error("CustomPressableWidget onClick method called. This is a bug in 0.7.3! See the source for information.")
         this.onPress()
     }
@@ -155,12 +159,24 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         }
     }
 
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onMouseDrag instead")
     override fun mouseDragged(click: Click, offsetX: Double, offsetY: Double): Boolean {
         return if (this.isValidClickButton(click.buttonInfo())) {
             onMouseDrag(CustomWidget.OnDrag(click, offsetX, offsetY))
         } else {
             false
         }
+    }
+
+    @Internal
+    @Deprecated("Won't work as intended, CustomPressableWidget calls onMouseDrag instead. Will be marked final in 0.8.0. Use onMouseDrag instead.")
+    override fun onDrag(click: Click, offsetX: Double, offsetY: Double) {
+        if (ConfigApi.platform().isDev()) {
+            throw IllegalStateException("CustomPressableWidget onDrag method called. This is a bug in 0.7.3! See the source for information.")
+        }
+        FC.LOGGER.error("CustomPressableWidget onDrag method called. This is a bug in 0.7.3! See the source for information.")
+        super.onDrag(click, offsetX, offsetY)
     }
 
     @Internal
@@ -171,6 +187,16 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         } else {
             false
         }
+    }
+
+    @Internal
+    @Deprecated("Won't work as intended, CustomPressableWidget calls onMouseRelease instead. Will be marked final in 0.8.0. Use onMouseRelease instead.")
+    override fun onRelease(click: Click) {
+        if (ConfigApi.platform().isDev()) {
+            throw IllegalStateException("CustomPressableWidget onRelease method called. This is a bug in 0.7.3! See the source for information.")
+        }
+        FC.LOGGER.error("CustomPressableWidget onRelease method called. This is a bug in 0.7.3! See the source for information.")
+        super.onRelease(click)
     }
 
     @Internal
@@ -213,8 +239,6 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
         appendDefaultNarrations(builder)
     }
-
-
 
     companion object {
         @JvmStatic
