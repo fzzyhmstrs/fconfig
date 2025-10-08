@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawOutline
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.DrawContext
@@ -52,7 +53,7 @@ internal class SidebarEntry(parentElement: DynamicListWidget, scope: String, tex
 
     override fun renderBorder(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, hovered: Boolean, focused: Boolean, delta: Float) {
         if (focused && MinecraftClient.getInstance().navigationType.isKeyboard) {
-            context.drawBorder(x, y, width, height, -1)
+            context.drawOutline(x, y, width, height, -1)
         }
     }
 
