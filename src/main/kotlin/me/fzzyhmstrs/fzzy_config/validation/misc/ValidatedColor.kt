@@ -22,6 +22,7 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomPressableWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.FcText.capital
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
@@ -996,14 +997,10 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             context.fill(x + 1, y + 1, x + 11, y + 11, preset.color)
             context.drawTex(textures.get(true, this.isSelected), x, y, 16, 16, this.alpha)
         }
-
-        override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-            renderBackground(context, x, y, width, height, mouseX, mouseY, delta)
-        }
     }
 
     //client
-    private class HLMapWidget(private val mutableColor: MutableColor): ClickableWidget(0, 0, 60, 68, "fc.validated_field.color.hl".translate()) {
+    private class HLMapWidget(private val mutableColor: MutableColor): CustomPressableWidget(0, 0, 60, 68, "fc.validated_field.color.hl".translate()) {
 
         companion object {
             private val BORDER = "widget/validation/color/hsl_border".fcId()
@@ -1045,13 +1042,21 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             context.drawTex(CROSSHAIR, cX, cY, 5, 5)
         }
 
-        override fun onClick(mouseX: Double, mouseY: Double) {
+        override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
             mouseHasBeenClicked = true
-            updateHL(mouseX, mouseY)
+            updateHL(event.x(), event.y())
+            return true
         }
 
-        override fun onDrag(mouseX: Double, mouseY: Double, deltaX: Double, deltaY: Double) {
-            updateHL(mouseX, mouseY)
+        override fun onMouseDrag(event: CustomWidget.MouseEvent): Boolean {
+            updateHL(event.x(), event.y())
+            return true
+        }
+
+        override fun onMouseRelease(event: CustomWidget.MouseEvent): Boolean {
+            if (mouseHasBeenClicked)
+                MinecraftClient.getInstance().soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
+            return true
         }
 
         private fun updateHL(mouseX: Double, mouseY: Double) {
@@ -1060,8 +1065,8 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             mutableColor.updateHSL(hue, mutableColor.s, light)
         }
 
-        override fun keyPressed(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-            return when(keyCode) {
+        override fun onKey(event: CustomWidget.KeyEvent): Boolean {
+            return when(event.key()) {
                 GLFW.GLFW_KEY_LEFT -> {
                     incrementL(-HORIZONTAL_INC)
                     true
@@ -1078,7 +1083,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
                     incrementH(VERTICAL_INC)
                     true
                 }
-                else -> super.keyPressed(keyCode, scanCode, modifiers)
+                else -> super.onKey(event)
             }
         }
 
@@ -1092,22 +1097,17 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
             mutableColor.updateHSL(mutableColor.h, mutableColor.s, light)
         }
 
-        override fun onRelease(mouseX: Double, mouseY: Double) {
-            if (mouseHasBeenClicked)
-                MinecraftClient.getInstance().soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
-        }
-
         override fun playDownSound(soundManager: SoundManager) {
             //soundManager.play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0f))
         }
 
-        override fun appendClickableNarrations(builder: NarrationMessageBuilder) {
-            builder.put(NarrationPart.TITLE, this.narrationMessage)
+        override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
+            builder?.put(NarrationPart.TITLE, this.narrationMessage)
             if (active) {
                 if (this.isFocused) {
-                    builder.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.keyboard".translate())
+                    builder?.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.keyboard".translate())
                 } else {
-                    builder.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.mouse".translate())
+                    builder?.put(NarrationPart.USAGE, "fc.validated_field.color.hl.usage.mouse".translate())
                 }
             }
         }
