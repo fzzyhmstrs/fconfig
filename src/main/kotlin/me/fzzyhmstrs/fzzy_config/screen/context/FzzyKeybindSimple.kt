@@ -17,7 +17,6 @@ import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isControlDown
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.isShiftDown
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.util.InputUtil
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
@@ -63,7 +62,7 @@ data class FzzyKeybindSimple(val inputCode: Int, val type: ContextInput, val ctr
 
     override fun keybind(): MutableText {
         val key: Text = if (type == ContextInput.KEYBOARD)
-            InputUtil.Type.MOUSE.createFromCode(inputCode).localizedText
+            InputUtil.Type.KEYSYM.createFromCode(inputCode).localizedText
         else
             InputUtil.Type.MOUSE.createFromCode(inputCode).localizedText
         val c = ctrl == TriState.TRUE

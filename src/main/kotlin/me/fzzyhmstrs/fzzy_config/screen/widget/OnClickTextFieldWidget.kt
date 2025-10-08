@@ -10,15 +10,14 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomTextWidget
+import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
-import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.tooltip.Tooltip
-import net.minecraft.client.gui.widget.AbstractTextWidget
-import net.minecraft.client.input.KeyInput
 import org.lwjgl.glfw.GLFW
 import java.util.function.Consumer
 import java.util.function.Supplier
@@ -33,12 +32,12 @@ import java.util.function.Supplier
 //client
 class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private val onClick: OnInteractAction)
     :
-    AbstractTextWidget( 0, 0, 110, 20, FcText.EMPTY, MinecraftClient.getInstance().textRenderer)
+    CustomTextWidget( 0, 0, 110, 20, FcText.EMPTY, MinecraftClient.getInstance().textRenderer)
 {
 
     private val textures: TextureProvider = TextureSet("widget/text_field".simpleId(), "widget/text_field".simpleId(), "widget/text_field_highlighted".simpleId())
 
-    override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderText(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.drawNineSlice(textures.get(this.active, this.isSelected), x, y, width, height, alpha)
         val text = FcText.literal(textSupplier.get())
         val i = getWidth() - 8
@@ -52,21 +51,23 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
         }
     }
 
-    override fun onClick(click: Click, doubled: Boolean) {
+    override fun onPress(event: CustomWidget.MouseEvent): Boolean {
         onClick.interact(this, false, 0, 0, 0)
+        return true
     }
 
-    override fun keyPressed(input: KeyInput): Boolean {
-        return if (!this.isFocused || isNavigation(input.keycode)) {
+    override fun onKey(event: CustomWidget.KeyEvent): Boolean {
+        return if (!this.isFocused || isNavigation(event.key())) {
             false
         } else {
-            if(input.isEnterOrSpace)
-                onClick.interact(this, false, input.keycode, input.scancode, input.modifiers)
+            if(event.isEnterOrSpace())
+                onClick.interact(this, false, event.key(), event.scancode(), event.modifiers())
             else
-                onClick.interact(this, true, input.keycode, input.scancode, input.modifiers)
+                onClick.interact(this, true, event.key(), event.scancode(), event.modifiers())
             return true
         }
     }
+
     private fun isNavigation(keyCode: Int): Boolean {
         return keyCode == GLFW.GLFW_KEY_TAB
                 || keyCode == GLFW.GLFW_KEY_RIGHT
