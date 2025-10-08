@@ -37,7 +37,9 @@ interface CustomWidget {
     fun onMouse(event: MouseEvent): Boolean
 
     /**
-     * TODO
+     * Handles mouse drag events for custom widgets. Override this for handling drag inputs
+     * @param event [MouseEvent] click information to use during handling
+     * @return whether handling was successful or not
      * @author fzzyhmstrs
      * @since 0.7.3
      */
@@ -46,7 +48,9 @@ interface CustomWidget {
     }
 
     /**
-     * TODO
+     * Handles mouse button release events for custom widgets. Override this for handling mouse inputs.
+     * @param event [MouseEvent] click information to use during handling
+     * @return whether handling was successful or not
      * @author fzzyhmstrs
      * @since 0.7.3
      */
@@ -55,7 +59,9 @@ interface CustomWidget {
     }
 
     /**
-     * TODO
+     * Handles mouse scroll events for custom widgets. Override this for handling mouse inputs.
+     * @param event [MouseEvent] click information to use during handling
+     * @return whether handling was successful or not
      * @author fzzyhmstrs
      * @since 0.7.3
      */
@@ -73,7 +79,9 @@ interface CustomWidget {
     fun onKey(event: KeyEvent): Boolean
 
     /**
-     * TODO
+     * Handles keyboard release events for custom widgets. Override this for handling keyboard inputs.
+     * @param event [KeyEvent] keyboard information to use during handling
+     * @return whether handling was successful or not
      * @author fzzyhmstrs
      * @since 0.7.3
      */
@@ -82,7 +90,9 @@ interface CustomWidget {
     }
 
     /**
-     * TODO
+     * Handles char input events for custom widgets. Override this for handling keyboard inputs.
+     * @param event [CharEvent] character information to use during handling
+     * @return whether handling was successful or not
      * @author fzzyhmstrs
      * @since 0.7.3
      */
