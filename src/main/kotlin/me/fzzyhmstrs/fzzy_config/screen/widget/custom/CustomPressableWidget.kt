@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
@@ -21,7 +22,6 @@ import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.widget.ClickableWidget
-import net.minecraft.client.input.KeyCodes
 import net.minecraft.text.Text
 import net.minecraft.util.math.MathHelper
 import org.jetbrains.annotations.ApiStatus.Internal
@@ -132,13 +132,16 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     @Internal
     @Deprecated("Won't work as intended, CustomPressableWidget calls onPress directly. Will be marked final in 0.8.0. Use onMouse instead.")
     override fun onClick(mouseX: Double, mouseY: Double) {
+        if (ConfigApi.platform().isDev()) {
+            throw IllegalStateException("CustomPressableWidget onClick method called. This is a bug in 0.7.3! See the source for information.")
+        }
         FC.LOGGER.error("CustomPressableWidget onClick method called. This is a bug in 0.7.3! See the source for information.")
         this.onPress()
     }
 
 
     override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
-        if (!this.isInteractable) {
+        if (!this.isSelected) {
             return false
         } else {
             if (this.isMouse(event)) {
@@ -153,12 +156,24 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         }
     }
 
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. Use onMouseDrag instead")
     override fun mouseDragged(mouseX: Double, mouseY: Double, button: Int, deltaX: Double, deltaY: Double): Boolean {
         return if (this.isValidClickButton(button)) {
             onMouseDrag(CustomWidget.OnDrag(mouseX, mouseY, button, deltaX, deltaY))
         } else {
             false
         }
+    }
+
+    @Internal
+    @Deprecated("Won't work as intended, CustomPressableWidget calls onMouseDrag instead. Will be marked final in 0.8.0. Use onMouseDrag instead.")
+    override fun onDrag(mouseX: Double, mouseY: Double, offsetX: Double, offsetY: Double) {
+        if (ConfigApi.platform().isDev()) {
+            throw IllegalStateException("CustomPressableWidget onDrag method called. This is a bug in 0.7.3! See the source for information.")
+        }
+        FC.LOGGER.error("CustomPressableWidget onDrag method called. This is a bug in 0.7.3! See the source for information.")
+        super.onDrag(mouseX, mouseY, offsetX, offsetY)
     }
 
     @Internal
@@ -169,6 +184,16 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         } else {
             false
         }
+    }
+
+    @Internal
+    @Deprecated("Won't work as intended, CustomPressableWidget calls onMouseRelease instead. Will be marked final in 0.8.0. Use onMouseRelease instead.")
+    override fun onRelease(mouseX: Double, mouseY: Double) {
+        if (ConfigApi.platform().isDev()) {
+            throw IllegalStateException("CustomPressableWidget onRelease method called. This is a bug in 0.7.3! See the source for information.")
+        }
+        FC.LOGGER.error("CustomPressableWidget onRelease method called. This is a bug in 0.7.3! See the source for information.")
+        super.onRelease(mouseX, mouseY)
     }
 
     @Internal
@@ -198,7 +223,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     @Internal
     @Deprecated("Will be marked final in 0.8.0. Use onKeyRelease instead")
     override fun keyReleased(keyCode: Int, scanCode: Int, modifiers: Int): Boolean {
-        return onKeyRelease(CustomWidget.KeyEvent(input))
+        return onKeyRelease(CustomWidget.KeyEvent(keyCode, scanCode, modifiers))
     }
 
     @Internal
