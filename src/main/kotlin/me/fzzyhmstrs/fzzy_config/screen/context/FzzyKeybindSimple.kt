@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.screen.context
 
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType.Relevant
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
@@ -41,9 +42,9 @@ data class FzzyKeybindSimple(val inputCode: Int, val type: ContextInput, val ctr
 
     override fun isPressed(): Boolean {
         return InputUtil.isKeyPressed(MinecraftClient.getInstance().window.handle, inputCode)
-                && this.ctrl.validate(Screen.hasControlDown())
-                && this.shift.validate(Screen.hasShiftDown())
-                && this.alt.validate(Screen.hasAltDown())
+                && this.ctrl.validate(PortingUtils.isControlDown())
+                && this.shift.validate(PortingUtils.isShiftDown())
+                && this.alt.validate(PortingUtils.isAltDown())
     }
 
     override fun needsCtrl(): Boolean {
