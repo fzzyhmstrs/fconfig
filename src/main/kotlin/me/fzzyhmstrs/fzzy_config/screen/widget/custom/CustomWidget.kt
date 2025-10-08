@@ -285,7 +285,7 @@ interface CustomWidget {
         }
 
         override fun verticalAmount(): Double {
-            return horizontalAmount
+            return verticalAmount
         }
     }
 
