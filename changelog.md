@@ -18,20 +18,20 @@
 -------------------------------------
 
 ### Additions
-* `ValidatedColor` has a new presets feature. These presets will be displayed in a "sub-pane" to the right of the main color popup.
-  * There are pre-defined presets based on MC color enums, or you can define your own presets using `ValidatedColor#withColorPresets`
-* New `ValidatedNumber#setFormat` extension function lets you define a custom `DecimalFormat` for your number settings
-* PopupWidgets can now have "child" layouts that appear as sub-panes either to the right or below the main popup.
-  * Create a child layout with a pair of `pushChildLayout` and `popChildLayout` in the Builder.
-  * This child layout can have completely different spacing, padding, and so on.
-  * All the elements added to this child will be navigable alongside the main popup.
+* Added new `CustomWidget` interface. This will be used for abstracting all FC widgets away from directly interacting with `Element`, `Widget`, etc. to reduce porting headache going forward. Updates related to CustomWidget will be sprinkled into the next versions.
+* New `CustomTextWidget` utilizing said CustomWidget interface.
+* Added `syncConfig` method to the `NetworkApi` for manually syncing a server-side config to clients.
+* Added uk_ua translation
 
 ### Changes
-* Configs marked with `SaveType.SEPARATE` can now be opened out of the world (if it's entries can be) without caring about permissions checking, because the clients version will be considered separately anyway
-* Deprecated the constructor of `LayoutWidget` in favor of a builder pattern. Migrate any custom LayoutWidget impls asap; removal scheduled for 0.8.0
+* `CustomMultilineTextWidget` now has an align-right method
+* `Relevant` has gained three new methods for modifier checks, `needsCtrl`, `needsShift`, `needsAlt`
+* `PopupWidget`'s wrapped `LayoutWidget` now contributes to re-sizing the popup based on the dimensions it would like.
 
 ### Fixes
-* (1.21.6+) the Changes widget now properly displays its number of changes
-* (1.21.6+) popups properly blur the underlying screen content again
-* Fixed `ValidatedCondition` not passing widget size changes to it's delegate widget
-* 
+* Validated Collections now resolve their contents lazily on serialize, allowing for proper implementation of mapped registry objects (items, blocks, etc.) in loaders that defer their registration.
+* `ConfigGroup` now acts properly with nested `collapsedByDefault`
+* `ConfigApi.buildTranslations` can now "see" inside objects that may be wrapping a translated object (such as `ValidatedAny`)
+* Configs packet size limit increased to avoid problems with serializing large configs.
+* (1.21.9) fixed keybinds showing as "Button 70" etc.
+* `ValidationResult.reportTo` no longer reports an error context has header information only.
