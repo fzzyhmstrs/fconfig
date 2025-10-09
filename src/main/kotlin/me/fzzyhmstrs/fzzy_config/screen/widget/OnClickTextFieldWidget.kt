@@ -42,7 +42,7 @@ class OnClickTextFieldWidget(private val textSupplier: Supplier<String>, private
 
     private val textures: TextureProvider = TextureSet("widget/text_field".fcId(), "widget/text_field".fcId(), "widget/text_field_highlighted".fcId())
 
-    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderText(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         context.drawNineSlice(textures.get(this.active, this.isSelected), x, y, width, height, alpha)
         val text = FcText.literal(textSupplier.get())
         val i = getWidth() - 8

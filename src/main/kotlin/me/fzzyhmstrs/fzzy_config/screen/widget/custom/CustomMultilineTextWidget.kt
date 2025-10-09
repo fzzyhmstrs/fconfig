@@ -41,7 +41,7 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
 
     private var alignRight = false
 
-    override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun renderText(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
         val text = cache.map(getKey(width - leftPadding - rightPadding))
         text.drawWithShadow(context, alignRight, width - leftPadding - rightPadding, x + leftPadding,  y + topPadding, lineHeight, textColor)
         if (!isMouseOver(mouseX.toDouble(), mouseY.toDouble())) return
@@ -56,9 +56,6 @@ class CustomMultilineTextWidget @JvmOverloads constructor(message: Text, private
         val text = cache.map(getKey(width - leftPadding - rightPadding))
         val lines = text.count()
         return (lines * lineHeight) + topPadding + bottomPadding
-    }
-
-    override fun setHeight(height: Int) {
     }
 
     fun alignRight(): CustomMultilineTextWidget {
