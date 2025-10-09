@@ -150,7 +150,7 @@ interface CustomWidget {
             return if (widget is CustomWidget) {
                 widget.onMouseScroll(this)
             } else {
-                widget?.mouseScrolled(x(), y(), horizontalAmount(), verticalAmount())
+                widget?.mouseScrolled(x(), y(), verticalAmount())
             }
         }
     }
@@ -245,7 +245,7 @@ interface CustomWidget {
         }
     }
 
-    class OnScroll(private val mouseX: Double, private val mouseY: Double, private val horizontalAmount: Double, private val verticalAmount: Double): MouseEvent {
+    class OnScroll(private val mouseX: Double, private val mouseY: Double, private val verticalAmount: Double): MouseEvent {
 
         override fun x(): Double {
             return mouseX
@@ -276,7 +276,7 @@ interface CustomWidget {
         }
 
         override fun horizontalAmount(): Double {
-            return horizontalAmount
+            return 0.0
         }
 
         override fun verticalAmount(): Double {

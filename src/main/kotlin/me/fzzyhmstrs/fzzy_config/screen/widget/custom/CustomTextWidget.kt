@@ -28,7 +28,7 @@ abstract class CustomTextWidget(x: Int, y: Int, width: Int, height: Int, message
 
     abstract fun renderText(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float)
 
-    final override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
+    final override fun renderButton(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
         renderText(context, mouseX, mouseY, deltaTicks)
     }
 
@@ -102,8 +102,8 @@ abstract class CustomTextWidget(x: Int, y: Int, width: Int, height: Int, message
     }
 
     @Internal
-    final override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        return onMouseScroll(CustomWidget.OnScroll(mouseX, mouseY, horizontalAmount, verticalAmount))
+    final override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
+        return onMouseScroll(CustomWidget.OnScroll(mouseX, mouseY, verticalAmount))
     }
 
     @Internal
