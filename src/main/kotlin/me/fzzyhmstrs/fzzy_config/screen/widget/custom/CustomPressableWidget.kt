@@ -206,8 +206,8 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
 
     @Internal
     @Deprecated("Will be marked final in 0.8.0. Use onMouseScroll instead")
-    override fun mouseScrolled(mouseX: Double, mouseY: Double, horizontalAmount: Double, verticalAmount: Double): Boolean {
-        return onMouseScroll(CustomWidget.OnScroll(mouseX, mouseY, horizontalAmount, verticalAmount))
+    override fun mouseScrolled(mouseX: Double, mouseY: Double, verticalAmount: Double): Boolean {
+        return onMouseScroll(CustomWidget.OnScroll(mouseX, mouseY, verticalAmount))
     }
 
     @Internal
