@@ -10,12 +10,12 @@ A set of choices with one active choice. Lists and sets can be automatically con
 
 ```java !!tabs Java
 // Defines a set of weights the user can choose from. Note the use of ValidatedSets toChoices()
-public ValidatedChoice<Integer> validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(ValidatedChoice.WidgetType.CYCLING); //Validated choice has optional GUI and translation controls too.
+public ValidatedChoice<Integer> validatedWeightChoices = ValidatedSet.ofInt(1, 2, 5, 10, 20).toChoices(ValidatedChoice.WidgetType.CYCLING); //Validated choice has optional GUI and translation controls too.
 ```
 
 ```kotlin !!tabs Kotlin
 // Defines a set of weights the user can choose from. Note the use of ValidatedSets toChoices()
-var validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(ValidatedChoice.WidgetType.CYCLING) //Validated choice has optional GUI and translation controls too.
+var validatedWeightChoices = ValidatedSet.ofInt(1, 2, 5, 10, 20).toChoices(ValidatedChoice.WidgetType.CYCLING) //Validated choice has optional GUI and translation controls too.
 ```
 
 </CodeTabs>
@@ -29,7 +29,7 @@ The weight choices from the example above might display like `"Ultra Rare", "Ver
 
 ```java !!tabs Java
 // Defines a set of weights the user can choose from. Note the use of ValidatedSets toChoices()
-public ValidatedChoice<Integer> validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(
+public ValidatedChoice<Integer> validatedWeightChoices = ValidatedSet.ofInt(1, 2, 5, 10, 20).toChoices(
     ValidatedChoice.WidgetType.CYCLING,
     ValidatedChoice.translate(),  //ValidatedChoice has a helper method that produces an automatic translated text based on a pre-defined key format.
     ValidatedChoice.translate("desc")   //see the documentation for details on the key format.
@@ -38,7 +38,7 @@ public ValidatedChoice<Integer> validatedWeightChoices = ValidateSet.ofInt(1, 2,
 
 ```kotlin !!tabs Kotlin
 // now we build out a translation and description provider. 
-var validatedWeightChoices = ValidateSet.ofInt(1, 2, 5, 10, 20).toChoices(
+var validatedWeightChoices = ValidatedSet.ofInt(1, 2, 5, 10, 20).toChoices(
     ValidatedChoice.WidgetType.CYCLING,
     ValidatedChoice.translate(),  //ValidatedChoice has a helper method that produces an automatic translated text based on a pre-defined key format.
     ValidatedChoice.translate("desc")   //see the documentation for details on the key format.
