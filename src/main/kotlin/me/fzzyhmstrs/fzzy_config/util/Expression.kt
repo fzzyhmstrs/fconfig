@@ -1773,7 +1773,7 @@ fun interface Expression {
             }
         }
         private class ConstSin(val c1: Double, val s1: String): Expression, Const {
-            private val c3 = MathHelper.sin(c1.toFloat()).toDouble()
+            private val c3 = MathHelper.sin(c1).toDouble()
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
             }
@@ -1799,7 +1799,7 @@ fun interface Expression {
         private class ExpSin(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 @Suppress("DEPRECATION")
-                return MathHelper.sin(e1.eval(vars).toFloat()).toDouble()
+                return MathHelper.sin(e1.eval(vars)).toDouble()
             }
             override fun toString(): String {
                 return "sin($e1)"
@@ -1824,7 +1824,7 @@ fun interface Expression {
             }
         }
         private class ConstCos(val c1: Double, val s1: String): Expression, Const {
-            private val c3 = MathHelper.cos(c1.toFloat()).toDouble()
+            private val c3 = MathHelper.cos(c1).toDouble()
             override fun eval(vars: Map<Char, Double>): Double {
                 return c3
             }
@@ -1850,7 +1850,7 @@ fun interface Expression {
         private class ExpCos(val e1: Expression): Expression {
             override fun eval(vars: Map<Char, Double>): Double {
                 @Suppress("DEPRECATION")
-                return MathHelper.cos(e1.eval(vars).toFloat()).toDouble()
+                return MathHelper.cos(e1.eval(vars)).toDouble()
             }
             override fun toString(): String {
                 return "cos($e1)"
