@@ -90,7 +90,7 @@ internal object PlatformUtils {
 
         dispatcher.register(
             CommandManager.literal("configure_update")
-                .requires { source -> source.hasPermissionLevel(3) }
+                .requires(CommandManager.requirePermissionLevel(CommandManager.ADMINS_CHECK))
                 .then(CommandManager.argument("id", StringArgumentType.string())
                     .then(
                         CommandManager.literal("list")
