@@ -16,6 +16,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.TextureProvider
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureSet
 import me.fzzyhmstrs.fzzy_config.screen.widget.TooltipChild
 import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.util.PortingUtils
 import me.fzzyhmstrs.fzzy_config.util.RenderUtil.drawNineSlice
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.font.TextRenderer
@@ -66,7 +67,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     open fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
         val minecraftClient = MinecraftClient.getInstance()
         val i = if (this.active) 16777215 else 10526880
-        this.drawMessage(context, minecraftClient.textRenderer, x, y, width, height, i or (MathHelper.ceil(this.alpha * 255.0f) shl 24))
+        this.drawMessage(context, minecraftClient.textRenderer, x, y, width, height, PortingUtils.fullAlpha(i))
     }
 
     /**
@@ -124,7 +125,7 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
         val i = x + xMargin
         val j = x + width - xMargin
         val drawer = context.getHoverListener(this, DrawContext.HoverType.NONE)
-        val text = if (color == -1) this.message else this.message.copy().styled { s -> s.withColor(color) }
+        val text = if (color == -1) this.getMessage() else this.getMessage().copy().styled { s -> s.withColor(color) }
         drawer.text(text, i, j, y, y + height)
     }
 

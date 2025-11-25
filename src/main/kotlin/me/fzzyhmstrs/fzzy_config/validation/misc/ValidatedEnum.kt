@@ -189,7 +189,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, this.message)
+            builder?.put(NarrationPart.TITLE, this.getMessage())
         }
 
         override fun onPress() {
