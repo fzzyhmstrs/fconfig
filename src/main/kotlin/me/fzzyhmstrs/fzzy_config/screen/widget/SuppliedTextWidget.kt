@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.screen.widget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomTextWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import net.minecraft.client.font.Alignment
+import net.minecraft.client.font.DrawnTextConsumer
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
@@ -65,19 +67,14 @@ class SuppliedTextWidget(private val messageSupplier: Supplier<Text>, textRender
         return this
     }
 
-    override fun renderText(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
+    override fun draw(textConsumer: DrawnTextConsumer) {
         val text = messageSupplier.get()
         val i = getWidth()
         val j = textRenderer.getWidth(text)
         val k = x + (horizontalAlignment * (max(i - j, 0)).toFloat()).roundToInt()
-        val l = y + (getHeight() - textRenderer.fontHeight + 1) / 2
+        val l = y + (getHeight() - textRenderer.fontHeight) / 2
         val orderedText = if (j > i) FcText.trim(text, i, textRenderer) else text.asOrderedText()
-        context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
-        if (overflowTooltip != null) {
-            if (j > i) {
-                setTooltip(Tooltip.of(overflowTooltip?.get()))
-            }
-        }
+        textConsumer.text(Alignment.LEFT, k, l, orderedText)
     }
 
     override fun onPress(event: CustomWidget.MouseEvent): Boolean {

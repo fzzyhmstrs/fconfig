@@ -12,7 +12,10 @@ package me.fzzyhmstrs.fzzy_config.screen.widget.custom
 
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import net.minecraft.client.MinecraftClient
+import net.minecraft.client.font.Alignment
+import net.minecraft.client.font.DrawnTextConsumer
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.Click
 import net.minecraft.client.gui.DrawContext
@@ -29,10 +32,21 @@ import org.jetbrains.annotations.ApiStatus.Internal
  */
 abstract class CustomTextWidget(x: Int, y: Int, width: Int, height: Int, message: Text, textRenderer: TextRenderer =  MinecraftClient.getInstance().textRenderer) : AbstractTextWidget(x, y, width, height, message, textRenderer), CustomWidget {
 
-    abstract fun renderText(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float)
+    override fun draw(textConsumer: DrawnTextConsumer) {
+        val text = message
+        val i = getWidth()
+        val j = textRenderer.getWidth(text)
+        val k = this.x + this.getWidth() / 2
+        val l = y + (getHeight() - textRenderer.fontHeight) / 2
+        val orderedText = if (j > i) FcText.trim(text, i, textRenderer) else text.asOrderedText()
+        textConsumer.text(Alignment.CENTER, k, l, orderedText)
+    }
+
+    open fun renderCustom(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {}
 
     final override fun renderWidget(context: DrawContext, mouseX: Int, mouseY: Int, deltaTicks: Float) {
-        renderText(context, mouseX, mouseY, deltaTicks)
+        renderCustom(context, mouseX, mouseY, deltaTicks)
+        super.renderWidget(context, mouseX, mouseY, deltaTicks)
     }
 
     open fun onPress(event: CustomWidget.MouseEvent): Boolean {

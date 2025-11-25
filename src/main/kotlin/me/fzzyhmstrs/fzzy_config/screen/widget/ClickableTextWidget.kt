@@ -10,14 +10,18 @@
 
 package me.fzzyhmstrs.fzzy_config.screen.widget
 
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomTextWidget
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import net.minecraft.client.font.Alignment
+import net.minecraft.client.font.DrawnTextConsumer
+import net.minecraft.client.font.DrawnTextConsumer.ClickHandler
 import net.minecraft.client.font.TextRenderer
 import net.minecraft.client.gui.DrawContext
+import net.minecraft.client.gui.DrawContext.HoverType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.text.Text
-import net.minecraft.util.math.MathHelper
 import kotlin.math.roundToInt
 
 /**
@@ -30,25 +34,14 @@ import kotlin.math.roundToInt
  */
 class ClickableTextWidget(private val parent: Screen, message: Text, textRenderer: TextRenderer): CustomTextWidget(0, 0, textRenderer.getWidth(message.asOrderedText()), textRenderer.fontHeight, message, textRenderer) {
 
-    private val horizontalAlignment = 0.5f
-
-    override fun renderText(context: DrawContext, mouseX: Int, mouseY: Int, delta: Float) {
-        val text = message
-        val i = getWidth()
-        val j = textRenderer.getWidth(text)
-        val k = x + (horizontalAlignment * (i - j).toFloat()).roundToInt()
-        val l = y + (getHeight() - textRenderer.fontHeight) / 2
-        val orderedText = if (j > i) FcText.trim(text, i, textRenderer) else text.asOrderedText()
-        context.drawTextWithShadow(textRenderer, orderedText, k, l, textColor)
-        if (!isMouseOver(mouseX.toDouble(), mouseY.toDouble())) return
-        val d = mouseX - this.x
-        val style = textRenderer.textHandler.getStyleAt(message.asOrderedText(), d) ?: return
-        context.drawHoverEvent(textRenderer, style, mouseX, mouseY)
-    }
-
     override fun onPress(event: CustomWidget.MouseEvent): Boolean {
-        val d = event.x() - this.x
-        val style = textRenderer.textHandler.getStyleAt(message.asOrderedText(), MathHelper.floor(d)) ?: return false
-        return parent.handleTextClick(style)
+        val clickHandler = ClickHandler(this.textRenderer, event.x().toInt(), event.y().toInt())
+        this.draw(clickHandler)
+        val style = clickHandler.style
+        if (style != null && style.clickEvent != null) {
+            val ce = style.clickEvent ?: return false
+            return ConfigAction.handleClickEvent(ce)
+        }
+        return false
     }
 }

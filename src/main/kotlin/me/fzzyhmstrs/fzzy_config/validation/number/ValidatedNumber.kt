@@ -366,13 +366,11 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             context.drawTex(getTexture(), x, y, getWidth(), getHeight(), alpha)
             val progress = MathHelper.getLerpProgress(value.toDouble(), minValue.toDouble(), maxValue.toDouble())
             context.drawTex(getHandleTexture(), x + (progress * (width - 8).toDouble()).toInt(), y, 8, getHeight())
-            this.drawScrollableText(context, minecraftClient.textRenderer, 2, 0xFFFFFF or (MathHelper.ceil(alpha * 255.0f) shl 24))
+            this.drawScrollableText(context, minecraftClient.textRenderer, 2, -1)
         }
 
-        override fun drawScrollableText(context: DrawContext?, textRenderer: TextRenderer?, xMargin: Int, color: Int) {
-            val i = x + xMargin
-            val j = x + getWidth() - xMargin
-            drawScrollableText(context, textRenderer, message, i, y, j, y + getHeight(), color)
+        fun drawScrollableText(context: DrawContext, textRenderer: TextRenderer, xMargin: Int, color: Int) {
+            drawScrollableText(context, textRenderer, x, y, width, height, xMargin, color)
         }
 
         override fun getNarrationMessage(): MutableText {
