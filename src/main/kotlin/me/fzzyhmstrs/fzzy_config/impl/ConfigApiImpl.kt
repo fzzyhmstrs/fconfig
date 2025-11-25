@@ -39,6 +39,8 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.outmap
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.validation.number.*
+import net.minecraft.command.DefaultPermissions
+import net.minecraft.command.permission.*
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.registry.BuiltinRegistries
 import net.minecraft.registry.RegistryWrapper.WrapperLookup
@@ -866,7 +868,7 @@ internal object ConfigApiImpl {
         }
     }*/
 
-    internal fun <T: Any> generatePermissionsReport(player: PlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
+    internal fun <T: Any> generatePermissionsReport(player: ServerPlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
         val map: MutableMap<String, Boolean> = hashMapOf()
 
         walk(config, (config as? Config)?.getId()?.toTranslationKey() ?: "", flags) { _, _, key, _, _, annotations, _, _ ->
@@ -878,7 +880,7 @@ internal object ConfigApiImpl {
                     }
                 }
                 if (it.fallback >= 0) {
-                    if (player.hasPermissionLevel(it.fallback))
+                    if (getPlayerPermissionLevel(player) >= it.fallback)
                         map[key] = true
                 }
                 map.putIfAbsent(key, false)
@@ -916,10 +918,10 @@ internal object ConfigApiImpl {
         return ValidationResult.predicated(list, list.isEmpty(), ValidationResult.Errors.ACCESS_VIOLATION) { b -> b.content("Config updated without proper permissions!") }
     }
 
-    internal fun isConfigAdmin(player: PlayerEntity, config: Config): Boolean {
+    internal fun isConfigAdmin(player: ServerPlayerEntity, config: Config): Boolean {
         val annotation = config::class.annotations.firstOrNull{ it is AdminAccess }?.cast<WithCustomPerms>()
         if (annotation == null) {
-            return player.hasPermissionLevel(3)
+            return player.permissions.hasPermission(DefaultPermissions.ADMINS)
         }
         for (perm in annotation.perms) {
             if(PlatformUtils.hasPermission(player, perm)) {
@@ -927,17 +929,13 @@ internal object ConfigApiImpl {
             }
         }
         if (annotation.fallback >= 0) {
-            return player.hasPermissionLevel(annotation.fallback)
+            return getPlayerPermissionLevel(player) >= annotation.fallback
         }
-        return player.hasPermissionLevel(3)
+        return player.permissions.hasPermission(DefaultPermissions.ADMINS)
     }
 
-    private fun getPlayerPermissionLevel(player: PlayerEntity): Int {
-        var i = 0
-        while(player.hasPermissionLevel(i)) {
-            i++
-        }
-        return i - 1
+    private fun getPlayerPermissionLevel(player: ServerPlayerEntity): Int {
+        return player.entityWorld.server!!.getPermissionLevel(player.playerConfigEntry).level.level
     }
 
     private fun makeDir(dir: File): Pair<File, Boolean> {

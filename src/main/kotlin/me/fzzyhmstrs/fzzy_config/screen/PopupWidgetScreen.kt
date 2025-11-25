@@ -71,8 +71,8 @@ open class PopupWidgetScreen(title: Text) : Screen(title), PopupParentElement {
         hoveredElement.nullCast<LastSelectable>()?.resetHover(mouseX, mouseY)
     }
 
-    override fun resize(client: MinecraftClient, width: Int, height: Int) {
-        super.resize(client, width, height)
+    override fun resize(width: Int, height: Int) {
+        super.resize(width, height)
         initPopup()
     }
 
