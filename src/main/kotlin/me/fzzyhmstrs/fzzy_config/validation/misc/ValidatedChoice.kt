@@ -384,7 +384,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.message).append(". "))
+            builder?.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.getMessage()).append(". "))
         }
 
         private fun constructTooltip() {
@@ -442,7 +442,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
-            builder?.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.message).append(". "))
+            builder?.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.getMessage()).append(". "))
         }
 
         private fun constructTooltip() {

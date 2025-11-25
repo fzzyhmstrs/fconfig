@@ -250,7 +250,7 @@ open class ValidatedExpression @JvmOverloads constructor(
         }
 
         override fun getNarrationMessage(): MutableText {
-            return "fc.validated_field.expression".translate().append(", ".lit()).append(this.message)
+            return "fc.validated_field.expression".translate().append(", ".lit()).append(this.getMessage())
         }
 
         override fun onPress() {

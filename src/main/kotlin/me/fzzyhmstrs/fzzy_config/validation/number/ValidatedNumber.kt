@@ -301,7 +301,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         init {
-            this.message = DECIMAL_FORMAT.format(wrappedValue.get()).lit()
+            this.setMessage(DECIMAL_FORMAT.format(wrappedValue.get()).lit())
         }
 
         private fun split(range: Double): Double {
@@ -359,7 +359,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
             if (cachedWrappedValue != testValue) {
                 this.value = testValue
                 cachedWrappedValue = testValue
-                this.message = DECIMAL_FORMAT.format(this.value).lit()
+                this.setMessage(DECIMAL_FORMAT.format(this.value).lit())
             }
             this.confirmActive = isChanged() && isValid
             val minecraftClient = MinecraftClient.getInstance()
@@ -414,7 +414,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
 
         private fun setValue(value: Double) {
             this.value = converter.apply(value)
-            this.message = DECIMAL_FORMAT.format(this.value).lit()
+            this.setMessage(DECIMAL_FORMAT.format(this.value).lit())
         }
 
         override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
