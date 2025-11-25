@@ -10,7 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.impl
 
-import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -23,9 +22,6 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigBaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.screen.internal.RestartScreen
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import net.minecraft.client.MinecraftClient
-import net.minecraft.command.permission.LeveledPermissionPredicate
-import net.minecraft.command.permission.OrPermissionPredicate
-import net.minecraft.command.permission.PermissionPredicate
 import net.minecraft.util.Identifier
 
 internal object ConfigApiImplClient {
@@ -98,20 +94,11 @@ internal object ConfigApiImplClient {
     internal fun getPlayerPermissionLevel(): Int {
         val client = MinecraftClient.getInstance()
         if(client.server != null && client?.server?.isSingleplayer == true) return 4 // single player game, they can change whatever they want
-        return client.player?.run { getPermissionPredicateLevel(permissions) } ?: 0
-    }
-
-    fun getPermissionPredicateLevel(permissions: PermissionPredicate): Int {
-        return when (permissions) {
-            PermissionPredicate.ALL -> 4
-            PermissionPredicate.NONE -> 0
-            is LeveledPermissionPredicate -> permissions.level.level
-            is OrPermissionPredicate -> permissions.predicates.maxOf { getPermissionPredicateLevel(it) }
-            else -> {
-                FC.LOGGER.warn("Unknow permissions predicate found! {}", permissions.javaClass.simpleName)
-                0
-            }
+        var i = 0
+        while(client.player?.hasPermissionLevel(i) == true) {
+            i++
         }
+        return i - 1
     }
 
     internal fun getText(thing: Any, scope: String, fieldName: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>, fallback: String = fieldName): Translatable.Result {
