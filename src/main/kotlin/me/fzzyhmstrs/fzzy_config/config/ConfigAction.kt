@@ -31,6 +31,8 @@ import me.fzzyhmstrs.fzzy_config.validation.misc.ChoiceValidator
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ConfirmLinkScreen
 import net.minecraft.client.gui.widget.ClickableWidget
+import net.minecraft.client.network.ClientPlayerEntity
+import net.minecraft.network.packet.c2s.common.CustomClickActionC2SPacket
 import net.minecraft.network.packet.c2s.play.CommandExecutionC2SPacket
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.MutableText
@@ -39,6 +41,7 @@ import net.minecraft.util.Identifier
 import net.minecraft.util.Util
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.net.URISyntaxException
+import java.util.*
 import java.util.function.Supplier
 import kotlin.experimental.and
 
@@ -273,41 +276,7 @@ class ConfigAction @JvmOverloads constructor(
          */
         fun build(clickEvent: ClickEvent): ConfigAction {
             val runnable = Runnable {
-                val client = MinecraftClient.getInstance()
-                if (clickEvent is ClickEvent.OpenUrl) {
-                    if (!client.options.chatLinks.value) {
-                        return@Runnable
-                    }
-
-                    try {
-                        val uRI = clickEvent.uri()
-                        if (client.options.chatLinksPrompt.value) {
-                            val screen = client.currentScreen
-                            client.setScreen(ConfirmLinkScreen({ confirmed: Boolean ->
-                                if (confirmed) {
-                                    Util.getOperatingSystem().open(uRI)
-                                }
-                                client.setScreen(screen)
-                            }, uRI.toString(), false))
-                        } else {
-                            Util.getOperatingSystem().open(uRI)
-                        }
-                    } catch (var4: URISyntaxException) {
-                        FC.LOGGER.error("Can't open url for {}", clickEvent, var4)
-                    }
-                } else if (clickEvent is ClickEvent.OpenFile) {
-                    Util.getOperatingSystem().open(clickEvent.file())
-                } else if (clickEvent.action == ClickEvent.Action.SUGGEST_COMMAND) {
-                    FC.LOGGER.error("Can't suggest a command from a config action")
-                } else if (clickEvent is ClickEvent.RunCommand) {
-                    val string =clickEvent.command().let { if (it.startsWith("/")) it.substring(1) else it }
-                    // (ender) It should be fine just running this
-                    client.player?.networkHandler?.send(CommandExecutionC2SPacket(string))
-                } else if (clickEvent is ClickEvent.CopyToClipboard) {
-                    client.keyboard.clipboard = clickEvent.value()
-                } else {
-                    FC.LOGGER.error("Don't know how to handle {}", clickEvent)
-                }
+                handleClickEvent(clickEvent)
             }
             val action = clickEvent.action
             if (desc == null && action != null) {
@@ -323,6 +292,8 @@ class ConfigAction @JvmOverloads constructor(
                 decoration = when(action) {
                     ClickEvent.Action.OPEN_URL -> TextureDeco.DECO_LINK
                     ClickEvent.Action.OPEN_FILE -> TextureDeco.DECO_FOLDER
+                    ClickEvent.Action.CUSTOM -> TextureDeco.DECO_QUESTION
+                    ClickEvent.Action.SHOW_DIALOG -> TextureDeco.DECO_OPEN_SCREEN
                     ClickEvent.Action.RUN_COMMAND -> TextureDeco.DECO_COMMAND
                     ClickEvent.Action.COPY_TO_CLIPBOARD -> TextureDeco.DECO_BUTTON_CLICK
                     else -> TextureDeco.DECO_BUTTON_CLICK
@@ -331,11 +302,69 @@ class ConfigAction @JvmOverloads constructor(
             when(action) {
                 ClickEvent.Action.RUN_COMMAND -> this.flag(EntryFlag.Flag.REQUIRES_WORLD)
                 ClickEvent.Action.SUGGEST_COMMAND -> this.flag(EntryFlag.Flag.REQUIRES_WORLD)
+                ClickEvent.Action.SHOW_DIALOG -> this.flag(EntryFlag.Flag.REQUIRES_WORLD)
+                ClickEvent.Action.CUSTOM -> this.flag(EntryFlag.Flag.REQUIRES_WORLD)
                 else -> {}
             }
             val q = ConfigAction(titleSupplier, activeSupplier, runnable, decoration ?: TextureDeco.DECO_BUTTON_CLICK, desc, background)
             q.flags = flags
             return q
+        }
+    }
+
+    companion object {
+        internal fun handleClickEvent(clickEvent: ClickEvent): Boolean {
+            val client = MinecraftClient.getInstance()
+            if (clickEvent is ClickEvent.OpenUrl) {
+                if (!client.options.chatLinks.value) {
+                    return false
+                }
+                try {
+                    val uRI = clickEvent.uri()
+                    if (!client.options.chatLinksPrompt.value) return false
+                    if (client.options.chatLinksPrompt.value) {
+                        val screen = client.currentScreen
+                        client.setScreen(ConfirmLinkScreen({ confirmed: Boolean ->
+                            if (confirmed) {
+                                Util.getOperatingSystem().open(uRI)
+                            }
+                            client.setScreen(screen)
+                        }, uRI.toString(), false))
+                    } else {
+                        Util.getOperatingSystem().open(uRI)
+                    }
+                    return true
+                } catch (var4: URISyntaxException) {
+                    FC.LOGGER.error("Can't open url for {}", clickEvent, var4)
+                    return false
+                }
+            } else if (clickEvent is ClickEvent.OpenFile) {
+                Util.getOperatingSystem().open(clickEvent.file())
+                return true
+            } else if (clickEvent.action == ClickEvent.Action.SUGGEST_COMMAND) {
+                FC.LOGGER.error("Can't suggest a command from a config action")
+                return false
+            } else if (clickEvent is ClickEvent.RunCommand) {
+                val string = clickEvent.command().let { if (it.startsWith("/")) it.substring(1) else it }
+                // (ender) It should be fine just running this
+                val player = client.player ?: return false
+                client.player?.networkHandler?.sendPacket(CommandExecutionC2SPacket(string))
+                return true
+            } else if (clickEvent is ClickEvent.CopyToClipboard) {
+                client.keyboard.clipboard = clickEvent.value()
+                return true
+            } else if (clickEvent is ClickEvent.ShowDialog) {
+                val player = client.player ?: return false
+                player.networkHandler.showDialog(clickEvent.dialog(), client.currentScreen)
+                return true
+            } else if (clickEvent is ClickEvent.Custom) {
+                val player = client.player ?: return false
+                player.networkHandler.sendPacket(CustomClickActionC2SPacket(clickEvent.id(), clickEvent.payload()))
+                return true
+            } else {
+                FC.LOGGER.error("Don't know how to handle {}", clickEvent)
+                return false
+            }
         }
     }
 }

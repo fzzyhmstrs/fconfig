@@ -86,7 +86,7 @@ internal object ValidatedShorthands {
         val shorthandRegistryIdList = listOf(Identifier.of("nether_star")).validatedRegistry(Registries.ITEM)
 
         //example shorthand identifier list with automatic predicated registry validation
-        val shorthandPredicatedRegistryIdList = listOf(Identifier.of("stone_sword")).validatedRegistry(Registries.ITEM, BiPredicate { id, e -> e.value() is RangedWeaponItem })
+        val shorthandPredicatedRegistryIdList = listOf(Identifier.of("bow")).validatedRegistry(Registries.ITEM, BiPredicate { id, e -> e.value() is RangedWeaponItem })
 
         //example shorthand identifier list with automatic list validation. The list should be complete and available at validation time
         val shorthandListIdList = listOf(Identifier.of("arrow")).validatedList(listOf(Identifier.of("arrow"), Identifier.of("firework_rocket")))
@@ -118,7 +118,7 @@ internal object ValidatedShorthands {
         val shorthandRegistryIdSet = setOf(Identifier.of("nether_star")).validatedRegistry(Registries.ITEM)
 
         //example shorthand identifier list with automatic predicated registry validation
-        val shorthandPredicatedRegistryIdSet = setOf(Identifier.of("stone_sword")).validatedRegistry(Registries.ITEM, BiPredicate { id, e -> e.value() is RangedWeaponItem })
+        val shorthandPredicatedRegistryIdSet = setOf(Identifier.of("bow")).validatedRegistry(Registries.ITEM, BiPredicate { id, e -> e.value() is RangedWeaponItem })
 
         //example shorthand identifier list with automatic list validation. The list should be complete and available at validation time
         val shorthandListIdSet = setOf(Identifier.of("arrow")).validatedList(listOf(Identifier.of("arrow"), Identifier.of("firework_rocket")))

@@ -123,7 +123,9 @@ open class CustomPressableWidget(x: Int, y: Int, width: Int, height: Int, messag
     protected open fun drawScrollableText(context: DrawContext, textRenderer: TextRenderer, x: Int, y: Int, width: Int, height: Int, xMargin: Int, color: Int) {
         val i = x + xMargin
         val j = x + width - xMargin
-        drawScrollableText(context, textRenderer, this.message, i, y, j, y + height, color)
+        val drawer = context.getHoverListener(this, DrawContext.HoverType.NONE)
+        val text = if (color == -1) this.message else this.message.copy().styled { s -> s.withColor(color) }
+        drawer.text(text, i, j, y, y + height)
     }
 
     @Internal
