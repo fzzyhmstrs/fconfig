@@ -135,6 +135,28 @@ A conditional setting can have more conditions added with <code>withCondition</c
 
 </CodeTabs>
 
+You can add more features to your condition once you've converted it. Beyond `withCondition` mentioned above, you can add a title to show when the conditions aren't met.
+
+<CodeTabs>
+
+```java !!tabs Java
+	//We can add more conditions and set up a "fail title" once we have the initial condition
+	ValidatedCondition<Int> validatedConditionInt = (new ValidatedInt(5, 100, 0))
+            .toCondition(validatedBooleanGate, Text.literal("Gate must be true"), () -> 0)
+            .withCondition(Text.literal("This also must be true"), () -> mySecondCheck())
+            .withFailTitle(Text.literal("Condition not met"), Text.literal("Conditions not net")); //you can add both a singular and plural of your fail message, useful if you have more than one condition
+```
+
+```kotlin !!tabs Kotlin
+	//We can add more conditions and set up a "fail title" once we have the initial condition
+	var validatedConditionInt = ValidatedInt(5, 100, 0)
+        .toCondition(validatedBooleanGate, "Gate must be true".lit()) { 0 }
+        .withCondition("This also must be true".lit(), this::mySecondCheck)
+        .withFailTitle("Condition not met".lit(), "Conditions not net".lit())
+```
+
+</CodeTabs>
+
 ## <div><div style={{display: "inline"}}><MicIcon height={26} width={22} style={{display: "inline", color: "#B2BFF9", paddingTop: "4px", verticalAlign: "top"}} /> Listeners</div> <a href="#-validation-manipulation" style={{color: "#B2BFF9"}}>⤴</a></div>
 You can listen to changes made to any `ValidatedField` by supplying a consumer of that field.
 
