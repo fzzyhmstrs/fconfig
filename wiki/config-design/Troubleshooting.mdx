@@ -18,7 +18,17 @@ ModMenu asks for its config screen on mod initialization. If your mod doesn't re
 ```
 
 ```toml !!tabs (neoforged.)mods.toml
+# 1.20.1
 modproperties={fzzy_config="mod_id"}
+# for a list of values
+modproperties={fzzy_config=["mod_id", "id2"]}
+
+# 1.21.1 and above
+[modproperties.fzzy_config]
+fzzy_config="mod_id"
+# for a list
+[modproperties.fzzy_config]
+fzzy_config=["mod_id", "id2"]
 ```
 
 </CodeTabs>
