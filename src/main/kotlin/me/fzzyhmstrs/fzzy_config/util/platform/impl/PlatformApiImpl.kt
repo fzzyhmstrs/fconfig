@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.util.PlatformApi
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
+import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
 import net.fabricmc.loader.api.FabricLoader
 import net.fabricmc.loader.api.Version
@@ -55,6 +56,10 @@ internal object PlatformApiImpl: PlatformApi {
 
     override fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T> {
         return RegistrarImpl(namespace, registry)
+    }
+
+    override fun <T> createRegistryBuilder(namespace: String): RegistryBuilder {
+        return RegistryBuilderImpl(namespace)
     }
 
     override fun testVersion(id: String, version: String): Optional<Int> {
