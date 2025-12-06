@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
 import me.fzzyhmstrs.fzzy_config.util.platform.Registrar
+import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
 import net.minecraft.registry.Registry
 import net.peanuuutz.tomlkt.TomlComment
 import org.jetbrains.annotations.ApiStatus
@@ -88,6 +89,17 @@ interface PlatformApi {
      * @since 0.5.9, no longer experimental 0.7.0
      */
     fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T>
+
+    /**
+     * Creates a [RegistryBuilder] for creating registries in a platform-agnostic way, along with providing other registry utilities.
+     *
+     * [See the Wiki](https://moddedmc.wiki/en/project/fzzy-config/docs/features/Registrar-System) for more details and examples.
+     * @param namespace String namespace to register objects under
+     * @return [RegistryBuilder] platform-agnostic wrapper for creating registries
+     * @author fzzyhmstrs
+     * @since 0.7.4
+     */
+    fun <T> createRegistryBuilder(namespace: String): RegistryBuilder
 
     /**
      * Applies a set of translations for the provided registry instance to the provided [builder]. Uses [Translatable.Name], [Translatable.Desc], and [Translatable.Prefix] annotations to power the generation. [TomlComment] and [Comment] can be used to provide en_us description lang.
