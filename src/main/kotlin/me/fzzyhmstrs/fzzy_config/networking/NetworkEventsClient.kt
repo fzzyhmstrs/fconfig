@@ -167,10 +167,11 @@ internal object NetworkEventsClient {
     private var initialized = false
 
     private fun registerConfigs(event: ScreenEvent.Init.Pre) {
-        if (event.screen !is TitleScreen || initialized) return
+        if (initialized || event.screen !is TitleScreen) return
+        val scopes = ClientConfigRegistry.getScreenScopes()
         ModList.get().forEachModInOrder { modContainer ->
             val id = modContainer.modId
-            if (ClientConfigRegistry.getScreenScopes().contains(id)) {
+            if (scopes.contains(id)) {
                 if (modContainer.getCustomExtension(ConfigScreenFactory::class.java).isEmpty) {
                     modContainer.registerExtensionPoint(ConfigScreenFactory::class.java, Supplier {
                         ConfigScreenFactory { _, screen -> ClientConfigRegistry.provideScreen(id) ?: screen }
