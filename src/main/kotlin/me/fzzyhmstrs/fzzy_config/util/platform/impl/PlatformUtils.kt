@@ -12,6 +12,7 @@ package me.fzzyhmstrs.fzzy_config.util.platform.impl
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
+import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -27,6 +28,7 @@ import net.neoforged.neoforge.common.NeoForge
 import net.neoforged.neoforge.event.RegisterCommandsEvent
 import net.neoforged.neoforge.server.permission.PermissionAPI
 import java.io.File
+import kotlin.jvm.optionals.getOrNull
 
 internal object PlatformUtils {
 
@@ -58,12 +60,25 @@ internal object PlatformUtils {
     fun customScopes(): List<String> {
         val list: MutableList<String> = mutableListOf()
         for (container in ModList.get().mods) {
-            val customValue = container.modProperties["fzzy_config"]
+            val map1 = container.modProperties.takeIf { it.isNotEmpty() }
+            val map = if (map1 != null) {
+                map1
+            } else {
+                val map2 = container.config.getConfigElement<Map<String, Any>>("modproperties").orElse(emptyMap())
+                if (map2.isNotEmpty()) {
+                    FC.LOGGER.error("Mod ${container.modId} uses outdated modproperties format. See https://github.com/fzzyhmstrs/fconfig/blob/master/wiki/config-design/Troubleshooting.mdx for proper 1.21.1+ syntax")
+                }
+                map2
+            }
+            val customValue = map["fzzy_config"]
             if (customValue is String) {
                 list.add(customValue)
             } else if (customValue is List<*>) {
-                val values = customValue.nullCast<List<String>>() ?: continue
-                list.addAll(values)
+                for (value in customValue) {
+                    if (value is String) {
+                        list.add(value)
+                    }
+                }
             }
         }
         return list
