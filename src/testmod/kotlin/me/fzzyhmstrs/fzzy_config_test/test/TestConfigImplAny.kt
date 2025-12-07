@@ -21,6 +21,7 @@ import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedCondition
+import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedEnum
 import net.minecraft.item.Items
 import net.minecraft.registry.Registries
 import net.minecraft.util.Identifier
@@ -38,6 +39,9 @@ class TestConfigImplAny: Config(Identifier.of("fzzy_config_test","test_config_an
 
     @Translatable.Name("My Test Object 2")
     var any2 = ValidatedAny(MyTestAny2()).toCondition({ true }, FcText.literal("Test"), ::MyTestAny2)
+
+    var longBoi1 = ValidatedEnum(LongBoi::class.java, ValidatedEnum.WidgetType.SCROLLABLE)
+    var longBoi2 = ValidatedEnum(LongBoi::class.java, ValidatedEnum.WidgetType.INLINE)
 
     //var bl1 = true
 
@@ -73,5 +77,17 @@ class TestConfigImplAny: Config(Identifier.of("fzzy_config_test","test_config_an
 
         @Translatable.Name("Mapped List Test")
         var test2 = ValidatedList(listOf(Items.ACACIA_BOAT, Items.DIAMOND), ValidatedRegistryType.of(Registries.ITEM))
+    }
+
+    enum class LongBoi {
+        ANY,
+        BOLD,
+        COLON,
+        DILDO,
+        ETHER,
+        FART,
+        GARDEN,
+        HAND,
+        INPUT
     }
 }
