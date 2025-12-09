@@ -38,7 +38,7 @@ internal object ConfigApiImplClient {
         return ClientConfigRegistry.getPermsRef()
     }
 
-    internal fun registerConfig(config: Config, baseConfig: Config, configCreator: () -> Config, noGui: Boolean) {
+    internal fun <T: Config> registerConfig(config: T, baseConfig: T, configCreator: () -> T, noGui: Boolean) {
         ClientConfigRegistry.registerConfig(config, baseConfig, configCreator, noGui)
     }
 
