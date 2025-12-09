@@ -11,6 +11,7 @@
 package me.fzzyhmstrs.fzzy_config_test.test
 
 import me.fzzyhmstrs.fzzy_config.annotations.RequiresRestart
+import me.fzzyhmstrs.fzzy_config.annotations.Translation
 import me.fzzyhmstrs.fzzy_config.annotations.Version
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.config.Config
@@ -38,6 +39,7 @@ import java.awt.Color
 import java.net.URI
 
 @Version(1)
+@Translation("fzzy_config_test.test_config")
 class TestConfigImpl: Config(Identifier.of("fzzy_config_test","test_config"), subfolder =  "test") {
 
     var bl1 = true
