@@ -24,7 +24,6 @@ import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.config.ConfigContext
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.nullCast
@@ -156,24 +155,24 @@ internal object ConfigApiImpl {
     internal fun <T: Config> registerConfig(config: T, configClass: () -> T, registerType: RegisterType, noGui: Boolean = false): T {
         return when(registerType) {
             RegisterType.BOTH -> registerBoth(config, configClass, noGui)
-            RegisterType.SERVER -> registerSynced(config)
+            RegisterType.SERVER -> registerSynced(config, configClass)
             RegisterType.CLIENT -> registerClient(config, configClass, noGui)
         }
     }
 
     private fun <T: Config> registerBoth(config: T, configClass: () -> T, noGui: Boolean): T {
-        SyncedConfigRegistry.registerConfig(config, RegisterType.BOTH)
+        SyncedConfigRegistry.registerConfig(config, RegisterType.BOTH, configClass)
         return registerClient(config, configClass, noGui)
     }
 
-    private fun <T: Config> registerSynced(config: T): T {
-        SyncedConfigRegistry.registerConfig(config, RegisterType.SERVER)
+    private fun <T: Config> registerSynced(config: T, configClass: () -> T): T {
+        SyncedConfigRegistry.registerConfig(config, RegisterType.SERVER, configClass)
         return config
     }
 
     private fun <T: Config> registerClient(config: T, configClass: () -> T, noGui: Boolean): T {
         if(isClient)
-            ConfigApiImplClient.registerConfig(config, configClass(), noGui)
+            ConfigApiImplClient.registerConfig(config, configClass(), configClass, noGui)
         return config
     }
 
@@ -189,7 +188,7 @@ internal object ConfigApiImpl {
     }
 
     private fun <T: Config> registerAndLoadSynced(configClass: () -> T): T {
-        return registerSynced(readOrCreateAndValidate(configClass))
+        return registerSynced(readOrCreateAndValidate(configClass), configClass)
     }
 
     private fun <T: Config> registerAndLoadClient(configClass: () -> T, noGui: Boolean): T {
@@ -297,12 +296,14 @@ internal object ConfigApiImpl {
                         writeFile(files.fOut, correctedConfig.get(), name, "correcting errors or updating version", files.fIn)
                     }, ThreadUtils.EXECUTOR)
                 } else if (files.fIn != files.fOut) {
-                    val fOutErrorContext = ValidationResult.createMutable("Error(s) encountered while re-serializing config [$name] to new file location/type! Output may not be complete.")
-                    val newFormatConfig = serializeConfig(readConfig, fOutErrorContext, fileType = files.fOutType)
-                    if (newFormatConfig.isError()) {
-                        newFormatConfig.log()
-                    }
-                    writeFile(files.fOut, newFormatConfig.get(), name, "moving config to new file format", files.fIn)
+                    CompletableFuture.runAsync( {
+                        val fOutErrorContext = ValidationResult.createMutable("Error(s) encountered while re-serializing config [$name] to new file location/type! Output may not be complete.")
+                        val newFormatConfig = serializeConfig(readConfig, fOutErrorContext, fileType = files.fOutType)
+                        if (newFormatConfig.isError()) {
+                            newFormatConfig.log()
+                        }
+                        writeFile(files.fOut, newFormatConfig.get(), name, "moving config to new file format", files.fIn)
+                    }, ThreadUtils.EXECUTOR)
                 }
                 log(start)
                 return readConfig
@@ -321,12 +322,14 @@ internal object ConfigApiImpl {
                     }
                     oldFile.delete()
                 }
-                val fOutErrorContext = ValidationResult.createMutable("Error(s) encountered while re-serializing converted config for [$name]! Output may not be complete.")
-                val reConvertedConfigResult = serializeConfig(classInstance, fOutErrorContext, fileType = files.fOutType)
-                if (reConvertedConfigResult.isError()) {
-                    reConvertedConfigResult.log()
-                }
-                writeFile(files.fOut, reConvertedConfigResult.get(), name, "converting old config")
+                CompletableFuture.runAsync( {
+                    val fOutErrorContext = ValidationResult.createMutable("Error(s) encountered while re-serializing converted config for [$name]! Output may not be complete.")
+                    val reConvertedConfigResult = serializeConfig(classInstance, fOutErrorContext, fileType = files.fOutType)
+                    if (reConvertedConfigResult.isError()) {
+                        reConvertedConfigResult.log()
+                    }
+                    writeFile(files.fOut, reConvertedConfigResult.get(), name, "converting old config")
+                }, ThreadUtils.EXECUTOR)
                 log(start)
                 return classInstance
             }
@@ -550,7 +553,7 @@ internal object ConfigApiImpl {
         return serializeToToml(config, errorBuilder, flags).outmap(fileType::encode)
     }
 
-    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = CHECK_NON_SYNC): ValidationResult<TomlTable> where M: UpdateManager, M: BasicValidationProvider {
+    private fun <T: Config, M> serializeUpdateToToml(config: T, manager: M, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte): ValidationResult<TomlTable> where M: UpdateManager, M: BasicValidationProvider {
         val toml = TomlTableBuilder()
         try {
             walk(config, config.getId().toTranslationKey(), flags) { _, _, str, v, prop, _, _, _ ->
@@ -600,7 +603,7 @@ internal object ConfigApiImpl {
         return deserializeFromToml(config, toml, ValidationResult.createMutable(errorHeader), flags)
     }
 
-    internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = IGNORE_NON_SYNC): ValidationResult<T> {
+    internal fun <T: Any> deserializeFromToml(config: T, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte): ValidationResult<T> {
         if (toml !is TomlTable) {
             errorBuilder.addError(ValidationResult.Errors.FILE_STRUCTURE, "TomlElement passed to deserializeFromToml not a TomlTable! Deserialization aborted.")
             return ValidationResult.ofMutable(config, errorBuilder)
@@ -753,7 +756,7 @@ internal object ConfigApiImpl {
         return deserializeFromToml(config, toml, errorBuilder, flags)
     }
 
-    private fun <T: Any> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
+    private fun <T: Any> deserializeUpdateFromToml(config: T, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte): ValidationResult<T> {
         try {
             val checkActions = checkActions(flags)
             val recordRestarts = if (!checkActions) false else recordRestarts(flags)
@@ -761,7 +764,7 @@ internal object ConfigApiImpl {
 
             if (toml !is TomlTable) {
                 errorBuilder.addError(ValidationResult.Errors.FILE_STRUCTURE, "TomlElement passed to deserializeUpdateFromToml not a TomlTable! Deserialization aborted.")
-                return ValidationResult.ofMutable(ConfigContext(config), errorBuilder)
+                return ValidationResult.ofMutable(config, errorBuilder)
             }
             val id = (config as? Config)?.getId()?.toTranslationKey() ?: ""
             walk(config, id, flags) { c, _, str, v, prop, _, _, _ -> toml[str]?.let {
@@ -814,18 +817,18 @@ internal object ConfigApiImpl {
         } catch(e: Throwable) {
             errorBuilder.addError(ValidationResult.Errors.DESERIALIZATION, "Exception encountered while deserializing TOML update", e)
         }
-        return ValidationResult.ofMutable(ConfigContext(config), errorBuilder)
+        return ValidationResult.ofMutable(config, errorBuilder)
     }
 
-    internal fun <T: Config> deserializeUpdate(config: T, string: String, errorHeader: String = "", flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
+    internal fun <T: Config> deserializeUpdate(config: T, string: String, errorHeader: String = "", flags: Byte = CHECK_NON_SYNC): ValidationResult<T> {
         return deserializeUpdate(config, string, ValidationResult.createMutable(errorHeader), flags)
     }
 
-    internal fun <T: Config> deserializeUpdate(config: T, string: String, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = CHECK_NON_SYNC): ValidationResult<ConfigContext<T>> {
+    private fun <T: Config> deserializeUpdate(config: T, string: String, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = CHECK_NON_SYNC): ValidationResult<T> {
         val toml = try {
             Toml.parseToTomlTable(string)
         } catch (e: Throwable) {
-            return ValidationResult.error(ConfigContext(config), ValidationResult.Errors.FILE_STRUCTURE, "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing", e)
+            return ValidationResult.error(config, ValidationResult.Errors.FILE_STRUCTURE, "Config ${config.javaClass.canonicalName} is corrupted or improperly formatted for parsing", e)
         }
         return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
     }
@@ -1552,6 +1555,10 @@ internal object ConfigApiImpl {
         fun cont() {
             continued = true
         }
+    }
+
+    internal fun interface UpdateAction {
+        fun onUpdate(deserializer: EntryDeserializer<*>?, previousValue: Any?, newValue: ValidationResult<out Any?>, action: Action, errorReporter: ValidationResult.ErrorEntry.Mutable, name: String)
     }
 
     private class IncompatibleSaveTypeException(message: String): RuntimeException(message)

@@ -13,6 +13,7 @@
 package me.fzzyhmstrs.fzzy_config.api
 
 import me.fzzyhmstrs.fzzy_config.annotations.Comment
+import me.fzzyhmstrs.fzzy_config.annotations.Version
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.readOrCreateAndValidate
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.registerAndLoadConfig
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi.registerConfig
@@ -65,7 +66,7 @@ object ConfigApiJava {
     @JvmOverloads
     @Suppress("DEPRECATION")
     @Deprecated("Consider registerAndLoadConfig() instead, to perform automatic loading, registering, and validating in one step.")
-    fun <T: Config> registerConfig(config: T, configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T{
+    fun <T: Config> registerConfig(config: T, configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApi.registerConfig(config, configClass, registerType)
     }
 
@@ -85,7 +86,7 @@ object ConfigApiJava {
      */
     @JvmStatic
     @JvmOverloads
-    fun <T: Config> registerAndLoadConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T{
+    fun <T: Config> registerAndLoadConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.BOTH): T {
         return ConfigApi.registerAndLoadConfig(configClass, registerType)
     }
 
@@ -107,6 +108,40 @@ object ConfigApiJava {
     @JvmStatic
     fun <T: Config> registerAndLoadNoGuiConfig(configClass: Supplier<T>, registerType: RegisterType = RegisterType.CLIENT): T {
         return ConfigApi.registerAndLoadNoGuiConfig(configClass, registerType)
+    }
+
+    /**
+     * Reads a config from File or Creates a new config class; writes out any corrections, updates, or new content to File. Automatically adds ".toml" to the name for reading and writing.
+     *
+     * Includes [Version] updating support, automatic validation and correction, and detailed error reporting. Use this to generate the actual config class instance to be used in-game, if you have other custom initialization to perform, otherwise see [registerAndLoadConfig]. See the Example Config for typical usage case.
+     * @param T The config class type. Must be a subclass of [Config]
+     * @param name String. The config name, will become the file name. In an identifier, would be the "path". Adds ".toml" to the name for reading/writing to file automatically.
+     * @param folder String, optional. A base config folder name. If left out, will write to the main config directory (not recommended). In an Identifier, this would be the "namespace"
+     * @param subfolder String, optional. A subfolder name if desired. By default, blank. The file will appear in the base "namespace" folder if no child is given.
+     * @param configClass Supplier. A provider of instances of the config class itself.
+     * @return An instance of the configClass passed to it, updated and validated or passed back as-is, depending on circumstances and errors encountered
+     * @author fzzyhmstrs
+     * @since 0.3.2
+     */
+    @JvmStatic
+    @JvmOverloads
+    @Suppress("DEPRECATION")
+    @Deprecated("Consider registerAndLoadConfig() instead, or readOrCreateAndValidate(configClass) for consistent application of names")
+    fun <T: Config> readOrCreateAndValidate(name: String, folder: String = "", subfolder: String = "", configClass: Supplier<T>): T {
+        return ConfigApi.readOrCreateAndValidate(name, folder, subfolder, configClass)
+    }
+
+    /**
+     * overload of [readOrCreateAndValidate] that automatically applies the name, folder, and subfolder from the config itself. Automatically adds ".toml" to the name for reading and writing.
+     * @param T type of config being created. Any subclass of [Config]
+     * @param configClass Supplier of T
+     * @return An instance of the configClass passed to it, updated and validated or passed back as-is, depending on circumstances and errors encountered
+     * @author fzzyhmstrs
+     * @since 0.3.2
+     */
+    @JvmStatic
+    fun <T: Config> readOrCreateAndValidate(configClass: Supplier<T>): T {
+        return ConfigApi.readOrCreateAndValidate(configClass)
     }
 
     /**
