@@ -108,8 +108,8 @@ internal object ConfigApiImpl {
     internal const val IGNORE_NON_SYNC_AND_FLAT_WALK: Byte = 17
     internal const val CRITICAL_ERRORS_ONLY: Byte = 32
     internal const val IGNORE_NON_SYNC_AND_CRITICAL_ERRORS_ONLY: Byte = 33
-    internal const val NO_WALK_ANNOTATIONS: Byte = 64
-
+    internal const val PROVIDE_UPDATE_TOML: Byte = 64
+    
     internal const val MAX_CONFIG_SERIALIZATION_LENGTH = Int.MAX_VALUE
 
     private val configClass = Config::class
@@ -833,6 +833,82 @@ internal object ConfigApiImpl {
         return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
     }
 
+    private fun deserializeFileUpdateFromToml(entry: ConfigEntry, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte, permissionChecker: PermissionChecker): ValidationResult<TomlTable> {
+        try {
+            val checkActions = checkActions(flags)
+            val recordRestarts = if (!checkActions) false else recordRestarts(flags)
+            val globalAction = getAction(config::class.annotations)
+
+            if (toml !is TomlTable) {
+                errorBuilder.addError(ValidationResult.Errors.FILE_STRUCTURE, "TomlElement passed to deserializeUpdateFromToml not a TomlTable! Deserialization aborted.")
+                return ValidationResult.ofMutable(config, errorBuilder)
+            }
+            val outputBuilder = TomlTableBuilder()
+            val updateToml = updateToml(flags)
+            val flattenedToml = flattenToml(toml)
+            val liveConfig = entry.config
+            val writeConfig = entry.configCreator()
+            val id = (liveConfig as? Config)?.getId()?.toTranslationKey() ?: ""
+            biWalk(liveConfig, writeConfig, id, flags) { liveC, writeC, _, str, liveV, writeV, liveProp, writeProp, annotations, _ -> flattenedToml[str]?.let {
+                if (writeV !is ConfigSection) { //good to go, skip sections since they are getting walked anyhow
+                    if(writeV is EntryDeserializer<*> && liveV is Supplier<*>) { //only deserialize for entries that we can do proper checks on
+                        val writeResult = writeV.deserializeEntry(it, str, flags) //write the update to the write-copy config
+                        val before = liveV.get() //what does the live config have in that spot right now
+                        if (writeV.deserializedChanged(before, writeResult.get())) { //permissible change made
+                            val permResult = permissionChecker.check(liveV, liveC, id, str, annotations) //check if we were even supposed to edit this.
+                            if (!permResult.success) { //shouldn't have edited... woops
+                                errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
+                            } else {
+                                liveV.cast<EntryDeserializer<*>>().deserializeEntry(it, str, flags) //deserialize the value over to the live version. Don't just set to get any deserialize side-effects
+                                val action = requiredAction(checkActions, liveProp, globalAction) //get applicable change actions
+                                if (updateToml) { //if applicable write to an output table to sync updates along
+                                    outputBuilder.element(str, it)
+                                }
+                                if (action.restartPrompt) { //record actions as needed
+                                    if (recordRestarts) {
+                                        errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + str) }
+                                    } else {
+                                        errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
+                                    }
+                                }
+                                errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
+                            }
+                        }
+                    } else if (writeV != null) {
+                        val basicValidation = UpdateManager.getValidation(writeV, writeProp, str, id, this.isClient)
+                        if (basicValidation != null) {
+                            val writeResult = basicValidation.deserializeEntry(it, str, flags) //write the update to the write-copy config
+                            if (basicValidation.deserializedChanged(liveV, writeResult.get())) {
+                                val permResult = permissionChecker.check(liveV, liveC, id, str, annotations) //check if we were even supposed to edit this.
+                                if (!permResult.success) { //shouldn't have edited... woops
+                                    errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
+                                } else {
+                                    liveProp.setter.call(c, result.get()) //set the value for the live property
+                                    val action = requiredAction(checkActions, liveProp, globalAction) //get applicable change actions
+                                    if (updateToml) { //if applicable write to an output table to sync updates along
+                                        outputBuilder.element(str, it)
+                                    }
+                                    if (action.restartPrompt) { //record actions as needed
+                                        if (recordRestarts) {
+                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + str) }
+                                        } else {
+                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
+                                        }
+                                    }
+                                    errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            }
+        } catch(e: Throwable) {
+            errorBuilder.addError(ValidationResult.Errors.DESERIALIZATION, "Exception encountered while deserializing TOML update", e)
+        }
+        return ValidationResult.ofMutable(outputBuilder.build(), errorBuilder)
+    }
+
     internal fun <T> deserializeEntry(entry: Entry<T, *>, string: String, scope: String, flags: Byte = CHECK_NON_SYNC): ValidationResult<out T?> {
         val toml = try {
             Toml.parseToTomlTable(string)
@@ -870,6 +946,21 @@ internal object ConfigApiImpl {
         for ((name, prop) in propsA) {
         }
     }*/
+
+    private fun flattenToml(table: TomlTable): TomlTable {
+        val toml = TomlTableBuilder()
+        for ((key, element) in table) {
+            if (element is TomlTable) {
+                val element2 = flattenToml(element)
+                for ((key3, element3) in element2) {
+                    toml.element("$key.$key3", element3)
+                }
+            }
+            //add element both for tables and not, to avoid "overflattening" by keeping maps that need to be maps (as well as extra flattened maps that will be ignored)
+            toml.element(key, element)
+        }
+        return toml.build()
+    }
 
     internal fun <T: Any> generatePermissionsReport(player: ServerPlayerEntity, config: T, flags: Byte = CHECK_NON_SYNC): MutableMap<String, Boolean> {
         val map: MutableMap<String, Boolean> = hashMapOf()
@@ -1395,7 +1486,7 @@ internal object ConfigApiImpl {
         return flags and 32.toByte() == 32.toByte()
     }
 
-    private fun noAnnotations(flags: Byte): Boolean {
+    private fun updateToml(flags: Byte): Boolean {
         return flags and 64.toByte() == 64.toByte()
     }
 
@@ -1425,16 +1516,16 @@ internal object ConfigApiImpl {
             val orderById = walkable::class.java.declaredFields.withIndex().associate { it.value.name to it.index }
             val globalAnnotations = walkable::class.annotations
             val walkCallback = WalkCallback(walkable)
-            for (property in walkable.javaClass.kotlin.memberProperties
+            val wProps = walkable.javaClass.kotlin.memberProperties
                 .filter {
                     it is KMutableProperty<*>
                             && if (ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
                             && (if (ignoreNonSync(flags)) true else !isNonSync(it))
                             && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-                }.sortedBy {
-                    orderById[it.name]
+                }.sortedBy { 
+                    orderById[it.name] 
                 }
-            ) {
+            for (property in wProps) {
                 try {
                     val newPrefix = FcText.concat(prefix, ".", property.name)
                     val propVal = property.get(walkable)
@@ -1465,6 +1556,57 @@ internal object ConfigApiImpl {
             }
         } catch (e: Throwable) {
             FC.LOGGER.error("Critical exception encountered while Walking through ${walkable::class.simpleName}", e)
+        }
+    }
+
+    internal fun<W: Any> biWalk(walkable: W, walkable2: W, prefix: String, flags: Byte, walkAction: BiWalkAction) {
+        try {
+            // check for IgnoreVisiblity
+            val ignoreVisibility = isIgnoreVisibility(walkable::class) || ignoreVisibility(flags)
+            val orderById = walkable::class.java.declaredFields.withIndex().associate { it.value.name to it.index } //both should be the same type, so this is fine
+            val globalAnnotations = walkable::class.annotations
+            val wProps =  walkable.javaClass.kotlin.memberProperties
+                .filter {
+                    it is KMutableProperty<*>
+                            && if (ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
+                            && (if (ignoreNonSync(flags)) true else !isNonSync(it))
+                            && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
+                }.sortedBy {
+                    orderById[it.name]
+                }
+            val w2Props =  walkable2.javaClass.kotlin.memberProperties.associateBy { it.name } //second walkable just make a map of all props for grabbing from
+            for (property in wProps) {
+                try {
+                    val newPrefix = FcText.concat(prefix, ".", property.name)
+                    val propVal = property.get(walkable)
+                    val property2 = w2Props[property.name]
+                    if (property2 == null) throw IllegalStateException("BiWalk provided mismatching inputs. Couldn't find property [$newPrefix] in second walkable from properties ${w2Props.keys}")
+                    val propVal2 = property2.get(walkable2)
+                    walkAction.act(
+                        walkable,
+                        walkable2,
+                        prefix,
+                        newPrefix,
+                        propVal,
+                        propVal2,
+                        property as KMutableProperty<*>,
+                        property2 as KMutableProperty<*>,
+                        property.annotations,
+                        globalAnnotations
+                    )
+                    if (propVal is Walkable && !flatWalk(flags)) {
+                        val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
+                        biWalk(propVal, propval2, newPrefix, newFlags, walkAction)
+                    }
+                } catch (e: Throwable) {
+                    FC.LOGGER.error("Critical exception caught while bi-walking $prefix for property $property.name")
+                    FC.LOGGER.error(" > Walk Flags: $flags, Ignoring Visibility: $ignoreVisibility")
+                    FC.LOGGER.error(" > Exception:", e)
+                    // continue without borking
+                }
+            }
+        } catch (e: Throwable) {
+            FC.LOGGER.error("Critical exception encountered while bi-walking through ${walkable::class.simpleName}", e)
         }
     }
 
@@ -1538,6 +1680,19 @@ internal object ConfigApiImpl {
                 walkCallback: WalkCallback)
     }
 
+    internal fun interface BiWalkAction {
+        fun act(walkable: Any,
+                walkable2: Any,
+                oldPrefix: String,
+                newPrefix: String,
+                element: Any?,
+                element2: Any?,
+                elementProp: KMutableProperty<*>,
+                elementProp2: KMutableProperty<*>,
+                annotations: List<Annotation>,
+                globalAnnotations: List<Annotation>)
+    }
+
     internal class WalkCallback (val walkable: Any) {
         private var cancelled = false
         private var continued = false
@@ -1557,8 +1712,8 @@ internal object ConfigApiImpl {
         }
     }
 
-    internal fun interface UpdateAction {
-        fun onUpdate(deserializer: EntryDeserializer<*>?, previousValue: Any?, newValue: ValidationResult<out Any?>, action: Action, errorReporter: ValidationResult.ErrorEntry.Mutable, name: String)
+    internal fun interface PermissionChecker {
+        fun check(thing: Any? Config: Any, configId: String, id: String, annotations: List<Annotation>): PermResult
     }
 
     private class IncompatibleSaveTypeException(message: String): RuntimeException(message)
