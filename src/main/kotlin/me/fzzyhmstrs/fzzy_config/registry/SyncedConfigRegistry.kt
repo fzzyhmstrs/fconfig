@@ -61,7 +61,7 @@ internal object SyncedConfigRegistry {
         }
     }
 
-    internal fun syncedConfigs(): Map<String, SyncedConfigEntry> {
+    internal fun syncedConfigs(): Map<String, SyncedConfigEntry<*>> {
         return syncedConfigs
     }
 
@@ -331,7 +331,7 @@ internal object SyncedConfigRegistry {
     }
 
     @Synchronized
-    internal fun registerConfig(config: Config, registerType: RegisterType, configCreator: () -> Config) {
+    internal fun <T: Config> registerConfig(config: T, registerType: RegisterType, configCreator: () -> T) {
         val entry = SyncedConfigEntry(config, registerType == RegisterType.SERVER, configCreator)
         syncedConfigs[config.getId().toTranslationKey()] = entry
         ThreadUtils.register(entry)
@@ -340,7 +340,7 @@ internal object SyncedConfigRegistry {
 
     internal class QuarantinedUpdate(val playerUuid: UUID, val changeHistory: List<String>, val configId: String, val configString: String)
 
-    internal data class SyncedConfigEntry(override val config: Config, val server: Boolean, override val configCreator: () -> Config): ConfigEntry {
+    internal data class SyncedConfigEntry<T: Config>(override val config: T, val server: Boolean, override val configCreator: () -> T): ConfigEntry<T> {
 
         override val client: Boolean = false
 
