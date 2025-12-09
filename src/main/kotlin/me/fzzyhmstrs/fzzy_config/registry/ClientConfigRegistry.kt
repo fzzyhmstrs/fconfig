@@ -14,6 +14,7 @@ import com.google.common.collect.HashMultimap
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
@@ -23,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.util.ThreadUtils
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.client.MinecraftClient
@@ -41,7 +43,7 @@ import java.util.function.Consumer
 //client
 internal object ClientConfigRegistry {
 
-    private val clientConfigs : MutableMap<String, ConfigPair> = mutableMapOf()
+    private val clientConfigs : MutableMap<String, ClientConfigEntry> = mutableMapOf()
     private val configScreenManagers: MutableMap<String, ConfigScreenManager> = hashMapOf()
     private val customPermissions: MutableMap<String, Map<String, Boolean>> = hashMapOf()
     private var validScopes: MutableSet<String> = Collections.synchronizedSet(hashSetOf()) //configs are sorted into Managers by namespace
@@ -55,12 +57,12 @@ internal object ClientConfigRegistry {
     }
 
     internal fun getClientConfig(scope: String): Config? {
-        return clientConfigs[scope]?.active
+        return clientConfigs[scope]?.config
     }
 
     internal fun getValidClientConfig(scope: String): Pair<Config?, String> {
         val s = getValidConfigScope(scope) ?: return Pair(null, scope)
-        return Pair(clientConfigs[s]?.active, s)
+        return Pair(clientConfigs[s]?.config, s)
     }
 
     private fun getValidConfigScope(scope: String): String? {
@@ -126,9 +128,9 @@ internal object ClientConfigRegistry {
                     getValidScope(id)?.let { //invalidate screen manager to refresh the state of widgets there. Should upgrade this functionality in the future.
                         configScreenManagers.remove(it)
                     }
-                    val saveType = result.get().config.saveType()
+                    val saveType = result.get().saveType()
                     if (saveType == SaveType.OVERWRITE)
-                        result.get().config.save()
+                        result.get().save()
                     for (action in result.iterate(ValidationResult.Errors.ACTION)) {
                         MinecraftClient.getInstance().player?.sendChat(action.content.clientPrompt)
                     }
@@ -138,7 +140,7 @@ internal object ClientConfigRegistry {
                         FC.LOGGER.error("Error encountered with onUpdateClient method of config $id while receiving an update from the server!", e)
                     }
                     try {
-                        EventApiImpl.fireOnUpdateClient(result.get().config.getId(), result.get().config)
+                        EventApiImpl.fireOnUpdateClient(result.get().getId(), result.get())
                     } catch (e: Throwable) {
                         FC.LOGGER.error("Error encountered while running onUpdateClient event for config $id while receiving an update from the server!", e)
                     }
@@ -194,7 +196,7 @@ internal object ClientConfigRegistry {
                 clientConfigs.filterKeys {
                     s -> s.startsWith(namespaceScope)
                 }.mapValues {
-                    ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key), ConfigApiImpl.isRootConfig(it.value.active::class))
+                    ConfigSet(it.value.config, it.value.base, !SyncedConfigRegistry.hasConfig(it.key), ConfigApiImpl.isRootConfig(it.value.config::class))
                 })
         }
         manager.openScreen(scope)
@@ -244,7 +246,7 @@ internal object ClientConfigRegistry {
                 clientConfigs.filterKeys {
                     s -> s.startsWith(namespaceScope)
                 }.mapValues {
-                    ConfigSet(it.value.active, it.value.base, !SyncedConfigRegistry.hasConfig(it.key), ConfigApiImpl.isRootConfig(it.value.active::class))
+                    ConfigSet(it.value.config, it.value.base, !SyncedConfigRegistry.hasConfig(it.key), ConfigApiImpl.isRootConfig(it.value.config::class))
                 })
         }
         return manager.provideScreen(scope)
@@ -298,7 +300,7 @@ internal object ClientConfigRegistry {
 
     //client
     @Synchronized
-    internal fun registerConfig(config: Config, baseConfig: Config, noGui: Boolean) {
+    internal fun registerConfig(config: Config, baseConfig: Config, configCreator: () -> Config, noGui: Boolean) {
         if (!noGui) {
             val namespace = config.getId().namespace
             validScopes.add(namespace)
@@ -307,14 +309,17 @@ internal object ClientConfigRegistry {
                 configScreenManagers.remove(namespace)
             }
         }
-        clientConfigs[config.getId().toTranslationKey()] = ConfigPair(config, baseConfig)
+        val entry = ClientConfigEntry(config, baseConfig, configCreator)
+        clientConfigs[config.getId().toTranslationKey()] = entry
+        ThreadUtils.register(entry)
         EventApiImpl.fireOnRegisteredClient(config.getId(), config)
     }
 
-    private class ConfigPair(private val _active: Config, val base: Config) {
+    private class ClientConfigEntry(private val _active: Config, val base: Config, override val configCreator: () -> Config): ConfigEntry {
         var i: Boolean = false
+        override val client: Boolean = true
 
-        val active: Config
+        override val config: Config
             get() {
                 if (!i) {
                     i = true

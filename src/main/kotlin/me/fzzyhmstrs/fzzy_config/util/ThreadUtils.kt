@@ -10,22 +10,85 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
-import me.fzzyhmstrs.fzzy_config.FCC
-import me.fzzyhmstrs.fzzy_config.config.Config
-import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
-import me.fzzyhmstrs.fzzy_config.screen.PopupController
+import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
+import net.peanuuutz.tomlkt.TomlTable
+import java.io.File
+import java.nio.file.FileSystems
 import java.nio.file.Path
-import java.util.Collections
+import java.nio.file.StandardWatchEventKinds
+import java.nio.file.WatchKey
 import java.util.concurrent.Executors
-import java.util.concurrent.ForkJoinPool
-import java.util.function.Consumer
-import java.util.function.Function
-import kotlin.concurrent.thread
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
 
 
 internal object ThreadUtils {
 
-    internal val EXECUTOR = Executors.newFixedThreadPool(6, Thread.ofVirtual().name("Fzzy Config Worker", 1).factory())
+    internal val EXECUTOR = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("Fzzy Config Worker").factory())
+    private val FILE_WATCHER = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().name("Fzzy Config File Watcher").factory())
+
+    private val lock: ReentrantLock = ReentrantLock()
+    private val watchService = FileSystems.getDefault().newWatchService()
+    private val configWatchers: HashMap<Path, ConfigEntry> = hashMapOf()
+
+    /*
+    * There will be a max of one actual config instance to care about.
+    * If you register separate config instances CLIENT/SERVER you will desync in-game anyway with screen usage.
+    *
+    * Synced will take priority over client. If there is both, the synced will matter more
+    * It will at the very least also update the client instance when needed (because they are the same),
+    * and will also handle syncing back/forth when applicable
+    *
+    * The listener should be started and stopped on game lifecycle
+    * Fabric
+    * - ClientLifecycleEvents.CLIENT_STARTED
+    * - ServerLifecycleEvents.SERVER_STARTED
+    * - ClientLifecycleEvents.CLIENT_STOPPING
+    * - ServerLivecycleEvents.SERVER_STOPPING
+    *
+    * Neo
+    * - Think I'll have to hook into the screen event again. Silly Neo
+    * - ServerStartedEvent
+    * - GameShuttingDownEvent (server and client)
+    *
+    * These events will start/stop the ExecutorServices I have in this stack. Need to make sure I add shutdowns for the EXECUTOR above!
+    *
+    * Synced Registry + SEPARATE + Client + Out of Game = Update Config State + No Sync
+    *
+    * */
+
+    fun start(onUpdateEvent: (ConfigEntry, () -> ValidationResult<TomlTable>) -> Unit) {
+        FILE_WATCHER.scheduleAtFixedRate( {
+            var watchKey: WatchKey? = watchService.poll()
+            while (watchKey != null) {
+                for (event in watchKey.pollEvents()) {
+                    val path = event.context() as Path
+                    val entry = configWatchers[path] ?: continue
+
+                }
+                watchKey.reset()
+                watchKey = watchService.poll()
+            }
+        }, 0L, 503L, TimeUnit.MILLISECONDS)
+    }
+
+    fun stop() {
+        watchService.close()
+        FILE_WATCHER.shutdown()
+    }
+
+    fun register(entry: ConfigEntry) {
+        try {
+            lock.lock()
+            val file = entry.config.getDir()
+            val dirPath = file.toPath()
+            dirPath.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
+            val path = File(file, FcText.concat(entry.config.name, entry.config.fileType().suffix())).toPath()
+            configWatchers[path] = entry
+        } finally {
+            lock.unlock()
+        }
+    }
 
     /*@Volatile
     private var doTick: Boolean = false
@@ -72,6 +135,7 @@ internal object ThreadUtils {
     }
 
     val fileWorker: Thread = Thread.ofPlatform().name("Fzzy Config File Worker").unstarted {
-
+       //https://stackoverflow.com/questions/16251273/can-i-watch-for-single-file-change-with-watchservice-not-the-whole-directory
+       //https://www.baeldung.com/java-delay-code-execution#service
     }*/
 }

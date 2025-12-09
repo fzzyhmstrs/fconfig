@@ -10,7 +10,12 @@
 
   "do.popups.break.enum": "Do I Break",
 
+  "fzzy_config_test.test_config": "Test Config",
+  "fzzy_config_test.test_config.desc": "Test Config Tooltip",
+  "fzzy_config_test.test_config.prefix": "Test Config Prefix",
+
   "fzzy_config_test.never_loaded_config": "I'm Never Loaded",
+  "fzzy_config_test.never_loaded_config.desc": "I'm Really Never Loaded",
 
   "fzzy_config_test.test_config_any.any1.test2": "Test 2",
   "fzzy_config_test.test_config_any.any1.test5": "Test TriState",
@@ -63,6 +68,7 @@
   "test.prefix.bl2.desc" : "Test Boolean Translation Description",
 
   "java.prefix" : "Java Config (Translated)",
+  "java.prefix.desc" : "Java translated tooltip",
   "java.prefix.prefix" : "This java config has a cool translated header",
   "java.prefix.anInt" : "Class-Translated Int",
   "java.prefix.aBoolean" : "Class-Translated Boolean",
