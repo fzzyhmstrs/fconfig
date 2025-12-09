@@ -29,7 +29,7 @@ internal object ThreadUtils {
 
     private val lock: ReentrantLock = ReentrantLock()
     private val watchService = FileSystems.getDefault().newWatchService()
-    private val configWatchers: HashMap<Path, ConfigEntry> = hashMapOf()
+    private val configWatchers: HashMap<Path, ConfigEntry<out Config>> = hashMapOf()
 
     /*
     * There will be a max of one actual config instance to care about.
@@ -57,7 +57,7 @@ internal object ThreadUtils {
     *
     * */
 
-    fun start(onUpdateEvent: (ConfigEntry, () -> ValidationResult<TomlTable>) -> Unit) {
+    fun start(onUpdateEvent: (ConfigEntry<out Config>, () -> ValidationResult<TomlTable>) -> Unit) {
         FILE_WATCHER.scheduleAtFixedRate( {
             var watchKey: WatchKey? = watchService.poll()
             while (watchKey != null) {
@@ -77,7 +77,7 @@ internal object ThreadUtils {
         FILE_WATCHER.shutdown()
     }
 
-    fun register(entry: ConfigEntry) {
+    fun register(entry: ConfigEntry<out Config>) {
         try {
             lock.lock()
             val file = entry.config.getDir()
