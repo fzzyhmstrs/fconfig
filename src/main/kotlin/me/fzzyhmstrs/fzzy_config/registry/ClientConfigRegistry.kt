@@ -43,7 +43,7 @@ import java.util.function.Consumer
 //client
 internal object ClientConfigRegistry {
 
-    private val clientConfigs : MutableMap<String, ClientConfigEntry> = mutableMapOf()
+    private val clientConfigs : MutableMap<String, ClientConfigEntry<*>> = mutableMapOf()
     private val configScreenManagers: MutableMap<String, ConfigScreenManager> = hashMapOf()
     private val customPermissions: MutableMap<String, Map<String, Boolean>> = hashMapOf()
     private var validScopes: MutableSet<String> = Collections.synchronizedSet(hashSetOf()) //configs are sorted into Managers by namespace
@@ -332,7 +332,7 @@ internal object ClientConfigRegistry {
 
     //client
     @Synchronized
-    internal fun registerConfig(config: Config, baseConfig: Config, configCreator: () -> Config, noGui: Boolean) {
+    internal fun <T: Config> registerConfig(config: T, baseConfig: T, configCreator: () -> T, noGui: Boolean) {
         if (!noGui) {
             val namespace = config.getId().namespace
             validScopes.add(namespace)
@@ -347,7 +347,7 @@ internal object ClientConfigRegistry {
         EventApiImpl.fireOnRegisteredClient(config.getId(), config)
     }
 
-    private class ClientConfigEntry(private val _active: Config, val base: Config, override val configCreator: () -> Config): ConfigEntry {
+    private class ClientConfigEntry<T: Config>(private val _active: T, val base: T, override val configCreator: () -> T): ConfigEntry<T> {
         var i: Boolean = false
         override val client: Boolean = true
 
