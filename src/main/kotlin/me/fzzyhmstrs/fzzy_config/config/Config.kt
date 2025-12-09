@@ -156,7 +156,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @author fzzyhmstrs
      * @since 0.5.0
      */
-    open fun onSyncClient(){}
+    open fun onSyncClient() {}
 
     /**
      * Runs on the logical server as config is about to be synced to a client. This occurs when the player is logging in and when datapacks are reloaded. This is distinct from [onUpdateServer], which fires when _changes_ are made to a config in-game, which are also synced. This is the initial sync of the entire config state.
@@ -166,7 +166,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @author fzzyhmstrs
      * @since 0.5.0
      */
-    open fun onSyncServer(){}
+    open fun onSyncServer() {}
 
     /**
      * Runs on the logical client after the config is updated. Typically, this is when the user closes the config screen or applies changes, but also occurs after a connected client recieves a S2C update. This is distinct from [onSyncClient], which fires when the entire config state is synced on login/reload. This handles chnages made in-game.
@@ -176,7 +176,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @author fzzyhmstrs
      * @since 0.5.0
      */
-    open fun onUpdateClient(){}
+    open fun onUpdateClient() {}
 
     /**
      * Runs on the logical server after an updated config is prepared for saving. Typically, this will be after a config update is received from a connected client, and that update passes permission checks.
@@ -187,7 +187,7 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @author fzzyhmstrs
      * @since 0.5.0
      */
-    open fun onUpdateServer(playerEntity: ServerPlayerEntity){}
+    open fun onUpdateServer(playerEntity: ServerPlayerEntity) {}
 
     /**
      * Anchor modifier method for a config. By default, provides a folder icon decoration to the base anchor. You can provide a custom icon if you want a special icon for the config in the goto menu. If your config has a long name, you may also want to create and provide a shortened "summary" name for a goto link.
@@ -223,7 +223,13 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
      * @suppress
      */
     override fun descriptionKey(): String {
-        return getId().toTranslationKey("", ".desc")
+        return getId().toTranslationKey() + ".desc"
+    }
+    /**
+     * @suppress
+     */
+    override fun prefixKey(): String {
+        return getId().toTranslationKey() + ".prefix"
     }
     /**
      * @suppress
