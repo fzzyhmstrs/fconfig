@@ -16,12 +16,14 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils
+import me.fzzyhmstrs.fzzy_config.util.ThreadUtils
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
@@ -31,7 +33,6 @@ import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.ClickEvent
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import java.lang.IllegalStateException
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -200,7 +201,7 @@ internal object SyncedConfigRegistry {
                 }
             }
             val result = ConfigApiImpl.deserializeUpdate(configEntry.config, configString, "Error(s) encountered while receiving config update for $id", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-            result.get().config.save()
+            result.get().save()
             if (result.test(ValidationResult.Errors.ACTION) { it.content.restartPrompt }) {
                 FC.LOGGER.warn("The server has received a config update that may require a restart. Connected clients have been automatically updated and notified of the potential for restart.")
                 if (result.has(ValidationResult.Errors.RESTART)) {
@@ -226,7 +227,7 @@ internal object SyncedConfigRegistry {
             }
         }
         if (!server.isSingleplayer) {
-            for (player in serverPlayer.entityWorld.server.playerManager.playerList) {
+            for (player in server.playerManager.playerList) {
                 if (player == serverPlayer) continue // don't push back to the player that just sent the update
                 if (!canSender.test(player, ConfigUpdateS2CCustomPayload.type)) continue
                 val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
@@ -272,7 +273,7 @@ internal object SyncedConfigRegistry {
         val player = server.playerManager.getPlayer(quarantinedUpdate.playerUuid)
         if (configEntry != null) {
             val result = ConfigApiImpl.deserializeUpdate(configEntry.config, quarantinedUpdate.configString, "Error(s) encountered while receiving config update for $id", ConfigApiImpl.CHECK_ACTIONS_AND_RECORD_RESTARTS).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-            result.get().config.save()
+            result.get().save()
             if (result.test(ValidationResult.Errors.ACTION) { it.content.restartPrompt }) {
                 FC.LOGGER.warn("A quarantined update has been accepted that may require a restart. Connected clients have been automatically updated and notified of the potential for restart.")
                 if (result.has(ValidationResult.Errors.RESTART)) {
@@ -315,14 +316,19 @@ internal object SyncedConfigRegistry {
     }
 
     @Synchronized
-    internal fun registerConfig(config: Config, registerType: RegisterType) {
-        syncedConfigs[config.getId().toTranslationKey()] = SyncedConfigEntry(config, registerType == RegisterType.SERVER)
+    internal fun registerConfig(config: Config, registerType: RegisterType, configCreator: () -> Config) {
+        val entry = SyncedConfigEntry(config, registerType == RegisterType.SERVER, configCreator)
+        syncedConfigs[config.getId().toTranslationKey()] = entry
+        ThreadUtils.register(entry)
         EventApiImpl.fireOnRegisteredServer(config.getId(), config)
     }
 
     internal class QuarantinedUpdate(val playerUuid: UUID, val changeHistory: List<String>, val configId: String, val configString: String)
 
-    internal data class SyncedConfigEntry(val config: Config, val server: Boolean) {
+    internal data class SyncedConfigEntry(override val config: Config, val server: Boolean, override val configCreator: () -> Config): ConfigEntry {
+
+        override val client: Boolean = false
+
         fun skipSync(): Boolean {
             return config.saveType() == SaveType.SEPARATE && server
         }
