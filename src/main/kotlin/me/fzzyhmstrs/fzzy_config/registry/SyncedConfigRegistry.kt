@@ -320,7 +320,7 @@ internal object SyncedConfigRegistry {
                 val update = config.fileType().encode(result.get())
                 if (update.isError()) {
                     update.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-                } else if (!entry.cast<syncedConfigEntry<*>().skipSync()) {
+                } else if (!entry.skipSync()) {
                     updates[id] = update.get()
                 }
             }
