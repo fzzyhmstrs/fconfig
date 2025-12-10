@@ -311,7 +311,7 @@ internal object SyncedConfigRegistry {
 
     internal fun start(server: MinecraftServer) {
         val updates: ConcurrentHashMap<String, String> = ConcurrentHashMap()
-        ThreadUtils.start(0, server, { entry, result -> 
+        ThreadUtils.start(1, server, { entry, result -> 
             if (result.isError()) {
                 result.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             } else {
