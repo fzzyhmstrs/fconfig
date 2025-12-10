@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.util
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import net.peanuuutz.tomlkt.TomlTable
 import java.io.File
 import java.nio.file.FileSystems
@@ -61,7 +62,7 @@ internal object ThreadUtils {
     *
     * */
 
-    fun start(flags: Byte, executor: Executor, updater: (TomlTable) -> Unit, permissionCheck: ConfigApiImpl.PermissionChecker) {
+    fun start(flags: Byte, executor: Executor, updater: (ValidationResult<TomlTable>) -> Unit, permissionCheck: ConfigApiImpl.PermissionChecker) {
         FILE_WATCHER.scheduleAtFixedRate( { //FILE_WATCHER thread
             val entries: MutableList<Pair<Path, ConfigEntry<*>>> = mutableListOf()
             try { //lock up the config watchers while we poll the watch service
@@ -92,9 +93,8 @@ internal object ThreadUtils {
                     result
                 }, EXECUTOR).thenAcceptAsync( { result -> //CLIENT of SERVER thread
                     if (result.isValid()) {
-                        val fileResult = result.get()
-                        ConfigApiImpl.applyFileUpdate(entry.config, fileResult.writeConfig, "Error(s) encountered while updating a config from a changed config file")
-                        updater(fileResult.toml)
+                        ConfigApiImpl.applyFileUpdate(entry.config, result.get().writeConfig, "Error(s) encountered while updating a config from a changed config file")
+                        updater(result.map { it.toml })
                     }
 
                 }, executor)

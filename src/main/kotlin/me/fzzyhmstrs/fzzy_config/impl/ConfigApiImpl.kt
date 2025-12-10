@@ -894,7 +894,7 @@ internal object ConfigApiImpl {
         val tomlResult = entry.config.fileType().decode(str)
         if (tomlResult.isError()) {
             return tomlResult.bimap { r -> ValidationResult.error(FileUpdateResult(entry.config, TomlTable.Empty), ValidationResult.Errors.INVALID) { b ->
-                    b.content("Parse error after config file updated manually").addError(r)
+                    b.content("Parse error after config file updated manually")
                 }
             }
         }
