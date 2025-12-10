@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
+import me.fzzyhmstrs.fzzy_config.impl.PermResult
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.entry.EntryCreators
@@ -506,10 +507,10 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
                     val context = EntryCreator.CreatorContext(new, if (groups.isEmpty()) ConfigGroup.emptyGroups else LinkedList(groups), set.clientOnly, prepareResult.texts, annotations, prepareResult.actions, contextMisc)
 
                     when (prepareResult.perms) {
-                        ConfigApiImplClient.PermResult.FAILURE -> {
+                        PermResult.FAILURE -> {
                             EntryCreators.createNoPermsEntry(context, "noPerms").applyToMap(old, functionMap)
                         }
-                        ConfigApiImplClient.PermResult.OUT_OF_GAME -> {
+                        PermResult.OUT_OF_GAME -> {
                             EntryCreators.createNoPermsEntry(context, "outOfGame").applyToMap(old, functionMap)
                         }
                         else -> {

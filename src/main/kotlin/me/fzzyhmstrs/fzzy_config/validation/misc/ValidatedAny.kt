@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
+import me.fzzyhmstrs.fzzy_config.impl.PermResult
 import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
@@ -43,7 +44,6 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.MutableText
-import net.minecraft.util.math.ColorHelper
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
@@ -273,10 +273,10 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
                 val context = EntryCreator.CreatorContext(new, if (groups.isEmpty()) ConfigGroup.emptyGroups else LinkedList(groups), false, prepareResult.texts, annotations, prepareResult.actions, misc)
 
                 when (prepareResult.perms) {
-                    ConfigApiImplClient.PermResult.FAILURE -> {
+                    PermResult.FAILURE -> {
                         EntryCreators.createNoPermsEntry(context, "noPerms").applyToList(entries)
                     }
-                    ConfigApiImplClient.PermResult.OUT_OF_GAME -> {
+                    PermResult.OUT_OF_GAME -> {
                         EntryCreators.createNoPermsEntry(context, "outOfGame").applyToList(entries)
                     }
                     else -> {
