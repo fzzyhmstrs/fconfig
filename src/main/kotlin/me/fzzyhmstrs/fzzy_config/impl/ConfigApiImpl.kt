@@ -24,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.config.ConfigSection
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.nullCast
@@ -831,23 +832,23 @@ internal object ConfigApiImpl {
         return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
     }
 
-    private fun deserializeFileUpdateFromToml(entry: ConfigEntry, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte, permissionChecker: PermissionChecker): ValidationResult<TomlTable> {
+    private fun deserializeFileUpdateFromToml(entry: ConfigEntry<*>, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte, permissionChecker: PermissionChecker): ValidationResult<TomlTable> {
+        val outputBuilder = TomlTableBuilder()
         try {
             val checkActions = checkActions(flags)
             val recordRestarts = if (!checkActions) false else recordRestarts(flags)
-            val globalAction = getAction(config::class.annotations)
+            val globalAction = getAction(entry.config::class.annotations)
 
             if (toml !is TomlTable) {
                 errorBuilder.addError(ValidationResult.Errors.FILE_STRUCTURE, "TomlElement passed to deserializeUpdateFromToml not a TomlTable! Deserialization aborted.")
-                return ValidationResult.ofMutable(config, errorBuilder)
+                return ValidationResult.ofMutable(TomlTable.Empty, errorBuilder)
             }
-            val outputBuilder = TomlTableBuilder()
             val updateToml = updateToml(flags)
             val flattenedToml = flattenToml(toml)
             val liveConfig = entry.config
             val writeConfig = entry.configCreator()
             val id = (liveConfig as? Config)?.getId()?.toTranslationKey() ?: ""
-            biWalk(liveConfig, writeConfig, id, flags) { liveC, writeC, _, str, liveV, writeV, liveProp, writeProp, annotations, _ -> flattenedToml[str]?.let {
+            biWalk(liveConfig, writeConfig, id, flags) { liveC, _, _, str, liveV, writeV, liveProp, writeProp, annotations, _ -> flattenedToml[str]?.let {
                 if (writeV !is ConfigSection) { //good to go, skip sections since they are getting walked anyhow
                     if(writeV is EntryDeserializer<*> && liveV is Supplier<*>) { //only deserialize for entries that we can do proper checks on
                         val writeResult = writeV.deserializeEntry(it, str, flags) //write the update to the write-copy config
@@ -862,14 +863,16 @@ internal object ConfigApiImpl {
                                 if (updateToml) { //if applicable write to an output table to sync updates along
                                     outputBuilder.element(str, it)
                                 }
-                                if (action.restartPrompt) { //record actions as needed
+                                if (action?.restartPrompt == true) { //record actions as needed
                                     if (recordRestarts) {
-                                        errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + str) }
+                                        errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message("$id.$str") }
                                     } else {
                                         errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
                                     }
                                 }
-                                errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
+                                if (action != null) {
+                                    errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
+                                }
                             }
                         }
                     } else if (writeV != null) {
@@ -881,19 +884,21 @@ internal object ConfigApiImpl {
                                 if (!permResult.success) { //shouldn't have edited... woops
                                     errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
                                 } else {
-                                    liveProp.setter.call(c, result.get()) //set the value for the live property
+                                    liveProp.setter.call(liveC, writeResult.get()) //set the value for the live property
                                     val action = requiredAction(checkActions, liveProp, globalAction) //get applicable change actions
                                     if (updateToml) { //if applicable write to an output table to sync updates along
                                         outputBuilder.element(str, it)
                                     }
-                                    if (action.restartPrompt) { //record actions as needed
+                                    if (action?.restartPrompt == true) { //record actions as needed
                                         if (recordRestarts) {
-                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + str) }
+                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message("$id.$str") }
                                         } else {
                                             errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
                                         }
                                     }
-                                    errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
+                                    if (action != null) {
+                                        errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
+                                    }
                                 }
                             }
                         }
@@ -1595,7 +1600,7 @@ internal object ConfigApiImpl {
                     )
                     if (propVal is Walkable && !flatWalk(flags)) {
                         val newFlags = if (ignoreVisibility || isIgnoreVisibility(propVal::class)) flags or IGNORE_VISIBILITY else flags
-                        biWalk(propVal, propval2, newPrefix, newFlags, walkAction)
+                        biWalk(propVal, propVal2 as Walkable, newPrefix, newFlags, walkAction)
                     }
                 } catch (e: Throwable) {
                     FC.LOGGER.error("Critical exception caught while bi-walking $prefix for property $property.name")
@@ -1712,7 +1717,7 @@ internal object ConfigApiImpl {
     }
 
     internal fun interface PermissionChecker {
-        fun check(thing: Any? Config: Any, configId: String, id: String, annotations: List<Annotation>): PermResult
+        fun check(thing: Any?, config: Any, configId: String, id: String, annotations: List<Annotation>): PermResult
     }
 
     private class IncompatibleSaveTypeException(message: String): RuntimeException(message)
