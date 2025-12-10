@@ -53,7 +53,7 @@ internal object PlatformApiImpl: PlatformApi {
         return DevLogger(name)
     }
 
-    override fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T> {
+    override fun <T: Any> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T> {
         return RegistrarImpl(namespace, registry)
     }
 

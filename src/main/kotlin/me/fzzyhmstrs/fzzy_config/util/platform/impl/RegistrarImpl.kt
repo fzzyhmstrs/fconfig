@@ -11,7 +11,7 @@ import net.neoforged.fml.ModList
 import net.neoforged.neoforge.registries.DeferredRegister
 import java.util.function.Supplier
 
-internal class RegistrarImpl<T>(private val namespace: String, private val registry: Registry<T>): Registrar<T> {
+internal class RegistrarImpl<T: Any>(private val namespace: String, private val registry: Registry<T>): Registrar<T> {
 
     companion object {
         private var unboundRegistrars: MutableSet<DeferredRegister<*>> = mutableSetOf()

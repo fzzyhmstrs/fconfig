@@ -348,7 +348,7 @@ class ConfigAction @JvmOverloads constructor(
                 val string = clickEvent.command().let { if (it.startsWith("/")) it.substring(1) else it }
                 // (ender) It should be fine just running this
                 val player = client.player ?: return false
-                client.player?.networkHandler?.sendPacket(CommandExecutionC2SPacket(string))
+                client.player?.networkHandler?.send(CommandExecutionC2SPacket(string))
                 return true
             } else if (clickEvent is ClickEvent.CopyToClipboard) {
                 client.keyboard.clipboard = clickEvent.value()
@@ -359,7 +359,7 @@ class ConfigAction @JvmOverloads constructor(
                 return true
             } else if (clickEvent is ClickEvent.Custom) {
                 val player = client.player ?: return false
-                player.networkHandler.sendPacket(CustomClickActionC2SPacket(clickEvent.id(), clickEvent.payload()))
+                player.networkHandler.send(CustomClickActionC2SPacket(clickEvent.id(), clickEvent.payload()))
                 return true
             } else {
                 FC.LOGGER.error("Don't know how to handle {}", clickEvent)

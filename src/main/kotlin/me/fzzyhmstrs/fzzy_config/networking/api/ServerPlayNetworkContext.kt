@@ -36,7 +36,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      * @since 0.4.1
      */
     override fun execute(runnable: Runnable) {
-        player().entityWorld.server.execute(runnable)
+        player().entityWorld.server?.execute(runnable)
     }
 
     /**
@@ -79,7 +79,7 @@ class ServerPlayNetworkContext(private val context: IPayloadContext): NetworkCon
      */
     @JvmOverloads
     fun sendToAllPlayers(payload: CustomPayload, skipCurrentPlayer: Boolean = true) {
-        for (player in  player().entityWorld.server.playerManager.playerList) {
+        for (player in  player().entityWorld.server?.playerManager?.playerList ?: emptyList()) {
             if (skipCurrentPlayer && player == player()) continue
             ConfigApi.network().send(payload, player)
         }

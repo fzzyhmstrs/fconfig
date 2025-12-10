@@ -77,13 +77,15 @@ interface PlatformApi {
 
     /**
      * Creates a [Registrar] wrapper for registering objects in a platform-agnostic way.
+     *
+     * Note the use of T: Any for this particular version. In 0.8.0 I will update all methods across versions to this. This is for successful build in 1.21.11 neo.
      * @param namespace String namespace to register objects under
      * @param registry [Registry] registry to wrap
      * @return [Registrar] platform-agnostic wrapper that registers objects
      * @author fzzyhmstrs
      * @since 0.5.9, no longer experimental 0.7.0
      */
-    fun <T> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T>
+    fun <T: Any> createRegistrar(namespace: String, registry: Registry<T>): Registrar<T>
 
     /**
      * Applies a set of translations for the provided registry instance to the provided [builder]. Uses [Translatable.Name], [Translatable.Desc], and [Translatable.Prefix] annotations to power the generation. [TomlComment] and [Comment] can be used to provide en_us description lang.

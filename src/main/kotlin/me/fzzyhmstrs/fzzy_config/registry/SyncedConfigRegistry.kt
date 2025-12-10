@@ -126,7 +126,7 @@ internal object SyncedConfigRegistry {
 
     internal fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
         for (player in players) {
-            if (player.entityWorld.server.isSingleplayer) {
+            if (player.entityWorld.server?.isSingleplayer == true) {
                 ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player))
                 continue
             }
@@ -226,7 +226,7 @@ internal object SyncedConfigRegistry {
             }
         }
         if (!server.isSingleplayer) {
-            for (player in serverPlayer.entityWorld.server.playerManager.playerList) {
+            for (player in server.playerManager.playerList) {
                 if (player == serverPlayer) continue // don't push back to the player that just sent the update
                 if (!canSender.test(player, ConfigUpdateS2CCustomPayload.type)) continue
                 val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
@@ -237,7 +237,7 @@ internal object SyncedConfigRegistry {
     }
 
     internal fun receiveSettingForward(uuid: UUID, player: ServerPlayerEntity, scope: String, update: String, summary: String, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
-        val receivingPlayer = player.entityWorld.server.playerManager?.getPlayer(uuid) ?: return
+        val receivingPlayer = player.entityWorld.server?.playerManager?.getPlayer(uuid) ?: return
         if (!canSender.test(receivingPlayer, SettingForwardCustomPayload.type)) {
             player.sendMessage("fc.config.forwarded_error.s2c".translate())
             return
