@@ -19,6 +19,7 @@ import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.PermResult
 import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
@@ -38,6 +39,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.*
 import java.util.function.Function
 
@@ -311,6 +313,35 @@ internal object SyncedConfigRegistry {
 
     internal fun rejectQuarantine(id: String, server: MinecraftServer) {
         quarantinedUpdates.remove(id)
+    }
+
+    internal fun start(server: MinecraftServer) {
+        val updates: ConcurrentHashMap<String, String> = ConcurrentHashMap()
+        ThreadUtils.start(0, server, { entry, result -> 
+            if (result.isError()) {
+                result.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+            } else {
+                val config = entry.config
+                val id = config.getId().toTranslationKey()
+                val update = config.fileType().encode(result.get())
+                if (update.isError()) {
+                    update.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+                } else {
+                    updates[id] = update.get()
+                }
+            }
+        }, {
+            val canSender = ConfigApi.network()::canSend
+            val sender = ConfigApi.network()::send
+            for (player in server.playerManager.playerList) {
+                if (player == serverPlayer) continue // don't push back to the player that just sent the update
+                if (!canSender(player, ConfigUpdateS2CCustomPayload.type)) continue
+                val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
+                sender(player, newPayload)
+            }
+        }) { _, _, _, _, _ ->
+            PermResult.SUCCESS //on the server we assume someone with file access has full game access.
+        }
     }
 
     internal fun hasConfig(scope: String): Boolean {
