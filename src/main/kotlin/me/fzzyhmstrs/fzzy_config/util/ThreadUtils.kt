@@ -120,7 +120,19 @@ internal object ThreadUtils {
             val dirPath = file.toPath()
             dirPath.register(watchService, StandardWatchEventKinds.ENTRY_MODIFY)
             val path = File(file, FcText.concat(entry.config.name, entry.config.fileType().suffix())).toPath()
-            configWatchers[path] = entry
+            configWatchers.compute(path) { p, e ->
+                if (e != null) {
+                    //client wins in env with both getting registered, so chats can be sent etc.
+                    //in dedicated serv, clients will not be regsitered so server will win, otherwise client should win
+                    if (e.client && !entry.client) { 
+                        e
+                    } else {
+                        entry
+                    }
+                } else {
+                    entry
+                }
+            }
         } finally {
             lock.unlock()
         }
