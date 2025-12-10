@@ -51,7 +51,7 @@ import java.util.function.Function
  */
 internal object SyncedConfigRegistry {
 
-    private val syncedConfigs : MutableMap<String, SyncedConfigEntry> = mutableMapOf()
+    private val syncedConfigs : MutableMap<String, SyncedConfigEntry<*>> = mutableMapOf()
     private val quarantinedUpdates : LimitedHashMap<String, QuarantinedUpdate> = LimitedHashMap()
 
     private class LimitedHashMap<K, V> : LinkedHashMap<K, V>() {
