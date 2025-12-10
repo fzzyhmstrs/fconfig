@@ -326,7 +326,7 @@ internal object SyncedConfigRegistry {
                 val update = config.fileType().encode(result.get())
                 if (update.isError()) {
                     update.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-                } else {
+                } else if (!entry.cast<syncedConfigEntry<*>().skipSync()) {
                     updates[id] = update.get()
                 }
             }
@@ -352,23 +352,31 @@ internal object SyncedConfigRegistry {
         return syncedConfigs[scope]?.config
     }
 
+    internal fun notServerOnly(scope: String) {
+        syncedConfigs[scope]?.server = false
+    }
+
     @Synchronized
     internal fun <T: Config> registerConfig(config: T, registerType: RegisterType, configCreator: () -> T) {
-        val entry = SyncedConfigEntry(config, registerType == RegisterType.SERVER, configCreator)
-        syncedConfigs[config.getId().toTranslationKey()] = entry
+        val scope = config.getId().toTranslationKey()
+        val existingEntry = syncedConfigs[scope]
+        val server = (registerType == RegisterType.SERVER) && (existingEntry?.server != false)
+        val entry = SyncedConfigEntry(config, server, configCreator)
+        syncedConfigs[scope] = entry
         ThreadUtils.register(entry)
         EventApiImpl.fireOnRegisteredServer(config.getId(), config)
     }
 
     internal class QuarantinedUpdate(val playerUuid: UUID, val changeHistory: List<String>, val configId: String, val configString: String)
 
-    internal data class SyncedConfigEntry<T: Config>(override val config: T, val server: Boolean, override val configCreator: () -> T): ConfigEntry<T> {
+    internal data class SyncedConfigEntry<T: Config>(override val config: T, var server: Boolean, override val configCreator: () -> T): ConfigEntry<T> {
 
         override val client: Boolean = false
 
-        fun skipSync(): Boolean {
+        override fun skipSync(): Boolean {
             return config.saveType() == SaveType.SEPARATE && server
         }
+        
         fun getId(): Identifier {
             return config.getId()
         }
