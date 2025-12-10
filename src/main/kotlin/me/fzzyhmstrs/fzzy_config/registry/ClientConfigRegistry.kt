@@ -299,7 +299,7 @@ internal object ClientConfigRegistry {
     }
 
     //client
-    internal fun updatePerms(id: String, perms: Map<String, Boolean>) {
+    private fun updatePerms(id: String, perms: Map<String, Boolean>) {
         customPermissions[id] = perms
     }
 
@@ -351,7 +351,7 @@ internal object ClientConfigRegistry {
         var i: Boolean = false
         override val client: Boolean = true
 
-        override val config: Config
+        override val config: T
             get() {
                 if (!i) {
                     i = true
