@@ -823,7 +823,7 @@ internal object ConfigApiImpl {
                 errorBuilder.addError(ValidationResult.Errors.FILE_STRUCTURE, "TomlElement passed to deserializeUpdateFromToml not a TomlTable! Deserialization aborted.")
                 return ValidationResult.ofMutable(FileUpdateResult(entry.config, TomlTable.Empty), errorBuilder)
             }
-            val updateToml = updateToml(flags)
+            val updateToml = !entry.skipSync()
             val flattenedToml = flattenToml(toml)
             val liveConfig = entry.config
             val writeConfig = entry.configCreator()
