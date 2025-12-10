@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.config
 
-interface ConfigEntry<C: COnfig> {
+interface ConfigEntry<C: Config> {
     val config: C
     val configCreator: () -> C
     val client: Boolean
