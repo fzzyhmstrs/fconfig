@@ -672,11 +672,11 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
          * @param to [Function]&lt;[ValidationResult]&lt;T&gt;, [ValidationResult]&lt;out N&gt;&gt; mapping function
          * @return Validation with the newly mapped [N] value and whatever [errorContext] might be stored in this validation
          * @author fzzyhmstrs
-         * @since Unknown
+         * @since Unknown, error context nesting order flipped 0.7.4
          */
         fun <N, T> ValidationResult<T>.bimap(to: Function<ValidationResult<T>, ValidationResult<out N>>): ValidationResult<N> {
             val result = to.apply(this)
-            return ValidationResult(result.get(), this.errorContext.addError(result.errorContext))
+            return ValidationResult(result.get(), result.errorContext.addError(this.errorContext))
         }
     }
 
