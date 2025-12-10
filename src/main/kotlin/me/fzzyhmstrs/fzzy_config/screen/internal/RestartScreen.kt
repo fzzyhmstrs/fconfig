@@ -56,11 +56,11 @@ internal class RestartScreen: PopupWidgetScreen(FcText.EMPTY) {
         c.world?.disconnect(ClientWorld.QUITTING_MULTIPLAYER_TEXT)
         val titleScreen = TitleScreen()
         if (sp) {
-            c.disconnect(titleScreen, false)
+            c.disconnect(titleScreen, false, true)
         } else if (serverInfo != null && serverInfo.isRealm) {
-            c.disconnect(RealmsMainScreen(titleScreen), false)
+            c.disconnect(RealmsMainScreen(titleScreen), false, true)
         } else {
-            c.disconnect(MultiplayerScreen(titleScreen), false)
+            c.disconnect(MultiplayerScreen(titleScreen), false, true)
         }
     }
 
