@@ -62,7 +62,7 @@ internal object ThreadUtils {
     *
     * */
 
-    fun start(flags: Byte, executor: Executor, updater: (ValidationResult<TomlTable>) -> Unit, permissionCheck: ConfigApiImpl.PermissionChecker) {
+    fun start(flags: Byte, executor: Executor, updater: (ConfigEntry, ValidationResult<TomlTable>) -> Unit, permissionCheck: ConfigApiImpl.PermissionChecker) {
         FILE_WATCHER.scheduleAtFixedRate( { //FILE_WATCHER thread
             val entries: MutableList<Pair<Path, ConfigEntry<*>>> = mutableListOf()
             try { //lock up the config watchers while we poll the watch service
@@ -94,7 +94,7 @@ internal object ThreadUtils {
                 }, EXECUTOR).thenAcceptAsync( { result -> //CLIENT of SERVER thread
                     if (result.isValid()) {
                         ConfigApiImpl.applyFileUpdate(entry.config, result.get().writeConfig, "Error(s) encountered while updating a config from a changed config file")
-                        updater(result.map { it.toml })
+                        updater(entry, result.map { it.toml })
                     }
 
                 }, executor)
