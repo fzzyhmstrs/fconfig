@@ -14,4 +14,6 @@ interface ConfigEntry<C: Config> {
     val config: C
     val configCreator: () -> C
     val client: Boolean
+
+    fun skipSync(): Boolean
 }
