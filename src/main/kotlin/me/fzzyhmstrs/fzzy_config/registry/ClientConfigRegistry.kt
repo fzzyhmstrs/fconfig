@@ -256,6 +256,53 @@ internal object ClientConfigRegistry {
         return getValidScope(scope) != null
     }
 
+    internal fun start() {
+        val updates: ConcurrentHashMap<String, String> = ConcurrentHashMap()
+        val serverActions: Vector<Action> = Vector(2)
+        val clientActions: Vector<Action> = Vector(2)
+        ThreadUtils.start(11, MinecraftClient.getInstance(), { entry, result -> 
+            if (result.isError()) {
+                result.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+            } else {
+                val config = entry.config
+                val id = config.getId().toTranslationKey()
+                val update = config.fileType().encode(result.get())
+                if (update.isError()) {
+                    update.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+                } else if (!entry.skipSync()) {
+                    for (action in result.iterate(ValidationResult.Errors.ACTION)) {
+                        serverActions.add(action)
+                    }
+                    updates[id] = update.get()
+                } else {
+                    for (action in result.iterate(ValidationResult.Errors.ACTION)) {
+                        clientActions.add(action)
+                    }
+                }
+            }
+        }, {
+            val finalServerActions = serverActions.toSet()
+            val finalClientActions = clientActions.toSet()
+            for (action in finalServerActions) {
+                if (MinecraftClient.getInstance().isInSingleplayer)
+                    MinecraftClient.getInstance().player?.sendChat(action.clientUpdateMessage)
+                else
+                    MinecraftClient.getInstance().player?.sendChat(action.serverUpdateMessage)
+            }
+            for (action in finalClientActions) {
+                MinecraftClient.getInstance().player?.sendChat(action.clientUpdateMessage)
+            }
+            NetworkEventsClient.updateServer(updates, emptyList(), ConfigApiImplClient.getPlayerPermissionLevel())
+        }) { thing: Any?, config: Any, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean ->
+            val flags = (if (thing is EntryFlag) {
+                EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
+            } else {
+                EntryFlag.Flag.NONE
+            }).toMutableList()
+            ConfigApiImplClient.hasNeededPermLevel(thing, ConfigApiImplClient.getPlayerPermissionLevel(), config, configId, id, annotations, clientOnly, flags, getPerms())
+        }
+    }
+
     //client
     internal fun getPerms(): Map<String, Map<String, Boolean>> {
         return HashMap(customPermissions)
@@ -309,8 +356,10 @@ internal object ClientConfigRegistry {
                 configScreenManagers.remove(namespace)
             }
         }
+        val id = config.getId().toTranslationKey()
+        SyncedConfigRegistry.notServerOnly(id)
         val entry = ClientConfigEntry(config, baseConfig, configCreator)
-        clientConfigs[config.getId().toTranslationKey()] = entry
+        clientConfigs[id] = entry
         ThreadUtils.register(entry)
         EventApiImpl.fireOnRegisteredClient(config.getId(), config)
     }
@@ -319,6 +368,10 @@ internal object ClientConfigRegistry {
         var i: Boolean = false
         override val client: Boolean = true
 
+        override fun skipSync(): Boolean {
+            return base.saveType() == SaveType.SEPARATE || !SyncedConfigRegistry.hasConfig(base.getId().toTranslationKey())
+        }
+        
         override val config: T
             get() {
                 if (!i) {
