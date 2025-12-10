@@ -12,12 +12,15 @@ package me.fzzyhmstrs.fzzy_config.util
 
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import net.peanuuutz.tomlkt.TomlTable
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
 import java.nio.file.WatchKey
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
@@ -58,17 +61,43 @@ internal object ThreadUtils {
     *
     * */
 
-    fun start(onUpdateEvent: (ConfigEntry<out Config>, () -> ValidationResult<TomlTable>) -> Unit) {
-        FILE_WATCHER.scheduleAtFixedRate( {
-            var watchKey: WatchKey? = watchService.poll()
-            while (watchKey != null) {
-                for (event in watchKey.pollEvents()) {
-                    val path = event.context() as Path
-                    val entry = configWatchers[path] ?: continue
-
+    fun start(flags: Byte, executor: Executor, updater: (TomlTable) -> Unit, permissionCheck: ConfigApiImpl.PermissionChecker) {
+        FILE_WATCHER.scheduleAtFixedRate( { //FILE_WATCHER thread
+            val entries: MutableList<Pair<Path, ConfigEntry<*>>> = mutableListOf()
+            try { //lock up the config watchers while we poll the watch service
+                lock.lock()
+                var watchKey: WatchKey? = watchService.poll()
+                while (watchKey != null) {
+                    for (event in watchKey.pollEvents()) {
+                        if (event.kind() == StandardWatchEventKinds.OVERFLOW) continue
+                        val path = event.context() as Path
+                        val entry = configWatchers[path] ?: continue
+                        entries.add(path to entry)
+                    }
+                    watchKey.reset()
+                    watchKey = watchService.poll()
                 }
-                watchKey.reset()
-                watchKey = watchService.poll()
+            } finally { //unlock the watchers
+                lock.unlock()
+            }
+            for ((path, entry) in entries) {
+                //push the update processing to the worker executors
+                CompletableFuture.supplyAsync( { //EXECUTOR threads
+                    val result = ConfigApiImpl.deserializeFileUpdate(
+                        entry,
+                        path,
+                        "Error(s) encountered while reading a changed config file",
+                        flags,
+                        permissionCheck).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+                    result
+                }, EXECUTOR).thenAcceptAsync( { result -> //CLIENT of SERVER thread
+                    if (result.isValid()) {
+                        val fileResult = result.get()
+                        ConfigApiImpl.applyFileUpdate(entry.config, fileResult.writeConfig, "Error(s) encountered while updating a config from a changed config file")
+                        updater(fileResult.toml)
+                    }
+
+                }, executor)
             }
         }, 0L, 503L, TimeUnit.MILLISECONDS)
     }
