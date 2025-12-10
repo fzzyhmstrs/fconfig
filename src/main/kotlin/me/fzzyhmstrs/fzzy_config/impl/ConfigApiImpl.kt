@@ -827,6 +827,7 @@ internal object ConfigApiImpl {
             val flattenedToml = flattenToml(toml)
             val liveConfig = entry.config
             val writeConfig = entry.configCreator()
+            val clientOnly = entry.skipSync() && entry.client
             val id = (liveConfig as? Config)?.getId()?.toTranslationKey() ?: ""
             biWalk(liveConfig, writeConfig, id, flags) { liveC, _, _, str, liveV, writeV, liveProp, writeProp, annotations, _ -> flattenedToml[str]?.let {
                 if (writeV !is ConfigSection) { //good to go, skip sections since they are getting walked anyhow
@@ -834,7 +835,7 @@ internal object ConfigApiImpl {
                         val writeResult = writeV.deserializeEntry(it, str, flags) //write the update to the write-copy config
                         val before = liveV.get() //what does the live config have in that spot right now
                         if (writeV.deserializedChanged(before, writeResult.get())) { //permissible change made
-                            val permResult = permissionChecker.check(liveV, liveC, id, str, annotations) //check if we were even supposed to edit this.
+                            val permResult = permissionChecker.check(liveV, liveC, id, str, annotations, clientOnly) //check if we were even supposed to edit this.
                             if (!permResult.success) { //shouldn't have edited... woops
                                 errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
                             } else {
@@ -856,7 +857,7 @@ internal object ConfigApiImpl {
                         if (basicValidation != null) {
                             val writeResult = basicValidation.deserializeEntry(it, str, flags) //write the update to the write-copy config
                             if (basicValidation.deserializedChanged(liveV, writeResult.get())) {
-                                val permResult = permissionChecker.check(liveV, liveC, id, str, annotations) //check if we were even supposed to edit this.
+                                val permResult = permissionChecker.check(liveV, liveC, id, str, annotations, clientOnly) //check if we were even supposed to edit this.
                                 if (!permResult.success) { //shouldn't have edited... woops
                                     errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
                                 } else {
@@ -1706,7 +1707,7 @@ internal object ConfigApiImpl {
     }
 
     internal fun interface PermissionChecker {
-        fun check(thing: Any?, config: Any, configId: String, id: String, annotations: List<Annotation>): PermResult
+        fun check(thing: Any?, config: Any, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean): PermResult
     }
 
     class FileUpdateResult(val writeConfig: Config, val toml: TomlTable)
