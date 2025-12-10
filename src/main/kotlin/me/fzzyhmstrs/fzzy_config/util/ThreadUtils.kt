@@ -62,7 +62,7 @@ internal object ThreadUtils {
     *
     * */
 
-    fun start(flags: Byte, executor: Executor, applier: (ConfigEntry, ValidationResult<TomlTable>) -> Unit, updateer: () -> Unit, permissionCheck: ConfigApiImpl.PermissionChecker) {
+    fun start(flags: Byte, executor: Executor, applier: (ConfigEntry, ValidationResult<TomlTable>) -> Unit, updater: () -> Unit, permissionCheck: ConfigApiImpl.PermissionChecker) {
         FILE_WATCHER.scheduleAtFixedRate( { //FILE_WATCHER thread
             val entries: MutableList<Pair<Path, ConfigEntry<*>>> = mutableListOf()
             try { //lock up the config watchers while we poll the watch service
@@ -81,22 +81,28 @@ internal object ThreadUtils {
             } finally { //unlock the watchers
                 lock.unlock()
             }
-            for ((path, entry) in entries) {
+            
                 //push the update processing to the worker executors
                 CompletableFuture.supplyAsync( { //EXECUTOR threads
-                    val result = ConfigApiImpl.deserializeFileUpdate(
-                        entry,
-                        path,
-                        "Error(s) encountered while reading a changed config file",
-                        flags,
-                        permissionCheck).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-                    result
-                }, EXECUTOR).thenAcceptAsync( { result -> //CLIENT of SERVER thread
-                    if (result.isValid()) {
-                        ConfigApiImpl.applyFileUpdate(entry.config, result.get().writeConfig, "Error(s) encountered while updating a config from a changed config file")
-                        applier(entry, result.map { it.toml })
+                    val results: MutableList<Pair<ConfigEntry, FileUpdateResult>> = mutableListOf()
+                    for ((path, entry) in entries) {
+                        val result = ConfigApiImpl.deserializeFileUpdate(
+                            entry,
+                            path,
+                            "Error(s) encountered while reading a changed config file",
+                            flags,
+                            permissionCheck).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+                        results.add(result)
                     }
-
+                    results
+                }, EXECUTOR).thenAcceptAsync( { results -> //CLIENT or SERVER thread
+                    for ((entry, result) in results) {
+                        if (result.isValid()) {
+                            ConfigApiImpl.applyFileUpdate(entry.config, result.get().writeConfig, "Error(s) encountered while updating a config from a changed config file")
+                            applier(entry, result.map { it.toml })
+                        }
+                    }
+                    updater()
                 }, executor)
             }
         }, 0L, 503L, TimeUnit.MILLISECONDS)
