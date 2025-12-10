@@ -35,6 +35,7 @@ import me.fzzyhmstrs.fzzy_config.updates.BasicValidationProvider
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.*
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.bimap
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.outmap
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
@@ -52,6 +53,7 @@ import java.io.File
 import java.io.Reader
 import java.lang.reflect.Modifier
 import java.lang.reflect.Modifier.isTransient
+import java.nio.file.Path
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.function.BiConsumer
@@ -62,6 +64,7 @@ import kotlin.reflect.*
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.internal.ReflectProperties.Val
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaGetter
@@ -92,10 +95,6 @@ internal object ConfigApiImpl {
         return wrapperLookup ?: BuiltinRegistries.createWrapperLookup().also { wrapperLookup = it }
     }
 
-    private fun debug(start: Long, phase: String, prefix: String = "") {
-        FC.DEVLOG.info("{}{} in {}ms", prefix, phase, (System.currentTimeMillis() - start))
-    }
-
     internal const val CHECK_NON_SYNC: Byte = 0
     internal const val IGNORE_NON_SYNC: Byte = 1
     internal const val CHECK_ACTIONS: Byte = 2
@@ -104,6 +103,7 @@ internal object ConfigApiImpl {
     internal const val IGNORE_NON_SYNC_AND_IGNORE_VISIBILITY: Byte = 5
     internal const val RECORD_RESTARTS: Byte = 8
     internal const val CHECK_ACTIONS_AND_RECORD_RESTARTS: Byte = 10
+    internal const val IGNORE_NON_SYNC_AND_CHECK_ACTIONS_AND_RECORD_RESTARTS: Byte = 11
     internal const val FLAT_WALK: Byte = 16
     internal const val IGNORE_NON_SYNC_AND_FLAT_WALK: Byte = 17
     internal const val CRITICAL_ERRORS_ONLY: Byte = 32
@@ -645,11 +645,7 @@ internal object ConfigApiImpl {
                         propVal.deserializeEntry(tomlElement, name, newFlags).also { r ->
                             if (action.restartPrompt) {
                                 if (propVal.deserializedChanged(before, r.get())) {
-                                    if (recordRestarts) {
-                                        errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name) }
-                                    } else {
-                                        errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
-                                    }
+                                    errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                                 }
                             }
                         }
@@ -667,12 +663,7 @@ internal object ConfigApiImpl {
                                 errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
                                 if (action.restartPrompt) {
                                     if (basicValidation.deserializedChanged(propVal, result.get())) {
-                                        if (recordRestarts) {
-                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name) }
-                                            //restartRecords.add(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
-                                        } else {
-                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
-                                        }
+                                        errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                                     }
                                 }
                             }
@@ -690,11 +681,7 @@ internal object ConfigApiImpl {
                                 if(ignoreVisibility) trySetAccessible(prop)
                                 prop.setter.call(config, validateNumber(decodeFromTomlElement(tomlElement, prop.returnType), prop).also {
                                     if (action.restartPrompt && propVal != it) {
-                                        if (recordRestarts) {
-                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name) }
-                                        } else {
-                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
-                                        }
+                                        errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                                     }
                                 })
                             } else {
@@ -776,11 +763,7 @@ internal object ConfigApiImpl {
                         v.deserializeEntry(it, str, flags).also { r ->
                             if (action.restartPrompt) {
                                 if(v.deserializedChanged(before, r.get())) {
-                                    if (recordRestarts) {
-                                        errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + str) }
-                                    } else {
-                                        errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
-                                    }
+                                    errorBuilder.addRestart(recordRestarts, action, "$id.$str")
                                 }
                             }
                         }
@@ -797,11 +780,7 @@ internal object ConfigApiImpl {
                                 errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
                                 if (action.restartPrompt) {
                                     if (basicValidation.deserializedChanged(v, result.get())) {
-                                        if (recordRestarts) {
-                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message(((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + str) }
-                                        } else {
-                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
-                                        }
+                                        errorBuilder.addRestart(recordRestarts, action, "$id.$str")
                                     }
                                 }
                             }
@@ -833,7 +812,7 @@ internal object ConfigApiImpl {
         return deserializeUpdateFromToml(config, toml, errorBuilder, flags)
     }
 
-    private fun deserializeFileUpdateFromToml(entry: ConfigEntry<*>, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte, permissionChecker: PermissionChecker): ValidationResult<TomlTable> {
+    private fun deserializeFileUpdateFromToml(entry: ConfigEntry<*>, toml: TomlElement, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte, permissionChecker: PermissionChecker): ValidationResult<FileUpdateResult> {
         val outputBuilder = TomlTableBuilder()
         try {
             val checkActions = checkActions(flags)
@@ -842,7 +821,7 @@ internal object ConfigApiImpl {
 
             if (toml !is TomlTable) {
                 errorBuilder.addError(ValidationResult.Errors.FILE_STRUCTURE, "TomlElement passed to deserializeUpdateFromToml not a TomlTable! Deserialization aborted.")
-                return ValidationResult.ofMutable(TomlTable.Empty, errorBuilder)
+                return ValidationResult.ofMutable(FileUpdateResult(entry.config, TomlTable.Empty), errorBuilder)
             }
             val updateToml = updateToml(flags)
             val flattenedToml = flattenToml(toml)
@@ -861,15 +840,11 @@ internal object ConfigApiImpl {
                             } else {
                                 liveV.cast<EntryDeserializer<*>>().deserializeEntry(it, str, flags) //deserialize the value over to the live version. Don't just set to get any deserialize side-effects
                                 val action = requiredAction(checkActions, liveProp, globalAction) //get applicable change actions
-                                if (updateToml) { //if applicable write to an output table to sync updates along
+                                if (updateToml && !isNonSync(annotations)) { //if applicable write to an output table to sync updates along
                                     outputBuilder.element(str, it)
                                 }
                                 if (action?.restartPrompt == true) { //record actions as needed
-                                    if (recordRestarts) {
-                                        errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message("$id.$str") }
-                                    } else {
-                                        errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
-                                    }
+                                    errorBuilder.addRestart(recordRestarts, action, "$id.$str")
                                 }
                                 if (action != null) {
                                     errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
@@ -887,15 +862,11 @@ internal object ConfigApiImpl {
                                 } else {
                                     liveProp.setter.call(liveC, writeResult.get()) //set the value for the live property
                                     val action = requiredAction(checkActions, liveProp, globalAction) //get applicable change actions
-                                    if (updateToml) { //if applicable write to an output table to sync updates along
+                                    if (updateToml && !isNonSync(annotations)) { //if applicable write to an output table to sync updates along
                                         outputBuilder.element(str, it)
                                     }
                                     if (action?.restartPrompt == true) { //record actions as needed
-                                        if (recordRestarts) {
-                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message("$id.$str") }
-                                        } else {
-                                            errorBuilder.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
-                                        }
+                                        errorBuilder.addRestart(recordRestarts, action, "$id.$str")
                                     }
                                     if (action != null) {
                                         errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
@@ -907,10 +878,28 @@ internal object ConfigApiImpl {
                 }
             }
             }
+            return ValidationResult.ofMutable(FileUpdateResult(writeConfig, outputBuilder.build()), errorBuilder)
         } catch(e: Throwable) {
             errorBuilder.addError(ValidationResult.Errors.DESERIALIZATION, "Exception encountered while deserializing TOML update", e)
         }
-        return ValidationResult.ofMutable(outputBuilder.build(), errorBuilder)
+        return ValidationResult.ofMutable(FileUpdateResult(entry.config, outputBuilder.build()), errorBuilder)
+    }
+
+    internal fun deserializeFileUpdate(entry: ConfigEntry<*>, path: Path, errorHeader: String, flags: Byte, permissionChecker: PermissionChecker):ValidationResult<FileUpdateResult> {
+        val file = path.toFile()
+        if (!file.exists()) {
+            return ValidationResult.error(FileUpdateResult(entry.config, TomlTable.Empty), ValidationResult.Errors.FILE_STRUCTURE, "Unexpected file update error; $path is supposed to be the file for ${entry.config.getId()}, but it's missing.")
+        }
+        val str = file.readLines().joinToString("\n")
+        val tomlResult = entry.config.fileType().decode(str)
+        if (tomlResult.isError()) {
+            return tomlResult.bimap { r -> ValidationResult.error(FileUpdateResult(entry.config, TomlTable.Empty), ValidationResult.Errors.INVALID) { b ->
+                    b.content("Parse error after config file updated manually").addError(r)
+                }
+            }
+        }
+        val errorBuilder = ValidationResult.createMutable(errorHeader)
+        return deserializeFileUpdateFromToml(entry, tomlResult.get(), errorBuilder, flags, permissionChecker)
     }
 
     internal fun <T> deserializeEntry(entry: Entry<T, *>, string: String, scope: String, flags: Byte = CHECK_NON_SYNC): ValidationResult<out T?> {
@@ -927,29 +916,30 @@ internal object ConfigApiImpl {
 
     ///////////////// Utilities //////////////////////////////////////////////////////////
 
-    /*internal fun <T: Any> areObjectsDifferent(a: T, b: T): Boolean {
-        val clazzA = a::class as KClass<T>
-        val clazzB = b::class as KClass<T>
-
-        val ignoreVisibilityA = isIgnoreVisibility(clazzA)
-        val ignoreVisibilityB = isIgnoreVisibility(clazzB)
-
-
-        val propsA = clazzA.memberProperties.filter {
-            it is KMutableProperty<*>
-                    && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-                    && if(ignoreVisibilityA) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
-        }.cast<List<KMutableProperty1<T, *>>>().associateBy { it.name }
-
-        val propsB = clazzB.memberProperties.filter {
-            it is KMutableProperty<*>
-                    && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
-                    && if(ignoreVisibilityB) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
-        }.cast<List<KMutableProperty1<T, *>>>().associateBy { it.name }
-
-        for ((name, prop) in propsA) {
+    internal fun applyFileUpdate(liveConfig: Config, writeConfig: Config, errorHeader: String): ValidationResult<Boolean> {
+        val errorBuilder = ValidationResult.createMutable(errorHeader)
+        val id = liveConfig.getId().toTranslationKey() ?: ""
+        try {
+            biWalk(liveConfig, writeConfig, id, 0) { liveC, _, _, _, _, writeV, liveProp, _, _, _ ->
+                try {
+                    liveProp.setter.call(liveC, writeV)
+                } catch (e: Exception) {
+                    errorBuilder.addError(ValidationResult.Errors.DESERIALIZATION, "Exception applying file update to config $id", e)
+                }
+            }
+        } catch (e: Exception) {
+            errorBuilder.addError(ValidationResult.Errors.DESERIALIZATION, "Exception trying to apply file update to config $id", e)
         }
-    }*/
+        return ValidationResult.ofMutable(true, errorBuilder)
+    }
+
+    private fun ValidationResult.ErrorEntry.Mutable.addRestart(recordRestarts: Boolean, action: Action, message: String) {
+        if (recordRestarts) {
+            this.addError(ValidationResult.Errors.RESTART) { b -> b.content(action).message(message) }
+        } else {
+            this.addError(ValidationResult.Errors.RESTART) { b -> b.content(action) }
+        }
+    }
 
     private fun flattenToml(table: TomlTable): TomlTable {
         val toml = TomlTableBuilder()
@@ -1553,7 +1543,7 @@ internal object ConfigApiImpl {
                     }
                 } catch (e: Throwable) {
                     FC.LOGGER.error("Critical exception caught while walking $prefix for property $property.name")
-                    FC.LOGGER.error(" > Walk Flags: $flags, Ignoring Visibility: $ignoreVisibility")
+                    FC.LOGGER.error(" > Bi-Walk Flags: $flags, Ignoring Visibility: $ignoreVisibility")
                     FC.LOGGER.error(" > Exception:", e)
                     // continue without borking
                 }
@@ -1563,9 +1553,9 @@ internal object ConfigApiImpl {
         }
     }
 
-    internal fun<W: Any> biWalk(walkable: W, walkable2: W, prefix: String, flags: Byte, walkAction: BiWalkAction) {
+    private fun<W: Any> biWalk(walkable: W, walkable2: W, prefix: String, flags: Byte, walkAction: BiWalkAction) {
         try {
-            // check for IgnoreVisiblity
+            // check for IgnoreVisibility
             val ignoreVisibility = isIgnoreVisibility(walkable::class) || ignoreVisibility(flags)
             val orderById = walkable::class.java.declaredFields.withIndex().associate { it.value.name to it.index } //both should be the same type, so this is fine
             val globalAnnotations = walkable::class.annotations
@@ -1583,8 +1573,7 @@ internal object ConfigApiImpl {
                 try {
                     val newPrefix = FcText.concat(prefix, ".", property.name)
                     val propVal = property.get(walkable)
-                    val property2 = w2Props[property.name]
-                    if (property2 == null) throw IllegalStateException("BiWalk provided mismatching inputs. Couldn't find property [$newPrefix] in second walkable from properties ${w2Props.keys}")
+                    val property2 = w2Props[property.name] ?: throw IllegalStateException("BiWalk provided mismatching inputs. Couldn't find property [$newPrefix] in second walkable from properties ${w2Props.keys}")
                     val propVal2 = property2.get(walkable2)
                     walkAction.act(
                         walkable,
@@ -1719,6 +1708,8 @@ internal object ConfigApiImpl {
     internal fun interface PermissionChecker {
         fun check(thing: Any?, config: Any, configId: String, id: String, annotations: List<Annotation>): PermResult
     }
+
+    class FileUpdateResult(val writeConfig: Config, val toml: TomlTable)
 
     private class IncompatibleSaveTypeException(message: String): RuntimeException(message)
 }

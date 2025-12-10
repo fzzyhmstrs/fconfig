@@ -254,11 +254,4 @@ internal object ConfigApiImplClient {
             flags.contains(EntryFlag.Flag.SEPARATE)
         }
     }
-
-    internal enum class PermResult(val success: Boolean) {
-        SUCCESS(true),
-        OUT_OF_GAME(false),
-        FAILURE(false)
-    }
-
 }
