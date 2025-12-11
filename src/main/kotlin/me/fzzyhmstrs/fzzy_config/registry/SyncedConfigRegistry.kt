@@ -17,6 +17,7 @@ import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
+import me.fzzyhmstrs.fzzy_config.event.api.ServerUpdateContext
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.PermResult
@@ -24,9 +25,10 @@ import me.fzzyhmstrs.fzzy_config.networking.*
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils
-import me.fzzyhmstrs.fzzy_config.util.ThreadUtils
+import me.fzzyhmstrs.fzzy_config.util.ThreadingUtils
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.reportTo
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.server.MinecraftServer
@@ -129,7 +131,7 @@ internal object SyncedConfigRegistry {
 
     internal fun onEndDataReload(players: List<ServerPlayerEntity>, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
         for (player in players) {
-            if (player.entityWorld.server.isSingleplayer) {
+            if (player.entityWorld.server?.isSingleplayer == true) {
                 ValidatedIdentifier.createSpSyncs(PortingUtils.getDynamicManager(player))
                 continue
             }
@@ -216,13 +218,14 @@ internal object SyncedConfigRegistry {
             }
             successfulUpdates[id] = configString
             server.execute {
+                val context = ServerUpdateContext(server, serverPlayer)
                 try {
-                    configEntry.config.onUpdateServer(serverPlayer)
+                    configEntry.config.onUpdateServer(context)
                 } catch (e: Throwable) {
                     FC.LOGGER.error("Error encountered with onUpdateServer method of config $id!", e)
                 }
                 try {
-                    EventApiImpl.fireOnUpdateServer(configEntry.getId(), configEntry.config, serverPlayer)
+                    EventApiImpl.fireOnUpdateServer(configEntry.getId(), configEntry.config, context)
                 } catch (e: Throwable) {
                     FC.LOGGER.error("Error encountered while running onUpdateServer event for config $id!", e)
                 }
@@ -240,7 +243,7 @@ internal object SyncedConfigRegistry {
     }
 
     internal fun receiveSettingForward(uuid: UUID, player: ServerPlayerEntity, scope: String, update: String, summary: String, canSender: BiPredicate<ServerPlayerEntity, CustomPayload.Id<*>>, sender: BiConsumer<ServerPlayerEntity, CustomPayload>) {
-        val receivingPlayer = player.entityWorld.server.playerManager?.getPlayer(uuid) ?: return
+        val receivingPlayer = player.entityWorld.server?.playerManager?.getPlayer(uuid) ?: return
         if (!canSender.test(receivingPlayer, SettingForwardCustomPayload.type)) {
             player.sendMessage("fc.config.forwarded_error.s2c".translate())
             return
@@ -305,13 +308,13 @@ internal object SyncedConfigRegistry {
         quarantinedUpdates.remove(id)
     }
 
-    internal fun rejectQuarantine(id: String, server: MinecraftServer) {
+    internal fun rejectQuarantine(id: String) {
         quarantinedUpdates.remove(id)
     }
 
     internal fun start(server: MinecraftServer) {
         val updates: ConcurrentHashMap<String, String> = ConcurrentHashMap()
-        ThreadUtils.start(1, server, { entry, result -> 
+        ThreadingUtils.start(1, server, { entry, result ->
             if (result.isError()) {
                 result.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             } else {
@@ -320,20 +323,34 @@ internal object SyncedConfigRegistry {
                 val update = config.fileType().encode(result.get())
                 if (update.isError()) {
                     update.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-                } else if (!entry.skipSync()) {
-                    updates[id] = update.get()
+                } else {
+                    if (!entry.skipSync()) {
+                        updates[id] = update.get()
+                    }
+                    val player = server.playerManager.playerList.getOrNull(0)
+                    val context = ServerUpdateContext(server, player)
+                    try {
+
+                        entry.config.onUpdateServer(context)
+                    } catch (e: Throwable) {
+                        FC.LOGGER.error("Error encountered with onUpdateServer method of config $id!", e)
+                    }
+                    try {
+                        EventApiImpl.fireOnUpdateServer(entry.config.getId(), entry.config, context)
+                    } catch (e: Throwable) {
+                        FC.LOGGER.error("Error encountered while running onUpdateServer event for config $id!", e)
+                    }
                 }
             }
         }, {
             val canSender = ConfigApi.network()::canSend
             val sender = ConfigApi.network()::send
             for (player in server.playerManager.playerList) {
-                if (player == serverPlayer) continue // don't push back to the player that just sent the update
-                if (!canSender(player, ConfigUpdateS2CCustomPayload.type)) continue
-                val newPayload = ConfigUpdateS2CCustomPayload(successfulUpdates)
-                sender(player, newPayload)
+                if (!canSender(ConfigUpdateS2CCustomPayload.type.id, player)) continue
+                val newPayload = ConfigUpdateS2CCustomPayload(updates)
+                sender(newPayload, player)
             }
-        }) { _, _, _, _, _ ->
+        }) { _, _, _, _, _, _ ->
             PermResult.SUCCESS //on the server we assume someone with file access has full game access.
         }
     }
@@ -357,7 +374,7 @@ internal object SyncedConfigRegistry {
         val server = (registerType == RegisterType.SERVER) && (existingEntry?.server != false)
         val entry = SyncedConfigEntry(config, server, configCreator)
         syncedConfigs[scope] = entry
-        ThreadUtils.register(entry)
+        ThreadingUtils.register(entry)
         EventApiImpl.fireOnRegisteredServer(config.getId(), config)
     }
 
@@ -370,7 +387,7 @@ internal object SyncedConfigRegistry {
         override fun skipSync(): Boolean {
             return config.saveType() == SaveType.SEPARATE && server
         }
-        
+
         fun getId(): Identifier {
             return config.getId()
         }
