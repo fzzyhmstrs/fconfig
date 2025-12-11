@@ -42,6 +42,9 @@ import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import me.fzzyhmstrs.fzzy_config.validation.number.*
 import net.minecraft.command.DefaultPermissions
 import net.minecraft.entity.player.PlayerEntity
+import net.minecraft.nbt.NbtElement
+import net.minecraft.nbt.NbtEnd
+import net.minecraft.nbt.NbtOps
 import net.minecraft.registry.BuiltinRegistries
 import net.minecraft.registry.RegistryWrapper.WrapperLookup
 import net.minecraft.server.network.ServerPlayerEntity
@@ -64,7 +67,6 @@ import kotlin.reflect.*
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.findAnnotation
 import kotlin.reflect.full.memberProperties
-import kotlin.reflect.jvm.internal.ReflectProperties.Val
 import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaField
 import kotlin.reflect.jvm.javaGetter
@@ -284,26 +286,10 @@ internal object ConfigApiImpl {
                     bl
                 }
                 if (readConfigResult.isError() || needsUpdating) {
-                    if (readConfigResult.isError()) {
-                        readConfigResult.log()
-                    }
-                    CompletableFuture.runAsync( {
-                        val fOutErrorContext = ValidationResult.createMutable("Error(s) encountered while re-serializing corrected config [$name]! Output may not be complete.")
-                        val correctedConfig = serializeConfig(readConfig, fOutErrorContext, fileType = files.fOutType)
-                        if (correctedConfig.isError()) {
-                            correctedConfig.log()
-                        }
-                        writeFile(files.fOut, correctedConfig.get(), name, "correcting errors or updating version", files.fIn)
-                    }, ThreadUtils.EXECUTOR)
+                    readConfigResult.log()
+                    writeFile(readConfig, files, name, "Error(s) encountered while re-serializing corrected config [$name]! Output may not be complete.")
                 } else if (files.fIn != files.fOut) {
-                    CompletableFuture.runAsync( {
-                        val fOutErrorContext = ValidationResult.createMutable("Error(s) encountered while re-serializing config [$name] to new file location/type! Output may not be complete.")
-                        val newFormatConfig = serializeConfig(readConfig, fOutErrorContext, fileType = files.fOutType)
-                        if (newFormatConfig.isError()) {
-                            newFormatConfig.log()
-                        }
-                        writeFile(files.fOut, newFormatConfig.get(), name, "moving config to new file format", files.fIn)
-                    }, ThreadUtils.EXECUTOR)
+                    writeFile(readConfig, files, name, "Error(s) encountered while re-serializing config [$name] to new file location/type! Output may not be complete.")
                 }
                 log(start)
                 return readConfig
@@ -316,20 +302,10 @@ internal object ConfigApiImpl {
                 if (oldFile != null && oldFile.exists()) {
                     val str = oldFile.readLines().joinToString("\n")
                     val fConvertErrorContext = ValidationResult.createMutable("Error(s) encountered while converting old file for [$name]! Output may not be complete.")
-                    val convertedConfigResult = deserializeConfig(classInstance, str, fConvertErrorContext, IGNORE_NON_SYNC_AND_CHECK_ACTIONS, fileType = oldFilePair.second)
-                    if (convertedConfigResult.isError()) {
-                        convertedConfigResult.log()
-                    }
+                    deserializeConfig(classInstance, str, fConvertErrorContext, IGNORE_NON_SYNC_AND_CHECK_ACTIONS, fileType = oldFilePair.second).log()
                     oldFile.delete()
                 }
-                CompletableFuture.runAsync( {
-                    val fOutErrorContext = ValidationResult.createMutable("Error(s) encountered while re-serializing converted config for [$name]! Output may not be complete.")
-                    val reConvertedConfigResult = serializeConfig(classInstance, fOutErrorContext, fileType = files.fOutType)
-                    if (reConvertedConfigResult.isError()) {
-                        reConvertedConfigResult.log()
-                    }
-                    writeFile(files.fOut, reConvertedConfigResult.get(), name, "converting old config")
-                }, ThreadUtils.EXECUTOR)
+                writeFile(classInstance, files, name, "Error(s) encountered while re-serializing config [$name] to new file location/type! Output may not be complete.")
                 log(start)
                 return classInstance
             }
@@ -353,10 +329,7 @@ internal object ConfigApiImpl {
 
             if (files.fOut.exists() || files.fOut.createNewFile()) {
                 val fOutErrorContext = ValidationResult.createMutable("Error(s) encountered while saving config [$name]! Output may not be complete.")
-                val result = serializeConfig(configClass, fOutErrorContext, fileType = files.fOutType)
-                if (result.isError()) {
-                    result.log()
-                }
+                val result = serializeConfig(configClass, fOutErrorContext, fileType = files.fOutType).log()
                 FC.LOGGER.info("Saved config $name to file ${files.fOut}")
                 files.fOut.lastModified()
                 writeFile(files.fOut, result.get(), name, "saving config", files.fIn)
@@ -439,6 +412,24 @@ internal object ConfigApiImpl {
         }
     }
 
+    internal fun encodeNbt(toml: TomlElement): ValidationResult<NbtElement> {
+        return try {
+            val jsonElement = TomlOps.INSTANCE.convertTo(NbtOps.INSTANCE, toml)
+            ValidationResult.success(jsonElement)
+        } catch (e: Throwable) {
+            ValidationResult.error(NbtEnd.INSTANCE, ValidationResult.ErrorEntry.Type("NBT Encoding Problem"), "Exception encountered while encoding NBT", e)
+        }
+    }
+
+    internal fun decodeNbt(input: NbtElement): ValidationResult<TomlElement> {
+        return try {
+            val tomlElement = NbtOps.INSTANCE.convertTo(TomlOps.INSTANCE, input)
+            ValidationResult.success(tomlElement)
+        } catch (e: Throwable) {
+            return  ValidationResult.error(TomlNull, ValidationResult.ErrorEntry.Type("NBT Decoding Problem"), "Exception encountered while decoding NBT", e)
+        }
+    }
+
     ///////////////// End Encode-Decode //////////////////////////////////////////////////
 
     ///////////////// Serialize //////////////////////////////////////////////////////////
@@ -490,7 +481,6 @@ internal object ConfigApiImpl {
                 //get the actual [thing] from the property
                 val propVal = prop.get(config)
                 if (propVal is EntryTransient) continue
-                //if(ignoreVisibility) (prop.javaField?.trySetAccessible())
                 //things name
                 val name = prop.name
                 //serialize the element. EntrySerializer elements will have a set serialization method
@@ -513,7 +503,6 @@ internal object ConfigApiImpl {
                             ValidationResult.error(TomlNull, ValidationResult.Errors.SERIALIZATION, "Exception encountered with raw data while serializing [$name]", e)
                         }
                     }
-                    //TomlNull for properties with Null state (improper state, no config values should be nullable)
                 } else {
                     ValidationResult.error(TomlNull, ValidationResult.Errors.SERIALIZATION, "Property [$name] was null during serialization!")
                 }.attachTo(errorBuilder)
@@ -533,10 +522,6 @@ internal object ConfigApiImpl {
 
     internal fun <T: Config> serializeConfigSafe(config: T, errorHeader: String = "", flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<String> {
         return serializeConfig(config, ValidationResult.createMutable(errorHeader), flags, fileType)
-    }
-
-    internal fun <T: Config> serializeConfigSafe(config: T, errorBuilder: ValidationResult.ErrorEntry.Mutable, flags: Byte = IGNORE_NON_SYNC, fileType: FileType = FileType.TOML): ValidationResult<String> {
-        return serializeConfig(config, errorBuilder, flags, fileType)
     }
 
     @Deprecated("Use overload with Mutable param")
@@ -823,13 +808,14 @@ internal object ConfigApiImpl {
                 errorBuilder.addError(ValidationResult.Errors.FILE_STRUCTURE, "TomlElement passed to deserializeUpdateFromToml not a TomlTable! Deserialization aborted.")
                 return ValidationResult.ofMutable(FileUpdateResult(entry.config, TomlTable.Empty), errorBuilder)
             }
-            val updateToml = !entry.skipSync()
-            val flattenedToml = flattenToml(toml)
             val liveConfig = entry.config
             val writeConfig = entry.configCreator()
-            val clientOnly = entry.skipSync() && entry.client
             val id = (liveConfig as? Config)?.getId()?.toTranslationKey() ?: ""
-            biWalk(liveConfig, writeConfig, id, flags) { liveC, _, _, str, liveV, writeV, liveProp, writeProp, annotations, _ -> flattenedToml[str]?.let {
+            val updateToml = !entry.skipSync()
+            val flattenedToml = flattenToml(id, toml)
+            val clientOnly = entry.skipSync() && entry.client
+            biWalk(liveConfig, writeConfig, id, flags) { liveC, writeC, _, str, liveV, writeV, liveProp, writeProp, annotations, _ ->
+                flattenedToml[str]?.let {
                 if (writeV !is ConfigSection) { //good to go, skip sections since they are getting walked anyhow
                     if(writeV is EntryDeserializer<*> && liveV is Supplier<*>) { //only deserialize for entries that we can do proper checks on
                         val writeResult = writeV.deserializeEntry(it, str, flags) //write the update to the write-copy config
@@ -839,7 +825,6 @@ internal object ConfigApiImpl {
                             if (!permResult.success) { //shouldn't have edited... woops
                                 errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
                             } else {
-                                liveV.cast<EntryDeserializer<*>>().deserializeEntry(it, str, flags) //deserialize the value over to the live version. Don't just set to get any deserialize side-effects
                                 val action = requiredAction(checkActions, liveProp, globalAction) //get applicable change actions
                                 if (updateToml && !isNonSync(annotations)) { //if applicable write to an output table to sync updates along
                                     outputBuilder.element(str, it)
@@ -861,7 +846,7 @@ internal object ConfigApiImpl {
                                 if (!permResult.success) { //shouldn't have edited... woops
                                     errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
                                 } else {
-                                    liveProp.setter.call(liveC, writeResult.get()) //set the value for the live property
+                                    writeProp.setter.call(writeC, writeResult.get()) //set the value in the written config for use later
                                     val action = requiredAction(checkActions, liveProp, globalAction) //get applicable change actions
                                     if (updateToml && !isNonSync(annotations)) { //if applicable write to an output table to sync updates along
                                         outputBuilder.element(str, it)
@@ -894,7 +879,7 @@ internal object ConfigApiImpl {
         val str = file.readLines().joinToString("\n")
         val tomlResult = entry.config.fileType().decode(str)
         if (tomlResult.isError()) {
-            return tomlResult.bimap { r -> ValidationResult.error(FileUpdateResult(entry.config, TomlTable.Empty), ValidationResult.Errors.INVALID) { b ->
+            return tomlResult.bimap { _ -> ValidationResult.error(FileUpdateResult(entry.config, TomlTable.Empty), ValidationResult.Errors.INVALID) { b ->
                     b.content("Parse error after config file updated manually")
                 }
             }
@@ -942,17 +927,17 @@ internal object ConfigApiImpl {
         }
     }
 
-    private fun flattenToml(table: TomlTable): TomlTable {
+    private fun flattenToml(prefix: String, table: TomlTable): TomlTable {
         val toml = TomlTableBuilder()
         for ((key, element) in table) {
             if (element is TomlTable) {
-                val element2 = flattenToml(element)
+                val element2 = flattenToml(prefix, element)
                 for ((key3, element3) in element2) {
                     toml.element("$key.$key3", element3)
                 }
             }
             //add element both for tables and not, to avoid "overflattening" by keeping maps that need to be maps (as well as extra flattened maps that will be ignored)
-            toml.element(key, element)
+            toml.element("$prefix.$key", element)
         }
         return toml.build()
     }
@@ -1052,12 +1037,25 @@ internal object ConfigApiImpl {
         return Pair(dir, true)
     }
 
+    private fun writeFile(readConfig: Any, files: FileResult, name: String, error: String) {
+        CompletableFuture.runAsync( {
+            val fOutErrorContext = ValidationResult.createMutable(error)
+            val newFormatConfig = serializeConfig(readConfig, fOutErrorContext, fileType = files.fOutType)
+            if (newFormatConfig.isError()) {
+                newFormatConfig.log()
+            }
+            writeFile(files.fOut, newFormatConfig.get(), name, "moving config to new file format", files.fIn)
+        }, ThreadingUtils.EXECUTOR)
+    }
+
     @Synchronized
     private fun writeFile(file: File, contents: String, name: String, phase: String, oldFile: File? = null) {
         if (file.exists()) {
+            ThreadingUtils.update(file)
             file.writeText(contents)
             if (oldFile != file) oldFile?.delete()
         } else if (file.createNewFile()) {
+            ThreadingUtils.update(file)
             file.writeText(contents)
             if (oldFile != file) oldFile?.delete()
         } else {
@@ -1085,6 +1083,7 @@ internal object ConfigApiImpl {
 
     private class FileResult(val fIn: File, val fInType: FileType, val fOut: File, val fOutType: FileType)
 
+    @Deprecated("remove by 0.8.0, just log error for un-parseable elements in the future")
     private fun encodeToTomlElement(a: Any, clazz: KType): TomlElement? {
         return try {
             val strategy = Toml.serializersModule.serializer(clazz)
@@ -1094,6 +1093,7 @@ internal object ConfigApiImpl {
         }
     }
 
+    @Deprecated("remove by 0.8.0, just log error for un-parseable elements in the future")
     private fun decodeFromTomlElement(element: TomlElement, clazz: KType): Any? {
         return try {
             val strategy = Toml.serializersModule.serializer(clazz) as? KSerializer<*> ?: return null
@@ -1103,14 +1103,17 @@ internal object ConfigApiImpl {
         }
     }
 
+    @Deprecated("Move by 0.8.0")
     internal fun <T: Any> buildTranslations(jclazz: Class<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
         buildTranslations(jclazz.kotlin, id, lang, builder, logWarnings)
     }
 
+    @Deprecated("Move by 0.8.0")
     internal fun <T: Any> buildTranslations(clazz: KClass<T>, id: Identifier, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean = true) {
         buildTranslations(clazz, id.toTranslationKey(), lang, builder, logWarnings)
     }
 
+    @Deprecated("Move by 0.8.0")
     private fun buildTranslations(clazz: KClass<*>, prefix: String, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean, keyComposer: (String, String) -> String = { a, b -> "$a.$b" }) {
 
         try {
@@ -1169,6 +1172,7 @@ internal object ConfigApiImpl {
         }
     }
 
+    @Deprecated("Move by 0.8.0")
     private fun applyTranslation(key: String, annotations: List<Annotation>, lang: String, builder: BiConsumer<String, String>, logWarnings: Boolean) {
         annotations.filterIsInstance<Translatable.Name>().firstOrNull { it.lang == lang }.also {
             if (it == null) FC.LOGGER.error("  No $lang name entry for $key")
@@ -1199,6 +1203,7 @@ internal object ConfigApiImpl {
         }
     }
 
+    @Deprecated("Move by 0.8.0")
     private fun getPrefix(basePrefix: String, annotations: List<Annotation>, globalAnnotations: List<Annotation>): String {
         for (annotation in annotations) {
             if (annotation is Translation) {
@@ -1226,6 +1231,7 @@ internal object ConfigApiImpl {
         return basePrefix
     }
 
+    @Deprecated("Move by 0.8.0")
     private fun clazzPrefix(basePrefix: String, globalAnnotations: List<Annotation>): String {
         for (ga in globalAnnotations) {
             if (ga is Translation && !ga.negate) {
