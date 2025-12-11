@@ -13,10 +13,13 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonPrimitive
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.IntegerArgumentType
+import kotlinx.io.bytestring.encodeToByteString
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
+import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.api.RegisterType
 import me.fzzyhmstrs.fzzy_config.updates.BaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.util.Expression
+import me.fzzyhmstrs.fzzy_config.util.TomlOps
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedBoolean
@@ -40,8 +43,12 @@ import net.minecraft.util.Identifier
 import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.entity.effect.StatusEffect
 import net.minecraft.entity.effect.StatusEffectCategory
+import net.minecraft.nbt.NbtElement
+import net.minecraft.nbt.NbtEnd
+import net.minecraft.nbt.NbtOps
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
+import net.peanuuutz.tomlkt.TomlElement
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -64,6 +71,15 @@ object FC: ModInitializer {
     @Translatable.Name("Test Direct Status")
     val TEST_DIRECT_STATUS_ID = Identifier.of("fzzy_config_test", "direct")
     val TEST_DIRECT_STATUS = Registry.register(Registries.STATUS_EFFECT, TEST_DIRECT_STATUS_ID, object: StatusEffect(StatusEffectCategory.NEUTRAL, 0xFFFFFF){})
+
+    internal fun encodeNbt(toml: TomlElement): ValidationResult<NbtElement> {
+        return try {
+            val jsonElement = TomlOps.INSTANCE.convertTo(NbtOps.INSTANCE, toml)
+            ValidationResult.success(jsonElement)
+        } catch (e: Throwable) {
+            ValidationResult.error(NbtEnd.INSTANCE, ValidationResult.ErrorEntry.Type("NBT Encoding Problem"), "Exception encountered while encoding NBT", e)
+        }
+    }
 
     override fun onInitialize() {
 
