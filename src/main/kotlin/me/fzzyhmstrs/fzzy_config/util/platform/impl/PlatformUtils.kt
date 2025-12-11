@@ -119,7 +119,7 @@ internal object PlatformUtils {
                                 context.source.sendError("fc.command.error.no_id".translate())
                                 return@executes 0
                             }
-                            SyncedConfigRegistry.rejectQuarantine(id, context.source.server)
+                            SyncedConfigRegistry.rejectQuarantine(id)
                             context.source.sendFeedback({ "fc.command.rejected".translate(id) }, true)
                             1
                         }
