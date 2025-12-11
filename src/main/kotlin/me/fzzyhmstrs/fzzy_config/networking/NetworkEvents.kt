@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.networking
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.util.ThreadingUtils
 import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.Packet
 import net.minecraft.server.network.ServerPlayerConfigurationTask
