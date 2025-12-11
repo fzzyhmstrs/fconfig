@@ -14,6 +14,7 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.networking.api.ServerPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
+import me.fzzyhmstrs.fzzy_config.util.ThreadingUtils
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents
 import net.fabricmc.fabric.api.networking.v1.*
 import net.minecraft.network.packet.CustomPayload
@@ -91,6 +92,14 @@ internal object NetworkEvents {
                 { player, payload -> ConfigApi.network().send(payload, player) }
             )
             ConfigApiImpl.invalidateLookup()
+        }
+
+        ServerLifecycleEvents.SERVER_STARTED.register { server ->
+            SyncedConfigRegistry.start(server)
+        }
+
+        ServerLifecycleEvents.SERVER_STOPPING.register { _ ->
+            ThreadingUtils.stop()
         }
 
     }

@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.event.impl
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.event.api.*
+import me.fzzyhmstrs.fzzy_config.event.api.v2.OnUpdateServerListener as OnUpdateServerListenerV2
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
@@ -22,7 +23,9 @@ internal object EventApiImpl: EventApi {
     private val onSyncClientListeners: MutableList<OnSyncClientListener> = mutableListOf()
     private val onSyncServerListeners: MutableList<OnSyncServerListener> = mutableListOf()
     private val onUpdateClientListeners: MutableList<OnUpdateClientListener> = mutableListOf()
+    @Deprecated("Soft-remove by 0.8.0, remove by 0.9.0")
     private val onUpdateServerListeners: MutableList<OnUpdateServerListener> = mutableListOf()
+    private val onUpdateServerListenersNew: MutableList<OnUpdateServerListenerV2> = mutableListOf()
     private val onRegisteredClientListeners: MutableMap<Identifier, MutableList<OnRegisteredClientListener>> = hashMapOf()
     private val onRegisteredServerListeners: MutableMap<Identifier, MutableList<OnRegisteredServerListener>> = hashMapOf()
 
@@ -40,8 +43,13 @@ internal object EventApiImpl: EventApi {
         onUpdateClientListeners.add(listener)
     }
 
+    @Deprecated("Soft-remove by 0.8.0, remove by 0.9.0")
     override fun onUpdateServer(listener: OnUpdateServerListener) {
         onUpdateServerListeners.add(listener)
+    }
+
+    override fun onUpdateServer(listener: OnUpdateServerListenerV2) {
+        onUpdateServerListenersNew.add(listener)
     }
 
     override fun onRegisteredClient(configId: Identifier, listener: OnRegisteredClientListener) {
@@ -94,9 +102,20 @@ internal object EventApiImpl: EventApi {
         }
     }
 
+    @Deprecated("Soft-remove by 0.8.0, remove by 0.9.0")
     internal fun fireOnUpdateServer(id: Identifier, config: Config, player: ServerPlayerEntity) {
         for (listener in onUpdateServerListeners) {
             listener.onChanged(id, config, player)
+        }
+    }
+
+    internal fun fireOnUpdateServer(id: Identifier, config: Config, context: ServerUpdateContext) {
+        val player = context.getPlayer()
+        if (player != null) {
+            fireOnUpdateServer(id, config, player)
+        }
+        for (listener in onUpdateServerListenersNew) {
+            listener.onChanged(id, config, context)
         }
     }
 

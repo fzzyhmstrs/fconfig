@@ -12,26 +12,32 @@ package me.fzzyhmstrs.fzzy_config.registry
 
 import com.google.common.collect.HashMultimap
 import me.fzzyhmstrs.fzzy_config.FC
+import me.fzzyhmstrs.fzzy_config.annotations.Action
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
+import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.event.impl.EventApiImpl
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ConfigSet
+import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.screen.ConfigScreenProvider
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigBaseUpdateManager
 import me.fzzyhmstrs.fzzy_config.screen.internal.ConfigScreenManager
 import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
-import me.fzzyhmstrs.fzzy_config.util.ThreadUtils
+import me.fzzyhmstrs.fzzy_config.util.ThreadingUtils
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.reportTo
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.text.Text
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.Consumer
 
@@ -260,7 +266,7 @@ internal object ClientConfigRegistry {
         val updates: ConcurrentHashMap<String, String> = ConcurrentHashMap()
         val serverActions: Vector<Action> = Vector(2)
         val clientActions: Vector<Action> = Vector(2)
-        ThreadUtils.start(11, MinecraftClient.getInstance(), { entry, result -> 
+        ThreadingUtils.start(11, MinecraftClient.getInstance(), { entry, result ->
             if (result.isError()) {
                 result.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
             } else {
@@ -269,15 +275,24 @@ internal object ClientConfigRegistry {
                 val update = config.fileType().encode(result.get())
                 if (update.isError()) {
                     update.reportTo(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-                } else if (!entry.skipSync()) {
-                    for (action in result.iterate(ValidationResult.Errors.ACTION)) {
-                        serverActions.add(action)
-                    }
-                    updates[id] = update.get()
                 } else {
                     for (action in result.iterate(ValidationResult.Errors.ACTION)) {
-                        clientActions.add(action)
+                        clientActions.add(action.content)
                     }
+                    if (!entry.skipSync()) {
+                        updates[id] = update.get()
+                    }
+                    try {
+                        entry.config.onUpdateClient()
+                    } catch (e: Throwable) {
+                        FC.LOGGER.error("Error encountered with onUpdateClient method of config $id!", e)
+                    }
+                    try {
+                        EventApiImpl.fireOnUpdateClient(entry.config.getId(), entry.config)
+                    } catch (e: Throwable) {
+                        FC.LOGGER.error("Error encountered while running onUpdateClient event for config $id!", e)
+                    }
+
                 }
             }
         }, {
@@ -292,7 +307,9 @@ internal object ClientConfigRegistry {
             for (action in finalClientActions) {
                 MinecraftClient.getInstance().player?.sendChat(action.clientUpdateMessage)
             }
-            NetworkEventsClient.updateServer(updates, emptyList(), ConfigApiImplClient.getPlayerPermissionLevel())
+            if (updates.isNotEmpty()) {
+                NetworkEventsClient.updateServer(updates, emptyList(), ConfigApiImplClient.getPlayerPermissionLevel())
+            }
         }) { thing: Any?, config: Any, configId: String, id: String, annotations: List<Annotation>, clientOnly: Boolean ->
             val flags = (if (thing is EntryFlag) {
                 EntryFlag.Flag.entries.filter { thing.hasFlag(it) }
@@ -360,7 +377,7 @@ internal object ClientConfigRegistry {
         SyncedConfigRegistry.notServerOnly(id)
         val entry = ClientConfigEntry(config, baseConfig, configCreator)
         clientConfigs[id] = entry
-        ThreadUtils.register(entry)
+        ThreadingUtils.register(entry)
         EventApiImpl.fireOnRegisteredClient(config.getId(), config)
     }
 
@@ -371,7 +388,7 @@ internal object ClientConfigRegistry {
         override fun skipSync(): Boolean {
             return base.saveType() == SaveType.SEPARATE || !SyncedConfigRegistry.hasConfig(base.getId().toTranslationKey())
         }
-        
+
         override val config: T
             get() {
                 if (!i) {

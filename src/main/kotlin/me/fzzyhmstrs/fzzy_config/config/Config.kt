@@ -14,11 +14,13 @@ import me.fzzyhmstrs.fzzy_config.api.ConfigApi
 import me.fzzyhmstrs.fzzy_config.api.FileType
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.entry.EntryAnchor
+import me.fzzyhmstrs.fzzy_config.event.api.ServerUpdateContext
 import me.fzzyhmstrs.fzzy_config.nullCast
 import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.Walkable
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
+import net.minecraft.server.MinecraftServer
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.text.MutableText
 import net.minecraft.util.Identifier
@@ -179,15 +181,34 @@ open class Config @JvmOverloads constructor(protected val identifier: Identifier
     open fun onUpdateClient() {}
 
     /**
+     * USE THE OTHER OVERLOAD INSTEAD
+     *
      * Runs on the logical server after an updated config is prepared for saving. Typically, this will be after a config update is received from a connected client, and that update passes permission checks.
      *
      * Client-only code shouldn't be run here.
      * @param playerEntity [ServerPlayerEntity] - the player that provided the update.
      * @see onUpdateClient
      * @author fzzyhmstrs
-     * @since 0.5.0
+     * @since 0.5.0, deprecated 0.7.4, soft-removal by 0.8.0, removal by 0.9.0
      */
+    @Deprecated("Scheduled for removal 0.9.0. Will stop functioning by 0.8.0. Will not crash in 0.8.0, but will not be wired in any more. Replace with the version that uses a ServerUpdateContext input. This may not be called in all cases, potentially skipping needed events")
     open fun onUpdateServer(playerEntity: ServerPlayerEntity) {}
+
+    /**
+     * Runs on the logical server after an updated config is prepared for saving. Typically, this will be after a config update is received from a connected client, and that update passes permission checks.
+     *
+     * Client-only code shouldn't be run here.
+     * @param context [ServerUpdateContext] information regarding the server and possibly player involved with the update
+     * @see onUpdateClient
+     * @author fzzyhmstrs
+     * @since 0.7.4
+     */
+    open fun onUpdateServer(context: ServerUpdateContext) {
+        val player = context.getPlayer()
+        if (player != null) {
+            onUpdateServer(player)
+        }
+    }
 
     /**
      * Anchor modifier method for a config. By default, provides a folder icon decoration to the base anchor. You can provide a custom icon if you want a special icon for the config in the goto menu. If your config has a long name, you may also want to create and provide a shortened "summary" name for a goto link.
