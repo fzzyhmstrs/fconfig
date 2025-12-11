@@ -14,7 +14,6 @@ import com.mojang.brigadier.CommandDispatcher
 import me.fzzyhmstrs.fzzy_config.FC
 import me.fzzyhmstrs.fzzy_config.FCC
 import me.fzzyhmstrs.fzzy_config.api.ConfigApi
-import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.ValidScopesArgumentType
 import me.fzzyhmstrs.fzzy_config.impl.ValidSubScopesArgumentType
@@ -25,6 +24,7 @@ import me.fzzyhmstrs.fzzy_config.screen.PopupController
 import me.fzzyhmstrs.fzzy_config.screen.context.ContextType
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils.sendChat
+import me.fzzyhmstrs.fzzy_config.util.ThreadingUtils
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.multiplayer.MultiplayerScreen
