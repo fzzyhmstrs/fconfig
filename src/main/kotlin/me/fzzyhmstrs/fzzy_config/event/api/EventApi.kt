@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.event.api
 
+import me.fzzyhmstrs.fzzy_config.event.api.v2.OnUpdateServerListener as OnUpdateServerListenerV2
 import net.minecraft.util.Identifier
 
 /**
@@ -59,15 +60,29 @@ interface EventApi {
     fun onUpdateClient(listener: OnUpdateClientListener)
 
     /**
+     * USE THE OTHER OVERLOAD
+     *
      * Registers a listener to the global `onChangedServer` event. This will be fired on the logical server after an updated config is prepared for saving.
      *
      * Typically, this will be after a config update is received from a connected client, and that update passes permission checks.
      * @param listener [OnUpdateServerListener] callback that is fired when any config is updated on the server side. This can be used to inspect other configs, not just your own.
      * @see [me.fzzyhmstrs.fzzy_config.config.Config.onUpdateServer] A direct-implementation option for inspecting your own config on change.
      * @author fzzyhmstrs
-     * @since 0.5.0
+     * @since 0.5.0, deprecated 0.7.4, soft-removal by 0.8.0, removal by 0.9.0
      */
+    @Deprecated("Scheduled for removal 0.9.0. Will stop functioning by 0.8.0. Will not crash in 0.8.0, but will not be wired in any more. Replace with the version that uses a V2 input. This may not be called in all cases, potentially skipping needed events")
     fun onUpdateServer(listener: OnUpdateServerListener)
+
+    /**
+     * Registers a listener to the global `onChangedServer` event. This will be fired on the logical server after an updated config is prepared for saving.
+     *
+     * Typically, this will be after a config update is received from a connected client, and that update passes permission checks.
+     * @param listener [OnUpdateServerListener] callback that is fired when any config is updated on the server side. This can be used to inspect other configs, not just your own.
+     * @see [me.fzzyhmstrs.fzzy_config.config.Config.onUpdateServer] A direct-implementation option for inspecting your own config on change.
+     * @author fzzyhmstrs
+     * @since 0.7.4
+     */
+    fun onUpdateServer(listener: OnUpdateServerListenerV2)
 
     /**
      * Registers a listener to the `onRegisteredClient` event.
