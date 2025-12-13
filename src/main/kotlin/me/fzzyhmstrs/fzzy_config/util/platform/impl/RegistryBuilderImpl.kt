@@ -6,6 +6,7 @@ import com.mojang.serialization.Lifecycle
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.nsId
 import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
 import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
@@ -17,7 +18,6 @@ import net.minecraft.registry.SimpleDefaultedRegistry
 import net.minecraft.registry.SimpleRegistry
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.entry.RegistryEntry.Reference
-import net.minecraft.registry.entry.RegistryEntryInfo
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
@@ -47,7 +47,28 @@ class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
     }
 
     override fun getTagName(tagKey: TagKey<*>): Text {
-        return tagKey.name
+        return FcText.translatable(getTranslationKey(tagKey))
+    }
+
+    private fun getTranslationKey(tagKey: TagKey<*>): String {
+        val stringBuilder = StringBuilder()
+        stringBuilder.append("tag.")
+
+        val registryIdentifier = tagKey.registry.value
+        val tagIdentifier = tagKey.id()
+
+        if (registryIdentifier.namespace != Identifier.DEFAULT_NAMESPACE) {
+            stringBuilder.append(registryIdentifier.namespace)
+                .append(".")
+        }
+
+        stringBuilder.append(registryIdentifier.path.replace("/", "."))
+            .append(".")
+            .append(tagIdentifier.namespace)
+            .append(".")
+            .append(tagIdentifier.path.replace("/", ".").replace(":", "."))
+
+        return stringBuilder.toString()
     }
 
     override fun <T> namespaceCodec(registry: Registry<T>): Codec<T> {
@@ -67,30 +88,26 @@ class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
         )
 
         return idCodec.flatXmap(
-            {id -> registry.getEntry(id).map{ DataResult.success(it.value()) }.orElseGet{ DataResult.error<T> { "Unknown registry key in " + registry.key.toString() + ": " + id.toString() } }},
+            {id -> registry.getEntry(RegistryKey.of(registry.key, id)).map { DataResult.success(it.value()) }.orElseGet{ DataResult.error<T> { "Unknown registry key in " + registry.key.toString() + ": " + id.toString() } }},
             { value -> validateReference(registry.getEntry(value)).map { it.registryKey().value } }
         )
     }
 
     override fun <T> regSupplierCodec(registry: Registry<T>): Codec<RegistryEntry<T>> {
-        return registry.entryCodec.xmap(Function.identity()) { re -> if (re is RegistrySupplier<T>) re.getEntry().cast() else re }
+        return registry.createEntryCodec().xmap(Function.identity()) { re -> if (re is RegistrySupplier<T>) re.getEntry().cast() else re }
     }
 
     override fun <T> referenceEntryCodec(registry: Registry<T>): Codec<Reference<T>> {
         val codec: Codec<Reference<T>> = Identifier.CODEC
             .comapFlatMap(
                 { id: Identifier ->
-                    registry.getEntry(id).map<DataResult<Reference<T>>> { result: Reference<T> ->
+                    registry.getEntry(RegistryKey.of(registry.key, id)).map<DataResult<Reference<T>>> { result: Reference<T> ->
                         DataResult.success(result)
                     }.orElseGet { DataResult.error { "Unknown registry key in " + registry.key + ": " + id } }
                 },
                 { entry: Reference<T> -> entry.registryKey().value }
             )
-        return Codecs.withLifecycle(codec) { entry: Reference<T> ->
-            registry.getEntryInfo(
-                entry.registryKey()
-            ).map { obj: RegistryEntryInfo -> obj.lifecycle() }.orElse(Lifecycle.experimental()) as Lifecycle
-        }
+        return Codecs.withLifecycle(codec, { entry: Reference<T> -> registry.getEntryLifecycle(entry.value()) }, { entry: Reference<T> -> registry.getEntryLifecycle(entry.value()) })
     }
 
     override fun <T> getEntryId(registry: Registry<T>, entry: RegistryEntry<T>): Identifier? {

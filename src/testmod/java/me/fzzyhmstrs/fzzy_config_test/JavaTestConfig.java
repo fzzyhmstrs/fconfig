@@ -44,12 +44,12 @@ public class JavaTestConfig extends Config {
 
     @RequiresAction(action = Action.RESTART)
     public ValidatedList<Identifier> foxTamingItems = new ValidatedList<>(List.of(
-            Identifier.of("glow_berries")
-    ), ValidatedIdentifier.ofRegistry(Identifier.of("glow_berries"), Registries.ITEM));
+            new Identifier("glow_berries")
+    ), ValidatedIdentifier.ofRegistry(new Identifier("glow_berries"), Registries.ITEM));
     @RequiresAction(action = Action.RESTART)
     public ValidatedList<Identifier> foxBreedingItems = new ValidatedList<>(List.of(
-            Identifier.of("sweet_berries")
-    ), ValidatedIdentifier.ofRegistry(Identifier.of("sweet_berries"), Registries.ITEM));
+            new Identifier("sweet_berries")
+    ), ValidatedIdentifier.ofRegistry(new Identifier("sweet_berries"), Registries.ITEM));
 
     public TestEnum testEnum = TestEnum.C;
 
