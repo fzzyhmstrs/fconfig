@@ -168,11 +168,11 @@ internal object NetworkEventsClient {
                     c.world?.disconnect(ClientWorld.QUITTING_MULTIPLAYER_TEXT)
                     val titleScreen = TitleScreen()
                     if (sp) {
-                        c.disconnect(titleScreen, false, true)
+                        c.disconnect(titleScreen, false)
                     } else if (serverInfo != null && serverInfo.isRealm) {
-                        c.disconnect(RealmsMainScreen(titleScreen), false, true)
+                        c.disconnect(RealmsMainScreen(titleScreen), false)
                     } else {
-                        c.disconnect(MultiplayerScreen(titleScreen), false, true)
+                        c.disconnect(MultiplayerScreen(titleScreen), false)
                     }
                     1
                 }
