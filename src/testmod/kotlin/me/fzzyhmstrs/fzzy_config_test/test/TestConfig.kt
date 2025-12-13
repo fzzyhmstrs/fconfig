@@ -68,5 +68,7 @@ object TestConfig {
     var testConfig2 = ConfigApi.registerAndLoadConfig({ TestConfigImpl2() }, RegisterType.BOTH)
     var testConfig4 = ConfigApi.registerAndLoadConfig({ TestConfigImpl4() }, RegisterType.BOTH)
 
+    var serverConfig = ConfigApi.registerAndLoadConfig({ TestServerConfigImpl() }, RegisterType.SERVER)
+
     //var javaConfig2 = ConfigApi.registerAndLoadConfig({ JavaTestConfig2() }, RegisterType.SERVER)
 }
