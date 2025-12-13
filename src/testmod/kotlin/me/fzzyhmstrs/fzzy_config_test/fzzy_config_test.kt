@@ -41,6 +41,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
 import net.minecraft.util.Identifier
 import net.fabricmc.fabric.api.util.TriState
 import net.minecraft.entity.effect.StatusEffect
@@ -50,6 +51,7 @@ import net.minecraft.nbt.NbtEnd
 import net.minecraft.nbt.NbtOps
 import net.minecraft.registry.Registries
 import net.minecraft.registry.Registry
+import net.minecraft.server.command.CommandManager
 import net.peanuuutz.tomlkt.TomlElement
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -99,6 +101,16 @@ object FC: ModInitializer {
         TestConfig.init()
         ConfigLootCondition.init()
         ConfigLootNumberProvider.init()
+
+        CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
+            dispatcher.register(
+                CommandManager.literal("check_server_config")
+                    .executes { _ ->
+                        FC.LOGGER.info(TestConfig.serverConfig.toString())
+                        1
+                    }
+            )
+        }
 
         val result = ConfigApi.serializeToToml(TestConfig.testConfig2)
         val test1 = FileType.TOML.encode(result.get())
