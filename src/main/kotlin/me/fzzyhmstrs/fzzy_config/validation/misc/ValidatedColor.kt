@@ -1045,6 +1045,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
         }
 
         override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+            if (!isMouseOver(event.x(), event.y())) return false
             mouseHasBeenClicked = true
             updateHL(event.x(), event.y())
             return true
