@@ -168,6 +168,7 @@ internal object NetworkEventsClient {
 
     private fun registerConfigs(event: ScreenEvent.Init.Pre) {
         if (initialized || event.screen !is TitleScreen) return
+        ClientConfigRegistry.start()
         val scopes = ClientConfigRegistry.getScreenScopes()
         ModList.get().forEachModInOrder { modContainer ->
             val id = modContainer.modId

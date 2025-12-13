@@ -52,6 +52,8 @@ internal fun String.nsId(path: String): Identifier {
 class FzzyConfigForge() {
     init {
         MinecraftForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
+        MinecraftForge.EVENT_BUS.addListener(NetworkEvents::serverStarted)
+        MinecraftForge.EVENT_BUS.addListener(NetworkEvents::gameStopping)
         NetworkEvents.registerPayloads()
         PlatformUtils.registerCommands(FMLJavaModLoadingContext.get().modEventBus)
 

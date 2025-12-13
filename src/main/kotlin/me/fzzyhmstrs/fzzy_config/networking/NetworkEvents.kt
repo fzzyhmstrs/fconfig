@@ -168,4 +168,14 @@ internal object NetworkEvents {
         ConfigApi.network().registerLenientS2C(DynamicIdsS2CCustomPayload.type, DynamicIdsS2CCustomPayload::class.java,
             ::DynamicIdsS2CCustomPayload, NetworkEventsClient::receiveDynamicIds)
     }
+
+    fun serverStarted(event: ServerStartedEvent) {
+        if (event.server.isDedicated) {
+            SyncedConfigRegistry.start(event.server)
+        }
+    }
+
+    fun gameStopping(event: GameShuttingDownEvent) {
+        ThreadingUtils.stop()
+    }
 }
