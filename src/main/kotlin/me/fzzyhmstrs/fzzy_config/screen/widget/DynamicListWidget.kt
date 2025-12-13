@@ -419,8 +419,34 @@ class DynamicListWidget(
     private inner class Entries(private val delegate: List<Entry>): Iterable<Entry> {
 
         //map <group, map <scope, entry> >
-        private val delegateMap: Map<String, Map<String, Entry>>
-        private val groups: Map<String, GroupPair> by lazy {
+        private val groupEntriesMap: Map<String, Map<String, Entry>> by lazy {
+            val entryMap: MutableMap<String, MutableMap<String, Entry>> = hashMapOf()
+            val groupMap: MutableMap<String, Entry> = hashMapOf()
+            val groupInGroupMap: MutableMap<List<String>, String> = hashMapOf()
+
+            for (e in delegate) {
+                if (e.scope.group != "") {
+                    groupMap[e.scope.group] = e
+                    groupInGroupMap[e.scope.inGroups] = e.scope.group
+                }
+            }
+
+            for (e in delegate) {
+                val v = e.getVisibility()
+                if (!(v.skip xor v.group)) {
+                    val inGroups = if (e.scope.group != "")
+                        e.scope.inGroups.filter { it != e.scope.group } //remove group from it's own inGroups list so it goes to parent
+                    else
+                        e.scope.inGroups
+                    if (inGroups.isEmpty()) continue
+                    val directGroup = groupInGroupMap[inGroups] ?: continue
+                    entryMap.computeIfAbsent(directGroup) { _ -> hashMapOf() }[e.scope.scope] = e
+                }
+            }
+
+            entryMap
+        }
+        private val groupsMap: Map<String, GroupPair> by lazy {
             val groupMap: MutableMap<String, GroupPair> = hashMapOf()
             for (e in delegate) {
                 if (e.getVisibility().group) {
@@ -430,38 +456,35 @@ class DynamicListWidget(
             groupMap
         }
 
-        private val searcher: Searcher<Entry> by lazy { Searcher(delegate) }
+        private val searcher: Searcher<Entry> by lazy {
+            Searcher(delegate)
+        }
 
         init {
             var previousEntry: Entry? = null
             val pos = ReferencePos { this@DynamicListWidget.top }
-            val entryMap: MutableMap<String, MutableMap<String, Entry>> = hashMapOf()
-            val groupMap: MutableMap<String, Entry> = hashMapOf()
-
             for ((index, e) in delegate.withIndex()) {
                 e.onAdd(pos, previousEntry, index == delegate.lastIndex)
-                val v = e.getVisibility()
-                if (v.group) {
-                    groupMap[e.scope.group] = e
-                }
-                if (!(v.skip xor v.group)) {
-                    for (g in e.scope.inGroups) {
-                        if (v.group && e.scope.group == g) continue
-                        entryMap.computeIfAbsent(g) { _ -> hashMapOf() }[e.scope.scope] = e
-                    }
-                }
                 previousEntry = e
             }
+
+            val groupMap: MutableMap<String, Entry> = hashMapOf()
+            for (e in delegate) {
+                if (e.scope.group != "") {
+                    groupMap[e.scope.group] = e
+                }
+            }
+
             for (e in delegate) {
                 for (g in e.scope.inGroups) {
                     val gV = groupMap[g]?.getRootVisibility() ?: continue
                     if (gV == Visibility.GROUP_VISIBLE_CLOSED) {
                         if (e.getVisibility().group && e.scope.group == g) continue
-                        e.applyVisibility(Visibility::close)
+                        if (e.getVisibility().visible)
+                            e.applyVisibility(Visibility::close)
                     }
                 }
             }
-            delegateMap = entryMap
         }
 
         private var inFrameEntries: List<Entry> = emptyList()
@@ -525,8 +548,8 @@ class DynamicListWidget(
                     if (eResults.isNotEmpty()) {
                         var hidden = false
                         for (g in e.scope.inGroups) {
-                            val gp = groups[g] ?: continue
-                            if (!gp.visible) {
+                            val gp = groupsMap[g] ?: continue
+                            if (!gp.unfolded) {
                                 hidden = true
                                 gp.groupEntry.applyVisibility(Visibility::searched)
                                 gPrefixes.computeIfAbsent(g) { mutableListOf() }.addAll(eResults.map {
@@ -556,8 +579,8 @@ class DynamicListWidget(
             for (e in foundEntries) {
                 if (searchInput.isNotEmpty()) {
                     for (g in e.scope.inGroups) {
-                        val gp = groups[g] ?: continue
-                        if (!gp.visible) {
+                        val gp = groupsMap[g] ?: continue
+                        if (!gp.unfolded) {
                             gp.groupEntry.applyVisibility(Visibility::searched)
                             g2Prefixes.computeIfAbsent(g) { mutableListOf() }.add(e.texts.name.copy().formatted(Formatting.GRAY))
                         }
@@ -566,8 +589,8 @@ class DynamicListWidget(
                 e.applyVisibility(Visibility::unfilter)
             }
 
-            for ((g, gp) in groups) {
-                val groupEntries = delegateMap[g]?.values
+            for ((g, gp) in groupsMap) {
+                val groupEntries = groupEntriesMap[g]?.values
                 if (groupEntries == null) {
                     FC.LOGGER.error("Errored group $g disabled!")
                     gp.groupEntry.applyVisibility(Visibility::disable)
@@ -600,20 +623,26 @@ class DynamicListWidget(
         }
 
         fun groupIsVisible(g: String): Boolean {
-            return groups[g]?.visible ?: return false
+            val gp = groupsMap[g] ?: return false
+            return gp.unfolded && gp.groupEntry.getVisibility().visible
         }
 
         fun toggleGroup(g: String) {
             if (delegate.isEmpty()) return
             dirty = true
-            val groupEntries = delegateMap[g] ?: return
-            val groupPair = groups[g] ?: return
-            if (groupPair.visible) {
-                for ((s, e) in groupEntries) {
-                    e.applyVisibility(Visibility::hide)
-                    if (e.getVisibility().group) {
-                        groups[s]?.visible = false
-                    }
+            val groupPair = groupsMap[g] ?: return
+            toggleGroupAction(g, groupPair)
+            val delta = this@DynamicListWidget.top - groupPair.groupEntry.top.get()
+            this@DynamicListWidget.handleScrollByBar(delta)
+            this@DynamicListWidget.focused = groupPair.groupEntry
+            delegate.forEach { it.onScroll(0) }
+        }
+
+        private fun toggleGroupAction(g: String, groupPair: GroupPair) {
+            val groupEntries = groupEntriesMap[g] ?: return
+            if (groupPair.unfolded) {
+                for ((_, e) in groupEntries) {
+                    hideGroupAction(e)
                 }
                 if (this@DynamicListWidget.focusedElement?.getVisibility()?.selectable != true) {
                     val replacement = this@DynamicListWidget.focusedElement?.getNeighbor(true) ?: this@DynamicListWidget.focusedElement?.getNeighbor(false)
@@ -622,23 +651,39 @@ class DynamicListWidget(
                 if (bottom() - top() <= this@DynamicListWidget.height) {
                     this@DynamicListWidget.ensureVisible(delegate.first())
                 }
-                groupPair.visible = false
+                groupPair.unfolded = false
             } else {
-                for ((s, e) in groupEntries) {
-                    e.applyVisibility(Visibility::unhide)
-                    if (e.getVisibility().group) {
-                        val otherGroup = delegateMap[e.scope.group] ?: continue
-                        if (otherGroup.values.any { it.getVisibility().visible }) {
-                            groups[s]?.visible = true
-                        }
+                for ((_, e) in groupEntries) {
+                    unhideGroupAction(e)
+                }
+                groupPair.unfolded = true
+            }
+        }
+
+        private fun hideGroupAction(e: Entry) {
+            e.applyVisibility(Visibility::hide)
+            if (e.getVisibility().group) {
+                val newPair = groupsMap[e.scope.group] ?: return
+                if (newPair.unfolded) {
+                    val otherGroup = this.groupEntriesMap[e.scope.group] ?: return
+                    for ((_, e2) in otherGroup) {
+                        hideGroupAction(e2)
                     }
                 }
-                groupPair.visible = true
             }
-            val delta = this@DynamicListWidget.top - groupPair.groupEntry.top.get()
-            this@DynamicListWidget.handleScrollByBar(delta)
-            this@DynamicListWidget.focused = groupPair.groupEntry
-            delegate.forEach { it.onScroll(0) }
+        }
+
+        private fun unhideGroupAction(e: Entry) {
+            e.applyVisibility(Visibility::unhide)
+            if (e.getVisibility().group) {
+                val newPair = groupsMap[e.scope.group] ?: return
+                if (newPair.unfolded) {
+                    val otherGroup = this.groupEntriesMap[e.scope.group] ?: return
+                    for ((_, e2) in otherGroup) {
+                        unhideGroupAction(e2)
+                    }
+                }
+            }
         }
 
         fun top(): Int {
@@ -676,7 +721,7 @@ class DynamicListWidget(
 
         fun scrollToGroup(g: String) {
             if (delegate.isEmpty()) return
-            val groupPair = groups[g] ?: return
+            val groupPair = groupsMap[g] ?: return
             if (this@DynamicListWidget.noScroll()) return
             val delta = this@DynamicListWidget.top - groupPair.groupEntry.top.get()
             this@DynamicListWidget.handleScrollByBar(delta)
@@ -752,7 +797,7 @@ class DynamicListWidget(
         }
     }
 
-    private class GroupPair(val groupEntry: Entry, var visible: Boolean)
+    private data class GroupPair(val groupEntry: Entry, var unfolded: Boolean)
 
     /**
      * Base entry class for list widget entries. This is typically built using a BiFunction that supplies the [parentElement] and an entry index
