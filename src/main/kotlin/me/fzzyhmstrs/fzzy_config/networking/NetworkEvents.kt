@@ -18,7 +18,9 @@ import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.Packet
 import net.minecraft.server.network.ServerPlayerConfigurationTask
 import net.minecraft.server.network.ServerPlayerEntity
+import net.neoforged.neoforge.event.GameShuttingDownEvent
 import net.neoforged.neoforge.event.OnDatapackSyncEvent
+import net.neoforged.neoforge.event.server.ServerStartedEvent
 import net.neoforged.neoforge.network.PacketDistributor
 import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent
@@ -123,5 +125,15 @@ internal object NetworkEvents {
         registrar.playBidirectional(SettingForwardCustomPayload.type, SettingForwardCustomPayload.codec, this::handleSettingForwardBidirectional, this::handleSettingForwardBidirectional)
 
         registrar.playToClient(DynamicIdsS2CCustomPayload.type, DynamicIdsS2CCustomPayload.codec, NetworkEventsClient::receiveDynamicIds)
+    }
+
+    fun serverStarted(event: ServerStartedEvent) {
+        if (event.server.isDedicated) {
+            SyncedConfigRegistry.start(event.server)
+        }
+    }
+
+    fun gameStopping(event: GameShuttingDownEvent) {
+        ThreadingUtils.stop()
     }
 }
