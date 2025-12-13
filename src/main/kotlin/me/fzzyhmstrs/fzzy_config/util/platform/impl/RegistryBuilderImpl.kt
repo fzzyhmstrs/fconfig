@@ -6,15 +6,12 @@ import com.mojang.serialization.Lifecycle
 import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.nsId
 import me.fzzyhmstrs.fzzy_config.simpleId
+import me.fzzyhmstrs.fzzy_config.util.FcText
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistryBuilder
 import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
-import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup
 import net.minecraft.item.ItemGroup
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
-import net.minecraft.registry.SimpleDefaultedRegistry
-import net.minecraft.registry.SimpleRegistry
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.entry.RegistryEntry.Reference
 import net.minecraft.registry.entry.RegistryEntryInfo
@@ -27,27 +24,48 @@ import java.util.function.Function
 class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
 
     override fun <T : Any> build(key: RegistryKey<Registry<T>>): Registry<T> {
-        return FabricRegistryBuilder.createSimple(key).buildAndRegister()
+        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).create()
     }
 
     override fun <T : Any> buildDefaulted(key: RegistryKey<Registry<T>>, defaultId: Identifier): Registry<T> {
-        return FabricRegistryBuilder.createDefaulted(key, defaultId).buildAndRegister()
+        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).defaultKey(defaultId).create()
     }
 
     override fun <T : Any> buildIntrusive(key: RegistryKey<Registry<T>>): Registry<T> {
-        return FabricRegistryBuilder.from(SimpleRegistry(key, Lifecycle.stable(), true)).buildAndRegister()
+        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).withIntrusiveHolders().create()
     }
 
     override fun <T : Any> buildDefaultedIntrusive(key: RegistryKey<Registry<T>>, defaultId: Identifier): Registry<T> {
-        return FabricRegistryBuilder.from(SimpleDefaultedRegistry<T>(defaultId.toString(), key, Lifecycle.stable(), true)).buildAndRegister()
+        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).defaultKey(defaultId).withIntrusiveHolders().create()
     }
 
     override fun itemGroup(): ItemGroup.Builder {
-        return FabricItemGroup.builder()
+        return ItemGroup.builder()
     }
 
     override fun getTagName(tagKey: TagKey<*>): Text {
-        return tagKey.name
+        return FcText.translatable(getTranslationKey(tagKey))
+    }
+
+    private fun getTranslationKey(tagKey: TagKey<*>): String {
+        val stringBuilder = StringBuilder()
+        stringBuilder.append("tag.")
+
+        val registryIdentifier = tagKey.registryRef.value
+        val tagIdentifier = tagKey.id()
+
+        if (registryIdentifier.namespace != Identifier.DEFAULT_NAMESPACE) {
+            stringBuilder.append(registryIdentifier.namespace)
+                .append(".")
+        }
+
+        stringBuilder.append(registryIdentifier.path.replace("/", "."))
+            .append(".")
+            .append(tagIdentifier.namespace)
+            .append(".")
+            .append(tagIdentifier.path.replace("/", ".").replace(":", "."))
+
+        return stringBuilder.toString()
     }
 
     override fun <T> namespaceCodec(registry: Registry<T>): Codec<T> {
