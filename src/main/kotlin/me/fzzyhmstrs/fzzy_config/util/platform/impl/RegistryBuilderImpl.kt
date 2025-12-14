@@ -61,7 +61,7 @@ class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
         val stringBuilder = StringBuilder()
         stringBuilder.append("tag.")
 
-        val registryIdentifier = tagKey.registryRef.value
+        val registryIdentifier = tagKey.registry.value
         val tagIdentifier = tagKey.id()
 
         if (registryIdentifier.namespace != Identifier.DEFAULT_NAMESPACE) {
