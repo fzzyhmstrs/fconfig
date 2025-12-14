@@ -18,20 +18,16 @@
 -------------------------------------
 
 ### Additions
-* Added new `CustomWidget` interface. This will be used for abstracting all FC widgets away from directly interacting with `Element`, `Widget`, etc. to reduce porting headache going forward. Updates related to CustomWidget will be sprinkled into the next versions.
-* New `CustomTextWidget` utilizing said CustomWidget interface.
-* Added `syncConfig` method to the `NetworkApi` for manually syncing a server-side config to clients.
-* Added uk_ua translation
+* Config updates made in the file (.toml, .json5, etc.) will be automatically updated live in-game, and synced as appropriate.
+* New `onUpdateServer` events that take a `ServerUpdateContext`. The old events are deprecated. They will stop working (no crashes) in 0.8.0, with full removal scheduled for 0.9.0
+  * For registered events, migrate to the v2 API
+* New `RegistryBuilder` platform system for creating modded registries in a loader-agnostic way, along with other registry-related utils.
+  * Call via `PlatformApi#createRegistryBuilder`. Much like registrars, a builder is created for a specific namespace.
 
 ### Changes
-* `CustomMultilineTextWidget` now has an align-right method
-* `Relevant` has gained three new methods for modifier checks, `needsCtrl`, `needsShift`, `needsAlt`
-* `PopupWidget`'s wrapped `LayoutWidget` now contributes to re-sizing the popup based on the dimensions it would like.
+* `ValidatedEnum` now has more widget types, including `INLINE` and `SCROLLABLE`
+* `ValidationResult.bimap` error nesting order flipped, the output results error context is now the parent context
 
 ### Fixes
-* Validated Collections now resolve their contents lazily on serialize, allowing for proper implementation of mapped registry objects (items, blocks, etc.) in loaders that defer their registration.
-* `ConfigGroup` now acts properly with nested `collapsedByDefault`
-* `ConfigApi.buildTranslations` can now "see" inside objects that may be wrapping a translated object (such as `ValidatedAny`)
-* Configs packet size limit increased to avoid problems with serializing large configs.
-* (1.21.9) fixed keybinds showing as "Button 70" etc.
-* `ValidationResult.reportTo` no longer reports an error context has header information only.
+* Fixed desc and prefix keys being broken for Config classes
+* Config groups, especially deeply nested groups, behave properly now when opening and closing repeatedly
