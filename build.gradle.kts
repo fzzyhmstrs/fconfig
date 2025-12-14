@@ -104,13 +104,13 @@ tasks {
         val modVersion: String by project
         val loaderVersion: String by project
         val kotlinForForgeVersion: String by project
-        inputs.property("version", project.version)
+        inputs.property("version", version)
         inputs.property("id", base.archivesName.get())
         inputs.property("loaderVersion", loaderVersion)
         inputs.property("kotlinForForgeVersion", kotlinForForgeVersion)
         filesMatching("META-INF/mods.toml") {
             expand(mutableMapOf(
-                "version" to project.version,
+                "version" to version,
                 "id" to base.archivesName.get(),
                 "loaderVersion" to loaderVersion,
                 "kotlinForForgeVersion" to kotlinForForgeVersion
