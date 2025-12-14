@@ -110,11 +110,13 @@ internal object NetworkEvents {
         }
 
         ServerLifecycleEvents.SERVER_STARTED.register { server ->
-            SyncedConfigRegistry.start(server)
+            if (server.isDedicated)
+                SyncedConfigRegistry.start(server)
         }
 
-        ServerLifecycleEvents.SERVER_STOPPING.register { _ ->
-            ThreadingUtils.stop()
+        ServerLifecycleEvents.SERVER_STOPPING.register { server ->
+            if (server.isDedicated)
+                ThreadingUtils.stop()
         }
 
     }
