@@ -167,13 +167,13 @@ tasks {
     processResources {
         val loaderVersion: String by project
         val fabricKotlinVersion: String by project
-        inputs.property("version", project.version)
+        inputs.property("version", version)
         inputs.property("id", base.archivesName.get())
         inputs.property("loaderVersion", loaderVersion)
         inputs.property("fabricKotlinVersion", fabricKotlinVersion)
         filesMatching("fabric.mod.json") {
             expand(mutableMapOf(
-                "version" to project.version,
+                "version" to version,
                 "id" to base.archivesName.get(),
                 "loaderVersion" to loaderVersion,
                 "fabricKotlinVersion" to fabricKotlinVersion
