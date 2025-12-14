@@ -160,7 +160,7 @@ if (System.getenv("MODRINTH_TOKEN") != null) {
         detectLoaders.set(false)
         changelog.set(log.readText())
         dependencies {
-            required.project("kotlin-lang-forge")
+            required.project("kotlin-for-forge")
         }
         debugMode.set(uploadDebugMode.toBooleanStrictOrNull() ?: true)
     }
@@ -185,7 +185,7 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
             mainArtifact(tasks.remapJar.get().archiveFile.get(), closureOf<CurseArtifact> {
                 displayName = "${base.archivesName.get()}-${project.version}"
                 relations(closureOf<CurseRelation> {
-                    this.requiredDependency("kotlinlangforge")
+                    this.requiredDependency("kotlin-for-forge")
                 })
             })
             addArtifact(tasks.remapSourcesJar.get().archiveFile, closureOf<CurseArtifact> {
@@ -193,7 +193,7 @@ if (System.getenv("CURSEFORGE_TOKEN") != null) {
                 changelog = "Source files for ${base.archivesName.get()}-${project.version}"
             })
             relations(closureOf<CurseRelation> {
-                this.requiredDependency("kotlinlangforge")
+                this.requiredDependency("kotlin-for-forge")
             })
         })
         options(closureOf<Options> {
