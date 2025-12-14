@@ -10,28 +10,25 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import kotlinx.coroutines.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import net.peanuuutz.tomlkt.TomlTable
-import org.jetbrains.annotations.Async.Schedule
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
 import java.nio.file.WatchKey
-import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
-import java.util.concurrent.StructuredTaskScope
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantLock
-
 
 internal object ThreadingUtils {
 
@@ -121,7 +118,6 @@ internal object ThreadingUtils {
             //push the update processing to the worker executors
             CompletableFuture.supplyAsync( {
                 //EXECUTOR threads
-                val results: MutableList<Pair<ConfigEntry<*>, ValidationResult<ConfigApiImpl.FileUpdateResult>>> = mutableListOf()
                 if (entries.size == 1) {
                     val result = ConfigApiImpl.deserializeFileUpdate(
                         entries[0].second,
@@ -130,12 +126,12 @@ internal object ThreadingUtils {
                         flags,
                         permissionCheck
                     ).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-                    results.add(entries[0].second to result)
+                    listOf(entries[0].second to result)
                 } else {
-                    StructuredTaskScope<Pair<ConfigEntry<*>, ValidationResult<ConfigApiImpl.FileUpdateResult>>>().use { scope ->
-                        //VIRTUAL threads (anonymous)
-                        val tasks = entries.map { (path, entry) ->
-                            Callable {
+                    runBlocking {
+                        //Kotlin Coroutine threads
+                        val deferredResults = entries.map { (path, entry) ->
+                            async(Dispatchers.IO) {
                                 entry to ConfigApiImpl.deserializeFileUpdate(
                                     entry,
                                     path,
@@ -144,14 +140,10 @@ internal object ThreadingUtils {
                                     permissionCheck
                                 ).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
                             }
-                        }.map(scope::fork)
-                        scope.join()
-                        for (subtask in tasks.filter { it.state() == StructuredTaskScope.Subtask.State.SUCCESS }) {
-                            results.add(subtask.get())
                         }
+                        deferredResults.awaitAll()
                     }
                 }
-                results
             }, EXECUTOR).thenAcceptAsync({ results ->
                 //CLIENT or SERVER thread
                 if (results.isNotEmpty()) {
