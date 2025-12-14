@@ -216,7 +216,7 @@ wiki {
     }
 }
 
-tasks.withType<DokkaTask>().configureEach {
+/*tasks.withType<DokkaTask>().configureEach {
 
     inputs.dir(file("dokka"))
 
@@ -270,7 +270,7 @@ tasks.withType<DokkaTask>().configureEach {
         // be needed in future builds, it's just overhead.
         currentDocsDir.resolve("older").deleteRecursively()
     }
-}
+}*/
 
 
 if (System.getenv("MODRINTH_TOKEN") != null) {
