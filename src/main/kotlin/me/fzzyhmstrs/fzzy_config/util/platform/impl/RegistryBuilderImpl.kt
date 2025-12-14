@@ -12,6 +12,8 @@ import me.fzzyhmstrs.fzzy_config.util.platform.RegistrySupplier
 import net.minecraft.item.ItemGroup
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
+import net.minecraft.registry.SimpleDefaultedRegistry
+import net.minecraft.registry.SimpleRegistry
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.entry.RegistryEntry.Reference
 import net.minecraft.registry.entry.RegistryEntryInfo
@@ -32,11 +34,19 @@ class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
     }
 
     override fun <T : Any> buildIntrusive(key: RegistryKey<Registry<T>>): Registry<T> {
-        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).withIntrusiveHolders().create()
+        return object: SimpleRegistry<T>(key, Lifecycle.stable(), true) {
+            override fun doesSync(): Boolean {
+                return true
+            }
+        }
     }
 
     override fun <T : Any> buildDefaultedIntrusive(key: RegistryKey<Registry<T>>, defaultId: Identifier): Registry<T> {
-        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).defaultKey(defaultId).withIntrusiveHolders().create()
+        return object: SimpleDefaultedRegistry<T>(defaultId.toString(), key, Lifecycle.stable(), true) {
+            override fun doesSync(): Boolean {
+                return true
+            }
+        }
     }
 
     override fun itemGroup(): ItemGroup.Builder {
