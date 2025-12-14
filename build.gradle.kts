@@ -167,8 +167,19 @@ tasks {
         from( "credits.txt") { rename { "${base.archivesName.get()}_${it}" } }
     }
     processResources {
-        inputs.property("version", project.version)
-        filesMatching("fabric.mod.json") { expand(mutableMapOf("version" to project.version)) }
+        val loaderVersion: String by project
+        val fabricKotlinVersion: String by project
+        inputs.property("version", version)
+        inputs.property("id", base.archivesName.get())
+        inputs.property("loaderVersion", loaderVersion)
+        inputs.property("fabricKotlinVersion", fabricKotlinVersion)
+        filesMatching("fabric.mod.json") {
+            expand(mutableMapOf(
+                "version" to version,
+                "id" to base.archivesName.get(),
+                "loaderVersion" to loaderVersion,
+                "fabricKotlinVersion" to fabricKotlinVersion
+            )) }
     }
     java {
         toolchain { languageVersion.set(JavaLanguageVersion.of(javaVersion.toString())) }
