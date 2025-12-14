@@ -52,10 +52,10 @@ internal fun String.nsId(path: String): Identifier {
 @Mod(value = "fzzy_config")
 class FzzyConfigNeoForge(bus: IEventBus) {
     init {
-        NeoForge.EVENT_BUS.addListener(RegistryBuilderImpl::registerRegistries)
         NeoForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
         NeoForge.EVENT_BUS.addListener(NetworkEvents::serverStarted)
         NeoForge.EVENT_BUS.addListener(NetworkEvents::gameStopping)
+        bus.addListener(RegistryBuilderImpl::registerRegistries)
         bus.addListener(NetworkEvents::registerPayloads)
         bus.addListener(NetworkApiImpl::onRegister)
         bus.addListener(NetworkEvents::registerConfigurations)
