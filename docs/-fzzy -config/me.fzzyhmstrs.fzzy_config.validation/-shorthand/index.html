@@ -57,11 +57,7 @@
                     </a>
             </div>
             <div class="library-version">
-<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.validation/-shorthand/index.html&quot;}"><div class="versions-dropdown">
-  <div class="versions-dropdown-button">0.7.3+1.21.9</div>
-  <div class="versions-dropdown-data"><a href="index.html">0.7.3+1.21.9</a><a href="..\..\..\older\0.7.2+1.21.6\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.7.2+1.21.6</a><a href="..\..\..\older\0.7.0+1.21.5\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.7.0+1.21.5</a><a href="..\..\..\older\0.6.7+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.6.7+1.21.3</a><a href="..\..\..\older\0.6.5+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.6.5+1.21.3</a><a href="..\..\..\older\0.6.4+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.6.4+1.21.3</a><a href="..\..\..\older\0.6.3+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.6.3+1.21.3</a><a href="..\..\..\older\0.6.1+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.6.1+1.21.3</a><a href="..\..\..\older\0.6.0+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.6.0+1.21.3</a><a href="..\..\..\older\0.5.9+1.21.3\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.5.9+1.21.3</a><a href="..\..\..\older\0.5.7+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.5.7+1.21.2</a><a href="..\..\..\older\0.5.6+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.5.6+1.21.2</a><a href="..\..\..\older\0.5.5+1.21.2\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.5.5+1.21.2</a><a href="..\..\..\older\0.5.3+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.5.3+1.21</a><a href="..\..\..\older\0.5.0+1.21\-fzzy -config\me.fzzyhmstrs.fzzy_config.validation\-shorthand\index.html">0.5.0+1.21</a></div>
-</div>
-</dokka-template-command>            </div>
+<dokka-template-command data="{&quot;@class&quot;:&quot;org.jetbrains.dokka.base.templating.ReplaceVersionsCommand&quot;,&quot;location&quot;:&quot;-fzzy -config/me.fzzyhmstrs.fzzy_config.validation/-shorthand/index.html&quot;}">0.7.4+1.21.11</dokka-template-command>            </div>
         </div>
     <div class="links-section" id="links-section">
         <div class="wiki-section-wrapper" id="wiki-section-wrapper" title="Open Fzzy Config wiki">
@@ -110,7 +106,7 @@ import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validatedList
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validatedRegistry
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validatedTag
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedIdentifier
-import net.minecraft.item.SwordItem
+import net.minecraft.item.RangedWeaponItem
 import net.minecraft.registry.Registries
 import net.minecraft.registry.tag.BlockTags
 import net.minecraft.registry.tag.ItemTags
@@ -148,7 +144,7 @@ val shorthandTagIdList = listOf(Identifier.of(&quot;white_bed&quot;)).validatedT
 val shorthandRegistryIdList = listOf(Identifier.of(&quot;nether_star&quot;)).validatedRegistry(Registries.ITEM)
 
 //example shorthand identifier list with automatic predicated registry validation
-val shorthandPredicatedRegistryIdList = listOf(Identifier.of(&quot;stone_sword&quot;)).validatedRegistry(Registries.ITEM, BiPredicate { id, e -&gt; e.value() is SwordItem })
+val shorthandPredicatedRegistryIdList = listOf(Identifier.of(&quot;bow&quot;)).validatedRegistry(Registries.ITEM, BiPredicate { id, e -&gt; e.value() is RangedWeaponItem })
 
 //example shorthand identifier list with automatic list validation. The list should be complete and available at validation time
 val shorthandListIdList = listOf(Identifier.of(&quot;arrow&quot;)).validatedList(listOf(Identifier.of(&quot;arrow&quot;), Identifier.of(&quot;firework_rocket&quot;)))
@@ -180,7 +176,7 @@ val shorthandTagIdSet = setOf(Identifier.of(&quot;white_bed&quot;)).validatedTag
 val shorthandRegistryIdSet = setOf(Identifier.of(&quot;nether_star&quot;)).validatedRegistry(Registries.ITEM)
 
 //example shorthand identifier list with automatic predicated registry validation
-val shorthandPredicatedRegistryIdSet = setOf(Identifier.of(&quot;stone_sword&quot;)).validatedRegistry(Registries.ITEM, BiPredicate { id, e -&gt; e.value() is SwordItem })
+val shorthandPredicatedRegistryIdSet = setOf(Identifier.of(&quot;bow&quot;)).validatedRegistry(Registries.ITEM, BiPredicate { id, e -&gt; e.value() is RangedWeaponItem })
 
 //example shorthand identifier list with automatic list validation. The list should be complete and available at validation time
 val shorthandListIdSet = setOf(Identifier.of(&quot;arrow&quot;)).validatedList(listOf(Identifier.of(&quot;arrow&quot;), Identifier.of(&quot;firework_rocket&quot;))) 
