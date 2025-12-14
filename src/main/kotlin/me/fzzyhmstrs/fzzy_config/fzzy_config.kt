@@ -15,6 +15,7 @@ import me.fzzyhmstrs.fzzy_config.networking.NetworkEvents
 import me.fzzyhmstrs.fzzy_config.networking.NetworkEventsClient
 import me.fzzyhmstrs.fzzy_config.networking.impl.NetworkApiImpl
 import me.fzzyhmstrs.fzzy_config.util.platform.impl.PlatformUtils
+import me.fzzyhmstrs.fzzy_config.util.platform.impl.RegistryBuilderImpl
 import net.minecraft.util.Identifier
 import net.neoforged.api.distmarker.Dist
 import net.neoforged.bus.api.IEventBus
@@ -51,6 +52,7 @@ internal fun String.nsId(path: String): Identifier {
 @Mod(value = "fzzy_config")
 class FzzyConfigNeoForge(bus: IEventBus) {
     init {
+        NeoForge.EVENT_BUS.addListener(RegistryBuilderImpl::registerRegistries)
         NeoForge.EVENT_BUS.addListener(NetworkEvents::registerDataSync)
         NeoForge.EVENT_BUS.addListener(NetworkEvents::serverStarted)
         NeoForge.EVENT_BUS.addListener(NetworkEvents::gameStopping)
