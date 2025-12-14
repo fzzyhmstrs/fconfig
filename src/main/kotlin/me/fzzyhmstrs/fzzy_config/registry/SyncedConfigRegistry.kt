@@ -361,7 +361,7 @@ internal object SyncedConfigRegistry {
             val canSender = ConfigApi.network()::canSend
             val sender = ConfigApi.network()::send
             for (player in server.playerManager.playerList) {
-                if (!canSender(ConfigUpdateS2CCustomPayload.type.id, player)) continue
+                if (!canSender(ConfigUpdateS2CCustomPayload.id, player)) continue
                 val newPayload = ConfigUpdateS2CCustomPayload(updates)
                 sender(newPayload, player)
             }

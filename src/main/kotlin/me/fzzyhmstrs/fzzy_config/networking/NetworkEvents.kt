@@ -17,15 +17,13 @@ import me.fzzyhmstrs.fzzy_config.networking.api.ServerPlayNetworkContext
 import me.fzzyhmstrs.fzzy_config.registry.SyncedConfigRegistry
 import net.minecraft.network.PacketByteBuf
 import me.fzzyhmstrs.fzzy_config.util.ThreadingUtils
-import net.minecraft.network.packet.CustomPayload
 import net.minecraft.network.packet.Packet
 import net.minecraft.network.packet.s2c.play.CustomPayloadS2CPacket
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
-import net.minecraft.server.network.ServerPlayNetworkHandler
 import net.minecraft.server.network.ServerPlayerEntity
 import net.minecraft.util.Identifier
+import net.minecraftforge.event.GameShuttingDownEvent
 import net.minecraftforge.event.OnDatapackSyncEvent
+import net.minecraftforge.event.server.ServerStartedEvent
 import net.minecraftforge.network.NetworkDirection
 import net.minecraftforge.network.NetworkEvent
 import net.minecraftforge.network.PacketDistributor

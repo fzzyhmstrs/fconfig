@@ -1,32 +1,24 @@
 /*
-* Copyright (c) 2025 Fzzyhmstrs
-*
-* This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
-*
-* Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
-* You should have received a copy of the TDL-M with this software.
-* If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
-* */
+ * Copyright (c) 2025 Fzzyhmstrs
+ *
+ * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+ *
+ * Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+ * You should have received a copy of the TDL-M with this software.
+ * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+ */
 
 package me.fzzyhmstrs.fzzy_config.util.platform
 
 import com.mojang.serialization.Codec
-import com.mojang.serialization.DataResult
-import com.mojang.serialization.Lifecycle
-import me.fzzyhmstrs.fzzy_config.cast
-import me.fzzyhmstrs.fzzy_config.nsId
-import me.fzzyhmstrs.fzzy_config.simpleId
 import net.minecraft.item.ItemGroup
 import net.minecraft.registry.Registry
 import net.minecraft.registry.RegistryKey
 import net.minecraft.registry.entry.RegistryEntry
 import net.minecraft.registry.entry.RegistryEntry.Reference
-import net.minecraft.registry.entry.RegistryEntryInfo
 import net.minecraft.registry.tag.TagKey
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
-import net.minecraft.util.dynamic.Codecs
-import java.util.function.Function
 
 /**
  * A utility for creating custom registries. Also includes some helper methods for interacting with registries

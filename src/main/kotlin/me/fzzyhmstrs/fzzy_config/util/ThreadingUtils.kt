@@ -42,7 +42,15 @@ internal object ThreadingUtils {
         }
 
     }
-    private val FILE_WATCHER = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().name("Fzzy Config File Watcher").factory())
+
+    private val FILE_WATCHER = Executors.newSingleThreadScheduledExecutor(FileFactory)
+    private object FileFactory: ThreadFactory {
+
+        override fun newThread(r: Runnable): Thread {
+            return Thread(null, r, "Fzzy Config File Watcher")
+        }
+
+    }
 
     private val watcherLock: ReentrantLock = ReentrantLock()
     private val updatesLock: ReentrantLock = ReentrantLock()

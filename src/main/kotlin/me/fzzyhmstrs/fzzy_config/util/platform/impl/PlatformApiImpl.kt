@@ -59,7 +59,7 @@ internal object PlatformApiImpl: PlatformApi {
     }
 
     override fun <T> createRegistryBuilder(namespace: String): RegistryBuilder {
-        return RegistryBuilderImpl(namespace)
+        throw UnsupportedOperationException("Forge 1.20.1 doesn't support modded vanilla-type registry creation, so this feature is disabled for this version. Don't shoot the messenger")
     }
 
     override fun testVersion(id: String, version: String): Optional<Int> {
