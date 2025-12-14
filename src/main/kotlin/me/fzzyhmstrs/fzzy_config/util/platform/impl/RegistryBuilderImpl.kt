@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2025 Fzzyhmstrs
+ *
+ * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
+ *
+ * Fzzy Config is free software provided under the terms of the Timefall Development License - Modified (TDL-M).
+ * You should have received a copy of the TDL-M with this software.
+ * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
+ */
+
 package me.fzzyhmstrs.fzzy_config.util.platform.impl
 
 import com.mojang.serialization.Codec
@@ -19,24 +29,35 @@ import net.minecraft.registry.tag.TagKey
 import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.minecraft.util.dynamic.Codecs
+import net.neoforged.neoforge.registries.NewRegistryEvent
 import java.util.function.Function
 
 class RegistryBuilderImpl(private val namespace: String): RegistryBuilder {
 
+    companion object {
+        private val registries: MutableList<Registry<*>> = mutableListOf()
+
+        internal fun registerRegistries(event: NewRegistryEvent) {
+            for (reg in registries) {
+                event.register(reg)
+            }
+        }
+    }
+
     override fun <T : Any> build(key: RegistryKey<Registry<T>>): Registry<T> {
-        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).create()
+        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).create().also(registries::add)
     }
 
     override fun <T : Any> buildDefaulted(key: RegistryKey<Registry<T>>, defaultId: Identifier): Registry<T> {
-        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).defaultKey(defaultId).create()
+        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).defaultKey(defaultId).create().also(registries::add)
     }
 
     override fun <T : Any> buildIntrusive(key: RegistryKey<Registry<T>>): Registry<T> {
-        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).withIntrusiveHolders().create()
+        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).withIntrusiveHolders().create().also(registries::add)
     }
 
     override fun <T : Any> buildDefaultedIntrusive(key: RegistryKey<Registry<T>>, defaultId: Identifier): Registry<T> {
-        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).defaultKey(defaultId).withIntrusiveHolders().create()
+        return net.neoforged.neoforge.registries.RegistryBuilder(key).sync(true).defaultKey(defaultId).withIntrusiveHolders().create().also(registries::add)
     }
 
     override fun itemGroup(): ItemGroup.Builder {
