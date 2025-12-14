@@ -15,14 +15,18 @@ import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import net.peanuuutz.tomlkt.TomlTable
+import org.jetbrains.annotations.Async.Schedule
 import java.io.File
 import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.StandardWatchEventKinds
 import java.nio.file.WatchKey
+import java.util.concurrent.Callable
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
+import java.util.concurrent.StructuredTaskScope
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
@@ -85,7 +89,9 @@ internal object ThreadingUtils {
     * */
 
     fun start(flags: Byte, executor: Executor, applier: (ConfigEntry<*>, ValidationResult<TomlTable>) -> Unit, updater: () -> Unit, permissionCheck: ConfigApiImpl.PermissionChecker) {
-        FILE_WATCHER.scheduleAtFixedRate( { //FILE_WATCHER thread
+        val watcher = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().name("Fzzy Config File Watcher").factory())
+        watcher.scheduleAtFixedRate( {
+            //FILE_WATCHER thread
             val entries: MutableList<Pair<Path, ConfigEntry<*>>> = mutableListOf()
             try { //lock up the config watchers while we poll the watch service
                 watcherLock.lock()
@@ -113,20 +119,41 @@ internal object ThreadingUtils {
             if (entries.isEmpty()) return@scheduleAtFixedRate
 
             //push the update processing to the worker executors
-            CompletableFuture.supplyAsync( { //EXECUTOR threads
+            CompletableFuture.supplyAsync( {
+                //EXECUTOR threads
                 val results: MutableList<Pair<ConfigEntry<*>, ValidationResult<ConfigApiImpl.FileUpdateResult>>> = mutableListOf()
-                for ((path, entry) in entries) {
+                if (entries.size == 1) {
                     val result = ConfigApiImpl.deserializeFileUpdate(
-                        entry,
-                        path,
+                        entries[0].second,
+                        entries[0].first,
                         "Error(s) encountered while reading a changed config file",
                         flags,
                         permissionCheck
                     ).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-                    results.add(entry to result)
+                    results.add(entries[0].second to result)
+                } else {
+                    StructuredTaskScope<Pair<ConfigEntry<*>, ValidationResult<ConfigApiImpl.FileUpdateResult>>>().use { scope ->
+                        //VIRTUAL threads (anonymous)
+                        val tasks = entries.map { (path, entry) ->
+                            Callable {
+                                entry to ConfigApiImpl.deserializeFileUpdate(
+                                    entry,
+                                    path,
+                                    "Error(s) encountered while reading a changed config file",
+                                    flags,
+                                    permissionCheck
+                                ).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+                            }
+                        }.map(scope::fork)
+                        scope.join()
+                        for (subtask in tasks.filter { it.state() == StructuredTaskScope.Subtask.State.SUCCESS }) {
+                            results.add(subtask.get())
+                        }
+                    }
                 }
                 results
-            }, EXECUTOR).thenAcceptAsync({ results -> //CLIENT or SERVER thread
+            }, EXECUTOR).thenAcceptAsync({ results ->
+                //CLIENT or SERVER thread
                 if (results.isNotEmpty()) {
                     for ((entry, result) in results) {
                         if (result.isValid()) {
@@ -143,11 +170,12 @@ internal object ThreadingUtils {
             }, executor)
 
         }, 0L, 503L, TimeUnit.MILLISECONDS)
+        FILE_WATCHER = watcher
     }
 
     fun stop() {
         watchService.close()
-        FILE_WATCHER.shutdown()
+        FILE_WATCHER?.shutdown()
     }
 
     fun register(entry: ConfigEntry<out Config>) {
