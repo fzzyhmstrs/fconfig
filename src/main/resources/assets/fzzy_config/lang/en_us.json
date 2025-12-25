@@ -294,5 +294,9 @@
 "fc.button.info.back.desc": "Backs out to the previous config screen",
 "fc.button.info.search.desc": "Opens the 'Go-To' menu",
 "fc.button.info.info.desc": "Opens this popup",
-"fc.button.info.full_exit.desc": "Exits all open config GUIs and saves them, as applicable"
+"fc.button.info.full_exit.desc": "Exits all open config GUIs and saves them, as applicable",
+
+"fzzy_config.text.or_2": "%1$s or %2$s",
+"fzzy_config.text.or_3": "%1$s, %2$s",
+"fzzy_config.text.and_2": "%1$s and %2$s"
 }

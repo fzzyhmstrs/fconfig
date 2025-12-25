@@ -35,7 +35,10 @@ import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TranslatableEntry
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.also
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.ofMutable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.outmap
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.predicated
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.report
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedSet
@@ -127,13 +130,17 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
             return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Exception deserializing entry [$fieldName], using default value [${get()}]").addError(tVal) }.report(errorBuilder)
         }
         val tVal2 = tVal.outmap { correctEntry(it, EntryValidator.ValidationType.WEAK) } //3
+        val changed = deserializedChanged(getUnconditional(), tVal2.get())
         set(tVal2.get()) //4
-        if (tVal2.isCritical()) { //5
-            @Suppress("DEPRECATION")
-            return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Config entry [$fieldName] had validation errors, corrected to [${get()}]").addError(tVal2) }.report(errorBuilder)
-        }
+
         @Suppress("DEPRECATION")
-        return ValidationResult.predicated(get(), tVal2.isValid(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2) }.report(errorBuilder)
+        return predicated(get(), !changed, ValidationResult.Errors.CHANGED) {
+                b -> b
+        }.also(!tVal2.isCritical(), ValidationResult.Errors.DESERIALIZATION) { b ->
+            b.content("Exception correcting deserialized entry [$fieldName], using value [${get()}]").addError(tVal2)
+        }.also(!tVal2.isError(), ValidationResult.Errors.DESERIALIZATION) { b ->
+            b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2)
+        }.report(errorBuilder)
     }
 
     @Internal
@@ -145,13 +152,17 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
             }
         }
         val tVal2 = tVal.outmap { correctEntry(it, EntryValidator.ValidationType.WEAK) } //3
+
+        //unconditional get to avoid side effects from conditions etc. that might skew deserialization checks
+        val changed = deserializedChanged(getUnconditional(), tVal2.get())
+
         set(tVal2.get()) //4
-        if (tVal2.isCritical()) { //5
-            return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b ->
-                b.content("Exception correcting deserialized entry [$fieldName], using value [${get()}]").addError(tVal2)
-            }
-        }
-        return ValidationResult.predicated(get(), tVal2.isValid(), ValidationResult.Errors.DESERIALIZATION) { b ->
+
+        return predicated(get(), !changed, ValidationResult.Errors.CHANGED) {
+            b -> b
+        }.also(!tVal2.isCritical(), ValidationResult.Errors.DESERIALIZATION) { b ->
+            b.content("Exception correcting deserialized entry [$fieldName], using value [${get()}]").addError(tVal2)
+        }.also(!tVal2.isError(), ValidationResult.Errors.DESERIALIZATION) { b ->
             b.content("Encountered non-critical errors while deserializing entry $fieldName").addError(tVal2)
         }
     }
@@ -262,6 +273,10 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
      */
     override fun get(): T {
         return storedValue
+    }
+
+    protected open fun getUnconditional(): T {
+        return get()
     }
 
     /**
