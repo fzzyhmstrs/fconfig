@@ -626,12 +626,9 @@ internal object ConfigApiImpl {
                     val newFlags = if (ignoreVisibility || isIgnoreVisibility(prop.annotations)) flags or IGNORE_VISIBILITY else flags
                     if (propVal is Supplier<*> && action != null) {
                         errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
-                        val before = propVal.get()
                         propVal.deserializeEntry(tomlElement, name, newFlags).also { r ->
-                            if (action.restartPrompt) {
-                                if (propVal.deserializedChanged(before, r.get())) {
-                                    errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
-                                }
+                            if (action.restartPrompt && r.has(ValidationResult.Errors.CHANGED)) {
+                                errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                             }
                         }
                     } else {
@@ -646,10 +643,8 @@ internal object ConfigApiImpl {
                             val action = requiredAction(checkActions, prop, globalAction)
                             if (action != null) {
                                 errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
-                                if (action.restartPrompt) {
-                                    if (basicValidation.deserializedChanged(propVal, result.get())) {
-                                        errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
-                                    }
+                                if (action.restartPrompt && result.has(ValidationResult.Errors.CHANGED)) {
+                                    errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                                 }
                             }
                             if (ignoreVisibility) trySetAccessible(prop)
@@ -744,12 +739,9 @@ internal object ConfigApiImpl {
                     val action = requiredAction(checkActions, prop, globalAction)
                     if(v is Supplier<*> && action != null) {
                         errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
-                        val before = v.get()
                         v.deserializeEntry(it, str, flags).also { r ->
-                            if (action.restartPrompt) {
-                                if(v.deserializedChanged(before, r.get())) {
-                                    errorBuilder.addRestart(recordRestarts, action, "$id.$str")
-                                }
+                            if (action.restartPrompt && r.has(ValidationResult.Errors.CHANGED)) {
+                                errorBuilder.addRestart(recordRestarts, action, "$id.$str")
                             }
                         }
                     } else {
@@ -763,10 +755,8 @@ internal object ConfigApiImpl {
                             val action = requiredAction(checkActions, prop, globalAction)
                             if(action != null) {
                                 errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
-                                if (action.restartPrompt) {
-                                    if (basicValidation.deserializedChanged(v, result.get())) {
-                                        errorBuilder.addRestart(recordRestarts, action, "$id.$str")
-                                    }
+                                if (action.restartPrompt && result.has(ValidationResult.Errors.CHANGED)) {
+                                    errorBuilder.addRestart(recordRestarts, action, "$id.$str")
                                 }
                             }
                             prop.setter.call(c, result.get()) //change?
@@ -819,8 +809,7 @@ internal object ConfigApiImpl {
                 if (writeV !is ConfigSection) { //good to go, skip sections since they are getting walked anyhow
                     if(writeV is EntryDeserializer<*> && liveV is Supplier<*>) { //only deserialize for entries that we can do proper checks on
                         val writeResult = writeV.deserializeEntry(it, str, flags) //write the update to the write-copy config
-                        val before = liveV.get() //what does the live config have in that spot right now
-                        if (writeV.deserializedChanged(before, writeResult.get())) { //permissible change made
+                        if (writeResult.has(ValidationResult.Errors.CHANGED)) { //permissible change made
                             val permResult = permissionChecker.check(liveV, liveC, id, str, annotations, clientOnly) //check if we were even supposed to edit this.
                             if (!permResult.success) { //shouldn't have edited... woops
                                 errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
@@ -841,7 +830,7 @@ internal object ConfigApiImpl {
                         val basicValidation = UpdateManager.getValidation(writeV, writeProp, str, id, this.isClient)
                         if (basicValidation != null) {
                             val writeResult = basicValidation.deserializeEntry(it, str, flags) //write the update to the write-copy config
-                            if (basicValidation.deserializedChanged(liveV, writeResult.get())) {
+                            if (writeResult.has(ValidationResult.Errors.CHANGED)) {
                                 val permResult = permissionChecker.check(liveV, liveC, id, str, annotations, clientOnly) //check if we were even supposed to edit this.
                                 if (!permResult.success) { //shouldn't have edited... woops
                                     errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
