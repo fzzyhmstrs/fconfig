@@ -698,6 +698,7 @@ class ValidationResult<T> private constructor(private val storedVal: T, private 
         val ACTION = Type<Action>("Action Required", isString = false, isLoggable = false, isError = false)
         val VERSION = Type<Int>("Version Number", isString = false, isLoggable = false, isError = false)
         val ACCESS_VIOLATION = Type<String>("Access Violation")
+        val CHANGED = Type<Unit>("Value Changed", isString = false, isLoggable = false, isError = false)
     }
 
 
