@@ -429,4 +429,67 @@ object FcText {
     fun String.capital(): Text {
         return this.lowercase().replace('_', ' ').split(' ').joinToString(" ") { it.lowercase(); it.replaceFirstChar { c -> c.uppercase() } }.lit()
     }
+
+    fun joinToText(texts: List<Text>, separator: Text): Text {
+        if (texts.isEmpty()) return empty()
+        if (texts.size == 1) return texts[0]
+        var t = texts[0].copy()
+        for (i in 1..texts.lastIndex) {
+            t = t.append(separator)
+            t = t.append(texts[i])
+        }
+        return t
+    }
+
+    fun orList(list: List<Text>): Text {
+        return orList(list, 0)
+    }
+
+
+    private fun orList(list: List<Text>, currentIndex: Int): Text {
+        if (list.isEmpty()) return empty()
+        return when (currentIndex) {
+            (list.size - 1) -> {
+                list[currentIndex]
+            }
+            (list.size - 2) -> {
+                translatable("fzzy_config.text.or_2", list[currentIndex], orList(list, currentIndex + 1))
+            }
+            else -> {
+                translatable("fzzy_config.text.or_3", list[currentIndex], orList(list, currentIndex + 1))
+            }
+        }
+    }
+
+    fun andList(list: List<Text>): Text {
+        return andList(list, 0)
+    }
+
+
+    private fun andList(list: List<Text>, currentIndex: Int): Text {
+        if (list.isEmpty()) return empty()
+        return when (currentIndex) {
+            (list.size - 1) -> {
+                list[currentIndex]
+            }
+            (list.size - 2) -> {
+                translatable("fzzy_config.text.and_2", list[currentIndex], orList(list, currentIndex + 1))
+            }
+            else -> {
+                translatable("fzzy_config.text.or_3", list[currentIndex], orList(list, currentIndex + 1))
+            }
+        }
+    }
+
+    fun createTooltipString(tt: List<OrderedText>): String {
+        val builder = StringBuilder()
+        for (tip in tt) {
+            tip.accept { _, _, codepoint ->
+                builder.appendCodePoint(codepoint)
+                true
+            }
+            builder.append(". ")
+        }
+        return builder.toString()
+    }
 }
