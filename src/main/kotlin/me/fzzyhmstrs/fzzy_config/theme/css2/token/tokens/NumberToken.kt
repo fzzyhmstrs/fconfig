@@ -11,7 +11,7 @@
 package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.CssToken
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenType
+import me.fzzyhmstrs.fzzy_config.theme.css2.test.TokenType
 
 open class NumberToken(val value: Number, val integer: Boolean): CssToken {
 

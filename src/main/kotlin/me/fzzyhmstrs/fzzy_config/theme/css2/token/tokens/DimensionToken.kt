@@ -10,8 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.CssToken
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenType
+import me.fzzyhmstrs.fzzy_config.theme.css2.test.TokenType
 
 class DimensionToken(value: Number, integer: Boolean, val unit: String): NumberToken(value, integer) {
 

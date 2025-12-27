@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Fzzyhmstrs
+ * Copyright (c) 2025 Fzzyhmstrs
  *
  * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
  *
@@ -8,14 +8,21 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
+package me.fzzyhmstrs.fzzy_config.theme.css2.token
 
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.CssToken
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.TokenType
+import java.util.*
 
-object CDCToken: CssToken {
+class TokenQueue internal constructor(private val tokens: LinkedList<Token<*>>) {
 
-    override fun type(): TokenType {
-        return TokenType.CDC
+    fun canPoll(): Boolean {
+        return tokens.isNotEmpty()
+    }
+
+    fun peek(): Token<*>? {
+        return tokens.peek()
+    }
+
+    fun poll(): Token<*>? {
+        return tokens.poll()
     }
 }

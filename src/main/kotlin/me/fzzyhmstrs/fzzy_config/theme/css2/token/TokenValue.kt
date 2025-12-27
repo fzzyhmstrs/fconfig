@@ -10,17 +10,12 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.css2.token
 
-import me.fzzyhmstrs.fzzy_config.theme.css2.ParseTokenizerType
-
 /**
- * simple interface used to make types for tokens to enable composition of tokens into result objects
+ * simple interface used to make value types for proto tokens. This defines what type of value the token stores
  * @author fzzyhmstrs
  * @since ?.?.?
  */
-class TokenType(val id: String, private val parseType: ParseTokenizerType, private val isError: Boolean = false) {
-
-    fun isType(type: ParseTokenizerType): Boolean = parseType == type
-    fun isError(): Boolean = isError
+class TokenValue<T: Any>(private val id: String) {
 
     override fun toString(): String {
         return id

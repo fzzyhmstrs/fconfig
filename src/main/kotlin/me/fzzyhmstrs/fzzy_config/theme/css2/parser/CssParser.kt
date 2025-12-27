@@ -13,6 +13,8 @@ package me.fzzyhmstrs.fzzy_config.theme.css2.parser
 import me.fzzyhmstrs.fzzy_config.theme.css2.CascadingStyleSheet
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.CssToken
 
+//https://www.w3.org/TR/css-syntax-3/
+
 object CssParser {
 
     fun parse(css: String): CascadingStyleSheet {

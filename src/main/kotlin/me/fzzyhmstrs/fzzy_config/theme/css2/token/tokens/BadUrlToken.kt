@@ -12,7 +12,7 @@ package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.CssToken
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenError
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenType
+import me.fzzyhmstrs.fzzy_config.theme.css2.test.TokenType
 
 class BadUrlToken(val value: String, val column: Int, val line: Int, val error: String): CssToken, TokenError {
 

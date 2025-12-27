@@ -12,7 +12,7 @@ package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.CssToken
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenError
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenType
+import me.fzzyhmstrs.fzzy_config.theme.css2.test.TokenType
 
 class DelimToken(val value: Char, val column: Int, val line: Int): CssToken, TokenError {
 

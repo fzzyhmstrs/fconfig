@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Fzzyhmstrs
+ * Copyright (c) 2025 Fzzyhmstrs
  *
  * This file is part of Fzzy Config, a mod made for minecraft; as such it falls under the license of Fzzy Config.
  *
@@ -8,14 +8,15 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
+package me.fzzyhmstrs.fzzy_config.theme.css2.test
 
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.CssToken
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.TokenType
+import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
 
-object CDCToken: CssToken {
+class CssStyleSheet(private val tokens: List<Token<*>>) {
 
-    override fun type(): TokenType {
-        return TokenType.CDC
+    fun print() {
+        for (token in tokens) {
+            println(token)
+        }
     }
 }

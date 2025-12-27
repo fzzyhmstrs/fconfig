@@ -10,6 +10,8 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.css2.token
 
+import me.fzzyhmstrs.fzzy_config.theme.css2.test.TokenType
+
 interface CssToken {
     fun type(): TokenType
 }
