@@ -8,7 +8,7 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens2
+package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
@@ -20,9 +20,6 @@ import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.consumeEscape
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.consumeIdent
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.isIdentStartCodePoint
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.isValidEscape
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.NOTHING_VALUE
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.STRING_VALUE
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenProducer
 import java.lang.StringBuilder
 
@@ -36,16 +33,18 @@ object IdentProducer: TokenProducer() {
         return isIdentStartCodePoint(reader.peek())
     }
 
-    override fun produce(context: ParseContext) {
+    override fun produce(context: ParseContext): Boolean {
         val reader = context.reader()
+        val startLine = reader.getLine()
+        val startColumn = reader.getColumn()
         val ident = consumeIdent(context.reader())
         if (ident.lowercase() == "url" && reader.canRead() && reader.peek() == '(') {
             reader.skip()
             reader.skipWhitespace()
             if (!reader.canRead()) {
-                context.token(IDENT, STRING_VALUE, ident)
-            } else if (reader.peek() == '"' || reader.peek() == '\'') {
-                context.token(FUNCTION, STRING_VALUE, ident)
+                context.token(IDENT, ident, startLine, startColumn)
+            } else if (reader.canRead() && (reader.peek() == '"' || reader.peek() == '\'')) {
+                context.token(FUNCTION, ident, startLine, startColumn)
             } else {
                 reader.skipWhitespace()
                 val builder = StringBuilder()
@@ -57,11 +56,11 @@ object IdentProducer: TokenProducer() {
                         ')' -> {
                             reader.skip()
                             if (bad != -1) {
-                                context.token(BAD_URL, NOTHING_VALUE, Unit, line, column, "URL parsing error at ln$line/col$bad")
+                                context.token(BAD_URL, line, column, "URL parsing error at ln$line/col$bad")
                             } else {
-                                context.token(URL, STRING_VALUE, builder.toString())
+                                context.token(URL, builder.toString(), startLine, startColumn)
                             }
-                            return
+                            return true
                         }
                         '"', '\'', '(' -> {
                             reader.skip()
@@ -88,13 +87,14 @@ object IdentProducer: TokenProducer() {
                         }
                     }
                 }
-                context.token(BAD_URL, NOTHING_VALUE, Unit, line, column, "Uncaptured URL parsing error at ln$line/col$column")
+                context.token(BAD_URL, line, column, "Uncaptured URL parsing error at ln$line/col$column")
             }
         } else if (reader.canRead() && reader.peek() == '(') {
             reader.skip()
-            context.token(FUNCTION, STRING_VALUE, ident)
+            context.token(FUNCTION, ident, startLine, startColumn)
         } else {
-            context.token(IDENT, STRING_VALUE, ident)
+            context.token(IDENT, ident, startLine, startColumn)
         }
+        return true
     }
 }

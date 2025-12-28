@@ -15,40 +15,37 @@ import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenProducer
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenType
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenValue
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens2.*
+import me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens.*
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import kotlin.math.pow
 
 object CssType: ParseTokenizerType {
 
-    val STRING = TokenType("String", this)
-    val BAD_STRING = TokenType("Bad String", this, true)
-    val IDENT = TokenType("Identifier", this)
-    val FUNCTION = TokenType("Function", this)
-    val URL = TokenType("URL", this)
-    val BAD_URL = TokenType("Bad URL", this, true)
-    val WHITESPACE = TokenType("Whitespace", this)
-    val COLON = TokenType("Colon", this)
-    val SEMI_COLON = TokenType("Semi-colon", this)
-    val HASH = TokenType("Hash", this)
-    val DELIM = TokenType("Delimiter", this)
-    val OPEN_PARENTHESIS = TokenType("Parentheses Open", this)
-    val CLOSE_PARENTHESIS = TokenType("Parentheses Close", this)
-    val COMMA = TokenType("Comma", this)
-    val NUMBER = TokenType("Number", this)
-    val NUMBER_DIMENSION = TokenType("Dimension-Number", this)
-    val NUMBER_PERCENTAGE = TokenType("Percentage-Number", this)
-    val BAD_NUMBER = TokenType("Bad Number", this, true)
-    val CDO = TokenType("cdo", this)
-    val CDC = TokenType("cdc", this)
-    val AT = TokenType("at", this)
-    val OPEN_BRACKET = TokenType("Bracket Open", this)
-    val CLOSE_BRACKET = TokenType("Bracket Close", this)
-    val OPEN_BRACE = TokenType("Brace Open", this)
-    val CLOSE_BRACE = TokenType("Brace Close", this)
-
-    val NUMBER_UNIT_VALUE = TokenValue<NumberWithUnitValue>("Number with unit")
+    val STRING = TokenType<String>("String", this, valueCreator = { s -> "\"$s\"" })
+    val BAD_STRING = TokenType<String>("Bad String", this, true)
+    val IDENT = TokenType<String>("Identifier", this)
+    val FUNCTION = TokenType<String>("Function", this, valueCreator = { s -> "$s(" })
+    val URL = TokenType<String>("URL", this, valueCreator = { s -> "url($s)" })
+    val BAD_URL = TokenType<Unit>("Bad URL", this, true)
+    val WHITESPACE = TokenType<String>("Whitespace", this, isWhitespace = true, raw = " ")
+    val HASH = TokenType<String>("Hash", this, valueCreator = { s -> "#$s" })
+    val DELIM = TokenType<String>("Delimiter", this)
+    val NUMBER = TokenType<Parser.NumberValue>("Number", this)
+    val NUMBER_DIMENSION = TokenType<NumberWithUnitValue>("Dimension-Number", this)
+    val NUMBER_PERCENTAGE = TokenType<NumberWithUnitValue>("Percentage-Number", this)
+    val BAD_NUMBER = TokenType<Token<out Parser.NumberValue>>("Bad Number", this, true)
+    val CDO = TokenType<Unit>("cdo", this, raw = "<!--")
+    val CDC = TokenType<Unit>("cdc", this, raw = "-->")
+    val AT = TokenType<String>("at", this, valueCreator = { s -> "@$s" })
+    val SEMI_COLON = TokenType<Char>("Semi-colon", this)
+    val COLON = TokenType<Char>("Colon", this)
+    val COMMA = TokenType<Char>("Comma", this)
+    val OPEN_PARENTHESIS = TokenType<Char>("Parentheses Open", this)
+    val CLOSE_PARENTHESIS = TokenType<Char>("Parentheses Close", this)
+    val OPEN_BRACKET = TokenType<Char>("Bracket Open", this)
+    val CLOSE_BRACKET = TokenType<Char>("Bracket Close", this)
+    val OPEN_BRACE = TokenType<Char>("Brace Open", this)
+    val CLOSE_BRACE = TokenType<Char>("Brace Close", this)
 
     init {
         Parser.addTokenizer(this, listOf(
@@ -215,6 +212,20 @@ object CssType: ParseTokenizerType {
             return error.isNotEmpty()
         }
 
+        fun toNumber(): Result {
+            if (isErrored()) {
+                return Result(0, false, error)
+            }
+            val number: Number = if (hasDecimal) {
+                val d = num.toString().toDoubleOrNull() ?: return Result(0, false, "Unparseable number: $num")
+                (if(positive) 1.0 else -1.0) * d * if(hasExponent) 10.0.pow((if (expPositive) 1.0 else -1.0) * (expNum.toString().toDoubleOrNull() ?: return Result(0, false, "Unparseable exponent: $expNum"))) else 1.0
+            } else {
+                val i = num.toString().toIntOrNull() ?: return Result(0, false, "Unparseable number: $num")
+                (if(positive) 1 else -1) * i * (if(hasExponent) 10.0.pow((if (expPositive) 1.0 else -1.0) * (expNum.toString().toDoubleOrNull() ?: return Result(0, false, "Unparseable exponent: $expNum"))) else 1.0).toInt()
+            }
+            return Result(number, hasDecimal)
+        }
+
         while (reader.canRead()) {
             val c = reader.peek()
             if (c == '+') {
@@ -252,6 +263,9 @@ object CssType: ParseTokenizerType {
                 num.append(c)
                 hasDecimal = true
             } else if (c == 'e' || c == 'E') {
+                if (reader.canRead(2) && reader.peek(1) == 'm') {
+                    return toNumber()
+                }
                 reader.skip()
                 if (isErrored()) continue
                 if (hasExponent) {
@@ -279,19 +293,7 @@ object CssType: ParseTokenizerType {
             }
         }
 
-        if (isErrored()) {
-            return Result(0, false, error)
-        }
-
-        val number: Number = if (hasDecimal) {
-            val d = num.toString().toDoubleOrNull() ?: return Result(0, false, "Unparseable number: $num")
-            (if(positive) 1.0 else -1.0) * d * if(hasExponent) 10.0.pow((if (expPositive) 1.0 else -1.0) * (expNum.toString().toDoubleOrNull() ?: return Result(0, false, "Unparseable exponent: $expNum"))) else 1.0
-        } else {
-            val i = num.toString().toIntOrNull() ?: return Result(0, false, "Unparseable number: $num")
-            (if(positive) 1 else -1) * i * (if(hasExponent) 10.0.pow((if (expPositive) 1.0 else -1.0) * (expNum.toString().toDoubleOrNull() ?: return Result(0, false, "Unparseable exponent: $expNum"))) else 1.0).toInt()
-        }
-
-        return Result(number, hasDecimal)
+        return toNumber()
     }
 
     internal class Result(val number: Number, val hasDecimal: Boolean, val error: String = "") {
@@ -307,7 +309,7 @@ object CssType: ParseTokenizerType {
         }
 
         override fun toString(): String {
-            return "NumberUnit(${getValue()} $unit)"
+            return "${getValue()}$unit"
         }
     }
 

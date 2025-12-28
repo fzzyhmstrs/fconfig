@@ -10,8 +10,6 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.css2.token
 
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.NOTHING_VALUE
-
 /**
  * A single "unit" of proto-parsing
  * @param type this defines "what" token it is, without having to have 5000 inherited ProtoToken subclasses. This is used by token producers to ask for certain types in some order
@@ -20,28 +18,67 @@ import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.NOTHING_VALUE
  * @author fzzyhmstrs
  * @since ?.?.?
  */
-data class Token<T: Any>(val type: TokenType, val valueType: TokenValue<T>, val value: T, val error: ProtoTokenError = ProtoTokenError.EMPTY) {
-    constructor(type: TokenType, valueType: TokenValue<T>, value: T, line: Int, column: Int, message: String): this(type, valueType, value, ProtoTokenError(line, column, message))
+class Token<T: Any> private constructor(val type: TokenType<T>, val value: T, private val info: TokenInfo = TokenInfo.EMPTY) {
+    constructor(type: TokenType<T>, value: T, line: Int, column: Int): this(type, value, TokenInfo(line, column, ""))
+    constructor(type: TokenType<T>, value: T, line: Int, column: Int, message: String): this(type, value, TokenInfo(line, column, message))
+
+    fun line(): Int {
+        return info.line
+    }
+
+    fun column(): Int {
+        return info.column
+    }
+
+    fun message(): String {
+        return info.error
+    }
+
+    fun asString(): String {
+        return type.createValue(if (value == Unit) type.raw() else value.toString())
+    }
 
     override fun toString(): String {
         return if (value == Unit) {
-            if (error != ProtoTokenError.EMPTY) {
-                "Token($type | $error)"
+            if (info != TokenInfo.EMPTY) {
+                "Token($type | $info)"
             } else {
                 "Token($type)"
             }
         } else {
-            if (error != ProtoTokenError.EMPTY) {
-                "Token($type > $valueType : $value | $error)"
+            if (info != TokenInfo.EMPTY) {
+                "Token($type : $value | $info)"
             } else {
-                "Token($type > $valueType : $value)"
+                "Token($type : $value)"
             }
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Token<*>) return false
+
+        if (type != other.type) return false
+        if (value != other.value) return false
+        if (info != other.info) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + value.hashCode()
+        result = 31 * result + info.hashCode()
+        return result
+    }
+
     companion object {
-        fun unit(type: TokenType): Token<Unit> {
-            return Token(type, NOTHING_VALUE, Unit)
+        fun unit(type: TokenType<Unit>, line: Int, column: Int): Token<Unit> {
+            return Token(type, Unit, line, column)
+        }
+
+        fun unit(type: TokenType<Unit>, line: Int, column: Int, message: String): Token<Unit> {
+            return Token(type, Unit, line, column, message)
         }
     }
 }

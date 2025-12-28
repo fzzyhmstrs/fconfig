@@ -13,6 +13,7 @@ package me.fzzyhmstrs.fzzy_config.theme.css2.test
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseTokenizerType
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
+import me.fzzyhmstrs.fzzy_config.theme.css2.strategy.ParseStrategy
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.*
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenType
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
@@ -24,6 +25,9 @@ import java.util.*
 import java.util.stream.Collectors
 import java.util.stream.Stream
 import java.util.stream.StreamSupport
+
+//non-selector strings aren't giving back their quotes
+//multi-line comments not handled properly
 
 object Parser {
     private val parseSpecs: MutableMap<ParseTokenizerType, Spec> = hashMapOf()
@@ -38,94 +42,78 @@ object Parser {
         }
     }
 
-    private val UNKNOWN = TokenType("Unknown", UNKNOWN_TYPE, true)
-
-    val NOTHING_VALUE = TokenValue<Unit>("Nothing")
-    val STRING_VALUE = TokenValue<String>("String")
-    val NUMBER_VALUE = TokenValue<NumberValue>("Number")
-    val NUMBER_TOKEN_VALUE = TokenValue<Token<out NumberValue>>("Number Token")
-
-    fun <T: Any, B: ParseStrategy.Builder<T>> parse(input: BufferedReader, type: ParseTokenizerType, strategy: ParseStrategy<T, B>, vararg args: String): ValidationResult<T> {
-        val spec = parseSpecs[type] ?: throw IllegalStateException("Parse spec ${type.id()} not registered")
-        val builder = strategy.builder()
-        val tokens = input.use { inputReader ->
-            inputReader.indexedLines()
-                .mapMulti { (index, line), consumer ->
-                    val context = object : ParseContext() {
-                        val reader = StringReader(type.filterInput(line), index + 1)
-
-                        override fun reader(): StringReader {
-                            return reader
-                        }
-
-                        override fun token(token: Token<*>) {
-                            consumer.accept(token)
-                        }
-                    }
-
-                    var unknownBuilder = StringBuilder()
-
-                    while (context.reader().canRead()) {
-                        var unknown = true
-                        for (provider in spec.producers) {
-                            if (provider.canProduce(context.reader())) {
-                                if (unknownBuilder.isNotEmpty()) {
-                                    context.token(UNKNOWN, STRING_VALUE, unknownBuilder.toString())
-                                    unknownBuilder = StringBuilder()
-                                }
-                                val before = context.reader().getColumn()
-                                provider.produce(context)
-                                if (context.reader().getColumn() == before) {
-                                    throw IllegalStateException("Provider ${provider.id()} didn't consume any input characters at column $before")
-                                }
-                                unknown = false
-                                break
-                            }
-                        }
-                        if (unknown) {
-                            unknownBuilder.append(context.reader().read())
-                        }
-                    }
-                }.collect(Collectors.toCollection(::LinkedList))
+    val SPECIAL_TYPE = object : ParseTokenizerType {
+        override fun id(): String {
+            return "special"
         }
 
-        val queue = TokenQueue(tokens)
+        override fun filterInput(string: String): String {
+            return string
+        }
+    }
 
-        @Suppress("UNCHECKED_CAST")
-        val buildResult = strategy.processTokens(builder, queue, args as Array<String>)
+    private val UNKNOWN = TokenType<String>("Unknown", UNKNOWN_TYPE, true)
+    val EOL = TokenType<Unit>("EOL", SPECIAL_TYPE, false, raw = "\n")
+    val EOF = TokenType<Unit>("EOF", SPECIAL_TYPE, false, valueCreator = { "" })
 
-        return buildResult.map { it.build() }
+    fun <T: Any, B: ParseStrategy.Builder<T>> parse(input: BufferedReader, type: ParseTokenizerType, strategy: ParseStrategy<T, B>, vararg args: String): ValidationResult<Pair<T, Int>> {
+        val a = System.currentTimeMillis()
+        val spec = parseSpecs[type] ?: throw IllegalStateException("Parse spec ${type.id()} not registered")
+        val lines = input.use { inputReader ->
+            inputReader.lines().collect(Collectors.toCollection(::ArrayList))
+        }
+        val b = System.currentTimeMillis()
 
-        /*val contexts = lines.mapIndexed { index, it ->
-            object : ParseContext() {
-                val reader = StringReader(it, index + 1)
+        val tokens: LinkedList<Token<*>> = LinkedList()
+
+        var pendingProducer: TokenProducer? = null
+
+        for ((index, line) in lines.withIndex()) {
+
+            val lineTokens: MutableList<Token<*>> = mutableListOf()
+
+            val context = object : ParseContext() {
+                private val reader = StringReader(type.filterInput(line), index + 1)
 
                 override fun reader(): StringReader {
                     return reader
                 }
 
                 override fun token(token: Token<*>) {
-                    tokens.add(token)
+                    lineTokens.add(token)
                 }
             }
-        }
 
-
-
-        for (context in contexts) {
             var unknownBuilder = StringBuilder()
+
+            val pp = pendingProducer
+            if (context.reader().canRead() && pp != null) {
+                pendingProducer = null
+                val before = context.reader().getColumn()
+                val complete = pp.produce(context)
+                if (context.reader().getColumn() == before) {
+                    throw IllegalStateException("Provider ${pp.id()} didn't consume any input characters at column $before")
+                }
+                if (!complete) {
+                    pendingProducer = pp
+                }
+            }
+
             while (context.reader().canRead()) {
                 var unknown = true
-                for (provider in spec.producers) {
-                    if (provider.canProduce(context.reader())) {
+                for (producer in spec.producers) {
+                    if (producer.canProduce(context.reader())) {
                         if (unknownBuilder.isNotEmpty()) {
-                            context.token(UNKNOWN, STRING_VALUE, unknownBuilder.toString())
+                            context.token(UNKNOWN, unknownBuilder.toString(), context.reader().getLine(), context.reader().getColumn())
                             unknownBuilder = StringBuilder()
                         }
                         val before = context.reader().getColumn()
-                        provider.produce(context)
+                        val complete = producer.produce(context)
                         if (context.reader().getColumn() == before) {
-                            throw IllegalStateException("Provider ${provider.id()} didn't consume any input characters at column $before")
+                            throw IllegalStateException("Provider ${producer.id()} didn't consume any input characters at column $before")
+                        }
+                        if (!complete) {
+                            pendingProducer = producer
                         }
                         unknown = false
                         break
@@ -135,8 +123,35 @@ object Parser {
                     unknownBuilder.append(context.reader().read())
                 }
             }
+            context.token(EOL, context.reader().getLine(), context.reader().getColumn(), "EOL")
+            tokens.addAll(lineTokens)
         }
-        return tokens*/
+
+        if (tokens.peekLast().type == EOL) {
+            val t = tokens.pollLast()
+            tokens.add(Token.unit(EOF, t.line(), t.column(), "EOF"))
+        }
+
+        val size = tokens.size
+
+        if (args.contains("-print-tokens")) {
+            for (token in tokens) {
+                println(token)
+            }
+        }
+
+        val queue = TokenQueue.Impl(tokens)
+
+        val c = System.currentTimeMillis()
+
+        @Suppress("UNCHECKED_CAST")
+        val buildResult = strategy.startProcessingTokens(queue, args as Array<String>)
+
+        val d = System.currentTimeMillis()
+
+        println("Timing: 1:${b - a}ms / 2:${c - b}ms / 3:${d - c}ms")
+
+        return buildResult.map { builder -> builder.build().map{ result -> result to size } }.get()
     }
 
     fun addTokenizer(type: ParseTokenizerType, providers: List<TokenProducer>) {
@@ -186,7 +201,7 @@ object Parser {
         }
 
         override fun toString(): String {
-            return "Number($value)"
+            return value.toString()
         }
     }
 

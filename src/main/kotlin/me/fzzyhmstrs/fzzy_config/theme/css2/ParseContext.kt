@@ -11,7 +11,6 @@
 package me.fzzyhmstrs.fzzy_config.theme.css2
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenValue
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenType
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
 
@@ -19,15 +18,19 @@ abstract class ParseContext {
     abstract fun reader(): StringReader
     abstract fun token(token: Token<*>)
 
-    fun token(type: TokenType) {
-        token(Token.unit(type))
+    fun token(type: TokenType<Unit>, line: Int, column: Int) {
+        token(Token.unit(type, line, column))
     }
 
-    fun <T: Any> token(type: TokenType, valueType: TokenValue<T>, value: T) {
-        token(Token(type, valueType, value))
+    fun token(type: TokenType<Unit>, line: Int, column: Int, message: String) {
+        token(Token.unit(type, line, column, message))
     }
 
-    fun <T: Any> token(type: TokenType, valueType: TokenValue<T>, value: T, line: Int, column: Int, message: String) {
-        token(Token(type, valueType, value, line, column, message))
+    fun <T: Any> token(type: TokenType<T>, value: T, line: Int, column: Int) {
+        token(Token(type, value, line, column))
+    }
+
+    fun <T: Any> token(type: TokenType<T>, value: T, line: Int, column: Int, message: String) {
+        token(Token(type, value, line, column, message))
     }
 }

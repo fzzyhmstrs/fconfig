@@ -12,18 +12,17 @@ package me.fzzyhmstrs.fzzy_config.theme.css2.token
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.NOTHING_VALUE
 
 abstract class TokenProducer {
     abstract fun id(): String
     abstract fun canProduce(reader: StringReader): Boolean
-    abstract fun produce(context: ParseContext)
+    abstract fun produce(context: ParseContext): Boolean //did the production finish
 
     override fun toString(): String {
         return "Producer(${id()})"
     }
 
-    open class SingleChar(private val type: TokenType, private val char: Char, private val id: String): TokenProducer() {
+    open class SingleChar(private val type: TokenType<Char>, private val char: Char, private val id: String): TokenProducer() {
 
         override fun id(): String {
             return id
@@ -33,9 +32,13 @@ abstract class TokenProducer {
             return reader.peek() == char
         }
 
-        override fun produce(context: ParseContext) {
-            context.reader().skip()
-            context.token(type, NOTHING_VALUE, Unit)
+        override fun produce(context: ParseContext): Boolean {
+            val reader = context.reader()
+            val startLine = reader.getLine()
+            val startColumn = reader.getColumn()
+            reader.skip()
+            context.token(type, char, startLine, startColumn)
+            return true
         }
     }
 }

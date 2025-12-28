@@ -8,29 +8,29 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens2
+package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
+import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.DELIM
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenProducer
 
-object CommentProducer: TokenProducer() {
+object OtherProducer: TokenProducer() {
 
     override fun id(): String {
-        return "comment"
+        return "at"
     }
 
     override fun canProduce(reader: StringReader): Boolean {
-        return reader.canRead(2) && reader.peek() == '/' && reader.peek(1) == '*'
+        return true
     }
 
-    override fun produce(context: ParseContext) {
+    override fun produce(context: ParseContext): Boolean {
         val reader = context.reader()
-        var lastRead = ' '
-        while (reader.canRead()) {
-            val read = reader.read()
-            if (lastRead == '*' && read == '/') break
-            lastRead = read
-        }
+        val startColumn = reader.getColumn()
+        val startLine = reader.getLine()
+        val at = reader.read().toString()
+        context.token(DELIM, at, startLine, startColumn, "Delimiter $at found")
+        return true
     }
 }

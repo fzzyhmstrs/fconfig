@@ -8,15 +8,13 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens2
+package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.BAD_STRING
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.STRING
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.STRING_VALUE
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenProducer
 
 object StringProducer: TokenProducer() {
@@ -29,7 +27,7 @@ object StringProducer: TokenProducer() {
         return (reader.peek() == '"' || reader.peek() == '\'')
     }
 
-    override fun produce(context: ParseContext) {
+    override fun produce(context: ParseContext): Boolean {
         val reader = context.reader()
         val startColumn = reader.getColumn()
         val startLine = reader.getLine()
@@ -49,15 +47,15 @@ object StringProducer: TokenProducer() {
             when (c) {
                 '"', '\'' -> {
                     if (c == open) {
-                        context.token(STRING, STRING_VALUE, builder.toString())
-                        return
+                        context.token(STRING, builder.toString(), startLine, startColumn)
+                        return true
                     } else {
                         builder.append(c)
                     }
                 }
                 '\n' -> {
-                    context.token(BAD_STRING, STRING_VALUE, builder.toString(), startColumn, startLine, "Illegal newline")
-                    return
+                    context.token(BAD_STRING, builder.toString(), startColumn, startLine, "Illegal newline")
+                    return true
                 }
                 '\u005C' -> {
                     solidusFound = true
@@ -67,7 +65,8 @@ object StringProducer: TokenProducer() {
                 }
             }
         }
-        context.token(BAD_STRING, STRING_VALUE, builder.toString(), startColumn, startLine, "Unterminated string value; EOF reached")
+        context.token(BAD_STRING, builder.toString(), startColumn, startLine, "Unterminated string value; EOF reached")
+        return true
     }
 
 }

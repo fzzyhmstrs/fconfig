@@ -8,30 +8,32 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens2
+package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.DELIM
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.STRING_VALUE
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
+import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.WHITESPACE
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenProducer
 
-object OtherProducer: TokenProducer() {
+object WhitespaceProducer: TokenProducer() {
 
     override fun id(): String {
-        return "at"
+        return "whitespace"
     }
 
     override fun canProduce(reader: StringReader): Boolean {
-        return true
+        return reader.peek().isWhitespace()
     }
 
-    override fun produce(context: ParseContext) {
+    override fun produce(context: ParseContext): Boolean {
         val reader = context.reader()
-        val startColumn = reader.getColumn()
         val startLine = reader.getLine()
-        val at = reader.read().toString()
-        context.token(DELIM, STRING_VALUE, at, startLine, startColumn, "Delimiter $at found")
+        val startColumn = reader.getColumn()
+        var whitespace = ""
+        while(reader.canRead() && reader.peek().isWhitespace()) {
+            whitespace += reader.read()
+        }
+        context.token(WHITESPACE, whitespace, startLine, startColumn)
+        return true
     }
 }

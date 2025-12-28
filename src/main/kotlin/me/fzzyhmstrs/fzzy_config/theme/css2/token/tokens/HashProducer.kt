@@ -8,7 +8,7 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens2
+package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
@@ -16,8 +16,6 @@ import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.DELIM
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.HASH
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.consumeIdent
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.STRING_VALUE
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenProducer
 
 object HashProducer: TokenProducer() {
@@ -30,16 +28,19 @@ object HashProducer: TokenProducer() {
         return reader.peek() == '#'
     }
 
-    override fun produce(context: ParseContext) {
+    override fun produce(context: ParseContext): Boolean {
         val reader = context.reader()
+        val startLine = reader.getLine()
+        val startColumn = reader.getColumn()
         val hash = reader.read()
         if (!reader.canRead()) {
-            context.token(DELIM, STRING_VALUE, hash.toString(), reader.getLine(), reader.getColumn(), "Delimiter # found")
+            context.token(DELIM, hash.toString(), reader.getLine(), reader.getColumn(), "Delimiter # found")
         } else if (CssType.isIdentSequenceStart(reader)) {
             val id = consumeIdent(reader)
-            context.token(HASH, STRING_VALUE, id)
+            context.token(HASH, id, startLine, startColumn)
         } else {
-            context.token(DELIM, STRING_VALUE, hash.toString(), reader.getLine(), reader.getColumn(), "Delimiter # found")
+            context.token(DELIM, hash.toString(), reader.getLine(), reader.getColumn(), "Delimiter # found")
         }
+        return true
     }
 }

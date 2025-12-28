@@ -8,7 +8,7 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens2
+package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
@@ -16,7 +16,6 @@ import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.AT
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.DELIM
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.consumeIdent
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.isIdentSequenceStart
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.STRING_VALUE
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenProducer
 
 object AtProducer: TokenProducer() {
@@ -29,16 +28,17 @@ object AtProducer: TokenProducer() {
         return reader.peek() == '@'
     }
 
-    override fun produce(context: ParseContext) {
+    override fun produce(context: ParseContext): Boolean {
         val reader = context.reader()
         val startColumn = reader.getColumn()
         val startLine = reader.getLine()
         val at = reader.read()
         if (isIdentSequenceStart(reader)) {
             val ident = consumeIdent(reader)
-            context.token(AT, STRING_VALUE, ident)
+            context.token(AT, ident, startLine, startColumn)
         } else {
-            context.token(DELIM, STRING_VALUE, at.toString(), startLine, startColumn, "Delimiter @ found")
+            context.token(DELIM, at.toString(), startLine, startColumn, "Delimiter @ found")
         }
+        return true
     }
 }

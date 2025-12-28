@@ -8,7 +8,7 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens2
+package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
@@ -18,8 +18,6 @@ import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.NUMBER
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.NUMBER_DIMENSION
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.NUMBER_PERCENTAGE
 import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.NUMBER_TOKEN_VALUE
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.Parser.NUMBER_VALUE
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenProducer
 
@@ -33,24 +31,25 @@ object DigitProducer: TokenProducer() {
         return reader.peek().isDigit()
     }
 
-    override fun produce(context: ParseContext) {
+    override fun produce(context: ParseContext): Boolean {
         val reader = context.reader()
         val startColumn = reader.getColumn()
         val startLine = reader.getLine()
         val result = CssType.consumeNumber(reader)
         val token = if (CssType.isIdentSequenceStart(reader)) {
             val unit = CssType.consumeIdent(reader)
-            Token(NUMBER_DIMENSION, CssType.NUMBER_UNIT_VALUE,  CssType.NumberWithUnitValue(result.number, unit))
+            Token(NUMBER_DIMENSION, CssType.NumberWithUnitValue(result.number, unit), startLine, startColumn)
         } else if (reader.canRead() && reader.peek() == '%') {
             reader.skip()
-            Token(NUMBER_PERCENTAGE, NUMBER_VALUE, CssType.NumberWithUnitValue(result.number, "%"))
+            Token(NUMBER_PERCENTAGE, CssType.NumberWithUnitValue(result.number, "%"), startLine, startColumn)
         } else {
-            Token(NUMBER, NUMBER_VALUE, Parser.NumberValue(result.number))
+            Token(NUMBER, Parser.NumberValue(result.number), startLine, startColumn)
         }
         context.token (if (result.isError()) {
-            Token(BAD_NUMBER, NUMBER_TOKEN_VALUE, token, startLine, startColumn, result.error)
+            Token(BAD_NUMBER, token, startLine, startColumn, result.error)
         } else {
             token
         })
+        return true
     }
 }

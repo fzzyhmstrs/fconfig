@@ -8,8 +8,10 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token
+package me.fzzyhmstrs.fzzy_config.theme.css2.strategy
 
+import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
+import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenQueue
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 
 /*
@@ -22,19 +24,26 @@ import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 * * Group -> A structure with some start and stop delimiters that mark the start/stop but otherwise just wrap the internals
 *                Probably would be used internally for standard list/map/etc. impls
 * * Alternatives -> A set of valid alternatives. Will attempt to parse
+* * Basic Type -> simple strategy to convert a set of tokens into a basic type
+*                String
+*                Number
+*                Boolean
 * */
 
 interface ParseStrategy<T: Any, B: ParseStrategy.Builder<T>> {
 
     fun id(): String
     fun builder(): B
-    fun processTokens(builder: B, tokens: TokenQueue, args: Array<String>, errored: Boolean = false): ValidationResult<B>
 
+    fun canProcessToken(tokens: TokenQueue, args: Array<String>): Boolean
+    fun processTokens(builder: B, tokens: TokenQueue, args: Array<String>, errored: Boolean = false): ValidationResult<B>
     fun startProcessingTokens(tokens: TokenQueue, args: Array<String>, errored: Boolean = false): ValidationResult<B> {
         return processTokens(builder(), tokens, args, errored)
     }
 
+    fun provideTokens(value: T): List<Token<*>>
+
     interface Builder<T: Any> {
-        fun build(): T
+        fun build(): ValidationResult<T>
     }
 }

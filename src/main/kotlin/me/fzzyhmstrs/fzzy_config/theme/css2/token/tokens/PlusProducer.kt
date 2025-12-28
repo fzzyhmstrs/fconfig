@@ -8,28 +8,33 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens2
+package me.fzzyhmstrs.fzzy_config.theme.css2.token.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.css2.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.css2.parser.StringReader
-import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.WHITESPACE
-import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
+import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.DELIM
+import me.fzzyhmstrs.fzzy_config.theme.css2.test.CssType.isValidNumber
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenProducer
 
-object WhitespaceProducer: TokenProducer() {
+object PlusProducer: TokenProducer() {
 
     override fun id(): String {
-        return "whitespace"
+        return "plus"
     }
 
     override fun canProduce(reader: StringReader): Boolean {
-        return reader.peek().isWhitespace()
+        return reader.peek() == '+'
     }
 
-    override fun produce(context: ParseContext) {
-        while(context.reader().canRead() && context.reader().peek().isWhitespace()) {
-            context.reader().skip()
+    override fun produce(context: ParseContext): Boolean {
+        val reader = context.reader()
+        val startColumn = reader.getColumn()
+        val startLine = reader.getLine()
+        if (isValidNumber(reader)) {
+            DigitProducer.produce(context)
+        } else {
+            context.token(DELIM, reader.read().toString(), startLine, startColumn, "Delimiter + found")
         }
-        context.token(WHITESPACE)
+        return true
     }
 }
