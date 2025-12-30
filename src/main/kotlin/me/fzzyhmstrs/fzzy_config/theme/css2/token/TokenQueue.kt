@@ -10,20 +10,25 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.css2.token
 
+import me.fzzyhmstrs.fzzy_config.theme.css2.strategy.ParseStrategy
+import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import java.lang.IllegalStateException
 import java.util.*
 import java.util.function.Predicate
 
 sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>) {
 
-    fun split(splitConsumer: (Split) -> Unit) {
+    fun <T: Any> split(splitConsumer: (Split) -> Optional<ValidationResult<out ParseStrategy.Builder<T>>>): Optional<ValidationResult<out ParseStrategy.Builder<T>>> {
         val split = Split(LinkedList(tokens), this)
-        splitConsumer(split)
+        return splitConsumer(split)
     }
 
-    fun slice(sliceTo: Predicate<Token<*>>, sliceConsumer: (TokenQueue) -> Unit) {
-        val split = Impl(LinkedList(tokens))
-        sliceConsumer(split)
+    fun <T: Any, B: ParseStrategy.Builder<T>> slice(sliceBefore: Predicate<Token<*>>, sliceConsumer: (Slice) -> Optional<ValidationResult<B>>): Optional<ValidationResult<B>> {
+        val sliceIndex = tokens.withIndex().firstOrNull { (_, t) -> sliceBefore.test(t) }?.index?.minus(1) ?: return Optional.empty()
+        if (sliceIndex < 0) return Optional.empty()
+
+        val slice = Slice(LinkedList(tokens.subList(0, sliceIndex)), sliceIndex, this)
+        return sliceConsumer(slice).also { slice.commit() }
     }
 
     class Impl internal constructor(tokens: LinkedList<Token<*>>): TokenQueue(tokens)
@@ -54,13 +59,46 @@ sealed class TokenQueue(protected val tokens: LinkedList<Token<*>>) {
         }
     }
 
+    class Slice internal constructor(tokens: LinkedList<Token<*>>, private val maxIndex: Int, private val parent: TokenQueue): TokenQueue(tokens) {
+
+        private var commited = false
+        private var index = 0
+
+        fun commit() {
+            parent.tokens.clear()
+            parent.tokens.addAll(this.tokens)
+            commited = true
+        }
+
+        override fun canPoll(): Boolean {
+            if (commited) throw IllegalStateException("Operation on TokenQueue Split after committing")
+            return index < maxIndex && super.canPoll()
+        }
+
+        override fun peek(): Token<*> {
+            if (commited) throw IllegalStateException("Operation on TokenQueue Split after committing")
+            if (index >= maxIndex) throw IllegalStateException("Out-of-bounds operation on TokenQueue Split")
+            return super.peek()
+        }
+
+        override fun poll(): Token<*> {
+            if (commited) throw IllegalStateException("Operation on TokenQueue Split after committing")
+            if (index >= maxIndex) throw IllegalStateException("Out-of-bounds operation on TokenQueue Split")
+            index++
+            return super.poll()
+        }
+    }
+
     fun isEOL(): Boolean {
         return canPoll() && peek().type.isSpecial()
     }
 
+    /**
+     * Also consumes special tokens like EOL and EOF, which are effectively whitespace
+     */
     fun consumeWhitespace() {
         while (canPoll()) {
-            if (!tokens.peek().type.isWhitespace()) {
+            if (!(tokens.peek().type.isWhitespace() || tokens.peek().type.isSpecial())) {
                 return
             }
             poll()

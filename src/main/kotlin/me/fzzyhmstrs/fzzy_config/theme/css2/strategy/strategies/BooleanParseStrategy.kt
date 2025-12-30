@@ -14,58 +14,58 @@ import me.fzzyhmstrs.fzzy_config.theme.css2.strategy.ParseStrategy
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.css2.token.TokenType
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
-import org.jetbrains.annotations.ApiStatus.Internal
-import java.lang.Appendable
 import java.lang.IllegalArgumentException
-import java.lang.StringBuilder
 import java.util.*
 import java.util.function.Predicate
 
-class StringParseStrategy private constructor(type: TokenType<String>,
-                                              delimiter: Predicate<Token<*>>?,
-                                              errorGates: List<Predicate<Token<*>>>,
-                                              unknownStrategy: UnknownStrategy,
-                                              provider: ((String) -> List<Token<*>>)?)
-    : BaseParseStrategy<String, StringParseStrategy.StrategyBuilder>("String", type, delimiter, errorGates, unknownStrategy, provider)
-{
+class BooleanParseStrategy private constructor(type: TokenType<Boolean>,
+                                               delimiter: Predicate<Token<*>>?,
+                                               errorGates: List<Predicate<Token<*>>>,
+                                               unknownStrategy: UnknownStrategy,
+                                               provider: ((Boolean) -> List<Token<*>>)?)
+    : BaseParseStrategy<Boolean, BooleanParseStrategy.StrategyBuilder>("Boolean", type, delimiter, errorGates, unknownStrategy, provider) {
 
     override fun builder(): StrategyBuilder {
         return StrategyBuilder()
     }
 
     override fun processToken(builder: StrategyBuilder, token: Token<*>, args: Array<String>): Optional<ValidationResult<StrategyBuilder>> {
-        builder.append(if (args.contains("--quote-strings")) token.asString() else token.value as String)
+        if(builder.accept(token.value as Boolean)) {
+            return Optional.of(ValidationResult.error(builder, "Multiple number tokens found at ln${token.line()}/col${token.column()}, expected 1"))
+        }
         return Optional.empty()
     }
 
     override fun convertToken(builder: StrategyBuilder, token: Token<*>): Optional<ValidationResult<StrategyBuilder>> {
-        builder.append(token.asString())
+        try {
+            val n = token.asString().lowercase().toBooleanStrictOrNull()
+            if (n != null) {
+                builder.accept(n)
+            }
+        } catch (_: Exception) {
+            //nop
+        }
         return Optional.empty()
     }
 
-    @Internal
-    inner class StrategyBuilder: ParseStrategy.Builder<String>, Appendable {
+    inner class StrategyBuilder: ParseStrategy.Builder<Boolean> {
 
-        private val strBuilder = StringBuilder()
+        private var bl: Boolean = false
+        private var accepted = false
 
-        override fun append(csq: CharSequence?): StrategyBuilder {
-            strBuilder.append(csq)
-            return this
+        fun accept(bl: Boolean): Boolean {
+            if (accepted) {
+                return true
+            }
+            this.bl = bl
+            accepted = true
+            return false
         }
 
-        override fun append(csq: CharSequence?, start: Int, end: Int): Appendable {
-            strBuilder.append(csq, start, end)
-            return this
+        override fun build(): ValidationResult<Boolean> {
+            return ValidationResult.success(bl)
         }
 
-        override fun append(c: Char): Appendable {
-            strBuilder.append(c)
-            return this
-        }
-
-        override fun build(): ValidationResult<String> {
-            return ValidationResult.success(strBuilder.toString())
-        }
     }
 
     companion object {
@@ -78,11 +78,11 @@ class StringParseStrategy private constructor(type: TokenType<String>,
             private var eolBreak = true
             private val errorGates: MutableList<Predicate<Token<*>>> = mutableListOf()
             private var delimiter: Predicate<Token<*>>? = null
-            private var type: TokenType<String>? = null
+            private var type: TokenType<Boolean>? = null
             private var unknownStrategy: UnknownStrategy = UnknownStrategy.THROW
-            private var provider: ((String) -> List<Token<*>>)? = null
+            private var provider: ((Boolean) -> List<Token<*>>)? = null
 
-            fun type(type: TokenType<String>): Builder {
+            fun type(type: TokenType<Boolean>): Builder {
                 this.type = type
                 return this
             }
@@ -117,18 +117,20 @@ class StringParseStrategy private constructor(type: TokenType<String>,
                 return this
             }
 
-            fun provider(provider: ((String) -> List<Token<*>>)): Builder {
+            fun provider(provider: ((Boolean) -> List<Token<*>>)): Builder {
                 this.provider = provider
                 return this
             }
 
-            fun build(): StringParseStrategy {
-                if (type == null) throw IllegalArgumentException("String strategy builder needs 'type' defined")
+            fun build(): BooleanParseStrategy {
+                if (type == null) throw IllegalArgumentException("Number strategy builder needs 'type' defined")
                 if (eolBreak) {
                     errorGates.add { t -> t.type.isSpecial() }
                 }
-                return StringParseStrategy(type!!, delimiter, errorGates, unknownStrategy, provider)
+                return BooleanParseStrategy(type!!, delimiter, errorGates, unknownStrategy, provider)
             }
         }
     }
+
+
 }

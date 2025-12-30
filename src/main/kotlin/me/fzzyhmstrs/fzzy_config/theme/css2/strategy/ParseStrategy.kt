@@ -35,7 +35,7 @@ interface ParseStrategy<T: Any, B: ParseStrategy.Builder<T>> {
     fun id(): String
     fun builder(): B
 
-    fun canProcessToken(tokens: TokenQueue, args: Array<String>): Boolean
+    fun canProcessToken(token: Token<*>, args: Array<String>): Boolean
     fun processTokens(builder: B, tokens: TokenQueue, args: Array<String>, errored: Boolean = false): ValidationResult<B>
     fun startProcessingTokens(tokens: TokenQueue, args: Array<String>, errored: Boolean = false): ValidationResult<B> {
         return processTokens(builder(), tokens, args, errored)
