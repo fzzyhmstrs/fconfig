@@ -10,7 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.theme.parsing.parser
 
-import net.minecraft.util.StringIdentifiable
+import java.lang.IllegalStateException
 import java.util.function.Predicate
 
 class StringReader(private val input: String, private var currentLine: Int = 1, val last: Boolean = false) {
@@ -83,18 +83,6 @@ class StringReader(private val input: String, private var currentLine: Int = 1, 
         return currentIndex == 0 && input == test
     }
 
-    fun <T: StringIdentifiable> peekCandidate(candidates: List<T>): T? {
-        if (!canRead()) return null
-        var c: List<T> = candidates.filter { canRead(it.asString().length) }
-        var offset = 0
-        while (canRead(offset + 1) && c.size > 1) {
-            val char = peek(offset)
-            c = c.filter { it.asString()[offset] == char }
-            offset += 1
-        }
-        return c.firstOrNull()
-    }
-
     fun peekRemainingHas(predicate: Predicate<Char>): Boolean {
         for (i in currentIndex..input.lastIndex) {
             if (predicate.test(input[i])) return true
@@ -124,6 +112,11 @@ class StringReader(private val input: String, private var currentLine: Int = 1, 
 
     fun read(): Char {
         return input[currentIndex++]
+    }
+
+    fun read(length: Int): String {
+        if (length < 1) throw IllegalStateException("String reader can't read ${length - 1}-length string")
+        return readTo(currentIndex + length - 1)
     }
 
     fun skip(len: Int = 1) {

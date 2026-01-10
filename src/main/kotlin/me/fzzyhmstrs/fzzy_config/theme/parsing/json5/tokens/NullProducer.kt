@@ -8,30 +8,29 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.parsing.css.tokens
+package me.fzzyhmstrs.fzzy_config.theme.parsing.json5.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseContext
+import me.fzzyhmstrs.fzzy_config.theme.parsing.json5.Json5Type
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
+import me.fzzyhmstrs.fzzy_config.theme.parsing.token.Token
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenProducer
 
-object CommentProducer: TokenProducer() {
+object NullProducer: TokenProducer() {
 
     override fun id(): String {
-        return "comment"
+        return "Null"
     }
 
     override fun canProduce(reader: StringReader): Boolean {
-        return reader.peekFor("/*")
+        return reader.peekFor("null")
     }
 
     override fun produce(context: ParseContext): Boolean {
-        val reader = context.reader()
-        var lastRead = ' '
-        while (reader.canRead()) {
-            val read = reader.read()
-            if (lastRead == '*' && read == '/') return true
-            lastRead = read
-        }
-        return false
+        val ln = context.reader().getLine()
+        val col = context.reader().getColumn()
+        context.reader().skip(4)
+        context.token(Token.unit(Json5Type.NULL, ln, col))
+        return true
     }
 }

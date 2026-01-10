@@ -8,16 +8,16 @@
  * If you did not, see <https://github.com/fzzyhmstrs/Timefall-Development-Licence-Modified>.
  */
 
-package me.fzzyhmstrs.fzzy_config.theme.parsing.css.tokens
+package me.fzzyhmstrs.fzzy_config.theme.parsing.json5.tokens
 
 import me.fzzyhmstrs.fzzy_config.theme.parsing.ParseContext
 import me.fzzyhmstrs.fzzy_config.theme.parsing.parser.StringReader
 import me.fzzyhmstrs.fzzy_config.theme.parsing.token.TokenProducer
 
-object CommentProducer: TokenProducer() {
+object MultiCommentProducer: TokenProducer() {
 
     override fun id(): String {
-        return "comment"
+        return "multi-line comment"
     }
 
     override fun canProduce(reader: StringReader): Boolean {
