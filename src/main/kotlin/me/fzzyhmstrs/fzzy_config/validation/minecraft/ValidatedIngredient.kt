@@ -12,16 +12,14 @@ package me.fzzyhmstrs.fzzy_config.validation.minecraft
 
 import me.fzzyhmstrs.fzzy_config.entry.EntryFlag
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
-import me.fzzyhmstrs.fzzy_config.screen.widget.LayoutWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.PopupWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.SuppliedTextWidget
-import me.fzzyhmstrs.fzzy_config.screen.widget.TextureDeco
+import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.simpleId
 import me.fzzyhmstrs.fzzy_config.util.EnumTranslatable
 import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
 import me.fzzyhmstrs.fzzy_config.util.PortingUtils
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -278,7 +276,11 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<IngredientProvider>): ClickableWidget {
-        return CustomButtonWidget.builder("fc.validated_field.ingredient.edit".translate()) { openIngredientPopup(it) }.size(110, 20).build()
+        return CustomButtonWidget
+            .builder { openIngredientPopup(it) }
+            .size(110, 20)
+            .messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, "fc.validated_field.ingredient.edit".translate()) }
+            .build()
     }
 
     @Internal
