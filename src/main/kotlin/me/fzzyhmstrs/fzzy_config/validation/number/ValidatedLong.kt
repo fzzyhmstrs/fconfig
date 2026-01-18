@@ -106,7 +106,7 @@ class ValidatedLong @JvmOverloads constructor(defaultValue: Long, maxValue: Long
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedLong {
-        return ValidatedLong(defaultValue, maxValue, minValue, widgetType)
+        return this.copyProvidersTo(ValidatedLong(defaultValue, maxValue, minValue, widgetType))
     }
 
     @Internal
