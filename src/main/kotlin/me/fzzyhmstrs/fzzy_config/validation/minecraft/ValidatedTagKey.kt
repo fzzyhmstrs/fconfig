@@ -79,7 +79,7 @@ open class ValidatedTagKey<T: Any> @JvmOverloads constructor(defaultValue: TagKe
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedField<TagKey<T>> {
-        return ValidatedTagKey(copyStoredValue(), predicate)
+        return this.copyProvidersTo(ValidatedTagKey(copyStoredValue(), predicate))
     }
 
     @Internal
