@@ -175,7 +175,7 @@ object FcText {
             translatable(fallback).formatted(Formatting.ITALIC)
     }
     /**
-     * Translates anything. If the thing is [Translatable], it will use the built in translation, otherwise it will use the fallback literally
+     * Translates anything. If the thing is [Translatable], it will use the built-in translation, otherwise it will use the fallback literally
      * @receiver Anything, null or not. [Translatable] will provide its translation.
      * @param literalFallback String - the fallback text, used literally, not as a translation key
      * @return [MutableText] translation based on the receivers translation, or the fallback
@@ -382,14 +382,33 @@ object FcText {
         return this.styled { s -> s.withColor(color) }
     }
 
+    /**
+     * Whether this Text object represents an empty string. This can have any type of inner content, as long as it resolves to an empty string
+     * @return The mutable text styled with a Run Command click event
+     * @author fzzyhmstrs
+     * @since 0.?.?
+     */
     fun Text.isEmpty(): Boolean {
-        return this.string == ""
+        return this.string.isEmpty()
     }
 
+    /**
+     * Whether this Text object does not represent an empty string. This can have any type of inner content, as long as it doesn't resolve to an empty string
+     * @return The mutable text styled with a Run Command click event
+     * @author fzzyhmstrs
+     * @since 0.?.?
+     */
     fun Text.isNotEmpty(): Boolean {
-        return this.string != ""
+        return this.string.isNotEmpty()
     }
 
+    /**
+     * Concatenates the provided texts into one text with each piece separated by a line break
+     * @param texts List of text to concatenate
+     * @return The mutable text styled with a Run Command click event
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
     fun toLinebreakText(texts: List<Text>): MutableText {
         if (texts.isEmpty()) return empty()
         var text: MutableText? = null
@@ -403,7 +422,16 @@ object FcText {
         return text ?: empty()
     }
 
-    fun trim(text: Text, width: Int, textRenderer: TextRenderer): OrderedText? {
+    /**
+     * Concatenates the provided texts into one text with each piece separated by a line break
+     * @param text Text to trim
+     * @param width maximum allowed width
+     * @param textRenderer [TextRenderer] text renderer instance to use
+     * @return The input text trimmed if needed. If it needs trimming, it will be trimmed to fit ellipses at the end ("Trimmed tex...")
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
+    fun trim(text: Text, width: Int, textRenderer: TextRenderer): OrderedText {
         val stringVisitable = textRenderer.trimToWidth(text, width - textRenderer.getWidth(ScreenTexts.ELLIPSIS))
         return Language.getInstance().reorder(StringVisitable.concat(stringVisitable, ScreenTexts.ELLIPSIS))
     }
@@ -429,10 +457,25 @@ object FcText {
         return builder.toString()
     }
 
+    /**
+     * Capitalizes a string and converts it to a literal text object
+     * @receiver The string to capitalize
+     * @return A [Text] object with the input string capitalized
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
     fun String.capital(): Text {
         return this.lowercase().replace('_', ' ').split(' ').joinToString(" ") { it.lowercase(); it.replaceFirstChar { c -> c.uppercase() } }.lit()
     }
 
+    /**
+     * Concatenates the provided texts into one text with each piece separated by a line break
+     * @param texts List of text to concatenate
+     * @param separator Text to concatenate between text fragments provided in [texts]
+     * @return A single text object with the provided texts concatenated and separated by the separator
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
     fun joinToText(texts: List<Text>, separator: Text): Text {
         if (texts.isEmpty()) return empty()
         if (texts.size == 1) return texts[0]
@@ -444,6 +487,13 @@ object FcText {
         return t
     }
 
+    /**
+     * Concatenates the provided texts into one text as a comma-separated "or" list ("a, b, c, or d")
+     * @param list List of text to concatenate
+     * @return Text object representing an "or list"
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
     fun orList(list: List<Text>): Text {
         return orList(list, 0)
     }
@@ -464,6 +514,13 @@ object FcText {
         }
     }
 
+    /**
+     * Concatenates the provided texts into one text as a comma-separated "and" list ("a, b, c, and d")
+     * @param list List of text to concatenate
+     * @return Text object representing an "and list"
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
     fun andList(list: List<Text>): Text {
         return andList(list, 0)
     }
@@ -476,14 +533,21 @@ object FcText {
                 list[currentIndex]
             }
             (list.size - 2) -> {
-                translatable("fzzy_config.text.and_2", list[currentIndex], orList(list, currentIndex + 1))
+                translatable("fzzy_config.text.and_2", list[currentIndex], andList(list, currentIndex + 1))
             }
             else -> {
-                translatable("fzzy_config.text.or_3", list[currentIndex], orList(list, currentIndex + 1))
+                translatable("fzzy_config.text.or_3", list[currentIndex], andList(list, currentIndex + 1))
             }
         }
     }
 
+    /**
+     * Creates a string representation of a tooltip (or other list of ordered text), generally used to supply narration
+     * @param tt List of [OrderedText] to convert
+     * @return String representation of the text list, separated with periods
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
     fun createTooltipString(tt: List<OrderedText>): String {
         val builder = StringBuilder()
         for (tip in tt) {
