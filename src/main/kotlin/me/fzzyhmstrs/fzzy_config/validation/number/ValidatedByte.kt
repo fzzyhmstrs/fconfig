@@ -93,7 +93,7 @@ class ValidatedByte @JvmOverloads constructor(defaultValue: Byte, maxValue: Byte
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedByte {
-        return ValidatedByte(copyStoredValue(), maxValue, minValue, widgetType)
+        return this.copyProvidersTo(ValidatedByte(copyStoredValue(), maxValue, minValue, widgetType))
     }
 
     @Internal

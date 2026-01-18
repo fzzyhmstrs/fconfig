@@ -93,7 +93,7 @@ class ValidatedShort @JvmOverloads constructor(defaultValue: Short, maxValue: Sh
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedShort {
-        return ValidatedShort(defaultValue, maxValue, minValue, widgetType)
+        return this.copyProvidersTo(ValidatedShort(defaultValue, maxValue, minValue, widgetType))
     }
 
     @Internal

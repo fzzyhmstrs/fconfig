@@ -18,10 +18,12 @@ import me.fzzyhmstrs.fzzy_config.updates.UpdateManager
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.map
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.translationProvider
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
+import java.util.function.BiFunction
 import java.util.function.Consumer
 import java.util.function.Function
 import kotlin.reflect.KClass
@@ -35,6 +37,11 @@ import kotlin.reflect.cast
  * @since 0.5.0
  */
 open class ValidatedMapped<N, T> @JvmOverloads constructor(protected val delegate: ValidatedField<T>, private val to: Function<T, out N>, private val from: Function<in N, T>, defaultValue: N = to.apply(delegate.get())): ValidatedField<N>(defaultValue), EntryOpener, EntryDelegate {
+
+    init {
+        this.translationProvider = BiFunction { n, s -> delegate.translationProvider?.apply(from.apply(n), s) }
+        this.descriptionProvider = BiFunction { n, s -> delegate.descriptionProvider?.apply(from.apply(n), s) }
+    }
 
     override var storedValue: N
         get() = to.apply(delegate.get())

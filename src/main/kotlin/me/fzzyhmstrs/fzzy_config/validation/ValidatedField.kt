@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.validation
 
+import com.ibm.icu.impl.CurrencyData.provider
 import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import me.fzzyhmstrs.fzzy_config.entry.Entry
@@ -87,6 +88,9 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     private var updateManager: UpdateManager? = null
     private var listener: Consumer<Entry<T, *>>? = null
     protected var flags: Byte = 0
+    internal var translationProvider: BiFunction<T, String, MutableText?>? = null
+    internal var descriptionProvider: BiFunction<T, String, MutableText?>? = null
+    private val attachments: MutableMap<Translatable.Provider.Type<*>, Translatable.Provider<*, *>> = hashMapOf()
 
     /**
      * Attaches a listener to this field. This listener will be called any time the field is written to ("set"). `accept`, `validateAndSet`, `setAndUpdate` and so on will all call the listener.
@@ -114,6 +118,25 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         this.listener = listener
     }
 
+    /**
+     * Called by the extension function version of this method. Implement to do custom things with attached providers as needed.
+     *
+     * By default, the attachments are simply stored in this fields `attachments`, which can be access with `provideAttachedValue`
+     * @param [S] the provider input-output type
+     * @param type [Translatable.Provider.Type] provider type. Use this to determine what you want to do (if anything) with the provider
+     * @param provider [Translatable.Provider] A provider of [S] instances. It is supplied the current stored value as well as the default [S] that would have been provided by the validation implementation. The output is not nullable, if you want to provide nothing custom, pass back the provided original.
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
+    protected open fun <S: Any> attachProvider(type: Translatable.Provider.Type<S>, provider: Translatable.Provider<T, S>) {
+        attachments[type] = provider
+    }
+
+    protected fun <S: Any> provideAttachedValue(type: Translatable.Provider.Type<S>, default: S): S {
+        val provider = attachments[type] as? Translatable.Provider<T, S> ?: return default
+        return provider.provide(storedValue, default)
+    }
+
     /////////////// SERIALIZATION /////////////////
 
     @Internal
@@ -126,14 +149,12 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     ): ValidationResult<T> {
         val tVal = deserialize(toml, fieldName) //1
         if (tVal.isCritical()){ //2
-            @Suppress("DEPRECATION")
             return ValidationResult.error(get(), ValidationResult.Errors.DESERIALIZATION) { b -> b.content("Exception deserializing entry [$fieldName], using default value [${get()}]").addError(tVal) }.report(errorBuilder)
         }
         val tVal2 = tVal.outmap { correctEntry(it, EntryValidator.ValidationType.WEAK) } //3
         val changed = deserializedChanged(getUnconditional(), tVal2.get())
         set(tVal2.get()) //4
 
-        @Suppress("DEPRECATION")
         return predicated(get(), !changed, ValidationResult.Errors.CHANGED) {
                 b -> b
         }.also(!tVal2.isCritical(), ValidationResult.Errors.DESERIALIZATION) { b ->
@@ -492,8 +513,54 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
     /////////////// TRANSLATION ///////////////////
 
     @Internal
+    @Deprecated("Will be marked final in 0.8.0. override provideTranslation instead")
     override fun translation(fallback: String?): MutableText {
+        return translationProvider?.apply(storedValue, translationKey()) ?: provideTranslation(fallback)
+    }
+
+    /**
+     * Provide a custom translation implementation to be used in the [Translatable] framework. Will be overridden if the field is supplied with a translationProvider
+     * @param fallback String, nullable. The fallback translation key to (attempt) to use. Can supply a literal message also (the translation will simply fail and the message will appear as-is)
+     * @return [MutableText]
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
+    open fun provideTranslation(fallback: String?): MutableText {
         return Translatable.getScopedResult(this.getEntryKey())?.name?.nullCast() ?: FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. override provideDescription instead")
+    override fun description(fallback: String?): MutableText {
+        return descriptionProvider?.apply(storedValue, descriptionKey()) ?: provideDescription(fallback)
+    }
+
+    /**
+     * Provide a custom description implementation to be used in the [Translatable] framework. Will be overridden if the field is supplied with a descriptionProvider
+     * @param fallback String, nullable. The fallback description key to (attempt) to use. Can supply a literal message also (the translation will simply fail and the message will appear as-is)
+     * @return [MutableText]
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
+    open fun provideDescription(fallback: String?): MutableText {
+        return super.description(fallback)
+    }
+
+    @Internal
+    @Deprecated("Will be marked final in 0.8.0. override providePrefix instead")
+    override fun prefix(fallback: String?): MutableText {
+        return providePrefix(fallback)
+    }
+
+    /**
+     * Provide a custom prefix implementation to be used in the [Translatable] framework.
+     * @param fallback String, nullable. The fallback prefix key to (attempt) to use. Can supply a literal message also (the translation will simply fail and the message will appear as-is)
+     * @return [MutableText]
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
+    open fun providePrefix(fallback: String?): MutableText {
+        return super.prefix(fallback)
     }
 
     /////////// END TRANSLATION ///////////////////
@@ -848,6 +915,64 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         fun <T, F: ValidatedField<T>> F.withFlag(flag: EntryFlag.Flag): F {
             this.setFlag(flag.flag)
             return this
+        }
+
+        /**
+         * Provides a custom translation provider implementation for the receiver field
+         * @param [F] the subtype of validated field
+         * @param [T] the type that the validated field stores
+         * @param provider [BiFunction]&lt;[T], String, [MutableText]?&gt; A translation provider. It is supplied the current stored value as well as the fields translation key. The output text is nullable. If null is returned, the standard translation mechanism will be used.
+         * @return [F] the receiver is passed through
+         * @see attachProvider
+         * @see descriptionProvider
+         * @author fzzyhmstrs
+         * @since 0.7.5
+         */
+        fun <T, F: ValidatedField<T>> F.translationProvider(provider: BiFunction<T, String, MutableText?>): F {
+            this.translationProvider = provider
+            return this
+        }
+
+        /**
+         * Provides a custom description (tooltip) provider implementation for the receiver field
+         * @param [F] the subtype of validated field
+         * @param [T] the type that the validated field stores
+         * @param provider [BiFunction]&lt;[T], String, [MutableText]?&gt; A description provider. It is supplied the current stored value as well as the fields description key. The output text is nullable. If null is returned, the standard description mechanism will be used.
+         * @return [F] the receiver is passed through
+         * @see translationProvider
+         * @see attachProvider
+         * @author fzzyhmstrs
+         * @since 0.7.5
+         */
+        fun <T, F: ValidatedField<T>> F.descriptionProvider(provider: BiFunction<T, String, MutableText?>): F {
+            this.descriptionProvider = provider
+            return this
+        }
+
+        /**
+         * Attach an arbitrary text provider. By default, this does nothing. Different validations can provide implementations to accept various provider types
+         * @param [F] the subtype of validated field
+         * @param [T] the type that the validated field stores
+         * @param [S] the provider input-output type
+         * @param type [Translatable.Provider.Type] provider type. The validation implementation will use this to determine what it will do with the provider
+         * @param provider [Translatable.Provider] A provider of [S]. It is supplied the current stored value as well as the [S] instance that would have been provided. The output is not nullable, if you want to provide nothing custom, pass back the provided original.
+         * @return [F] the receiver is passed through
+         * @see translationProvider
+         * @see descriptionProvider
+         * @author fzzyhmstrs
+         * @since 0.7.5
+         */
+        fun <T, S: Any, F: ValidatedField<T>> F.attachProvider(type: Translatable.Provider.Type<S>, provider: Translatable.Provider<T, S>): F {
+            this.attachProvider(type, provider)
+            return this
+        }
+
+        @JvmStatic
+        protected fun <T, F: ValidatedField<T>> ValidatedField<T>.copyProvidersTo(other: F): F {
+            other.translationProvider = this.translationProvider
+            other.descriptionProvider = this.descriptionProvider
+            other.attachments.putAll(this.attachments)
+            return other
         }
     }
 }

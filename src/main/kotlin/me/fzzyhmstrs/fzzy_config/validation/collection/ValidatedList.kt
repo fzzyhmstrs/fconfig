@@ -157,7 +157,7 @@ open class ValidatedList<T> @Deprecated("Use ValidatedField.toList pattern inste
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedList<T> {
-        return ValidatedList(copyStoredValue(), entryHandler)
+        return this.copyProvidersTo(ValidatedList(copyStoredValue(), entryHandler))
     }
 
     @Internal

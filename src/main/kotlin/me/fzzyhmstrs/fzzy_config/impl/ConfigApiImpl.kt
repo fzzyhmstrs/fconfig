@@ -474,6 +474,7 @@ internal object ConfigApiImpl {
                 it is KMutableProperty<*>
                         && (if (ignoreNonSync(flags)) true else !isNonSync(it))
                         && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
+                        && !isDeprecated(it)
                         && if(ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
             }.sortedBy { orderById[it.name] }
 
@@ -1262,6 +1263,14 @@ internal object ConfigApiImpl {
 
     internal fun isRootConfig(clazz: KClass<*>): Boolean {
         return clazz.annotations.any { it is RootConfig }
+    }
+
+    private fun isDeprecated(property: KProperty<*>): Boolean {
+        return isDeprecated(property.annotations)
+    }
+
+    internal fun isDeprecated(annotations: List<Annotation>): Boolean {
+        return annotations.any { it is ConfigDeprecated }
     }
 
     @Suppress("DEPRECATION")

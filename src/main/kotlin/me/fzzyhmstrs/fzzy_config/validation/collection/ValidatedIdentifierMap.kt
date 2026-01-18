@@ -175,7 +175,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedIdentifierMap<V> {
-        return ValidatedIdentifierMap(storedValue, keyHandler, valueHandler)
+        return this.copyProvidersTo(ValidatedIdentifierMap(storedValue, keyHandler, valueHandler))
     }
 
     @Internal
