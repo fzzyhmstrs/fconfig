@@ -224,7 +224,11 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
         return when(widgetType) {
             WidgetType.POPUP -> {
-                CustomButtonWidget.builder("fc.validated_field.choice_set".translate()) { b -> openChoicesEditPopup(b) }.size(110, 20).build()
+                CustomButtonWidget
+                    .builder { b -> openChoicesEditPopup(b) }
+                    .size(110, 20)
+                    .messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, "fc.validated_field.choice_set".translate()) }
+                    .build()
             }
             WidgetType.INLINE -> {
                 val layout = LayoutWidget.Builder().paddingBoth(0).spacingBoth(0).clampWidth(110).build()

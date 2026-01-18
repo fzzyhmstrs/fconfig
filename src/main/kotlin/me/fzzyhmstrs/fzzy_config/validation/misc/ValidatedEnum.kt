@@ -150,7 +150,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
     }
 
     @Internal
-    override fun description(fallback: String?): MutableText {
+    override fun provideDescription(fallback: String?): MutableText {
         return FcText.translatable(descriptionKey(), fallback ?: valuesMap.keys.toString())
     }
 
