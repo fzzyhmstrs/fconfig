@@ -93,7 +93,7 @@ class ValidatedDouble @JvmOverloads constructor(defaultValue: Double, maxValue: 
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedDouble {
-        return ValidatedDouble(copyStoredValue(), maxValue, minValue, widgetType)
+        return this.copyProvidersTo(ValidatedDouble(copyStoredValue(), maxValue, minValue, widgetType))
     }
 
     @Internal
