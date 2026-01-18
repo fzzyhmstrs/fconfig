@@ -165,7 +165,7 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
     }
 
     override fun instanceEntry(): ValidatedStringMap<V> {
-        return ValidatedStringMap(storedValue, keyHandler, valueHandler)
+        return this.copyProvidersTo(ValidatedStringMap(storedValue, keyHandler, valueHandler))
     }
 
     @Internal
