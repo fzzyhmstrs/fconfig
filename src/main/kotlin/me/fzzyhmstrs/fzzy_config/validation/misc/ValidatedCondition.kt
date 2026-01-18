@@ -143,7 +143,7 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * @author fzzyhmstrs
      * @since 0.5.4, overrides from ValidatedField 0.7.5
      */
-    override fun getUnconditional(): T {
+    public override fun getUnconditional(): T {
         return super.get()
     }
 

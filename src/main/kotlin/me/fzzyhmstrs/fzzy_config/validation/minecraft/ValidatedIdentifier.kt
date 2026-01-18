@@ -169,7 +169,7 @@ open class ValidatedIdentifier @JvmOverloads constructor(defaultValue: Identifie
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedIdentifier {
-        return ValidatedIdentifier(copyStoredValue(), allowableIds, validator)
+        return this.copyProvidersTo(ValidatedIdentifier(copyStoredValue(), allowableIds, validator))
     }
 
     @Internal
