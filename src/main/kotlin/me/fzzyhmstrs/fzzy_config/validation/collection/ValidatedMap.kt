@@ -201,7 +201,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedMap<K, V> {
-        return ValidatedMap(copyStoredValue(), keyHandler, valueHandler)
+        return this.copyProvidersTo(ValidatedMap(copyStoredValue(), keyHandler, valueHandler))
     }
 
     @Internal

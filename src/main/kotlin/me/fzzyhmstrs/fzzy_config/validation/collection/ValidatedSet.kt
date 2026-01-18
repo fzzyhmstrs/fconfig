@@ -157,7 +157,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedSet<T> {
-        return ValidatedSet(copyStoredValue(), entryHandler)
+        return this.copyProvidersTo(ValidatedSet(copyStoredValue(), entryHandler))
     }
 
     @Internal
