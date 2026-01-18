@@ -13,10 +13,16 @@ package me.fzzyhmstrs.fzzy_config_test.test
 import me.fzzyhmstrs.fzzy_config.annotations.*
 import me.fzzyhmstrs.fzzy_config.api.SaveType
 import me.fzzyhmstrs.fzzy_config.config.Config
+import me.fzzyhmstrs.fzzy_config.config.ConfigAction
+import me.fzzyhmstrs.fzzy_config.screen.widget.TextureIds
 import me.fzzyhmstrs.fzzy_config.util.FcText
+import me.fzzyhmstrs.fzzy_config.util.FcText.lit
 import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.TriState
 import me.fzzyhmstrs.fzzy_config.util.Walkable
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.attachProvider
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.descriptionProvider
+import me.fzzyhmstrs.fzzy_config.validation.ValidatedField.Companion.translationProvider
 import me.fzzyhmstrs.fzzy_config.validation.collection.ValidatedList
 import me.fzzyhmstrs.fzzy_config.validation.minecraft.ValidatedRegistryType
 import me.fzzyhmstrs.fzzy_config.validation.misc.ValidatedAny
@@ -38,8 +44,22 @@ class TestConfigImplAny: Config(Identifier.of("fzzy_config_test","test_config_an
     var any1 = MyTestAny()
 
     @Translatable.Name("My Test Object 2")
-    var any2 = ValidatedAny(MyTestAny2()).toCondition({ true }, FcText.literal("Test"), ::MyTestAny2)
+    var any2 = ValidatedAny(MyTestAny2())
+        .translationProvider { v, _ ->
+            "Test currently: ${v.test}".lit()
+        }.descriptionProvider { v, s ->
+            "This any has the following values:\n${v.test}\n${v.test2}".lit()
+        }.attachProvider(Translatable.Provider.WIDGET_TITLE) { v, t ->
+            "I am a long boi".lit()
+        }.toCondition({ true }, FcText.literal("Test"), ::MyTestAny2)
 
+    var button = ConfigAction.Builder().title("Where is Longboi?".lit()).decoration(TextureIds.DECO_QUESTION).build ( Runnable { println("Still lurking in the shadows as ${longBoi1.get()}") } )
+
+    var anyList = ValidatedAny(MyTestAny2()).attachProvider(Translatable.Provider.WIDGET_TITLE) { v, _ ->
+        "Currently: ${v.test}".lit()
+    }.toList()
+
+    @ConfigDeprecated
     var longBoi1 = ValidatedEnum(LongBoi::class.java, ValidatedEnum.WidgetType.SCROLLABLE)
     var longBoi2 = ValidatedEnum(LongBoi::class.java, ValidatedEnum.WidgetType.INLINE)
 

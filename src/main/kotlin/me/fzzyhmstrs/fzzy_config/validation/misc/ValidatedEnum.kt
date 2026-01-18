@@ -135,7 +135,7 @@ open class ValidatedEnum<T: Enum<*>> @JvmOverloads constructor(defaultValue: T, 
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedEnum<T> {
-        return ValidatedEnum(this.defaultValue, this.widgetType)
+        return this.copyProvidersTo(ValidatedEnum(this.defaultValue, this.widgetType))
     }
 
     @Internal

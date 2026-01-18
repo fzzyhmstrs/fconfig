@@ -458,16 +458,16 @@ internal class ConfigScreenManager(private val scope: String, private val subSco
                 EntryFlag.Flag.NONE
             }).toMutableList()
 
-
+            val notDeprecated = !ConfigApiImpl.isDeprecated(annotations)
 
             val entryCreator: EntryCreator?
 
-            val prepareResult = if (thing is EntryCreator) {
+            val prepareResult = if (thing is EntryCreator && notDeprecated) {
                 entryCreator = thing
                 thing.prepare(new, groups, annotations, globalAnnotations)
                 setSeparate(config, thing)
                 ConfigApiImplClient.prepare(thing, playerPermLevel, config, prefix, new, annotations, globalAnnotations, set.clientOnly, flags)
-            } else if (thing != null) {
+            } else if (thing != null && notDeprecated) {
                 var basicValidation: ValidatedField<*>? = null
                 val target = new.removePrefix("$prefix.")
                 ConfigApiImpl.drill(baseConfig, target, '.', 1) { _, _, _, thing2, drillProp, drillAnnotations, _, _ ->

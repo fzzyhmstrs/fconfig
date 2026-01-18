@@ -380,3 +380,13 @@ annotation class Translation(val prefix: String, val negate: Boolean = false)
  */
 @Target(AnnotationTarget.CLASS)
 annotation class RootConfig
+
+/**
+ * A setting marked as ConfigDeprecated will not appear in the auto-generated config screen and won't be saved (but WILL be read from file).
+ *
+ * This may be useful for conversion of configs over time. If you mark a deprecated setting with ConfigDeprecated, you can still use that setting in [Config.update][me.fzzyhmstrs.fzzy_config.config.Config.update], paired with [Version]
+ * @author fzzyhmstrs
+ * @since 0.7.5
+ */
+@Target(AnnotationTarget.PROPERTY, AnnotationTarget.FIELD)
+annotation class ConfigDeprecated

@@ -67,7 +67,7 @@ open class ValidatedBoolean(defaultValue: Boolean): ValidatedField<Boolean>(defa
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedBoolean {
-        return ValidatedBoolean(copyStoredValue())
+        return this.copyProvidersTo(ValidatedBoolean(copyStoredValue()))
     }
 
     @Internal
