@@ -195,7 +195,7 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
      * @since 0.6.0
      */
     override fun instanceEntry(): ValidatedPair<A, B> {
-        return ValidatedPair(Tuple(leftHandler.copyValue(storedValue.left), rightHandler.copyValue(storedValue.right)), leftHandler, rightHandler, layoutStyle)
+        return this.copyProvidersTo(ValidatedPair(Tuple(leftHandler.copyValue(storedValue.left), rightHandler.copyValue(storedValue.right)), leftHandler, rightHandler, layoutStyle))
     }
 
     @Internal
