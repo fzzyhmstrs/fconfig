@@ -256,7 +256,7 @@ class ValidatedIngredient private constructor(defaultValue: IngredientProvider, 
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedField<IngredientProvider> {
-        return ValidatedIngredient(copyStoredValue(), itemPredicate, tagPredicate)
+        return this.copyProvidersTo(ValidatedIngredient(copyStoredValue(), itemPredicate, tagPredicate))
     }
 
     @Internal
