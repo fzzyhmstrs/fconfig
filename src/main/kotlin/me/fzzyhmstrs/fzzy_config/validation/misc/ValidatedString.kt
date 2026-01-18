@@ -134,7 +134,7 @@ open class ValidatedString(defaultValue: String, private val checker: EntryCheck
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedString {
-        return ValidatedString(copyStoredValue(), this.checker)
+        return this.copyProvidersTo(ValidatedString(copyStoredValue(), this.checker))
     }
 
     @Internal
