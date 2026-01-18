@@ -345,7 +345,7 @@ open class ValidatedColor: ValidatedField<ColorHolder>, EntryOpener {
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedColor {
-        return storedValue.instance()
+        return this.copyProvidersTo(storedValue.instance())
     }
 
     @Internal

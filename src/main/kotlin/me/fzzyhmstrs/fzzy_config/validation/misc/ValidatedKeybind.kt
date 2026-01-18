@@ -213,7 +213,7 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
      * @since 0.6.5
      */
     override fun instanceEntry(): ValidatedKeybind {
-        return ValidatedKeybind(this.storedValue.clone())
+        return this.copyProvidersTo(ValidatedKeybind(this.storedValue.clone()))
     }
 
     @Internal

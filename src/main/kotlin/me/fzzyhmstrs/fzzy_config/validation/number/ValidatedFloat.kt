@@ -85,7 +85,7 @@ class ValidatedFloat @JvmOverloads constructor(defaultValue: Float, maxValue: Fl
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedFloat {
-        return ValidatedFloat(defaultValue, maxValue, minValue, widgetType)
+        return this.copyProvidersTo(ValidatedFloat(defaultValue, maxValue, minValue, widgetType))
     }
     @Internal
     override fun isValidEntry(input: Any?): Boolean {
