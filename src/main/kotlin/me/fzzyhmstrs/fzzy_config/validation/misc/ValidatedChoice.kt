@@ -67,10 +67,13 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     defaultValue: T,
     private val choices: List<T>,
     private val handler: EntryHandler<T>,
-    private val translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) },
-    private val descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") },
+    translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) },
+    descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") },
     private val widgetType: WidgetType = WidgetType.POPUP): ValidatedField<T>(defaultValue), EntryOpener
 {
+
+    private val entryTranslationProvider: BiFunction<T, String, MutableText> = translationProvider
+    private val entryDescriptionProvider: BiFunction<T, String, Text> = descriptionProvider
 
     /**
      * A validated single choice of any type, from an input list of possible choices
@@ -165,7 +168,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedChoice<T> {
-        return ValidatedChoice(copyStoredValue(), this.choices, this.handler, this.translationProvider, this.descriptionProvider, this.widgetType)
+        return this.copyProvidersTo(ValidatedChoice(copyStoredValue(), this.choices, this.handler, this.entryTranslationProvider, this.entryDescriptionProvider, this.widgetType))
     }
 
     @Internal
@@ -212,7 +215,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                     layout.add("choice$index", button, LayoutWidget.Position.BELOW, LayoutWidget.Position.ALIGN_CENTER)
                 }
                 LayoutClickableWidget(0, 0, 110, 20 * choices.size, layout).withNarrationAppender { builder ->
-                    builder.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.translationProvider.apply(this.get(), this.translationKey())).append(". "))
+                    builder.put(NarrationPart.TITLE, "fc.validated_field.current".translate(this.entryTranslationProvider.apply(this.get(), this.translationKey())).append(". "))
                 }
             }
             WidgetType.SCROLLABLE -> {
@@ -249,7 +252,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                         ValidatedChoiceList.WidgetType.INLINE): ValidatedChoiceList<T>
     {
         @Suppress("DEPRECATION")
-        return ValidatedChoiceList(selectedChoices, choices, handler, translationProvider, descriptionProvider, widgetType)
+        return ValidatedChoiceList(selectedChoices, choices, handler, entryTranslationProvider, entryDescriptionProvider, widgetType)
     }
 
     /**
@@ -321,7 +324,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
         }
         val entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
         for (const in choices) {
-            buttonWidth = max(buttonWidth, textRenderer.getWidth(this@ValidatedChoice.translationProvider.apply(const, this@ValidatedChoice.translationKey())))
+            buttonWidth = max(buttonWidth, textRenderer.getWidth(this@ValidatedChoice.entryTranslationProvider.apply(const, this@ValidatedChoice.translationKey())))
         }
         if (choices.size <= 6)
             buttonWidth += 10
@@ -333,8 +336,8 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                     { c: T -> c != this@ValidatedChoice.get() },
                     this@ValidatedChoice,
                     { this@ValidatedChoice.accept(it); choiceOptionRunnable.run(); PopupWidget.pop() })
-                val n = this@ValidatedChoice.translationProvider.apply(const, this@ValidatedChoice.translationKey())
-                val desc = this@ValidatedChoice.descriptionProvider.apply(const, this@ValidatedChoice.descriptionKey()).takeIf { it.string != "" }
+                val n = this@ValidatedChoice.entryTranslationProvider.apply(const, this@ValidatedChoice.translationKey())
+                val desc = this@ValidatedChoice.entryDescriptionProvider.apply(const, this@ValidatedChoice.descriptionKey()).takeIf { it.string != "" }
                 WidgetEntry(list, "choice$index", Translatable.createResult(n, desc), 20, button)
             })
         }
@@ -365,7 +368,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
         }
         builder.positionX(xPosition)
         builder.positionY(yPosition)
-        builder.additionalNarration("fc.validated_field.current".translate(this@ValidatedChoice.translationProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.translationKey())))
+        builder.additionalNarration("fc.validated_field.current".translate(this@ValidatedChoice.entryTranslationProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.translationKey())))
         PopupWidget.push(builder.build())
     }
 
@@ -377,7 +380,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
         }
 
         override fun getMessage(): Text {
-            return this@ValidatedChoice.translationProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.translationKey())
+            return this@ValidatedChoice.entryTranslationProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.translationKey())
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
@@ -386,7 +389,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
 
         private fun constructTooltip() {
             val text1 = this@ValidatedChoice.descLit("").takeIf { it.string != "" }?.copy()
-            val text2 = this@ValidatedChoice.descriptionProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.descriptionKey()).takeIf { it.string != "" }
+            val text2 = this@ValidatedChoice.entryDescriptionProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.descriptionKey()).takeIf { it.string != "" }
             val totalText = if(text1 != null) {
                 if (text2 != null) {
                     text1.append("; ".lit()).append(text2)
@@ -408,7 +411,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
                 choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
             }
             for (const in choices) {
-                buttonWidth = max(buttonWidth, textRenderer.getWidth(this@ValidatedChoice.translationProvider.apply(const, this@ValidatedChoice.translationKey())))
+                buttonWidth = max(buttonWidth, textRenderer.getWidth(this@ValidatedChoice.entryTranslationProvider.apply(const, this@ValidatedChoice.translationKey())))
             }
             buttonWidth = max(150, buttonWidth + 4)
             for ((index, const) in choices.withIndex()) {
@@ -422,7 +425,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
             }
             builder.positionX(PopupWidget.Builder.popupContext { w -> this.x + this.width/2 - w/2 })
             builder.positionY(PopupWidget.Builder.popupContext { this.y - 20 })
-            builder.additionalNarration("fc.validated_field.current".translate(this@ValidatedChoice.translationProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.translationKey())))
+            builder.additionalNarration("fc.validated_field.current".translate(this@ValidatedChoice.entryTranslationProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.translationKey())))
             PopupWidget.push(builder.build())
         }
     }
@@ -435,7 +438,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
         }
 
         override fun getMessage(): Text {
-            return this@ValidatedChoice.translationProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.translationKey())
+            return this@ValidatedChoice.entryTranslationProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.translationKey())
         }
 
         override fun appendClickableNarrations(builder: NarrationMessageBuilder?) {
@@ -444,7 +447,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
 
         private fun constructTooltip() {
             val text1 = this@ValidatedChoice.descLit("").takeIf { it.string != "" }?.copy()
-            val text2 = this@ValidatedChoice.descriptionProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.descriptionKey()).takeIf { it.string != "" }
+            val text2 = this@ValidatedChoice.entryDescriptionProvider.apply(this@ValidatedChoice.get(), this@ValidatedChoice.descriptionKey()).takeIf { it.string != "" }
             val totalText = if(text1 != null) {
                 if (text2 != null) {
                     text1.append("; ".lit()).append(text2)
@@ -469,10 +472,10 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     }
 
     //client
-    private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val entry: ValidatedChoice<T>, private val valueApplier: Consumer<T>): CustomPressableWidget(0, 0, width, 20, entry.translationProvider.apply(thisVal, entry.translationKey())) {
+    private class ChoiceOptionWidget<T>(private val thisVal: T, width: Int, private val activePredicate: Predicate<T>, private val entry: ValidatedChoice<T>, private val valueApplier: Consumer<T>): CustomPressableWidget(0, 0, width, 20, entry.entryTranslationProvider.apply(thisVal, entry.translationKey())) {
 
         init {
-            entry.descriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
+            entry.entryDescriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { tooltip = Tooltip.of(it) }
         }
 
         override fun renderCustom(context: DrawContext, x: Int, y: Int, width: Int, height: Int, mouseX: Int, mouseY: Int, delta: Float) {
@@ -481,7 +484,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
         }
 
         override fun getNarrationMessage(): MutableText {
-            return entry.translationProvider.apply(thisVal, entry.translationKey())
+            return entry.entryTranslationProvider.apply(thisVal, entry.translationKey())
         }
 
         override fun onPress() {
@@ -490,7 +493,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     }
 
     //client
-    private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, entry.translationProvider.apply(entry.get(), entry.translationKey())) {
+    private class CyclingOptionsWidget<T>(choicePredicate: ChoiceValidator<T>, private val entry: ValidatedChoice<T>): CustomPressableWidget(0, 0, 110, 20, entry.entryTranslationProvider.apply(entry.get(), entry.translationKey())) {
 
         private val choices = entry.choices.filter {
             choicePredicate.validateEntry(it, EntryValidator.ValidationType.STRONG).isValid()
@@ -502,7 +505,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
 
         private fun constructTooltip() {
             val text1 = entry.descLit("").takeIf { it.string != "" }?.copy()
-            val text2 = entry.descriptionProvider.apply(entry.get(), entry.descriptionKey()).takeIf { it.string != "" }
+            val text2 = entry.entryDescriptionProvider.apply(entry.get(), entry.descriptionKey()).takeIf { it.string != "" }
             val totalText = if(text1 != null) {
                 if (text2 != null) {
                     text1.append("; ".lit()).append(text2)
@@ -517,13 +520,13 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
         }
 
         override fun getNarrationMessage(): MutableText {
-            return "fc.validated_field.current".translate(entry.translationProvider.apply(entry.get(), entry.translationKey()).append(". "))
+            return "fc.validated_field.current".translate(entry.entryTranslationProvider.apply(entry.get(), entry.translationKey()).append(". "))
         }
 
         override fun onPress() {
             val newIndex = (choices.indexOf(entry.get()) + 1).takeIf { it < choices.size } ?: 0
             val newConst = choices[newIndex]
-            message = entry.translationProvider.apply(newConst, entry.translationKey())
+            message = entry.entryTranslationProvider.apply(newConst, entry.translationKey())
             entry.accept(newConst)
             constructTooltip()
         }

@@ -107,7 +107,7 @@ class ValidatedInt @JvmOverloads constructor(defaultValue: Int, maxValue: Int, m
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedInt {
-        return ValidatedInt(defaultValue, maxValue, minValue, widgetType)
+        return this.copyProvidersTo(ValidatedInt(defaultValue, maxValue, minValue, widgetType))
     }
 
     @Internal
