@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -192,9 +193,9 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
 
     @Internal
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<String, V>>): ClickableWidget {
-        return CustomButtonWidget.builder(TextureIds.MAP_LANG) { b: CustomButtonWidget ->
+        return CustomButtonWidget.builder { b: CustomButtonWidget ->
             openMapEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
-        }.size(110, 20).build()
+        }.size(110, 20).messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, TextureIds.MAP_LANG) }.build()
     }
 
     @Internal
