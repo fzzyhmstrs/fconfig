@@ -79,7 +79,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
             val set: MutableSet<T> = mutableSetOf()
             val errors = ValidationResult.createMutable("Error(s) found deserializing set $fieldName")
             for ((index, el) in array.content.withIndex()) {
-                val result = entryHandler.deserializeEntry(el,  "$fieldName[$index]", 1).attachTo(errors)
+                val result = entryHandler.deserializeEntry(el,  "$fieldName[$index]", 65).attachTo(errors)
                 if (!result.isError()) {
                     set.add(result.get())
                 }
