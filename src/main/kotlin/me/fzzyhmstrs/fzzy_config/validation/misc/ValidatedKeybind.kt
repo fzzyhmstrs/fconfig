@@ -103,9 +103,9 @@ open class ValidatedKeybind(defaultValue: FzzyKeybind): ValidatedField<FzzyKeybi
                 val altToml = table["alt"] ?: TomlNull
                 val typeToml = table["type"] ?: TomlNull
                 val keyToml = table["key"] ?: TomlNull
-                val ctrlResult = modifierHandler.deserializeEntry(ctrlToml, "$fieldName.ctrl", 1).attachTo(errors)
-                val shiftResult = modifierHandler.deserializeEntry(shiftToml, "$fieldName.shift", 1).attachTo(errors)
-                val altResult = modifierHandler.deserializeEntry(altToml, "$fieldName.alt", 1).attachTo(errors)
+                val ctrlResult = modifierHandler.deserializeEntry(ctrlToml, "$fieldName.ctrl", 65).attachTo(errors)
+                val shiftResult = modifierHandler.deserializeEntry(shiftToml, "$fieldName.shift", 65).attachTo(errors)
+                val altResult = modifierHandler.deserializeEntry(altToml, "$fieldName.alt", 65).attachTo(errors)
                 val typeResult = ValidationResult.mapDataResult(ContextInput.CODEC.parse(TomlOps.INSTANCE, typeToml), ContextInput.KEYBOARD).attachTo(errors)
                 val keyResult = deserializeKey(keyToml).attachTo(errors)
                 ValidationResult.ofMutable(
