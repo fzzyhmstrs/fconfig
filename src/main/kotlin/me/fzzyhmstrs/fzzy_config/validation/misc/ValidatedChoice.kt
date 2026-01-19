@@ -146,7 +146,7 @@ open class ValidatedChoice<T> @JvmOverloads constructor(
     override fun deserialize(toml: TomlElement, fieldName: String): ValidationResult<T> {
         return try {
             val errors = ValidationResult.createMutable("Error(s) found deserializing choice [$fieldName]")
-            val value =  handler.deserializeEntry(toml, fieldName, 1).attachTo(errors)
+            val value = handler.deserializeEntry(toml, fieldName, 65).attachTo(errors)
             ValidationResult.ofMutable(value.get(), errors)
         } catch (e: Throwable) {
             ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing choice [$fieldName]", e)

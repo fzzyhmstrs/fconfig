@@ -175,12 +175,13 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         val tVal2 = tVal.outmap { correctEntry(it, EntryValidator.ValidationType.WEAK) } //3
 
         //unconditional get to avoid side effects from conditions etc. that might skew deserialization checks
-        val changed = deserializedChanged(getUnconditional(), tVal2.get())
+        //if flag contains 64, ignore changes. Use with handlers (the entire thing is going to be checked later anyway)
+        val changed = if (flags and 64.toByte() == 64.toByte()) false else deserializedChanged(getUnconditional(), tVal2.get())
 
         set(tVal2.get()) //4
 
         return predicated(get(), !changed, ValidationResult.Errors.CHANGED) {
-            b -> b
+            b -> b.content(Unit)
         }.also(!tVal2.isCritical(), ValidationResult.Errors.DESERIALIZATION) { b ->
             b.content("Exception correcting deserialized entry [$fieldName], using value [${get()}]").addError(tVal2)
         }.also(!tVal2.isError(), ValidationResult.Errors.DESERIALIZATION) { b ->
@@ -333,6 +334,15 @@ abstract class ValidatedField<T>(protected open var storedValue: T, protected va
         try {
             @Suppress("UNCHECKED_CAST")
             setAndUpdate(input as T)
+        } catch (e: Throwable) {
+            //
+        }
+    }
+
+    override fun trySetQuiet(input: Any?) {
+        try {
+            @Suppress("UNCHECKED_CAST")
+            storedValue = input as T
         } catch (e: Throwable) {
             //
         }
