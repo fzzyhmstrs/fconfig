@@ -123,8 +123,8 @@ open class ValidatedPair<A, B> @JvmOverloads constructor(defaultValue: Tuple<A, 
             val errors = ValidationResult.createMutable("Error(s) found deserializing pair $fieldName")
             val aToml = table["left"] ?: TomlNull
             val bToml = table["right"] ?: TomlNull
-            val aResult = leftHandler.deserializeEntry(aToml, "$fieldName.left", 1).attachTo(errors)
-            val bResult = rightHandler.deserializeEntry(bToml, "$fieldName.right", 1).attachTo(errors)
+            val aResult = leftHandler.deserializeEntry(aToml, "$fieldName.left", 65).attachTo(errors)
+            val bResult = rightHandler.deserializeEntry(bToml, "$fieldName.right", 65).attachTo(errors)
             ValidationResult.ofMutable(Tuple(aResult.get(), bResult.get()), errors)
         } catch (e: Throwable) {
             ValidationResult.error(storedValue, ValidationResult.Errors.DESERIALIZATION, "Exception deserializing pair [$fieldName]", e)
