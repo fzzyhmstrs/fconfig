@@ -74,11 +74,11 @@ open class ValidatedStringMap<V>(defaultValue: Map<String, V>, private val keyHa
             val valueErrors = ValidationResult.createMutable("Value errors")
             for ((keyToml, el) in table.entries) {
                 val field = "{$fieldName, @key: $keyToml}"
-                val keyResult = keyHandler.deserializeEntry(TomlLiteral(keyToml), field, 1).attachTo(keyErrors)
+                val keyResult = keyHandler.deserializeEntry(TomlLiteral(keyToml), field, 65).attachTo(keyErrors)
                 if(!keyResult.isValid()) {
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(el, field, 1).attachTo(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(el, field, 65).attachTo(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
             val totalErrors = ValidationResult.createMutable("Errors found deserializing string map [$fieldName]")
