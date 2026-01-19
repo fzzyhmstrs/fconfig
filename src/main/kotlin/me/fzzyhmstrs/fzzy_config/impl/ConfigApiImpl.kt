@@ -1283,7 +1283,7 @@ internal object ConfigApiImpl {
     }
 
     @Suppress("DEPRECATION")
-    private fun getAction(annotations: List<Annotation>): Action? {
+    internal fun getAction(annotations: List<Annotation>): Action? {
         return (annotations.firstOrNull {
             (it is RequiresAction)
         } as? RequiresAction ?: annotations.firstOrNull {
@@ -1306,7 +1306,7 @@ internal object ConfigApiImpl {
         }
     }
 
-    private fun requiredAction(settingAnnotations: List<Annotation>, classAction: Action?): Action? {
+    internal fun requiredAction(settingAnnotations: List<Annotation>, classAction: Action?): Action? {
         val settingAction = getAction(settingAnnotations)
         if (settingAction == null && classAction == null) return null
         if (settingAction == null) return classAction
@@ -1567,7 +1567,7 @@ internal object ConfigApiImpl {
         }
     }
 
-    private fun<W: Any> biWalk(walkable: W, walkable2: W, prefix: String, flags: Byte, walkAction: BiWalkAction) {
+    internal fun<W: Any> biWalk(walkable: W, walkable2: W, prefix: String, flags: Byte, walkAction: BiWalkAction) {
         try {
             // check for IgnoreVisibility
             val ignoreVisibility = isIgnoreVisibility(walkable::class) || ignoreVisibility(flags)
