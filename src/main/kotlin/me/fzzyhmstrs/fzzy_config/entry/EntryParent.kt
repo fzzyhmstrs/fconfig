@@ -28,6 +28,16 @@ fun interface EntryParent {
     fun actions(): Set<Action>
 
     /**
+     * Return a set of [Action] for settings that have been changed. This most commonly is based on the pushed value versus the live value in an [Entry]
+     * @see [me.fzzyhmstrs.fzzy_config.api.ConfigApi.actions]
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
+    fun changeActions(): Set<Action> {
+        return actions()
+    }
+
+    /**
      * Whether the screen manager should skip over analyzing this parents internals.
      * @return True if entry creation is handled separately for this parents children, false if the standard screen manager should build entries in a new screen for them.
      * @author fzzyhmstrs
