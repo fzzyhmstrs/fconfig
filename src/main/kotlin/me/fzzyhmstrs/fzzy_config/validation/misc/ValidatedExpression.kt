@@ -136,7 +136,7 @@ open class ValidatedExpression @JvmOverloads constructor(
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedExpression {
-        return ValidatedExpression(copyStoredValue(), validVars, validator)
+        return this.copyProvidersTo(ValidatedExpression(copyStoredValue(), validVars, validator))
     }
 
     @Internal

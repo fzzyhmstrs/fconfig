@@ -110,7 +110,7 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
      * @since 0.6.5
      */
     override fun instanceEntry(): ValidatedTriState {
-        return ValidatedTriState(this.defaultValue)
+        return this.copyProvidersTo(ValidatedTriState(this.defaultValue))
     }
 
     @Internal
@@ -279,5 +279,9 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
             this@ValidatedTriState.accept(newConst)
         }
 
+    }
+
+    override fun deserializedChanged(old: Any?, new: Any?): Boolean {
+        return super.deserializedChanged(old, new)
     }
 }

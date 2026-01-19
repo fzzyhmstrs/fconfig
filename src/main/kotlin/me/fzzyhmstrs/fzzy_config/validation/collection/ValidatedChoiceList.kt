@@ -45,7 +45,6 @@ import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.MutableText
 import net.minecraft.text.Text
-import net.minecraft.util.math.ColorHelper
 import net.peanuuutz.tomlkt.TomlArrayBuilder
 import net.peanuuutz.tomlkt.TomlElement
 import net.peanuuutz.tomlkt.asTomlArray
@@ -81,12 +80,16 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     defaultValues: List<T>,
     private val choices: List<T>,
     private val entryHandler: EntryHandler<T>,
-    private val translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) },
-    private val descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") },
+    translationProvider: BiFunction<T, String, MutableText> = BiFunction { t, _ -> t.transLit(t.toString()) },
+    descriptionProvider: BiFunction<T, String, Text> = BiFunction { t, _ -> t.descLit("") },
     private val widgetType: WidgetType = WidgetType.POPUP)
     :
     ValidatedLazyField<List<T>>(defaultValues, { listOf() }), List<T>, EntryOpener
 {
+
+    private val entryTranslationProvider: BiFunction<T, String, MutableText> = translationProvider
+    private val entryDescriptionProvider: BiFunction<T, String, Text> = descriptionProvider
+
     init {
         if (!choices.containsAll(defaultValues))
             throw IllegalStateException("Default value list [$defaultValues] not within valid choice list [$choices]")
@@ -103,7 +106,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
             val list: MutableList<T> = mutableListOf()
             val errors = ValidationResult.createMutable("Error(s) found deserializing choice list $fieldName")
             for ((index, el) in array.content.withIndex()) {
-                val result = entryHandler.deserializeEntry(el, "$fieldName[$index]", 1).attachTo(errors)
+                val result = entryHandler.deserializeEntry(el, "$fieldName[$index]", 65).attachTo(errors)
                 if (result.isValid()) {
                     val candidate = result.get()
                     if (!choices.contains(candidate)) {
@@ -191,7 +194,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
      */
     override fun instanceEntry(): ValidatedChoiceList<T> {
         @Suppress("DEPRECATION")
-        return ValidatedChoiceList(copyStoredValue(), this.choices, this.entryHandler, this.translationProvider, this.descriptionProvider, this.widgetType)
+        return this.copyProvidersTo(ValidatedChoiceList(copyStoredValue(), this.choices, this.entryHandler, this.entryTranslationProvider, this.entryDescriptionProvider, this.widgetType))
     }
 
     @Internal
@@ -221,7 +224,11 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
         return when(widgetType) {
             WidgetType.POPUP -> {
-                CustomButtonWidget.builder("fc.validated_field.choice_set".translate()) { b -> openChoicesEditPopup(b) }.size(110, 20).build()
+                CustomButtonWidget
+                    .builder { b -> openChoicesEditPopup(b) }
+                    .size(110, 20)
+                    .messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, "fc.validated_field.choice_set".translate()) }
+                    .build()
             }
             WidgetType.INLINE -> {
                 val layout = LayoutWidget.Builder().paddingBoth(0).spacingBoth(0).clampWidth(110).build()
@@ -311,7 +318,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         val textRenderer = MinecraftClient.getInstance().textRenderer
         var buttonWidth = textRenderer.getWidth(choiceListTitle)
         for (const in choices) {
-            buttonWidth = max(buttonWidth, textRenderer.getWidth(this.translationProvider.apply(const, this.translationKey())) + 8)
+            buttonWidth = max(buttonWidth, textRenderer.getWidth(this.entryTranslationProvider.apply(const, this.translationKey())) + 8)
         }
         builder.pushSpacing(UnaryOperator.identity()) { 0 }
         for ((index, const) in choices.withIndex()) {
@@ -342,7 +349,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         var buttonWidth = textRenderer.getWidth(choiceListTitle)
         val entries: MutableList<BiFunction<DynamicListWidget, Int, out DynamicListWidget.Entry>> = mutableListOf()
         for (const in choices) {
-            buttonWidth = max(buttonWidth, textRenderer.getWidth(this.translationProvider.apply(const, this.translationKey())) + 8)
+            buttonWidth = max(buttonWidth, textRenderer.getWidth(this.entryTranslationProvider.apply(const, this.translationKey())) + 8)
         }
         if (choices.size <= 6)
             buttonWidth += 10
@@ -360,8 +367,8 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
                         }
                         this.accept(newList)
                     })
-                val name = this.translationProvider.apply(const, this.translationKey())
-                val desc = this.descriptionProvider.apply(const, this.descriptionKey()).takeIf { it.string != "" }
+                val name = this.entryTranslationProvider.apply(const, this.translationKey())
+                val desc = this.entryDescriptionProvider.apply(const, this.descriptionKey()).takeIf { it.string != "" }
                 WidgetEntry(list, "choice$index", Translatable.createResult(name, desc), 20, button)
             })
         }
@@ -451,10 +458,10 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
     // End List Interface //////////////////////////////
 
     //client
-    private class ChoiceWidget<T>(private val thisVal: T, width: Int, private val selectedPredicate: Predicate<T>, private val entry: ValidatedChoiceList<T>, private val valueApplier: Consumer<T>): CustomPressableWidget(0, 0, width, 20, entry.translationProvider.apply(thisVal, entry.translationKey())) {
+    private class ChoiceWidget<T>(private val thisVal: T, width: Int, private val selectedPredicate: Predicate<T>, private val entry: ValidatedChoiceList<T>, private val valueApplier: Consumer<T>): CustomPressableWidget(0, 0, width, 20, entry.entryTranslationProvider.apply(thisVal, entry.translationKey())) {
 
         init {
-            entry.descriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
+            entry.entryDescriptionProvider.apply(thisVal, entry.descriptionKey()).takeIf { it.string != "" }?.also { setTooltip(Tooltip.of(it)) }
         }
 
         override val textures: TextureProvider = TextureSet.Quad(tex, disabled, highlighted, "widget/button_disabled_highlighted".fcId())
@@ -479,7 +486,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
         }
 
         override fun getMessage(): Text {
-            return entry.translationProvider.apply(thisVal, entry.translationKey())
+            return entry.entryTranslationProvider.apply(thisVal, entry.translationKey())
         }
 
         override fun getNarrationMessage(): MutableText {

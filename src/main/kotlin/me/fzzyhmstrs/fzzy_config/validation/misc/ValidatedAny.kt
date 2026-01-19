@@ -18,6 +18,10 @@ import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.biWalk
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.getAction
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.requiredAction
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.walk
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.PermResult
 import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
@@ -44,6 +48,7 @@ import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.tooltip.Tooltip
 import net.minecraft.client.gui.widget.ClickableWidget
 import net.minecraft.text.MutableText
+import net.minecraft.text.Text
 import net.peanuuutz.tomlkt.TomlElement
 import org.jetbrains.annotations.ApiStatus.Internal
 import java.util.*
@@ -100,7 +105,8 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedField<T> {
-        return ValidatedAny(copyStoredValue())
+        val any = ValidatedAny(copyStoredValue())
+        return this.copyProvidersTo(any)
     }
 
     @Internal
@@ -138,7 +144,12 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<T>): ClickableWidget {
-        return CustomButtonWidget.builder("fc.validated_field.object".translate()) { openObjectPopup() }.size(110, 20).build()
+        val defaultTitle = "fc.validated_field.object".translate()
+        return CustomButtonWidget
+            .builder { openObjectPopup() }
+            .size(provideAttachedValue(Translatable.Provider.WIDGET_WIDTH, 110), 20)
+            .messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, defaultTitle) }
+            .build()
     }
 
     @Internal
@@ -335,21 +346,21 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     }
 
     @Internal
-    override fun translation(fallback: String?): MutableText {
+    override fun provideTranslation(fallback: String?): MutableText {
         return  Translatable.getScopedResult(this.getEntryKey())?.name?.nullCast()
             ?: storedValue.nullCast<Translatable>()?.translationOrNull(fallback)
             ?: FcText.translatableWithFallback(translationKey(), fallback ?: this.translationKey().substringAfterLast('.').split(FcText.regex).joinToString(" ") { it.replaceFirstChar { c -> c.uppercase() } })
     }
 
     @Internal
-    override fun description(fallback: String?): MutableText {
+    override fun provideDescription(fallback: String?): MutableText {
         return Translatable.getScopedResult(this.getEntryKey())?.desc?.nullCast()
             ?: storedValue.nullCast<Translatable>()?.descriptionOrNull(fallback)
             ?: FcText.translatableWithFallback(descriptionKey(), fallback ?: "")
     }
 
     @Internal
-    override fun prefix(fallback: String?): MutableText {
+    override fun providePrefix(fallback: String?): MutableText {
         return Translatable.getScopedResult(this.getEntryKey())?.prefix?.nullCast()
             ?: storedValue.nullCast<Translatable>()?.prefixOrNull(fallback)
             ?: FcText.translatableWithFallback(prefixKey(), fallback ?: "")
@@ -401,6 +412,29 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     @Internal
     override fun actions(): Set<Action> {
         return ConfigApiImpl.getActions(storedValue, ConfigApiImpl.IGNORE_NON_SYNC)
+    }
+
+    @Internal
+    override fun changeActions(): Set<Action> {
+        val pv = pushedValue ?: return setOf()
+        val classAction = getAction(storedValue::class.annotations)
+        val propActions: SortedSet<Action> = sortedSetOf()
+        biWalk(storedValue, pv, "", ConfigApiImpl.IGNORE_NON_SYNC)  { stored, pushed, _, _, _, _, _, _, annotations, _ ->
+            if (stored is EntryDeserializer<*> && stored is Supplier<*>) {
+                if (stored.deserializedChanged(stored.get(), (pushed as Supplier<*>).get())) {
+                    val action = requiredAction(annotations, classAction)
+                    if (action != null) {
+                        propActions.add(action)
+                    }
+                }
+            } else if (stored != pushed) {
+                val action = requiredAction(annotations, classAction)
+                if (action != null) {
+                    propActions.add(action)
+                }
+            }
+        }
+        return propActions
     }
 
     @Internal

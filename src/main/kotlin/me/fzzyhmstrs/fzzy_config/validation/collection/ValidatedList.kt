@@ -25,6 +25,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
@@ -82,7 +83,7 @@ open class ValidatedList<T> @Deprecated("Use ValidatedField.toList pattern inste
             val list: MutableList<T> = mutableListOf()
             val errors = ValidationResult.createMutable("Error(s) found deserializing list $fieldName")
             for ((index, el) in array.content.withIndex()) {
-                val result = entryHandler.deserializeEntry(el, "$fieldName[$index]", 1).attachTo(errors)
+                val result = entryHandler.deserializeEntry(el, "$fieldName[$index]", 65).attachTo(errors)
                 if (result.isValid()) {
                     list.add(index, result.get())
                 }
@@ -157,7 +158,7 @@ open class ValidatedList<T> @Deprecated("Use ValidatedField.toList pattern inste
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedList<T> {
-        return ValidatedList(copyStoredValue(), entryHandler)
+        return this.copyProvidersTo(ValidatedList(copyStoredValue(), entryHandler))
     }
 
     @Internal
@@ -185,9 +186,10 @@ open class ValidatedList<T> @Deprecated("Use ValidatedField.toList pattern inste
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<List<T>>): ClickableWidget {
-        return CustomButtonWidget.builder(TextureIds.LIST_LANG) { b: CustomButtonWidget ->
+
+        return CustomButtonWidget.builder { b: CustomButtonWidget ->
             openListEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
-        }.size(110, 20).build()
+        }.size(110, 20).messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, TextureIds.LIST_LANG) }.build()
     }
 
     @Internal

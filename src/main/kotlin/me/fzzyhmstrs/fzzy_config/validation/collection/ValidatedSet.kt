@@ -25,6 +25,7 @@ import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.descLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.transLit
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.Shorthand.validated
@@ -80,7 +81,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
             val set: MutableSet<T> = mutableSetOf()
             val errors = ValidationResult.createMutable("Error(s) found deserializing set $fieldName")
             for ((index, el) in array.content.withIndex()) {
-                val result = entryHandler.deserializeEntry(el,  "$fieldName[$index]", 1).attachTo(errors)
+                val result = entryHandler.deserializeEntry(el,  "$fieldName[$index]", 65).attachTo(errors)
                 if (!result.isError()) {
                     set.add(result.get())
                 }
@@ -157,7 +158,7 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedSet<T> {
-        return ValidatedSet(copyStoredValue(), entryHandler)
+        return this.copyProvidersTo(ValidatedSet(copyStoredValue(), entryHandler))
     }
 
     @Internal
@@ -185,9 +186,9 @@ open class ValidatedSet<T>(defaultValue: Set<T>, private val entryHandler: Entry
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Set<T>>): ClickableWidget {
-        return CustomButtonWidget.builder(TextureIds.SET_LANG) { b: CustomButtonWidget ->
+        return CustomButtonWidget.builder { b: CustomButtonWidget ->
             openListEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
-        }.size(110, 20).build()
+        }.size(110, 20).messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, TextureIds.SET_LANG) }.build()
     }
 
     @Internal

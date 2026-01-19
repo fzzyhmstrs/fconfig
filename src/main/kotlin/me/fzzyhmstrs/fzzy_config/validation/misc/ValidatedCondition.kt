@@ -143,9 +143,9 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
      * Retrieves the wrapped value without performing condition checks
      * @return stored value [T]
      * @author fzzyhmstrs
-     * @since 0.5.4
+     * @since 0.5.4, overrides from ValidatedField 0.7.5
      */
-    fun getUnconditional(): T {
+    public override fun getUnconditional(): T {
         return super.get()
     }
 
@@ -321,6 +321,12 @@ open class ValidatedCondition<T> internal constructor(delegate: ValidatedField<T
             val kClass = delegate::class
             kClass
         }
+    }
+
+    @Internal
+    @Deprecated("Internal Method, don't Override unless you know what you are doing!")
+    override fun peekState(): Boolean {
+        return deserializedChanged(pushedValue, getUnconditional())
     }
 
     /**

@@ -474,6 +474,7 @@ internal object ConfigApiImpl {
                 it is KMutableProperty<*>
                         && (if (ignoreNonSync(flags)) true else !isNonSync(it))
                         && !isTransient(it.javaField?.modifiers ?: Modifier.TRANSIENT)
+                        && !isDeprecated(it)
                         && if(ignoreVisibility) trySetAccessible(it) else it.visibility == KVisibility.PUBLIC
             }.sortedBy { orderById[it.name] }
 
@@ -613,11 +614,14 @@ internal object ConfigApiImpl {
             }
 
             for (prop in props.cast<List<KMutableProperty1<T, *>>>()) {
+                if (isDeprecated(prop)) { //don't bother checking for a deprecated prop in an update
+                    continue
+                }
                 val propVal = prop.get(config)
                 if (propVal is EntryTransient) continue
                 val name = prop.name
                 val tomlElement = tomlMap.remove(name)
-                if (tomlElement == null || tomlElement is TomlNull) {
+                if ((tomlElement == null || tomlElement is TomlNull)) {
                     errorBuilder.addError(ValidationResult.Errors.DESERIALIZATION, "TomlElement [$name] was missing or null.")
                     continue
                 }
@@ -626,12 +630,9 @@ internal object ConfigApiImpl {
                     val newFlags = if (ignoreVisibility || isIgnoreVisibility(prop.annotations)) flags or IGNORE_VISIBILITY else flags
                     if (propVal is Supplier<*> && action != null) {
                         errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
-                        val before = propVal.get()
                         propVal.deserializeEntry(tomlElement, name, newFlags).also { r ->
-                            if (action.restartPrompt) {
-                                if (propVal.deserializedChanged(before, r.get())) {
-                                    errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
-                                }
+                            if (action.restartPrompt && r.has(ValidationResult.Errors.CHANGED)) {
+                                errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                             }
                         }
                     } else {
@@ -641,15 +642,14 @@ internal object ConfigApiImpl {
                     val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop, name)
                     if (basicValidation != null) {
                         val newFlags = if (ignoreVisibility || isIgnoreVisibility(prop.annotations)) flags or IGNORE_VISIBILITY else flags
+                        basicValidation.trySetQuiet(propVal)
                         val result = basicValidation.deserializeEntry(tomlElement, name, newFlags)
                         try {
                             val action = requiredAction(checkActions, prop, globalAction)
                             if (action != null) {
                                 errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
-                                if (action.restartPrompt) {
-                                    if (basicValidation.deserializedChanged(propVal, result.get())) {
-                                        errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
-                                    }
+                                if (action.restartPrompt && result.has(ValidationResult.Errors.CHANGED)) {
+                                    errorBuilder.addRestart(recordRestarts, action, ((config as? Config)?.getId()?.toTranslationKey() ?: "") + "." + name)
                                 }
                             }
                             if (ignoreVisibility) trySetAccessible(prop)
@@ -744,12 +744,9 @@ internal object ConfigApiImpl {
                     val action = requiredAction(checkActions, prop, globalAction)
                     if(v is Supplier<*> && action != null) {
                         errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
-                        val before = v.get()
                         v.deserializeEntry(it, str, flags).also { r ->
-                            if (action.restartPrompt) {
-                                if(v.deserializedChanged(before, r.get())) {
-                                    errorBuilder.addRestart(recordRestarts, action, "$id.$str")
-                                }
+                            if (action.restartPrompt && r.has(ValidationResult.Errors.CHANGED)) {
+                                errorBuilder.addRestart(recordRestarts, action, "$id.$str")
                             }
                         }
                     } else {
@@ -758,15 +755,14 @@ internal object ConfigApiImpl {
                 } else if (v != null) {
                     val basicValidation = UpdateManager.getValidation(v, prop, str, id, this.isClient)
                     if (basicValidation != null) {
+                        basicValidation.trySetQuiet(v)
                         val result = basicValidation.deserializeEntry(it, str, flags)
                         try {
                             val action = requiredAction(checkActions, prop, globalAction)
                             if(action != null) {
                                 errorBuilder.addError(ValidationResult.Errors.ACTION) { b -> b.content(action) }
-                                if (action.restartPrompt) {
-                                    if (basicValidation.deserializedChanged(v, result.get())) {
-                                        errorBuilder.addRestart(recordRestarts, action, "$id.$str")
-                                    }
+                                if (action.restartPrompt && result.has(ValidationResult.Errors.CHANGED)) {
+                                    errorBuilder.addRestart(recordRestarts, action, "$id.$str")
                                 }
                             }
                             prop.setter.call(c, result.get()) //change?
@@ -819,8 +815,7 @@ internal object ConfigApiImpl {
                 if (writeV !is ConfigSection) { //good to go, skip sections since they are getting walked anyhow
                     if(writeV is EntryDeserializer<*> && liveV is Supplier<*>) { //only deserialize for entries that we can do proper checks on
                         val writeResult = writeV.deserializeEntry(it, str, flags) //write the update to the write-copy config
-                        val before = liveV.get() //what does the live config have in that spot right now
-                        if (writeV.deserializedChanged(before, writeResult.get())) { //permissible change made
+                        if (writeResult.has(ValidationResult.Errors.CHANGED)) { //permissible change made
                             val permResult = permissionChecker.check(liveV, liveC, id, str, annotations, clientOnly) //check if we were even supposed to edit this.
                             if (!permResult.success) { //shouldn't have edited... woops
                                 errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
@@ -840,8 +835,9 @@ internal object ConfigApiImpl {
                     } else if (writeV != null) {
                         val basicValidation = UpdateManager.getValidation(writeV, writeProp, str, id, this.isClient)
                         if (basicValidation != null) {
+                            basicValidation.trySetQuiet(writeV)
                             val writeResult = basicValidation.deserializeEntry(it, str, flags) //write the update to the write-copy config
-                            if (basicValidation.deserializedChanged(liveV, writeResult.get())) {
+                            if (writeResult.has(ValidationResult.Errors.CHANGED)) {
                                 val permResult = permissionChecker.check(liveV, liveC, id, str, annotations, clientOnly) //check if we were even supposed to edit this.
                                 if (!permResult.success) { //shouldn't have edited... woops
                                     errorBuilder.addError(ValidationResult.Errors.ACCESS_VIOLATION, "${permResult.message}: $str")
@@ -1275,8 +1271,16 @@ internal object ConfigApiImpl {
         return clazz.annotations.any { it is RootConfig }
     }
 
+    private fun isDeprecated(property: KProperty<*>): Boolean {
+        return isDeprecated(property.annotations)
+    }
+
+    internal fun isDeprecated(annotations: List<Annotation>): Boolean {
+        return annotations.any { it is ConfigDeprecated }
+    }
+
     @Suppress("DEPRECATION")
-    private fun getAction(annotations: List<Annotation>): Action? {
+    internal fun getAction(annotations: List<Annotation>): Action? {
         return (annotations.firstOrNull {
             (it is RequiresAction)
         } as? RequiresAction ?: annotations.firstOrNull {
@@ -1299,7 +1303,7 @@ internal object ConfigApiImpl {
         }
     }
 
-    private fun requiredAction(settingAnnotations: List<Annotation>, classAction: Action?): Action? {
+    internal fun requiredAction(settingAnnotations: List<Annotation>, classAction: Action?): Action? {
         val settingAction = getAction(settingAnnotations)
         if (settingAction == null && classAction == null) return null
         if (settingAction == null) return classAction
@@ -1560,7 +1564,7 @@ internal object ConfigApiImpl {
         }
     }
 
-    private fun<W: Any> biWalk(walkable: W, walkable2: W, prefix: String, flags: Byte, walkAction: BiWalkAction) {
+    internal fun<W: Any> biWalk(walkable: W, walkable2: W, prefix: String, flags: Byte, walkAction: BiWalkAction) {
         try {
             // check for IgnoreVisibility
             val ignoreVisibility = isIgnoreVisibility(walkable::class) || ignoreVisibility(flags)

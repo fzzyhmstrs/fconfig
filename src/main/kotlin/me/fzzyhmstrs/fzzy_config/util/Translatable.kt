@@ -389,6 +389,18 @@ interface Translatable {
             get() = false
     }
 
+    @FunctionalInterface
+    fun interface Provider<T, S> {
+        fun provide(t: T, default: S): S
+
+        interface Type<S: Any>
+
+        companion object {
+            val WIDGET_TITLE = object : Type<Text> {}
+            val WIDGET_WIDTH = object : Type<Int> {}
+        }
+    }
+
     /**
      * Name string for data generation or used as a "fallback" name implementation. Use this on the config class itself to translate the config name.
      *

@@ -10,6 +10,7 @@
 
 package me.fzzyhmstrs.fzzy_config.util
 
+import kotlinx.coroutines.*
 import me.fzzyhmstrs.fzzy_config.config.Config
 import me.fzzyhmstrs.fzzy_config.config.ConfigEntry
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
@@ -23,14 +24,14 @@ import java.nio.file.WatchKey
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.ReentrantLock
-
 
 internal object ThreadingUtils {
 
     internal val EXECUTOR = Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("Fzzy Config Worker").factory())
-    private val FILE_WATCHER = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().name("Fzzy Config File Watcher").factory())
+    private var FILE_WATCHER: ScheduledExecutorService? = null
 
     private val watcherLock: ReentrantLock = ReentrantLock()
     private val updatesLock: ReentrantLock = ReentrantLock()
@@ -65,7 +66,9 @@ internal object ThreadingUtils {
     * */
 
     fun start(flags: Byte, executor: Executor, applier: (ConfigEntry<*>, ValidationResult<TomlTable>) -> Unit, updater: () -> Unit, permissionCheck: ConfigApiImpl.PermissionChecker) {
-        FILE_WATCHER.scheduleAtFixedRate( { //FILE_WATCHER thread
+        val watcher = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().name("Fzzy Config File Watcher").factory())
+        watcher.scheduleAtFixedRate( {
+            //FILE_WATCHER thread
             val entries: MutableList<Pair<Path, ConfigEntry<*>>> = mutableListOf()
             try { //lock up the config watchers while we poll the watch service
                 watcherLock.lock()
@@ -93,20 +96,36 @@ internal object ThreadingUtils {
             if (entries.isEmpty()) return@scheduleAtFixedRate
 
             //push the update processing to the worker executors
-            CompletableFuture.supplyAsync( { //EXECUTOR threads
-                val results: MutableList<Pair<ConfigEntry<*>, ValidationResult<ConfigApiImpl.FileUpdateResult>>> = mutableListOf()
-                for ((path, entry) in entries) {
+            CompletableFuture.supplyAsync( {
+                //EXECUTOR threads
+                if (entries.size == 1) {
                     val result = ConfigApiImpl.deserializeFileUpdate(
-                        entry,
-                        path,
+                        entries[0].second,
+                        entries[0].first,
                         "Error(s) encountered while reading a changed config file",
                         flags,
                         permissionCheck
                     ).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
-                    results.add(entry to result)
+                    listOf(entries[0].second to result)
+                } else {
+                    runBlocking {
+                        //Kotlin Coroutine threads
+                        val deferredResults = entries.map { (path, entry) ->
+                            async(Dispatchers.IO) {
+                                entry to ConfigApiImpl.deserializeFileUpdate(
+                                    entry,
+                                    path,
+                                    "Error(s) encountered while reading a changed config file",
+                                    flags,
+                                    permissionCheck
+                                ).log(ValidationResult.ErrorEntry.ENTRY_ERROR_LOGGER)
+                            }
+                        }
+                        deferredResults.awaitAll()
+                    }
                 }
-                results
-            }, EXECUTOR).thenAcceptAsync({ results -> //CLIENT or SERVER thread
+            }, EXECUTOR).thenAcceptAsync({ results ->
+                //CLIENT or SERVER thread
                 if (results.isNotEmpty()) {
                     for ((entry, result) in results) {
                         if (result.isValid()) {
@@ -123,11 +142,12 @@ internal object ThreadingUtils {
             }, executor)
 
         }, 0L, 503L, TimeUnit.MILLISECONDS)
+        FILE_WATCHER = watcher
     }
 
     fun stop() {
         watchService.close()
-        FILE_WATCHER.shutdown()
+        FILE_WATCHER?.shutdown()
     }
 
     fun register(entry: ConfigEntry<out Config>) {

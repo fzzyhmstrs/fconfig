@@ -18,6 +18,7 @@ import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
 import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -82,7 +83,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
                 if(!keyResult.isValid()) {
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(el, "{$fieldName, @key: $key}", 1).attachTo(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(el, "{$fieldName, @key: $key}", 65).attachTo(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
             val totalErrors = ValidationResult.createMutable("Errors found deserializing id map [$fieldName]")
@@ -175,7 +176,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedIdentifierMap<V> {
-        return ValidatedIdentifierMap(storedValue, keyHandler, valueHandler)
+        return this.copyProvidersTo(ValidatedIdentifierMap(storedValue, keyHandler, valueHandler))
     }
 
     @Internal
@@ -205,7 +206,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<Identifier, V>>): ClickableWidget {
         return CustomButtonWidget.builder(TextureIds.MAP_LANG) { b: CustomButtonWidget ->
             openMapEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
-        }.size(110, 20).build()
+        }.size(110, 20).messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, TextureIds.MAP_LANG) }.build()
     }
 
     @Internal

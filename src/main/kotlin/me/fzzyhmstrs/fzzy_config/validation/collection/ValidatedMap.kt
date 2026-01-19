@@ -23,6 +23,7 @@ import me.fzzyhmstrs.fzzy_config.screen.decoration.Decorated
 import me.fzzyhmstrs.fzzy_config.screen.widget.*
 import me.fzzyhmstrs.fzzy_config.screen.widget.custom.CustomButtonWidget
 import me.fzzyhmstrs.fzzy_config.util.FcText.translate
+import me.fzzyhmstrs.fzzy_config.util.Translatable
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult
 import me.fzzyhmstrs.fzzy_config.util.ValidationResult.Companion.attachTo
 import me.fzzyhmstrs.fzzy_config.validation.ValidatedField
@@ -85,11 +86,11 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
                 val keyToml = pairEl[0]
                 val valueToml = pairEl[1]
                 val field = "{$fieldName, @key: $keyToml}"
-                val keyResult = keyHandler.deserializeEntry(keyToml, field, 1).attachTo(keyErrors)
+                val keyResult = keyHandler.deserializeEntry(keyToml, field, 65).attachTo(keyErrors)
                 if(!keyResult.isValid()) {
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(valueToml, field, 1).attachTo(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(valueToml, field, 65).attachTo(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
             val totalErrors = ValidationResult.createMutable("Errors found deserializing map [$fieldName]")
@@ -201,7 +202,7 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
      * @since 0.2.0
      */
     override fun instanceEntry(): ValidatedMap<K, V> {
-        return ValidatedMap(copyStoredValue(), keyHandler, valueHandler)
+        return this.copyProvidersTo(ValidatedMap(copyStoredValue(), keyHandler, valueHandler))
     }
 
     @Internal
@@ -229,9 +230,9 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
     @Internal
     //client
     override fun widgetEntry(choicePredicate: ChoiceValidator<Map<K, V>>): ClickableWidget {
-        return CustomButtonWidget.builder(TextureIds.MAP_LANG) { b: CustomButtonWidget ->
+        return CustomButtonWidget.builder { b: CustomButtonWidget ->
             openMapEditPopup(PopupWidget.Builder.popupContext { w -> b.x + b.width/2 - w/2 }, PopupWidget.Builder.popupContext { h -> b.y + b.height/2 - h/2 })
-        }.size(110, 20).build()
+        }.size(110, 20).messageSupplier { provideAttachedValue(Translatable.Provider.WIDGET_TITLE, TextureIds.MAP_LANG) }.build()
     }
 
     @Internal

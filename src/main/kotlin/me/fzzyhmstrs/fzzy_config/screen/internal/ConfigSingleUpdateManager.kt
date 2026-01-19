@@ -132,6 +132,15 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
                         } else {
                             serverActions.add(action)
                         }
+                    } else if (update is EntryParent) {
+                        val anyActions = update.changeActions()
+                        if (anyActions.isNotEmpty()) {
+                            if (ConfigApiImpl.isNonSync(annotations) || isClient) {
+                                clientActions.addAll(anyActions)
+                            } else {
+                                serverActions.addAll(anyActions)
+                            }
+                        }
                     }
                     try {
                         prop.setter.call(walkable, update.get())
@@ -149,7 +158,7 @@ internal class ConfigSingleUpdateManager(private val configSet: ConfigSet, priva
                         serverActions.add(action)
                     }
                 } else if (thing is EntryParent) {
-                    val anyActions = thing.actions()
+                    val anyActions = thing.changeActions()
                     if (anyActions.isNotEmpty()) {
                         if (ConfigApiImpl.isNonSync(annotations) || isClient) {
                             clientActions.addAll(anyActions)
