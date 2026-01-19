@@ -18,20 +18,25 @@
 -------------------------------------
 
 ### Additions
-* Added new `CustomWidget` interface. This will be used for abstracting all FC widgets away from directly interacting with `Element`, `Widget`, etc. to reduce porting headache going forward. Updates related to CustomWidget will be sprinkled into the next versions.
-* New `CustomTextWidget` utilizing said CustomWidget interface.
-* Added `syncConfig` method to the `NetworkApi` for manually syncing a server-side config to clients.
-* Added uk_ua translation
+* Several new utilities added to `FcText`
+* Added a basic `Provider` system to Validated Fields
+  * Use `ValidatedField.translationProvider` to attach a custom translation provider function to a field.
+  * Use `ValidatedField.descriptionProvider` to attach a custom description (tooltip) provider function to a field.
+  * Use `ValidatedField.attachProvider` to attach an arbitrary value provider. This system is experimental and currently largely unused except for some widget names
+  * For validation with titles like "Edit Map..." you can attach a `WIDGET_TITLE` provider to create custom widget labels
+  * There will be much more work put into this and related systems in 0.8.0 and beyond
+* New `ConfigDeprecated` annotation. Use this to mark a setting as deprecated in the config.
+  * It won't appear in GUIs
+  * It won't be serialized to save files or networking
+  * It WILL still be read in from files
+  * This can be used in combination with a `Version` annotation to update a setting while still being able to use the old setting to update/inform the content of the new one.
 
 ### Changes
-* `CustomMultilineTextWidget` now has an align-right method
-* `Relevant` has gained three new methods for modifier checks, `needsCtrl`, `needsShift`, `needsAlt`
-* `PopupWidget`'s wrapped `LayoutWidget` now contributes to re-sizing the popup based on the dimensions it would like.
+* `ThreadingUtils` (the file watcher utility) now uses kotlin coroutines internally and has more robust startup and shutdown processes
+* Updated change detection system; may introduce niche regressions. Please open an issue if you encounter any strange behavior with "actions" 
 
 ### Fixes
-* Validated Collections now resolve their contents lazily on serialize, allowing for proper implementation of mapped registry objects (items, blocks, etc.) in loaders that defer their registration.
-* `ConfigGroup` now acts properly with nested `collapsedByDefault`
-* `ConfigApi.buildTranslations` can now "see" inside objects that may be wrapping a translated object (such as `ValidatedAny`)
-* Configs packet size limit increased to avoid problems with serializing large configs.
-* (1.21.9) fixed keybinds showing as "Button 70" etc.
-* `ValidationResult.reportTo` no longer reports an error context has header information only.
+* Fixed restart detection when syncing for mapped settings (`ValidatedCondition`, `ValidatedMapped`, etc.)
+* Fixed action reporting for changes made inside `ValidatedAny`
+* (1.20.1) fixed tooltips not showing up in config screens until you "click into" them (or tab in)
+* (1.20.1) fixed sliders "stealing" input outside their widget bounds
