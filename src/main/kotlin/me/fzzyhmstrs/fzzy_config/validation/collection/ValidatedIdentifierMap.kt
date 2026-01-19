@@ -83,7 +83,7 @@ open class ValidatedIdentifierMap<V>(defaultValue: Map<Identifier, V>, private v
                 if(!keyResult.isValid()) {
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(el, "{$fieldName, @key: $key}", 1).attachTo(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(el, "{$fieldName, @key: $key}", 65).attachTo(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
             val totalErrors = ValidationResult.createMutable("Errors found deserializing id map [$fieldName]")

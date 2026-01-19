@@ -83,7 +83,7 @@ open class ValidatedList<T> @Deprecated("Use ValidatedField.toList pattern inste
             val list: MutableList<T> = mutableListOf()
             val errors = ValidationResult.createMutable("Error(s) found deserializing list $fieldName")
             for ((index, el) in array.content.withIndex()) {
-                val result = entryHandler.deserializeEntry(el, "$fieldName[$index]", 1).attachTo(errors)
+                val result = entryHandler.deserializeEntry(el, "$fieldName[$index]", 65).attachTo(errors)
                 if (result.isValid()) {
                     list.add(index, result.get())
                 }

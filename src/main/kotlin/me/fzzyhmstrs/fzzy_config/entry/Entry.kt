@@ -61,6 +61,18 @@ interface Entry<T, E: Entry<T, E>>: EntryHandler<T>, EntryWidget<T>, EntryFlag, 
     fun trySet(input: Any?)
 
     /**
+     * Attempts to set an arbitrary input into this Entry. Should fail soft if the input is incompatible
+     *
+     * Should not trigger any events or other side effects. The default implementation here likely does do this, so overriding is recommended
+     * @param input Any value to attempt to set
+     * @author fzzyhmstrs
+     * @since 0.7.5
+     */
+    fun trySetQuiet(input: Any?) {
+        trySet(input)
+    }
+
+    /**
      * Applies a listener to this entry. The consumer(s) passed be invoked whenever the value of this [Entry] is updated
      * @author fzzyhmstrs
      * @since 0.6.0
