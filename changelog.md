@@ -18,16 +18,25 @@
 -------------------------------------
 
 ### Additions
-* Config updates made in the file (.toml, .json5, etc.) will be automatically updated live in-game, and synced as appropriate.
-* New `onUpdateServer` events that take a `ServerUpdateContext`. The old events are deprecated. They will stop working (no crashes) in 0.8.0, with full removal scheduled for 0.9.0
-  * For registered events, migrate to the v2 API
-* New `RegistryBuilder` platform system for creating modded registries in a loader-agnostic way, along with other registry-related utils.
-  * Call via `PlatformApi#createRegistryBuilder`. Much like registrars, a builder is created for a specific namespace.
+* Several new utilities added to `FcText`
+* Added a basic `Provider` system to Validated Fields
+  * Use `ValidatedField.translationProvider` to attach a custom translation provider function to a field.
+  * Use `ValidatedField.descriptionProvider` to attach a custom description (tooltip) provider function to a field.
+  * Use `ValidatedField.attachProvider` to attach an arbitrary value provider. This system is experimental and currently largely unused except for some widget names
+  * For validation with titles like "Edit Map..." you can attach a `WIDGET_TITLE` provider to create custom widget labels
+  * There will be much more work put into this and related systems in 0.8.0 and beyond
+* New `ConfigDeprecated` annotation. Use this to mark a setting as deprecated in the config.
+  * It won't appear in GUIs
+  * It won't be serialized to save files or networking
+  * It WILL still be read in from files
+  * This can be used in combination with a `Version` annotation to update a setting while still being able to use the old setting to update/inform the content of the new one.
 
 ### Changes
-* `ValidatedEnum` now has more widget types, including `INLINE` and `SCROLLABLE`
-* `ValidationResult.bimap` error nesting order flipped, the output results error context is now the parent context
+* `ThreadingUtils` (the file watcher utility) now uses kotlin coroutines internally and has more robust startup and shutdown processes
+* Updated change detection system; may introduce niche regressions. Please open an issue if you encounter any strange behavior with "actions" 
 
 ### Fixes
-* Fixed desc and prefix keys being broken for Config classes
-* Config groups, especially deeply nested groups, behave properly now when opening and closing repeatedly
+* Fixed restart detection when syncing for mapped settings (`ValidatedCondition`, `ValidatedMapped`, etc.)
+* Fixed action reporting for changes made inside `ValidatedAny`
+* (1.20.1) fixed tooltips not showing up in config screens until you "click into" them (or tab in)
+* (1.20.1) fixed sliders "stealing" input outside their widget bounds
