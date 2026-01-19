@@ -420,6 +420,7 @@ sealed class ValidatedNumber<T>(defaultValue: T, protected val minValue: T, prot
         }
 
         override fun onMouse(event: CustomWidget.MouseEvent): Boolean {
+            if (!isMouseOver(event.x(), event.y())) return false
             setValueFromMouse(event.x())
             return true
         }
