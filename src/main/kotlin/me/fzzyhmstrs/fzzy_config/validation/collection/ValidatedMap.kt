@@ -84,11 +84,11 @@ open class ValidatedMap<K, V>(defaultValue: Map<K, V>, private val keyHandler: E
                 val keyToml = pairEl[0]
                 val valueToml = pairEl[1]
                 val field = "{$fieldName, @key: $keyToml}"
-                val keyResult = keyHandler.deserializeEntry(keyToml, field, 1).attachTo(keyErrors)
+                val keyResult = keyHandler.deserializeEntry(keyToml, field, 65).attachTo(keyErrors)
                 if(!keyResult.isValid()) {
                     continue
                 }
-                val valueResult = valueHandler.deserializeEntry(valueToml, field, 1).attachTo(valueErrors)
+                val valueResult = valueHandler.deserializeEntry(valueToml, field, 65).attachTo(valueErrors)
                 map[keyResult.get()] = valueResult.get()
             }
             val totalErrors = ValidationResult.createMutable("Errors found deserializing map [$fieldName]")
