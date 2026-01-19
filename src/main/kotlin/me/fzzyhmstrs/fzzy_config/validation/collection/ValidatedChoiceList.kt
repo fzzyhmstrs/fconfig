@@ -106,7 +106,7 @@ open class ValidatedChoiceList<T> @JvmOverloads @Deprecated("Use toChoiceSet fro
             val list: MutableList<T> = mutableListOf()
             val errors = ValidationResult.createMutable("Error(s) found deserializing choice list $fieldName")
             for ((index, el) in array.content.withIndex()) {
-                val result = entryHandler.deserializeEntry(el, "$fieldName[$index]", 1).attachTo(errors)
+                val result = entryHandler.deserializeEntry(el, "$fieldName[$index]", 65).attachTo(errors)
                 if (result.isValid()) {
                     val candidate = result.get()
                     if (!choices.contains(candidate)) {
