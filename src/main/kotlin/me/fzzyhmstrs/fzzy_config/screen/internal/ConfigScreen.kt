@@ -35,6 +35,7 @@ import net.minecraft.client.gui.DrawContext
 import net.minecraft.client.gui.Drawable
 import net.minecraft.client.gui.Element
 import net.minecraft.client.gui.Selectable
+import net.minecraft.client.gui.navigation.GuiNavigationType
 import net.minecraft.client.gui.screen.Screen
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder
 import net.minecraft.client.gui.screen.world.CreateWorldScreen.FOOTER_SEPARATOR_TEXTURE
@@ -169,6 +170,7 @@ internal class ConfigScreen(
     }
 
     override fun init() {
+        this.client?.navigationType = GuiNavigationType.MOUSE //start with mouse navigation
         layout = ThreePartsLayoutWidget(this)
         super.init()
         initHeader()

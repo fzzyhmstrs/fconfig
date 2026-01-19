@@ -44,7 +44,7 @@ internal object ThreadingUtils {
 
     }
 
-    private val FILE_WATCHER = Executors.newSingleThreadScheduledExecutor(FileFactory)
+    private var FILE_WATCHER = Executors.newSingleThreadScheduledExecutor(FileFactory)
     private object FileFactory: ThreadFactory {
 
         override fun newThread(r: Runnable): Thread {
@@ -86,7 +86,7 @@ internal object ThreadingUtils {
     * */
 
     fun start(flags: Byte, executor: Executor, applier: (ConfigEntry<*>, ValidationResult<TomlTable>) -> Unit, updater: () -> Unit, permissionCheck: ConfigApiImpl.PermissionChecker) {
-        val watcher = Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().name("Fzzy Config File Watcher").factory())
+        val watcher = Executors.newSingleThreadScheduledExecutor(FileFactory)
         watcher.scheduleAtFixedRate( {
             //FILE_WATCHER thread
             val entries: MutableList<Pair<Path, ConfigEntry<*>>> = mutableListOf()
@@ -167,7 +167,7 @@ internal object ThreadingUtils {
 
     fun stop() {
         watchService.close()
-        FILE_WATCHER?.shutdown()
+        FILE_WATCHER.shutdown()
     }
 
     fun register(entry: ConfigEntry<out Config>) {
