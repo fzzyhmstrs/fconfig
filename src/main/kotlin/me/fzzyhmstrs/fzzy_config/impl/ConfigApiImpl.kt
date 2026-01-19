@@ -613,11 +613,14 @@ internal object ConfigApiImpl {
             }
 
             for (prop in props.cast<List<KMutableProperty1<T, *>>>()) {
+                if (isDeprecated(prop)) { //don't bother checking for a deprecated prop in an update
+                    continue
+                }
                 val propVal = prop.get(config)
                 if (propVal is EntryTransient) continue
                 val name = prop.name
                 val tomlElement = tomlMap.remove(name)
-                if (tomlElement == null || tomlElement is TomlNull) {
+                if ((tomlElement == null || tomlElement is TomlNull)) {
                     errorBuilder.addError(ValidationResult.Errors.DESERIALIZATION, "TomlElement [$name] was missing or null.")
                     continue
                 }
@@ -638,6 +641,7 @@ internal object ConfigApiImpl {
                     val basicValidation = UpdateManager.basicValidationStrategy(propVal, prop, name)
                     if (basicValidation != null) {
                         val newFlags = if (ignoreVisibility || isIgnoreVisibility(prop.annotations)) flags or IGNORE_VISIBILITY else flags
+                        basicValidation.trySetQuiet(propVal)
                         val result = basicValidation.deserializeEntry(tomlElement, name, newFlags)
                         try {
                             val action = requiredAction(checkActions, prop, globalAction)
@@ -750,6 +754,7 @@ internal object ConfigApiImpl {
                 } else if (v != null) {
                     val basicValidation = UpdateManager.getValidation(v, prop, str, id, this.isClient)
                     if (basicValidation != null) {
+                        basicValidation.trySetQuiet(v)
                         val result = basicValidation.deserializeEntry(it, str, flags)
                         try {
                             val action = requiredAction(checkActions, prop, globalAction)
@@ -829,6 +834,7 @@ internal object ConfigApiImpl {
                     } else if (writeV != null) {
                         val basicValidation = UpdateManager.getValidation(writeV, writeProp, str, id, this.isClient)
                         if (basicValidation != null) {
+                            basicValidation.trySetQuiet(writeV)
                             val writeResult = basicValidation.deserializeEntry(it, str, flags) //write the update to the write-copy config
                             if (writeResult.has(ValidationResult.Errors.CHANGED)) {
                                 val permResult = permissionChecker.check(liveV, liveC, id, str, annotations, clientOnly) //check if we were even supposed to edit this.

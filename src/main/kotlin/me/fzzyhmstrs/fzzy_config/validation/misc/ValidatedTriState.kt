@@ -283,4 +283,8 @@ open class ValidatedTriState @JvmOverloads constructor(defaultValue: TriState, p
         }
 
     }
+
+    override fun deserializedChanged(old: Any?, new: Any?): Boolean {
+        return super.deserializedChanged(old, new)
+    }
 }
