@@ -18,6 +18,10 @@ import me.fzzyhmstrs.fzzy_config.cast
 import me.fzzyhmstrs.fzzy_config.config.ConfigGroup
 import me.fzzyhmstrs.fzzy_config.entry.*
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.biWalk
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.getAction
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.requiredAction
+import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImpl.walk
 import me.fzzyhmstrs.fzzy_config.impl.ConfigApiImplClient
 import me.fzzyhmstrs.fzzy_config.impl.PermResult
 import me.fzzyhmstrs.fzzy_config.impl.config.SearchConfig
@@ -406,6 +410,29 @@ open class ValidatedAny<T: Any>(defaultValue: T): ValidatedField<T>(defaultValue
     @Internal
     override fun actions(): Set<Action> {
         return ConfigApiImpl.getActions(storedValue, ConfigApiImpl.IGNORE_NON_SYNC)
+    }
+
+    @Internal
+    override fun changeActions(): Set<Action> {
+        val pv = pushedValue ?: return setOf()
+        val classAction = getAction(storedValue::class.annotations)
+        val propActions: SortedSet<Action> = sortedSetOf()
+        biWalk(storedValue, pv, "", ConfigApiImpl.IGNORE_NON_SYNC)  { stored, pushed, _, _, _, _, _, _, annotations, _ ->
+            if (stored is EntryDeserializer<*> && stored is Supplier<*>) {
+                if (stored.deserializedChanged(stored.get(), (pushed as Supplier<*>).get())) {
+                    val action = requiredAction(annotations, classAction)
+                    if (action != null) {
+                        propActions.add(action)
+                    }
+                }
+            } else if (stored != pushed) {
+                val action = requiredAction(annotations, classAction)
+                if (action != null) {
+                    propActions.add(action)
+                }
+            }
+        }
+        return propActions
     }
 
     @Internal
